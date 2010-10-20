@@ -141,6 +141,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 * @see edu.sdsc.grid.io.FTPFileOutputStream#close()
 	 */
+	@Override
 	protected void finalize() throws IOException {
 		close();
 	}
@@ -156,6 +157,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		this.file = (FTPFile) file;
 		temp = (LocalFile) LocalFile.createTempFile(""
@@ -173,6 +175,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(int b) throws IOException {
 		out.write(b);
 	}
@@ -186,6 +189,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(byte b[]) throws IOException {
 		out.write(b);
 	}
@@ -203,6 +207,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(byte b[], int off, int len) throws IOException {
 		out.write(b, off, len);
 	}
@@ -219,6 +224,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		if (temp.length() < file.length()) {
 			// only partially overwrote the existing file

@@ -1,8 +1,6 @@
 package org.irods.jargon.core.packinstr;
 
-import static org.junit.Assert.*;
-import junit.framework.TestCase;
-
+import junit.framework.Assert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,14 +29,14 @@ public class OpenedDataObjInpTest {
 		sb.append("<KeyValPair_PI><ssLen>0</ssLen>\n");
 		sb.append("</KeyValPair_PI>\n");
 		sb.append("</OpenedDataObjInp_PI>\n");
-		TestCase.assertEquals("did not generate expected XML", sb.toString(), openedDataObjInp.getParsedTags());
+		Assert.assertEquals("did not generate expected XML", sb.toString(), openedDataObjInp.getParsedTags());
 
 	}
 
 	@Test
 	public final void testGetApiNumber() throws Exception {
 		OpenedDataObjInp openedDataObjInp = OpenedDataObjInp.instanceForFileSeek(1024, 3,OpenedDataObjInp.SEEK_CURRENT);
-		TestCase.assertEquals("did not get correct api number", 674, openedDataObjInp.getApiNumber());
+		Assert.assertEquals("did not get correct api number", 674, openedDataObjInp.getApiNumber());
 	
 	}
 	

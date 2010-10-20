@@ -67,6 +67,7 @@ import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.grid.io.ProtocolCatalog;
 import edu.sdsc.grid.io.RemoteFileSystem;
+import edu.sdsc.grid.io.UserMetaData;
 
 /**
  * The IRODSFileSystem class is the class for connection implementations to
@@ -175,9 +176,9 @@ public class IRODSFileSystem extends RemoteFileSystem {
 						new MetaDataCondition[] { buildMetaDataConditionForGSIUser(irodsAccount) },
 						new MetaDataSelect[] {
 								MetaDataSet
-										.newSelection(IRODSMetaDataSet.USER_NAME),
+										.newSelection(UserMetaData.USER_NAME),
 								MetaDataSet
-										.newSelection(IRODSMetaDataSet.USER_ZONE) },
+										.newSelection(UserMetaData.USER_ZONE) },
 						10);
 			} catch (Exception e) {
 				IOException x = new IOException();
@@ -238,14 +239,14 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			// reported version is less than the 'arguement', or prior to the
 			// protocol change
 			log.info("reported version is prior to irods 2.2, using USER_DN_2_1");
-			return IRODSMetaDataSet.newCondition(IRODSMetaDataSet.USER_DN_2_1,
+			return MetaDataSet.newCondition(UserMetaData.USER_DN_2_1,
 					MetaDataCondition.EQUAL, irodsAccount.getGSSCredential()
 							.getName().toString());
 
 		} else {
 			// version is after the rods2.2 cutoff
 			log.info("reported version is after the irods 2.2 cutoff, using  USER_DN");
-			return IRODSMetaDataSet.newCondition(IRODSMetaDataSet.USER_DN,
+			return MetaDataSet.newCondition(UserMetaData.USER_DN,
 					MetaDataCondition.EQUAL, irodsAccount.getGSSCredential()
 							.getName().toString());
 		}
@@ -256,6 +257,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() throws Throwable {
 		
 		if (log.isDebugEnabled()) {
@@ -273,6 +275,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	/**
 	 * Loads the account information for this file system.
 	 */
+	@Override
 	protected void setAccount(GeneralAccount account) throws IOException {
 		if (account == null)
 			account = new IRODSAccount();
@@ -283,6 +286,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	/**
 	 * Returns the account used by this IRODSFileSystem.
 	 */
+	@Override
 	public GeneralAccount getAccount() throws NullPointerException {
 		if (((IRODSAccount) account) != null)
 			return (IRODSAccount) account.clone();
@@ -293,6 +297,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	/**
 	 * Returns the root directories of the iRODS file system.
 	 */
+	@Override
 	public String[] getRootDirectories() {
 		String[] root = { IRODS_ROOT };
 
@@ -540,6 +545,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)
@@ -561,6 +567,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	/**
 	 * Checks if the socket is connected.
 	 */
+	@Override
 	public boolean isConnected() {
 		return commands.isConnected();
 	}
@@ -570,6 +577,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * formated according to the iRODS URI model. Note: the user password will
 	 * not be included in the URI.
 	 */
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("irods://");
@@ -628,6 +636,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @return The metadata results from the filesystem, returns
 	 *         <code>null</code> if there are no results.
 	 */
+	@Override
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted)
 			throws IOException {

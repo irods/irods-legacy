@@ -45,13 +45,10 @@ package edu.sdsc.grid.io.http;
 
 import edu.sdsc.grid.io.*;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.File;
-import java.io.RandomAccessFile;
-
 import java.net.URLConnection;
 
 /**
@@ -182,6 +179,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 		httpFile = file;
 	}
 
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		close();
 		if (in == null) {
@@ -199,6 +197,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 		length = file.length();
 	}
 
+	@Override
 	protected int readBytes(byte b[], int offset, int len) throws IOException {
 		int read = in.read(b, offset, len);
 		if (read > 0) {
@@ -208,6 +207,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	}
 
 	// Private method in wrapper, so call public.
+	@Override
 	protected void writeBytes(byte b[], int offset, int len) throws IOException {
 		out.write(b, offset, len);
 	}
@@ -220,6 +220,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public long getFilePointer() throws IOException {
 		// keep an internal file pointer, for some fancy/inefficient business
 		// since we aren't really quite random access...
@@ -240,6 +241,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 *             if <code>pos</code> is less than <code>0</code> or if an I/O
 	 *             error occurs.
 	 */
+	@Override
 	public void seek(long position) throws IOException {
 		seek(position, SEEK_CURRENT);
 	}
@@ -266,6 +268,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 *             if <code>pos</code> is less than <code>0</code> or if an I/O
 	 *             error occurs.
 	 */
+	@Override
 	public void seek(long position, int origin) throws IOException {
 		if (position < 0) {
 			throw new IllegalArgumentException();
@@ -297,6 +300,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public long length() throws IOException {
 		return length;
 	}
@@ -309,6 +313,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             If an I/O error occurs
 	 */
+	@Override
 	public void setLength(long newLength) throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -321,6 +326,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		if (in != null) {
 			in.close();

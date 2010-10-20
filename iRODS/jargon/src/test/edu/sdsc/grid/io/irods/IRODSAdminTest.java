@@ -1,9 +1,8 @@
 package edu.sdsc.grid.io.irods;
 
-import static org.junit.Assert.*;
-
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -51,7 +50,7 @@ public class IRODSAdminTest {
 		IRODSAdmin irodsAdmin = new IRODSAdmin(irodsFileSystem);
 		String[] userGroups = irodsAdmin.listUserGroups();
 		irodsFileSystem.close();
-		TestCase.assertTrue("returned no user groups", userGroups.length > 0);
+		Assert.assertTrue("returned no user groups", userGroups.length > 0);
 
 	}
 
@@ -63,7 +62,7 @@ public class IRODSAdminTest {
 		IRODSAdmin irodsAdmin = new IRODSAdmin(irodsFileSystem);
 		String[] users = irodsAdmin.listUsers();
 		irodsFileSystem.close();
-		TestCase.assertTrue("returned no users", users.length > 0);
+		Assert.assertTrue("returned no users", users.length > 0);
 	}
 
 	@Test
@@ -74,7 +73,7 @@ public class IRODSAdminTest {
 		IRODSAdmin irodsAdmin = new IRODSAdmin(irodsFileSystem);
 		String[] resources = irodsAdmin.listResources();
 		irodsFileSystem.close();
-		TestCase.assertTrue("returned no resources", resources.length > 0);
+		Assert.assertTrue("returned no resources", resources.length > 0);
 	}
 
 	@Test
@@ -85,7 +84,7 @@ public class IRODSAdminTest {
 		IRODSAdmin irodsAdmin = new IRODSAdmin(irodsFileSystem);
 		String[] zones = irodsAdmin.listZones();
 		irodsFileSystem.close();
-		TestCase.assertTrue("returned no zones", zones.length > 0);
+		Assert.assertTrue("returned no zones", zones.length > 0);
 	}
 
 	@Test
@@ -116,7 +115,7 @@ public class IRODSAdminTest {
 		irodsAdmin.deleteGroup(testGroup);
 		
 		irodsFileSystem.close();
-		TestCase.assertEquals("did not add the group", initialCount + 1, postCreateCount);
+		Assert.assertEquals("did not add the group", initialCount + 1, postCreateCount);
 	}
 
 }

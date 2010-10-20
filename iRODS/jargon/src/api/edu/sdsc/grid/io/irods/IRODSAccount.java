@@ -320,6 +320,7 @@ public class IRODSAccount extends RemoteAccount {
 	 * held values.
 	 * <P>
 	 */
+	@Override
 	protected void finalize() {
 		super.finalize();
 
@@ -328,6 +329,7 @@ public class IRODSAccount extends RemoteAccount {
 	/**
 	 * Sets the port of this IRODSAccount. Port numbers can not be negative.
 	 */
+	@Override
 	public void setPort(int port) {
 		if (port > 0)
 			this.port = port;
@@ -342,6 +344,7 @@ public class IRODSAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if homeDirectory is null.
 	 */
+	@Override
 	public void setHomeDirectory(String homeDirectory) {
 		if (homeDirectory == null) {
 			// throw new NullPointerException(
@@ -382,7 +385,7 @@ public class IRODSAccount extends RemoteAccount {
 	 * connecting.
 	 */
 	void setVersion(String version) {
-		this.version = version;
+		IRODSAccount.version = version;
 	}
 
 	// for GSI
@@ -531,6 +534,7 @@ public class IRODSAccount extends RemoteAccount {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)
@@ -558,6 +562,7 @@ public class IRODSAccount extends RemoteAccount {
 	 * formated according to the iRODS URI model. Note: the user password will
 	 * not be included in the URI.
 	 */
+	@Override
 	public String toString() {
 		return new String("irods://" + getUserName() + "@" + getHost() + ":"
 				+ getPort());
@@ -570,6 +575,7 @@ public class IRODSAccount extends RemoteAccount {
 	 *            If true, the account's password will be included in the URI,
 	 *            if possible.
 	 */
+	@Override
 	public URI toURI(boolean includePassword) {
 		URI uri = null;
 		try {

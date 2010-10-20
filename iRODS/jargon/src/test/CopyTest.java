@@ -26,8 +26,6 @@
 //	NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import edu.sdsc.grid.io.irods.IRODSFileSystem;
-import edu.sdsc.grid.io.srb.SRBFileSystem;
-import edu.sdsc.grid.io.srb.SRBFile;
 import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.*;
 
@@ -215,13 +213,15 @@ public class CopyTest
     Thread[] transferThreads = new Thread[connections];
     for (int i=0;i<connections;i++){
       transferThreads[i] = new Thread(){
-        public void run()
+        @Override
+		public void run()
         {
           Thread[] copyThreads = new Thread[threadsEach];
           try {
             for (int i=0;i<threadsEach;i++){
               copyThreads[i] = new Thread(){
-                public void run()
+                @Override
+				public void run()
                 {
                   try {
                     GeneralFile s = 
@@ -303,7 +303,7 @@ public class CopyTest
 			} catch (Throwable e) {
         //if not URI
 				loc = new LocalFile( System.getProperty("user.home")+
-                LocalFile.PATH_SEPARATOR+filePath );
+                GeneralFile.PATH_SEPARATOR+filePath );
 			}
 
       //upload destination

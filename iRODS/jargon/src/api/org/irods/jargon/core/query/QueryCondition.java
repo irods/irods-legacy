@@ -56,6 +56,7 @@ public class QueryCondition {
 		return value;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		String tabOver = "    ";

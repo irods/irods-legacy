@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -127,7 +128,7 @@ public class IRODSFileInputStreamTest {
 		long skippedPlusRead = skipped + numberBytesReadAfterSkip;
 		
 		
-		TestCase
+		Assert
 				.assertEquals(
 						"I did not skip and then read the remainder of the specified file",
 						fileLengthInBytes, skippedPlusRead);
@@ -189,7 +190,7 @@ public class IRODSFileInputStreamTest {
 		}
 
 		irodsFileSystem.close();
-		TestCase.assertEquals("whole file not read back", fileLengthInBytes,
+		Assert.assertEquals("whole file not read back", fileLengthInBytes,
 				bytesRead);
 	}
 
@@ -247,7 +248,7 @@ public class IRODSFileInputStreamTest {
 		}
 
 		irodsFileSystem.close();
-		TestCase
+		Assert
 				.assertEquals(
 						"I did not skip and then read the remainder of the specified file",
 						fileLengthInBytes, actualFileContents.size());
@@ -301,7 +302,7 @@ public class IRODSFileInputStreamTest {
 		}
 
 		irodsFileSystem.close();
-		TestCase
+		Assert
 		.assertEquals(
 				"file length from irods does not match string length",
 				testString.length(), length);
@@ -360,7 +361,7 @@ public class IRODSFileInputStreamTest {
 		}
 
 		irodsFileSystem.close();
-		TestCase
+		Assert
 		.assertEquals(
 				"file length from irods does not match string length",
 				testString.length(), length);
@@ -421,12 +422,12 @@ public class IRODSFileInputStreamTest {
 		irodsFileSystem.close();
 		String actualString = actualFileContents.toString();
 		
-		TestCase
+		Assert
 		.assertEquals(
 				"file length from irods does not match string length",
 				testString.length(), length);
 		
-		TestCase.assertEquals("string written does not match string read", testString, actualString);
+		Assert.assertEquals("string written does not match string read", testString, actualString);
 
 	}
 

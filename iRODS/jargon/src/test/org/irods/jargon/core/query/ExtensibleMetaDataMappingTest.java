@@ -1,10 +1,9 @@
 package org.irods.jargon.core.query;
 
-import static org.junit.Assert.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.AfterClass;
@@ -34,7 +33,7 @@ public class ExtensibleMetaDataMappingTest {
 		ExtensibleMetaDataMapping metaDataMapping = ExtensibleMetaDataMapping
 				.instance(metaDataSource);
 
-		TestCase.assertNotNull(metaDataMapping);
+		Assert.assertNotNull(metaDataMapping);
 
 	}
 
@@ -52,7 +51,7 @@ public class ExtensibleMetaDataMappingTest {
 				.instance(metaDataSource);
 
 		String index = metaDataMapping.getIndexFromColumnName(key1);
-		TestCase.assertEquals(val1, index);
+		Assert.assertEquals(val1, index);
 	}
 
 	@Test
@@ -69,7 +68,7 @@ public class ExtensibleMetaDataMappingTest {
 				.instance(metaDataSource);
 
 		String actual = metaDataMapping.getColumnNameFromIndex(val1);
-		TestCase.assertEquals(key1, actual);
+		Assert.assertEquals(key1, actual);
 
 	}
 
@@ -95,7 +94,7 @@ public class ExtensibleMetaDataMappingTest {
 		metaDataSource.put(key4, val4);
 		metaDataMapping = ExtensibleMetaDataMapping.instance(metaDataSource);
 		String actual = metaDataMapping.getColumnNameFromIndex(val3);
-		TestCase.assertEquals(
+		Assert.assertEquals(
 				"stale data still in metadata mapping, should have overridden",
 				key3, actual);
 	}
@@ -116,7 +115,7 @@ public class ExtensibleMetaDataMappingTest {
 
 		metaDataMapping = ExtensibleMetaDataMapping.instance();
 		String actual = metaDataMapping.getColumnNameFromIndex(val1);
-		TestCase.assertEquals(
+		Assert.assertEquals(
 				"stale data still in metadata mapping, should have overridden",
 				key1, actual);
 	}
@@ -137,7 +136,7 @@ public class ExtensibleMetaDataMappingTest {
 
 		metaDataMapping = ExtensibleMetaDataMapping.instance(metaDataSource);
 		String actual = metaDataMapping.getColumnNameFromIndex(val1);
-		TestCase.assertEquals(
+		Assert.assertEquals(
 				"stale data still in metadata mapping, should have overridden",
 				key1, actual);
 	}

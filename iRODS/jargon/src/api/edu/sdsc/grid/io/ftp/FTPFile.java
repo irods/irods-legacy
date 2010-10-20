@@ -233,6 +233,7 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * Not implemented
 	 */
+	@Override
 	public void replicate(String resource) {
 		throw new UnsupportedOperationException();
 	}
@@ -240,6 +241,7 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * Not implemented
 	 */
+	@Override
 	public String getResource() {
 		throw new UnsupportedOperationException();
 	}
@@ -257,6 +259,7 @@ public class FTPFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
 			throws IOException {
 		if (destinationFile == null) {
@@ -311,6 +314,7 @@ public class FTPFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
 			throws IOException {
 		if (sourceFile == null) {
@@ -361,6 +365,7 @@ public class FTPFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> can be read; otherwise
 	 *         <code>false</code>.
 	 */
+	@Override
 	public boolean canRead() {
 		return true;
 	}
@@ -374,6 +379,7 @@ public class FTPFile extends RemoteFile {
 	 *         the application is allowed to write to the file; otherwise
 	 *         <code>false</code>.
 	 */
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
@@ -383,6 +389,7 @@ public class FTPFile extends RemoteFile {
 	 * pathname denotes a directory, then the directory must be empty in order
 	 * to be deleted.
 	 */
+	@Override
 	public boolean delete() {
 		try {
 			if (isDirectory()) {
@@ -401,6 +408,7 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * @return This abstract pathname as a pathname string.
 	 */
+	@Override
 	public String getPath() {
 		return getAbsolutePath();
 	}
@@ -411,6 +419,7 @@ public class FTPFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname exists; <code>false</code> otherwise
 	 */
+	@Override
 	public boolean exists() {
 		try {
 			ftpClient.exists(getPath());
@@ -429,6 +438,7 @@ public class FTPFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isDirectory() {
 		return false;
 	}
@@ -441,6 +451,7 @@ public class FTPFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a normal file;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isFile() {
 		return true;
 	}
@@ -452,6 +463,7 @@ public class FTPFile extends RemoteFile {
 	 * @return A <code>long</code> value representing the time the file was last
 	 *         modified, measured in system-dependent way.
 	 */
+	@Override
 	public long lastModified() {
 		try {
 			Date date = ftpClient.lastModified(getPath());
@@ -469,6 +481,7 @@ public class FTPFile extends RemoteFile {
 	 * @return The length, in bytes, of the file denoted by this abstract
 	 *         pathname, or <code>0L</code> if the file does not exist
 	 */
+	@Override
 	public long length() {
 		try {
 			return ftpClient.size(getPath());
@@ -492,6 +505,7 @@ public class FTPFile extends RemoteFile {
 	 * @return An array of strings naming the files and directories in the
 	 *         directory denoted by this abstract pathname.
 	 */
+	@Override
 	public String[] list() {
 		try {
 			Vector list = ftpClient.list(getPath());
@@ -511,6 +525,7 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * Creates the directory named by this abstract pathname.
 	 */
+	@Override
 	public boolean mkdir() {
 		try {
 			ftpClient.makeDir(getPath());
@@ -538,6 +553,7 @@ public class FTPFile extends RemoteFile {
 	 * @throws NullPointerException
 	 *             - If dest is null
 	 */
+	@Override
 	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
 			NullPointerException {
 		try {
@@ -571,6 +587,7 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * Returns the pathname string of this abstract pathname.
 	 */
+	@Override
 	public String toString() {
 		String username = ((FTPFileSystem) fileSystem).getUserName(), portString;
 		int port = ((FTPFileSystem) fileSystem).getPort();
@@ -620,6 +637,7 @@ public class FTPFile extends RemoteFile {
 	 * @see java.net.URI
 	 * @see java.net.URI#toURL()
 	 */
+	@Override
 	public URI toURI() {
 		try {
 			return new URI(toString());
@@ -652,6 +670,7 @@ public class FTPFile extends RemoteFile {
 	 * @see java.net.URI#toURL()
 	 * @see java.net.URL
 	 */
+	@Override
 	public URL toURL() throws MalformedURLException {
 		return new URL(toString());
 	}

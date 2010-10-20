@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.net.URI;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -73,13 +74,13 @@ public class IRODSAccountTest {
 		IRODSAccount actualIRODSAccount = new IRODSAccount(expectedIRODSAccount.getHost(), expectedIRODSAccount.getPort(),
 				expectedIRODSAccount.getUserName(), expectedIRODSAccount.getPassword(), expectedIRODSAccount.getHomeDirectory(),
 				expectedIRODSAccount.getZone(), expectedIRODSAccount.getDefaultStorageResource());
-		TestCase.assertEquals(expectedIRODSAccount.getDefaultStorageResource(), actualIRODSAccount.getDefaultStorageResource());
-		TestCase.assertEquals(expectedIRODSAccount.getZone(), actualIRODSAccount.getZone());
-		TestCase.assertEquals(expectedIRODSAccount.getHomeDirectory(), actualIRODSAccount.getHomeDirectory());
-		TestCase.assertEquals(expectedIRODSAccount.getHost(), actualIRODSAccount.getHost());
-		TestCase.assertEquals(expectedIRODSAccount.getPassword(), actualIRODSAccount.getPassword());
-		TestCase.assertEquals(expectedIRODSAccount.getPort(), actualIRODSAccount.getPort());
-		TestCase.assertEquals(expectedIRODSAccount.getUserName(), actualIRODSAccount.getUserName());		
+		Assert.assertEquals(expectedIRODSAccount.getDefaultStorageResource(), actualIRODSAccount.getDefaultStorageResource());
+		Assert.assertEquals(expectedIRODSAccount.getZone(), actualIRODSAccount.getZone());
+		Assert.assertEquals(expectedIRODSAccount.getHomeDirectory(), actualIRODSAccount.getHomeDirectory());
+		Assert.assertEquals(expectedIRODSAccount.getHost(), actualIRODSAccount.getHost());
+		Assert.assertEquals(expectedIRODSAccount.getPassword(), actualIRODSAccount.getPassword());
+		Assert.assertEquals(expectedIRODSAccount.getPort(), actualIRODSAccount.getPort());
+		Assert.assertEquals(expectedIRODSAccount.getUserName(), actualIRODSAccount.getUserName());		
 	}
 	
 	@Test(expected=NullPointerException.class)
@@ -88,13 +89,13 @@ public class IRODSAccountTest {
 		IRODSAccount actualIRODSAccount = new IRODSAccount(expectedIRODSAccount.getHost(), expectedIRODSAccount.getPort(),
 				expectedIRODSAccount.getUserName(), expectedIRODSAccount.getPassword(), expectedIRODSAccount.getHomeDirectory(),
 				expectedIRODSAccount.getZone(), null);
-		TestCase.assertEquals(expectedIRODSAccount.getDefaultStorageResource(), actualIRODSAccount.getDefaultStorageResource());
-		TestCase.assertEquals(expectedIRODSAccount.getZone(), actualIRODSAccount.getZone());
-		TestCase.assertEquals(expectedIRODSAccount.getHomeDirectory(), actualIRODSAccount.getHomeDirectory());
-		TestCase.assertEquals(expectedIRODSAccount.getHost(), actualIRODSAccount.getHost());
-		TestCase.assertEquals(expectedIRODSAccount.getPassword(), actualIRODSAccount.getPassword());
-		TestCase.assertEquals(expectedIRODSAccount.getPort(), actualIRODSAccount.getPort());
-		TestCase.assertEquals(expectedIRODSAccount.getUserName(), actualIRODSAccount.getUserName());		
+		Assert.assertEquals(expectedIRODSAccount.getDefaultStorageResource(), actualIRODSAccount.getDefaultStorageResource());
+		Assert.assertEquals(expectedIRODSAccount.getZone(), actualIRODSAccount.getZone());
+		Assert.assertEquals(expectedIRODSAccount.getHomeDirectory(), actualIRODSAccount.getHomeDirectory());
+		Assert.assertEquals(expectedIRODSAccount.getHost(), actualIRODSAccount.getHost());
+		Assert.assertEquals(expectedIRODSAccount.getPassword(), actualIRODSAccount.getPassword());
+		Assert.assertEquals(expectedIRODSAccount.getPort(), actualIRODSAccount.getPort());
+		Assert.assertEquals(expectedIRODSAccount.getUserName(), actualIRODSAccount.getUserName());		
 	}
 
 	@Test
@@ -104,10 +105,10 @@ public class IRODSAccountTest {
 		MockGssCredential gssCredential = new MockGssCredential();
 		IRODSAccount irodsAccount = new IRODSAccount(host, port, gssCredential);
 		irodsAccount.setGSSCredential(gssCredential);
-		TestCase.assertNotNull("irods account is null", irodsAccount);
-		TestCase.assertEquals("host not found", host, irodsAccount.getHost());
-		TestCase.assertEquals("port not found", port, irodsAccount.getPort());	
-		TestCase.assertNotNull("gsi credential not set", irodsAccount.getGSSCredential());
+		Assert.assertNotNull("irods account is null", irodsAccount);
+		Assert.assertEquals("host not found", host, irodsAccount.getHost());
+		Assert.assertEquals("port not found", port, irodsAccount.getPort());	
+		Assert.assertNotNull("gsi credential not set", irodsAccount.getGSSCredential());
 	}
 
 	@Ignore
@@ -133,7 +134,7 @@ public class IRODSAccountTest {
 				expectedIRODSAccount.getZone(), expectedIRODSAccount.getDefaultStorageResource());
 		actualIRODSAccount.setDefaultStorageResource(expectedDefaultResource);
 		String actualDefaultResource = actualIRODSAccount.getDefaultStorageResource();
-		TestCase.assertEquals(expectedDefaultResource, actualDefaultResource);
+		Assert.assertEquals(expectedDefaultResource, actualDefaultResource);
 		
 	}
 	
@@ -142,7 +143,7 @@ public class IRODSAccountTest {
 		String expectedCA = "hows,that,for,a,test";
 		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 		irodsAccount.setCertificateAuthority(expectedCA);
-		TestCase.assertEquals("did not set the CA", expectedCA, irodsAccount.getCertificateAuthority());
+		Assert.assertEquals("did not set the CA", expectedCA, irodsAccount.getCertificateAuthority());
 
 	}
 	
@@ -150,14 +151,14 @@ public class IRODSAccountTest {
 	public final void testSetNullCertificateAuthority() throws Exception {
 		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 		irodsAccount.setCertificateAuthority(null);
-		TestCase.assertTrue(irodsAccount.getAuthenticationScheme().equals("PASSWORD"));
+		Assert.assertTrue(irodsAccount.getAuthenticationScheme().equals("PASSWORD"));
 	}
 	
 	@Test
 	public final void testEquals() throws Exception {
 		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSAccount otherAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-		TestCase.assertTrue("equals() does not detect identical accounts", irodsAccount.equals(otherAccount));
+		Assert.assertTrue("equals() does not detect identical accounts", irodsAccount.equals(otherAccount));
 	}
 	
 	@Test
@@ -175,7 +176,7 @@ public class IRODSAccountTest {
 		b.append(irodsAccount.getHomeDirectory());
 		URI actualUri = irodsAccount.toURI(true);
 		URI expectedUri = new URI(b.toString());
-		TestCase.assertEquals("did not generate correct uri including password", expectedUri, actualUri);
+		Assert.assertEquals("did not generate correct uri including password", expectedUri, actualUri);
 		
 	}
 	
@@ -192,7 +193,7 @@ public class IRODSAccountTest {
 		b.append(irodsAccount.getHomeDirectory());
 		URI actualUri = irodsAccount.toURI(false);
 		URI expectedUri = new URI(b.toString());
-		TestCase.assertEquals("did not generate correct uri including password", expectedUri, actualUri);
+		Assert.assertEquals("did not generate correct uri including password", expectedUri, actualUri);
 		
 	}
 	

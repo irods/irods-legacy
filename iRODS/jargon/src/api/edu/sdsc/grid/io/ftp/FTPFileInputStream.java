@@ -144,6 +144,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 *                if an I/O error occurs.
 	 * @see edu.sdsc.grid.io.FTPFileInputStream#close()
 	 */
+	@Override
 	protected void finalize() throws IOException {
 		close();
 	}
@@ -156,6 +157,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		// Download the file to temp, read it from there
 		this.file = file; // save for later, just in case;
@@ -182,6 +184,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int read() throws IOException {
 		return in.read();
 	}
@@ -198,6 +201,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int read(byte b[]) throws IOException {
 		return in.read(b);
 	}
@@ -276,6 +280,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 *                if <code>b</code> is <code>null</code>.
 	 * @see java.io.InputStream#read()
 	 */
+	@Override
 	public int read(byte b[], int off, int len) throws IOException {
 		return in.read(b, off, len);
 	}
@@ -292,6 +297,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public long skip(long n) throws IOException {
 		return in.skip(n);
 	}
@@ -305,6 +311,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int available() throws IOException {
 		return in.available();
 	}
@@ -319,6 +326,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		in.close();
 	}

@@ -45,7 +45,6 @@
 //
 package edu.sdsc.grid.io.http;
 
-import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.*;
 
 import java.io.*;
@@ -122,6 +121,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Loads the account information for this file system.
 	 */
+	@Override
 	protected void setAccount(GeneralAccount account) throws IOException {
 		if (account == null)
 			throw new NullPointerException("Account information cannot be null");
@@ -165,6 +165,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	/**
 	 *
 	 */
+	@Override
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects) throws IOException {
 		throw new UnsupportedOperationException();
@@ -173,6 +174,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	/**
 	 *
 	 */
+	@Override
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted)
 			throws IOException {
@@ -182,6 +184,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Returns the root directories of the HTTP file system.
 	 */
+	@Override
 	public String[] getRootDirectories() {
 		String[] root = { HTTP_ROOT };
 
@@ -200,6 +203,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof HTTPFileSystem) {
 			if (toString().equals(obj.toString())) {
@@ -212,6 +216,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Returns a string representation of this file system object.
 	 */
+	@Override
 	public String toString() {
 		return conn.getURL().toString();
 	}
@@ -219,6 +224,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Checks if the socket is connected.
 	 */
+	@Override
 	public boolean isConnected() {
 		if (conn != null) {
 			// just in case?

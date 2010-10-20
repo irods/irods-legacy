@@ -3,6 +3,7 @@ package org.irods.jargon.core.packinstr;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.JargonException;
@@ -27,7 +28,7 @@ public class GenUpdateInpTest {
 		InxVal val = InxVal.instance(new Integer(3), "x");
 		vals.add(val);
 		GenUpdateInp genUpdateInp = GenUpdateInp.instance(updateType, vals);
-		TestCase.assertNotNull("null returned from instance method",
+		Assert.assertNotNull("null returned from instance method",
 				genUpdateInp);
 	}
 
@@ -39,9 +40,9 @@ public class GenUpdateInpTest {
 		vals.add(val);
 		GenUpdateInp genUpdateInp = GenUpdateInp.instance(updateType, vals);
 		String tags = genUpdateInp.getParsedTags();
-		TestCase.assertNotNull("null returned", tags);
+		Assert.assertNotNull("null returned", tags);
 		String expected = "<GeneralUpdateInp_PI><type>23451</type>\n<InxValPair_PI><isLen>1</isLen>\n<inx>3</inx>\n<svalue>x</svalue>\n</InxValPair_PI>\n</GeneralUpdateInp_PI>\n";
-		TestCase.assertEquals(expected, tags);
+		Assert.assertEquals(expected, tags);
 	}
 
 	@Test(expected = JargonException.class)

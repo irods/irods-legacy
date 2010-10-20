@@ -126,6 +126,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 *                if an I/O error occurs.
 	 * @see edu.sdsc.grid.io.LocalFileOutputStream#close()
 	 */
+	@Override
 	protected void finalize() throws IOException {
 
 		close();
@@ -139,6 +140,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		out = new FileOutputStream(((LocalFile) file).getFile());
 	}
@@ -152,6 +154,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(int b) throws IOException {
 		out.write(b);
 	}
@@ -165,6 +168,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(byte b[]) throws IOException {
 		out.write(b);
 	}
@@ -182,6 +186,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(byte b[], int off, int len) throws IOException {
 		out.write(b, off, len);
 	}
@@ -198,6 +203,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		out.close();
 	}

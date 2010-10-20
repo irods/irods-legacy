@@ -1,7 +1,7 @@
 package org.irods.jargon.core.accessobject;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.JargonException;
@@ -28,7 +28,7 @@ public class IRODSAccessObjectFactoryImplTest {
 		IRODSCommands irodsCommands = mock(IRODSCommands.class);
 		when(irodsCommands.isConnected()).thenReturn(true);
 		IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl.instance(irodsCommands);
-		TestCase.assertNotNull("did not create a factory", irodsAccessObjectFactory);
+		Assert.assertNotNull("did not create a factory", irodsAccessObjectFactory);
 	}
 
 	@Test(expected=JargonException.class)

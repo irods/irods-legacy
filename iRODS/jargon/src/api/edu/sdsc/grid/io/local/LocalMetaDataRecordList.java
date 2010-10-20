@@ -77,6 +77,7 @@ public class LocalMetaDataRecordList extends MetaDataRecordList {
 	/**
 	 * @throws UnsupportedOperationException
 	 */
+	@Override
 	public boolean isQueryComplete() {
 		throw new UnsupportedOperationException();
 	}
@@ -84,6 +85,7 @@ public class LocalMetaDataRecordList extends MetaDataRecordList {
 	/**
 	 * @throws UnsupportedOperationException
 	 */
+	@Override
 	public MetaDataRecordList[] getMoreResults() {
 		throw new UnsupportedOperationException();
 	}
@@ -91,6 +93,7 @@ public class LocalMetaDataRecordList extends MetaDataRecordList {
 	/**
 	 * @throws UnsupportedOperationException
 	 */
+	@Override
 	public MetaDataRecordList[] getMoreResults(int numOfResults) {
 		throw new UnsupportedOperationException();
 	}

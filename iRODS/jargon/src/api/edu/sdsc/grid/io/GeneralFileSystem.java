@@ -104,6 +104,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * held values.
 	 * <P>
 	 */
+	@Override
 	protected void finalize() throws Throwable {
 		account = null;
 	}
@@ -264,6 +265,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	/**
 	 * @return a copy of this account object.
 	 */
+	@Override
 	public Object clone() {
 		try {
 			return FileFactory.newFileSystem(account);
@@ -285,6 +287,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public abstract boolean equals(Object obj);
 
 	/**
@@ -295,6 +298,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	/**
 	 * Returns a string representation of this file system object.
 	 */
+	@Override
 	public String toString() {
 		return new String("GeneralFileSystem, " + getHomeDirectory());
 	}

@@ -1,27 +1,24 @@
 package edu.sdsc.jargon.testutils.icommandinvoke.icommands;
 
+import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
+
+import java.util.Arrays;
+import java.util.Properties;
+
+import junit.framework.Assert;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Properties;
 
 
 /**
@@ -91,6 +88,6 @@ public class IchksumCommandTest {
         		testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName));
         String chksumResult = invoker.invokeCommandAndGetResultAsString(chksumCommand);
         String expectedChecksumString = Arrays.toString(expectedChecksum);
-        TestCase.assertTrue("did not compute checksum, expected:" + expectedChecksumString + " actual:" + chksumResult, chksumResult.indexOf(expectedChecksumString) > -1);
+        Assert.assertTrue("did not compute checksum, expected:" + expectedChecksumString + " actual:" + chksumResult, chksumResult.indexOf(expectedChecksumString) > -1);
     }
 }

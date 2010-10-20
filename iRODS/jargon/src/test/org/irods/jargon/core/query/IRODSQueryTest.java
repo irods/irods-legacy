@@ -1,8 +1,6 @@
 package org.irods.jargon.core.query;
 
-import static org.junit.Assert.*;
-import junit.framework.TestCase;
-
+import junit.framework.Assert;
 import org.irods.jargon.core.exception.JargonException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -21,8 +19,8 @@ public class IRODSQueryTest {
 	@Test
 	public final void testInstance() throws Exception {
 		IRODSQuery query = IRODSQuery.instance("test", 1);
-		TestCase.assertEquals("test", query.getQueryString());
-		TestCase.assertEquals(1, query.getNumberOfResultsDesired());
+		Assert.assertEquals("test", query.getQueryString());
+		Assert.assertEquals(1, query.getNumberOfResultsDesired());
 	}
 
 	@Test(expected = JargonException.class)

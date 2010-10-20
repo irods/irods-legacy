@@ -74,6 +74,7 @@ public class OpenedDataObjInp extends AbstractIRODSPackingInstruction {
 		this.setApiNumber(SEEK_API_NBR);
 		this.whence = whence;
 	}
+	@Override
 	public Tag getTagValue() throws JargonException {
 		
 

@@ -116,6 +116,7 @@ public class LocalFileSystem extends GeneralFileSystem {
 	/**
 	 * Sets the <code>account</code> object.
 	 */
+	@Override
 	protected void setAccount(GeneralAccount account) {
 		if (account == null)
 			account = new LocalAccount();
@@ -126,8 +127,9 @@ public class LocalFileSystem extends GeneralFileSystem {
 	/**
 	 * Returns the root directories of the local file system.
 	 */
+	@Override
 	public String[] getRootDirectories() {
-		GeneralFile[] roots = (GeneralFile[]) LocalFile.listRoots();
+		GeneralFile[] roots = LocalFile.listRoots();
 		String[] rootStrings = new String[roots.length];
 		for (int i = 0; i < roots.length; i++) {
 			rootStrings[i] = roots[i].toString();
@@ -144,6 +146,7 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 * For all those that match, the fields indicated in the select array are
 	 * returned in the result object.
 	 */
+	@Override
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects) throws IOException {
 		throw new UnsupportedOperationException();
@@ -187,6 +190,7 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 *            The attributes to be returned from those values that met the
 	 *            conditions, like SELECT in SQL.
 	 */
+	@Override
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int recordsWanted) throws IOException {
 		throw new UnsupportedOperationException();
@@ -204,6 +208,7 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)
@@ -223,6 +228,7 @@ public class LocalFileSystem extends GeneralFileSystem {
 	/**
 	 * Tests the connection to the filesystem. Local always returns true.
 	 */
+	@Override
 	public boolean isConnected() {
 		return true;
 	}

@@ -5,6 +5,7 @@ package edu.sdsc.jargon.testutils.icommandinvoke.icommands;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -68,7 +69,7 @@ public class UsersCommandTest {
 		IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		String result =invoker.invokeCommandAndGetResultAsString(command);
-		TestCase.assertTrue("did not find user name in users", result.indexOf(testingProperties.getProperty(TestingPropertiesHelper.IRODS_USER_KEY)) > -1);
+		Assert.assertTrue("did not find user name in users", result.indexOf(testingProperties.getProperty(TestingPropertiesHelper.IRODS_USER_KEY)) > -1);
 	}
 	
 	@Test(expected=IcommandException.class)

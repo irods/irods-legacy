@@ -302,6 +302,7 @@ public final class MetaDataField implements Comparable {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		MetaDataField field = null;
 
@@ -346,6 +347,7 @@ public final class MetaDataField implements Comparable {
 	/**
 	 * Returns a string representation of the object.
 	 */
+	@Override
 	public String toString() {
 		return fieldName + ": " + description;
 	}

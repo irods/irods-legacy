@@ -25,6 +25,7 @@ public class IRODSMetaDataConditionWrapper {
 	
 	public enum AVUComponent { ATTRIB_NAME_COMPONENT, ATTRIB_VALUE_COMPONENT, UNSET }
 	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("IRODSMetaDataConditionWrapper:");

@@ -7,6 +7,7 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SCRATCH_DI
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -116,7 +117,7 @@ public class IRODSTestSetupUtilitiesTest {
 		IlsCommand ilsCommand = new IlsCommand();
 		String ilsResult = invoker
 				.invokeCommandAndGetResultAsString(ilsCommand);
-		TestCase
+		Assert
 				.assertTrue(
 						"did not find scratch dir created in irods",
 						ilsResult.indexOf("/"
@@ -138,7 +139,7 @@ public class IRODSTestSetupUtilitiesTest {
 		ilsCommand.setIlsBasePath(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, expectedDirectoryName));
 		String ilsResult = invoker
 				.invokeCommandAndGetResultAsString(ilsCommand);
-		TestCase.assertTrue("did not find test dir created in irods", ilsResult
+		Assert.assertTrue("did not find test dir created in irods", ilsResult
 				.indexOf("/" + expectedDirectoryName) > -1);
 	}
 

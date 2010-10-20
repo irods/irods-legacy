@@ -28,7 +28,6 @@
 
 import edu.sdsc.grid.io.srb.*;
 import edu.sdsc.grid.io.*;
-import java.io.*;
 import java.net.*;
 
 
@@ -43,7 +42,7 @@ public class Srm
 
 		if (file.isDirectory()) {
 			//recursive delete
-			GeneralFile fileList[] = (GeneralFile[]) file.listFiles();
+			GeneralFile fileList[] = file.listFiles();
 
 			if (fileList != null) {
 				for (int i=0;i<fileList.length;i++) {

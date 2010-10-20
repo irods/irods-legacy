@@ -147,6 +147,7 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() {
 
 	}
@@ -207,6 +208,7 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * query.
 	 */
 
+	@Override
 	public boolean isQueryComplete() {
 		if (continuationIndex >= 0) {
 			return false;
@@ -222,6 +224,7 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * return 300 values at a time which match the query, see also
 	 * <code>SRBFileSystem.DEFAULT_RECORDS_WANTED</code>.
 	 */
+	@Override
 	public MetaDataRecordList[] getMoreResults() throws IOException {
 		return getMoreResults(SRBFileSystem.DEFAULT_RECORDS_WANTED);
 	}
@@ -231,6 +234,7 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * partial list and there are more results which matched the query that
 	 * haven't been returned. Otherwise null.
 	 */
+	@Override
 	public MetaDataRecordList[] getMoreResults(int numOfResults)
 			throws IOException {
 		if (continuationIndex < 0) {
@@ -241,7 +245,7 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 			int multipleRows = metaDataNums[metaDataNums.length - 1].continuationIndex;
 			if (multipleRows >= 0) {
 				SRBMetaDataRecordList[] rl;
-				metaDataNums = (SRBMetaDataRecordList[]) fileSystem
+				metaDataNums = fileSystem
 						.srbGenGetMoreRows(SRBFile.MDAS_CATALOG, multipleRows,
 								numOfResults);
 
@@ -261,7 +265,7 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 						// user defined metadata to finish out the last record.
 						numOfResults = multipleRows;
 					}
-					rl = (SRBMetaDataRecordList[]) fileSystem
+					rl = fileSystem
 							.srbGenGetMoreRows(SRBFile.MDAS_CATALOG,
 									continuationIndex, numOfResults);
 					if (rl[0].continuationIndex >= 0) {

@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.query.ExtensibleMetaDataSource;
@@ -17,6 +18,7 @@ import org.junit.Test;
 import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataField;
 import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
@@ -57,7 +59,7 @@ public class IRODSExtensibleMetaDataTest {
 	public final void testIRODSMetaDataSetIRODSProtocol() {
 		IRODSProtocol irodsProtocol = new IRODSProtocol();
 		IRODSMetaDataSet irodsMetaDataSet = new IRODSMetaDataSet(irodsProtocol);
-		TestCase.assertNotNull(irodsMetaDataSet);
+		Assert.assertNotNull(irodsMetaDataSet);
 	}
 
 	@Test
@@ -69,7 +71,7 @@ public class IRODSExtensibleMetaDataTest {
 		IRODSProtocol irodsProtocol = new IRODSProtocol();
 		IRODSMetaDataSet irodsMetaDataSet = new IRODSMetaDataSet(irodsProtocol);
 		String id = IRODSMetaDataSet.getIDFromExtensibleMetaData("COL_TEST_ID");
-		TestCase.assertEquals("10001", id);
+		Assert.assertEquals("10001", id);
 
 	}
 
@@ -82,7 +84,7 @@ public class IRODSExtensibleMetaDataTest {
 		IRODSProtocol irodsProtocol = new IRODSProtocol();
 		IRODSMetaDataSet irodsMetaDataSet = new IRODSMetaDataSet(irodsProtocol);
 		String id = IRODSMetaDataSet.getID("IAmAnAvu");
-		TestCase.assertEquals("IAmAnAvu", id);
+		Assert.assertEquals("IAmAnAvu", id);
 
 	}
 
@@ -105,11 +107,11 @@ public class IRODSExtensibleMetaDataTest {
 		IRODSCommands commands = irodsFileSystem.commands;
 
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = IRODSMetaDataSet.newCondition("COLL_TEST_ID",
+		condition[0] = MetaDataSet.newCondition("COLL_TEST_ID",
 				MetaDataCondition.EQUAL, "123");
 
 		String[] fileds = { "COLL_TEST_ID" };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		
 		GenQueryClassicMidLevelService genQueryMidLevelService = GenQueryClassicMidLevelService.instance(commands);
 
@@ -118,7 +120,7 @@ public class IRODSExtensibleMetaDataTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("null queryTag means message not built",
+		Assert.assertNotNull("null queryTag means message not built",
 				queryTag);
 
 	}
@@ -132,11 +134,11 @@ public class IRODSExtensibleMetaDataTest {
 		IRODSProtocol irodsProtocol = new IRODSProtocol();
 		IRODSMetaDataSet irodsMetaDataSet = new IRODSMetaDataSet(irodsProtocol);
 
-		String fieldId = irodsMetaDataSet.getIDFromExtensibleMetaData("COL_TEST_ID");
-		MetaDataField actualReverseField = irodsMetaDataSet.getField(fieldId);
+		String fieldId = IRODSMetaDataSet.getIDFromExtensibleMetaData("COL_TEST_ID");
+		MetaDataField actualReverseField = IRODSMetaDataSet.getField(fieldId);
 		String actualFieldName = actualReverseField.getName();
 
-		TestCase.assertEquals("expected to get field name from reverse lookup", "COL_TEST_ID", actualFieldName);
+		Assert.assertEquals("expected to get field name from reverse lookup", "COL_TEST_ID", actualFieldName);
 
 	}
 

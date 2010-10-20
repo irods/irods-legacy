@@ -1,5 +1,6 @@
 package org.irods.jargon.core.packinstr;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.JargonException;
@@ -20,7 +21,7 @@ public class CollInpTest {
 	@Test
 	public final void testInstance() throws Exception {
 		CollInp collInp = CollInp.instance("testcollname", true);
-		TestCase.assertNotNull("null coll inp object", collInp);
+		Assert.assertNotNull("null coll inp object", collInp);
 	}
 
 	@Test(expected = JargonException.class)
@@ -42,13 +43,13 @@ public class CollInpTest {
 		sb.append("</CollInpNew_PI>\n");
 		String expected = sb.toString();
 		CollInp collInp = CollInp.instance("testcollname", true);
-		TestCase.assertEquals("did not get expected xml", expected, collInp.getParsedTags());
+		Assert.assertEquals("did not get expected xml", expected, collInp.getParsedTags());
 	}
 
 	@Test
 	public final void testGetCollectionName() throws JargonException {
 		CollInp collInp = CollInp.instance("testcollname", true);
-		TestCase.assertEquals("coll name not set", "testcollname", collInp
+		Assert.assertEquals("coll name not set", "testcollname", collInp
 				.getCollectionName());
 	}
 

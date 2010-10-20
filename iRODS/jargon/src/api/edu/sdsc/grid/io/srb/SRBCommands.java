@@ -59,6 +59,7 @@ import java.util.List;
 
 import edu.sdsc.grid.io.FileFactory;
 import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileSystem;
 import edu.sdsc.grid.io.GeneralRandomAccessFile;
 import edu.sdsc.grid.io.Host;
 import edu.sdsc.grid.io.Lucid;
@@ -139,7 +140,7 @@ class SRBCommands {
 	/**
 	 * Size of the socket send buffer
 	 */
-	static int OUTPUT_BUFFER_LENGTH = SRBFileSystem.getWriteBufferSize();
+	static int OUTPUT_BUFFER_LENGTH = GeneralFileSystem.getWriteBufferSize();
 
 	/**
 	 * Length of encrypt1 authentication key.

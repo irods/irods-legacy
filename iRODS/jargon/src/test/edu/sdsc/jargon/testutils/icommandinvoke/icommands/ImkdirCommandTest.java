@@ -3,16 +3,13 @@
  */
 package edu.sdsc.jargon.testutils.icommandinvoke.icommands;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Properties;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -20,10 +17,8 @@ import org.junit.Test;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
 
 /**
@@ -132,7 +127,7 @@ public class ImkdirCommandTest {
 				testingProperties, testingDirName));
 		String ilsResult = invoker
 				.invokeCommandAndGetResultAsString(ilsCommand);
-		TestCase.assertTrue("test directory is not there", ilsResult
+		Assert.assertTrue("test directory is not there", ilsResult
 				.indexOf(testingDirName) > -1);
 	}
 

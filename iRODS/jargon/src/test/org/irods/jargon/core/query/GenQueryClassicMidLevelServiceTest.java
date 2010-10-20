@@ -1,9 +1,8 @@
 package org.irods.jargon.core.query;
 
-import static org.junit.Assert.*;
-
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.JargonException;
@@ -50,7 +49,7 @@ public class GenQueryClassicMidLevelServiceTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		GenQueryClassicMidLevelService service = GenQueryClassicMidLevelService.instance(irodsFileSystem.getCommands());
 		irodsFileSystem.close();
-		TestCase.assertNotNull("mid level query service not created", service);
+		Assert.assertNotNull("mid level query service not created", service);
 	}
 	
 	

@@ -3,7 +3,9 @@ package edu.sdsc.grid.io.irods;
 import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
+import edu.sdsc.grid.io.StandardMetaData;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -18,8 +20,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,6 +28,7 @@ import java.net.URI;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 public class IRODSCommandsDeleteTest {
@@ -201,7 +202,7 @@ public class IRODSCommandsDeleteTest {
 
 		boolean deleteResult = irodsFile.delete(true);
 		irodsFileSystem.close();
-		TestCase.assertTrue("delete was unsuccessful", deleteResult);
+		Assert.assertTrue("delete was unsuccessful", deleteResult);
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
 
 	}
@@ -258,7 +259,7 @@ public class IRODSCommandsDeleteTest {
 
 		boolean deleteResult = irodsFile.delete(false);
 		irodsFileSystem.close();
-		TestCase.assertTrue("delete was unsuccessful", deleteResult);
+		Assert.assertTrue("delete was unsuccessful", deleteResult);
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
 
 	}
@@ -325,7 +326,7 @@ public class IRODSCommandsDeleteTest {
 
 		boolean deleteResult = irodsFile.delete(true);
 		irodsFileSystem.close();
-		TestCase.assertTrue("delete was unsuccessful", deleteResult);
+		Assert.assertTrue("delete was unsuccessful", deleteResult);
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
 
 	}
@@ -387,7 +388,7 @@ public class IRODSCommandsDeleteTest {
 								testingProperties, deleteCollectionSubdir));
 
 		boolean deleteResult = irodsFile.delete(true);
-		TestCase.assertTrue("delete was unsuccessful", deleteResult);
+		Assert.assertTrue("delete was unsuccessful", deleteResult);
 		irodsFileSystem.close();
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
 
@@ -447,17 +448,17 @@ public class IRODSCommandsDeleteTest {
 
 		// now do a query
 
-		String[] fields = { IRODSMetaDataSet.FILE_NAME,	IRODSMetaDataSet.DIRECTORY_NAME };
+		String[] fields = { StandardMetaData.FILE_NAME,	StandardMetaData.DIRECTORY_NAME };
 
 
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fields);
+		MetaDataSelect[] select = MetaDataSet.newSelection(fields);
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = IRODSMetaDataSet.newCondition(IRODSMetaDataSet.DIRECTORY_NAME,
+		condition[0] = MetaDataSet.newCondition(StandardMetaData.DIRECTORY_NAME,
 				MetaDataCondition.EQUAL, irodsFile.getAbsolutePath());
 		MetaDataRecordList[] fileList = irodsFileSystem.query(condition, select, 100, Namespace.FILE, false);
 
 		irodsFileSystem.close();
-		TestCase.assertTrue("delete was unsuccessful", deleteResult);
+		Assert.assertTrue("delete was unsuccessful", deleteResult);
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
 
 	}
@@ -513,7 +514,7 @@ public class IRODSCommandsDeleteTest {
 								testingProperties, deleteCollectionSubdir));
 
 		boolean deleteResult = irodsFile.delete(false);
-		TestCase.assertTrue("delete was unsuccessful", deleteResult);
+		Assert.assertTrue("delete was unsuccessful", deleteResult);
 		irodsFileSystem.close();
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
 

@@ -3,10 +3,9 @@
  */
 package edu.sdsc.jargon.testutils.icommandinvoke.icommands;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -19,7 +18,6 @@ import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
@@ -105,9 +103,9 @@ public class IreplCommandTest {
         ilsCommand.setIlsBasePath(ireplCommand.getObjectToReplicate());
         ilsCommand.setLongFormat(true);
         String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-        TestCase.assertTrue("did not find first resource",
+        Assert.assertTrue("did not find first resource",
         		ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) > -1);
-        TestCase.assertTrue("did not find replicated resource",
+        Assert.assertTrue("did not find replicated resource",
         		ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) > -1);
 
     }

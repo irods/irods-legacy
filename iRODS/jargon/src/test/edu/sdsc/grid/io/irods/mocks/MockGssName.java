@@ -2,7 +2,6 @@ package edu.sdsc.grid.io.irods.mocks;
 
 import java.util.Properties;
 
-import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
@@ -49,6 +48,7 @@ public class MockGssName implements GSSName {
 		return false;
 	}
 	
+	@Override
 	public String toString() {
 		return testingProperties.getProperty(TestingPropertiesHelper.IRODS_USER_DN_KEY);
 	}

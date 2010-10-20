@@ -3,10 +3,9 @@
  */
 package org.irods.jargon.core.accessobject;
 
-import static org.junit.Assert.fail;
-
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.query.IRODSQuery;
@@ -109,7 +108,7 @@ public class IRODSGenQueryExecutorImplTest {
 		IRODSGenQueryExecutor irodsGenQueryExecutor = accessObjectFactory
 				.getIRODSGenQueryExcecutor();
 
-		TestCase.assertNotNull(irodsGenQueryExecutor);
+		Assert.assertNotNull(irodsGenQueryExecutor);
 		irodsFileSystem.close();
 
 	}
@@ -146,8 +145,8 @@ public class IRODSGenQueryExecutorImplTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull(resultSet);
-		TestCase.assertFalse("did not expect continuation", resultSet.isHasMoreRecords());
+		Assert.assertNotNull(resultSet);
+		Assert.assertFalse("did not expect continuation", resultSet.isHasMoreRecords());
 
 	}
 
@@ -181,10 +180,10 @@ public class IRODSGenQueryExecutorImplTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("null result set",resultSet);
-		TestCase.assertFalse("empty result set", resultSet.getResults().isEmpty());
+		Assert.assertNotNull("null result set",resultSet);
+		Assert.assertFalse("empty result set", resultSet.getResults().isEmpty());
 		String returnedResourceName = resultSet.getFirstResult().getColumn(0);
-		TestCase.assertEquals("did not get expected result", testingProperties
+		Assert.assertEquals("did not get expected result", testingProperties
 						.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), returnedResourceName);
 		
 	}
@@ -216,16 +215,16 @@ public class IRODSGenQueryExecutorImplTest {
 		IRODSQueryResultSet resultSet = irodsGenQueryExecutor
 				.executeIRODSQuery(irodsQuery, 0);
 		
-		TestCase.assertTrue("did not get expected continuation", resultSet.isHasMoreRecords());
+		Assert.assertTrue("did not get expected continuation", resultSet.isHasMoreRecords());
 
 		// now requery and get a new result set
 		
 		resultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
 		
 		irodsFileSystem.close();
-		TestCase.assertNotNull("result set was null", resultSet);		
-		TestCase.assertTrue("did not get expected continuation", resultSet.isHasMoreRecords());
-		TestCase.assertTrue("no results, some expected", resultSet.getResults().size() > 0);
+		Assert.assertNotNull("result set was null", resultSet);		
+		Assert.assertTrue("did not get expected continuation", resultSet.isHasMoreRecords());
+		Assert.assertTrue("no results, some expected", resultSet.getResults().size() > 0);
 	}
 
 	public static final void addAVUsToEachFile() throws Exception {

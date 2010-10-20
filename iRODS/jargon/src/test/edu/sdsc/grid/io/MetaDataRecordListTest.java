@@ -1,5 +1,6 @@
 package edu.sdsc.grid.io;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.Test;
@@ -13,7 +14,7 @@ public class MetaDataRecordListTest {
 	public void testMetaDataRecordListMetaDataFieldLong() {
 		long longVal = 100000000L;
 		MetaDataRecordList testList = new IRODSMetaDataRecordList(new MetaDataField("name", "desc", MetaDataField.LONG, new IRODSProtocol()), longVal);
-		TestCase.assertNotNull(testList);
+		Assert.assertNotNull(testList);
 	}
 	
 
@@ -23,9 +24,9 @@ public class MetaDataRecordListTest {
 		long longValAsLong = 100000000L;
 
 		MetaDataRecordList testList = new IRODSMetaDataRecordList(new MetaDataField("name", "desc", MetaDataField.STRING, new IRODSProtocol()), longVal);
-		TestCase.assertNotNull(testList);
+		Assert.assertNotNull(testList);
 		long actualLongVal = testList.getLongValue(0);
-		TestCase.assertEquals(longValAsLong, actualLongVal);
+		Assert.assertEquals(longValAsLong, actualLongVal);
 	}
 
 	@Test
@@ -33,7 +34,7 @@ public class MetaDataRecordListTest {
 		long longVal = 100000000L;
 		MetaDataRecordList testList = new IRODSMetaDataRecordList(new MetaDataField("name", "desc", MetaDataField.LONG, new IRODSProtocol()), longVal);
 		long actualLongVal = testList.getLongValue(0);
-		TestCase.assertEquals(longVal, actualLongVal);
+		Assert.assertEquals(longVal, actualLongVal);
 	}
 
 }

@@ -1,12 +1,9 @@
 package edu.sdsc.jargon.testutils.filemanip;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -71,7 +68,7 @@ public class ScratchFileUtilsTest {
 		ScratchFileUtils scratchFileUtils = new ScratchFileUtils(props);
 		String scratchFileName = String.valueOf(System.currentTimeMillis());
 		scratchFileUtils.createScratchDirIfNotExists(scratchFileName);
-		TestCase.assertTrue("did not create scratch dir", scratchFileUtils.checkIfFileExistsInScratch(scratchFileName));
+		Assert.assertTrue("did not create scratch dir", scratchFileUtils.checkIfFileExistsInScratch(scratchFileName));
 	}
 	
 	@Test
@@ -88,7 +85,7 @@ public class ScratchFileUtilsTest {
 		
 		// now I should find that dir
 		boolean foundDir = scratchFileUtils.checkIfFileExistsInScratch(testingDir);
-		TestCase.assertTrue("did not find scratch file just added", foundDir);
+		Assert.assertTrue("did not find scratch file just added", foundDir);
 	}
 	
 	@Test(expected=TestingUtilsException.class)
@@ -116,7 +113,7 @@ public class ScratchFileUtilsTest {
 		
 		// now I should find that dir
 		boolean foundDir = scratchFileUtils.checkIfFileExistsInScratch(testingDir);
-		TestCase.assertTrue("did not find scratch file just added", foundDir);
+		Assert.assertTrue("did not find scratch file just added", foundDir);
 	}
 	
 	@Test
@@ -134,13 +131,13 @@ public class ScratchFileUtilsTest {
 		pathBuilder.append(testingDir);
 		pathBuilder.append(testingFileName);
 		String newPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(testingDir);
-		TestCase.assertTrue("no path returned", newPath.length() > 0);
+		Assert.assertTrue("no path returned", newPath.length() > 0);
 		
 		// now create a file using the path
 		FileGenerator.generateFileOfFixedLengthGivenName(newPath, testingFileName, 1);
 		
 		File existsFile = new File(newPath);
-		TestCase.assertTrue("did not find scratch file just added", existsFile.exists());
+		Assert.assertTrue("did not find scratch file just added", existsFile.exists());
 	}
 	
 	@Test
@@ -154,7 +151,7 @@ public class ScratchFileUtilsTest {
 		FileGenerator.generateFileOfFixedLengthGivenName(fullPath, testingFileName, 11);
 		byte[] actualChecksum = scratchFileUtils.computeFileCheckSum(IRODS_TEST_SUBDIR_PATH + '/' + testingFileName);
 		
-		TestCase.assertTrue("no checksum generated", actualChecksum.length > 0);
+		Assert.assertTrue("no checksum generated", actualChecksum.length > 0);
 	}
 
 }

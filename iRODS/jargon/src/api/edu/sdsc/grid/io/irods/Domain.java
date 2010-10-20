@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
  * @deprecated this class appears to be obsolete, and will be re-vamped in coming versions
  * @author iktome
  */
+@Deprecated
 public class Domain {
 	protected final String name;
 	protected final String typeName;
@@ -41,6 +42,7 @@ public class Domain {
 		return tableName;
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}

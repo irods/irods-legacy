@@ -57,11 +57,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Vector;
-import java.util.Date;
 
 /**
  * An abstract representation of file and directory pathnames on the SRB.

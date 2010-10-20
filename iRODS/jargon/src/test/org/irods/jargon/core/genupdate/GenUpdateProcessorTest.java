@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.irods.jargon.core.packinstr.GenUpdateInp;
 import org.irods.jargon.core.query.ExtensibleMetaDataMapping;
 import org.irods.jargon.core.query.ExtensibleMetaDataSource;
 import org.irods.jargon.core.query.ExtensibleMetadataPropertiesSource;
@@ -23,7 +23,6 @@ import edu.sdsc.grid.io.irods.IRODSFileSystem;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 
 /**
  * Test the gen update processor
@@ -59,7 +58,7 @@ public class GenUpdateProcessorTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		GenUpdateProcessor genUpdateProcessor = GenUpdateProcessor
 				.instance(irodsFileSystem.getCommands());
-		TestCase.assertNotNull(genUpdateProcessor);
+		Assert.assertNotNull(genUpdateProcessor);
 	}
 
 	@Ignore //FIXME: currently fails, checking on packing instruction....

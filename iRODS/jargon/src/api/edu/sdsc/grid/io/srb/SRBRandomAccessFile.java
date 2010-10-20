@@ -234,6 +234,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
 		close();
@@ -281,6 +282,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             If an I/O error occurs
 	 */
+	@Override
 	protected void open(GeneralFile file) throws FileNotFoundException,
 			SecurityException, IOException {
 		file.createNewFile();
@@ -328,6 +330,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 *             if fileSystem is null.
 	 * @return RemoteFileSystem
 	 */
+	@Override
 	public GeneralFileSystem getFileSystem() {
 		if (fileSystem != null)
 			return fileSystem;
@@ -353,6 +356,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 *             if an I/O error occurs. Not thrown if end-of-file has been
 	 *             reached.
 	 */
+	@Override
 	public int read() throws IOException {
 		byte buffer[] = fileSystem.srbObjRead(fd, 1);
 		if (buffer != null) {
@@ -375,6 +379,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             If an I/O error has occurred.
 	 */
+	@Override
 	protected int readBytes(byte buffer[], int offset, int len)
 			throws IOException {
 		byte b[] = null;
@@ -402,6 +407,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             If an I/O error has occurred.
 	 */
+	@Override
 	protected void writeBytes(byte buffer[], int offset, int len)
 			throws IOException {
 		byte b[] = new byte[len];
@@ -420,6 +426,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public long getFilePointer() throws IOException {
 		return filePointer;
 	}
@@ -445,6 +452,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 *             if <code>pos</code> is less than <code>0</code> or if an I/O
 	 *             error occurs.
 	 */
+	@Override
 	public void seek(long position, int origin) throws IOException {
 		if (position < 0) {
 			throw new IllegalArgumentException();
@@ -461,21 +469,22 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public long length() throws IOException {
 		MetaDataRecordList[] rl = null;
 		MetaDataCondition[] conditions = {
-				MetaDataSet.newCondition(SRBMetaDataSet.DIRECTORY_NAME,
+				MetaDataSet.newCondition(StandardMetaData.DIRECTORY_NAME,
 						MetaDataCondition.EQUAL, file.getParent()),
-				MetaDataSet.newCondition(SRBMetaDataSet.FILE_NAME,
+				MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 						MetaDataCondition.EQUAL, file.getName()) };
 		MetaDataSelect[] selects = { MetaDataSet
-				.newSelection(SRBMetaDataSet.SIZE) };
+				.newSelection(GeneralMetaData.SIZE) };
 
 		try {
 			rl = fileSystem.query(conditions, selects, 3);
 
 			if (rl != null)
-				return Long.parseLong(rl[0].getValue(SRBMetaDataSet.SIZE)
+				return Long.parseLong(rl[0].getValue(GeneralMetaData.SIZE)
 						.toString());
 		} catch (IOException e) {
 
@@ -510,6 +519,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws UnsupportedOperationException
 	 *             on truncate
 	 */
+	@Override
 	public void setLength(long newLength) throws IOException {
 
 		long length = length();
@@ -531,6 +541,7 @@ public class SRBRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		if (fileSystem != null) {
 			fileSystem.srbObjClose(fd);

@@ -11,6 +11,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.StandardMetaData;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
@@ -39,9 +41,9 @@ public class IRODSAvuTest {
 		List<IRODSMetaDataSelectWrapper> translatedSelects = new ArrayList<IRODSMetaDataSelectWrapper>();
 		IRODSMetaDataSelectWrapper irodsMetaDataSelectWrapper = null;
 
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
-				IRODSMetaDataSet.DIRECTORY_NAME };
-		MetaDataSelect[] selects = IRODSMetaDataSet.newSelection(fileds);
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] selects = MetaDataSet.newSelection(fileds);
 
 		for (int i = 0; i < selects.length; i++) {
 			try {

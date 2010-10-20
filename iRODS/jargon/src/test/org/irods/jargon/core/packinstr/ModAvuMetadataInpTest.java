@@ -1,8 +1,6 @@
 package org.irods.jargon.core.packinstr;
 
-import static org.junit.Assert.*;
-import junit.framework.TestCase;
-
+import junit.framework.Assert;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.junit.After;
@@ -23,14 +21,14 @@ public class ModAvuMetadataInpTest {
 	public void testInstanceForAddCollectionMetadata() throws Exception {
 		AvuData avuData = AvuData.instance("attrib", "value", "unit");
 		ModAvuMetadataInp modAvu = ModAvuMetadataInp.instanceForAddCollectionMetadata("hello", avuData);
-		TestCase.assertNotNull("null modAvu returned from initializer", modAvu);
+		Assert.assertNotNull("null modAvu returned from initializer", modAvu);
 	}
 	@Test
 	public void testInstanceForDeleteCollectionMetadata() throws Exception {
 		AvuData avuData = AvuData.instance("attrib", "value", "unit");
 		ModAvuMetadataInp modAvu = ModAvuMetadataInp.instanceForDeleteCollectionMetadata("hello", avuData);
-		TestCase.assertNotNull("null modAvu returned from initializer", modAvu);
-		TestCase.assertEquals("wrong action", ModAvuMetadataInp.ActionType.REMOVE, modAvu.getActionType());
+		Assert.assertNotNull("null modAvu returned from initializer", modAvu);
+		Assert.assertEquals("wrong action", ModAvuMetadataInp.ActionType.REMOVE, modAvu.getActionType());
 	}
 	
 	@Test(expected=JargonException.class)
@@ -69,7 +67,7 @@ public class ModAvuMetadataInpTest {
 		sb.append("<arg9></arg9>\n");
 		sb.append("</ModAVUMetadataInp_PI>\n");
 
-		TestCase.assertEquals("packing instruction is malformed", sb.toString(), modAvu.getParsedTags());
+		Assert.assertEquals("packing instruction is malformed", sb.toString(), modAvu.getParsedTags());
 	}
 
 }

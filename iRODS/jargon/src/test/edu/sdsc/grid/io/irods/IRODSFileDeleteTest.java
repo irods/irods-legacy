@@ -2,6 +2,7 @@ package edu.sdsc.grid.io.irods;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -73,15 +74,15 @@ public class IRODSFileDeleteTest {
     	IRODSFile newFile = new IRODSFile(irodsFileSystem, newFolder.getAbsolutePath(), testNewFileName);
 
     	newFolder.mkdir();
-    	TestCase.assertTrue("directory I just created should exist", newFolder.exists());
+    	Assert.assertTrue("directory I just created should exist", newFolder.exists());
     	newFile.createNewFile();
-    	TestCase.assertTrue("file I just created should exist", newFile.exists());
+    	Assert.assertTrue("file I just created should exist", newFile.exists());
 
-    	TestCase.assertTrue("could not delete file I just created", newFile.delete());
-    	TestCase.assertFalse("file I just deleted should not exist", newFile.exists());
+    	Assert.assertTrue("could not delete file I just created", newFile.delete());
+    	Assert.assertFalse("file I just deleted should not exist", newFile.exists());
 
-    	TestCase.assertTrue("unable to delete folder I just created", newFolder.delete());
-    	TestCase.assertFalse("folder I just deleted should not exist", newFolder.exists());
+    	Assert.assertTrue("unable to delete folder I just created", newFolder.delete());
+    	Assert.assertFalse("folder I just deleted should not exist", newFolder.exists());
     	irodsFileSystem.close();
 
     }
@@ -106,12 +107,12 @@ public class IRODSFileDeleteTest {
     	IRODSFile newFile = new IRODSFile(irodsFileSystem, newFolder.getAbsolutePath(), testNewFileName);
 
     	newFolder.mkdir();
-    	TestCase.assertTrue("directory I just created should exist", newFolder.exists());
+    	Assert.assertTrue("directory I just created should exist", newFolder.exists());
     	newFile.createNewFile();
-    	TestCase.assertTrue("file I just created should exist", newFile.exists());
+    	Assert.assertTrue("file I just created should exist", newFile.exists());
 
-    	TestCase.assertTrue("unable to delete folder I just created", newFolder.delete(true));
-    	TestCase.assertFalse("folder I just deleted should not exist", newFolder.exists());
+    	Assert.assertTrue("unable to delete folder I just created", newFolder.delete(true));
+    	Assert.assertFalse("folder I just deleted should not exist", newFolder.exists());
     	irodsFileSystem.close();
 
     }
@@ -132,12 +133,12 @@ public class IRODSFileDeleteTest {
     	IRODSFile newFile = new IRODSFile(irodsFileSystem, newFolder.getAbsolutePath(), testNewFileName);
 
     	newFolder.mkdir();
-    	TestCase.assertTrue("directory I just created should exist", newFolder.exists());
+    	Assert.assertTrue("directory I just created should exist", newFolder.exists());
     	newFile.createNewFile();
-    	TestCase.assertTrue("file I just created should exist", newFile.exists());
+    	Assert.assertTrue("file I just created should exist", newFile.exists());
 
-    	TestCase.assertTrue("unable to delete folder I just created", newFolder.delete(false));
-    	TestCase.assertFalse("folder I just deleted should not exist", newFolder.exists());
+    	Assert.assertTrue("unable to delete folder I just created", newFolder.delete(false));
+    	Assert.assertFalse("folder I just deleted should not exist", newFolder.exists());
     	irodsFileSystem.close();
 
     }
@@ -191,7 +192,7 @@ public class IRODSFileDeleteTest {
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
         
     	IRODSFile delFile = new IRODSFile(irodsFileSystem, irodsObjectAbsolutePath);
-    	TestCase.assertTrue("the test file does not exist!", delFile.exists());
+    	Assert.assertTrue("the test file does not exist!", delFile.exists());
     	
     	delFile.delete(true);
     	
@@ -209,11 +210,11 @@ public class IRODSFileDeleteTest {
     	try {
     		ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
     	} catch (IcommandException ice) {
-    		TestCase.assertTrue("was not the expected 'not found' condition", ice.getMessage().indexOf("does not exist") > -1);
+    		Assert.assertTrue("was not the expected 'not found' condition", ice.getMessage().indexOf("does not exist") > -1);
     		notFound = true;
     	}
 
-    	TestCase.assertTrue("found the deleted file with ils", notFound);
+    	Assert.assertTrue("found the deleted file with ils", notFound);
     	
 
     }
@@ -267,7 +268,7 @@ public class IRODSFileDeleteTest {
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
         
     	IRODSFile delFile = new IRODSFile(irodsFileSystem, irodsObjectAbsolutePath);
-    	TestCase.assertTrue("the test file does not exist!", delFile.exists());
+    	Assert.assertTrue("the test file does not exist!", delFile.exists());
     	
     	delFile.delete(false);
     	
@@ -285,11 +286,11 @@ public class IRODSFileDeleteTest {
     	try {
     		ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
     	} catch (IcommandException ice) {
-    		TestCase.assertTrue("was not the expected 'not found' condition", ice.getMessage().indexOf("does not exist") > -1);
+    		Assert.assertTrue("was not the expected 'not found' condition", ice.getMessage().indexOf("does not exist") > -1);
     		notFound = true;
     	}
 
-    	TestCase.assertTrue("found the deleted file with ils", notFound);
+    	Assert.assertTrue("found the deleted file with ils", notFound);
     	
 
     }

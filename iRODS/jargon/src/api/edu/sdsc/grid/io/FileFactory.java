@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Vector;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -786,7 +785,7 @@ public final class FileFactory {
 		dir.mkdir();
 
 		MetaDataSelect[] selects = MetaDataSet.newSelection(new String[] {
-				SRBMetaDataSet.FILE_NAME, SRBMetaDataSet.DIRECTORY_NAME });
+				StandardMetaData.FILE_NAME, StandardMetaData.DIRECTORY_NAME });
 		MetaDataRecordList[] rl = fileSystem.query(conditions, selects);
 
 		if (rl == null) {

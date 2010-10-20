@@ -1,10 +1,8 @@
 import edu.sdsc.grid.io.irods.*;
-import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.srb.*;
 import edu.sdsc.grid.io.*;
 
 import java.net.URI;
-import java.io.*;
 
 
 
@@ -134,7 +132,7 @@ System.out.println("\n Query the file system for all files matching certain "+
 			MetaDataSet.newCondition(
 				GeneralMetaData.SIZE, MetaDataCondition.LESS_THAN, 5000 ),
       
-			MetaDataSet.newCondition( GeneralMetaData.DIRECTORY_NAME,
+			MetaDataSet.newCondition( StandardMetaData.DIRECTORY_NAME,
 				MetaDataCondition.EQUAL, file.getParent() )
 		};
 
@@ -144,7 +142,7 @@ System.out.println("\n Query the file system for all files matching certain "+
 		 * the following values will be returned.
 		 */
 		String[] selectFieldNames = {
-			GeneralMetaData.FILE_NAME,
+			StandardMetaData.FILE_NAME,
 			FileMetaData.FILE_COMMENTS,
 			GeneralMetaData.SIZE,
 			UserMetaData.USER_NAME,
@@ -277,14 +275,14 @@ System.out.println("\n Set the SRB definable metadata.");
       new MetaDataTable( operators, definableMetaDataValues );
 
     rl = new MetaDataRecordList[1];
-    rl[0] = new SRBMetaDataRecordList( SRBMetaDataSet.getField(
+    rl[0] = new SRBMetaDataRecordList( MetaDataSet.getField(
       SRBMetaDataSet.DEFINABLE_METADATA_FOR_FILES ), metaDataTable );
-    rl[0].addRecord( SRBMetaDataSet.getField(
+    rl[0].addRecord( MetaDataSet.getField(
       FileMetaData.FILE_COMMENTS ),"Hi." );
 
     file.modifyMetaData( rl[0] );
 
-    rl = ((GeneralFile) file.getParentFile()).query( selects );
+    rl = (file.getParentFile()).query( selects );
     printQueryResults( rl );
 
 

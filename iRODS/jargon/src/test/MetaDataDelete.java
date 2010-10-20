@@ -29,7 +29,6 @@
 // Created on June 3, 2005, 4:11 PM
 
 
-import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.srb.*;
 import edu.sdsc.grid.io.*;
 
@@ -74,7 +73,7 @@ public class MetaDataDelete {
     else {
         fieldName = SRBMetaDataSet.DEFINABLE_METADATA_FOR_FILES;      
     }
-    field = SRBMetaDataSet.getField( fieldName );
+    field = MetaDataSet.getField( fieldName );
     
     rl = file.query( fieldName );
     metaDataTable = (MetaDataTable)rl[0].getValue(field);

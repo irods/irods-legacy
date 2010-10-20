@@ -50,7 +50,6 @@ import edu.sdsc.grid.io.local.*;
 
 import java.io.IOException;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.File;
 import java.util.HashMap;
 import java.util.StringTokenizer;

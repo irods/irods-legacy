@@ -3,9 +3,6 @@
  */
 package edu.sdsc.jargon.testutils.icommandinvoke.icommands;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Properties;
 
 import junit.framework.Assert;
@@ -18,11 +15,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
 /**
  * @author Mike Conway, DICE (www.renci.org)
@@ -109,7 +103,7 @@ public class IlsCommandTest {
 		IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-		TestCase.assertTrue("did not find home dir in ils result", ilsResult.indexOf("/home") > -1);
+		Assert.assertTrue("did not find home dir in ils result", ilsResult.indexOf("/home") > -1);
 	
 	}
 

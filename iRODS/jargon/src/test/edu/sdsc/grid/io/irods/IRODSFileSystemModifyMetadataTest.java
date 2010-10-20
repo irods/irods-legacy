@@ -1,9 +1,6 @@
 package edu.sdsc.grid.io.irods;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
-import edu.sdsc.grid.io.MetaDataCondition;
-import edu.sdsc.grid.io.MetaDataRecordList;
-import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
@@ -19,16 +16,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Properties;
-import java.util.TimeZone;
-
-import junit.framework.TestCase;
+import junit.framework.Assert;
 
 public class IRODSFileSystemModifyMetadataTest {
 	private static Properties testingProperties = new Properties();
@@ -180,7 +171,7 @@ public class IRODSFileSystemModifyMetadataTest {
 		metaList.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
 		metaList.setObjectPath(metaAddCommand.getObjectPath());
 		String metaListResult = invoker.invokeCommandAndGetResultAsString(metaList);
-		TestCase.assertTrue("did not add metadata attribute in test setup", metaListResult.indexOf("does not exist") == -1);
+		Assert.assertTrue("did not add metadata attribute in test setup", metaListResult.indexOf("does not exist") == -1);
 		
 		// now delete the meta1Attrib metadata value
 		String[] values = {meta1Attrib, meta1Value};
@@ -194,7 +185,7 @@ public class IRODSFileSystemModifyMetadataTest {
 		String metaListResult2 = invoker.invokeCommandAndGetResultAsString(metaList);
 		
 		irodsFileSystem.close();
-		TestCase.assertTrue("did not delete metadata attribute in test setup", metaListResult2.indexOf("does not exist") != -1);
+		Assert.assertTrue("did not delete metadata attribute in test setup", metaListResult2.indexOf("does not exist") != -1);
 
 		
 		

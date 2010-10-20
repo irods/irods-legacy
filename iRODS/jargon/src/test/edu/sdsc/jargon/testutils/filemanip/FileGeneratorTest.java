@@ -6,6 +6,7 @@ package edu.sdsc.jargon.testutils.filemanip;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -80,7 +81,7 @@ public class FileGeneratorTest {
 
         // make sure file generated
         boolean foundFile = scratchFileUtils.checkIfFileExistsInScratch(filePathBuilder.toString());
-        TestCase.assertTrue("did not find the generated file", foundFile);
+        Assert.assertTrue("did not find the generated file", foundFile);
     }
 
     /**
@@ -94,7 +95,7 @@ public class FileGeneratorTest {
 
         int dotPos = fileName.indexOf('.');
         String namePart = fileName.substring(0, dotPos);
-        TestCase.assertTrue(
+        Assert.assertTrue(
             "length of file name before extension should be 6, instead got:" +
             namePart, namePart.length() == 6);
     }
@@ -107,7 +108,7 @@ public class FileGeneratorTest {
     @Test
     public void testGenerateRandomNumber() throws Exception {
         int nbr = FileGenerator.generateRandomNumber(10, 20);
-        TestCase.assertTrue(
+        Assert.assertTrue(
             "did not generate a proper random number, generated:" + nbr,
             (nbr >= 10) && (nbr <= 20));
     }
@@ -121,7 +122,7 @@ public class FileGeneratorTest {
     public void testGenerateRandomString() throws Exception {
         String str = FileGenerator.generateRandomString(10);
 
-        TestCase.assertTrue(
+        Assert.assertTrue(
             "did not generate a proper random string, generated:" + str,
             str.length() == 10);
     }
@@ -139,7 +140,7 @@ public class FileGeneratorTest {
             }
         }
 
-        TestCase.assertTrue("did not generate a valid extension, generated:" +
+        Assert.assertTrue("did not generate a valid extension, generated:" +
             extension, extFound);
     }
 }

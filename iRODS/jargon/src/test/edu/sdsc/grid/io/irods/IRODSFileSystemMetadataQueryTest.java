@@ -5,7 +5,9 @@ import edu.sdsc.grid.io.GeneralMetaData;
 import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
+import edu.sdsc.grid.io.StandardMetaData;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
@@ -21,7 +23,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.text.DateFormat;
@@ -30,6 +31,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 public class IRODSFileSystemMetadataQueryTest {
@@ -102,8 +104,8 @@ public class IRODSFileSystemMetadataQueryTest {
 		// trickles down to IRODSCommands.query()
 
 		MetaDataRecordList[] lists = irodsFile.query(new String[] {
-				IRODSMetaDataSet.CREATION_DATE,
-				IRODSMetaDataSet.MODIFICATION_DATE });
+				GeneralMetaData.CREATION_DATE,
+				GeneralMetaData.MODIFICATION_DATE });
 
 		for (MetaDataRecordList l : lists) {
 			String createDate = l.getStringValue(0);
@@ -127,7 +129,7 @@ public class IRODSFileSystemMetadataQueryTest {
 			// System.out.println("create date: " +
 			// dateFormat.format(computedDate.getTime()));
 
-			TestCase.assertEquals("create and mod date not equal", createDate,
+			Assert.assertEquals("create and mod date not equal", createDate,
 					modDate);
 		}
 
@@ -163,14 +165,14 @@ public class IRODSFileSystemMetadataQueryTest {
 
 		String keyword = "testQueryFileName1%";
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = IRODSMetaDataSet.newCondition(
-				IRODSMetaDataSet.FILE_NAME, MetaDataCondition.LIKE, keyword);
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
-				IRODSMetaDataSet.DIRECTORY_NAME, IRODSMetaDataSet.SIZE };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		condition[0] = MetaDataSet.newCondition(
+				StandardMetaData.FILE_NAME, MetaDataCondition.LIKE, keyword);
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME, GeneralMetaData.SIZE };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
 				select, 100);
-		TestCase.assertTrue(
+		Assert.assertTrue(
 				"did not return query result for file I just added",
 				fileList != null);
 
@@ -231,23 +233,23 @@ public class IRODSFileSystemMetadataQueryTest {
 
 		// now query for multiple value
 		MetaDataCondition[] condition = new MetaDataCondition[2];
-		condition[0] = IRODSMetaDataSet.newCondition(meta1Attrib,
+		condition[0] = MetaDataSet.newCondition(meta1Attrib,
 				MetaDataCondition.EQUAL, meta1Value);
-		condition[1] = IRODSMetaDataSet.newCondition(meta2Attrib,
+		condition[1] = MetaDataSet.newCondition(meta2Attrib,
 				MetaDataCondition.EQUAL, meta2Value);
 
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
-				IRODSMetaDataSet.DIRECTORY_NAME };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
 				select, 100);
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("no query results returned", fileList);
-		TestCase.assertEquals("did not find any query results", 1,
+		Assert.assertNotNull("no query results returned", fileList);
+		Assert.assertEquals("did not find any query results", 1,
 				fileList.length);
-		TestCase.assertTrue("did not find my file name in results", fileList[0]
+		Assert.assertTrue("did not find my file name in results", fileList[0]
 				.toString().indexOf(testFileName) > -1);
 	}
 
@@ -292,21 +294,21 @@ public class IRODSFileSystemMetadataQueryTest {
 
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[2];
-		condition[0] = IRODSMetaDataSet.newCondition(meta1Attrib,
+		condition[0] = MetaDataSet.newCondition(meta1Attrib,
 				MetaDataCondition.EQUAL, meta1Value);
 
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
-				IRODSMetaDataSet.DIRECTORY_NAME };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
 				select, 100);
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("no query results returned", fileList);
-		TestCase.assertEquals("did not find my file and metadata", 1,
+		Assert.assertNotNull("no query results returned", fileList);
+		Assert.assertEquals("did not find my file and metadata", 1,
 				fileList.length);
-		TestCase.assertTrue("did not find my file name in results", fileList[0]
+		Assert.assertTrue("did not find my file name in results", fileList[0]
 				.toString().indexOf(testFileName) > -1);
 
 	}
@@ -480,17 +482,17 @@ public class IRODSFileSystemMetadataQueryTest {
 		
 		// now query 1 val for all dirs, should get subdir1a and subdir1b
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = IRODSMetaDataSet.newCondition(avuAttr1,
+		condition[0] = MetaDataSet.newCondition(avuAttr1,
 				MetaDataCondition.EQUAL, avuVal1);
 
-		String[] selectVals = { IRODSMetaDataSet.DIRECTORY_NAME };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(selectVals);
+		String[] selectVals = { StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(selectVals);
 		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
 				select, 100, Namespace.DIRECTORY);
 
 
-		TestCase.assertNotNull(fileList);
-		TestCase.assertEquals(2, fileList.length);
+		Assert.assertNotNull(fileList);
+		Assert.assertEquals(2, fileList.length);
 		irodsFileSystem.close();
 
 	}

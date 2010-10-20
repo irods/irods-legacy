@@ -11,13 +11,13 @@ import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.sdsc.grid.io.GeneralRandomAccessFile;
@@ -96,7 +96,7 @@ public class IRODSFileCommandsTest {
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
         IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
         int fileDescriptor = irodsFileSystem.commands.fileOpen(irodsFile, true, true);
-        TestCase.assertTrue("did not return a valid descriptor", fileDescriptor > 0);
+        Assert.assertTrue("did not return a valid descriptor", fileDescriptor > 0);
         irodsFileSystem.commands.fileClose(fileDescriptor);
         irodsFileSystem.close();
         
@@ -237,7 +237,7 @@ public class IRODSFileCommandsTest {
         irodsFileSystem.commands.fileClose(fileDescriptor);
         irodsFileSystem.close();
         
-        TestCase.assertTrue("did not get same buffer back", Arrays.equals(inputBytes, buff));
+        Assert.assertTrue("did not get same buffer back", Arrays.equals(inputBytes, buff));
     }
     
     @Test
@@ -299,7 +299,7 @@ public class IRODSFileCommandsTest {
         irodsFileSystem.commands.fileClose(fileDescriptor);
         irodsFileSystem.close();
         
-        TestCase.assertTrue("did not get same buffer back", Arrays.equals(inputBytes, actualReadByteStream.toByteArray()));
+        Assert.assertTrue("did not get same buffer back", Arrays.equals(inputBytes, actualReadByteStream.toByteArray()));
     }
     
     
@@ -521,7 +521,7 @@ public class IRODSFileCommandsTest {
         ilsCommand.setLongFormat(true);
         ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
         String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(irodsFileAfter.resource) != -1);
+        Assert.assertTrue("file is not in new resource", ilsResult.indexOf(irodsFileAfter.resource) != -1);
         
     }
     
@@ -585,8 +585,8 @@ public class IRODSFileCommandsTest {
         ilsCommand.setLongFormat(true);
         ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
         String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
-        TestCase.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
+        Assert.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
+        Assert.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
     }
     
     @Test
@@ -644,8 +644,8 @@ public class IRODSFileCommandsTest {
         ilsCommand.setLongFormat(true);
         ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
         String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
-        TestCase.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
+        Assert.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
+        Assert.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
 
        
     }
@@ -695,8 +695,8 @@ public class IRODSFileCommandsTest {
         ilsCommand.setLongFormat(true);
         ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
         String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
-        TestCase.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
+        Assert.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
+        Assert.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
         
         // now delete the replica from the first resource
         

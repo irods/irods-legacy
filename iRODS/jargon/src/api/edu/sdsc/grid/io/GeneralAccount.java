@@ -76,6 +76,7 @@ public abstract class GeneralAccount extends Object implements Cloneable {
 	 * held values.
 	 * <P>
 	 */
+	@Override
 	protected void finalize() {
 		if (homeDirectory != null)
 			homeDirectory = null;
@@ -102,6 +103,7 @@ public abstract class GeneralAccount extends Object implements Cloneable {
 	/**
 	 * @return a copy of this account object.
 	 */
+	@Override
 	public Object clone() {
 		try {
 			return super.clone();
@@ -111,5 +113,6 @@ public abstract class GeneralAccount extends Object implements Cloneable {
 		}
 	}
 
+	@Override
 	public abstract boolean equals(Object obj);
 }

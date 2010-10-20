@@ -2,8 +2,7 @@ package edu.sdsc.grid.io.irods;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
+import junit.framework.Assert;
 import org.irods.jargon.core.query.GenQueryClassicMidLevelService;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -14,8 +13,9 @@ import org.junit.Test;
 import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
-import edu.sdsc.jargon.testutils.AssertionHelper;
+import edu.sdsc.grid.io.StandardMetaData;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
@@ -144,24 +144,24 @@ public class IRODSThousandFilesTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		
-		MetaDataSelect avu = IRODSMetaDataSet.newSelection(avu1Attrib);
-		MetaDataSelect objNameSel = IRODSMetaDataSet.newSelection(IRODSMetaDataSet.FILE_NAME);
+		MetaDataSelect avu = MetaDataSet.newSelection(avu1Attrib);
+		MetaDataSelect objNameSel = MetaDataSet.newSelection(StandardMetaData.FILE_NAME);
 		MetaDataSelect[] sels = new MetaDataSelect[2];
 		sels[0] = avu;
 		sels[1] = objNameSel;
 		MetaDataRecordList[] lists = irodsFileSystem.query(sels, 1000);
 		// should have 1000 in this batch
-		TestCase.assertEquals("did not get back the 1000 rows I requested", 1000, lists.length);
+		Assert.assertEquals("did not get back the 1000 rows I requested", 1000, lists.length);
 		// last entry should have a continuation
 		MetaDataRecordList last = lists[999];
-		TestCase.assertFalse("last row did not have expected continuation", last.isQueryComplete());
+		Assert.assertFalse("last row did not have expected continuation", last.isQueryComplete());
 		// now test getting the next batch
 		lists = last.getMoreResults(1000);
 		// last entry has continuation again
-		TestCase.assertEquals("did not get back the 1000 rows I requested", 1000, lists.length);
+		Assert.assertEquals("did not get back the 1000 rows I requested", 1000, lists.length);
 		// last entry should have a continuation
 		last = lists[999];
-		TestCase.assertFalse("last row did not have expected continuation", last.isQueryComplete()); 
+		Assert.assertFalse("last row did not have expected continuation", last.isQueryComplete()); 
 		// requery again
 		lists = last.getMoreResults(1000);
 		irodsFileSystem.close();
@@ -175,15 +175,15 @@ public class IRODSThousandFilesTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		GenQueryClassicMidLevelService genQuery = GenQueryClassicMidLevelService.instance(irodsFileSystem.commands);
-		MetaDataSelect avu = IRODSMetaDataSet.newSelection(avu1Attrib);
-		MetaDataSelect objNameSel = IRODSMetaDataSet.newSelection(IRODSMetaDataSet.FILE_NAME);
+		MetaDataSelect avu = MetaDataSet.newSelection(avu1Attrib);
+		MetaDataSelect objNameSel = MetaDataSet.newSelection(StandardMetaData.FILE_NAME);
 		MetaDataSelect[] sels = new MetaDataSelect[2];
 		sels[0] = avu;
 		sels[1] = objNameSel;
 		MetaDataCondition[] condition = new MetaDataCondition[0];
 		MetaDataRecordList[] lists =genQuery.queryWithPartialStart(condition, sels, 1000, 0, Namespace.FILE, true);
 		// should have 1000 in this batch
-		TestCase.assertEquals("did not get back the 1000 rows I requested", 1000, lists.length);
+		Assert.assertEquals("did not get back the 1000 rows I requested", 1000, lists.length);
 		irodsFileSystem.close();
 		
 	}
@@ -197,17 +197,17 @@ public class IRODSThousandFilesTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		
-		MetaDataSelect avu = IRODSMetaDataSet.newSelection(avu1Attrib);
-		MetaDataSelect objNameSel = IRODSMetaDataSet.newSelection(IRODSMetaDataSet.FILE_NAME);
+		MetaDataSelect avu = MetaDataSet.newSelection(avu1Attrib);
+		MetaDataSelect objNameSel = MetaDataSet.newSelection(StandardMetaData.FILE_NAME);
 		MetaDataSelect[] sels = new MetaDataSelect[2];
 		sels[0] = avu;
 		sels[1] = objNameSel;
 		MetaDataRecordList[] lists = irodsFileSystem.query(sels, 10000);
 		// should have 1000 in this batch
-		TestCase.assertTrue("did not get back the rows I requested", lists.length > 1000);
+		Assert.assertTrue("did not get back the rows I requested", lists.length > 1000);
 		// last entry should have a continuation
 		MetaDataRecordList last = lists[lists.length -1];
-		TestCase.assertFalse("last row had a continuation, should have all of them", last.isQueryComplete());
+		Assert.assertFalse("last row had a continuation, should have all of them", last.isQueryComplete());
 		irodsFileSystem.close();
 		
 	}

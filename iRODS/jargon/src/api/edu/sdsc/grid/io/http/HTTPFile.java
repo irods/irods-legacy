@@ -47,12 +47,9 @@ package edu.sdsc.grid.io.http;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.*;
 
 //consider instead http://www.innovation.ch/java/HTTPClient/
@@ -204,6 +201,7 @@ public class HTTPFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs during the system query.
 	 */
+	@Override
 	public String getResource() throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -226,6 +224,7 @@ public class HTTPFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public void replicate(String newResource) throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -245,6 +244,7 @@ public class HTTPFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)
@@ -274,6 +274,7 @@ public class HTTPFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> can be read; otherwise
 	 *         <code>false</code>.
 	 */
+	@Override
 	public boolean canRead() {
 		return true;
 	}
@@ -287,6 +288,7 @@ public class HTTPFile extends RemoteFile {
 	 *         the application is allowed to write to the file; otherwise
 	 *         <code>false</code>.
 	 */
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
@@ -295,6 +297,7 @@ public class HTTPFile extends RemoteFile {
 	 * Atomically creates a new, empty file named by this abstract pathname if
 	 * and only if a file with this name does not yet exist.
 	 */
+	@Override
 	public boolean createNewFile() throws IOException {
 		return false;
 	}
@@ -302,6 +305,7 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Cannot delete using HTTP protocol.
 	 */
+	@Override
 	public boolean delete() {
 		return false;
 	}
@@ -309,6 +313,7 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * @return This abstract pathname as a pathname string.
 	 */
+	@Override
 	public String getPath() {
 		return getAbsolutePath();
 	}
@@ -319,6 +324,7 @@ public class HTTPFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname exists; <code>false</code> otherwise
 	 */
+	@Override
 	public boolean exists() {
 		return true;
 	}
@@ -330,6 +336,7 @@ public class HTTPFile extends RemoteFile {
 	 * @return <code>true</code> if this abstract pathname is absolute,
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isAbsolute() {
 		return true;
 	}
@@ -341,6 +348,7 @@ public class HTTPFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isDirectory() {
 		return false;
 	}
@@ -353,6 +361,7 @@ public class HTTPFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a normal file;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isFile() {
 		return true;
 	}
@@ -363,6 +372,7 @@ public class HTTPFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname is hidden.
 	 */
+	@Override
 	public boolean isHidden() {
 		return false;
 	}
@@ -374,6 +384,7 @@ public class HTTPFile extends RemoteFile {
 	 * @return A <code>long</code> value representing the time the file was last
 	 *         modified, measured in system-dependent way.
 	 */
+	@Override
 	public long lastModified() {
 		return httpFileSystem.conn.getLastModified();
 	}
@@ -384,6 +395,7 @@ public class HTTPFile extends RemoteFile {
 	 * @return The length, in bytes, of the file denoted by this abstract
 	 *         pathname, or <code>0L</code> if the file does not exist
 	 */
+	@Override
 	public long length() {
 		long length = httpFileSystem.conn.getContentLength();
 		if (length < 0)
@@ -405,6 +417,7 @@ public class HTTPFile extends RemoteFile {
 	 * @return An array of strings naming the files and directories in the
 	 *         directory denoted by this abstract pathname.
 	 */
+	@Override
 	public String[] list() {
 		throw new RuntimeException("not implemented");
 	}
@@ -412,6 +425,7 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Creates the directory named by this abstract pathname.
 	 */
+	@Override
 	public boolean mkdir() {
 
 		return false;
@@ -433,6 +447,7 @@ public class HTTPFile extends RemoteFile {
 	 * @throws NullPointerException
 	 *             - If dest is null
 	 */
+	@Override
 	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
 			NullPointerException {
 		try {
@@ -455,6 +470,7 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Returns the pathname string of this abstract pathname.
 	 */
+	@Override
 	public String toString() {
 		String username = httpFileSystem.getUserName(), portString;
 		int port = httpFileSystem.getPort();
@@ -504,6 +520,7 @@ public class HTTPFile extends RemoteFile {
 	 * @see java.net.URI
 	 * @see java.net.URI#toURL()
 	 */
+	@Override
 	public URI toURI() {
 		try {
 			return new URI(toString());
@@ -536,6 +553,7 @@ public class HTTPFile extends RemoteFile {
 	 * @see java.net.URI#toURL()
 	 * @see java.net.URL
 	 */
+	@Override
 	public URL toURL() throws MalformedURLException {
 		return new URL(toString());
 	}
@@ -543,6 +561,7 @@ public class HTTPFile extends RemoteFile {
 	/**
 	* Unsupported operation
 	 */
+	@Override
 	public void copyFrom(GeneralFile file) throws IOException {
 		throw new UnsupportedOperationException("output to an HTTP file is not supported");
 	}
@@ -550,6 +569,7 @@ public class HTTPFile extends RemoteFile {
 	/**
 	* Unsupported operation
 	 */
+	@Override
 	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
 			throws IOException {
 		throw new UnsupportedOperationException("output to an HTTP file is not supported");
@@ -569,6 +589,7 @@ public class HTTPFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public void copyTo(GeneralFile destinationFile) throws IOException {
 		copyTo(destinationFile, false);
 	}
@@ -586,6 +607,7 @@ public class HTTPFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
 			throws IOException {
 		byte buffer[] = null;

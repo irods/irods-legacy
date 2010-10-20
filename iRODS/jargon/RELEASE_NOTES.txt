@@ -24,6 +24,8 @@ libraries
 ================================================================================================
 Features and Changes
 
+*Did a periodic mass cleanup/format/import cleanup. This had not been done for a while.
+
 *Bug 115 - copyFrom() for http files results in protocol exception 
 Normalized copyFrom and copyTo in the various file implementations, added unit tests.  There may be some subtle contract changes
 from this fix, but the code itself was not consistent.

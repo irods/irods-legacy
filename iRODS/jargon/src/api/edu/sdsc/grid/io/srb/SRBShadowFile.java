@@ -32,8 +32,6 @@
 package edu.sdsc.grid.io.srb;
 
 import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
@@ -130,7 +128,7 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 		if (child == null)
 			parent.getShadowPath();
 		else
-			shadowPath = parent.getShadowPath() + SRBFile.separator + child;
+			shadowPath = parent.getShadowPath() + GeneralFile.separator + child;
 
 		open(parent.getSRBFile());
 	}
@@ -144,6 +142,7 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		// can't do ths from super because shadowPath isn't set yet.
 		if (shadowPath == null)
@@ -177,6 +176,7 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public long length() throws IOException {
 		throw new UnsupportedOperationException();
 		// doesn't work SRBFile.exists() and getStat() don't seem to work
@@ -210,10 +210,12 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 * @throws UnsupportedOperationException
 	 *             on truncate
 	 */
+	@Override
 	public void setLength(long newLength) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public String toString() {
 		switch (rw) {
 		case 0:
@@ -290,12 +292,12 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 				physicalPath = physicalPath.substring(0, index);
 			}
 			InputStream in = fileSystem.executeProxyCommand("ls", physicalPath
-					+ SRBFile.separator + shadowPath);
+					+ GeneralFile.separator + shadowPath);
 
 			int result = in.read();
 			while (result != -1) {
 				if ((char) result == '\n') {
-					index = temp.lastIndexOf(SRBFile.separator);
+					index = temp.lastIndexOf(GeneralFile.separator);
 					if (index >= 0) {
 						temp = temp.substring(index);
 					}

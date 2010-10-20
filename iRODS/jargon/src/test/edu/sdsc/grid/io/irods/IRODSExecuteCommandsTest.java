@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -76,7 +77,7 @@ public class IRODSExecuteCommandsTest {
 		String result = sb.toString();
 		irodsFileSystem.close();
 
-		TestCase.assertTrue("did not successfully execute hello command",
+		Assert.assertTrue("did not successfully execute hello command",
 				result.length() > 0);
 
 	}
@@ -104,7 +105,7 @@ public class IRODSExecuteCommandsTest {
 		String result = sb.toString();
 		irodsFileSystem.close();
 
-		TestCase.assertEquals("did not successfully execute hello command",
+		Assert.assertEquals("did not successfully execute hello command",
 				"Hello world  from irods".trim(), result.trim());
 
 	}
@@ -132,7 +133,7 @@ public class IRODSExecuteCommandsTest {
 		String result = sb.toString();
 		irodsFileSystem.close();
 
-		TestCase.assertEquals("did not successfully execute hello command",
+		Assert.assertEquals("did not successfully execute hello command",
 				"Hello world  from irods".trim(), result.trim());
 
 	}

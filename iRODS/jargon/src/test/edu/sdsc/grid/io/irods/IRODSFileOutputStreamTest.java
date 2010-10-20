@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -74,7 +75,7 @@ public class IRODSFileOutputStreamTest {
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
 
 		irodsFileOutputStream.open(irodsFile);
-		TestCase
+		Assert
 				.assertTrue("file I created does not exist", irodsFile.exists());
 		// get a simple byte array
 		String myBytes = "ajjjjjjjjjjjjjjjjjjjjjjjjfeiiiiiiiiiiiiiii54454545";
@@ -83,7 +84,7 @@ public class IRODSFileOutputStreamTest {
 		irodsFileOutputStream.close();
 		long length = irodsFile.length();
 
-		TestCase.assertEquals("file length does not match bytes written",
+		Assert.assertEquals("file length does not match bytes written",
 				myBytesArray.length, length);
 
 		irodsFileSystem.close();
@@ -105,7 +106,7 @@ public class IRODSFileOutputStreamTest {
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
 
 		irodsFileOutputStream.open(irodsFile);
-		TestCase
+		Assert
 				.assertTrue("file I created does not exist", irodsFile.exists());
 		irodsFileOutputStream.close();
 		irodsFileSystem.close();
@@ -147,7 +148,7 @@ public class IRODSFileOutputStreamTest {
 
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
-		TestCase.assertNotNull("did not create fileOutputStream",
+		Assert.assertNotNull("did not create fileOutputStream",
 				irodsFileOutputStream);
 
 		irodsFileSystem.close();
@@ -255,7 +256,7 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
 
-		TestCase.assertTrue("i cannot write an output stream", irodsFile
+		Assert.assertTrue("i cannot write an output stream", irodsFile
 				.canWrite());
 
 		File fileToWrite = new File(sourceFileName);
@@ -338,7 +339,7 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
 
-		TestCase.assertTrue("i cannot write an output stream", irodsFile
+		Assert.assertTrue("i cannot write an output stream", irodsFile
 				.canWrite());
 
 		String myBytes = "ajjjjjjjjjjjjjjjjjjjf94949fjg94fj9jfasdofalkdfjfkdfjksdfjsiejfesifslas;efias;efiadfkadfdffjjjjjfeiiiiiiiiiiiiiii54454545";
@@ -358,7 +359,7 @@ public class IRODSFileOutputStreamTest {
 		irodsFileInputStream.read(readBackBytes);
 		boolean areEqual = Arrays.equals(myBytesArray, readBackBytes);
 		irodsFileSystem.close();
-		TestCase.assertTrue("did not overwrite and read back my bytes",
+		Assert.assertTrue("did not overwrite and read back my bytes",
 				areEqual);
 
 	}
@@ -410,7 +411,7 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
 
-		TestCase
+		Assert
 				.assertFalse(
 						"i should not be able to write an output stream to a file I do not own",
 						irodsFile.canWrite());
@@ -488,7 +489,7 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
 
-		TestCase.assertTrue("i cannot write an output stream", irodsFile
+		Assert.assertTrue("i cannot write an output stream", irodsFile
 				.canWrite());
 
 		String myBytes = "ajjjjjjjjjjjjjjjjjjjf94949fjg94fj9jfasdofalkdfjfkdfjksdfjsiejfesifslas;efias;efiadfkadfdffjjjjjfeiiiiiiiiiiiiiii54454545";
@@ -519,10 +520,10 @@ public class IRODSFileOutputStreamTest {
 				targetIrodsCollection + '/' + testFileName);
 
 		irodsFile.createNewFile();
-		TestCase.assertTrue("i cannot write an output stream", irodsFile
+		Assert.assertTrue("i cannot write an output stream", irodsFile
 				.canWrite());
 
-		TestCase
+		Assert
 				.assertTrue("file I created does not exist", irodsFile.exists());
 
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
@@ -588,14 +589,14 @@ public class IRODSFileOutputStreamTest {
 		fin.close();
 
 		boolean canRead = destination.canRead();
-		TestCase
+		Assert
 				.assertTrue(
 						"The newly copied file should be readable by the person who just put it.",
 						canRead);
 
 		IRODSFile destination2 = new IRODSFile(irodsFileSystem, targetIrodsFile);
 		boolean canRead2 = destination2.canRead();
-		TestCase
+		Assert
 				.assertTrue(
 						"A new file object should be readable by the person who just put the underlying file.",
 						canRead2);

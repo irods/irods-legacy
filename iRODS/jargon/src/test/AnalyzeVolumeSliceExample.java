@@ -27,7 +27,6 @@
 //	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import edu.sdsc.grid.io.srb.*;
-import edu.sdsc.grid.io.local.*;
 import java.io.*;
 
 public class AnalyzeVolumeSliceExample

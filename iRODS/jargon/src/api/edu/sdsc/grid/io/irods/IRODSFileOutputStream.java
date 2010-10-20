@@ -123,6 +123,7 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() throws IOException {
 		// calls close()
 		super.finalize();
@@ -137,6 +138,7 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		if (!file.exists())
 			fd = ((IRODSFileSystem) file.getFileSystem()).commands.fileCreate(
@@ -159,6 +161,7 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(byte buffer[], int offset, int length) throws IOException {
 		fileSystem.commands.fileWrite(fd, buffer, offset, length);
 	}
@@ -175,6 +178,7 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		if (fileSystem != null) {
 			fileSystem.commands.fileClose(fd);

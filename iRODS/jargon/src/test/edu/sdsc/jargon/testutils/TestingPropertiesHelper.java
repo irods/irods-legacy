@@ -2,14 +2,6 @@ package edu.sdsc.jargon.testutils;
 
 import edu.sdsc.grid.io.irods.IRODSAccount;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_HOST_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_PASSWORD_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_PORT_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_RESOURCE_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_USER_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_ZONE_KEY;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

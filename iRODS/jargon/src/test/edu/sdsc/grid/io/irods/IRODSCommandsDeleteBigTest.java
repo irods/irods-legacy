@@ -14,13 +14,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.net.URI;
 
 import java.util.Properties;
 

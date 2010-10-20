@@ -2,6 +2,7 @@ package edu.sdsc.grid.io.irods;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.AfterClass;
@@ -38,7 +39,7 @@ public class IRODSCommandsPIExecTest {
 
 	@Test
 	public final void testIrodsFunctionIRodsPI() throws Exception {
-		TestCase.fail("not implemented yet"); // TODO: implement tests
+		Assert.fail("not implemented yet"); // TODO: implement tests
 	}
 
 }

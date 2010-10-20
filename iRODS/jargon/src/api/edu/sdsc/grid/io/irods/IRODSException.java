@@ -82,7 +82,7 @@ public class IRODSException extends IOException {
 	 * Drop the socket error portion.
 	 */
 	int getSimpleType() {
-		return ((int) (type / 1000)) * 1000;
+		return ((type / 1000)) * 1000;
 	}
 
 	/*

@@ -205,6 +205,7 @@ public abstract class MetaDataRecordList extends Object {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() {
 		if (records != null)
 			records = null;
@@ -472,7 +473,7 @@ public abstract class MetaDataRecordList extends Object {
 			throws ArrayIndexOutOfBoundsException {
 		int fieldType = fields[index].getType();
 		if (fieldType == MetaDataField.FLOAT) {
-			records[index] = new Float((float) value);
+			records[index] = new Float(value);
 		} else if (fieldType == MetaDataField.STRING) {
 			records[index] = new Integer(value).toString();
 		} else if (fieldType == MetaDataField.TABLE) {
@@ -619,13 +620,13 @@ public abstract class MetaDataRecordList extends Object {
    *
    */
 	public void addRecord(MetaDataField field, int recordValue) {
-		addRecord(field, (Object) new Integer(recordValue));
+		addRecord(field, new Integer(recordValue));
 		// convert to correct Class type
 		setValue(field, recordValue);
 	}
 
 	public void addRecord(MetaDataField field, float recordValue) {
-		addRecord(field, (Object) new Float(recordValue));
+		addRecord(field, new Float(recordValue));
 		// convert to correct Class type
 		setValue(field, recordValue);
 	}
@@ -720,11 +721,12 @@ public abstract class MetaDataRecordList extends Object {
 					recordLists.add(rl[i]);
 				}
 			}
-			return (MetaDataRecordList[]) recordLists
+			return recordLists
 					.toArray(new MetaDataRecordList[0]);
 		}
 	}
 
+	@Override
 	public String toString() {
 		int length = getRecordCount();
 		String value = "Total records: " + length + "\n";
@@ -749,6 +751,7 @@ public abstract class MetaDataRecordList extends Object {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)

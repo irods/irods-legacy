@@ -41,8 +41,6 @@
 //
 package edu.sdsc.grid.io;
 
-import edu.sdsc.grid.io.srb.*;
-
 import java.util.Vector;
 
 /**

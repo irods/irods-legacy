@@ -85,8 +85,10 @@ public abstract class Protocol {
 	 * The standard java equals(Object), but it is abstract to insure all
 	 * subclasses will implement it.
 	 */
+	@Override
 	public abstract boolean equals(Object obj);
 
+	@Override
 	public String toString() {
 		return name;
 	}

@@ -45,7 +45,6 @@
 //
 package edu.sdsc.grid.io.ftp;
 
-import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.*;
 
 import java.io.*;
@@ -53,7 +52,6 @@ import java.net.URI;
 
 import org.globus.ftp.*;
 import org.globus.ftp.exception.*;
-import org.ietf.jgss.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,6 +161,7 @@ public class FTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Loads the account information for this file system.
 	 */
+	@Override
 	protected void setAccount(GeneralAccount account) throws IOException {
 		if (account == null)
 			throw new NullPointerException("Account information cannot be null");
@@ -191,6 +190,7 @@ public class FTPFileSystem extends RemoteFileSystem {
 	/**
 	 *
 	 */
+	@Override
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects) throws IOException {
 		throw new UnsupportedOperationException();
@@ -199,6 +199,7 @@ public class FTPFileSystem extends RemoteFileSystem {
 	/**
 	 *
 	 */
+	@Override
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted)
 			throws IOException {
@@ -208,6 +209,7 @@ public class FTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Returns the root directories of the FTP file system.
 	 */
+	@Override
 	public String[] getRootDirectories() {
 		String[] root = { FTP_ROOT };
 
@@ -226,6 +228,7 @@ public class FTPFileSystem extends RemoteFileSystem {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof FTPFileSystem) {
 			if (toString().equals(obj.toString())) {
@@ -238,6 +241,7 @@ public class FTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Returns a string representation of this file system object.
 	 */
+	@Override
 	public String toString() {
 		return new String("ftp://" + getUserName() + "@" + getHost() + ":"
 				+ getPort() + getHomeDirectory());
@@ -246,6 +250,7 @@ public class FTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Checks if the socket is connected.
 	 */
+	@Override
 	public boolean isConnected() {
 		if (ftpClient != null && !closed) {
 			return true;

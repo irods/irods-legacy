@@ -23,12 +23,9 @@
  *   Lucas Gilbert, SDSC/UCSD
  */
 import edu.sdsc.grid.io.irods.*;
-import edu.sdsc.grid.io.local.*;
-import edu.sdsc.grid.io.srb.*;
 import edu.sdsc.grid.io.*;
 
 import java.net.URI;
-import java.io.*;
 
 
 /**
@@ -159,7 +156,7 @@ System.out.println("\n Query specific AVU metadata of an iRODS file.");
     //WHERE myTestAttributeName=myTestAttributeValue SELECT file_name
     MetaDataCondition conditions[] = { MetaDataSet.newCondition( 
       "myTestAttributeName", MetaDataCondition.EQUAL, "myTestAttributeValue" )};
-    String[] selectFieldNames = { GeneralMetaData.FILE_NAME, null, null };
+    String[] selectFieldNames = { StandardMetaData.FILE_NAME, null, null };
     MetaDataSelect selects[] =  MetaDataSet.newSelection( selectFieldNames ); 
     MetaDataRecordList[] rl = fileSystem.query( conditions, selects );
     MetaDataTest.printQueryResults( rl );

@@ -1,6 +1,7 @@
 package edu.sdsc.grid.io.srb;
 
 import static org.junit.Assert.*;
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.AfterClass;
@@ -21,7 +22,7 @@ public class SRBMetaDataSetTest {
 	public final void testSRBMetaDataSet() {
 		SRBProtocol srbProtocol = new SRBProtocol();
 		SRBMetaDataSet srbMetaDataSet = new SRBMetaDataSet(srbProtocol);
-		TestCase.assertNotNull(srbMetaDataSet);
+		Assert.assertNotNull(srbMetaDataSet);
 	}
 
 	@Test

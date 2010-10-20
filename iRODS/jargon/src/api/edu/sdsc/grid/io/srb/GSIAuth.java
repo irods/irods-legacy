@@ -50,7 +50,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.globus.common.CoGProperties;
-import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.net.impl.GSIGssInputStream;
 import org.globus.gsi.gssapi.net.impl.GSIGssOutputStream;
@@ -231,7 +230,7 @@ class GSIAuth {
 	static GSSCredential getCredential(SRBAccount account) throws GSSException,
 			IOException {
 		byte[] data = null;
-		GSSCredential credential = (GSSCredential) account.getGSSCredential();
+		GSSCredential credential = account.getGSSCredential();
 		if (credential != null) {
 			if (credential.getRemainingLifetime() <= 0)
 				throw new GSSException(GSSException.CREDENTIALS_EXPIRED);

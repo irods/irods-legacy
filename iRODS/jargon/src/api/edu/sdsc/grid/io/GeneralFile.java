@@ -564,7 +564,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
+	 * @param destinationFile
 	 *            The file to receive the data.
 	 * @throws NullPointerException
 	 *             If file is null.

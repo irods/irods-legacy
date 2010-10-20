@@ -1,8 +1,6 @@
 import edu.sdsc.grid.io.irods.*;
 import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.srb.*;
-import edu.sdsc.grid.io.ftp.*;
-import edu.sdsc.grid.io.http.*;
 import edu.sdsc.grid.io.*;
 
 

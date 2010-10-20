@@ -207,6 +207,7 @@ public class MetaDataGroup implements Comparable {
 	/**
 	 * Returns a string representation of the object.
 	 */
+	@Override
 	public String toString() {
 		return getName() + " : " + getDescription();
 	}

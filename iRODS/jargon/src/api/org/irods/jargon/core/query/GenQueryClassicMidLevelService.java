@@ -196,7 +196,7 @@ public class GenQueryClassicMidLevelService {
 			} else {
 				log
 						.debug("adding avu name and attribute select for this namespace");
-				MetaDataSelect avuSelect = IRODSMetaDataSet
+				MetaDataSelect avuSelect = MetaDataSet
 						.newSelection(IRODSAvu.getAttributeName(namespace));
 				IRODSMetaDataSelectWrapper avuWrapper;
 				try {
@@ -216,7 +216,7 @@ public class GenQueryClassicMidLevelService {
 					log.debug("generated a select for avu name:" + avuWrapper);
 				}
 
-				avuSelect = IRODSMetaDataSet.newSelection(IRODSAvu
+				avuSelect = MetaDataSet.newSelection(IRODSAvu
 						.getAttributeValue(namespace));
 				try {
 					avuWrapper = new IRODSMetaDataSelectWrapper(avuSelect);

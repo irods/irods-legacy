@@ -107,6 +107,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @throws IOException
 	 *             If can't close socket.
 	 */
+	@Override
 	protected void finalize() throws JargonException {
 		shutdown();
 	}
@@ -268,6 +269,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		return connected;
 	}
 
+	@Override
 	public String toString() {
 		return this.connectionInternalIdentifier;
 	}
@@ -760,7 +762,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			// hopefully won't be too many bytes...
 			do {
 				searchForNewHeaderChar = irodsInputStream.read();
-				if (searchForNewHeaderChar == (int) '<') {
+				if (searchForNewHeaderChar == '<') {
 					searchForNewHeaderChar = irodsInputStream.read(temp);
 					if (true) {// (sigh == 13) {
 						if (new String(temp, encoding).equals(newHeader)) {

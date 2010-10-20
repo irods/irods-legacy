@@ -128,6 +128,7 @@ public class FTPAccount extends RemoteAccount {
 	 * held values.
 	 * <P>
 	 */
+	@Override
 	protected void finalize() {
 		super.finalize();
 
@@ -142,6 +143,7 @@ public class FTPAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if homeDirectory is null.
 	 */
+	@Override
 	public void setHomeDirectory(String homeDirectory) {
 		if (homeDirectory == null)
 			throw new NullPointerException(
@@ -150,6 +152,7 @@ public class FTPAccount extends RemoteAccount {
 		this.homeDirectory = homeDirectory;
 	}
 
+	@Override
 	public void setPort(int port) {
 		if (port > 0)
 			this.port = port;
@@ -211,6 +214,7 @@ public class FTPAccount extends RemoteAccount {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null || !(obj instanceof FTPAccount))
@@ -237,6 +241,7 @@ public class FTPAccount extends RemoteAccount {
 	/**
 	 * Returns a string representation of this file system object.
 	 */
+	@Override
 	public String toString() {
 		return new String("ftp://" + getUserName() + "@" + getHost() + ":"
 				+ getPort() + getHomeDirectory());

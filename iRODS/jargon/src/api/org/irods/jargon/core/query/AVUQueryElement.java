@@ -55,6 +55,7 @@ public class AVUQueryElement {
 		this.valuesTable = valuesTable;
 	}
 	
+	@Override
 	public boolean equals(Object other) {
 		if (this == other) {
 			return true;

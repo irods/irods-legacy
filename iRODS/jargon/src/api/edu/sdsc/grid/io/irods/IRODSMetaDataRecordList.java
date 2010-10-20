@@ -145,6 +145,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() {
 		if (irodsConnection != null)
 			irodsConnection = null;
@@ -206,6 +207,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Tests if this IRODSMetaDataRecordList can return more values from the
 	 * query.
 	 */
+	@Override
 	public boolean isQueryComplete() {
 		if (continuationIndex >= 0) {
 			return false;
@@ -221,8 +223,9 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * return 300 values at a time which match the query, see also
 	 * <code>IRODSFileSystem.DEFAULT_RECORDS_WANTED</code>.
 	 */
+	@Override
 	public MetaDataRecordList[] getMoreResults() throws IOException {
-		return getMoreResults(IRODSFileSystem.DEFAULT_RECORDS_WANTED);
+		return getMoreResults(GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
 
 	/**
@@ -230,6 +233,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * partial list and there are more results which matched the query that
 	 * haven't been returned. Otherwise null.
 	 */
+	@Override
 	public MetaDataRecordList[] getMoreResults(int numOfResults)
 			throws IOException {
 		if (continuationIndex < 0) {

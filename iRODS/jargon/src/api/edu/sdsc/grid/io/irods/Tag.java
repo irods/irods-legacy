@@ -231,10 +231,12 @@ public class Tag implements Cloneable {
 		}
 	}
 
+	@Override
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof Tag) {
 			Tag newTag = (Tag) obj;
@@ -249,6 +251,7 @@ public class Tag implements Cloneable {
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		return tagName;
 	}

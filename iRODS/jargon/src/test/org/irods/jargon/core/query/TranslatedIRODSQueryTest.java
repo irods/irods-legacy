@@ -3,6 +3,7 @@ package org.irods.jargon.core.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.JargonException;
@@ -34,7 +35,7 @@ public class TranslatedIRODSQueryTest {
 		IRODSQuery query = IRODSQuery.instance("hello", 100);
 		TranslatedIRODSQuery translatedQuery = TranslatedIRODSQuery.instance(
 				selectFields, queryConditions, query);
-		TestCase.assertNotNull("translated query not created", translatedQuery);
+		Assert.assertNotNull("translated query not created", translatedQuery);
 	}
 
 	@Test(expected = JargonException.class)

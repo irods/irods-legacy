@@ -1,6 +1,5 @@
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
@@ -15,21 +14,18 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IreplCommand;
 
-import org.irods.jargon.core.exception.JargonException;
 import org.junit.After;
 import org.junit.AfterClass;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
@@ -85,7 +81,7 @@ public class IRODSResourceQueryTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
 		MetaDataRecordList[] lists = irodsFileSystem
-				.query(new String[] { IRODSMetaDataSet.COLL_RESOURCE_NAME });
+				.query(new String[] { ResourceMetaData.COLL_RESOURCE_NAME });
 
 		boolean foundResc1 = false;
 		boolean foundResc2 = false;
@@ -103,8 +99,8 @@ public class IRODSResourceQueryTest {
 		}
 
 		irodsFileSystem.close();
-		TestCase.assertTrue("did not find first resource", foundResc1);
-		TestCase.assertTrue("did not find second resource", foundResc2);
+		Assert.assertTrue("did not find first resource", foundResc1);
+		Assert.assertTrue("did not find second resource", foundResc2);
 	}
 
 	/**
@@ -147,8 +143,8 @@ public class IRODSResourceQueryTest {
 		long size = irodsFile.length();
 
 		MetaDataRecordList[] lists = irodsFile.query(new String[] {
-				IRODSMetaDataSet.RESOURCE_NAME,
-				IRODSMetaDataSet.RESOURCE_LOCATION });
+				ResourceMetaData.RESOURCE_NAME,
+				ResourceMetaData.RESOURCE_LOCATION });
 
 		for (MetaDataRecordList l : lists) {
 			String resource = l.getStringValue(0);
@@ -157,7 +153,7 @@ public class IRODSResourceQueryTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertTrue("did not get query result", lists.length > 0);
+		Assert.assertTrue("did not get query result", lists.length > 0);
 	}
 
 	/**
@@ -208,7 +204,7 @@ public class IRODSResourceQueryTest {
 
 		List<String> resources = irodsFile.getAllResourcesForFile();
 		irodsFileSystem.close();
-		TestCase.assertEquals("did not get query result", 2, resources.size());
+		Assert.assertEquals("did not get query result", 2, resources.size());
 		boolean foundResc1 = false;
 		boolean foundResc2 = false;
 
@@ -220,12 +216,12 @@ public class IRODSResourceQueryTest {
 					.getProperty(IRODS_SECONDARY_RESOURCE_KEY))) {
 				foundResc2 = true;
 			} else {
-				TestCase.fail("unknown resource found:" + rescName);
+				Assert.fail("unknown resource found:" + rescName);
 			}
 		}
 
-		TestCase.assertTrue("did not find first resource", foundResc1);
-		TestCase.assertTrue("did not find second resource", foundResc2);
+		Assert.assertTrue("did not find first resource", foundResc1);
+		Assert.assertTrue("did not find second resource", foundResc2);
 
 	}
 
@@ -269,7 +265,7 @@ public class IRODSResourceQueryTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertEquals(
+		Assert.assertEquals(
 				"should not have returned resources for the collection", 0,
 				resources.size());
 	}
@@ -294,7 +290,7 @@ public class IRODSResourceQueryTest {
 		List<String> resources = resource.listResourcesInResourceGroup(testResourceGroup);
 		irodsFileSystem.close();
 		
-		TestCase.assertTrue("did not get any resources from query", resources.size() > 0);
+		Assert.assertTrue("did not get any resources from query", resources.size() > 0);
 		
 		boolean found = false;
 		for (String resc : resources) {
@@ -304,7 +300,7 @@ public class IRODSResourceQueryTest {
 			}
 		}
 
-		TestCase.assertTrue("did not find resc I added to the resource group", found);
+		Assert.assertTrue("did not find resc I added to the resource group", found);
 
 	}
 
@@ -340,11 +336,11 @@ public class IRODSResourceQueryTest {
 				ResourceMetaData.RESOURCE_TYPE,
 				ResourceMetaData.RESOURCE_VAULT_PATH,
 				ResourceMetaData.RESOURCE_ZONE };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(null,
 				select, 100, Namespace.RESOURCE, false);
 		irodsFileSystem.close();
-		TestCase.assertNotNull("query result were null", fileList);
+		Assert.assertNotNull("query result were null", fileList);
 
 	}
 

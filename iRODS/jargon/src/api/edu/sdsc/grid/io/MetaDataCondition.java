@@ -526,6 +526,7 @@ public final class MetaDataCondition {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() {
 		if (field != null) {
 			field = null;
@@ -721,6 +722,7 @@ public final class MetaDataCondition {
 	/**
 	 * Returns a string representation of the object.
 	 */
+	@Override
 	public String toString() {
 		String toString = new String(field.getName());
 		toString += " " + getOperatorString(operator);
@@ -742,6 +744,7 @@ public final class MetaDataCondition {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)

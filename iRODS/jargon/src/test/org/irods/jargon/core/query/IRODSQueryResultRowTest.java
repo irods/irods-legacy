@@ -3,6 +3,7 @@ package org.irods.jargon.core.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.JargonException;
@@ -50,7 +51,7 @@ public class IRODSQueryResultRowTest {
 
 		IRODSQueryResultRow resultRow = IRODSQueryResultRow.instance(
 				resultColumns, query);
-		TestCase.assertNotNull("no result row created", resultRow);
+		Assert.assertNotNull("no result row created", resultRow);
 
 	}
 
@@ -120,7 +121,7 @@ public class IRODSQueryResultRowTest {
 		IRODSQueryResultRow resultRow = IRODSQueryResultRow.instance(
 				resultColumns, query);
 		String actualColumn = resultRow.getColumn(0);
-		TestCase.assertEquals("did not get expected column",
+		Assert.assertEquals("did not get expected column",
 				RodsGenQueryEnum.COL_AUDIT_ACTION_ID.getName(), actualColumn);
 
 	}
@@ -185,7 +186,7 @@ public class IRODSQueryResultRowTest {
 				resultColumns, query);
 		String actualColumn = resultRow
 				.getColumn(RodsGenQueryEnum.COL_AUDIT_ACTION_ID.getName());
-		TestCase.assertEquals("did not get expected column",
+		Assert.assertEquals("did not get expected column",
 				RodsGenQueryEnum.COL_AUDIT_ACTION_ID.getName(), actualColumn);
 
 	}

@@ -134,6 +134,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 * @see edu.sdsc.grid.io.HTTPFileOutputStream#close()
 	 */
+	@Override
 	protected void finalize() throws IOException {
 		// flush doesn't do anything, because there is no buffer
 
@@ -148,6 +149,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		out = ((HTTPFile) file).httpFileSystem.conn.getOutputStream();
 	}
@@ -161,6 +163,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(int b) throws IOException {
 		out.write(b);
 	}
@@ -174,6 +177,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(byte b[]) throws IOException {
 		out.write(b);
 	}
@@ -191,6 +195,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(byte b[], int off, int len) throws IOException {
 		out.write(b, off, len);
 	}
@@ -207,6 +212,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		out.close();
 	}

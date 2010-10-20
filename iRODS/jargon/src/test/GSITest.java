@@ -3,13 +3,10 @@ import edu.sdsc.grid.io.srb.SRBFileSystem;
 import edu.sdsc.grid.io.srb.SRBFile;
 
 import edu.sdsc.grid.io.irods.*;
-import edu.sdsc.grid.io.srb.*;
 import edu.sdsc.grid.io.*;
 
 
 import java.io.*;
-import java.net.URI;
-import java.util.*;
 
 
 public class GSITest

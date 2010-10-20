@@ -15,11 +15,11 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 
@@ -113,8 +113,8 @@ public class IRODSFileSystemCreateTarTest {
 
 		IRODSFile newTarFile = new IRODSFile(irodsFileSystem, newTarAbsPath + '/' + irodsNewTarFileName);
 		IRODSFile irodsCollectionToTar = new IRODSFile(irodsFileSystem, collectionAbsPath);
-		TestCase.assertTrue(irodsCollectionToTar.exists());
-		TestCase.assertTrue(irodsCollectionToTar.isDirectory());
+		Assert.assertTrue(irodsCollectionToTar.exists());
+		Assert.assertTrue(irodsCollectionToTar.isDirectory());
 
 		irodsFileSystem.createTarFile(newTarFile, irodsCollectionToTar, irodsFileSystem.getDefaultStorageResource());
 		irodsFileSystem.close();

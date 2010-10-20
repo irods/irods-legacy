@@ -1,5 +1,6 @@
 package org.irods.jargon.core.query;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.Test;
@@ -8,7 +9,7 @@ public class AVUQueryElementTest {
 
 	@Test
 	public final void testInstanceForValueQuery() throws JargonQueryException {
-		TestCase.assertNotNull(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, "3"));
+		Assert.assertNotNull(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, "3"));
 	}
 
 	@Test(expected=JargonQueryException.class)

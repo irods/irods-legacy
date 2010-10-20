@@ -6,6 +6,7 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SECONDARY_
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -72,7 +73,7 @@ public class GeneralFileSystemTest {
 		GeneralFileSystem irodsFileSystem = FileFactory.newFileSystem(account);
 
 		MetaDataRecordList[] lists = irodsFileSystem
-				.query(new String[] { IRODSMetaDataSet.COLL_RESOURCE_NAME });
+				.query(new String[] { ResourceMetaData.COLL_RESOURCE_NAME });
 
 		boolean foundResc1 = false;
 		boolean foundResc2 = false;
@@ -89,8 +90,8 @@ public class GeneralFileSystemTest {
 			}
 		}
 
-		TestCase.assertTrue("did not find first resource", foundResc1);
-		TestCase.assertTrue("did not find second resource", foundResc2);
+		Assert.assertTrue("did not find first resource", foundResc1);
+		Assert.assertTrue("did not find second resource", foundResc2);
 	}
 
 	/**
@@ -130,9 +131,9 @@ public class GeneralFileSystemTest {
 				.getIrodsFileName()
 				+ '/' + testFileName);
 
-		TestCase.assertTrue("file I created does not exist according to irods",
+		Assert.assertTrue("file I created does not exist according to irods",
 				file.exists());
-		TestCase.assertTrue(
+		Assert.assertTrue(
 				"file I just created is not seen as a file on irods", file
 						.isFile());
 
@@ -147,7 +148,7 @@ public class GeneralFileSystemTest {
 			offset += nbytes;
 		}
 
-		TestCase.assertEquals(
+		Assert.assertEquals(
 				"did not read all of the bytes of the file from irods",
 				expectedFileLength, offset);
 
@@ -189,9 +190,9 @@ public class GeneralFileSystemTest {
 				.getIrodsFileName()
 				+ '/' + testFileName);
 
-		TestCase.assertTrue(file.exists());
+		Assert.assertTrue(file.exists());
 		String fileChecksum = file.checksum();
-		TestCase.assertNotNull(fileChecksum);
+		Assert.assertNotNull(fileChecksum);
 
 	}
 
@@ -234,7 +235,7 @@ public class GeneralFileSystemTest {
 		boolean checkSumPassed = irodsFile.checksum().equals(lFile.checksum());
 		irodsFileSystem.close();
 
-		TestCase.assertTrue("checksums not equal", checkSumPassed);
+		Assert.assertTrue("checksums not equal", checkSumPassed);
 
 	}
 	
@@ -276,7 +277,7 @@ public class GeneralFileSystemTest {
 
 		boolean checkSumPassed = irodsFile.checksum().equals(lFile.checksum());
 
-		TestCase.assertTrue("checksums not equal", checkSumPassed);
+		Assert.assertTrue("checksums not equal", checkSumPassed);
 
 	}
 

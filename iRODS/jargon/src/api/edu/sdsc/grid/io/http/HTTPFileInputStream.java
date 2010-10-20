@@ -135,6 +135,7 @@ public class HTTPFileInputStream extends RemoteFileInputStream {
 	 *                if an I/O error occurs.
 	 * @see edu.sdsc.grid.io.HTTPFileInputStream#close()
 	 */
+	@Override
 	protected void finalize() throws IOException {
 		close();
 	}
@@ -150,6 +151,7 @@ public class HTTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		in = ((HTTPFile) file).httpFileSystem.conn.getInputStream();
 	}
@@ -163,6 +165,7 @@ public class HTTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int read() throws IOException {
 		return in.read();
 	}
@@ -179,6 +182,7 @@ public class HTTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int read(byte b[]) throws IOException {
 		return in.read(b);
 	}
@@ -257,6 +261,7 @@ public class HTTPFileInputStream extends RemoteFileInputStream {
 	 *                if <code>b</code> is <code>null</code>.
 	 * @see java.io.InputStream#read()
 	 */
+	@Override
 	public int read(byte b[], int off, int len) throws IOException {
 		return in.read(b, off, len);
 	}
@@ -273,6 +278,7 @@ public class HTTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public long skip(long n) throws IOException {
 		return in.skip(n);
 	}
@@ -286,6 +292,7 @@ public class HTTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int available() throws IOException {
 		return 0;
 	}
@@ -300,6 +307,7 @@ public class HTTPFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		in.close();
 	}

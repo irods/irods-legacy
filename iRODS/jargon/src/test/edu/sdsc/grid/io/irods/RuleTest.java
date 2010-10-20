@@ -1,7 +1,5 @@
 package edu.sdsc.grid.io.irods;
 
-import static org.junit.Assert.*;
-
 import java.io.FileNotFoundException;
 import java.io.StringBufferInputStream;
 import java.util.Map;
@@ -9,13 +7,13 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.sdsc.jargon.testutils.AssertionHelper;
@@ -109,13 +107,13 @@ public class RuleTest {
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("null response, no data back from rule", result);
-		TestCase.assertTrue(
+		Assert.assertNotNull("null response, no data back from rule", result);
+		Assert.assertTrue(
 				"I expected to get the ruleExec out from this hello command",
 				result.length > 0);
-		TestCase.assertEquals("should only have the string response", 1,
+		Assert.assertEquals("should only have the string response", 1,
 				result.length);
-		TestCase.assertTrue("did not get hello in response", result[0]
+		Assert.assertTrue("did not get hello in response", result[0]
 				.getStringValue().indexOf("Hello") > -1);
 
 	}
@@ -126,10 +124,10 @@ public class RuleTest {
 		StringTokenizer tokenizer = new StringTokenizer(attribTestLine);
 		Vector<Parameter> parameters = new Vector<Parameter>();
 		Rule.processRuleAttributesLine(tokenizer, parameters);
-		TestCase.assertTrue(parameters.size() > 0);
-		TestCase.assertEquals("did not parse out parameter name", "*Condition",
+		Assert.assertTrue(parameters.size() > 0);
+		Assert.assertEquals("did not parse out parameter name", "*Condition",
 				parameters.get(0).getUniqueName());
-		TestCase
+		Assert
 				.assertEquals(
 						"Did not get entire condition as value",
 						"COLL_NAME='/Bergen/home/csaba/01f760ac-7084-4233-93db-659a8b2d5c9f'",
@@ -183,8 +181,8 @@ public class RuleTest {
 		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
-		TestCase.assertNotNull("did not get a response", result);
-		TestCase.assertEquals("did not get results for each output parameter",
+		Assert.assertNotNull("did not get a response", result);
+		Assert.assertEquals("did not get results for each output parameter",
 				5, result.length);
 
 		// I need to find the parameter for the condition, so I can see if the
@@ -193,7 +191,7 @@ public class RuleTest {
 		for (int i = 0; i < result.length; i++) {
 			if (result[i].getUniqueName().equals("*Condition")) {
 				foundCondition = true;
-				TestCase.assertEquals(
+				Assert.assertEquals(
 						"did not get the condition, including the = sign",
 						"COLL_NAME = '" + iputCommand.getIrodsFileName() + "'",
 						result[i].getStringValue());
@@ -201,7 +199,7 @@ public class RuleTest {
 			}
 		}
 
-		TestCase
+		Assert
 				.assertTrue(
 						"did not find the 'condition' returned as output from the rule",
 						foundCondition);
@@ -221,10 +219,10 @@ public class RuleTest {
 				.toString());
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
-		TestCase.assertNotNull("null response, no data back from rule", result);
-		TestCase.assertEquals("should only have the rule data", 1,
+		Assert.assertNotNull("null response, no data back from rule", result);
+		Assert.assertEquals("should only have the rule data", 1,
 				result.length);
-		TestCase.assertEquals(result[0].getType(), "GenQueryOut_PI");
+		Assert.assertEquals(result[0].getType(), "GenQueryOut_PI");
 
 	}
 

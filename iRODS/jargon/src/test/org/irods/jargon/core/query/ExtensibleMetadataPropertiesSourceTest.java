@@ -1,5 +1,6 @@
 package org.irods.jargon.core.query;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.JargonException;
@@ -20,7 +21,7 @@ public class ExtensibleMetadataPropertiesSourceTest {
 	@Test
 	public void testCreateInstance() throws Exception {
 		ExtensibleMetaDataSource source = new ExtensibleMetadataPropertiesSource();
-		TestCase
+		Assert
 				.assertNotNull(
 						"null extensible metadata source, some creation problem occurred",
 						source);
@@ -31,7 +32,7 @@ public class ExtensibleMetadataPropertiesSourceTest {
 		ExtensibleMetaDataSource source = new ExtensibleMetadataPropertiesSource();
 		ExtensibleMetaDataMapping mapping = source
 				.generateExtensibleMetaDataMapping();
-		TestCase.assertNotNull(mapping);
+		Assert.assertNotNull(mapping);
 	}
 
 	@Test(expected = JargonException.class)
@@ -64,7 +65,7 @@ public class ExtensibleMetadataPropertiesSourceTest {
 		ExtensibleMetaDataMapping mapping = source
 				.generateExtensibleMetaDataMapping();
 		String colName1 = mapping.getColumnNameFromIndex("10001");
-		TestCase.assertEquals("COL_TEST_ID", colName1);
+		Assert.assertEquals("COL_TEST_ID", colName1);
 	}
 
 }

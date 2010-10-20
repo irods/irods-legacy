@@ -106,6 +106,7 @@ public class TranslatedQueryCondition {
 		return value;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		String tabOver = "    ";

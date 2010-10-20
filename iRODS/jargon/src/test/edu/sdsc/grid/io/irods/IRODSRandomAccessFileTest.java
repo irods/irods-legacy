@@ -3,12 +3,12 @@ package edu.sdsc.grid.io.irods;
 import static org.junit.Assert.*;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -121,7 +121,7 @@ public class IRODSRandomAccessFileTest {
 		char expectedReadData = (char) inputBytes[0];
 
 		irodsFileSystem.close();
-		TestCase.assertEquals(
+		Assert.assertEquals(
 				"byte I read does not match the first byte I wrote",
 				expectedReadData, readData);
 
@@ -196,7 +196,7 @@ public class IRODSRandomAccessFileTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertTrue(
+		Assert.assertTrue(
 				"did not seek and read the same data that I originally wrote",
 				Arrays.equals(expectedBytes, bytesToRead));
 
@@ -247,9 +247,9 @@ public class IRODSRandomAccessFileTest {
 		GeneralFile file = FileFactory.newFile(irodsFileSystem, iputCommand
 				.getIrodsFileName()
 				+ '/' + testFileName);
-		TestCase.assertTrue("file does not exist in IRODS, setup issue", file
+		Assert.assertTrue("file does not exist in IRODS, setup issue", file
 				.exists());
-		TestCase.assertTrue("file is not a file in IRODS, setup issue", file
+		Assert.assertTrue("file is not a file in IRODS, setup issue", file
 				.isFile());
 
 		GeneralRandomAccessFile raFile = FileFactory.newRandomAccessFile(file,
@@ -265,7 +265,7 @@ public class IRODSRandomAccessFileTest {
 			dataRead = true;
 		}
 
-		TestCase.assertTrue("did not read back any data", dataRead);
+		Assert.assertTrue("did not read back any data", dataRead);
 	}
 
 	/**
@@ -344,7 +344,7 @@ public class IRODSRandomAccessFileTest {
 				+ testFileName);
 		
 		String finalChecksum = irodsFile.checksumMD5();		
-		TestCase.assertFalse("got the same checksum for different files", finalChecksum.equals(interimChecksum));
+		Assert.assertFalse("got the same checksum for different files", finalChecksum.equals(interimChecksum));
 
 	}
 	
@@ -424,7 +424,7 @@ public class IRODSRandomAccessFileTest {
 				+ testFileName);
 		
 		String finalChecksum = irodsFile.checksumMD5();		
-		TestCase.assertFalse("got the same checksum for different files", finalChecksum.equals(interimChecksum));
+		Assert.assertFalse("got the same checksum for different files", finalChecksum.equals(interimChecksum));
 
 	}
 

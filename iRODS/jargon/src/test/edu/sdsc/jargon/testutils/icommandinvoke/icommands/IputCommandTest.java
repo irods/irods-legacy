@@ -3,10 +3,9 @@
  */
 package edu.sdsc.jargon.testutils.icommandinvoke.icommands;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -192,7 +191,7 @@ public class IputCommandTest {
         ilsCommand.setIlsBasePath(actualCollectionPath);
 
         String res = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-        TestCase.assertTrue("did not find file I just put",
+        Assert.assertTrue("did not find file I just put",
             res.indexOf(testFileName) > -1);
     }
 

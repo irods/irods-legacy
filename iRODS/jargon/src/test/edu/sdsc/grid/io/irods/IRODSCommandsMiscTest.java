@@ -14,16 +14,14 @@ import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.URI;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 public class IRODSCommandsMiscTest {
@@ -65,7 +63,7 @@ public class IRODSCommandsMiscTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 		String miscSvrInfo = irodsFileSystem.commands.miscServerInfo();
 		irodsFileSystem.close();
-		TestCase.assertTrue("no svr info returned", miscSvrInfo.length() > 0);
+		Assert.assertTrue("no svr info returned", miscSvrInfo.length() > 0);
 	}
 
 	@Test
@@ -247,9 +245,9 @@ public class IRODSCommandsMiscTest {
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
 
-		TestCase.assertTrue("irods orig file does not exist", irodsFile
+		Assert.assertTrue("irods orig file does not exist", irodsFile
 				.exists());
-		TestCase.assertFalse("irods orig file is not a file, but a directory",
+		Assert.assertFalse("irods orig file is not a file, but a directory",
 				irodsFile.isDirectory());
 
 		IRODSFile newIrodsFile = new IRODSFile(irodsFileSystem2,
@@ -299,7 +297,7 @@ public class IRODSCommandsMiscTest {
 		String checksum = irodsFileSystem.commands.checksum(irodsFile);
 		irodsFileSystem.close();
 
-		TestCase.assertTrue("checksum not generated", checksum.length() > -1);
+		Assert.assertTrue("checksum not generated", checksum.length() > -1);
 	}
 
 	

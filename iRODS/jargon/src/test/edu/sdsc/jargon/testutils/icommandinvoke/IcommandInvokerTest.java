@@ -1,7 +1,5 @@
 package edu.sdsc.jargon.testutils.icommandinvoke;
 
-import static org.junit.Assert.*;
-
 import java.util.Properties;
 
 import junit.framework.Assert;
@@ -10,7 +8,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;

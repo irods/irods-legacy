@@ -3,7 +3,6 @@
  */
 package edu.sdsc.jargon.unittest.testsuites;
 
-import org.irods.jargon.core.genupdate.GenUpdateProcessorTest;
 import org.irods.jargon.core.query.GenQueryClassicMidLevelServiceTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

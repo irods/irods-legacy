@@ -65,7 +65,7 @@ public final class GenUpdateInp extends AbstractIRODSPackingInstruction
 		}
 
 		this.updateType = updateType;
-		this.columnValues = (List<InxVal>) Collections
+		this.columnValues = Collections
 				.unmodifiableList(columnValues);
 	}
 
@@ -105,6 +105,7 @@ public final class GenUpdateInp extends AbstractIRODSPackingInstruction
 		return message;
 	}
 
+	@Override
 	public String getParsedTags() throws JargonException {
 
 		Tag message = getTagValue();

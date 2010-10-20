@@ -128,6 +128,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 *                if an I/O error occurs.
 	 * @see edu.sdsc.grid.io.GeneralFileInputStream#close()
 	 */
+	@Override
 	protected void finalize() throws IOException {
 		close();
 	}
@@ -158,6 +159,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public abstract int read() throws IOException;
 
 	/**
@@ -208,6 +210,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 *                if <code>b</code> is <code>null</code>.
 	 * @see java.io.InputStream#read(byte[], int, int)
 	 */
+	@Override
 	public int read(byte b[]) throws IOException {
 		return read(b, 0, b.length);
 	}
@@ -286,6 +289,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 *                if <code>b</code> is <code>null</code>.
 	 * @see java.io.InputStream#read()
 	 */
+	@Override
 	public abstract int read(byte b[], int off, int len) throws IOException;
 
 	/**
@@ -309,6 +313,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public abstract long skip(long n) throws IOException;
 
 	/**
@@ -329,6 +334,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public abstract int available() throws IOException;
 
 	/**
@@ -341,6 +347,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public abstract void close() throws IOException;
 
 }

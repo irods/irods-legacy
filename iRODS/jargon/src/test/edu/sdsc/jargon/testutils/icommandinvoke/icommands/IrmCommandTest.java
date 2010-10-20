@@ -3,22 +3,18 @@
  */
 package edu.sdsc.jargon.testutils.icommandinvoke.icommands;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Properties;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 
@@ -103,7 +99,7 @@ public class IrmCommandTest {
 		IlsCommand ilsCommand = new IlsCommand();
 		ilsCommand.setIlsBasePath("scratch");
 		String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-		TestCase.assertTrue("test directory is not there", ilsResult.indexOf(testingDirName) > -1);
+		Assert.assertTrue("test directory is not there", ilsResult.indexOf(testingDirName) > -1);
 		
 
 		// dir is out there in the proper place, now zap, this is the exercise of the real test
@@ -117,7 +113,7 @@ public class IrmCommandTest {
 		ilsCommand = new IlsCommand();
 		ilsCommand.setIlsBasePath("scratch");
 		ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-		TestCase.assertTrue("test directory is still there", ilsResult.indexOf(testingDirName) == -1);
+		Assert.assertTrue("test directory is still there", ilsResult.indexOf(testingDirName) == -1);
 		
 	}
 	

@@ -1,8 +1,5 @@
 package edu.sdsc.jargon.testutils;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
 import java.util.Properties;
 
 import org.junit.After;

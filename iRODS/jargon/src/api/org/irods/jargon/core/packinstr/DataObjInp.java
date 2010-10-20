@@ -365,6 +365,7 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 
 	}
 	
+	@Override
 	public Tag getTagValue() throws JargonException {
 		int tagOpenFlags = translateOpenFlagsValue();
 

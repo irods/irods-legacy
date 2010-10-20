@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 
@@ -75,9 +76,9 @@ public class IRODSFileSystemTest {
          IRODSFile irodsFile = new IRODSFile(irodsFileSystem, 
         		 testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH) + '/' + testFileName);
         
-    	 TestCase.assertTrue("file system not aware this is a file", irodsFile.isFile());
-    	 TestCase.assertFalse("thinks this is a file and a directory", irodsFile.isDirectory());
-    	 TestCase.assertEquals("does not have the resource from the account", account.getDefaultStorageResource(), irodsFile.getResource());
+    	 Assert.assertTrue("file system not aware this is a file", irodsFile.isFile());
+    	 Assert.assertFalse("thinks this is a file and a directory", irodsFile.isDirectory());
+    	 Assert.assertEquals("does not have the resource from the account", account.getDefaultStorageResource(), irodsFile.getResource());
     	 irodsFileSystem.close();
          
     }
@@ -114,7 +115,7 @@ public class IRODSFileSystemTest {
 		IRODSAccount gsiAccount = new IRODSAccount(host, port, gssCredential);
 		irodsFileSystem.setAccount(gsiAccount);
 		IRODSAccount returnedAccount = irodsFileSystem.lookupUserIfGSI(gsiAccount);
-		TestCase.assertTrue("did not set a user name", returnedAccount.getUserName().length() > 0);
+		Assert.assertTrue("did not set a user name", returnedAccount.getUserName().length() > 0);
     }
     
     @Test
@@ -127,9 +128,9 @@ public class IRODSFileSystemTest {
          IRODSFile irodsFile = new IRODSFile(irodsFileSystem, 
         		 testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH));
         
-    	 TestCase.assertFalse("file system thinks this is a file", irodsFile.isFile());
-    	 TestCase.assertTrue("file system does not think this is a directory", irodsFile.isDirectory());
-    	 TestCase.assertEquals("does not have the resource from the account", account.getDefaultStorageResource(), irodsFile.getResource());
+    	 Assert.assertFalse("file system thinks this is a file", irodsFile.isFile());
+    	 Assert.assertTrue("file system does not think this is a directory", irodsFile.isDirectory());
+    	 Assert.assertEquals("does not have the resource from the account", account.getDefaultStorageResource(), irodsFile.getResource());
     	 irodsFileSystem.close();
     }
     
@@ -163,9 +164,9 @@ public class IRODSFileSystemTest {
          IRODSFile irodsFile = new IRODSFile(irodsFileSystem, 
         		 testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH) + '/' + testFileName);
         
-    	 TestCase.assertTrue("file system not aware this is a file", irodsFile.isFile());
-    	 TestCase.assertFalse("thinks this is a file and a directory", irodsFile.isDirectory());
-    	 TestCase.assertEquals("does not have the resource from the account", testingProperties.getProperty(IRODS_RESOURCE_KEY), irodsFile.getResource());
+    	 Assert.assertTrue("file system not aware this is a file", irodsFile.isFile());
+    	 Assert.assertFalse("thinks this is a file and a directory", irodsFile.isDirectory());
+    	 Assert.assertEquals("does not have the resource from the account", testingProperties.getProperty(IRODS_RESOURCE_KEY), irodsFile.getResource());
     	 irodsFileSystem.close();
          
     }
@@ -199,9 +200,9 @@ public class IRODSFileSystemTest {
          IRODSFile irodsFile = new IRODSFile(irodsFileSystem, 
         		 testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH) + '/' + testFileName);
         
-    	 TestCase.assertTrue("file system not aware this is a file", irodsFile.isFile());
-    	 TestCase.assertFalse("thinks this is a file and a directory", irodsFile.isDirectory());
-    	 TestCase.assertEquals("does not have the resource from the account", testingProperties.getProperty(IRODS_RESOURCE_KEY), irodsFile.getResource());
+    	 Assert.assertTrue("file system not aware this is a file", irodsFile.isFile());
+    	 Assert.assertFalse("thinks this is a file and a directory", irodsFile.isDirectory());
+    	 Assert.assertEquals("does not have the resource from the account", testingProperties.getProperty(IRODS_RESOURCE_KEY), irodsFile.getResource());
     	 irodsFileSystem.close();    
     }
     
@@ -273,7 +274,7 @@ public class IRODSFileSystemTest {
 	public void testCreateFileSystemWithIRODSAccountDefaultConstructor() throws Exception {
 		IRODSAccount irodsAccount = new IRODSAccount();
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
-		TestCase.assertTrue("did not create a connected irodsFileSystem", irodsFileSystem.commands.isConnected());
+		Assert.assertTrue("did not create a connected irodsFileSystem", irodsFileSystem.commands.isConnected());
 	}
     
 }

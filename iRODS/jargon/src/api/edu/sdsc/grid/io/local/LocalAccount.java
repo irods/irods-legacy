@@ -90,6 +90,7 @@ public class LocalAccount extends GeneralAccount {
 	/**
 	 * Sets the home directory of this GeneralAccount.
 	 */
+	@Override
 	public void setHomeDirectory(String homeDir) {
 		if (homeDir == null) {
 			try {
@@ -118,6 +119,7 @@ public class LocalAccount extends GeneralAccount {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)

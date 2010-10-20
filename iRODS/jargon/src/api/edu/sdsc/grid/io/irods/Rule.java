@@ -79,6 +79,7 @@ class Rule {
 	 * @param type
 	 * @param parameter
 	 */
+	@Deprecated
 	public Rule(String label, String type, Object parameter) {
 
 		this.label = label;

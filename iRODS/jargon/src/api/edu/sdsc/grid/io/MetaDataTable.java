@@ -244,6 +244,7 @@ public class MetaDataTable {
 		operators.remove(index);
 	}
 
+	@Override
 	public String toString() {
 		String value = "";
 
@@ -262,6 +263,7 @@ public class MetaDataTable {
 	/**
    *
    */
+	@Override
 	public boolean equals(Object obj) {
 		MetaDataTable table = null;
 

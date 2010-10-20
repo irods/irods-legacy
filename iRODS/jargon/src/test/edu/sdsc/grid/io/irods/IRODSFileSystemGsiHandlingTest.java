@@ -2,6 +2,7 @@ package edu.sdsc.grid.io.irods;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.connection.IRODSServerProperties;
@@ -66,7 +67,7 @@ public class IRODSFileSystemGsiHandlingTest {
 		
 		irodsFileSystem.close();
 
-		TestCase.assertEquals("did not derive expected metadata name for this version", UserMetaData.USER_DN_2_1, condition.getField().getName());
+		Assert.assertEquals("did not derive expected metadata name for this version", UserMetaData.USER_DN_2_1, condition.getField().getName());
 
 	}
 	
@@ -89,7 +90,7 @@ public class IRODSFileSystemGsiHandlingTest {
 		
 		irodsFileSystem.close();
 
-		TestCase.assertEquals("did not derive expected metadata name for this version", UserMetaData.USER_DN, condition.getField().getName());
+		Assert.assertEquals("did not derive expected metadata name for this version", UserMetaData.USER_DN, condition.getField().getName());
 
 	}
 	
@@ -100,8 +101,8 @@ public class IRODSFileSystemGsiHandlingTest {
 	 */
 	@Test 
 	public void testGetOldIrodsMetaDataid() throws Exception {
-		String id = IRODSMetaDataSet.getID(IRODSMetaDataSet.USER_DN_2_1);
-		TestCase.assertEquals("did not find prev version metadata id", "205", id);
+		String id = IRODSMetaDataSet.getID(UserMetaData.USER_DN_2_1);
+		Assert.assertEquals("did not find prev version metadata id", "205", id);
 		
 	
 	}
@@ -113,8 +114,8 @@ public class IRODSFileSystemGsiHandlingTest {
 	 */
 	@Test 
 	public void testGetNewIrodsMetaDataid() throws Exception {
-		String id = IRODSMetaDataSet.getID(IRODSMetaDataSet.USER_DN);
-		TestCase.assertEquals("did not find prev version metadata id", "1601", id);
+		String id = IRODSMetaDataSet.getID(UserMetaData.USER_DN);
+		Assert.assertEquals("did not find prev version metadata id", "1601", id);
 		
 	
 	}

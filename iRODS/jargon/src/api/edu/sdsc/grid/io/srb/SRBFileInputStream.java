@@ -164,6 +164,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		this.file = (SRBFile) file;
 		fd = ((SRBFileSystem) file.getFileSystem()).srbObjOpen(file.getName(),
@@ -187,6 +188,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int read() throws IOException {
 		try {
 			byte buffer[] = fileSystem.srbObjRead(fd, 1);
@@ -278,6 +280,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 *                if <code>b</code> is <code>null</code>.
 	 * @see java.io.InputStream#read()
 	 */
+	@Override
 	public int read(byte b[], int off, int len) throws IOException {
 		try {
 			byte buffer[] = null;
@@ -311,6 +314,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public long skip(long n) throws IOException {
 		long length = available();
 		if (length <= 0) {
@@ -338,15 +342,16 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int available() throws IOException {
 		MetaDataRecordList[] rl = null;
 		MetaDataCondition[] conditions = {
-				MetaDataSet.newCondition(SRBMetaDataSet.DIRECTORY_NAME,
+				MetaDataSet.newCondition(StandardMetaData.DIRECTORY_NAME,
 						MetaDataCondition.EQUAL, file.getParent()),
-				MetaDataSet.newCondition(SRBMetaDataSet.FILE_NAME,
+				MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 						MetaDataCondition.EQUAL, file.getName()) };
 		MetaDataSelect[] selects = { MetaDataSet
-				.newSelection(SRBMetaDataSet.SIZE) };
+				.newSelection(GeneralMetaData.SIZE) };
 		int available = 0;
 
 		try {
@@ -355,7 +360,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 			if (rl != null) {
 				// would use .getIntValue but it could be long...
 				available = (int) (Long.parseLong(rl[0].getValue(
-						SRBMetaDataSet.SIZE).toString()) - filePointer);
+						GeneralMetaData.SIZE).toString()) - filePointer);
 			}
 		} catch (IOException e) {
 
@@ -377,6 +382,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		if (fileSystem != null) {
 			fileSystem.srbObjClose(fd);
@@ -386,6 +392,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 			file = null;
 	}
 
+	@Override
 	public String toString() {
 		return "Input: " + file;
 	}

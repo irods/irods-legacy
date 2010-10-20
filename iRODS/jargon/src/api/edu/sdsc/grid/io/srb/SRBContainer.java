@@ -51,7 +51,6 @@ import edu.sdsc.grid.io.*;
 import edu.sdsc.grid.io.local.*;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Vector;
 import java.net.URI;
 
@@ -350,10 +349,11 @@ public class SRBContainer extends SRBFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public String getResource() throws IOException {
-		MetaDataRecordList[] rl = query(SRBMetaDataSet.RESOURCE_NAME);
+		MetaDataRecordList[] rl = query(ResourceMetaData.RESOURCE_NAME);
 		if (rl != null) {
-			return rl[0].getValue(SRBMetaDataSet.RESOURCE_NAME).toString();
+			return rl[0].getValue(ResourceMetaData.RESOURCE_NAME).toString();
 		}
 
 		return null;
@@ -365,6 +365,7 @@ public class SRBContainer extends SRBFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public String getDataType() throws IOException {
 		MetaDataRecordList[] rl = query(SRBMetaDataSet.FILE_TYPE_NAME);
 		if (rl != null) {
@@ -412,11 +413,13 @@ public class SRBContainer extends SRBFile {
 	// ----------------------------------------------------------------------
 	// GeneralFile Methods
 	// ----------------------------------------------------------------------
+	@Override
 	public MetaDataRecordList[] query(MetaDataSelect[] selects)
 			throws IOException {
 		return query(selects, SRBFileSystem.DEFAULT_RECORDS_WANTED);
 	}
 
+	@Override
 	public MetaDataRecordList[] query(MetaDataSelect[] selects,
 			int recordsWanted) throws IOException {
 		MetaDataCondition iConditions[] = { MetaDataSet.newCondition(
@@ -426,6 +429,7 @@ public class SRBContainer extends SRBFile {
 		return srbFileSystem.query(iConditions, selects, recordsWanted);
 	}
 
+	@Override
 	public void copyTo(GeneralFile file, boolean forceOverwrite,
 			boolean bulkCopy) throws IOException {
 		String list[] = list();
@@ -451,6 +455,7 @@ public class SRBContainer extends SRBFile {
 		}
 	}
 
+	@Override
 	public void copyFrom(GeneralFile file, boolean forceOverwrite,
 			boolean bulkCopy) throws IOException {
 		String list[] = file.list();
@@ -478,6 +483,7 @@ public class SRBContainer extends SRBFile {
 	 *             except any GeneralFile. It also fixes some bugs in those
 	 *             methods.
 	 */
+	@Deprecated
 	public void copyFromLocal(LocalFile localFile) throws IOException {
 		if (localFile.isDirectory()) {
 			copyFrom(localFile, false, false);
@@ -494,6 +500,7 @@ public class SRBContainer extends SRBFile {
 	 *             except any GeneralFile. It also fixes some bugs in those
 	 *             methods.
 	 */
+	@Deprecated
 	public void copyFromLocal(String localFilePath) throws IOException {
 		LocalFile localFile = new LocalFile(localFilePath);
 		if (localFile.isDirectory()) {
@@ -520,6 +527,7 @@ public class SRBContainer extends SRBFile {
 	 * @throws NullPointerException
 	 *             If localFile is null.
 	 */
+	@Deprecated
 	public void copyToLocal(LocalFile localFile) throws IOException {
 		copyTo(localFile, false, false);
 	}
@@ -539,6 +547,7 @@ public class SRBContainer extends SRBFile {
 	 * @throws NullPointerException
 	 *             If localFile is null.
 	 */
+	@Deprecated
 	public void copyToLocal(String localFilePath) throws IOException {
 		copyTo(new LocalFile(localFilePath), false, false);
 	}
@@ -563,6 +572,7 @@ public class SRBContainer extends SRBFile {
 	 * @throws NullPointerException
 	 *             If remoteFile is null.
 	 */
+	@Deprecated
 	public void copyToRemote(RemoteFile remoteFile) throws IOException,
 			ClassCastException {
 		copyTo(remoteFile);
@@ -576,28 +586,29 @@ public class SRBContainer extends SRBFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public String getPermissions() throws IOException {
 		MetaDataRecordList[] rl = null;
 		String userName = srbFileSystem.getUserName();
 		String userDomain = srbFileSystem.getDomainName();
 
 		MetaDataCondition conditions[] = {
-				MetaDataSet.newCondition(SRBMetaDataSet.USER_NAME,
+				MetaDataSet.newCondition(UserMetaData.USER_NAME,
 						MetaDataCondition.EQUAL, userName),
 				MetaDataSet.newCondition(SRBMetaDataSet.USER_DOMAIN,
 						MetaDataCondition.EQUAL, userDomain), };
 		MetaDataSelect selects[] = {
 				MetaDataSet.newSelection(UserMetaData.USER_NAME),
 				MetaDataSet.newSelection(SRBMetaDataSet.USER_DOMAIN),
-				MetaDataSet.newSelection(SRBMetaDataSet.ACCESS_CONSTRAINT), };
+				MetaDataSet.newSelection(GeneralMetaData.ACCESS_CONSTRAINT), };
 		rl = query(conditions, selects);
 
 		if (rl != null) {
 			for (int i = 0; i < rl.length; i++) {
-				if (rl[i].getValue(SRBMetaDataSet.USER_NAME).equals(userName)
+				if (rl[i].getValue(UserMetaData.USER_NAME).equals(userName)
 						&& rl[i].getValue(SRBMetaDataSet.USER_DOMAIN).equals(
 								userDomain)) {
-					return rl[i].getValue(SRBMetaDataSet.ACCESS_CONSTRAINT)
+					return rl[i].getValue(GeneralMetaData.ACCESS_CONSTRAINT)
 							.toString();
 				}
 			}
@@ -614,6 +625,7 @@ public class SRBContainer extends SRBFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public MetaDataRecordList[] getPermissions(boolean allUsers)
 			throws IOException {
 		return query(GeneralMetaData.ACCESS_CONSTRAINT);
@@ -627,6 +639,7 @@ public class SRBContainer extends SRBFile {
 	 * @param newResource
 	 *            The storage resource name of the new copy.
 	 */
+	@Override
 	public void replicate(String newResource) throws IOException {
 		srbFileSystem.srbReplContainer(catalogType, getPath(), newResource);
 	}
@@ -641,6 +654,7 @@ public class SRBContainer extends SRBFile {
 	 *            synchronization type, see PURGE_SYNC and PRIMARY_SYNC. default
 	 *            value is to synchronize all archival resources.
 	 */
+	@Override
 	public void backup(String syncType) throws IOException {
 		int syncFlag = 0;
 		String path = getAbsolutePath();
@@ -1027,15 +1041,15 @@ public class SRBContainer extends SRBFile {
 				else
 					dirName = getAbsolutePath();
 
-				rl = new SRBMetaDataRecordList(SRBMetaDataSet
-						.getField(SRBMetaDataSet.FILE_NAME), fileName);
-				rl.addRecord(SRBMetaDataSet
-						.getField(SRBMetaDataSet.DIRECTORY_NAME), dirName);
+				rl = new SRBMetaDataRecordList(MetaDataSet
+						.getField(StandardMetaData.FILE_NAME), fileName);
+				rl.addRecord(MetaDataSet
+						.getField(StandardMetaData.DIRECTORY_NAME), dirName);
 				rl
 						.addRecord(
-								SRBMetaDataSet.getField(SRBMetaDataSet.SIZE),
+								MetaDataSet.getField(GeneralMetaData.SIZE),
 								size);
-				rl.addRecord(SRBMetaDataSet.getField(SRBMetaDataSet.OFFSET),
+				rl.addRecord(MetaDataSet.getField(SRBMetaDataSet.OFFSET),
 						registrationOffset);
 
 				recordLists[i - registeredFiles] = rl;
@@ -1085,10 +1099,11 @@ public class SRBContainer extends SRBFile {
 	 *         abstract pathname exists <em>and</em> can be read; otherwise
 	 *         <code>false</code>.
 	 */
+	@Override
 	public boolean canRead() {
 		try {
 			if (exists()) {
-				MetaDataRecordList[] rl = query(SRBMetaDataSet.ACCESS_CONSTRAINT);
+				MetaDataRecordList[] rl = query(GeneralMetaData.ACCESS_CONSTRAINT);
 				if (rl != null) {
 					if (rl[0].getStringValue(0).equals("all")
 							|| rl[0].getStringValue(0).equals("read")) {
@@ -1111,10 +1126,11 @@ public class SRBContainer extends SRBFile {
 	 *         the application is allowed to write to the container; otherwise
 	 *         <code>false</code>.
 	 */
+	@Override
 	public boolean canWrite() {
 		try {
 			if (exists()) {
-				MetaDataRecordList[] rl = query(SRBMetaDataSet.ACCESS_CONSTRAINT);
+				MetaDataRecordList[] rl = query(GeneralMetaData.ACCESS_CONSTRAINT);
 				if (rl != null) {
 					if (rl[0].getStringValue(0).equals("all")
 							|| rl[0].getStringValue(0).equals("write")) {
@@ -1139,6 +1155,7 @@ public class SRBContainer extends SRBFile {
 	 *         argument, or a value greater than zero if this container is
 	 *         lexicographically greater than the argument
 	 */
+	@Override
 	public int compareTo(GeneralFile pathname) {
 		return getAbsolutePath().compareTo(
 				((SRBContainer) pathname).getAbsolutePath());
@@ -1164,6 +1181,7 @@ public class SRBContainer extends SRBFile {
 	 * @throws ClassCastException
 	 *             - if the argument is not an container
 	 */
+	@Override
 	public int compareTo(Object o) throws ClassCastException {
 		return compareTo((SRBContainer) o);
 	}
@@ -1172,6 +1190,7 @@ public class SRBContainer extends SRBFile {
 	 * Atomically creates a new, empty container named by this abstract pathname
 	 * if and only if a container with this name does not yet exist.
 	 */
+	@Override
 	public boolean createNewFile() {
 		try {
 			if (!exists()) {
@@ -1315,6 +1334,7 @@ public class SRBContainer extends SRBFile {
 	 * Deletes the container denoted by this SRBContainer. The container must be
 	 * empty in order to be deleted.
 	 */
+	@Override
 	public boolean delete() {
 		return delete(false);
 	}
@@ -1327,6 +1347,7 @@ public class SRBContainer extends SRBFile {
 	 * @return <code>true</code> if and only if the file or directory is
 	 *         successfully deleted; <code>false</code> otherwise
 	 */
+	@Override
 	public boolean delete(boolean force) {
 		try {
 			if (exists()) {
@@ -1352,6 +1373,7 @@ public class SRBContainer extends SRBFile {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			SRBContainer temp = (SRBContainer) obj;
@@ -1370,6 +1392,7 @@ public class SRBContainer extends SRBFile {
 	 * @return <code>true</code> if and only if the container denoted by this
 	 *         abstract pathname exists; <code>false</code> otherwise
 	 */
+	@Override
 	public boolean exists() {
 		try {
 			MetaDataRecordList[] rl = null;
@@ -1400,6 +1423,7 @@ public class SRBContainer extends SRBFile {
 	 * @return The absolute abstract pathname denoting the same container as
 	 *         this abstract pathname
 	 */
+	@Override
 	public GeneralFile getAbsoluteFile() {
 		return new SRBContainer(srbFileSystem, getAbsolutePath());
 	}
@@ -1416,6 +1440,7 @@ public class SRBContainer extends SRBFile {
 	 *             construction of the canonical pathname may require filesystem
 	 *             queries
 	 */
+	@Override
 	public GeneralFile getCanonicalFile() {
 		return new SRBContainer(srbFileSystem, getAbsolutePath());
 	}
@@ -1434,6 +1459,7 @@ public class SRBContainer extends SRBFile {
 	 *         abstract pathname, or <code>null</code> if this pathname does not
 	 *         name a parent
 	 */
+	@Override
 	public GeneralFile getParentFile() {
 		return new SRBContainer(srbFileSystem, getParent());
 	}
@@ -1446,6 +1472,7 @@ public class SRBContainer extends SRBFile {
 	 *         abstract pathname exists <em>and</em> is a container;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isContainer() {
 		if (exists())
 			return true;
@@ -1460,6 +1487,7 @@ public class SRBContainer extends SRBFile {
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isDirectory() {
 		return false;
 	}
@@ -1474,6 +1502,7 @@ public class SRBContainer extends SRBFile {
 	 *         abstract pathname exists <em>and</em> is a normal file;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isFile() {
 		return false;
 	}
@@ -1484,6 +1513,7 @@ public class SRBContainer extends SRBFile {
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname is hidden.
 	 */
+	@Override
 	public boolean isHidden() {
 		return false;// SRB files can't be hidden?
 	}
@@ -1497,16 +1527,17 @@ public class SRBContainer extends SRBFile {
 	 *         January 1, 1970), or <code>0L</code> if the file does not exist
 	 *         or if an I/O error occurs
 	 */
+	@Override
 	public long lastModified() {
 		try {
-			MetaDataRecordList[] rl = query(SRBMetaDataSet.MODIFICATION_DATE);// wrong
+			MetaDataRecordList[] rl = query(GeneralMetaData.MODIFICATION_DATE);// wrong
 			// attribute,
 			// need
 			// epoch
 			// long
 			if (rl != null) {
 				return Long.parseLong(rl[0].getValue(
-						SRBMetaDataSet.MODIFICATION_DATE).toString());
+						GeneralMetaData.MODIFICATION_DATE).toString());
 			}
 		} catch (IOException e) {
 			return 0;
@@ -1525,6 +1556,7 @@ public class SRBContainer extends SRBFile {
 	 * @return The length, in bytes, of the container denoted by this abstract
 	 *         pathname, or <code>0L</code> if the container does not exist
 	 */
+	@Override
 	public long length() {
 		try {
 			MetaDataRecordList[] rl = query(SRBMetaDataSet.CONTAINER_SIZE);
@@ -1552,12 +1584,13 @@ public class SRBContainer extends SRBFile {
 	 *         empty if the directory is empty. Returns null if this abstract
 	 *         pathname does not denote a directory, or if an I/O error occurs.
 	 */
+	@Override
 	public String[] list() {
 		String list[] = {};
 		String fileName, containerName = getName();
 
 		try {
-			MetaDataRecordList[] rl = query(SRBMetaDataSet.FILE_NAME);
+			MetaDataRecordList[] rl = query(StandardMetaData.FILE_NAME);
 
 			if (rl != null) {
 				list = new String[rl.length - 1];
@@ -1581,6 +1614,7 @@ public class SRBContainer extends SRBFile {
 	 * Creates the container named by this abstract pathname. Same as calling
 	 * the createNewFile method.
 	 */
+	@Override
 	public boolean mkdir() {
 		return createNewFile();
 	}
@@ -1594,6 +1628,7 @@ public class SRBContainer extends SRBFile {
 	 * @throws IllegalArgumentException
 	 *             If parameter <code>dest</code> is not a <code>SRBFile</code>.
 	 */
+	@Override
 	public boolean renameTo(GeneralFile dest) {
 		try {
 			if (exists()) {

@@ -43,8 +43,6 @@
 //
 package edu.sdsc.grid.io;
 
-import edu.sdsc.grid.io.local.*;
-
 import java.io.IOException;
 import java.net.URI;
 

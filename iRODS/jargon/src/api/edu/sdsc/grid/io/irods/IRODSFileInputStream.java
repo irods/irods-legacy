@@ -121,6 +121,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() throws IOException {
 		// calls close()
 		super.finalize();
@@ -170,6 +171,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		this.file = (IRODSFile) file;
 		fd = ((IRODSFileSystem) file.getFileSystem()).commands.fileOpen(
@@ -193,6 +195,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int read() throws IOException {
 		try {
 			byte buffer[] = new byte[1];
@@ -202,7 +205,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 					return -1;
 				// if temp = 0 is an error?
 				filePointer += temp; // 0 or 1
-				return (int) (buffer[0] & 0xFF);
+				return (buffer[0] & 0xFF);
 			}
 		} catch (IRODSException e) {
 			// -1 just means EOF
@@ -287,6 +290,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 	 *                if <code>b</code> is <code>null</code>.
 	 * @see java.io.InputStream#read()
 	 */
+	@Override
 	public int read(byte b[], int off, int len) throws IOException {
 		int temp = fileSystem.commands.fileRead(fd, b, off, len);
 		if (temp > 0)
@@ -306,6 +310,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public long skip(long n) throws IOException {
 		long length = available();
 		if (length <= 0) {
@@ -343,12 +348,13 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public int available() throws IOException {
 		MetaDataRecordList[] rl = null;
 		MetaDataCondition[] conditions = {
-				MetaDataSet.newCondition(GeneralMetaData.DIRECTORY_NAME,
+				MetaDataSet.newCondition(StandardMetaData.DIRECTORY_NAME,
 						MetaDataCondition.EQUAL, file.getParent()),
-				MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+				MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 						MetaDataCondition.EQUAL, file.getName()) };
 		MetaDataSelect[] selects = { MetaDataSet
 				.newSelection(GeneralMetaData.SIZE) };
@@ -382,6 +388,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		if (fileSystem != null) {
 			fileSystem.commands.fileClose(fd);
@@ -391,6 +398,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 			file = null;
 	}
 
+	@Override
 	public String toString() {
 		return "Input: " + file;
 	}

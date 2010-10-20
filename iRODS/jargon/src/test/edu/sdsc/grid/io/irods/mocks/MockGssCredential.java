@@ -1,13 +1,9 @@
 package edu.sdsc.grid.io.irods.mocks;
 
-import java.util.Properties;
-
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
-
-import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 
 
 public class MockGssCredential implements GSSCredential {

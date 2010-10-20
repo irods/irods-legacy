@@ -135,6 +135,7 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 *                if an I/O error occurs.
 	 * @see edu.sdsc.grid.io.GeneralFileOutputStream#close()
 	 */
+	@Override
 	protected void finalize() throws IOException {
 
 		close();
@@ -166,6 +167,7 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(int b) throws IOException {
 		byte buffer[] = { (byte) b };
 
@@ -181,6 +183,7 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public void write(byte b[]) throws IOException {
 		write(b, 0, b.length);
 	}
@@ -198,6 +201,7 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public abstract void write(byte b[], int off, int len) throws IOException;
 
 	/**
@@ -212,6 +216,7 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 * @exception IOException
 	 *                if an I/O error occurs.
 	 */
+	@Override
 	public abstract void close() throws IOException;
 
 }

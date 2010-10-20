@@ -268,6 +268,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 		return wrapper;
 	}
 
+	@Override
 	protected void open(GeneralFile file) throws IOException {
 		if (!file.exists()) {
 			file.createNewFile();
@@ -281,15 +282,18 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	// ----------------------------------------------------------------------
 	// Read methods
 	// ----------------------------------------------------------------------
+	@Override
 	public int read() throws IOException {
 		return wrapper.read();
 	}
 
 	// Private method in wrapper, so call public.
+	@Override
 	protected int readBytes(byte b[], int offset, int len) throws IOException {
 		return wrapper.read(b, offset, len);
 	}
 
+	@Override
 	public int skipBytes(int n) throws IOException {
 		return wrapper.skipBytes(n);
 	}
@@ -297,11 +301,13 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	// ----------------------------------------------------------------------
 	// Write methods
 	// ----------------------------------------------------------------------
+	@Override
 	public void write(int b) throws IOException {
 		wrapper.write(b);
 	}
 
 	// Private method in wrapper, so call public.
+	@Override
 	protected void writeBytes(byte b[], int offset, int len) throws IOException {
 		wrapper.write(b, offset, len);
 	}
@@ -317,6 +323,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public long getFilePointer() throws IOException {
 		return wrapper.getFilePointer();
 	}
@@ -335,6 +342,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 *             if <code>pos</code> is less than <code>0</code> or if an I/O
 	 *             error occurs.
 	 */
+	@Override
 	public void seek(long position) throws IOException {
 		wrapper.seek(position);
 	}
@@ -360,6 +368,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 *             if <code>pos</code> is less than <code>0</code> or if an I/O
 	 *             error occurs.
 	 */
+	@Override
 	public void seek(long position, int origin) throws IOException {
 		switch (origin) {
 		case 1:
@@ -382,6 +391,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public long length() throws IOException {
 		return wrapper.length();
 	}
@@ -406,6 +416,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 * @throws IOException
 	 *             If an I/O error occurs
 	 */
+	@Override
 	public void setLength(long newLength) throws IOException {
 		wrapper.setLength(newLength);
 	}
@@ -418,6 +429,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
+	@Override
 	public void close() throws IOException {
 		wrapper.close();
 	}

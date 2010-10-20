@@ -110,6 +110,7 @@ public abstract class RemoteAccount extends GeneralAccount {
 	 * held values.
 	 * <P>
 	 */
+	@Override
 	protected void finalize() {
 		super.finalize();
 		host = null;

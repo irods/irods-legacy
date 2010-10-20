@@ -1,10 +1,9 @@
 package edu.sdsc.grid.io.irods;
 
-import static org.junit.Assert.*;
-
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.DuplicateDataException;
@@ -70,7 +69,7 @@ public class ResourceTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
 		List<String> resourceGroups = resource.listResourceGroups();
-		TestCase.assertNotNull(resourceGroups);
+		Assert.assertNotNull(resourceGroups);
 		// if no error, I'm successful
 
 	}
@@ -95,7 +94,7 @@ public class ResourceTest {
 
 		// list the resource groups
 		List<String> resourceGroups = resource.listResourceGroups();
-		TestCase.assertTrue(resourceGroups.size() > 0);
+		Assert.assertTrue(resourceGroups.size() > 0);
 		boolean testRgFound = false;
 		for (String resourceGroup : resourceGroups) {
 			if (resourceGroup.equals(testResourceGroup)) {
@@ -106,7 +105,7 @@ public class ResourceTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertTrue("did not find the resource group I just added",
+		Assert.assertTrue("did not find the resource group I just added",
 				testRgFound);
 	}
 
@@ -150,7 +149,7 @@ public class ResourceTest {
 		}
 		irodsFileSystem.close();
 
-		TestCase.assertFalse("found the resource group I just removed",
+		Assert.assertFalse("found the resource group I just removed",
 				testRgFound);
 	}
 
@@ -180,7 +179,7 @@ public class ResourceTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
 		String[] resources = resource.listSubjects();
-		TestCase.assertTrue(resources.length > 0);
+		Assert.assertTrue(resources.length > 0);
 		boolean resc1Found = false;
 		boolean resc2Found = false;
 
@@ -199,8 +198,8 @@ public class ResourceTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertTrue("did not return first resource", resc1Found);
-		TestCase.assertTrue("did not return second resource", resc2Found);
+		Assert.assertTrue("did not return first resource", resc1Found);
+		Assert.assertTrue("did not return second resource", resc2Found);
 
 	}
 
@@ -243,9 +242,9 @@ public class ResourceTest {
 				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
-		TestCase.assertTrue("did not find expected attrib name", metaValues
+		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAVUAttrib) > -1);
-		TestCase.assertTrue("did not find expected attrib value", metaValues
+		Assert.assertTrue("did not find expected attrib value", metaValues
 				.indexOf(expectedAVUValue) > -1);
 
 	}
@@ -294,9 +293,9 @@ public class ResourceTest {
 				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
-		TestCase.assertTrue("should have deleted attrib name", metaValues
+		Assert.assertTrue("should have deleted attrib name", metaValues
 				.indexOf(expectedAVUAttrib) == -1);
-		TestCase.assertTrue("should have deleted attrib value", metaValues
+		Assert.assertTrue("should have deleted attrib value", metaValues
 				.indexOf(expectedAVUValue) == -1);
 
 	}
@@ -338,7 +337,7 @@ public class ResourceTest {
 
 		List<AvuData> avuData = resource.listResourceMetadata(testResource);
 		irodsFileSystem.close();
-		TestCase.assertFalse("no query result returned", avuData.isEmpty());
+		Assert.assertFalse("no query result returned", avuData.isEmpty());
 		AvuData avuDataItem = null;
 
 		for (AvuData foundItem : avuData) {
@@ -348,11 +347,11 @@ public class ResourceTest {
 			}
 		}
 
-		TestCase.assertNotNull(
+		Assert.assertNotNull(
 				"did not find the testing attrib in the resource", avuDataItem);
-		TestCase.assertEquals("did not get expected attrib",
+		Assert.assertEquals("did not get expected attrib",
 				expectedAttribName, avuDataItem.getAttribute());
-		TestCase.assertEquals("did not get expected value",
+		Assert.assertEquals("did not get expected value",
 				expectedAttribValue, avuDataItem.getValue());
 
 	}
@@ -416,8 +415,8 @@ public class ResourceTest {
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("null query results were not expected", results);
-		TestCase.assertTrue("did not get query results", results.length > 0);
+		Assert.assertNotNull("null query results were not expected", results);
+		Assert.assertTrue("did not get query results", results.length > 0);
 
 	}
 
@@ -481,8 +480,8 @@ public class ResourceTest {
 		irodsFileSystem.close();
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("null query results were not expected", results);
-		TestCase.assertTrue("did not get query results", results.length > 0);
+		Assert.assertNotNull("null query results were not expected", results);
+		Assert.assertTrue("did not get query results", results.length > 0);
 
 	}
 

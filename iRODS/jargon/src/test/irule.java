@@ -26,7 +26,6 @@
 //	NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.irods.*;
 import edu.sdsc.grid.io.*;
 import java.io.*;

@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.AfterClass;
@@ -36,7 +37,7 @@ public class DomainTest {
 						.buildIRODSAccountFromTestProperties(testingProperties));
 		Domain access = new Domain(irodsFileSystem, "access", "access_type", "");
 		irodsFileSystem.close();
-		TestCase.assertNotNull("no domain returned", access);
+		Assert.assertNotNull("no domain returned", access);
 	}
 
 	@Test
@@ -47,7 +48,7 @@ public class DomainTest {
 		Domain access = new Domain(irodsFileSystem, "data", "data_type", "");
 		String[] types = access.listTypes();
 		irodsFileSystem.close();
-		TestCase.assertTrue("no types found for data domain", types.length > 0);
+		Assert.assertTrue("no types found for data domain", types.length > 0);
 
 	}
 

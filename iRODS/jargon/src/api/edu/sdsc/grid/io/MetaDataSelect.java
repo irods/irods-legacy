@@ -132,6 +132,7 @@ public class MetaDataSelect {
 	/**
 	 * Returns a string representation of the object.
 	 */
+	@Override
 	public String toString() {
 		return new String(field.getName());
 	}
@@ -148,6 +149,7 @@ public class MetaDataSelect {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)

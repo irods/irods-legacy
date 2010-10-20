@@ -1,9 +1,8 @@
 package edu.sdsc.grid.io.irods;
 
-import static org.junit.Assert.*;
-
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -16,7 +15,6 @@ import org.junit.Test;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
@@ -60,7 +58,7 @@ public class UserTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 		User user = new User(irodsFileSystem);
 		String[] subjects = user.listSubjects();
-		TestCase.assertTrue("no subjects returned", subjects.length > 0);
+		Assert.assertTrue("no subjects returned", subjects.length > 0);
 	}
 
 	@Test
@@ -93,7 +91,7 @@ public class UserTest {
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		String result = invoker.invokeCommandAndGetResultAsString(command);
-		TestCase.assertTrue("did not find user I just added", result
+		Assert.assertTrue("did not find user I just added", result
 				.indexOf(testUser) > -1);
 
 		// cleanup...delete the user, also provides an additional check that the
@@ -134,7 +132,7 @@ public class UserTest {
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		String result = invoker.invokeCommandAndGetResultAsString(command);
-		TestCase.assertTrue("did not find user I just added", result
+		Assert.assertTrue("did not find user I just added", result
 				.indexOf(testUser) > -1);
 
 		// skip this for irods2.1, icommand does not work
@@ -146,7 +144,7 @@ public class UserTest {
 			ListUserDnCommand dnCommand = new ListUserDnCommand();
 			dnCommand.setUserDn(expectedDn);
 			result = invoker.invokeCommandAndGetResultAsString(dnCommand);
-			TestCase.assertTrue("did not find user dn", result
+			Assert.assertTrue("did not find user dn", result
 					.indexOf(expectedDn) > -1);
 		}
 
@@ -190,7 +188,7 @@ public class UserTest {
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		String result = invoker.invokeCommandAndGetResultAsString(command);
-		TestCase.assertTrue("user was not deleted",
+		Assert.assertTrue("user was not deleted",
 				result.indexOf(testUser) == -1);
 
 	}
@@ -234,7 +232,7 @@ public class UserTest {
 		ListUserDnCommand dnCommand = new ListUserDnCommand();
 		dnCommand.setUserDn(expectedDn);
 		String result = invoker.invokeCommandAndGetResultAsString(dnCommand);
-		TestCase.assertTrue("did not find user dn",
+		Assert.assertTrue("did not find user dn",
 				result.indexOf(expectedDn) > -1);
 
 		// cleanup, delete user
@@ -278,7 +276,7 @@ public class UserTest {
 		ListUsersCommand command = new ListUsersCommand();
 		command.setUserName(testUser);
 		String result = invoker.invokeCommandAndGetResultAsString(command);
-		TestCase.assertTrue("did not find new comment", result
+		Assert.assertTrue("did not find new comment", result
 				.indexOf(expectedComment) > -1);
 
 		// cleanup, delete user
@@ -321,7 +319,7 @@ public class UserTest {
 		ListUsersCommand command = new ListUsersCommand();
 		command.setUserName(testUser);
 		String result = invoker.invokeCommandAndGetResultAsString(command);
-		TestCase.assertTrue("did not find new comment", result
+		Assert.assertTrue("did not find new comment", result
 				.indexOf(expectedInfo) > -1);
 
 		// cleanup, delete user

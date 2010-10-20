@@ -53,6 +53,8 @@ import java.net.URL;
 
 import org.ietf.jgss.GSSCredential;
 
+import edu.sdsc.grid.io.DirectoryMetaData;
+import edu.sdsc.grid.io.FileMetaData;
 import edu.sdsc.grid.io.GeneralAccount;
 import edu.sdsc.grid.io.GeneralFile;
 import edu.sdsc.grid.io.GeneralFileSystem;
@@ -62,6 +64,7 @@ import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.ProtocolCatalog;
 import edu.sdsc.grid.io.RemoteFileSystem;
+import edu.sdsc.grid.io.StandardMetaData;
 
 /**
  * The SRBFileSystem class is the class for connection implementations to SRB
@@ -151,7 +154,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @deprecated Use SRBFile separator and pathSeparator
 	 */
-	public static final String PATH_SEPARATOR = SRBFile.separator;
+	@Deprecated
+	public static final String PATH_SEPARATOR = GeneralFile.separator;
 
 	/**
 	 * This object handles the socket protocol and communications with the Srb
@@ -330,8 +334,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 		}
 		// make sure there is a home directory
 		if (srbAccount.getHomeDirectory() == null) {
-			srbAccount.setHomeDirectory(SRBFile.separator
-					+ SRBFile.LOCAL_HOME_DIRECTORY + SRBFile.separator
+			srbAccount.setHomeDirectory(GeneralFile.separator
+					+ SRBFile.LOCAL_HOME_DIRECTORY + GeneralFile.separator
 					+ srbAccount.getUserName() + "."
 					+ srbAccount.getDomainName());
 		}
@@ -341,6 +345,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
 
@@ -358,6 +363,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	/**
 	 * Loads the account information for this file system.
 	 */
+	@Override
 	protected void setAccount(GeneralAccount account) throws IOException {
 		if (account == null)
 			account = new SRBAccount();
@@ -403,6 +409,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	/**
 	 * Returns the account used by this SRBFileSystem.
 	 */
+	@Override
 	public GeneralAccount getAccount() throws NullPointerException {
 		if (srbAccount != null)
 			return (SRBAccount) srbAccount.clone();
@@ -413,6 +420,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	/**
 	 * Returns the root directories of the SRB file system.
 	 */
+	@Override
 	public String[] getRootDirectories() {
 		return roots;
 	}
@@ -470,6 +478,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	/**
 	 * @return the SRB password
 	 */
+	@Override
 	public String getPassword() {
 		return srbAccount.getPassword();
 	}
@@ -586,6 +595,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            getMoreRecords() method in MetaDataRecordList to continue the
 	 *            search, if more records are available.
 	 */
+	@Override
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int recordsWanted) throws IOException {
 		return query(conditions, selects, recordsWanted, false, false);
@@ -687,9 +697,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 			for (int i = 0; i < conditions.length; i++) {
 				if ((conditions[i] != null)
 						&& (conditions[i].getFieldName().equals(
-								SRBMetaDataSet.DIRECTORY_NAME)
+								StandardMetaData.DIRECTORY_NAME)
 								|| conditions[i].getFieldName().equals(
-										SRBMetaDataSet.PARENT_DIRECTORY_NAME) || conditions[i]
+										DirectoryMetaData.PARENT_DIRECTORY_NAME) || conditions[i]
 								.getFieldName().equals(
 										SRBMetaDataSet.CONTAINER_NAME))) {
 					hasZone = true;
@@ -702,7 +712,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 							&& conditions[i].getFieldName().equals(
 									SRBMetaDataSet.CURRENT_ZONE)) {
 						conditions[i] = MetaDataSet.newCondition(
-								SRBMetaDataSet.DIRECTORY_NAME,
+								StandardMetaData.DIRECTORY_NAME,
 								MetaDataCondition.EQUAL, "MCAT_NAME="
 										+ conditions[i].getStringValue());
 						break;
@@ -736,6 +746,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			if (obj == null)
@@ -757,6 +768,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	/**
 	 * Checks if the socket is connected.
 	 */
+	@Override
 	public boolean isConnected() {
 		return commands.isConnected();
 	}
@@ -766,6 +778,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * formated according to the SRB URI model. Note: the user password will not
 	 * be included in the URI.
 	 */
+	@Override
 	public String toString() {
 		return new String("srb://" + getUserName() + "." + getDomainName()
 				+ "@" + getHost() + ":" + getPort());
@@ -1082,7 +1095,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1105,7 +1118,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1133,7 +1146,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1199,7 +1212,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (pathName == null) {
 			pathName = getHomeDirectory();
 		} else if (!pathName.startsWith(SRB_ROOT)) {
-			pathName = getHomeDirectory() + SRBFile.separator + pathName;
+			pathName = getHomeDirectory() + GeneralFile.separator + pathName;
 		}
 		/*
 		 * Definition for isDir in myType in srbObjStat call #define IS_UNKNOWN
@@ -1227,21 +1240,21 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
 		// Make sure collectionName ends with '/'
-		if (collectionName.substring(collectionName.length() - 1) != SRBFile.separator) {
+		if (collectionName.substring(collectionName.length() - 1) != GeneralFile.separator) {
 			// don't use: System.getProperty( "file.separator" )
 			// because the srb is expecting '/'
 			if (collectionName.substring(collectionName.length() - 1) == System
 					.getProperty("file.separator")) {
 				collectionName = collectionName.substring(0, collectionName
 						.length() - 2)
-						+ SRBFile.separator;
+						+ GeneralFile.separator;
 			} else {
-				collectionName = collectionName + SRBFile.separator;
+				collectionName = collectionName + GeneralFile.separator;
 			}
 		}
 
@@ -1259,7 +1272,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1411,7 +1424,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1435,15 +1448,15 @@ public class SRBFileSystem extends RemoteFileSystem {
 			resourceName = getDefaultStorageResource();// DefMdasResourceName
 		} else if ((pathName == null) || pathName.equals("")) {
 			MetaDataCondition[] conditions = {
-					MetaDataSet.newCondition(SRBMetaDataSet.FILE_NAME,
+					MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 							MetaDataCondition.EQUAL, objID),
-					MetaDataSet.newCondition(SRBMetaDataSet.DIRECTORY_NAME,
+					MetaDataSet.newCondition(StandardMetaData.DIRECTORY_NAME,
 							MetaDataCondition.EQUAL, collectionName) };
 			MetaDataSelect[] selects = { MetaDataSet
-					.newSelection(SRBMetaDataSet.PATH_NAME) };
+					.newSelection(FileMetaData.PATH_NAME) };
 			MetaDataRecordList rl[] = query(conditions, selects, 3);
 			if (rl != null) {
-				pathName = rl[0].getValue(SRBMetaDataSet.PATH_NAME).toString();
+				pathName = rl[0].getValue(FileMetaData.PATH_NAME).toString();
 			}
 		}
 
@@ -1480,7 +1493,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (parentCollection == null) {
 			parentCollection = getHomeDirectory();// DefMdasCollectionName
 		} else if (!parentCollection.startsWith(SRB_ROOT)) {
-			parentCollection = getHomeDirectory() + SRBFile.separator
+			parentCollection = getHomeDirectory() + GeneralFile.separator
 					+ parentCollection;
 		}
 
@@ -1498,7 +1511,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1523,7 +1536,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1679,7 +1692,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1705,7 +1718,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1760,7 +1773,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1790,7 +1803,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -1846,7 +1859,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -2194,7 +2207,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 			throw new NullPointerException("No file given");
 		}
 
-		commands.srbSyncData(file.catalogType, file.getName(),
+		commands.srbSyncData(SRBFile.catalogType, file.getName(),
 				file.getParent(), file.getResource());
 	}
 
@@ -2525,7 +2538,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
-			collectionName = getHomeDirectory() + SRBFile.separator
+			collectionName = getHomeDirectory() + GeneralFile.separator
 					+ collectionName;
 		}
 
@@ -2688,9 +2701,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 		domainName = userInfo.substring(index2 + 1, userInfo.length() - 1);
 
 		SRBAccount dnAccount = new SRBAccount(srbAccount.getHost(), srbAccount
-				.getPort(), userName, null, SRBFile.PATH_SEPARATOR + zone
-				+ SRBFile.PATH_SEPARATOR + SRBFile.LOCAL_HOME_DIRECTORY
-				+ SRBFile.PATH_SEPARATOR + userName + "." + domainName,
+				.getPort(), userName, null, GeneralFile.PATH_SEPARATOR + zone
+				+ GeneralFile.PATH_SEPARATOR + SRBFile.LOCAL_HOME_DIRECTORY
+				+ GeneralFile.PATH_SEPARATOR + userName + "." + domainName,
 				domainName, srbAccount.getDefaultStorageResource());
 
 		return dnAccount;
