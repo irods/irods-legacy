@@ -23,6 +23,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.text.DateFormat;
@@ -494,6 +495,92 @@ public class IRODSFileSystemMetadataQueryTest {
 		Assert.assertNotNull(fileList);
 		Assert.assertEquals(2, fileList.length);
 		irodsFileSystem.close();
+
+	}
+	
+	/**
+	 * Currently ignored as this is a genquery issue...
+	 * Bug 116 - Query with Query multiple user AVU on Collection returns no result  
+	 * @throws Exception
+	 */
+	@Ignore
+	public void testQueryCollectionMetadataTwoValuesEqualCondition() throws Exception {
+		
+		String testCollection = "testQueryCollectionMetadataTwoValuesEqualCondition";
+		
+		// add an irods collection and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		String baseDir = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		String testSubdir1 = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH
+								+ "/" + testCollection);
+
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+
+		// make the dirs in irods
+
+		ImkdirCommand imkdirCommand = new ImkdirCommand();
+		imkdirCommand.setCollectionName(testSubdir1);
+		invoker.invokeCommandAndGetResultAsString(imkdirCommand);
+
+
+		// seed files in each subdir
+
+		String testFilePrefix = "testFile";
+		String testFileSuffix = ".txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+
+		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH
+				+ "/" + testCollection, testFilePrefix, testFileSuffix, 2, 20, 25);
+
+		// put the files by putting the collection
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setForceOverride(true);
+		iputCommand.setIrodsFileName(baseDir);
+		iputCommand.setLocalFileName(absPath + testCollection);
+		iputCommand.setRecursive(true);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// add avu's 
+
+		String avuAttr1 = "testmeta1";
+		String avuVal1 = "180";
+
+		String avuAttr2 = "testmeta2";
+		String avuVal2 = "50";
+		
+		addAVUsToDir(irodsFileSystem, testSubdir1, avuAttr1, avuVal1);
+		addAVUsToDir(irodsFileSystem, testSubdir1, avuAttr2, avuVal2);
+
+		MetaDataCondition[] dataObjectConditions = new MetaDataCondition[2];
+		dataObjectConditions[0] = MetaDataSet.newCondition(avuAttr1,
+		MetaDataCondition.IN, avuVal1);
+		dataObjectConditions[1] = MetaDataSet.newCondition(avuAttr2,
+		MetaDataCondition.EQUAL, avuVal2);
+		String[] selectFieldNames = {
+		   IRODSMetaDataSet.META_COLL_ATTR_NAME,
+		   IRODSMetaDataSet.META_COLL_ATTR_VALUE,
+		   GeneralMetaData.DIRECTORY_NAME,
+		};
+		MetaDataSelect selects[] =
+		MetaDataSet.newSelection( selectFieldNames );
+		MetaDataRecordList[] recordList =
+		irodsFileSystem.query(dataObjectConditions, selects,
+		Namespace.DIRECTORY);
+		irodsFileSystem.close();
+
+		TestCase.assertNotNull("no results returned from metadata query",recordList);
 
 	}
 
