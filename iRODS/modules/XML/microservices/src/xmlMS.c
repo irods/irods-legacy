@@ -615,7 +615,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	xmlFreeDoc(xsd_doc);
 	xmlCleanupParser();
 
-	return (-rei->status);
+	return (rei->status);
 }
 
 
