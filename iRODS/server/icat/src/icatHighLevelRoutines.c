@@ -6013,6 +6013,126 @@ int _modInheritance(int inheritFlag, int recursiveFlag, char *collIdStr, char *p
    return(status);
 }
 
+int chlModAccessControlResc(rsComm_t *rsComm, int recursiveFlag,
+			char* accessLevel, char *userName, char *zone, 
+			char* rescName) {
+   char myAccessStr[LONG_NAME_LEN];
+   char rescIdStr[MAX_NAME_LEN];
+   char *myAccessLev=NULL;
+   int rmFlag=0;
+   rodsLong_t status;
+   char *myZone;
+   rodsLong_t userId;
+   char userIdStr[MAX_NAME_LEN];
+   char myTime[50];
+   rodsLong_t iVal;
+   
+   strncpy(myAccessStr,accessLevel+strlen(MOD_RESC_PREFIX),LONG_NAME_LEN);
+
+   printf("accessLevel: %s\n", accessLevel);
+   printf("rescName: %s\n", rescName);
+
+   if (strcmp(myAccessStr, AP_NULL)==0) {myAccessLev=ACCESS_NULL; rmFlag=1;}
+   else if (strcmp(myAccessStr,AP_READ)==0) {myAccessLev=ACCESS_READ_OBJECT;}
+   else if (strcmp(myAccessStr,AP_WRITE)==0){myAccessLev=ACCESS_MODIFY_OBJECT;}
+   else if (strcmp(myAccessStr,AP_OWN)==0) {myAccessLev=ACCESS_OWN;}
+   else {
+      int i;
+      char errMsg[105];
+      snprintf(errMsg, 100, "access level '%s' is invalid for a resource",
+	       myAccessStr);
+      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      return(CAT_INVALID_ARGUMENT);
+   }
+
+   if (rsComm->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH) {
+      /* admin, so just get the resc_id */
+      if (logSQL) rodsLog(LOG_SQL, "chlModAccessControlResc SQL 1");
+      status = cmlGetIntegerValueFromSql(
+	 "select resc_id from R_RESC_MAIN where resc_name=?",
+	 &iVal, rescName, 0, 0, 0, 0, &icss);
+      if (status==CAT_NO_ROWS_FOUND) return(CAT_UNKNOWN_RESOURCE);
+      if (status<0) return(status);
+      status = iVal;
+   }
+   else {
+      status = cmlCheckResc(rescName,
+			 rsComm->clientUser.userName, 
+			 rsComm->clientUser.rodsZone,
+			 ACCESS_OWN,
+			 &icss);
+      if (status<0) return(status);
+   }
+   snprintf(rescIdStr, MAX_NAME_LEN, "%lld", status);
+
+   /* Check that the receiving user exists and if so get the userId */
+   status = getLocalZone();
+   if (status) return(status);
+
+   myZone=zone;
+   if (zone == NULL || strlen(zone)==0) {
+      myZone=localZone;
+   }
+
+   userId=0;
+   if (logSQL) rodsLog(LOG_SQL, "chlModAccessControlResc SQL 2");
+   status = cmlGetIntegerValueFromSql(
+              "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=?",
+	      &userId, userName, myZone, 0, 0, 0, &icss);
+   if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
+      return(status);
+   }
+
+   snprintf(userIdStr, MAX_NAME_LEN, "%lld", userId);
+
+   /* remove any access permissions */
+   cllBindVars[cllBindVarCount++]=userIdStr;
+   cllBindVars[cllBindVarCount++]=rescIdStr;
+   if (logSQL) rodsLog(LOG_SQL, "chlModAccessControlResc SQL 3");
+   status =  cmlExecuteNoAnswerSql(
+      "delete from R_OBJT_ACCESS where user_id=? and object_id=?",
+      &icss);
+   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      return(status);
+   }
+
+   /* If not just removing, add the new value */
+   if (rmFlag==0) {
+      getNowStr(myTime);
+      cllBindVars[cllBindVarCount++]=rescIdStr;
+      cllBindVars[cllBindVarCount++]=userIdStr;
+      cllBindVars[cllBindVarCount++]=myAccessLev;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=myTime;
+      if (logSQL) rodsLog(LOG_SQL, "chlModAccessControlResc SQL 4");
+      status =  cmlExecuteNoAnswerSql(
+	 "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  values (?, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+	 &icss);
+      if (status) {
+	 _rollback("chlModAccessControlResc");
+	 return(status);
+      }
+   }
+
+   /* Audit */
+   status = cmlAudit5(AU_MOD_ACCESS_CONTROL_RESOURCE,
+		      rescIdStr,
+		      userIdStr,
+		      myAccessLev,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModAccessControlResc cmlAudit5 failure %d",
+	      status);
+      _rollback("chlModAccessControlResc");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   return(status);
+}
+
 /* 
  * chlModAccessControl - Modify the Access Control information
  *         of an existing dataObj or collection.
@@ -6039,6 +6159,11 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    int inheritFlag=0;
 
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl");
+
+   if (strncmp(accessLevel, MOD_RESC_PREFIX, strlen(MOD_RESC_PREFIX))==0) {
+      return(chlModAccessControlResc(rsComm, recursiveFlag,
+			accessLevel, userName, zone, pathName));
+   }
 
    if (strcmp(accessLevel, AP_NULL)==0) {myAccessLev=ACCESS_NULL; rmFlag=1;}
    else if (strcmp(accessLevel,AP_READ)==0) {myAccessLev=ACCESS_READ_OBJECT;}
