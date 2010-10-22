@@ -21,6 +21,10 @@
 #include "initServer.h"
 #include "icatDefines.h"
 
+#define MOD_RESC_PREFIX "resource:"  /* Used to indicate a resource
+				      * instead of requiring a change
+				      * to the protocol */
+
 typedef struct {	
    int recursiveFlag;
    char *accessLevel;

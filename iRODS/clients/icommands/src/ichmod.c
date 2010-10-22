@@ -24,8 +24,9 @@ main(int argc, char **argv) {
     char userName[NAME_LEN];
     char zoneName[NAME_LEN];
     int doingInherit;
+    char rescAccessLevel[LONG_NAME_LEN];
 
-    optStr = "rhvV";
+    optStr = "RrhvV";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status) {
@@ -86,6 +87,7 @@ main(int argc, char **argv) {
 
     modAccessControl.recursiveFlag = myRodsArgs.recursive;
     modAccessControl.accessLevel = argv[myRodsArgs.optind];
+
     if (doingInherit) {
        modAccessControl.userName = "";
        modAccessControl.zone = "";
@@ -105,6 +107,13 @@ main(int argc, char **argv) {
 	  printf("path %s\n",rodsPathInp.srcPath[i].outPath);
        }
        modAccessControl.path = rodsPathInp.srcPath[i].outPath;
+
+       if (myRodsArgs.resource) {
+	  strncpy(rescAccessLevel, MOD_RESC_PREFIX, LONG_NAME_LEN);
+	  strncat(rescAccessLevel, argv[myRodsArgs.optind], LONG_NAME_LEN);
+	  modAccessControl.accessLevel = rescAccessLevel; /* indicate resource*/
+	  modAccessControl.path = argv[optind]; /* just use the plain name */
+       }
        status = rcModAccessControl(conn, &modAccessControl);
        if (status < 0) {
 	  rodsLogError(LOG_ERROR, status, "rcModAccessControl failure %s",
@@ -139,13 +148,16 @@ usage () {
 "Usage: ichmod [-rhvV] null|read|write|own userOrGroup dataObj|Collection ...",
 " or    ichmod [-rhvV] inherit Collection ...",
 " or    ichmod [-rhvV] noinherit Collection ...",
+" or    ichmod [-R] null|read|write|own userOrGroup DBResource",
 " -r  recursive - set the access level for all dataObjects",
 "             in the entered collection and subCollections under it",
 " -v  verbose",
 " -V  Very verbose",
+" -R  Resource (Database Resource)",
 " -h  this help",
 " ",
-"Modify access to dataObjects (iRODS files) and collections (directories).",
+"Modify access to dataObjects (iRODS files), collections (directories),",
+"and Database Resources.",
 " ",
 "When you store a file, you are the owner and have full control - you can",
 "read, write or delete it and, by default, no one else can.",
@@ -171,6 +183,11 @@ usage () {
 "new dataObjects and collections added to the collection inherit the",
 "access permisions (ACLs) of the collection.  'ils -A' displays ACLs",
 "and the inheritance status.",
+" ",
+"To execute a Database Object (DBO) on a Database Resource (DBR), users",
+"need to have access permissions ('read', 'write', or better).  The admin",
+"or owner can use ichmod to set these.  See 'ilsresc' for listing these.",
+"See the Database Resources page on the irods web site for more information.",
 ""};
    int i;
    for (i=0;;i++) {

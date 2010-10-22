@@ -233,6 +233,12 @@ primary ordering column.
 #define COL_COLL_ACCESS_USER_ID 713
 #define COL_COLL_ACCESS_COLL_ID 714
 
+#define COL_RESC_ACCESS_TYPE 720
+#define COL_RESC_ACCESS_NAME 721
+#define COL_RESC_TOKEN_NAMESPACE 722
+#define COL_RESC_ACCESS_USER_ID 723
+#define COL_RESC_ACCESS_RESC_ID 724
+
 /* R_RESC_GROUP */
 #define COL_RESC_GROUP_RESC_ID 800
 #define COL_RESC_GROUP_NAME 801
@@ -284,6 +290,10 @@ primary ordering column.
 /* R_DATA_USER_MAIN (r_user_main for Data information specifically) */
 #define COL_DATA_USER_NAME    1310
 #define COL_DATA_USER_ZONE    1311
+
+/* R_DATA_USER_MAIN (r_user_main for Data information specifically) */
+#define COL_RESC_USER_NAME    1320
+#define COL_RESC_USER_ZONE    1321
 
 /* R_SERVER_LOAD */
 #define COL_SL_HOST_NAME      1400

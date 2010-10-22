@@ -469,6 +469,7 @@ runCmd(2, "iinit 1234");
 $ENV{'irodsUserName'}=$U2; 
 runCmd(0, "iinit 1234");
 runCmd(2, "iadmin atg g1 user3"); # test SQL (just needs to be groupadmin to)
+runCmd(2, "ichmod -R write $U1 $Resc"); # test SQL (the non-admin)
 runCmd(0, "iexit full");
 runCmd(0, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};
@@ -620,6 +621,12 @@ runCmd(0, "irm $D1/$F1");
 runCmd(0, "ichmod own $U1 $D1");
 runCmd(0, "irm -rf $D1");
 runCmd(0, "irmtrash");
+
+#
+# ichmod for DB Resource
+#
+runCmd(0, "ichmod -R write $U2 $Resc");
+runCmd(0, "ichmod -R null $U2 $Resc");
 
 #
 # chmod, test a case that use to fail as the dir% directory

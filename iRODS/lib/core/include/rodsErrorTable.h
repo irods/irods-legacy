@@ -305,6 +305,7 @@
 #define CAT_PASSWORD_EXPIRED             -840000
 #define CAT_PASSWORD_ENCODING_ERROR      -850000
 #define CAT_TABLE_ACCESS_DENIED          -851000
+#define CAT_UNKNOWN_RESOURCE             -852000
 
 /* 880,000 to 899,000  RDA errors  */
 #define RDA_NOT_COMPILED_IN             -880000

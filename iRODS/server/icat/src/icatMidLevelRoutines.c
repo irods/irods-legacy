@@ -660,6 +660,41 @@ int cmlTest( icatSessionStruct *icss) {
 
 }
 
+/*
+  Check that a resource exists and user has 'accessLevel' permission.
+  Return code is either an iRODS error code (< 0) or the collectionId.
+*/ 
+rodsLong_t
+cmlCheckResc( char *rescName, char *userName, char *userZone, char *accessLevel,
+		 icatSessionStruct *icss)
+{
+   int status;
+   rodsLong_t iVal;
+
+   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckResc SQL 1 ");
+
+   status = cmlGetIntegerValueFromSql(
+  	        "select resc_id from R_RESC_MAIN RM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where RM.resc_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = RM.resc_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+	      &iVal, rescName, userName, userZone, accessLevel, 0, icss);
+   if (status) { 
+      /* There was an error, so do another sql to see which 
+         of the two likely cases is problem. */
+
+      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckResc SQL 2 ");
+
+      status = cmlGetIntegerValueFromSql(
+		 "select resc_id from R_RESC_MAIN where resc_name=?",
+		 &iVal, rescName, 0, 0, 0, 0, icss);
+      if (status) {
+	 return(CAT_UNKNOWN_RESOURCE);
+      }
+      return (CAT_NO_ACCESS_PERMISSION);
+   }
+
+   return(iVal);
+
+}
+
 
 /*
   Check that a collection exists and user has 'accessLevel' permission.

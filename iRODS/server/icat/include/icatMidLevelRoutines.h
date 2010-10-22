@@ -162,6 +162,9 @@ int cmlGetNextSeqStr(char *seqStr, int maxSeqStrLen, icatSessionStruct *icss);
 rodsLong_t cmlCheckDir( char *dirName, char *userName, char *userZone, 
 			char *accessLevel, icatSessionStruct *icss);
 
+rodsLong_t cmlCheckResc( char *rescName, char *userName, char *userZone, 
+			char *accessLevel, icatSessionStruct *icss);
+
 rodsLong_t cmlCheckDirAndGetInheritFlag( char *dirName, char *userName,
 			char *userZone, char *accessLevel, 
 			int *inheritFlag, icatSessionStruct *icss);

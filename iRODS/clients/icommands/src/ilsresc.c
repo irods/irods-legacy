@@ -60,6 +60,38 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
    return(printCount);
 }
 
+/* 
+ print the results of a general query, formatted for the Resc ACLs
+ */
+int
+printGenQueryResultsRescACLs(rcComm_t *Conn, int status, 
+			     genQueryOut_t *genQueryOut)
+{
+   int printCount;
+   int i, j;
+   char interChars[]="#:   ";
+   printCount=0;
+   if (status!=0) {
+      printError(Conn, status, "rcGenQuery");
+   }
+   else {
+      if (status !=CAT_NO_ROWS_FOUND) {
+	 for (i=0;i<genQueryOut->rowCnt;i++) {
+	    printf("      ");
+	    for (j=0;j<genQueryOut->attriCnt;j++) {
+	       char *tResult;
+	       tResult = genQueryOut->sqlResult[j].value;
+	       tResult += i*genQueryOut->sqlResult[j].len;
+	       printf("%s%c",tResult,interChars[j]);
+	       printCount++;
+	    }
+	    printf("\n");
+	 }
+      }
+   }
+   return(printCount);
+}
+
 /*
 Via a general query, show a resource
 */
@@ -235,9 +267,90 @@ showOneRescGroup(char *rescGroupName, int longOption)
    }
 
    return (1);
-
-
 }
+
+/*
+Via a general query, show a resource Access Control List
+*/
+int
+showRescAcl(char *name) 
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[20];
+   int i1b[20]={0,0,0,0,0,0,0,0,0,0,0,0};
+   int i2a[20];
+   char *condVal[10];
+   char v1[BIG_STR];
+   int i, status;
+   int printCount;
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   printCount=0;
+
+
+   i=0;
+   i1a[i++]=COL_RESC_USER_NAME;
+   i1a[i++]=COL_RESC_USER_ZONE;
+   i1a[i++]=COL_RESC_ACCESS_NAME;
+   
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = i;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   if (name !=NULL && *name != '\0') {
+      i2a[0]=COL_R_RESC_NAME;
+      sprintf(v1,"='%s'",name);
+      condVal[0]=v1;
+      genQueryInp.sqlCondInp.len=1;
+   }
+   else {
+      genQueryInp.sqlCondInp.len=0;
+   }
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
+   genQueryInp.maxRows=50;
+   genQueryInp.continueInx=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_R_RESC_INFO;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("None\n");
+	 return(0);
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 if (name!=NULL && name[0]!='\0') {
+	    printf("Resource %s does not exist.\n", name);
+	 }
+	 else {
+	    printf("Resource does not exist.\n");
+	 }
+	 return(0);
+      }
+   }
+   printf("Resource access permissions apply only to Database Resources\n");
+   printf("(external databases).  See the Database Resources page on the\n");
+   printf("irods web site for more information.\n");
+
+   printf("   %s\n",name);
+
+   printCount+= printGenQueryResultsRescACLs(Conn, status, genQueryOut);
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      printCount+= printGenQueryResultsRescACLs(Conn, status, genQueryOut);
+   }
+
+   return (1);
+}
+
 
 /*
   Show the resource groups, if any
@@ -330,7 +443,7 @@ main(int argc, char **argv) {
 
    rodsLogLevel(LOG_ERROR);
 
-   status = parseCmdLineOpt (argc, argv, "hvVlz:", 0, &myRodsArgs);
+   status = parseCmdLineOpt (argc, argv, "AhvVlz:", 0, &myRodsArgs);
    if (status) {
       printf("Use -h for help.\n");
       exit(1);
@@ -377,14 +490,19 @@ main(int argc, char **argv) {
       status2 = showRescGroups(myRodsArgs.longOption);
    }
    else {
-      status = showOneRescGroup(argv[myRodsArgs.optind], 
-				myRodsArgs.longOption);
-      if (status==0) {
-	 status2 = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
-	 if (status2==0) {
-	    /* Only print this if both fail */
-	    printf("Resource-group %s does not exist.\n",
-		   argv[myRodsArgs.optind]); 
+      if (myRodsArgs.accessControl == True) {
+	 showRescAcl(argv[myRodsArgs.optind]);
+      }
+      else {
+	 status = showOneRescGroup(argv[myRodsArgs.optind], 
+				   myRodsArgs.longOption);
+	 if (status==0) {
+	    status2 = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
+	    if (status2==0) {
+	       /* Only print this if both fail */
+	       printf("Resource-group %s does not exist.\n",
+		      argv[myRodsArgs.optind]); 
+	    }
 	 }
       }
    }
@@ -404,7 +522,7 @@ void usage()
 {
    char *msgs[]={
 "ilsresc lists iRODS resources and resource-groups",
-"Usage: ilsresc [-lvVh] [Name]", 
+"Usage: ilsresc [-lvVhA] [Name]", 
 "If Name is present, list only that resource or resource-group,",
 "otherwise list them all ",
 "Options are:", 
@@ -412,6 +530,7 @@ void usage()
 " -v verbose",
 " -V Very verbose",
 " -z Zonename  list resources of specified Zone",
+" -A Rescname  list the access permisssions (applies to Database Resources only)",
 " -h This help",
 ""};
    int i;

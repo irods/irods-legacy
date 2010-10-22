@@ -107,6 +107,7 @@
 #define AU_MOD_ACCESS_CONTROL_OBJ              2120
 #define AU_MOD_ACCESS_CONTROL_COLL             2121
 #define AU_MOD_ACCESS_CONTROL_COLL_RECURSIVE   2122
+#define AU_MOD_ACCESS_CONTROL_RESOURCE         2123
 
 #define AU_RENAME_DATA_OBJ                     2130
 #define AU_RENAME_COLLECTION                   2131

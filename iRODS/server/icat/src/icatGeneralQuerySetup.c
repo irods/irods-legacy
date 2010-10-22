@@ -135,7 +135,7 @@ icatGeneralQuerySetup() {
   sTable( "r_coll_meta_main", "R_META_MAIN r_coll_meta_main", 0);
   sTable( "r_data_meta_main", "R_META_MAIN r_data_meta_main", 0);
   sTable( "r_rule_meta_main", "R_META_MAIN r_rule_meta_main", 0);
-  sTable( "r_useR_META_MAIN", "R_META_MAIN r_useR_META_MAIN", 0);
+  sTable( "r_user_meta_main", "R_META_MAIN r_user_meta_main", 0);
   sTable( "r_met2_meta_main", "R_META_MAIN r_met2_meta_main", 0);
 
   sTable( "R_USER_GROUP",  "R_USER_GROUP", 0);
@@ -240,6 +240,12 @@ icatGeneralQuerySetup() {
   sColumn( COL_COLL_ACCESS_USER_ID, "r_coll_access", "user_id");
   sColumn( COL_COLL_ACCESS_COLL_ID, "r_coll_access", "object_id");
 
+  sColumn( COL_RESC_ACCESS_TYPE, "r_resc_access", "access_type_id");
+  sColumn( COL_RESC_ACCESS_NAME, "r_resc_tokn_accs", "token_name");
+  sColumn( COL_RESC_TOKEN_NAMESPACE, "r_resc_tokn_accs", "token_namespace");
+  sColumn( COL_RESC_ACCESS_USER_ID, "r_resc_access", "user_id");
+  sColumn( COL_RESC_ACCESS_RESC_ID, "r_resc_access", "object_id");
+
   sColumn( COL_COLL_ID, "R_COLL_MAIN", "coll_id");
   sColumn( COL_COLL_NAME, "R_COLL_MAIN", "coll_name");
   sColumn( COL_COLL_PARENT_NAME, "R_COLL_MAIN", "parent_coll_name");
@@ -270,7 +276,7 @@ icatGeneralQuerySetup() {
   sColumn( COL_META_NAMESPACE_DATA, "r_data_meta_main", "meta_namespace");
   sColumn( COL_META_NAMESPACE_RESC, "r_resc_meta_main", "meta_namespace");
   sColumn( COL_META_NAMESPACE_RESC_GROUP, "r_resc_grp_meta_main", "meta_namespace");
-  sColumn( COL_META_NAMESPACE_USER, "r_useR_META_MAIN", "meta_namespace");
+  sColumn( COL_META_NAMESPACE_USER, "r_user_meta_main", "meta_namespace");
 
   sColumn( COL_META_RESC_ATTR_NAME, "r_resc_meta_main", "meta_attr_name");
   sColumn( COL_META_RESC_ATTR_VALUE, "r_resc_meta_main", "meta_attr_value");
@@ -282,10 +288,10 @@ icatGeneralQuerySetup() {
   sColumn( COL_META_RESC_GROUP_ATTR_UNITS, "r_resc_grp_meta_main", "meta_attr_unit");
   sColumn( COL_META_RESC_GROUP_ATTR_ID,   "r_resc_grp_meta_main", "meta_id");
  
-  sColumn( COL_META_USER_ATTR_NAME, "r_useR_META_MAIN", "meta_attr_name");
-  sColumn( COL_META_USER_ATTR_VALUE, "r_useR_META_MAIN", "meta_attr_value");
-  sColumn( COL_META_USER_ATTR_UNITS, "r_useR_META_MAIN", "meta_attr_unit");
-  sColumn( COL_META_USER_ATTR_ID,   "r_useR_META_MAIN", "meta_id");
+  sColumn( COL_META_USER_ATTR_NAME, "r_user_meta_main", "meta_attr_name");
+  sColumn( COL_META_USER_ATTR_VALUE, "r_user_meta_main", "meta_attr_value");
+  sColumn( COL_META_USER_ATTR_UNITS, "r_user_meta_main", "meta_attr_unit");
+  sColumn( COL_META_USER_ATTR_ID,   "r_user_meta_main", "meta_id");
 
   sColumn( COL_RESC_GROUP_RESC_ID, "R_RESC_GROUP", "resc_id");
   sColumn( COL_RESC_GROUP_NAME, "R_RESC_GROUP", "resc_group_name");
@@ -327,6 +333,9 @@ icatGeneralQuerySetup() {
 
   sColumn(COL_DATA_USER_NAME, "r_data_user_main", "user_name");
   sColumn(COL_DATA_USER_ZONE, "r_data_user_main", "zone_name");
+
+  sColumn(COL_RESC_USER_NAME, "r_resc_user_main", "user_name");
+  sColumn(COL_RESC_USER_ZONE, "r_resc_user_main", "zone_name");
 
   sColumn(COL_SL_HOST_NAME, "R_SERVER_LOAD", "host_name");
   sColumn(COL_SL_RESC_NAME, "R_SERVER_LOAD", "resc_name");
@@ -427,7 +436,7 @@ icatGeneralQuerySetup() {
   sFklink("R_RULE_MAIN", "r_rule_metamap", "R_RULE_MAIN.rule_id = r_rule_metamap.object_id");
   sFklink("R_USER_MAIN", "r_user_metamap", "R_USER_MAIN.user_id = r_user_metamap.object_id");
   sFklink("r_met2_main", "r_met2_metamap", "r_met2_main.meta_id = r_met2_metamap.object_id");
-  sFklink("R_RESC_MAIN", "r_resc_access", "R_RESC_MAIN.resc_id = r_resc_access..object_id");
+  sFklink("R_RESC_MAIN", "r_resc_access", "R_RESC_MAIN.resc_id = r_resc_access.object_id");
   sFklink("R_COLL_MAIN", "r_coll_access", "R_COLL_MAIN.coll_id = r_coll_access.object_id");
   sFklink("R_DATA_MAIN", "r_data_access", "R_DATA_MAIN.data_id = r_data_access.object_id");
   sFklink("R_RULE_MAIN", "r_rule_access", "R_RULE_MAIN.rule_id = r_rule_access.object_id");
@@ -447,9 +456,9 @@ icatGeneralQuerySetup() {
   sFklink("r_coll_metamap", "r_coll_meta_main",  "r_coll_metamap.meta_id = r_coll_meta_main.meta_id");
   sFklink("r_data_metamap", "r_data_meta_main",  "r_data_metamap.meta_id = r_data_meta_main.meta_id");
   sFklink("r_rule_metamap", "r_rule_meta_main",  "r_rule_metamap.meta_id = r_rule_meta_main.meta_id");
-  sFklink("r_user_metamap", "r_useR_META_MAIN",  "r_user_metamap.meta_id = r_useR_META_MAIN.meta_id");
+  sFklink("r_user_metamap", "r_user_meta_main",  "r_user_metamap.meta_id = r_user_meta_main.meta_id");
   sFklink("r_met2_metamap", "r_met2_meta_main",  "r_met2_metamap.object_id = r_met2_meta_main.meta_id");
-  sFklink("r_resc_access", "r_resc_tokn_accs",  "r_resc_access.access_typ_id = r_resc_tokn_accs.token_id");
+  sFklink("r_resc_access", "r_resc_tokn_accs",  "r_resc_access.access_type_id = r_resc_tokn_accs.token_id");
   sFklink("r_resc_access", "r_resc_user_group", "r_resc_access.user_id = r_resc_user_group.group_user_id");
   sFklink("r_coll_access", "r_coll_tokn_accs",  "r_coll_access.access_type_id = r_coll_tokn_accs.token_id");
   sFklink("r_coll_access", "r_coll_user_group", "r_coll_access.user_id = r_coll_user_group.group_user_id");
