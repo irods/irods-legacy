@@ -666,17 +666,21 @@ int queryDataObj(char *cmdToken[]) {
 /*
 Do a query on AVUs for collections and show the results
  */
-int queryCollection(char *attribute, char *op, char *value) {
+int queryCollection(char *cmdToken[]) {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
-   int i1a[10];
-   int i1b[10];
-   int i2a[10];
-   char *condVal[10];
+   int i1a[20];
+   int i1b[20];
+   int i2a[20];
+   char *condVal[20];
    char v1[BIG_STR];
    char v2[BIG_STR];
+   char v3[BIG_STR];
    int status;
    char *columnNames[]={"collection"};
+   int cmdIx;
+   int condIx;
+   char vstr[20] [BIG_STR];
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
@@ -688,16 +692,38 @@ int queryCollection(char *attribute, char *op, char *value) {
    genQueryInp.selectInp.len = 1;
 
    i2a[0]=COL_META_COLL_ATTR_NAME;
-   sprintf(v1,"='%s'",attribute);
+   sprintf(v1,"='%s'", cmdToken[2]);
    condVal[0]=v1;
 
    i2a[1]=COL_META_COLL_ATTR_VALUE;
-   sprintf(v2, "%s '%s'", op, value);
+   sprintf(v2, "%s '%s'", cmdToken[3], cmdToken[4]);
    condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
    genQueryInp.sqlCondInp.len=2;
+
+   if (strcmp(cmdToken[5], "or")==0) {
+      sprintf(v3, "|| %s '%s'", cmdToken[6], cmdToken[7]);
+      rstrcat(v2, v3, BIG_STR);
+   }
+
+   cmdIx = 5;
+   condIx = 2;
+   while (strcmp(cmdToken[cmdIx], "and")==0) {
+      i2a[condIx]=COL_META_COLL_ATTR_NAME;
+      cmdIx++;
+      sprintf(vstr[condIx],"='%s'", cmdToken[cmdIx]);
+      condVal[condIx]=vstr[condIx];
+      condIx++;
+
+      i2a[condIx]=COL_META_COLL_ATTR_VALUE;
+      sprintf(vstr[condIx], "%s '%s'", cmdToken[cmdIx+1], cmdToken[cmdIx+2]);
+      cmdIx+=3;
+      condVal[condIx]=vstr[condIx];
+      condIx++;
+      genQueryInp.sqlCondInp.len+=2;
+   }
 
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
@@ -721,6 +747,7 @@ int queryCollection(char *attribute, char *op, char *value) {
 
    return (0);
 }
+
 
 /*
 Do a query on AVUs for resources and show the results
@@ -1285,7 +1312,7 @@ doCommand(char *cmdToken[]) {
 	 return(0);
       }
       if (strcmp(cmdToken[1],"-C")==0 || strcmp(cmdToken[1],"-c")==0) {
-	 queryCollection(cmdToken[2], cmdToken[3], cmdToken[4]);
+	 queryCollection(cmdToken);
 	 return(0);
       }
       if (strcmp(cmdToken[1],"-R")==0 || strcmp(cmdToken[1],"-r")==0) {
@@ -1716,8 +1743,8 @@ usage(char *subOpt)
 "Query across AVUs for the specified type of item",
 "Example: qu -d distance '<=' 12",
 " ",
-"When querying dataObjects (-d) additional conditions (AttName Op AttVal)",
-"may be given separated by 'and', for example:",
+"When querying dataObjects (-d) or collections (-C) additional conditions",
+"(AttName Op AttVal) may be given separated by 'and', for example:",
 " qu -d a = b and c '<' 10",
 "Or a single 'or' can be given for the same AttName, for example",
 " qu -d r '<' 5 or '>' 7",

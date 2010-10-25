@@ -701,6 +701,79 @@ handleMultiDataAVUConditions(int nConditions) {
 }
 
 /*
+ When there are multiple AVU conditions on Collections, need to adjust the SQL.
+ */
+void 
+handleMultiCollAVUConditions(int nConditions) {
+   int i;
+   char *firstItem, *nextItem;
+   char nextStr[20];
+
+   /* In the whereSQL, change r_coll_meta_main.meta_attr_name to
+      r_coll_meta_mnNN.meta_attr_name, where NN is index.  First one
+      is OK, subsequent ones need a new name for each. */
+   firstItem = strstr(whereSQL, "r_coll_meta_main.meta_attr_name");
+   if (firstItem != NULL) {
+      *firstItem = 'x'; /* temporarily change 1st string */
+   }
+   for (i=2;i<=nConditions;i++) {
+      nextItem = strstr(whereSQL, "r_coll_meta_main.meta_attr_name");
+      if (nextItem != NULL) {
+	 snprintf(nextStr, sizeof nextStr, "n%2.2d", i);
+	 *(nextItem+13)=nextStr[0];  /* replace "ain" in main */
+	 *(nextItem+14)=nextStr[1];  /* with nNN */
+	 *(nextItem+15)=nextStr[2];
+      }
+   }
+   if (firstItem != NULL) {
+      *firstItem = 'r'; /* put it back */
+   }
+
+   /* Do similar for r_coll_meta_main.meta_attr_value.  */
+   firstItem = strstr(whereSQL, "r_coll_meta_main.meta_attr_value");
+   if (firstItem != NULL) {
+      *firstItem = 'x'; /* temporarily change 1st string */
+   }
+   for (i=2;i<=nConditions;i++) {
+      nextItem = strstr(whereSQL, "r_coll_meta_main.meta_attr_value");
+      if (nextItem != NULL) {
+	 snprintf(nextStr, sizeof nextStr, "n%2.2d", i);
+	 *(nextItem+13)=nextStr[0];  /* replace "ain" in main */
+	 *(nextItem+14)=nextStr[1];  /* with nNN */
+	 *(nextItem+15)=nextStr[2];
+      }
+   }
+   if (firstItem != NULL) {
+      *firstItem = 'r'; /* put it back */
+   }
+
+ 
+   /* In the fromSQL, add items for r_coll_metamapNN and
+      r_coll_meta_mnNN */
+   for (i=2;i<=nConditions;i++) {
+      char newStr[100];
+      snprintf(newStr, sizeof newStr,
+       ", R_OBJT_METAMAP r_coll_metamap%d, R_META_MAIN r_coll_meta_mn%2.2d ", 
+	       i, i);
+      rstrcat(fromSQL, newStr, MAX_SQL_SIZE);
+   }
+
+   /* In the whereSQL, add items for 
+      r_coll_metamapNN.meta_id = r_coll_meta_maNN.meta_id  and
+      R_COLL_MAIN.coll_id = r_coll_metamap2.object_id
+   */
+   for (i=2;i<=nConditions;i++) {
+      char newStr[100];
+      snprintf(newStr, sizeof newStr,
+       " AND r_coll_metamap%d.meta_id = r_coll_meta_mn%2.2d.meta_id", i, i);
+      rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
+      snprintf(newStr, sizeof newStr,
+	       " AND R_COLL_MAIN.coll_id = r_coll_metamap%d.object_id ", i);
+      rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
+   }
+}
+
+/*
  Check if this is a compound condition, that is if there is a && or ||
  outside of single quotes.  Previously the corresponding test was just
  to see if && or || existed in the string, but if the name
@@ -1235,6 +1308,9 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    int useGroupBy;
    int N_col_meta_data_attr_name=0;
    int N_col_meta_coll_attr_name=0;
+   int N_col_meta_user_attr_name=0;
+   int N_col_meta_resc_attr_name=0;
+   int N_col_meta_resc_group_attr_name=0;
 
    char combinedSQL[MAX_SQL_SIZE];
 #if ORA_ICAT
@@ -1305,6 +1381,15 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
       if (genQueryInp.sqlCondInp.inx[i]==COL_META_COLL_ATTR_NAME) {
 	 N_col_meta_coll_attr_name++;
       }
+      if (genQueryInp.sqlCondInp.inx[i]==COL_META_USER_ATTR_NAME) {
+	 N_col_meta_user_attr_name++;
+      }
+      if (genQueryInp.sqlCondInp.inx[i]==COL_META_RESC_ATTR_NAME) {
+	 N_col_meta_resc_attr_name++;
+      }
+      if (genQueryInp.sqlCondInp.inx[i]==COL_META_RESC_GROUP_ATTR_NAME) {
+	 N_col_meta_resc_group_attr_name++;
+      }
 /*
   Using an input condition, determine if the associated column is being
   requested to be cast as an int.  That is, if the input is n< n> or n=.
@@ -1358,12 +1443,25 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    }
 
    if (N_col_meta_data_attr_name > 1) {
-      /* Need to do some special changes and additions for multi AVU query */
+      /* Make some special changes & additions for multi AVU query - data */
       handleMultiDataAVUConditions(N_col_meta_data_attr_name);
    }
 
    if (N_col_meta_coll_attr_name > 1) {
-      /* Multi AVU queries for collections not currently implemented */
+      /* Make some special changes & additions for multi AVU query - collections */
+      handleMultiCollAVUConditions(N_col_meta_coll_attr_name);
+   }
+
+   if (N_col_meta_user_attr_name > 1) {
+      /* Not currently handled, return error */
+      return(CAT_INVALID_ARGUMENT);
+   }
+   if (N_col_meta_resc_attr_name > 1) {
+      /* Not currently handled, return error */
+      return(CAT_INVALID_ARGUMENT);
+   }
+   if (N_col_meta_resc_group_attr_name > 1) {
+      /* Not currently handled, return error */
       return(CAT_INVALID_ARGUMENT);
    }
 
