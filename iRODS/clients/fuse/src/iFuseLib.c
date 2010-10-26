@@ -631,7 +631,7 @@ off_t offset)
 	      &dataObjWriteInp, &dataObjWriteInpBBuf);
 	    unuseIFuseConn (IFuseDesc[descInx].iFuseConn);
             if (status < 0) {
-                if ((myError = getUnixErrno (status)) > 0) {
+                if ((myError = getErrno (status)) > 0) {
                     return (-myError);
                 } else {
                     return -ENOENT;
@@ -724,7 +724,7 @@ off_t offset)
                 rodsLog (LOG_ERROR,
                   "ifuseWrite: rcDataObjWrite of %s error, status=%d",
                  path, status1);
-                if ((myError = getUnixErrno (status1)) > 0) {
+                if ((myError = getErrno (status1)) > 0) {
                     status1 = (-myError);
                 } else {
                     status1 = -ENOENT;
@@ -744,7 +744,7 @@ off_t offset)
                 rodsLog (LOG_ERROR,
                   "ifuseWrite: ifuseLseek of %s error, status=%d",
                  path, status1);
-                if ((myError = getUnixErrno (status1)) > 0) {
+                if ((myError = getErrno (status1)) > 0) {
                     return (-myError);
                 } else {
                     return -ENOENT;
@@ -781,7 +781,7 @@ off_t offset)
 	      &dataObjReadInp, &dataObjReadOutBBuf);
 	    unuseIFuseConn (IFuseDesc[descInx].iFuseConn);
             if (status < 0) {
-                if ((myError = getUnixErrno (status)) > 0) {
+                if ((myError = getErrno (status)) > 0) {
                     return (-myError);
                 } else {
                     return -ENOENT;

@@ -785,7 +785,7 @@ struct fuse_file_info *fi)
     lockDesc (descInx);
     if ((status = ifuseLseek ((char *) path, descInx, offset)) < 0) {
         unlockDesc (descInx);
-        if ((myError = getUnixErrno (status)) > 0) {
+        if ((myError = getErrno (status)) > 0) {
             return (-myError);
         } else {
             return -ENOENT;
@@ -822,7 +822,7 @@ struct fuse_file_info *fi)
     lockDesc (descInx);
     if ((status = ifuseLseek ((char *) path, descInx, offset)) < 0) {
         unlockDesc (descInx);
-        if ((myError = getUnixErrno (status)) > 0) {
+        if ((myError = getErrno (status)) > 0) {
             return (-myError);
         } else {
             return -ENOENT;
@@ -884,7 +884,7 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
     freeIFuseDesc (descInx);
 
     if (status < 0) {
-        if ((myError = getUnixErrno (status)) > 0) {
+        if ((myError = getErrno (status)) > 0) {
             return (-myError);
         } else {
             return -ENOENT;
