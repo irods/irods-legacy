@@ -1,5 +1,6 @@
 package edu.sdsc.grid.io.irods;
 
+import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
@@ -271,27 +272,32 @@ public class IRODSResourceQueryTest {
 	}
 
 	/**
-	 *  Bug 82 -  error querying resources in resource group
+	 * Bug 82 - error querying resources in resource group
+	 * 
 	 * @throws Exception
 	 */
 	@Test
-	public final void testAddAndQueryResourcesInResourceGroup() throws Exception {
+	public final void testAddAndQueryResourcesInResourceGroup()
+			throws Exception {
 		String testResourceGroup = "testResourceGroup";
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
+				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-		String rescName = testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY);
+		String rescName = testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY);
 		Resource resource = new Resource(irodsFileSystem);
 		resource.removeResourceFromResourceGroup(rescName, testResourceGroup);
-				
+
 		// add a resource to the resource group
 		resource.addResourceToResourceGroup(rescName, testResourceGroup);
-	
-		List<String> resources = resource.listResourcesInResourceGroup(testResourceGroup);
+
+		List<String> resources = resource
+				.listResourcesInResourceGroup(testResourceGroup);
 		irodsFileSystem.close();
-		
-		Assert.assertTrue("did not get any resources from query", resources.size() > 0);
-		
+
+		Assert.assertTrue("did not get any resources from query", resources
+				.size() > 0);
+
 		boolean found = false;
 		for (String resc : resources) {
 			if (resc.equals(rescName)) {
@@ -300,7 +306,8 @@ public class IRODSResourceQueryTest {
 			}
 		}
 
-		Assert.assertTrue("did not find resc I added to the resource group", found);
+		Assert.assertTrue("did not find resc I added to the resource group",
+				found);
 
 	}
 
@@ -317,8 +324,8 @@ public class IRODSResourceQueryTest {
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-		if (irodsFileSystem.commands.getIrodsServerProperties().getRelVersion().compareTo(
-				"rods2.3") <= 0) {
+		if (irodsFileSystem.commands.getIrodsServerProperties().getRelVersion()
+				.compareTo("rods2.3") <= 0) {
 			return;
 		}
 
@@ -341,6 +348,47 @@ public class IRODSResourceQueryTest {
 				select, 100, Namespace.RESOURCE, false);
 		irodsFileSystem.close();
 		Assert.assertNotNull("query result were null", fileList);
+
+	}
+
+	/*
+	 * per [iROD-Chat:5031] question on MetaDataCondition
+	 */
+	@Test
+	public final void testQueryResourceFreeSpace() throws Exception {
+
+		int minFreeSpace = 0;
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		// don't do test for versions prior to 2.4
+
+		if (irodsFileSystem.commands.getIrodsServerProperties().getRelVersion()
+				.compareTo("rods2.4") <= 0) {
+			return;
+		}
+
+		String[] fileds = { ResourceMetaData.RESOURCE_GROUP,
+				ResourceMetaData.RESOURCE_FREE_SPACE,
+				ResourceMetaData.RESOURCE_STATUS };
+
+		MetaDataCondition[] condition = {
+
+				MetaDataSet.newCondition(ResourceMetaData.RESOURCE_FREE_SPACE,
+						MetaDataCondition.NUM_GREATER_OR_EQUAL, minFreeSpace),
+
+				MetaDataSet.newCondition(ResourceMetaData.RESOURCE_STATUS,
+						MetaDataCondition.NOT_EQUAL, Resource.RESC_DOWN) 
+						};
+
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
+		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(condition,
+				select, 100, Namespace.RESOURCE, false);
+		irodsFileSystem.close();
+		TestCase.assertTrue(true); // no sql errors = a pass
+		//Assert.assertNotNull("query result were null", fileList);
 
 	}
 

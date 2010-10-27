@@ -64,6 +64,11 @@ public class Resource extends Domain {
 	private Logger log = LoggerFactory.getLogger(Resource.class);
 
 	static final String iName = "resource";
+	
+	public static final String RESC_DOWN  =  "down";
+	public static final String RESC_UP = "up";
+	public static final String RESC_AUTO_UP =  "auto-up";
+	public static final String RESC_AUTO_DOWN =  "auto-down";
 
 	private static final Object COMMA = ", ";
 

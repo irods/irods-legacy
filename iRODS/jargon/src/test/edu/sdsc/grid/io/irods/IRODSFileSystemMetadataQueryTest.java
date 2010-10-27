@@ -19,6 +19,7 @@ import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaCommand.MetaObjectType;
 
+import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -166,15 +167,14 @@ public class IRODSFileSystemMetadataQueryTest {
 
 		String keyword = "testQueryFileName1%";
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = MetaDataSet.newCondition(
-				StandardMetaData.FILE_NAME, MetaDataCondition.LIKE, keyword);
+		condition[0] = MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
+				MetaDataCondition.LIKE, keyword);
 		String[] fileds = { StandardMetaData.FILE_NAME,
 				StandardMetaData.DIRECTORY_NAME, GeneralMetaData.SIZE };
 		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
 				select, 100);
-		Assert.assertTrue(
-				"did not return query result for file I just added",
+		Assert.assertTrue("did not return query result for file I just added",
 				fileList != null);
 
 		irodsFileSystem.close();
@@ -474,13 +474,13 @@ public class IRODSFileSystemMetadataQueryTest {
 
 		String avuAttr2 = "T";
 		String avuVal2 = "10000";
-		
+
 		addAVUsToDir(irodsFileSystem, testSubdir1a, avuAttr1, avuVal1);
 		addAVUsToDir(irodsFileSystem, testSubdir1a, avuAttr2, avuVal2);
 
 		addAVUsToDir(irodsFileSystem, testSubdir1b, avuAttr1, avuVal1);
 		addAVUsToDir(irodsFileSystem, testSubdir1b, avuAttr2, avuVal2);
-		
+
 		// now query 1 val for all dirs, should get subdir1a and subdir1b
 		MetaDataCondition[] condition = new MetaDataCondition[1];
 		condition[0] = MetaDataSet.newCondition(avuAttr1,
@@ -491,27 +491,37 @@ public class IRODSFileSystemMetadataQueryTest {
 		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
 				select, 100, Namespace.DIRECTORY);
 
-
 		Assert.assertNotNull(fileList);
 		Assert.assertEquals(2, fileList.length);
 		irodsFileSystem.close();
 
 	}
-	
+
 	/**
-	 * Currently ignored as this is a genquery issue...
-	 * Bug 116 - Query with Query multiple user AVU on Collection returns no result  
+	 * Currently ignored as this is a genquery issue... Bug 116 - Query with
+	 * Query multiple user AVU on Collection returns no result
+	 * 
 	 * @throws Exception
 	 */
-	@Ignore
-	public void testQueryCollectionMetadataTwoValuesEqualCondition() throws Exception {
-		
+	@Test
+	public void testQueryCollectionMetadataTwoValuesEqualCondition()
+			throws Exception {
+
 		String testCollection = "testQueryCollectionMetadataTwoValuesEqualCondition";
-		
+
 		// add an irods collection and set two metadata values
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		IRODSServerProperties irodsServerProperties = irodsFileSystem
+				.getCommands().getIrodsServerProperties();
+
+		// test only post 2.4.1
+		if (irodsFileSystem.commands.getIrodsServerProperties().getRelVersion()
+				.compareTo("rods2.4") <= 0) {
+			return;
+		}
 
 		String baseDir = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -519,9 +529,8 @@ public class IRODSFileSystemMetadataQueryTest {
 
 		String testSubdir1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH
-								+ "/" + testCollection);
-
+						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
+								+ testCollection);
 
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
@@ -533,7 +542,6 @@ public class IRODSFileSystemMetadataQueryTest {
 		imkdirCommand.setCollectionName(testSubdir1);
 		invoker.invokeCommandAndGetResultAsString(imkdirCommand);
 
-
 		// seed files in each subdir
 
 		String testFilePrefix = "testFile";
@@ -542,7 +550,8 @@ public class IRODSFileSystemMetadataQueryTest {
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 
 		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH
-				+ "/" + testCollection, testFilePrefix, testFileSuffix, 2, 20, 25);
+				+ "/" + testCollection, testFilePrefix, testFileSuffix, 2, 20,
+				25);
 
 		// put the files by putting the collection
 		IputCommand iputCommand = new IputCommand();
@@ -552,35 +561,32 @@ public class IRODSFileSystemMetadataQueryTest {
 		iputCommand.setRecursive(true);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
 
-		// add avu's 
+		// add avu's
 
 		String avuAttr1 = "testmeta1";
 		String avuVal1 = "180";
 
 		String avuAttr2 = "testmeta2";
 		String avuVal2 = "50";
-		
+
 		addAVUsToDir(irodsFileSystem, testSubdir1, avuAttr1, avuVal1);
 		addAVUsToDir(irodsFileSystem, testSubdir1, avuAttr2, avuVal2);
 
 		MetaDataCondition[] dataObjectConditions = new MetaDataCondition[2];
 		dataObjectConditions[0] = MetaDataSet.newCondition(avuAttr1,
-		MetaDataCondition.IN, avuVal1);
+				MetaDataCondition.EQUAL, avuVal1);
 		dataObjectConditions[1] = MetaDataSet.newCondition(avuAttr2,
-		MetaDataCondition.EQUAL, avuVal2);
-		String[] selectFieldNames = {
-		   IRODSMetaDataSet.META_COLL_ATTR_NAME,
-		   IRODSMetaDataSet.META_COLL_ATTR_VALUE,
-		   GeneralMetaData.DIRECTORY_NAME,
-		};
-		MetaDataSelect selects[] =
-		MetaDataSet.newSelection( selectFieldNames );
-		MetaDataRecordList[] recordList =
-		irodsFileSystem.query(dataObjectConditions, selects,
-		Namespace.DIRECTORY);
+				MetaDataCondition.EQUAL, avuVal2);
+		String[] selectFieldNames = { IRODSMetaDataSet.META_COLL_ATTR_NAME,
+				IRODSMetaDataSet.META_COLL_ATTR_VALUE,
+				GeneralMetaData.DIRECTORY_NAME, };
+		MetaDataSelect selects[] = MetaDataSet.newSelection(selectFieldNames);
+		MetaDataRecordList[] recordList = irodsFileSystem.query(
+				dataObjectConditions, selects, Namespace.DIRECTORY);
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("no results returned from metadata query",recordList);
+		TestCase.assertNotNull("no results returned from metadata query",
+				recordList);
 
 	}
 

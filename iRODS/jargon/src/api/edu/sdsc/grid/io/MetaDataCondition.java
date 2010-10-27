@@ -770,8 +770,8 @@ public final class MetaDataCondition {
 
 	private static String[] operatorStrings = { "=", "<>", "<", ">", "<=",
 			">=", "in", "not in", "between", "not between", "like", "not like",
-			"sounds like", "sounds not like", "TABLE", "num<", "num>", "num<=",
-			"num>=", };
+			"sounds like", "sounds not like", "TABLE", "n<", "n>", "n<=",
+			"n>=", };
 
 	public static String getOperatorString(int operator) {
 		if ((operator < 0) || (operator >= operatorStrings.length))

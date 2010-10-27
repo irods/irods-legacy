@@ -30,7 +30,12 @@ Features and Changes
 Normalized copyFrom and copyTo in the various file implementations, added unit tests.  There may be some subtle contract changes
 from this fix, but the code itself was not consistent.
 
-*Bug 116 - Query with Query multiple user AVU on Collection returns no result - added tests, currently ignored as this appears a GenQuery issue.
+*Bug 116 - Query with Query multiple user AVU on Collection returns no result - added tests, iRODS was patched to support this post 2.4.1
+
+*Bug 118 - problems with query of resc status and free space
+**added literals to Resource class for various states
+**changed num<, num> etc to n<, n> for numeric comparison operators
+
 ================================================================================================
 Outstanding Issues
 
