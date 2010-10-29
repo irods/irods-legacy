@@ -325,3 +325,16 @@ endif
 # See modules/extendedICAT/README.txt.  Uncomment this line, and add
 # modules/extendedICAT/extendedICAT.h, to enable the extensible ICAT:
 # EXTENDED_ICAT = 1
+
+# DDN_WOS - Define whether DDN's WOS driver is supported on this server.
+# WOS_DIR is the directory for the WOS library ($(WOS_DIR)/lib64) and
+# include files ($(WOS_DIR)/include). BOOST_DIR is the directory where
+# the BOOST directory is located. BOOST is required for compiling the
+# C++ WOS driver.
+# DDN_WOS=1
+
+ifdef DDN_WOS
+WOS_DIR=/home/mwan/myapps/ddn/woscpp
+BOOST_DIR=/home/mwan/myapps/boost/boost_1_44_0
+endif
+
