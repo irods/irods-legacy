@@ -35,7 +35,7 @@ public class IRODSGenQueryExecutorImpl extends AbstractIRODSAccessObject impleme
 	 * @param irodsCommands
 	 * @throws JargonException
 	 */
-	public IRODSGenQueryExecutorImpl(IRODSCommands irodsCommands)
+	protected IRODSGenQueryExecutorImpl(IRODSCommands irodsCommands)
 			throws JargonException {
 		super(irodsCommands);
 	}

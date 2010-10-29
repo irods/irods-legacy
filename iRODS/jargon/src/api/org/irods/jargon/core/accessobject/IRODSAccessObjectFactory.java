@@ -19,5 +19,13 @@ public interface IRODSAccessObjectFactory {
 	 * @throws JargonException
 	 */
 	IRODSGenQueryExecutor getIRODSGenQueryExcecutor() throws JargonException;
+	
+	/**
+	 * Get an access object that can executes scripts on a remote server
+	 * @return {@link org.irods.jargon.core.accessobject.RemoteExecutionOfCommansAO}
+	 * @throws JargonException
+	 */
+	RemoteExecutionOfCommandsAO getRemoteExecutionOfCommandsAO() throws JargonException;
+
 
 }

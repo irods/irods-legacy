@@ -54,6 +54,9 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Date;
 
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactoryImpl;
+import org.irods.jargon.core.accessobject.RemoteExecutionOfCommandsAO;
 import org.irods.jargon.core.connection.ConnectionConstants;
 import org.irods.jargon.core.connection.EnvironmentalInfoAccessor;
 import org.irods.jargon.core.connection.IRODSServerProperties;
@@ -1704,41 +1707,36 @@ public class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
 
+	
 	synchronized InputStream executeCommand(String command, String args,
 			String hostAddress) throws IOException {
-		Tag message = new Tag(ExecCmd_PI, new Tag[] { new Tag(cmd, command),
-				new Tag(cmdArgv, args), new Tag(execAddr, hostAddress),
-				new Tag(hintPath, ""), new Tag(addPathToArgv, 0),
-				Tag.createKeyValueTag(null) });
-		String buffer = "";
-
+		
+		if (command == null || command.length() == 0) {
+			throw new IOException("no command to execute");
+		}
+		
+		if (args == null) {
+			throw new IOException("args are null");
+		}
+		
+		if (hostAddress == null) {
+			throw new IOException("hostAddress is null");
+		}
+		
+		log.info("execute command:{}", command);
+		log.info("host:{}", hostAddress);
+		log.info("args:{}", args);
+		
 		try {
-			message = irodsFunction(RODS_API_REQ, message, EXEC_CMD_AN);
-		} catch (NullPointerException e) {
-			NullPointerException x = new NullPointerException(
-					"Can occur if the command output is too long");
-			x.initCause(e);
-			throw x;
+			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl.instance(this);
+			RemoteExecutionOfCommandsAO remoteExecutionOfCommandsAO = irodsAccessObjectFactory.getRemoteExecutionOfCommandsAO();
+			return remoteExecutionOfCommandsAO.executeARemoteCommandAndGetStreamGivingCommandNameAndArgsAndHost(
+					command, args, hostAddress);
+		} catch (JargonException e) {
+			log.error("Jargon exception executing remote command, will rethrow as IOException for present contracts", e);
+			throw new IOException(e);
 		}
-		if (message != null) {
-			// message
-			int length = message.getTag(BinBytesBuf_PI, 0).getTag(buflen)
-					.getIntValue();
-			if (length > 0) {
-				buffer += message.getTag(BinBytesBuf_PI, 0).getTag(buf)
-						.getStringValue();
-			}
-
-			// error
-			length = message.getTag(BinBytesBuf_PI, 1).getTag(buflen)
-					.getIntValue();
-			if (length > 0) {
-				buffer += message.getTag(BinBytesBuf_PI, 1).getTag(buf)
-						.getStringValue();
-			}
-		}
-
-		return new java.io.ByteArrayInputStream(Base64.fromString(buffer));
+		
 	}
 
 	String checksum(IRODSFile file) throws IOException {

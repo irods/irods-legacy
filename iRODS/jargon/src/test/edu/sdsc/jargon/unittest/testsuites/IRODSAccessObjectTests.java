@@ -5,6 +5,7 @@ package edu.sdsc.jargon.unittest.testsuites;
 
 import org.irods.jargon.core.accessobject.IRODSAccessObjectFactoryImplTest;
 import org.irods.jargon.core.accessobject.IRODSGenQueryExecutorImplTest;
+import org.irods.jargon.core.accessobject.RemoteExecutionOfCommandsAOImplTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -12,7 +13,7 @@ import org.junit.runners.Suite;
 
 @Suite.SuiteClasses({
   IRODSAccessObjectFactoryImplTest.class,
-  IRODSGenQueryExecutorImplTest.class
+  IRODSGenQueryExecutorImplTest.class, RemoteExecutionOfCommandsAOImplTest.class
 })
 public class IRODSAccessObjectTests {
 	

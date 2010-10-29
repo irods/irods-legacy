@@ -45,13 +45,21 @@ public class IRODSAccessObjectFactoryImpl implements IRODSAccessObjectFactory {
 		return irodsCommands;
 	}
 	
-	/**
-	 * Get an access object that can execute iquest-like queries
-	 * @return {@link org.irods.jargon.core.accessobject.IRODSGenQueryExecutor}
-	 * @throws JargonException
+	
+	/* (non-Javadoc)
+	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#getIRODSGenQueryExcecutor()
 	 */
 	public IRODSGenQueryExecutor getIRODSGenQueryExcecutor() throws JargonException {
 		return new IRODSGenQueryExecutorImpl(irodsCommands);
+	}
+
+	
+	/* (non-Javadoc)
+	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#getRemoteExecutionOfCommandsAO()
+	 */
+	public RemoteExecutionOfCommandsAO getRemoteExecutionOfCommandsAO()
+			throws JargonException {
+		return new RemoteExecutionOfCommandsAOImpl(irodsCommands);
 	}
 	
 
