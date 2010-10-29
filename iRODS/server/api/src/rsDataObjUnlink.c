@@ -273,6 +273,26 @@ dataObjInfo_t *dataObjInfo)
                     return CANT_UNREG_IN_VAULT_FILE;
 		}
 	    }
+	} else if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].driverType 
+	  == WOS_FILE_TYPE && dataObjUnlinkInp->oprType != UNREG_OPR) {
+	    /* WOS_FILE_TYPE, unlink first before unreg because orphan files
+	     * cannot be reclaimed */
+            status = l3Unlink (rsComm, dataObjInfo);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "dataObjUnlinkS: l3Unlink error for WOS file %s. status = %d",
+                  dataObjUnlinkInp->objPath, status);
+		return status;
+	    }
+            unregDataObjInp.dataObjInfo = dataObjInfo;
+            unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
+            status = rsUnregDataObj (rsComm, &unregDataObjInp);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "dataObjUnlinkS: rsUnregDataObj error for %s. status = %d",
+                  dataObjUnlinkInp->objPath, status);
+            }
+            return status;
 	}
         unregDataObjInp.dataObjInfo = dataObjInfo;
         unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;

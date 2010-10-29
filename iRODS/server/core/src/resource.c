@@ -1243,6 +1243,28 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
             continue;
         }
         rstrcpy (myRescInfo->rescVaultPath, tmpRescVaultPath, MAX_NAME_LEN);
+        if (RescTypeDef[myRescInfo->rescTypeInx].driverType == WOS_FILE_TYPE &&
+          tmpRodsServerHost->localFlag == LOCAL_HOST) {
+	    /* For WOS_FILE_TYPE, the vault path is wosHost/wosPolicy */
+	    char wosHost[MAX_NAME_LEN], wosPolicy[MAX_NAME_LEN];
+	    char *tmpStr;
+            if (splitPathByKey (tmpRescVaultPath, wosHost, wosPolicy, '/') < 0)
+            {
+		rodsLog (LOG_ERROR,
+                  "procAndQueResResult:splitPathByKey of wosHost error for %s",
+		  wosHost, wosPolicy);
+	    } else {
+		tmpStr = malloc (strlen (wosHost) + 40);
+                snprintf (tmpStr, MAX_NAME_LEN, "%s=%s", WOS_HOST_ENV, wosHost);
+                putenv (tmpStr);
+		tmpStr = malloc (strlen (wosPolicy) + 40);
+                snprintf (tmpStr, MAX_NAME_LEN, "%s=%s", 
+		  WOS_POLICY_ENV, wosPolicy);
+                putenv (tmpStr);
+		rodsLog (LOG_NOTICE,
+		 "Set WOS env wosHost=%s, wosPolicy=%s", wosHost, wosPolicy);
+	    }
+        }
         rstrcpy (myRescInfo->rescInfo, tmpRescInfo, LONG_NAME_LEN);
         rstrcpy (myRescInfo->rescComments, tmpRescComments, LONG_NAME_LEN);
         myRescInfo->freeSpace = strtoll (tmpFreeSpace, 0, 0);

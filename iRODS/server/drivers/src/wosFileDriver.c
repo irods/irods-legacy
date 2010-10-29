@@ -24,7 +24,6 @@ wosFileUnlink (rsComm_t *rsComm, char *filename)
 int
 wosFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf)
 {
-    int status;
     rodsLong_t len;
 
     len = wosGetFileSizePP (filename);
