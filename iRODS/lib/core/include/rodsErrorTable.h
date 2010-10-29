@@ -262,6 +262,16 @@
 #define S3_FILE_STAT_ERR		-716000
 #define S3_FILE_COPY_ERR		-717000
 
+/* DDN WOS error */
+#define WOS_PUT_ERR                     -750000
+#define WOS_STREAM_PUT_ERR              -751000
+#define WOS_STREAM_CLOSE_ERR            -752000
+#define WOS_GET_ERR                     -753000
+#define WOS_STREAM_GET_ERR              -754000
+#define WOS_UNLINK_ERR                  -755000
+#define WOS_STAT_ERR                    -756000
+#define WOS_CONNECT_ERR                 -757000
+
 /* 800,000 to 880,000 - Catalog library errors  */
 #define CATALOG_NOT_CONNECTED           -801000
 #define CAT_ENV_ERR                     -802000

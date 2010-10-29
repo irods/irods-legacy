@@ -158,6 +158,7 @@ typedef struct PathCache {
 #define OLD_COPY        0x0
 #define NEWLY_CREATED_COPY      0x1
 #define OPEN_EXISTING_COPY	0x10
+#define FILE_PATH_HAS_CHG	0x20
 
 /* definition for flags in dataObjInfo_t */
 #define NO_COMMIT_FLAG	0x1  /* used in chlModDataObjMeta and chlRegDataObj */
@@ -271,6 +272,7 @@ typedef enum {
     TEST_STAGE_FILE_TYPE,
     S3_FILE_TYPE,
     UNIV_MSS_FILE_TYPE,
+    WOS_FILE_TYPE,
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600
@@ -291,11 +293,17 @@ typedef enum {
 #define DO_TRASH_CAN	0
 #define NO_TRASH_CAN	1
 
+typedef enum {
+    NO_CREATE_PATH,
+    CREATE_PATH,
+} createPath_t;
+
 typedef struct RescTypeDef {
     char *typeName;
     rescCat_t rescCat;
     int driverType;
     int chkPathPerm;	/* whether to check path permission */
+    createPath_t createPathFlag;  /* create a path in getFilePathName ? */    
 } rescTypeDef_t;
 
 /* definition for classType */

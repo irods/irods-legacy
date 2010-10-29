@@ -23,7 +23,6 @@ include $(buildDir)/config/common.mk
 
 extendedICAT.h = 	$(buildDir)/modules/extendedICAT/extendedICAT.h
 
-
 #
 # Source files
 # 	core	shared functions for all servers
@@ -67,7 +66,6 @@ SERVER_BINS =	$(serverBinDir)/irodsServer \
 include $(buildDir)/config/api.mk
 INCLUDES +=	-I$(svrApiIncDir)
 
-
 # Drivers
 SVR_DRIVERS_OBJS = \
 		$(svrDriversObjDir)/structFileDriver.o \
@@ -85,6 +83,12 @@ endif
 
 ifdef AMAZON_S3
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/s3FileDriver.o
+endif
+
+ifdef DDN_WOS
+SVR_DRIVERS_CPP_OBJS+=$(svrDriversObjDir)/wosFunctPP.o
+SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/wosFileDriver.o
+CPPFLAGS = -g -O0 -c -D$(OS_platform) -I$(libCoreIncDir) -I$(svrDriversIncDir) -I$(WOS_DIR)/include -I$(BOOST_DIR)
 endif
 
 ifdef HPSS
@@ -246,7 +250,9 @@ endif
 # All objects (except tests)
 OBJS =		$(SVR_CORE_OBJS) $(SVR_DRIVERS_OBJS) $(SVR_API_OBJS) \
 		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS) $(SVR_DBO_OBJS)
-
+ifdef DDN_WOS
+OBJS+=$(SVR_DRIVERS_CPP_OBJS)
+endif
 
 # Server configuration
 CONFIG +=	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
@@ -313,7 +319,7 @@ endif
 # Princpal Targets
 #
 .PHONY:	all clean config server servers bin test tests print_cflags print_ldflags
-vpath %c	$(svrCoreSrcDir) $(svrDriversSrcDir) $(svrApiSrcDir) \
+vpath %cpp %c 	$(svrCoreSrcDir) $(svrDriversSrcDir) $(svrApiSrcDir) \
 		$(svrIcatSrcDir) $(svrReSrcDir) 
 
 
@@ -415,10 +421,13 @@ $(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(DEPEND)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
+$(svrDriversObjDir)/wosFunctPP.o:	$(svrDriversSrcDir)/wosFunctPP.cpp
+	g++ $(CPPFLAGS) -o $(svrDriversObjDir)/wosFunctPP.o $(svrDriversSrcDir)/wosFunctPP.cpp
+
 # Build server drivers
 $(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.c $(DEPEND)
 	@echo "Compile drivers `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server ICAT
 $(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(extendedICAT.h) $(DEPEND)

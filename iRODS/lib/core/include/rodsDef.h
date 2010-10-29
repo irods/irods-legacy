@@ -282,6 +282,11 @@ typedef struct {
 #define MATCHED_RESTART_COLL    0x4
 #define OPR_RESUMED    		0x8
 
+/* definition for DNN WOS connection env */
+
+#define WOS_HOST_ENV    "wosHost"
+#define WOS_POLICY_ENV  "wosPolicy"
+
 /* struct that defines restart operation */
 
 typedef struct {

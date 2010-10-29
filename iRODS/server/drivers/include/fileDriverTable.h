@@ -24,6 +24,9 @@
 #include "s3FileDriver.h"
 #endif
 #include "univMSSDriver.h"
+#ifdef DDN_WOS
+#include "wosFileDriver.h"
+#endif
 
 #define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport, intNoSupport, intNoSupport
 
@@ -72,6 +75,16 @@ fileDriver_t FileDriverTable[] = {
     intNoSupport, intNoSupport, intNoSupport, intNoSupport,
     longNoSupport, intNoSupport, univMSSStageToCache, univMSSSyncToArch},
 #endif
+#ifdef DDN_WOS
+    {WOS_FILE_TYPE, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, wosFileUnlink, wosFileStat, intNoSupport, longNoSupport,
+    intNoSupport, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    wosFileGetFsFreeSpace, intNoSupport, wosStageToCache, wosSyncToArch},
+#else
+    {WOS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
+
 };
 
 int NumFileDriver = sizeof (FileDriverTable) / sizeof (fileDriver_t);

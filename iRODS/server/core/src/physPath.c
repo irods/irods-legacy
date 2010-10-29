@@ -82,6 +82,11 @@ dataObjInp_t *dataObjInp)
         return (SYS_INVALID_RESC_INPUT);
     }
 
+    if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == 
+      NO_CREATE_PATH) {
+	*dataObjInfo->filePath = '\0';
+	return 0;
+    }
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
     if (status < 0) {
 	return (status);
@@ -733,6 +738,12 @@ dataObjInfo_t *dataObjInfo)
 
     if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0)
 	return 0;
+
+    if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == 
+      NO_CREATE_PATH) {
+	/* no need to sync for path created by resource */
+	return 0;
+    }
 
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
     if (status < 0) {

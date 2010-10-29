@@ -257,6 +257,14 @@
     S3_FILE_UNLINK_ERR, 
     S3_FILE_STAT_ERR, 
     S3_FILE_COPY_ERR, 
+    WOS_PUT_ERR, 
+    WOS_STREAM_PUT_ERR, 
+    WOS_STREAM_CLOSE_ERR, 
+    WOS_GET_ERR, 
+    WOS_STREAM_GET_ERR, 
+    WOS_UNLINK_ERR, 
+    WOS_STAT_ERR, 
+    WOS_CONNECT_ERR, 
     CATALOG_NOT_CONNECTED, 
     CAT_ENV_ERR, 
     CAT_CONNECT_ERR, 
@@ -726,6 +734,14 @@
     "S3_FILE_UNLINK_ERR", 
     "S3_FILE_STAT_ERR", 
     "S3_FILE_COPY_ERR", 
+    "WOS_PUT_ERR", 
+    "WOS_STREAM_PUT_ERR", 
+    "WOS_STREAM_CLOSE_ERR", 
+    "WOS_GET_ERR", 
+    "WOS_STREAM_GET_ERR", 
+    "WOS_UNLINK_ERR", 
+    "WOS_STAT_ERR", 
+    "WOS_CONNECT_ERR", 
     "CATALOG_NOT_CONNECTED", 
     "CAT_ENV_ERR", 
     "CAT_CONNECT_ERR", 
@@ -967,7 +983,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 467;
+int irodsErrorCount= 475;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

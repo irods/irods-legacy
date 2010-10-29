@@ -429,6 +429,10 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
               IRODS_ADMIN_KW) != NULL) {
                 addKeyVal (&regParam, IRODS_ADMIN_KW, "");
             }
+	    if ((L1desc[l1descInx].replStatus & FILE_PATH_HAS_CHG) != 0) {
+		/* path has changed */ 
+	        addKeyVal (&regParam, FILE_PATH_KW, destDataObjInfo->filePath);
+	    }
             modDataObjMetaInp.dataObjInfo = destDataObjInfo;
             modDataObjMetaInp.regParam = &regParam;
             status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
