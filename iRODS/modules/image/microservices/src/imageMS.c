@@ -253,7 +253,7 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
 		return rei->status;	/* Error */
 
 	source.properties = mallocAndZero( sizeof( keyValPair_t ) );
-	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageConvert:  source properties",
+	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageGetProperties:  source properties",
 		sourceProp, &(source.properties) )) < 0 )
 	{
 		free( (char*)source.properties );
