@@ -12,7 +12,8 @@
 #include "physPath.h"
 
 int
-rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
+rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
+char **outFileName)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -24,14 +25,15 @@ rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
 	return (remoteFlag);
     } else {
 	status = rsFileSyncToArchByHost (rsComm, fileSyncToArchInp, 
-	  rodsServerHost);
+	  outFileName, rodsServerHost);
 	return (status);
     }
 }
 
 int 
 rsFileSyncToArchByHost (rsComm_t *rsComm, 
-fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost)
+fileStageSyncInp_t *fileSyncToArchInp, char **outFileName,
+rodsServerHost_t *rodsServerHost)
 {
     int status;
     int remoteFlag;
@@ -45,10 +47,10 @@ fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost)
     remoteFlag = rodsServerHost->localFlag;
     
     if (remoteFlag == LOCAL_HOST) {
-	status = _rsFileSyncToArch (rsComm, fileSyncToArchInp);
+	status = _rsFileSyncToArch (rsComm, fileSyncToArchInp, outFileName);
     } else if (remoteFlag == REMOTE_HOST) {
         status = remoteFileSyncToArch (rsComm, fileSyncToArchInp, 
-	  rodsServerHost);
+	  outFileName, rodsServerHost);
     } else {
 	if (remoteFlag < 0) {
 	    return (remoteFlag);
@@ -65,7 +67,8 @@ fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost)
 
 int
 remoteFileSyncToArch (rsComm_t *rsComm, 
-fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost)
+fileStageSyncInp_t *fileSyncToArchInp, char **outFileName,
+rodsServerHost_t *rodsServerHost)
 {
     int status;
 
@@ -79,7 +82,8 @@ fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcFileSyncToArch (rodsServerHost->conn, fileSyncToArchInp);
+    status = rcFileSyncToArch (rodsServerHost->conn, fileSyncToArchInp,
+      outFileName);
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
@@ -94,18 +98,22 @@ fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost)
  */
 
 int
-_rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
+_rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
+char **outFileName)
 {
     int status;
+    char myFileName[MAX_NAME_LEN];
 
     /* XXXX need to check resource permission and vault permission
      * when RCAT is available 
      */
 
+    *outFileName = NULL;
+    rstrcpy (myFileName, fileSyncToArchInp->filename, MAX_NAME_LEN);
     status = fileSyncToArch (fileSyncToArchInp->fileType, rsComm, 
       fileSyncToArchInp->cacheFileType, 
       fileSyncToArchInp->mode, fileSyncToArchInp->flags,
-      fileSyncToArchInp->filename, fileSyncToArchInp->cacheFilename, 
+      myFileName, fileSyncToArchInp->cacheFilename, 
       fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput);
 
     if (status < 0) {
@@ -126,7 +134,7 @@ _rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
         status = fileSyncToArch (fileSyncToArchInp->fileType, rsComm,
           fileSyncToArchInp->cacheFileType,
           fileSyncToArchInp->mode, fileSyncToArchInp->flags,
-          fileSyncToArchInp->filename, fileSyncToArchInp->cacheFilename,
+          myFileName, fileSyncToArchInp->cacheFilename,
           fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput);
 	if (status < 0) {
             rodsLog (LOG_NOTICE,
@@ -134,7 +142,10 @@ _rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
               fileSyncToArchInp->filename, status);
         }
     }
-
+    if (strcmp (myFileName, fileSyncToArchInp->filename) != 0) {
+	/* file name has changed */
+	*outFileName = strdup (myFileName);
+    }
     return (status);
 } 
  

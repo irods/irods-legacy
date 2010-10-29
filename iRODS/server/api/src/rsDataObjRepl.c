@@ -1068,6 +1068,7 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     fileStageSyncInp_t fileSyncToArchInp;
     dataObjInp_t *dataObjInp;
     int status;
+    char *outFileName = NULL;	/* for fileSyncToArch */
 
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
@@ -1103,13 +1104,14 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
         rstrcpy (fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath, 
 	  MAX_NAME_LEN);
         fileSyncToArchInp.mode = getFileMode (dataObjInp);
-        status = rsFileSyncToArch (rsComm, &fileSyncToArchInp);
+        status = rsFileSyncToArch (rsComm, &fileSyncToArchInp, &outFileName);
 	if (status >= 0 && 
-	  RescTypeDef[rescTypeInx].createPathFlag == NO_CREATE_PATH) {
+	  RescTypeDef[rescTypeInx].createPathFlag == NO_CREATE_PATH &&
+	  outFileName != NULL) {
 	    /* path name is created by the resource */
-	    rstrcpy (destDataObjInfo->filePath, fileSyncToArchInp.filename,
-	      MAX_NAME_LEN);
+	    rstrcpy (destDataObjInfo->filePath, outFileName, MAX_NAME_LEN);
 	    L1desc[destL1descInx].replStatus |= FILE_PATH_HAS_CHG;
+	    free (outFileName);
 	}
         break;
       default:
