@@ -30,13 +30,8 @@ typedef long long rodsLong_t;
 /**
  * The maximum sized object which we can do a Put for.
  */
-#if 0 /* XXXXXXXXXXXXXX test only */
 #define WSIZE_MAX (64*1024*1024-512)
 #define WOS_STREAM_BUF_SIZE	(16*1024*1024)
-#else
-#define WSIZE_MAX (1024*1024-512)
-#define WOS_STREAM_BUF_SIZE	(1024*1024)
-#endif
 
 #ifdef  __cplusplus
 extern "C" {
