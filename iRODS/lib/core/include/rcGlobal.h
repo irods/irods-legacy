@@ -129,6 +129,7 @@ rescTypeDef_t RescTypeDef[] = {
   {"s3",FILE_CAT, S3_FILE_TYPE, DO_CHK_PATH_PERM, CREATE_PATH},
   {"MSS universal driver", FILE_CAT, UNIV_MSS_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
   {"wos",FILE_CAT, WOS_FILE_TYPE, NO_CHK_PATH_PERM, NO_CREATE_PATH},
+  {"database", DB_CAT, 0, 0, 0},
 };
 
 int NumRescTypeDef = sizeof (RescTypeDef) / sizeof (rescTypeDef_t);
@@ -142,6 +143,9 @@ rescClass_t RescClass[] = {
 	{"archive",	ARCHIVAL_CL},
 	{"bundle",	BUNDLE_CL},
 	{"compound",	COMPOUND_CL},
+	{"postgresql",	DATABASE_CL},
+	{"mysql",	DATABASE_CL},
+	{"oracle",	DATABASE_CL},
 };
 
 int NumRescClass = sizeof (RescClass) / sizeof (rescClass_t);

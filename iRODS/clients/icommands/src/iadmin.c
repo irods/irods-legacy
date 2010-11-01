@@ -1278,7 +1278,7 @@ void usageMain()
 " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
 " mkdir Name [username] (make directory(collection))",
 " rmdir Name (remove directory) ",
-" mkresc Name Type Class Host Path (make Resource)",
+" mkresc Name Type Class Host [Path] (make Resource)",
 " modresc Name [name, type, class, host, path, status, comment, info, freespace] Value (mod Resc)",
 " rmresc Name (remove resource)",
 " mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
@@ -1482,14 +1482,15 @@ usage(char *subOpt)
 ""};
 
    char *mkrescMsgs[]={
-" mkresc Name Type Class Host Path (make Resource)",
-"Create (register) a new storage resource.",
+" mkresc Name Type Class Host [Path] (make Resource)",
+"Create (register) a new storage or database resource.",
 " ",
 "Name is the name of the new resource.",
 "Type is the resource type (see 'lt resc_type' for a list).",
 "Class is the usage class of the resource (see 'lt resc_class').",
 "Host is the DNS host name.",
-"And Path is the defaultPath for the vault.",
+"And Path is the defaultPath for the vault (not needed for resources of",
+"type 'database' (DBRs)).",
 " ",
 "Tip: Also see the lt command for Type and Class token information.",
 ""};

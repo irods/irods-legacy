@@ -263,6 +263,7 @@ typedef struct IntArray {
 
 typedef enum {	/* resource category */
     FILE_CAT,
+    DB_CAT,
 } rescCat_t;
 
 typedef enum {
@@ -312,6 +313,7 @@ typedef struct RescTypeDef {
 #define ARCHIVAL_CL	1
 #define BUNDLE_CL	2
 #define COMPOUND_CL	3
+#define DATABASE_CL	4
 
 #define PRIMARY_FLAG	0x8000		/* primary class when this bit is set */
 typedef struct RescClass {

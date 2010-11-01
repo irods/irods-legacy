@@ -1423,8 +1423,10 @@ int chlRegResc(rsComm_t *rsComm,
       return(CAT_INVALID_RESOURCE_NET_ADDR);
    }
 
-   if (strlen(rescInfo->rescVaultPath)<1) {
-      return(CAT_INVALID_RESOURCE_VAULT_PATH);
+   if (strcmp(rescInfo->rescType, "database") !=0) {
+      if (strlen(rescInfo->rescVaultPath)<1) {
+	 return(CAT_INVALID_RESOURCE_VAULT_PATH);
+      }
    }
 
    status = getLocalZone();
