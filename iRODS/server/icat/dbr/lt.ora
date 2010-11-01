@@ -1,0 +1,6 @@
+! This is an example of a database object (DBO) and can be a useful
+! addition to a DBR/DBO environment as it lists the tables within a
+! database resource (DBR).  First iput this file, set its attributes
+! appropriately and then execute it on the DBR via idb.  This version
+! is for Oracle.
+select TABLE_NAME from tabs
