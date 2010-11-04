@@ -80,9 +80,9 @@ OBJS =		\
 		$(objDir)/iscan.o \
 		$(objDir)/ixmsg.o \
 		$(objDir)/idbug.o \
-		$(objDir)/idbo.o \
 		$(objDir)/ips.o  \
-		$(objDir)/ifsck.o
+		$(objDir)/ifsck.o \
+		$(objDir)/idbo.o
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -128,9 +128,8 @@ BINS =		\
 		$(binDir)/ixmsg  \
 		$(binDir)/idbug  \
 		$(binDir)/ips   \
-		$(binDir)/ifsck
-
-
+		$(binDir)/ifsck \
+		$(binDir)/idbo
 
 #
 # Compile and link flags
