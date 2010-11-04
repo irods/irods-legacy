@@ -371,17 +371,17 @@ LIB_API_OBJS += $(libApiObjDir)/rcBulkDataObjPut.o
 SVR_API_OBJS += $(svrApiObjDir)/rsEndTransaction.o
 LIB_API_OBJS += $(libApiObjDir)/rcEndTransaction.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseObjOpen.o
-LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjOpen.o
-
-SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseObjInfo.o
-LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjInfo.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsProcStat.o
 LIB_API_OBJS += $(libApiObjDir)/rcProcStat.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseObjectAdmin.o
-LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjectAdmin.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsStreamRead.o
 LIB_API_OBJS += $(libApiObjDir)/rcStreamRead.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseRescOpen.o
+LIB_API_OBJS += $(libApiObjDir)/rcDatabaseRescOpen.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseRescClose.o
+LIB_API_OBJS += $(libApiObjDir)/rcDatabaseRescClose.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseObjControl.o
+LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjControl.o

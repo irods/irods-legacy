@@ -23,11 +23,14 @@
 
 #include "dboHighLevelRoutines.h"
 #include "icatLowLevel.h"
-#include "databaseObjectAdmin.h"
 
-#define DBO_CONFIG_FILE "dbo.config"
+#include "dataObjOpen.h"
+#include "dataObjRead.h"
+#include "dataObjClose.h"
+
+#define DBR_CONFIG_FILE "dbr.config"
 /*#define DBO_ACCESS_ATTRIBUTE "DBO_ACCESS" */
-#define DBO_ODBC_ENTRY_PREFIX "IRODS_DBO_"
+#define DBR_ODBC_ENTRY_PREFIX "IRODS_DBR_"
 #define MAX_ODBC_ENTRY_NAME 100
 
 #define BUF_LEN 500
@@ -37,10 +40,10 @@
 #define BIG_STR 200
 
 #define MAX_SESSIONS 10
-static char openDboName[MAX_DBO_NAME_LEN+2]="";
+static char openDbrName[MAX_SESSIONS][MAX_DBO_NAME_LEN+2]={"","","","","","","","","",""};
 
 int dboLogSQL=0;
-int readDboConfig(char *dboName, char **DBUser, char**DBPasswd);
+int readDboConfig(char *dbrname, char **DBUser, char**DBPasswd);
 
 icatSessionStruct dbo_icss[MAX_SESSIONS]={{0},{0},{0},{0},{0},{0},{0},{0},{0},{0}};
 
@@ -54,9 +57,21 @@ int dboDebug(char *debugMode) {
    return(0);
 }
 
+int
+getOpenDbrIndex(char *dbrName) {
+   int ix, i;
+   ix=-1;
+   for (i=0;i<MAX_SESSIONS;i++) {
+      if (strcmp(openDbrName[i], dbrName)==0) {
+	 ix = i;
+	 break;
+      }
+   }
+   return(ix);
+}
 
 
-int dboOpen(char *dboName) {
+int dbrOpen(char *dbrName) {
 #if defined(DBO) 
    int i;
    int status;
@@ -65,13 +80,9 @@ int dboOpen(char *dboName) {
    int icss_index;
    char odbcEntryName[MAX_ODBC_ENTRY_NAME+10];
 
-   if (dboLogSQL) rodsLog(LOG_SQL, "dboOpen");
+   i = getOpenDbrIndex(dbrName);
+   if (i>=0) return(DBR_ALREADY_OPEN);
 
-#if 0
-   if (strcmp(openDboName, dboName)==0) {
-      return(0); /* already open */
-   }
-#endif
    icss_index = -1;
    for (i=0;i<MAX_SESSIONS;i++) {
       if (dbo_icss[i].status==0) {
@@ -79,13 +90,13 @@ int dboOpen(char *dboName) {
 	 break;
       }
    }
-   if (icss_index==-1) return (DBO_MAX_SESSIONS_REACHED);
+   if (icss_index==-1) return (DBR_MAX_SESSIONS_REACHED);
 
-   status =  readDboConfig(dboName, &DBUser, &DBPasswd);
+   status =  readDboConfig(dbrName, &DBUser, &DBPasswd);
    if (status) return(status);
 
-   rodsLog(LOG_NOTICE, "dboOpen DBUser %s",DBUser);
-   rodsLog(LOG_NOTICE, "dboOpen DBPasswd %s",DBPasswd);
+   rodsLog(LOG_NOTICE, "dbrOpen DBUser %s",DBUser);
+   rodsLog(LOG_NOTICE, "dbrOpen DBPasswd %s",DBPasswd);
 
    dbo_icss[icss_index].databaseUsername = DBUser;
    dbo_icss[icss_index].databasePassword = DBPasswd;
@@ -98,32 +109,33 @@ int dboOpen(char *dboName) {
    /* Open Environment */
    i = cllOpenEnv(&dbo_icss[icss_index]);
    if (i != 0) {
-      rodsLog(LOG_NOTICE, "dboOpen cllOpen failure %d",i);
+      rodsLog(LOG_NOTICE, "dbrOpen cllOpen failure %d",i);
       return(DBO_ENV_ERR);
    }
 
    /* Connect to the DBMS */
-   strncpy((char *)&odbcEntryName, DBO_ODBC_ENTRY_PREFIX, 
+   strncpy((char *)&odbcEntryName, DBR_ODBC_ENTRY_PREFIX, 
 	   MAX_ODBC_ENTRY_NAME);
-   strncat((char *)&odbcEntryName, dboName,
+   strncat((char *)&odbcEntryName, dbrName,
 	   MAX_ODBC_ENTRY_NAME);
    i = cllConnectDbo(&dbo_icss[icss_index], odbcEntryName);
    if (i != 0) {
-      rodsLog(LOG_NOTICE, "dboOpen cllConnectDbo failure %d",i);
+      rodsLog(LOG_NOTICE, "dbrOpen cllConnectDbo failure %d",i);
       return(DBO_CONNECT_ERR);
    }
 
    dbo_icss[icss_index].status=1;
-   strncpy(openDboName, dboName, MAX_DBO_NAME_LEN);
+   strncpy(openDbrName[icss_index], dbrName, MAX_DBO_NAME_LEN);
 
    return(icss_index);
 #else
-   openDboName[0]='\0'; /* avoid warning */
+   openDbrName[0][0]='\0'; /* avoid warning */
    return(DBO_NOT_COMPILED_IN);
 #endif
 }
 
-int dboClose(int icss_index) {
+
+int _dbrClose(int icss_index) {
 #if defined(DBO) 
    int status, stat2;
 
@@ -131,7 +143,7 @@ int dboClose(int icss_index) {
 
    stat2 = cllCloseEnv(&dbo_icss[icss_index]);
 
-   openDboName[0]='\0';
+   openDbrName[icss_index][0]='\0';
 
    if (status) {
       return(DBO_DISCONNECT_ERR);
@@ -140,28 +152,59 @@ int dboClose(int icss_index) {
       return(DBO_CLOSE_ENV_ERR);
    }
    dbo_icss[icss_index].status=0;
+   openDbrName[icss_index][0] = '\0';
    return(0);
 #else
    return(DBO_NOT_COMPILED_IN);
 #endif
 }
 
-int dboCommit(int icss_index) {
+int dbrClose(char *dbrName) {
 #if defined(DBO) 
-   int status;
+   int i;
+   for (i=0;i<MAX_SESSIONS;i++) {
+      if (strcmp(openDbrName[i], dbrName)==0) {
+	 return(_dbrClose(i));
+      }
+   }
+   return(DBR_NOT_OPEN);
+#else
+   return(DBO_NOT_COMPILED_IN);
+#endif
+}
 
-   status = cllExecSqlNoResult(&dbo_icss[icss_index], "commit");
+int dbrCommit(rsComm_t *rsComm, char *dbrName) {
+#if defined(DBO) 
+   int status, ix;
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   ix = getOpenDbrIndex(dbrName);
+
+   if (ix<0) return(DBR_NOT_OPEN);
+
+   status = cllExecSqlNoResult(&dbo_icss[ix], "commit");
    return(status);
 #else
    return(DBO_NOT_COMPILED_IN);
 #endif
 }
 
-int dboRollback(int icss_index) {
+int dbrRollback(rsComm_t *rsComm, char *dbrName) {
 #if defined(DBO) 
-   int status;
+   int status, ix;
 
-   status = cllExecSqlNoResult(&dbo_icss[icss_index], "rollback");
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   ix = getOpenDbrIndex(dbrName);
+
+   if (ix<0) return(DBR_NOT_OPEN);
+
+   status = cllExecSqlNoResult(&dbo_icss[ix], "rollback");
    return(status);
 #else
    return(DBO_NOT_COMPILED_IN);
@@ -327,19 +370,19 @@ readDboConfig(char *dboName, char **DBUser, char**DBPasswd) {
    static char foundLine[BUF_LEN];
 
    dboConfigFile =  (char *) malloc((strlen (getDboConfigDir()) +
-				    strlen(DBO_CONFIG_FILE) + 24));
+				    strlen(DBR_CONFIG_FILE) + 24));
 
    sprintf (dboConfigFile, "%s/%s", getDboConfigDir(), 
-	    DBO_CONFIG_FILE);
+	    DBR_CONFIG_FILE);
 
    fptr = fopen (dboConfigFile, "r");
 
    if (fptr == NULL) {
       rodsLog (LOG_NOTICE, 
-	       "Cannot open DBO_CONFIG_FILE file %s. errno = %d\n",
+	       "Cannot open DBR_CONFIG_FILE file %s. errno = %d\n",
           dboConfigFile, errno);
       free (dboConfigFile);
-      return (DBO_CONFIG_FILE_ERR);
+      return (DBR_CONFIG_FILE_ERR);
    }
    free (dboConfigFile);
 
@@ -392,7 +435,7 @@ readDboConfig(char *dboName, char **DBUser, char**DBPasswd) {
    }
    fclose (fptr);
 
-   return(DBO_NAME_NOT_FOUND);
+   return(DBR_NAME_NOT_FOUND);
 }
 
 /*
@@ -407,19 +450,19 @@ dboReadConfigItems(char *dboList, int maxSize) {
    static char foundLine[BUF_LEN];
 
    dboConfigFile =  (char *) malloc((strlen (getDboConfigDir()) +
-				    strlen(DBO_CONFIG_FILE) + 24));
+				    strlen(DBR_CONFIG_FILE) + 24));
 
    sprintf (dboConfigFile, "%s/%s", getDboConfigDir(), 
-	    DBO_CONFIG_FILE);
+	    DBR_CONFIG_FILE);
 
    fptr = fopen (dboConfigFile, "r");
 
    if (fptr == NULL) {
       rodsLog (LOG_NOTICE, 
-	       "Cannot open DBO_CONFIG_FILE file %s. errno = %d\n",
+	       "Cannot open DBR_CONFIG_FILE file %s. errno = %d\n",
           dboConfigFile, errno);
       free (dboConfigFile);
-      return (DBO_CONFIG_FILE_ERR);
+      return (DBR_CONFIG_FILE_ERR);
    }
    free (dboConfigFile);
 
@@ -462,7 +505,7 @@ dboGetInfo(int fd, char *outBuf, int maxOutBuf) {
 #endif
 
    if (fd>MAX_SESSIONS || fd< 0 || dbo_icss[fd].status!=1) {
-      strcpy(outBuf, "DBO is not open");
+      strcpy(outBuf, "DBR is not open");
       return(DBO_INVALID_OBJECT_DESCRIPTOR);
    }
 
@@ -473,98 +516,88 @@ dboGetInfo(int fd, char *outBuf, int maxOutBuf) {
 
 int
 getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL) {
-   genQueryInp_t genQueryInp;
-   genQueryOut_t *genQueryOut;
-   int i1a[30];
-   int i1b[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-   int i2a[30];
-   char *condVal[10];
-   char v1[MAX_NAME_LEN+10];
-   char v2[MAX_NAME_LEN+10];
-   char v3[MAX_NAME_LEN+10];
-   char myDirName[MAX_NAME_LEN];
-   char myFileName[MAX_NAME_LEN];
+   openedDataObjInp_t dataObjReadInp;
+   openedDataObjInp_t dataObjCloseInp;
+   bytesBuf_t *readBuf;
    int status;
+   int objID;
+   char *cp1;
+   int bytesRead;
+   dataObjInp_t dataObjInp;
 
-   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   memset (&dataObjInp, 0, sizeof(dataObjInp_t));
+   strncpy(dataObjInp.objPath, fullName, MAX_NAME_LEN);
 
-   i1a[0]=COL_META_DATA_ATTR_NAME;
-   i1b[0]=0;
-   i1a[1]=COL_META_DATA_ATTR_VALUE;
-   i1b[1]=0;
-   genQueryInp.selectInp.inx = i1a;
-   genQueryInp.selectInp.value = i1b;
-   genQueryInp.selectInp.len = 2;
-
-   status = splitPathByKey(fullName, 
-			   myDirName, myFileName, '/');
-   sprintf(v1,"='%s'",myDirName);
-   i2a[0]=COL_COLL_NAME;
-   condVal[0]=v1;
-   sprintf(v2,"='%s'",myFileName);
-   i2a[1]=COL_DATA_NAME;
-   condVal[1]=v2;
-
-   i2a[2]=COL_META_DATA_ATTR_NAME;
-   sprintf(v3,"='%s'", DBO_SQL);
-   condVal[2]=v3;
-
-   genQueryInp.sqlCondInp.inx = i2a;
-   genQueryInp.sqlCondInp.value = condVal;
-   genQueryInp.sqlCondInp.len=3;
-
-   genQueryInp.maxRows=10;
-   genQueryInp.continueInx=0;
-   genQueryInp.condInput.len=0;
-
-   status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-   if (status != 0) {
-      return(status);
+   if ((objID=rsDataObjOpen(rsComm, &dataObjInp)) < 0) {
+      if (objID == CAT_NO_ROWS_FOUND) return (DBO_DOES_NOT_EXIST);
+      return (objID);
    }
-   else {
-      int i, j, doNext;
-      for (i=0;i<genQueryOut->rowCnt;i++) {
-	 doNext=0;
-	 for (j=0;j<genQueryOut->attriCnt;j++) {
-	    char *tResult;
-	    tResult = genQueryOut->sqlResult[j].value;
-	    tResult += i*genQueryOut->sqlResult[j].len;
-	    if (strcmp(tResult,DBO_SQL)==0) {
-		doNext=1;
-	    }
-	    if (j==1) {
-	       if (doNext==1) {
-		  strncpy(dboSQL, tResult, MAX_SQL);
-		  return(0);
-	       }
-	       doNext=0;
-	    }
-	 }
-      }
+
+   /* read buffer init */
+   readBuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+   readBuf->len = 5*1024;	        /* just 5K should do it */
+   readBuf->buf = (char *)malloc(readBuf->len);
+   memset (readBuf->buf, '\0', readBuf->len);
+
+  /* read SQL data */
+   memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
+   dataObjReadInp.l1descInx = objID;
+   dataObjReadInp.len = readBuf->len;
+
+   bytesRead = rsDataObjRead (rsComm, &dataObjReadInp, readBuf);
+   if (bytesRead < 0) return(bytesRead);
+   
+   cp1 = readBuf->buf;
+   while (*cp1 == '!' || *cp1 == '#') {
+      cp1++;
+      while (*cp1 != '\n') cp1++;
+      cp1++;
    }
-   return(DBO_NAME_NOT_FOUND);
+   strncpy(dboSQL, cp1, MAX_SQL);
+
+   memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+   dataObjCloseInp.l1descInx = objID;
+	
+   status = rsDataObjClose (rsComm, &dataObjCloseInp);
+   if (status) return(status);
+
+   return(0);
 }
 
-
 int
-dboExecute(rsComm_t *rsComm, int fd, char *dboName, char *outBuf, int maxOutBuf) {
+dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
+	   int maxOutBuf) {
    int status;
    char dboSQL[MAX_SQL];
+   int i, ix;
+   int didOpen=0;
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    }
 
-   if (fd>MAX_SESSIONS || fd< 0 || dbo_icss[fd].status!=1) {
-      strcpy(outBuf, "DBO is not open");
-      return(DBO_INVALID_OBJECT_DESCRIPTOR);
+   ix=getOpenDbrIndex(dbrName);
+
+   if (ix < 0) {
+      ix = dbrOpen(dbrName);
+      if (ix) return(ix);
+      didOpen=1;
    }
 
    status = getDboSql(rsComm, dboName, dboSQL);
    if (status) return(status);
 
-   status =  dboSqlWithResults(fd, dboSQL, NULL, 0, 
+   if (dboLogSQL) rodsLog(LOG_SQL, "dboExecute SQL: %s", dboSQL);
+
+   if (status) return(status);
+
+   status =  dboSqlWithResults(ix, dboSQL, NULL, 0, 
 			       outBuf, maxOutBuf);
-   return(status);
+
+   if (didOpen) {  /* DBR was not originally open */
+      i = dbrClose(dbrName);
+      if (i) return(i);
+   }
+   return(0);
 }
 

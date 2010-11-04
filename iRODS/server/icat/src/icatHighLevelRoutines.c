@@ -21,7 +21,6 @@
 #include "icatMidLevelHelpers.h"
 #include "icatHighLevelRoutines.h"
 #include "icatLowLevel.h"
-#include "databaseObjectAdmin.h"
 
 extern int get64RandomBytes(char *buf);
 
@@ -8067,82 +8066,3 @@ icatCheckResc(char *rescName) {
    }
    return(status);
 }
-
-
-/* Manage database-objects */
-
-int
-chlDatabaseObjectAdmin(rsComm_t *rsComm, 
-		       databaseObjectAdminInp_t *databaseObjectAdminInp,
-		       databaseObjectAdminOut_t *databaseObjectAdminOut) {
-   int status;
-
-   if (databaseObjectAdminInp->option == NULL) return(CAT_INVALID_ARGUMENT);
-
-   /* Add */
-   if (strcmp(databaseObjectAdminInp->option, DBObjAdmin_Add)==0) {
-      if (databaseObjectAdminInp->sql == NULL) return(CAT_INVALID_ARGUMENT);
-      if (databaseObjectAdminInp->dbrName == NULL) return(CAT_INVALID_ARGUMENT);
-      if (databaseObjectAdminInp->dboName == NULL) return(CAT_INVALID_ARGUMENT);
-      if (databaseObjectAdminInp->description == NULL) 
-	 return(CAT_INVALID_ARGUMENT);
-
-      status = icatCheckResc(databaseObjectAdminInp->dbrName);
-      if (status) return(status);
-
-      status = chlAddAVUMetadata(rsComm, 0, "-d", 
-				 databaseObjectAdminInp->dboName,
-				 DBO_SQL, 
-				 databaseObjectAdminInp->sql,
-			         "");
-      if (status) return(status);
-
-      status = chlAddAVUMetadata(rsComm, 0, "-d", 
-				 databaseObjectAdminInp->dboName,
-				 DBO_DESC, 
-				 databaseObjectAdminInp->description,
-			         "");
-      if (status) return(status);
-
-      status = chlAddAVUMetadata(rsComm, 0, "-d", 
-				 databaseObjectAdminInp->dboName,
-				 DBO_RESC, 
-				 databaseObjectAdminInp->dbrName,
-			         "");
-
-      return(status);
-   }
-
-   /* Remove */
-   if (strcmp(databaseObjectAdminInp->option, DBObjAdmin_Remove)==0) {
-      if (databaseObjectAdminInp->dboName == NULL) return(CAT_INVALID_ARGUMENT);
-
-      status = chlDeleteAVUMetadata(rsComm, 1, "-d", 
-				    databaseObjectAdminInp->dboName,
-				    DBO_SQL, 
-				    "%",
-				    "%", 0);
-      if (status) return(status);
-
-      status = chlDeleteAVUMetadata(rsComm, 1, "-d", 
-				    databaseObjectAdminInp->dboName,
-				    DBO_DESC, 
-				    "%",
-				    "%", 0);
-      if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
-      if (status) return(status);
-
-      status = chlDeleteAVUMetadata(rsComm, 1, "-d", 
-				    databaseObjectAdminInp->dboName,
-				    DBO_RESC, 
-				    "%",
-				    "%", 0);
-      if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
-
-      return(status);
-
-   }
-
-   return (CAT_INVALID_ARGUMENT);
-}
-

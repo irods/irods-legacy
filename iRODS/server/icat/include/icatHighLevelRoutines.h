@@ -10,7 +10,6 @@
 #include "ruleExecSubmit.h"
 #include "rcConnect.h"
 #include "rodsGeneralUpdate.h"
-#include "databaseObjectAdmin.h"
 
 int chlOpen(char *DBUser, char *DBpasswd);
 int chlClose();
@@ -129,9 +128,5 @@ int chlInsRuleTable(rsComm_t *rsComm,
 		    char *ruleRecovery, char *ruleIdStr, char *myTime);
 int chlVersionRuleBase(rsComm_t *rsComm,
 		       char *baseName, char *myTime);
-int chlDatabaseObjectAdmin(rsComm_t *rsComm, 
-			   databaseObjectAdminInp_t *databaseObjectAdminInp,
-			   databaseObjectAdminOut_t *databaseObjectAdminOut);
- 
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

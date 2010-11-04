@@ -518,11 +518,16 @@
 #define DBO_DISCONNECT_ERR              -1706000
 #define DBO_CLOSE_ENV_ERR               -1707000
 #define DBO_SQL_ERR                     -1708000
-#define DBO_CONFIG_FILE_ERR             -1700000
+#define DBR_CONFIG_FILE_ERR             -1700000
 #define DBO_ACCESS_PROHIBITED           -1710000
 #define DBO_NAME_NOT_FOUND              -1711000
-#define DBO_MAX_SESSIONS_REACHED        -1712000
+#define DBR_MAX_SESSIONS_REACHED        -1712000
 #define DBO_INVALID_OBJECT_DESCRIPTOR   -1713000
+#define DBR_NOT_OPEN                    -1714000
+#define DBR_NAME_NOT_FOUND              -1715000
+#define DBO_INVALID_CONTROL_OPTION      -1716000
+#define DBR_ALREADY_OPEN                -1717000
+#define DBO_DOES_NOT_EXIST              -1718000
 
 
 /* The following are handler protocol type msg. These are not real error */
