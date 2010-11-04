@@ -23,6 +23,9 @@ rodsEnv myEnv;
 int lastCommandStatus=0;
 int printCount=0;
 
+rodsArguments_t myRodsArgs;
+
+
 void usage(char *subOpt);
 
 /* 
@@ -102,6 +105,67 @@ getInput(char *cmdToken[], int maxTokens) {
    }
 }
 
+/*
+ This is a copy of the iquest function, used here in idbo to
+ show database objects.
+ */
+int
+queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, 
+		    char *selectConditionString, int noDistinctFlag,
+                    char *zoneArgument, int noPageFlag)
+{
+/*
+  NoDistinctFlag is 1 if the user is requesting 'distinct' to be skipped.
+*/
+
+   genQueryInp_t genQueryInp;
+   int i;
+   genQueryOut_t *genQueryOut = NULL;
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   i = fillGenQueryInpFromStrCond(selectConditionString, &genQueryInp);
+   if (i < 0)
+      return(i);
+
+   if (noDistinctFlag) {
+      genQueryInp.options = NO_DISTINCT;
+   }
+
+   if (zoneArgument!=0 && zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+      printf("Zone is %s\n",zoneArgument);
+   }
+
+   genQueryInp.maxRows= MAX_SQL_ROWS;
+   genQueryInp.continueInx=0;
+   i = rcGenQuery (conn, &genQueryInp, &genQueryOut);
+   if (i < 0)
+      return(i);
+
+   i = printGenQueryOut(stdout, format,hint,  genQueryOut);
+   if (i < 0)
+      return(i);
+
+
+   while (i==0 && genQueryOut->continueInx > 0) {
+      if (noPageFlag==0) {
+	 char inbuf[100];
+	 printf("Continue? [Y/n]");
+	 fgets(inbuf, 90, stdin);
+	 if (strncmp(inbuf, "n", 1)==0) break;
+      }
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      i = rcGenQuery (conn, &genQueryInp, &genQueryOut);
+      if (i < 0)
+	 return(i);
+      i = printGenQueryOut(stdout, format,hint,  genQueryOut);
+      if (i < 0)
+	 return(i);
+   }
+
+   return(0);
+
+}
 
 int
 execDbo(char *dbRescName, char *dboName) {
@@ -255,60 +319,6 @@ getInputLine(char *prompt, char *result, int max_result_len) {
 }
 
 
-/* 
- print the results of a general query.
- */
-int
-printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, 
-		     char *descriptions[], int doDashes)
-{
-   int printCount;
-   int i, j;
-   char localTime[20];
-   printCount=0;
-   if (status!=0) {
-      printError(Conn, status, "rcGenQuery");
-   }
-   else {
-      if (status !=CAT_NO_ROWS_FOUND) {
-	 for (i=0;i<genQueryOut->rowCnt;i++) {
-	    if (i>0 && doDashes) printf("----\n");
-	    for (j=0;j<genQueryOut->attriCnt;j++) {
-	       char *tResult;
-	       tResult = genQueryOut->sqlResult[j].value;
-	       tResult += i*genQueryOut->sqlResult[j].len;
-	       if (descriptions !=0 && *descriptions[j]!='\0') {
-		  if (strstr(descriptions[j],"_ts")!=0) {
-		     getLocalTimeFromRodsTime(tResult, localTime);
-		     if (atoll(tResult)==0) rstrcpy(localTime, "None", 20);
-		     printf("%s: %s: %s\n", descriptions[j], tResult, 
-			    localTime);
-		  } 
-		  else {
-		     printf("%s: %s\n", descriptions[j], tResult);
-		  }
-	       }
-	       else {
-		  printf("%s\n", tResult);
-	       }
-	       printCount++;
-	    }
-	 }
-      }
-   }
-   return(printCount);
-}
-
-
-/*
- do a Query on a specific DBO
- */
-int
-doTest(char *inStr) {
-   return (0);
-}
-
-
 /* handle a command,
    return code is 0 if the command was (at least partially) valid,
    -1 for quitting,
@@ -337,10 +347,14 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
 
-   if (strcmp(cmdToken[0],"test") == 0) {
-      doTest(cmdToken[1]);
+   if (strcmp(cmdToken[0],"ls") == 0) {
+      queryAndShowStrCond(Conn, NULL, "%s/%s",
+			  "select COLL_NAME, DATA_NAME where DATA_TYPE_NAME = 'database object'",
+			  0, myRodsArgs.zoneName,
+			  myRodsArgs.noPage);
       return(0);
    }
+
    if (strcmp(cmdToken[0],"exec") == 0) {
       execDbo(cmdToken[1], cmdToken[2]);
       return(0);
@@ -363,8 +377,6 @@ int
 main(int argc, char **argv) {
    int status, i, j;
    rErrMsg_t errMsg;
-
-   rodsArguments_t myRodsArgs;
 
    char *mySubName;
    char *myName;
@@ -509,16 +521,23 @@ void usageMain()
 "  exec DBR DBO (execute a DBO on a DBR)",
 "  commit DBR   (commit updates to a DBR (done via a DBO))",
 "  rollback DBR (rollback updates instead)",
-"  close DBR    (close a DBR)",
-"  help  (this help)",
-"  quit  (exit idbo)",
+"  ls           (list defined Database-Objects in the Zone)",
+"  help (or h) [command] (this help, or help on a command)",
+"  quit  (or 'q', exit idbo)",
 "Where DBR and DBO are the names of a Database Resource and Database Object.",
 " ",
 "You can exectute a DBO without first opening the DBR (in which case the",
 "server will open and close it), so you can run a DBO from the command",
 "line: 'idbo DBR DBO'",
 " ",
+"Like other unix utilities, a series of commands can be piped into it:",
+"'cat file1 | idbo' (maintaining one connection for all commands).",
+" ",
 "See 'Database Resources' on the irods web site for more information.",
+" ",
+"Try 'help command' for more help on a specific command.",
+"'help exec' will explain options on the exec command.",
+
 ""};
    printMsgs(msgs);
    printReleaseInfo("idbo");
@@ -532,46 +551,65 @@ void
 usage(char *subOpt)
 {
    char *openMsgs[]={
-"open  ResourceName DatabaseName", 
-"Open the specified database object on the specified database resource. ",
+"open  DatabaseResourceName", 
+"Open the specified database resource. ",
+"If you are just running DBO that only queries, you do not need to",
+"open or close the DBR, it will be done automatically.",
 ""};
-   char *infoMsgs[]={
-"list information about the database-resource or a particular (open)",
-"database on that resource.",
-"In the first case, it will list the configured databases on that",
-"database-resource.  In the later, it will list the tables in the database.",
-"If ResourceName is not included, it will use the last one used.",
-"Examples:",
-"$ idbo",
-"idbo>info demoResc",
-"DBName1 DBName2",
-"idbo>open demoResc DBName1",
-"open object-descriptor (index to open database)=0",
-"idbo>info 0",
-"Schema|Name|Type|Owner|",
-"public|r_table1|table|schroeder|",
-"public|r_table2|table|schroeder|",
-"public|cadc_config_archive_case|table|schroeder|",
-"public|cadc_config_compression|table|schroeder|",
+   char *closeMsgs[]={
+"  close DBR",
+"Close a database resource.",
+"If you have opened a DBR, it will be closed.",
+"If you are just running DBO that only queries, you do not need to",
+"open or close the DBR, it will be done automatically.",
+"If you have updated a DBR via a DBO, you should 'commit' before closing.",
+""};
+   char *execMsgs[]={
+"  exec DBR DBO",
+"Execute a DBO on a DBR.",
+"By default, the results (of a query) will be returned and displayed",
+"If you are just running DBO that only queries, you do not need to",
+"open or close the DBR, it will be done automatically.",
 ""};
    char *lsMsgs[]={
-"ls [dataObj]", 
-"List information about all defined database objects or, if provided,",
-"on the one database object.  You can also use 'ils' for other information.",
+"ls ", 
+"List information about all defined database objects (in the zone).",
+"This does a query to find all the DBOs. This can also be done via iquest, with:",
+"select COLL_NAME, DATA_NAME where DATA_TYPE_NAME = 'database object'",
+"Once found, other information is available via 'ils'.",
+"You can also 'iget' the data-object to see the contents (the SQL).",
+""};
+   char *commitMsgs[]={
+"  commit DBR",
+"commit any updates to a DBR.",
+"To run a DBO that updates the DBR, you need to open, exec, and commit.",
+"If you are just running DBO that only queries, you do not need to",
+"open or close the DBR, or commit.",
+""};
+   char *rollbackMsgs[]={
+"  rollback DBR",
+"rollback any updates to a DBR.",
+"To run a DBO that updates the DBR, you do a rollback to cancel",
+"the updates.",
 ""};
    char *helpMsgs[]={
 " help (or h) [command] (general help, or more details on a command)",
-" If you specify a command, a brief description of that command",
-" will be displayed.",
+"If you specify a command, a brief description of that command",
+"will be displayed.",
+""};
+   char *quitMsgs[]={
+      " quit (or q) ",
+"Exit idbo",
 ""};
 
 
-   char *subCmds[]={"open", "info", "ls",
-		    "help", "h",
+   char *subCmds[]={"open", "close", "exec", "ls",
+		    "commit", "rollback", "help", "h", "quit", "q",
 		    ""};
 
-   char **pMsgs[]={ openMsgs, infoMsgs, lsMsgs,
-		    helpMsgs, helpMsgs };
+   char **pMsgs[]={ openMsgs, closeMsgs, execMsgs, lsMsgs,
+		    commitMsgs, rollbackMsgs, helpMsgs, helpMsgs,
+		    quitMsgs, quitMsgs};
 
    if (*subOpt=='\0') {
       usageMain();

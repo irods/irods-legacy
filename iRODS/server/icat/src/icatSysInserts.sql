@@ -187,6 +187,7 @@ insert into R_TOKN_MAIN values ('data_type',1691,'datascope data','','','','','1
 insert into R_TOKN_MAIN values ('data_type',1692,'DICOM header','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('data_type',1693,'XML Schema','text/xml','|.xsd|','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('data_type',1694,'tar bundle','','','','','1250100000','1250100000');
+insert into R_TOKN_MAIN values ('data_type',1695,'database object','text','','','','1288631300','1288631300');
 
 
 insert into R_TOKN_MAIN values ('action_type',1800,'generic','','','','','1170000000','1170000000');
