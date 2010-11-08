@@ -1261,8 +1261,11 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
                 snprintf (tmpStr, MAX_NAME_LEN, "%s=%s", 
 		  WOS_POLICY_ENV, wosPolicy);
                 putenv (tmpStr);
-		rodsLog (LOG_NOTICE,
-		 "Set WOS env wosHost=%s, wosPolicy=%s", wosHost, wosPolicy);
+		if (ProcessType == SERVER_PT) {
+		    rodsLog (LOG_NOTICE,
+		     "Set WOS env wosHost=%s, wosPolicy=%s", 
+		      wosHost, wosPolicy);
+		}
 	    }
         }
         rstrcpy (myRescInfo->rescInfo, tmpRescInfo, LONG_NAME_LEN);
