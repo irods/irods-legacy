@@ -3,6 +3,7 @@
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
  
 #include "univMSSDriver.h"
+#include "physPath.h"
 
 /* univMSSSyncToArch - This function is for copying the file from cacheFilename to filename in the MSS. 
  * optionalInfo info is not used.
