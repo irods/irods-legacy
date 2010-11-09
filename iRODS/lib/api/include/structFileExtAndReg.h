@@ -29,13 +29,6 @@ typedef struct StructFileExtAndRegInp {
     keyValPair_t condInput;   /* include chksum flag and value */
 } structFileExtAndRegInp_t;
 
-typedef struct RenamedPhyFiles {
-    int count;
-    char objPath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
-    char origFilePath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
-    char newFilePath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
-} renamedPhyFiles_t;
-
 #define StructFileExtAndRegInp_PI "str objPath[MAX_NAME_LEN]; str collection[MAX_NAME_LEN]; int oprType; int flags; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
@@ -57,16 +50,6 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray);
 int
 regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags);
-int
-bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, 
-char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize, 
-int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp, 
-renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray);
-int
-bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
-char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
-int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
-renamedPhyFiles_t *renamedPhyFiles);
 int
 addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 
 renamedPhyFiles_t *renamedPhyFiles);

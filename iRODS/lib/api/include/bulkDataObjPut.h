@@ -26,6 +26,13 @@ typedef struct {
     keyValPair_t condInput;   /* include chksum flag and value */
 } bulkOprInp_t;
 
+typedef struct RenamedPhyFiles {
+    int count;
+    char objPath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
+    char origFilePath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
+    char newFilePath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
+} renamedPhyFiles_t;
+
 #define BulkOprInp_PI "str objPath[MAX_NAME_LEN]; struct GenQueryOut_PI; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
@@ -42,6 +49,25 @@ createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir);
 int
 initDataObjInpFromBulkOpr (dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp);
+int
+bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, 
+char *rescGroupName, char *collection, char *phyBunDir, int flags, 
+genQueryOut_t *attriArray);
+int
+_bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, 
+char *rescGroupName, char *collection, char *phyBunDir, int flags, 
+genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles, 
+genQueryOut_t *attriArray);
+int
+bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo,
+char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize,
+int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp,
+renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray);
+int
+bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
+char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
+int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
+renamedPhyFiles_t *renamedPhyFiles);
 #else
 #define RS_BULK_DATA_OBJ_PUT NULL
 #endif
