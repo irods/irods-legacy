@@ -162,12 +162,15 @@ rescGrpInfo_t *rescGrpInfo)
                           L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
 		        /* need to reset subPhyPath since phyBunDir has 
 		         * changed */
+			/* At this point subPhyPath[0] == 0 if it has gone
+			 * through replAndAddSubFileToDir below. != 0 if it has
+			 * not and already a good cache copy */
 			if (curSubFileCond.subPhyPath[0] != '\0')
 	                    setSubPhyPath (phyBunDir, curSubFileCond.dataId,
                               curSubFileCond.subPhyPath);
 
                     }
-		}
+		}	/* end of new bundle file */
 		status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
 		  myRescName, phyBunDir, &bunReplCacheHeader);
                 if (status < 0) {
@@ -184,7 +187,7 @@ rescGrpInfo_t *rescGrpInfo)
                 rstrcpy (curSubFileCond.dataName, collEnt->dataName, 
 		  MAX_NAME_LEN);
 		curSubFileCond.dataId = strtoll (collEnt->dataId, 0, 0);
-	    }
+	    }	/* end of  name compare */
  
 	    if (curSubFileCond.bundled > 0) {
 		/* already bundled. skip */
