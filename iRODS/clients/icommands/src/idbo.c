@@ -168,13 +168,14 @@ queryAndShowStrCond(rcComm_t *conn, char *hint, char *format,
 }
 
 int
-execDbo(char *dbRescName, char *dboName) {
+execDbo(char *dbRescName, char *dboName, char *args[10]) {
    databaseObjControlInp_t databaseObjControlInp;
    databaseObjControlOut_t *databaseObjControlOut;
    int status;
    char *myName;
    char *mySubName;
    char fullName[BIG_STR];
+   int i;
 
    memset((void *)&databaseObjControlInp, 0, sizeof(databaseObjControlInp));
 
@@ -197,6 +198,7 @@ execDbo(char *dbRescName, char *dboName) {
    }
 
    databaseObjControlInp.dboName = fullName;
+   for (i=0;i<10;i++) databaseObjControlInp.args[i] = args[i];
 
    status = rcDatabaseObjControl(Conn, &databaseObjControlInp, 
 				 &databaseObjControlOut);
@@ -214,6 +216,17 @@ execDbo(char *dbRescName, char *dboName) {
 	    printf("Error message return by the DBMS or DBO interface:\n");
 	 }
 	 printf("%s\n",databaseObjControlOut->outBuf);
+      }
+      if (Conn->rError) {
+	 rError_t *Err;
+         rErrMsg_t *ErrMsg;
+	 int i, len;
+	 Err = Conn->rError;
+	 len = Err->len;
+	 for (i=0;i<len;i++) {
+	    ErrMsg = Err->errMsg[i];
+	    rodsLog(LOG_ERROR, "Detail: %s", ErrMsg->msg);
+	 }
       }
       return(status);
    }
@@ -356,7 +369,7 @@ doCommand(char *cmdToken[]) {
    }
 
    if (strcmp(cmdToken[0],"exec") == 0) {
-      execDbo(cmdToken[1], cmdToken[2]);
+      execDbo(cmdToken[1], cmdToken[2], &cmdToken[3]);
       return(0);
    }
    if (strcmp(cmdToken[0],"commit") == 0) {
@@ -518,7 +531,7 @@ void usageMain()
 "Commands are:",
 "  open DBR    (open a database resource)",
 "  close DBR   (close a database resource)",
-"  exec DBR DBO (execute a DBO on a DBR)",
+"  exec DBR DBO [arguments] (execute a DBO on a DBR)",
 "  commit DBR   (commit updates to a DBR (done via a DBO))",
 "  rollback DBR (rollback updates instead)",
 "  ls           (list defined Database-Objects in the Zone)",
@@ -565,11 +578,14 @@ usage(char *subOpt)
 "If you have updated a DBR via a DBO, you should 'commit' before closing.",
 ""};
    char *execMsgs[]={
-"  exec DBR DBO",
+"  exec DBR DBO [arguments]",
 "Execute a DBO on a DBR.",
-"By default, the results (of a query) will be returned and displayed",
-"If you are just running DBO that only queries, you do not need to",
+"By default, the results (of a query) will be returned and displayed.",
+"If you are just running a DBO that only queries, you do not need to",
 "open or close the DBR, it will be done automatically.",
+"Error messages, if any, will be displayed.",
+"For DBOs that take one or more arguments, these are supplied after the DBO",
+"name; if an argument contains a blank, enclose it with singles quotes (').",
 ""};
    char *lsMsgs[]={
 "ls ", 

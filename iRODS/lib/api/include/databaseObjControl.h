@@ -23,9 +23,10 @@ typedef struct {
    char *dbrName;
    char *dboName; /* DBO name */
    int   option;  /* option to perform */
+   char *args[10];  /* optional arguments for execute */
 } databaseObjControlInp_t;
     
-#define databaseObjControlInp_PI "str *dbrName; str *dboName; int option;"
+#define databaseObjControlInp_PI "str *dbrName; str *dboName; int option; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7; str *arg8; str *arg9; str *arg10;"
 
 typedef struct {
    char *outBuf;

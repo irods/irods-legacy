@@ -528,6 +528,11 @@
 #define DBO_INVALID_CONTROL_OPTION      -1716000
 #define DBR_ALREADY_OPEN                -1717000
 #define DBO_DOES_NOT_EXIST              -1718000
+#define DBR_ACCESS_PROHIBITED           -1719000
+#define DBO_NOT_VALID_DATATYPE          -1720000
+#define DBR_WRITABLE_BY_TOO_MANY        -1721000
+#define DBO_WRITABLE_BY_TOO_MANY        -1722000
+#define DBO_WRITABLE_BY_NON_PRIVILEGED  -1723000
 
 
 /* The following are handler protocol type msg. These are not real error */

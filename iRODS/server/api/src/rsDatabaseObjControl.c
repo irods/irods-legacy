@@ -83,8 +83,9 @@ rsDatabaseObjControl (rsComm_t *rsComm, databaseObjControlInp_t *databaseObjCont
 
 
 int
-_rsDatabaseObjControl (rsComm_t *rsComm, databaseObjControlInp_t *databaseObjControlInp,
-		    databaseObjControlOut_t **databaseObjControlOut) {
+_rsDatabaseObjControl (rsComm_t *rsComm, 
+		       databaseObjControlInp_t *databaseObjControlInp,
+		       databaseObjControlOut_t **databaseObjControlOut) {
     char *outBuf;
     databaseObjControlOut_t *myObjControlOut;
 #ifdef DBO
@@ -102,7 +103,8 @@ _rsDatabaseObjControl (rsComm_t *rsComm, databaseObjControlInp_t *databaseObjCon
        status = dboExecute(rsComm, 
 			   databaseObjControlInp->dbrName, 
 			   databaseObjControlInp->dboName, 
-			   outBuf, maxBufSize);
+			   outBuf, maxBufSize, 
+			   databaseObjControlInp->args);
     }
     if (databaseObjControlInp->option == DBR_COMMIT) {
        validOption=1;

@@ -29,9 +29,12 @@
 #include "dataObjClose.h"
 
 #define DBR_CONFIG_FILE "dbr.config"
-/*#define DBO_ACCESS_ATTRIBUTE "DBO_ACCESS" */
 #define DBR_ODBC_ENTRY_PREFIX "IRODS_DBR_"
 #define MAX_ODBC_ENTRY_NAME 100
+
+#define DBR_ACCESS_READ  1
+#define DBR_ACCESS_WRITE 2
+#define DBR_ACCESS_OWN   3
 
 #define BUF_LEN 500
 #define MAX_SQL 4000
@@ -221,13 +224,13 @@ int dboIsConnected(int icss_index) {
 }
 
 /*
-  Check to see if the client user has access to this DBO
-  by querying the user AVU.
- */
-int dboCheckAccess(char *dboName, rsComm_t *rsComm) {
-#if defined(DBO_NOTYET) 
+Via a general query, get the user's access to the DBR
+*/
+int
+checkAccessToDBR(rsComm_t *rsComm, char *dbrName)
+{
    genQueryInp_t genQueryInp;
-   genQueryOut_t genQueryOut;
+   genQueryOut_t *genQueryOut;
    int iAttr[10];
    int iAttrVal[10]={0,0,0,0,0};
    int iCond[10];
@@ -235,43 +238,241 @@ int dboCheckAccess(char *dboName, rsComm_t *rsComm) {
    char v1[BIG_STR];
    char v2[BIG_STR];
    char v3[BIG_STR];
-   int status;
+   int status, i, j;
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
-   iAttr[0]=COL_META_USER_ATTR_VALUE;
+   i=0;
+   iAttr[i++]=COL_RESC_ACCESS_NAME;
+   
    genQueryInp.selectInp.inx = iAttr;
    genQueryInp.selectInp.value = iAttrVal;
-   genQueryInp.selectInp.len = 1;
-
-   iCond[0]=COL_USER_NAME;
-   sprintf(v1,"='%s'", rsComm->clientUser.userName);
-   condVal[0]=v1;
-
-   iCond[1]=COL_META_USER_ATTR_NAME;
-   sprintf(v2,"='%s'", DBO_ACCESS_ATTRIBUTE);
-   condVal[1]=v2;
-
-   iCond[2]=COL_META_USER_ATTR_VALUE;
-   sprintf(v3,"='%s'", dboName);
-   condVal[2]=v3;
+   genQueryInp.selectInp.len = i;
 
    genQueryInp.sqlCondInp.inx = iCond;
    genQueryInp.sqlCondInp.value = condVal;
-   genQueryInp.sqlCondInp.len=3;
 
-   genQueryInp.maxRows=10;
+   i=0;
+   iCond[i]=COL_R_RESC_NAME;
+   sprintf(v1,"='%s'",dbrName);
+   condVal[i++]=v1;
+
+   iCond[i]=COL_RESC_USER_NAME;
+   sprintf(v2,"='%s'", rsComm->clientUser.userName);
+   condVal[i++]=v2;
+
+   iCond[i]=COL_RESC_USER_ZONE;
+   sprintf(v3,"='%s'", rsComm->clientUser.rodsZone);
+   condVal[i++]=v3;
+
+   genQueryInp.sqlCondInp.len=i;
+
+   genQueryInp.maxRows=50;
+   genQueryInp.continueInx=0;
+   status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) return(0);
+   if (status) return(status);
+
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+      for (j=0;j<genQueryOut->attriCnt;j++) {
+	 char *tResult;
+	 tResult = genQueryOut->sqlResult[j].value;
+	 tResult += i*genQueryOut->sqlResult[j].len;
+	 printf("%s ",tResult);
+	 if (strcmp(tResult,"own")==0) return(DBR_ACCESS_OWN);
+	 if (strcmp(tResult,"modify object")==0) return(DBR_ACCESS_WRITE);
+	 if (strcmp(tResult,"read object")==0) return(DBR_ACCESS_READ);
+      }
+      printf("\n");
+   }
+   return (0);
+}
+
+/*
+Via a general query, check that the DBO is of the right type (access
+will be checked when the data-object is opened for reading)
+*/
+int
+checkDBOType(rsComm_t *rsComm, char *dboName)
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int iAttr[10];
+   int iAttrVal[10]={0,0,0,0,0};
+   int iCond[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char v3[BIG_STR];
+   int status, i;
+   char logicalFileName[MAX_NAME_LEN];
+   char logicalDirName[MAX_NAME_LEN];
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   i=0;
+   iAttr[i++]=COL_D_DATA_ID;
+   
+   genQueryInp.selectInp.inx = iAttr;
+   genQueryInp.selectInp.value = iAttrVal;
+   genQueryInp.selectInp.len = i;
+
+   genQueryInp.sqlCondInp.inx = iCond;
+   genQueryInp.sqlCondInp.value = condVal;
+
+   status = splitPathByKey(dboName,
+			   logicalDirName, logicalFileName, '/');
+
+   i=0;
+   iCond[i]=COL_DATA_TYPE_NAME;
+   sprintf(v1,"='%s'","database object");
+   condVal[i++]=v1;
+
+   iCond[i]=COL_DATA_NAME;
+   sprintf(v2,"='%s'", logicalFileName);
+   condVal[i++]=v2;
+
+   iCond[i]=COL_COLL_NAME;
+   sprintf(v3,"='%s'", logicalDirName);
+   condVal[i++]=v3;
+
+   genQueryInp.sqlCondInp.len=i;
+
+   genQueryInp.maxRows=50;
+   genQueryInp.continueInx=0;
+   status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) return(DBO_NOT_VALID_DATATYPE);
+   return(status);
+}
+
+
+/*
+  Check to see if the client user has access to this DBR and DBO
+  by querying the user AVU.
+ */
+int checkDBOOwner(rsComm_t *rsComm, char *dbrName, char *dboName) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   genQueryInp_t genQueryInp2;
+   genQueryOut_t *genQueryOut2;
+   int iAttr[10];
+   int iAttrVal[10]={0,0,0,0,0};
+   int iCond[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char v3[BIG_STR];
+   int status, i, j;
+   char logicalFileName[MAX_NAME_LEN];
+   char logicalDirName[MAX_NAME_LEN];
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   i=0;
+   iAttr[i++]=COL_DATA_ACCESS_USER_ID;
+   
+   genQueryInp.selectInp.inx = iAttr;
+   genQueryInp.selectInp.value = iAttrVal;
+   genQueryInp.selectInp.len = i;
+
+   status = splitPathByKey(dboName,
+			   logicalDirName, logicalFileName, '/');
+
+   i=0;
+   iCond[i]=COL_DATA_ACCESS_NAME;
+   sprintf(v1,"= '%s' || = '%s'","own", "modify object");
+   condVal[i++]=v1;
+
+   iCond[i]=COL_DATA_NAME;
+   sprintf(v2,"='%s'", logicalFileName);
+   condVal[i++]=v2;
+
+   iCond[i]=COL_COLL_NAME;
+   sprintf(v3,"='%s'", logicalDirName);
+   condVal[i++]=v3;
+
+   genQueryInp.sqlCondInp.len=i;
+   genQueryInp.sqlCondInp.inx = iCond;
+   genQueryInp.sqlCondInp.value = condVal;
+
+   genQueryInp.maxRows=20;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
-   status = chlGenQuery(genQueryInp, &genQueryOut);
-   if (status == CAT_NO_ROWS_FOUND) {
-      return(DBO_ACCESS_PROHIBITED);
+   status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+   if (status) return(status);
+   if (genQueryOut->continueInx != 0) return(DBR_WRITABLE_BY_TOO_MANY);
+
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+       printf("DEBUGy");
+      for (j=0;j<genQueryOut->attriCnt;j++) {
+	 char *tResult;
+	 tResult = genQueryOut->sqlResult[j].value;
+	 tResult += i*genQueryOut->sqlResult[j].len;
+	 printf("%s ",tResult);
+      }
+      printf("\n");
    }
 
-   return (status);  /* any error, no access */
-#else
-   return(DBO_NOT_COMPILED_IN);
+
+/* Now find all users with write access to the DBR */
+   memset (&genQueryInp2, 0, sizeof (genQueryInp_t));
+
+   i=0;
+   iAttr[i++]=COL_RESC_ACCESS_USER_ID;
+   
+   genQueryInp2.selectInp.inx = iAttr;
+   genQueryInp2.selectInp.value = iAttrVal;
+   genQueryInp2.selectInp.len = i;
+
+   i=0;
+   iCond[i]=COL_RESC_ACCESS_NAME;
+   sprintf(v1,"= '%s'", "modify object");
+   condVal[i++]=v1;
+
+   iCond[i]=COL_R_RESC_NAME;
+   sprintf(v2,"='%s'", dbrName);
+   condVal[i++]=v2;
+
+   genQueryInp2.sqlCondInp.len=i;
+   genQueryInp2.sqlCondInp.inx = iCond;
+   genQueryInp2.sqlCondInp.value = condVal;
+
+   genQueryInp2.maxRows=20;
+   genQueryInp2.continueInx=0;
+   genQueryInp2.condInput.len=0;
+   status = rsGenQuery(rsComm, &genQueryInp2, &genQueryOut2);
+
+   if (status) return(status);
+   if (genQueryOut2->continueInx != 0) return(DBR_WRITABLE_BY_TOO_MANY);
+
+#if 0
+   for (i=0;i<genQueryOut2->rowCnt;i++) {
+      for (j=0;j<genQueryOut->attriCnt;j++) {
+	 char *tResult;
+	 tResult = genQueryOut->sqlResult[j].value;
+	 tResult += i*genQueryOut->sqlResult[j].len;
+	 printf("DEBUG2: %s ",tResult);
+      }
+      printf("\n");
+   }
 #endif
+
+   /* if more users can write to the DBO than can write to the DBR
+      then the DBO access is clearly too open */
+   if (genQueryOut->rowCnt > genQueryOut2->rowCnt) 
+      return(DBO_WRITABLE_BY_NON_PRIVILEGED);
+
+   /* Each user that can write to the DBO must be in the list of those
+      who can write to the DBR */
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+      int OK=0;
+      for (j=0;j<genQueryOut2->rowCnt;j++) {
+	 if (strcmp(genQueryOut->sqlResult[i].value,
+		    genQueryOut2->sqlResult[j].value) == 0) OK=1;
+      }
+      if (OK==0) return(DBO_WRITABLE_BY_NON_PRIVILEGED);
+   }
+   return (status);  /* any error, no access */
 }
 
 
@@ -293,17 +494,19 @@ int dboSqlNoResults(char *sql, char *parm[], int nParms) {
 #endif
 }
 
-int dboSqlWithResults(int fd, char *sql, char *parm[], int nParms, 
+int dboSqlWithResults(int fd, char *sql, char *args[10],
 		      char *outBuf, int maxOutBuf) {
 #if defined(DBO) 
    int i, ii;
    int statement;
    int rowCount, nCols;
 
-   for (i=0;i<nParms;i++) {
-      cllBindVars[i]=parm[i];
+   for (i=0;i<10;i++) {
+      if (args[i]==NULL || strlen(args[i])==0) break;
+      cllBindVars[i]=args[i];
    }
-   cllBindVarCount=nParms;
+   cllBindVarCount=i;
+
    i = cllExecSqlWithResult(&dbo_icss[fd], &statement, sql);
    if (i==CAT_SUCCESS_BUT_WITH_NO_INFO) return(CAT_SUCCESS_BUT_WITH_NO_INFO);
    if (i) {
@@ -491,28 +694,6 @@ dboReadConfigItems(char *dboList, int maxSize) {
 
    return(0);
 }
-int
-dboGetInfo(int fd, char *outBuf, int maxOutBuf) {
-   int status;
-#ifdef ORA_DBO
-   /* Oracle vesion */
-   char tableSql[]="select TABLE_NAME from tabs";
-#else
-   /* Postgres sql that returns table list, like '\d' in psql.  
-      Found on the web.
-   */
-   char tableSql[]="SELECT n.nspname as \"Schema\", c.relname as \"Name\", CASE c.relkind WHEN 'r' THEN 'table' WHEN 'v' THEN 'view' WHEN 'i' THEN 'index' WHEN 'S' THEN 'sequence' WHEN 's' THEN 'special' END as \"Type\", u.usename as \"Owner\" FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_user u ON u.usesysid = c.relowner LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','') AND n.nspname NOT IN ('pg_catalog', 'pg_toast') AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY 1,2";
-#endif
-
-   if (fd>MAX_SESSIONS || fd< 0 || dbo_icss[fd].status!=1) {
-      strcpy(outBuf, "DBR is not open");
-      return(DBO_INVALID_OBJECT_DESCRIPTOR);
-   }
-
-   status =  dboSqlWithResults(fd, tableSql, NULL, 0, 
-			       outBuf, maxOutBuf);
-   return(status);
-}
 
 int
 getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL) {
@@ -566,14 +747,38 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL) {
 
 int
 dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
-	   int maxOutBuf) {
+	   int maxOutBuf, char *args[10]) {
    int status;
    char dboSQL[MAX_SQL];
    int i, ix;
    int didOpen=0;
+   int dbrAccess;
 
+#if 0
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+#endif
+
+   status = checkDBOType(rsComm, dboName);
+   if (status==DBO_NOT_VALID_DATATYPE) {
+      int i;
+      i = addRErrorMsg (&rsComm->rError, 0, 
+          "Either the DBO does not exist or does not have a data-type\nof 'database object'.  The owner of the DBO can set the datatype via 'isysmeta'.\nSee 'isysmeta -h'.");
+   }
+   if (status) return(status);
+
+   dbrAccess = checkAccessToDBR(rsComm, dbrName);
+   if (dbrAccess < 0) return(dbrAccess);
+
+   if (dbrAccess < DBR_ACCESS_WRITE) {
+      if (dbrAccess == DBR_ACCESS_READ) {
+	 status = checkDBOOwner(rsComm, dbrName, dboName);
+	 if (status) return(status);
+      }
+      else {
+	 return (DBR_ACCESS_PROHIBITED);
+      }
    }
 
    ix=getOpenDbrIndex(dbrName);
@@ -591,7 +796,7 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
 
    if (status) return(status);
 
-   status =  dboSqlWithResults(ix, dboSQL, NULL, 0, 
+   status =  dboSqlWithResults(ix, dboSQL, args,
 			       outBuf, maxOutBuf);
 
    if (didOpen) {  /* DBR was not originally open */
