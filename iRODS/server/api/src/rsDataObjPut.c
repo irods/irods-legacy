@@ -114,7 +114,6 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
 	    addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
 	    status = rsDataObjRepl (rsComm, dataObjInp, &transStat);
 	    if (transStat!= NULL) free (transStat);
-            clearKeyVal (&replDataObjInp.condInput);
 	}
 	if (status > 0) status = 0;
         return (status);
