@@ -1236,6 +1236,7 @@ dataObjInfo_t *outCacheObjInfo)
     rescInfo_t *cacheResc;
     transStat_t transStat;
     dataObjInp_t dataObjInp;
+    char tmpStr[NAME_LEN];
 
     if (getRescClass (compObjInfo->rescInfo) != COMPOUND_CL) return 0;
 #if 0
