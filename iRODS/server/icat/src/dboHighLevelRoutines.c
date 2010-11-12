@@ -117,9 +117,9 @@ int dbrOpen(char *dbrName) {
    }
 
    /* Connect to the DBMS */
-   strncpy((char *)&odbcEntryName, DBR_ODBC_ENTRY_PREFIX, 
+   rstrcpy((char *)&odbcEntryName, DBR_ODBC_ENTRY_PREFIX, 
 	   MAX_ODBC_ENTRY_NAME);
-   strncat((char *)&odbcEntryName, dbrName,
+   rstrcat((char *)&odbcEntryName, dbrName,
 	   MAX_ODBC_ENTRY_NAME);
    i = cllConnectDbo(&dbo_icss[icss_index], odbcEntryName);
    if (i != 0) {
@@ -128,7 +128,7 @@ int dbrOpen(char *dbrName) {
    }
 
    dbo_icss[icss_index].status=1;
-   strncpy(openDbrName[icss_index], dbrName, MAX_DBO_NAME_LEN);
+   rstrcpy(openDbrName[icss_index], dbrName, MAX_DBO_NAME_LEN);
 
    return(icss_index);
 #else
@@ -494,7 +494,7 @@ int dboSqlNoResults(char *sql, char *parm[], int nParms) {
 #endif
 }
 
-int dboSqlWithResults(int fd, char *sql, char *args[10],
+int dboSqlWithResults(int fd, char *sql, char *sqlFormat, char *args[10],
 		      char *outBuf, int maxOutBuf) {
 #if defined(DBO) 
    int i, ii;
@@ -526,24 +526,117 @@ int dboSqlWithResults(int fd, char *sql, char *args[10],
       if (dbo_icss[fd].stmtPtr[statement]->numOfCols == 0) {
 	 i = cllFreeStatement(&dbo_icss[fd],statement);
 	 if (rowCount==0) return(CAT_NO_ROWS_FOUND);
+	 rstrcat(outBuf, "\n<\\rows>", maxOutBuf);
 	 return(0);
       }
 
       nCols = dbo_icss[fd].stmtPtr[statement]->numOfCols;
       if (rowCount==0) {
+	 rstrcat(outBuf, "<column_descriptions>\n", maxOutBuf);
 	 for (i=0; i<nCols ; i++ ) {
 	    rstrcat(outBuf, dbo_icss[fd].stmtPtr[statement]->resultColName[i],
 		    maxOutBuf);
 	    rstrcat(outBuf, "|", maxOutBuf);
 	 }
-	 rstrcat(outBuf, "\n", maxOutBuf);
+	 rstrcat(outBuf, "\n<\\column_descriptions>\n<rows>\n", maxOutBuf);
       }
-      for (i=0; i<nCols ; i++ ) {
-	 rstrcat(outBuf, dbo_icss[fd].stmtPtr[statement]->resultValue[i], 
-		 maxOutBuf);
-	 rstrcat(outBuf, "|", maxOutBuf);
+      if (rowCount>0) rstrcat(outBuf, "\n", maxOutBuf);
+      if (nCols>0 && nCols<5 && sqlFormat!=NULL && *sqlFormat!='\0') {
+	 char line1[1000];
+	 if (nCols==1) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0]);
+	 }
+	 if (nCols==2) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1]);
+	 }
+	 if (nCols==3) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[2]);
+	 }
+	 if (nCols==4) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[2],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[3]);
+	 }
+	 if (nCols==5) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[2],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[3],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[4]);
+	 }
+	 if (nCols==6) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[2],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[3],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[4],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[5]);
+	 }
+	 if (nCols==7) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[2],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[3],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[4],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[5],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[6]);
+	 }
+	 if (nCols==8) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[2],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[3],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[4],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[5],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[6],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[7]);
+	 }
+	 if (nCols==9) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[2],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[3],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[4],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[5],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[6],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[7],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[8]);
+	 }
+	 if (nCols==10) {
+	    snprintf(line1, sizeof(line1), sqlFormat, 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[0], 
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[1],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[2],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[3],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[4],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[5],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[6],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[7],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[8],
+		     dbo_icss[fd].stmtPtr[statement]->resultValue[9]);
+	 }
+	 rstrcat(outBuf, line1, maxOutBuf);
       }
-      rstrcat(outBuf, "\n", maxOutBuf);
+      else {
+	 for (i=0; i<nCols ; i++ ) {
+	    rstrcat(outBuf, dbo_icss[fd].stmtPtr[statement]->resultValue[i], 
+		    maxOutBuf);
+	    rstrcat(outBuf, "|", maxOutBuf);
+	 }
+      }
    }
 
    return(0);  /* never reached */
@@ -696,18 +789,18 @@ dboReadConfigItems(char *dboList, int maxSize) {
 }
 
 int
-getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL) {
+getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL, char *dboFormat) {
    openedDataObjInp_t dataObjReadInp;
    openedDataObjInp_t dataObjCloseInp;
    bytesBuf_t *readBuf;
    int status;
    int objID;
-   char *cp1;
+   char *cp1, *cp2, *cp3;
    int bytesRead;
    dataObjInp_t dataObjInp;
 
    memset (&dataObjInp, 0, sizeof(dataObjInp_t));
-   strncpy(dataObjInp.objPath, fullName, MAX_NAME_LEN);
+   rstrcpy(dataObjInp.objPath, fullName, MAX_NAME_LEN);
 
    if ((objID=rsDataObjOpen(rsComm, &dataObjInp)) < 0) {
       if (objID == CAT_NO_ROWS_FOUND) return (DBO_DOES_NOT_EXIST);
@@ -734,7 +827,21 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL) {
       while (*cp1 != '\n') cp1++;
       cp1++;
    }
-   strncpy(dboSQL, cp1, MAX_SQL);
+   cp2=cp1;
+   while (*cp2 != '\n' && *cp2 != '\0') cp2++;
+   if (*cp2=='\0') {
+      rstrcpy(dboSQL, cp1, MAX_SQL);
+      *dboFormat='\0';
+   }
+   else {
+      *cp2='\0';
+      rstrcpy(dboSQL, cp1, MAX_SQL);
+      cp2++;
+      cp3=cp2;
+      while (*cp3 != '\n' && *cp3 != '\0') cp3++;
+      *cp3='\0';
+      rstrcpy(dboFormat, cp2, MAX_SQL);
+   }
 
    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
    dataObjCloseInp.l1descInx = objID;
@@ -745,12 +852,28 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL) {
    return(0);
 }
 
+void
+printSqlAndArgs(char *dboSQL, char *args[10], char *outBuf, int maxOutBuf) {
+   int i;
+   rstrcpy(outBuf, "<sql>", maxOutBuf);
+   rstrcat(outBuf, dboSQL, maxOutBuf);
+   rstrcat(outBuf, "</sql>\n", maxOutBuf);
+   for (i=0;i<10;i++) {
+      if (args[i]==NULL || strlen(args[i])==0) break;
+      rstrcat(outBuf, "<arg>", maxOutBuf);
+      rstrcat(outBuf, args[i], maxOutBuf);
+      rstrcat(outBuf, "</arg>\n", maxOutBuf);
+   }
+}
+
 int
 dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
 	   int maxOutBuf, char *args[10]) {
    int status;
    char dboSQL[MAX_SQL];
+   char dboFormat[MAX_SQL];
    int i, ix;
+   int outBufStrLen;
    int didOpen=0;
    int dbrAccess;
 
@@ -789,15 +912,19 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
       didOpen=1;
    }
 
-   status = getDboSql(rsComm, dboName, dboSQL);
+   status = getDboSql(rsComm, dboName, dboSQL, dboFormat);
    if (status) return(status);
 
-   if (dboLogSQL) rodsLog(LOG_SQL, "dboExecute SQL: %s", dboSQL);
+   if (dboLogSQL) rodsLog(LOG_SQL, "dboExecute SQL: %s\n", dboSQL);
 
    if (status) return(status);
 
-   status =  dboSqlWithResults(ix, dboSQL, args,
-			       outBuf, maxOutBuf);
+   printSqlAndArgs(dboSQL, args, outBuf, maxOutBuf);
+
+   outBufStrLen = strlen(outBuf);
+
+   status =  dboSqlWithResults(ix, dboSQL, dboFormat, args,
+			       outBuf+outBufStrLen, maxOutBuf-outBufStrLen-1);
 
    if (didOpen) {  /* DBR was not originally open */
       i = dbrClose(dbrName);
@@ -805,4 +932,3 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
    }
    return(0);
 }
-
