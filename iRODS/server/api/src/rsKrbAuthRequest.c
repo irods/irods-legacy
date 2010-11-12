@@ -56,7 +56,7 @@ int ikrbServersideAuth(rsComm_t *rsComm) {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
    char condition1[MAX_NAME_LEN];
-   char condition2[MAX_NAME_LEN];
+   char condition2[MAX_NAME_LEN*2];
    char *tResult;
    int privLevel;
    int clientPrivLevel;
