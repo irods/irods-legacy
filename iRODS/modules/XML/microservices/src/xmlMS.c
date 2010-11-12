@@ -83,7 +83,7 @@ myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
  *  *xmlObjPath=/tempZone/home/antoine/formattedDDI.xml%*targetObjPath=/tempZone/home/antoine/contact.txt
  *  ruleExecOut
  *  
- * \param[in] targetObj - a msParam of type DataObjInp_MS_T or STR_MS_T
+ * \param[in] targetObj - Optional - a msParam of type DataObjInp_MS_T or STR_MS_T
  * \param[in] xmlObj - a msParam of type DataObjInp_MS_T or STR_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -138,7 +138,8 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	
 	/* for new AVU creation */
 	modAVUMetadataInp_t modAVUMetadataInp;
-	char attrStr[MAX_NAME_LEN];
+	int max_attr_len = 2700;
+	char attrStr[max_attr_len];
 
 
 
@@ -265,15 +266,29 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	{
 		if (nodes->nodeTab[i])
 		{
-			/* temporary: Add index number to avoid duplicating attribute names */
-			memset(attrStr, '\0', MAX_NAME_LEN);
-			snprintf(attrStr, MAX_NAME_LEN - 1, "%04d: %s", i+1, (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Attribute")) );
+//			/* temporary: Add index number to avoid duplicating attribute names */
+//			memset(attrStr, '\0', MAX_NAME_LEN);
+//			snprintf(attrStr, MAX_NAME_LEN - 1, "%04d: %s", i+1, (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Attribute")) );
+
+			/* Truncate if needed. No prefix. */
+			memset(attrStr, '\0', max_attr_len);
+			snprintf(attrStr, max_attr_len - 1, "%s", (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Attribute")) );
 
 			/* init modAVU input */
 			memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
 			modAVUMetadataInp.arg0 = "add";
 			modAVUMetadataInp.arg1 = "-d";
-			modAVUMetadataInp.arg2 = myTargetObjInp->objPath;
+
+			/* Use target object if one was provided, otherwise look for it in the XML doc */
+			if (myTargetObjInp->objPath != NULL && strlen(myTargetObjInp->objPath) > 0)
+			{
+				modAVUMetadataInp.arg2 = myTargetObjInp->objPath;
+			}
+			else
+			{
+				modAVUMetadataInp.arg2 = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Target"));
+			}
+
 			modAVUMetadataInp.arg3 = attrStr;
 			modAVUMetadataInp.arg4 = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Value"));
 			modAVUMetadataInp.arg5 = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Unit"));
