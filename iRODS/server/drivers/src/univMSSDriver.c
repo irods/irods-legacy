@@ -3,7 +3,6 @@
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
  
 #include "univMSSDriver.h"
-#include "physPath.h"
 
 /* univMSSSyncToArch - This function is for copying the file from cacheFilename to filename in the MSS. 
  * optionalInfo info is not used.
@@ -210,7 +209,7 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 			statbuf->st_uid = atoi(splchain1[4]);
 			statbuf->st_gid = atoi(splchain1[5]);
 			statbuf->st_rdev = atoi(splchain1[6]);
-			statbuf->st_size = atoi(splchain1[7]);
+			statbuf->st_size = atoll(splchain1[7]);
 			statbuf->st_blksize = atoi(splchain1[8]);
 			statbuf->st_blocks = atoi(splchain1[9]);
 			for (i = 0; i < 3; i++) {

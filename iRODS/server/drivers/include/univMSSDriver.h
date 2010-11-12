@@ -14,6 +14,7 @@
 #include "rods.h"
 #include "rcConnect.h"
 #include "msParam.h"
+#include "physPath.h"
 #include "reIn2p3SysRule.h"
 
 int
