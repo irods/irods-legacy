@@ -29,6 +29,7 @@ rodsPathInp_t *rodsPathInp)
         getRodsObjType (conn, destPath);
 
 	if (destPath->objState == EXIST_ST &&
+	 myRodsArgs->force == False &&
 	 myRodsArgs->mountCollection == False) {
 	    rodsLog (LOG_ERROR,
 	      "regUtil: iRODSPath %s already exist", destPath->outPath);
@@ -87,6 +88,10 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
 
     if (rodsArgs->collection == True) {
             addKeyVal (&dataObjOprInp->condInput, COLLECTION_KW, "");
+    }
+
+    if (rodsArgs->force == True) {
+        addKeyVal (&dataObjOprInp->condInput, FORCE_FLAG_KW, "");
     }
 
     if (rodsArgs->resource == True) {

@@ -282,6 +282,7 @@ rescInfo_t *rescInfo)
     fileReaddirInp_t fileReaddirInp;
     rodsDirent_t *rodsDirent = NULL;
     rodsObjStat_t *rodsObjStatOut = NULL;
+    int forceFlag;
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
     if (status < 0) {
@@ -316,6 +317,12 @@ rescInfo_t *rescInfo)
 
     fileReaddirInp.fileInx = dirFd;
 
+    if (getValByKey (&phyPathRegInp->condInput, FORCE_FLAG_KW) != NULL) {
+	forceFlag = 1;
+    } else {
+	forceFlag = 0;
+    }
+
     while ((status = rsFileReaddir (rsComm, &fileReaddirInp, &rodsDirent))
       >= 0) {
         fileStatInp_t fileStatInp;
@@ -347,6 +354,13 @@ rescInfo_t *rescInfo)
 	  phyPathRegInp->objPath, rodsDirent->d_name);
 
 	if ((myStat->st_mode & S_IFREG) != 0) {     /* a file */
+	    if (forceFlag > 0) {
+		/* check if it already exists */
+	        if (isData (rsComm, subPhyPathRegInp.objPath, NULL) >= 0) {
+		    free (myStat);
+		    continue;
+		}
+	    }
             addKeyVal (&subPhyPathRegInp.condInput, FILE_PATH_KW, 
 	      fileStatInp.fileName);
 	    subPhyPathRegInp.dataSize = myStat->st_size;
