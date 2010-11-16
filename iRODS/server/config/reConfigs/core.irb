@@ -165,7 +165,7 @@ acSetMultiReplPerResc||nop|nop
 #    in the resource group.  
 #    It may be desirable to do replication only if the dataObject is stored
 #    in a resource group. For example, the following rule can be used:
-# acPostProcForPut|$rescGroupName != ""|msiSysReplDataObj($rescGroupName,all)|nop
+# acPostProcForPut|$rescGroupName != |msiSysReplDataObj($rescGroupName,all)|nop
 #
 #    msiSysChksumDataObj - checksum the just uploaded or copied data object.
 # acPostProcForPut||msiSysChksumDataObj##msiSysReplDataObj(demoResc8,all)|nop##nop
