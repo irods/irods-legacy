@@ -11,7 +11,9 @@
 #define MAX_SQL 4000
 #define BIG_STR 200
 
-char cwd[BIG_STR];
+char g_cwd[BIG_STR];
+char g_dbor[BIG_STR]="";
+int g_force;
 
 int debug=0;
 
@@ -192,12 +194,15 @@ execDbo(char *dbRescName, char *dboName, char *args[10]) {
       strncpy(fullName, dboName, BIG_STR);
    }
    else {
-      strncpy(fullName, cwd, BIG_STR);
+      strncpy(fullName, g_cwd, BIG_STR);
       strncat(fullName, "/", BIG_STR);
       strncat(fullName, dboName, BIG_STR);
    }
 
    databaseObjControlInp.dboName = fullName;
+   databaseObjControlInp.dborName = g_dbor;
+   databaseObjControlInp.subOption = g_force;
+
    for (i=0;i<10;i++) databaseObjControlInp.args[i] = args[i];
 
    status = rcDatabaseObjControl(Conn, &databaseObjControlInp, 
@@ -318,6 +323,39 @@ closeDatabaseResc(char *dbRescName) {
 }
 
 void
+dborOutput(char *arg1, char *arg2) {
+   char *dborName;
+
+   g_force=0;
+   if (arg2==NULL || *arg2=='\0') {
+      dborName = arg1;
+   }
+   else {
+      dborName = arg2;
+      if (strncmp(arg1, "-f", 2)==0) g_force=1;
+   }
+
+   if (dborName==NULL || dborName[0]=='\0') {
+      printf("DBOR option disabled; 'exec' results will be displayed\n");
+      g_dbor[0]='\0';
+      return;
+   }
+   if(dborName[0]=='/') {
+      strncpy(g_dbor, dborName, BIG_STR);
+   }
+   else {
+      strncpy(g_dbor, g_cwd, BIG_STR);
+      strncat(g_dbor, "/", BIG_STR);
+      strncat(g_dbor, dborName, BIG_STR);
+   }
+   printf("'exec' results will be stored in %s\n", g_dbor);
+   if (g_force) {
+      printf("If %s exists, the contents will be overwritten\n", g_dbor);
+   }
+   return;
+}
+
+void
 getInputLine(char *prompt, char *result, int max_result_len) {
    char *stat;
    int i;
@@ -374,6 +412,10 @@ doCommand(char *cmdToken[]) {
    }
    if (strcmp(cmdToken[0],"commit") == 0) {
       dbrControl(cmdToken[1], DBR_COMMIT);
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"output") == 0) {
+      dborOutput(cmdToken[1], cmdToken[2]);
       return(0);
    }
    if (strcmp(cmdToken[0],"rollback") == 0) {
@@ -445,9 +487,9 @@ main(int argc, char **argv) {
 	       status);
       exit (1);
    }
-   strncpy(cwd,myEnv.rodsCwd,BIG_STR);
-   if (strlen(cwd)==0) {
-      strcpy(cwd,"/");
+   strncpy(g_cwd,myEnv.rodsCwd,BIG_STR);
+   if (strlen(g_cwd)==0) {
+      strcpy(g_cwd,"/");
    }
 
    for (i=0;i<maxCmdTokens;i++) {
@@ -532,6 +574,7 @@ void usageMain()
 "  open DBR    (open a database resource)",
 "  close DBR   (close a database resource)",
 "  exec DBR DBO [arguments] (execute a DBO on a DBR)",
+"  output [-f] DBOR  (store 'exec' results in another data-object)",
 "  commit DBR   (commit updates to a DBR (done via a DBO))",
 "  rollback DBR (rollback updates instead)",
 "  ls           (list defined Database-Objects in the Zone)",
@@ -586,6 +629,15 @@ usage(char *subOpt)
 "Error messages, if any, will be displayed.",
 "For DBOs that take one or more arguments, these are supplied after the DBO",
 "name; if an argument contains a blank, enclose it with singles quotes (').",
+"DBOs are specified via either the full or relative (to the current) path."
+""};
+   char *outputMsgs[]={
+"  output [-f] DBOR  (store 'exec' results in another data-object)",
+"When 'exec' is run, instead of returning the results to the terminal,",
+"write the results to the DBOR data-object.  If -f is included,",
+"the data-object will be overwritten if it exists.",
+"DBORs (DBO Result data-objects) are specified via either the full or",
+"relative (to the current) path.",
 ""};
    char *lsMsgs[]={
 "ls ", 
@@ -619,11 +671,11 @@ usage(char *subOpt)
 ""};
 
 
-   char *subCmds[]={"open", "close", "exec", "ls",
+   char *subCmds[]={"open", "close", "exec", "output", "ls", 
 		    "commit", "rollback", "help", "h", "quit", "q",
 		    ""};
 
-   char **pMsgs[]={ openMsgs, closeMsgs, execMsgs, lsMsgs,
+   char **pMsgs[]={ openMsgs, closeMsgs, execMsgs, outputMsgs, lsMsgs,
 		    commitMsgs, rollbackMsgs, helpMsgs, helpMsgs,
 		    quitMsgs, quitMsgs};
 

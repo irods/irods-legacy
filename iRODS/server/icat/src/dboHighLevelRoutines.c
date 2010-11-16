@@ -27,6 +27,8 @@
 #include "dataObjOpen.h"
 #include "dataObjRead.h"
 #include "dataObjClose.h"
+#include "dataObjCreate.h"
+#include "dataObjWrite.h"
 
 #define DBR_CONFIG_FILE "dbr.config"
 #define DBR_ODBC_ENTRY_PREFIX "IRODS_DBR_"
@@ -42,6 +44,7 @@
 #define MAX_DBO_NAME_LEN 200
 #define BIG_STR 200
 
+#define LOCAL_BUFFER_SIZE 1000000
 #define MAX_SESSIONS 10
 static char openDbrName[MAX_SESSIONS][MAX_DBO_NAME_LEN+2]={"","","","","","","","","",""};
 
@@ -794,7 +797,7 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL, char *dboFormat) {
    openedDataObjInp_t dataObjCloseInp;
    bytesBuf_t *readBuf;
    int status;
-   int objID;
+   int objFD;
    char *cp1, *cp2, *cp3;
    int bytesRead;
    dataObjInp_t dataObjInp;
@@ -802,9 +805,14 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL, char *dboFormat) {
    memset (&dataObjInp, 0, sizeof(dataObjInp_t));
    rstrcpy(dataObjInp.objPath, fullName, MAX_NAME_LEN);
 
-   if ((objID=rsDataObjOpen(rsComm, &dataObjInp)) < 0) {
-      if (objID == CAT_NO_ROWS_FOUND) return (DBO_DOES_NOT_EXIST);
-      return (objID);
+   if ((objFD=rsDataObjOpen(rsComm, &dataObjInp)) < 0) {
+      int i;
+      if (objFD == CAT_NO_ROWS_FOUND) return (DBO_DOES_NOT_EXIST);
+      if (objFD==CAT_NO_ACCESS_PERMISSION) {
+	 i = addRErrorMsg (&rsComm->rError, 0, 
+			   "You do not have read access to the DBO.");
+      }
+      return (objFD);
    }
 
    /* read buffer init */
@@ -815,7 +823,7 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL, char *dboFormat) {
 
   /* read SQL data */
    memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
-   dataObjReadInp.l1descInx = objID;
+   dataObjReadInp.l1descInx = objFD;
    dataObjReadInp.len = readBuf->len;
 
    bytesRead = rsDataObjRead (rsComm, &dataObjReadInp, readBuf);
@@ -844,8 +852,10 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL, char *dboFormat) {
    }
 
    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-   dataObjCloseInp.l1descInx = objID;
+   dataObjCloseInp.l1descInx = objFD;
 	
+   free(readBuf);
+
    status = rsDataObjClose (rsComm, &dataObjCloseInp);
    if (status) return(status);
 
@@ -867,7 +877,23 @@ printSqlAndArgs(char *dboSQL, char *args[10], char *outBuf, int maxOutBuf) {
 }
 
 int
-dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
+openDBOR(rsComm_t *rsComm, char *dborName, int forceOption) {
+    dataObjInp_t myDataObjInp;
+    int status;
+
+    memset (&myDataObjInp, 0, sizeof(dataObjInp_t));
+    rstrcpy(myDataObjInp.objPath, dborName, MAX_NAME_LEN);
+    if (forceOption) {
+       addKeyVal (&myDataObjInp.condInput, FORCE_FLAG_KW, "");
+    }
+    status = rsDataObjCreate (rsComm, &myDataObjInp);
+    return(status);
+}
+
+int
+dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, 
+	   char *dborName, int dborOption, 
+	   char *outBuf,
 	   int maxOutBuf, char *args[10]) {
    int status;
    char dboSQL[MAX_SQL];
@@ -876,12 +902,18 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
    int outBufStrLen;
    int didOpen=0;
    int dbrAccess;
+   int outDesc;
+   char *myOutBuf;
+   int myMaxOutBuf;
 
 #if 0
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    }
 #endif
+
+   myOutBuf = outBuf;
+   myMaxOutBuf = maxOutBuf;
 
    status = checkDBOType(rsComm, dboName);
    if (status==DBO_NOT_VALID_DATATYPE) {
@@ -897,11 +929,32 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
    if (dbrAccess < DBR_ACCESS_WRITE) {
       if (dbrAccess == DBR_ACCESS_READ) {
 	 status = checkDBOOwner(rsComm, dbrName, dboName);
+	 if (status==DBO_WRITABLE_BY_NON_PRIVILEGED) {
+	    int i;
+	    i = addRErrorMsg (&rsComm->rError, 0, 
+		"The DBO is not secure.  Some users who can write to the DBO do not have write permission to the DBR.");
+	 }
 	 if (status) return(status);
       }
       else {
 	 return (DBR_ACCESS_PROHIBITED);
       }
+   }
+
+   if (dborName != NULL && *dborName!='\0') {
+      outDesc=openDBOR(rsComm, dborName, dborOption);
+      if (outDesc < 0) return(outDesc);
+
+      /* Use a larger buffer when output will be going to a DBOR.
+         Sometime, we should also modify the buffering logic so that
+         any size response can be handled; getting more rows after the
+         buffer is flushed; but this will handle fairly large sets of
+         rows. */
+      myMaxOutBuf = LOCAL_BUFFER_SIZE;
+      myOutBuf=(char *)malloc(myMaxOutBuf);
+   }
+   else {
+      outDesc = -1;
    }
 
    ix=getOpenDbrIndex(dbrName);
@@ -919,12 +972,53 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
 
    if (status) return(status);
 
-   printSqlAndArgs(dboSQL, args, outBuf, maxOutBuf);
+   printSqlAndArgs(dboSQL, args, myOutBuf, myMaxOutBuf);
 
-   outBufStrLen = strlen(outBuf);
+   outBufStrLen = strlen(myOutBuf);
 
    status =  dboSqlWithResults(ix, dboSQL, dboFormat, args,
-			       outBuf+outBufStrLen, maxOutBuf-outBufStrLen-1);
+		       myOutBuf+outBufStrLen, myMaxOutBuf-outBufStrLen-1);
+
+   if (status) {
+      if (didOpen) {  /* DBR was not originally open */
+	 i = dbrClose(dbrName);
+      }
+      return(status);
+   }
+
+   if (outDesc > 0) {
+      openedDataObjInp_t dataObjWriteInp;
+      int bytesWritten;
+      openedDataObjInp_t dataObjCloseInp;
+
+      bytesBuf_t *writeBuf;
+      writeBuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+      writeBuf->len = outBufStrLen;
+      writeBuf->buf = myOutBuf;
+
+      memset (&dataObjWriteInp, 0, sizeof (dataObjWriteInp));
+      dataObjWriteInp.l1descInx = outDesc;
+      outBufStrLen = strlen(myOutBuf);
+      dataObjWriteInp.len = outBufStrLen;
+
+      bytesWritten = rsDataObjWrite(rsComm, &dataObjWriteInp, writeBuf);
+      if (bytesWritten < 0) return(bytesWritten);
+
+      if (bytesWritten != outBufStrLen) {
+/*  */
+      }
+
+      memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+      dataObjCloseInp.l1descInx = outDesc;
+      status = rsDataObjClose (rsComm, &dataObjCloseInp);
+      if (status) return(status);
+
+      rstrcpy(outBuf, "Output written to ", maxOutBuf);
+      rstrcat(outBuf, dborName, maxOutBuf);
+
+      free(myOutBuf);
+      free(writeBuf);
+   }
 
    if (didOpen) {  /* DBR was not originally open */
       i = dbrClose(dbrName);

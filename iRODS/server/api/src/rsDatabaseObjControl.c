@@ -103,6 +103,8 @@ _rsDatabaseObjControl (rsComm_t *rsComm,
        status = dboExecute(rsComm, 
 			   databaseObjControlInp->dbrName, 
 			   databaseObjControlInp->dboName, 
+			   databaseObjControlInp->dborName, 
+			   databaseObjControlInp->subOption,
 			   outBuf, maxBufSize, 
 			   databaseObjControlInp->args);
     }

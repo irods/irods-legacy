@@ -7,7 +7,8 @@
 
 int dbrOpen(char *dbrName);
 int dboReadConfigItems(char *dboList, int maxChars);
-int dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *outBuf,
+int dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *dborName,
+	       int dobrOption, char *outBuf,
 	       int maxOutBuf, char *args[10]);
 int dbrClose(char *dbrName);
 int dbrCommit(rsComm_t *rsComm, char *dbrName);
