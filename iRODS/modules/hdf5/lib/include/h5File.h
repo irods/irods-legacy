@@ -49,8 +49,8 @@ typedef struct H5File
     H5Error error;       /* strings used to carry error report from server operation */
 #if 0	/* long is 64 bits in 64 arch */
     long  time;          /* number of seconds used to finish the hdf5 request on server */
-    int  time;          /* number of seconds used to finish the hdf5 request on server */
 #endif
+    int  time;          /* number of seconds used to finish the hdf5 request on server */
 } H5File;
 
 /* The following structure is used to hold all the information.
