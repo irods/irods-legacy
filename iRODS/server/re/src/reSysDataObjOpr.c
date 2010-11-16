@@ -804,7 +804,8 @@ ruleExecInfo_t *rei)
 
     rei->status = 0;
 
-    if (cacheResc == NULL || strcmp (cacheResc, "null") == 0) {
+    if (cacheResc == NULL || strcmp (cacheResc, "null") == 0 ||
+      strlen (cacheResc) == 0) {
 	return (rei->status);
     }
 
