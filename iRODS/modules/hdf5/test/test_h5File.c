@@ -22,7 +22,7 @@ int print_attribute(const H5Attribute *a);
 int main(int argc, char* argv[])
 {
     int ret_value=0, i=0;
-    char fname[80];
+    char fname[1024];
     H5File *f=0;
     H5Dataset *d=0;
 #ifndef HDF5_LOCAL
