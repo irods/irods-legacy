@@ -176,7 +176,7 @@ This documentation is generated from the iRODS code.
   - #msiRegisterData - Registers a new data object
   - #writeBytesBuf - Writes the buffer in an inOutStruct to stdout or stderr
   - #msiStrToBytesBuf - Converts a string to a bytesBuf_t
-  - #msiFreeBuffer - Frees a buffer in an inOutStruct
+  - #msiFreeBuffer - Frees a buffer in an inOutStruct, or stdout or stderr
   - #writePosInt  - Writes an integer to stdout or stderr
   - #msiGetDiffTime - Returns the difference between two system timestamps given in unix format (stored in string)
   - #msiGetSystemTime - Returns the local system time of server
