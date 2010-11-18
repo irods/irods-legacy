@@ -259,22 +259,22 @@ public class GenQueryClassicMidLevelService {
 			if (currentCondition.getSelectType() == IRODSMetaDataConditionWrapper.SelectType.IRODS_GEN_QUERY_METADATA) {
 				if (log.isDebugEnabled()) {
 					log
-							.debug("irods gen query data condition, move as is to amended:"
-									+ currentCondition);
+							.debug("irods gen query data condition, move as is to amended:{}"
+									, currentCondition);
 				}
 				amendedConditions.add(currentCondition);
 			} else if (currentCondition.getSelectType() == IRODSMetaDataConditionWrapper.SelectType.EXTENSIBLE_METADATA) {
 				if (log.isDebugEnabled()) {
 					log
-							.debug("extensible metadata condition, move as is to amended:"
-									+ currentCondition);
+							.debug("extensible metadata condition, move as is to amended:{}"
+									,currentCondition);
 				}
 				amendedConditions.add(currentCondition);
 			} else if (currentCondition.getSelectType() == IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA) {
 				if (log.isDebugEnabled()) {
 					log
-							.debug("AVU condition, will break out the AVU conditions:"
-									+ currentCondition);
+							.debug("AVU condition, will break out the AVU conditions:{}"
+									,currentCondition);
 				}
 
 				// add a condition for the attribute value
@@ -293,6 +293,7 @@ public class GenQueryClassicMidLevelService {
 					log.error("exception translating a condition field", e);
 					throw new JargonRuntimeException(e);
 				}
+				
 				newConditionWrapper
 						.setAvuComponent(IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_VALUE_COMPONENT);
 				newConditionWrapper
@@ -302,8 +303,8 @@ public class GenQueryClassicMidLevelService {
 				amendedConditions.add(newConditionWrapper);
 
 				if (log.isDebugEnabled()) {
-					log.debug("added a condition for the AVU attribute value:"
-							+ newConditionWrapper);
+					log.debug("added a condition for the AVU attribute value:{}"
+							,newConditionWrapper);
 				}
 
 				// add a condition for the attribute name

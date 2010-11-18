@@ -498,7 +498,7 @@ public class IRODSFileSystemMetadataQueryTest {
 	}
 
 	/**
-	 * Currently ignored as this is a genquery issue... Bug 116 - Query with
+	 * Currently ignored pre 2.4.1 as this is a genquery issue... Bug 116 - Query with
 	 * Query multiple user AVU on Collection returns no result
 	 * 
 	 * @throws Exception

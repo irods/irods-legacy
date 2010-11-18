@@ -84,12 +84,20 @@ public class IRODSAccountTest {
 	}
 	
 	@Test(expected=NullPointerException.class)
-	public final void testIRODSAccountNoDefaultStorageResource() {
+	public final void testIRODSAccountNullDefaultStorageResource() {
+		IRODSAccount expectedIRODSAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+	new IRODSAccount(expectedIRODSAccount.getHost(), expectedIRODSAccount.getPort(),
+				expectedIRODSAccount.getUserName(), expectedIRODSAccount.getPassword(), expectedIRODSAccount.getHomeDirectory(),
+				expectedIRODSAccount.getZone(), null);	
+	}
+	
+	@Test
+	public final void testIRODSAccountBlankDefaultStorageResource() {
 		IRODSAccount expectedIRODSAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSAccount actualIRODSAccount = new IRODSAccount(expectedIRODSAccount.getHost(), expectedIRODSAccount.getPort(),
 				expectedIRODSAccount.getUserName(), expectedIRODSAccount.getPassword(), expectedIRODSAccount.getHomeDirectory(),
-				expectedIRODSAccount.getZone(), null);
-		Assert.assertEquals(expectedIRODSAccount.getDefaultStorageResource(), actualIRODSAccount.getDefaultStorageResource());
+				expectedIRODSAccount.getZone(), "");
+		Assert.assertEquals("", actualIRODSAccount.getDefaultStorageResource());
 		Assert.assertEquals(expectedIRODSAccount.getZone(), actualIRODSAccount.getZone());
 		Assert.assertEquals(expectedIRODSAccount.getHomeDirectory(), actualIRODSAccount.getHomeDirectory());
 		Assert.assertEquals(expectedIRODSAccount.getHost(), actualIRODSAccount.getHost());

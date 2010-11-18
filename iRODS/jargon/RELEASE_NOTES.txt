@@ -36,6 +36,8 @@ from this fix, but the code itself was not consistent.
 **added literals to Resource class for various states
 **changed num<, num> etc to n<, n> for numeric comparison operators
 
+*Refactored remote execution code, enhanced streaming from server-side commands (work in progress)
+
 ================================================================================================
 Outstanding Issues
 

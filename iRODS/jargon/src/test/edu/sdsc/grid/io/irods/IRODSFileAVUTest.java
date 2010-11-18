@@ -196,6 +196,72 @@ public class IRODSFileAVUTest {
 		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
 
 	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testAddOneAVUToDataObjectWithUnitsAndAttribNoValue() throws Exception {
+		String testFileName = "testAddOneAVUToDataObjectWithUnitsAndAttribNoValue.txt";
+		String expectedAttribName = "testattrib1";
+		String expectedAttribValue = "";
+		String expectedUnits = "";
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+
+		// generate testing file
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String absPathToFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName, 20);
+
+		IputCommand iputCommand = new IputCommand();
+
+		iputCommand.setLocalFileName(absPathToFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// open the file and add an AVU
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
+				.getIrodsFileName()
+				+ '/' + testFileName);
+		String[] metaData = { expectedAttribName, expectedAttribValue,
+				expectedUnits };
+		irodsFile.modifyMetaData(metaData);
+		irodsFileSystem.close();
+
+		// verify the metadata was added
+		// now get back the avu data and make sure it's there
+		ImetaListCommand imetaList = new ImetaListCommand();
+		imetaList.setAttribName(expectedAttribName);
+		imetaList.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
+		imetaList.setObjectPath(iputCommand.getIrodsFileName() + '/'
+				+ testFileName);
+		String metaValues = invoker
+				.invokeCommandAndGetResultAsString(imetaList);
+		Assert.assertTrue("did not find expected attrib name", metaValues
+				.indexOf(expectedAttribName) > -1);
+		Assert.assertTrue("did not find expected attrib value", metaValues
+				.indexOf(expectedAttribValue) > -1);
+		Assert.assertTrue("did not find expected units", metaValues
+				.indexOf(expectedUnits) > -1);
+
+		// clean up avu
+		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
+		imetaRemoveCommand.setAttribName(expectedAttribName);
+		imetaRemoveCommand.setAttribValue(expectedAttribValue);
+		imetaRemoveCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
+		imetaRemoveCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
+				+ testFileName);
+		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+
+	}
 
 	@Test
 	public void testAddOneAVUToDataObjectWithTwoAVUTriples() throws Exception {
