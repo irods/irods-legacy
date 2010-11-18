@@ -229,6 +229,7 @@ This documentation is generated from the iRODS code.
   - #msiLoadMetadataFromDataObj - Parses an iRODS object for new metadata AVUs from | separated format
   - #msiExportRecursiveCollMeta - Exports metadata AVU triplets for a collection and its contents in | separated format
   - #msiCopyAVUMetadata - Copies metadata triplets from an iRODS object to another
+  - #msiStripAVUs - Strips a data object of its metadata AVU triplets
   - #msiGetUserInfo - Gets Information about user
   - #msiGetUserACL  - Gets User ACL for all objects and collections
   - #msiCreateUserAccountsFromDataObj - Creates new user from information in an iRODS data object
