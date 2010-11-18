@@ -529,8 +529,12 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
       genQueryInp.selectInp.len = 1;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
       if (rei->status==0) {
-	 printf("None\n");
-	 return(0);
+
+    	  /* Closing tag */
+    	  appendStrToBBuf(mybuf, "</metadata>\n");
+    	  fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+    	  return (0);
+
       }
       if (rei->status == CAT_NO_ROWS_FOUND) {
 
@@ -2337,7 +2341,7 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     	memset(&execCmdInp, 0, sizeof(execCmd_t));
     	rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
     	rstrcpy(execCmdInp.cmd, "mkdir", LONG_NAME_LEN);
-    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "-p '%s'", tmpPath);
+    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "-p \"%s\"", tmpPath);
     	
     	
 		/* Invoke rsExecCmd for remote mkdir on resource */
@@ -2356,8 +2360,8 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
 		/* Reset input for rsExecCmd */
     	memset(&execCmdInp, 0, sizeof(execCmd_t));
     	rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
-    	rstrcpy(execCmdInp.cmd, "link", LONG_NAME_LEN);
-    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "'%s' '%s'", currentDataObjInfo->filePath, tmpPath);
+    	rstrcpy(execCmdInp.cmd, "ln", LONG_NAME_LEN);
+    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "\"%s\" \"%s\"", currentDataObjInfo->filePath, tmpPath);
     	
     	
     	/* Create hard link on resource */
@@ -2690,7 +2694,7 @@ msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *statu
     /* get timestamp */
 	getNowStr(tStr0);
 	getLocalTimeFromRodsTime(tStr0,tStr);
-	snprintf(infectedFlag, NAME_LEN, "%s.%s", "INFECTED", tStr);
+	snprintf(infectedFlag, NAME_LEN, "%s.%s", "VIRUS_SCAN_FAILED", tStr);
 
 	/* in case buffer is not null terminated */
 	appendStrToBBuf(readBuf, "");
@@ -2742,7 +2746,94 @@ msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *statu
 }
 
 
+/**
+ * \fn msiStripAVUs(msParam_t *target, msParam_t *options, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief Strips an object of its metadata
+ *
+ * \module ERA
+ *
+ * \since 2.4.x
+ *
+ * \author  Antoine de Torcy
+ * \date    2010-11-17
+ *
+ *
+ * \note  Only data objects are supported for now.
+ *
+ *
+ * \usage As shown in modules/ERA/test/stripAVUs.ir
+ *
+ * remove dataObj AVUs||msiStripAVUs(*target, null, *status)##writePosInt(stdout,*status)##writeLine(stdout,"")|nop
+ * *target=$1
+ * ruleExecOut
+ *
+ *
+ * \param[in] target - A STR_MS_T with a data/collection path or user/resource name
+ * \param[in] options - Optional - a STR_MS_T that contains one of more options in
+ *      the format keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *      The type of target will be specified here (i.e data, collection, user, resource, etc...).
+ *      Valid keywords will be added as more types are supported.
+ * \param[out] status - An INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified Some
+ * \sideeffect None
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre None
+ * \post None
+ * \sa None
+ * \bug  no known bugs
+**/
+int
+msiStripAVUs(msParam_t *target, msParam_t *options, msParam_t *status, ruleExecInfo_t *rei)
+{
+	/* for parsing target object */
+	dataObjInp_t dataObjInpCache, *dataObjInp;
 
+	/* for AVU deletion */
+	modAVUMetadataInp_t modAVUMetadataInp;
+
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiStripAVUs")
+
+
+	/* init modAVU input */
+	memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
+	modAVUMetadataInp.arg0 = "rmw";		// remove with wildcards
+	modAVUMetadataInp.arg3 = "%";   	// any attribute
+	modAVUMetadataInp.arg4 = "%";		// any value
+	modAVUMetadataInp.arg5 = "%";		// any unit
+
+	/* Check for type in options and parse target accordingly */
+	if (1) // stub
+	{
+		rei->status = parseMspForDataObjInp (target, &dataObjInpCache, &dataObjInp, 0);
+		if (rei->status < 0)
+		{
+			rodsLog (LOG_ERROR, "msiStripAVUs: input target error. status = %d", rei->status);
+			return (rei->status);
+		}
+
+		/* Set object type to data and get its path */
+		modAVUMetadataInp.arg1 = "-d";
+		modAVUMetadataInp.arg2 = dataObjInp->objPath;
+	}
+
+	/* And... let's do it! */
+	rei->status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
+
+	/* Return operation status */
+	fillIntInMsParam (status, rei->status);
+	return (rei->status);
+}
 
 
 

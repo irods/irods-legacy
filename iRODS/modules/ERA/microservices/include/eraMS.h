@@ -35,6 +35,7 @@ int msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outP
 int msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *masterColl, msParam_t *status, ruleExecInfo_t *rei);
 int msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ruleExecInfo_t *rei);
 int msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *status, ruleExecInfo_t *rei);
+int msiStripAVUs(msParam_t *target, msParam_t *options, msParam_t *status, ruleExecInfo_t *rei);
 
 #endif	/* ERAMS_H */
 

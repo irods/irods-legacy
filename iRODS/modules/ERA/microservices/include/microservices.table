@@ -33,3 +33,4 @@
 {"msiCollectionSpider",			4,		(funcPtr) msiCollectionSpider},
 {"msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU},
 {"msiFlagInfectedObjs",			3,		(funcPtr) msiFlagInfectedObjs},
+{"msiStripAVUs",				3,		(funcPtr) msiStripAVUs},
