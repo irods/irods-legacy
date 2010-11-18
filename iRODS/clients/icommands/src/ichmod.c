@@ -188,6 +188,10 @@ usage () {
 "need to have access permissions ('read', 'write', or better).  The admin",
 "or owner can use ichmod to set these.  See 'ilsresc' for listing these.",
 "See the Database Resources page on the irods web site for more information.",
+" ",
+"Like Unix, if you remove your own access to an object ('null'), you will",
+"not be able to read it, but you can restore access via another 'ichmod'",
+"because for ichmod, you are still the owner.",
 ""};
    int i;
    for (i=0;;i++) {

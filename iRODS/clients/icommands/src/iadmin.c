@@ -1302,7 +1302,10 @@ void usageMain()
 " cu (calulate usage (for quotas))",
 " rum (remove unused metadata (user-defined AVUs)",
 " help (or h) [command] (this help, or more details on a command)",
-"Also see 'irmtrash -M -u user' for the admin mode of removing trash.",
+"Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
+"similar admin modes in irepl, iphymv, and itrim.",
+"The admin can also alias as any user via the 'clientUserName' environment",
+"variable.",
 ""};
    printMsgs(Msgs);
    printReleaseInfo("iadmin");
