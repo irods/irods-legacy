@@ -2830,6 +2830,12 @@ msiStripAVUs(msParam_t *target, msParam_t *options, msParam_t *status, ruleExecI
 	/* And... let's do it! */
 	rei->status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
 
+	/* Avoid throwing an error if object did not have any metadata */
+	if (rei->status == CAT_SUCCESS_BUT_WITH_NO_INFO)
+	{
+		rei->status = 0;
+	}
+
 	/* Return operation status */
 	fillIntInMsParam (status, rei->status);
 	return (rei->status);
