@@ -2264,7 +2264,7 @@ msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
     }
 #else
     validKwFlags = IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG | 
-      FORCE_CHKSUM_FLAG | COLL_NAME_FLAG;
+      FORCE_FLAG_FLAG | COLL_NAME_FLAG;
     if ((rei->status = parseMsKeyValStrForCollInp (msKeyValStr,
       myRmCollInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd)) < 0) {
         if (outBadKeyWd != NULL) {
