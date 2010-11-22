@@ -17,7 +17,7 @@ main(int argc, char **argv) {
     rErrMsg_t errMsg;
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
-    char *optStr;
+    char *optStr, buffer[HUGE_NAME_LEN];
     rodsPathInp_t rodsPathInp;
     objType_t srcType, destType;
     int nArgv;
@@ -57,7 +57,8 @@ main(int argc, char **argv) {
 	    strcpy (argv[argc-i], ".");
         } else if (strncmp (argv[argc-i], "i:", 2) == 0) {
             srcType = UNKNOWN_OBJ_T;
-            strcpy (argv[argc-i], argv[argc-i] + 2);
+	    strcpy (buffer, argv[argc-1] + 2);
+	    strcpy (argv[argc-1], buffer);
         } else {
             srcType = UNKNOWN_FILE_T;
         }
