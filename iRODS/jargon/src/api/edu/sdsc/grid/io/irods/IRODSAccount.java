@@ -681,16 +681,14 @@ public class IRODSAccount extends RemoteAccount {
 		index = rcatEnv.indexOf(' ', index) + 1;
 		setUserName(rcatEnv.substring(index, rcatEnv.indexOf('\n', index)));
 
-		// defaultStorageResource
+		// defaultStorageResource can be blank
 		index = rcatEnv.indexOf("irodsDefResource");
-		if (index < 0) {
-			throw new NullPointerException(
-					"No default resource found in env file.");
+		if (index >= 0) {
+			index = rcatEnv.indexOf(' ', index) + 1;
+			setDefaultStorageResource(rcatEnv.substring(index, rcatEnv.indexOf(
+					'\n', index)));
 		}
-		index = rcatEnv.indexOf(' ', index) + 1;
-		setDefaultStorageResource(rcatEnv.substring(index, rcatEnv.indexOf(
-				'\n', index)));
-
+		
 		// homeDirectory
 		index = rcatEnv.indexOf("irodsHome");
 		if (index >= 0) {

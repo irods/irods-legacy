@@ -38,6 +38,8 @@ from this fix, but the code itself was not consistent.
 
 *Refactored remote execution code, enhanced streaming from server-side commands (work in progress)
 
+*Bug 121 - Default resource when getting IRODSAccount with no-vals constructor
+
 ================================================================================================
 Outstanding Issues
 
