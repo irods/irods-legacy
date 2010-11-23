@@ -57,8 +57,8 @@ main(int argc, char **argv) {
 	    strcpy (argv[argc-i], ".");
         } else if (strncmp (argv[argc-i], "i:", 2) == 0) {
             srcType = UNKNOWN_OBJ_T;
-	    strcpy (buffer, argv[argc-1] + 2);
-	    strcpy (argv[argc-1], buffer);
+	    strcpy (buffer, argv[argc-i] + 2);
+	    argv[argc-i] = buffer;
         } else {
             srcType = UNKNOWN_FILE_T;
         }
@@ -69,7 +69,8 @@ main(int argc, char **argv) {
         strcpy (argv[argc-1], ".");
     } else if (strncmp (argv[argc-1], "i:", 2) == 0) {
         destType = UNKNOWN_OBJ_T;
-        strcpy (argv[argc-1], argv[argc-1] + 2);
+	strcpy (buffer, argv[argc-1] + 2);
+	argv[argc-1] = buffer;
     } else {
         destType = UNKNOWN_FILE_T;
     }

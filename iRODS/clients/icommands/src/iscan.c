@@ -45,7 +45,7 @@ main(int argc, char **argv) {
 	} else if (strncmp (argv[argc-1], "i:", 2) == 0) {
 		srcType = UNKNOWN_OBJ_T;
 		strcpy (buffer, argv[argc-1] + 2);
-		strcpy (argv[argc-1], buffer);
+		argv[argc-1] = buffer;
     } else {
 		srcType = UNKNOWN_FILE_T;
     }
