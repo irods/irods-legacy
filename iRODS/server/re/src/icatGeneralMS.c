@@ -61,6 +61,12 @@ This documentation is generated from the iRODS code.
   - #msiSplitPath - Splits a pathname into parent and child values
   - #msiGetSessionVarValue - Gets the value of a session variable in the rei
 
+ \subsection msidatabase Database Object (DBO) and DB Resource (DBR) Microservices
+  Can be called by client through irule.
+  - #msiDboExec - Execute a database object on a DBR
+  - #msiDbrCommit - Executes a commit on a DBR
+  - #msiDbrRollback - Executes a rollback on a DBR
+
  \subsection msilowlevel Data Object Low-level Microservices
   Can be called by client through irule.
   - #msiDataObjCreate - Create a data object
