@@ -215,6 +215,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \
 		$(svrReObjDir)/reRDA.o \
+		$(svrReObjDir)/reDBO.o \
 		$(svrReObjDir)/testMS.o \
                 $(svrReObjDir)/reAutoReplicateService.o
 INCLUDES +=	-I$(svrReIncDir)

@@ -220,7 +220,7 @@ execDbo(char *dbRescName, char *dboName, char *args[10]) {
 	 else {
 	    printf("Error message return by the DBMS or DBO interface:\n");
 	 }
-	 printf("%s\n",databaseObjControlOut->outBuf);
+	 printf("%s",databaseObjControlOut->outBuf);
       }
       if (Conn->rError) {
 	 rError_t *Err;
@@ -236,7 +236,7 @@ execDbo(char *dbRescName, char *dboName, char *args[10]) {
       return(status);
    }
    if (*databaseObjControlOut->outBuf != '\0') {
-      printf("%s\n",databaseObjControlOut->outBuf);
+      printf("%s",databaseObjControlOut->outBuf);
    }
    return(status);
 }
@@ -276,12 +276,12 @@ dbrControl(char *dbRescName, int option) {
 	 else {
 	    printf("Error message return by the DBMS or DBO interface:\n");
 	 }
-	 printf("%s\n",databaseObjControlOut->outBuf);
+	 printf("%s",databaseObjControlOut->outBuf);
       }
       return(status);
    }
    if (*databaseObjControlOut->outBuf != '\0') {
-      printf("%s\n",databaseObjControlOut->outBuf);
+      printf("%s",databaseObjControlOut->outBuf);
    }
    return(status);
 }

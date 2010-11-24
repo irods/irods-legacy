@@ -193,6 +193,14 @@ int msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inp
          msParam_t *inpParam4, ruleExecInfo_t *rei);
 int
 msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei);
+int msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName, 
+               msParam_t *options, 
+               msParam_t *inpParam1, msParam_t *inpParam2, 
+               msParam_t *inpParam3, msParam_t *inpParam4, 
+               msParam_t *inpParam5, msParam_t *inpParam6, 
+               ruleExecInfo_t *rei);
+int msiDbrCommit(msParam_t dbrName, ruleExecInfo_t *rei);
+int msiDbrRollback(msParam_t dbrName, ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
@@ -360,4 +368,7 @@ microsdef_t MicrosTable[] = {
   {"msiStrlen",2,(funcPtr) msiStrlen},
   {"msiStrchop",2,(funcPtr) msiStrchop},
   {"msiSubstr",4,(funcPtr) msiSubstr},
+  {"msiDbrCommit", 1, (funcPtr) msiDbrCommit},
+  {"msiDbrRollback", 1, (funcPtr) msiDbrRollback},
+  {"msiDboExec",10,(funcPtr) msiDboExec},
 

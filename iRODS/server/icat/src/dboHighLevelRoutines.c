@@ -350,8 +350,7 @@ checkDBOType(rsComm_t *rsComm, char *dboName)
 
 
 /*
-  Check to see if the client user has access to this DBR and DBO
-  by querying the user AVU.
+  Check the access permissions to the DBR and DBO.
  */
 int checkDBOOwner(rsComm_t *rsComm, char *dbrName, char *dboName) {
    genQueryInp_t genQueryInp;
@@ -529,7 +528,7 @@ int dboSqlWithResults(int fd, char *sql, char *sqlFormat, char *args[10],
       if (dbo_icss[fd].stmtPtr[statement]->numOfCols == 0) {
 	 i = cllFreeStatement(&dbo_icss[fd],statement);
 	 if (rowCount==0) return(CAT_NO_ROWS_FOUND);
-	 rstrcat(outBuf, "\n<\\rows>", maxOutBuf);
+	 rstrcat(outBuf, "\n<\\rows>\n", maxOutBuf);
 	 return(0);
       }
 
@@ -1015,6 +1014,7 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName,
 
       rstrcpy(outBuf, "Output written to ", maxOutBuf);
       rstrcat(outBuf, dborName, maxOutBuf);
+      rstrcat(outBuf, "\n", maxOutBuf);
 
       free(myOutBuf);
       free(writeBuf);
