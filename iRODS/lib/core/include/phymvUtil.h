@@ -1,5 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more inforeplation please refer to files in the COPYRIGHT directory ***/
+ *** For more information please refer to files in the COPYRIGHT directory ***/
 /* phymvUtil.h - Header for for phymvUtil.c */
 
 #ifndef PHYMVUTIL_H

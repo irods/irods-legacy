@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more inforeplation please refer to files in the COPYRIGHT directory ***/
+ *** For more information please refer to files in the COPYRIGHT directory ***/
 /* 
- * iphymv - The irods repl utility
+ * iphymv - The irods physical move utility
 */
 
 #include "rodsClient.h"

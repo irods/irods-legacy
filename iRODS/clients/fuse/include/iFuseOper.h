@@ -1,5 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more inforeplation please refer to files in the COPYRIGHT directory ***/
+ *** For more information please refer to files in the COPYRIGHT directory ***/
 /* iFuseOper.h - Header for for iFuseOper.c */
 
 #ifndef I_FUSE_OPER_H
