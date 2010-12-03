@@ -355,9 +355,9 @@ for ( $cnt=1; $cnt<=$test_number; $cnt++ ) {
 	print( FILE "# This first input line is the rule body.\n" );
 	print( FILE "# The second input line is the input parameter in the format of:\n" );
 	print( FILE "#   label=value. e.g., *A=$tmpfile1\n" );
-	print( FILE "# Multiple inputs can be specified using the \'\%\' character as the seperator.\n" );
+	print( FILE "# Multiple inputs can be specified using the \'\%\' character as the separator.\n" );
 	print( FILE "# The third input line is the output description. Multiple outputs can be specified\n" );
-	print( FILE "# using the \'\%\' character as the seperator.\n" );
+	print( FILE "# using the \'\%\' character as the separator.\n" );
 	print( FILE "#\n" );
 	print( FILE "myTestRule||msiDataObjOpen(*A,*S_FD)" );
 	print( FILE "##msiDataObjCreate(*B,$irodsdefresource,*D_FD)" );

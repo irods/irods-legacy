@@ -1227,7 +1227,7 @@ msiNoTrashCan (ruleExecInfo_t *rei)
  *
  * \param[in] xoprList - Only 2 operations are allowed - "read" - read files; 
  * "query" - browse some system level metadata. More than one operation can be
- * input using the character "%" as seperator. e.g., read%query.
+ * input using the character "%" as separator. e.g., read%query.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.

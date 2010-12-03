@@ -566,7 +566,7 @@ class SRBCommands {
 		 * SRBAccount.SEA_ENCRYPT: send( password ); break;
 		 */
 		case SRBAccount.GSI_AUTH:
-			// GSIAuth was moved to a seperate class file, GSIAuth.
+			// GSIAuth was moved to a separate class file, GSIAuth.
 			// This is to allow compiling Jargon when not in possession of
 			// the GSI libraries. It seems to be ok for me to include the
 			// gsi libraries, but I'm not sure. So this makes it easy to remove
@@ -1485,7 +1485,7 @@ class SRBCommands {
 				send(account.getPassword());
 				break;
 			case SRBAccount.GSI_AUTH:
-				// GSIAuth was moved to a seperate class file, GSIAuth.
+				// GSIAuth was moved to a separate class file, GSIAuth.
 				// This is to allow compiling Jargon when not in possession of
 				// the GSI libraries. It seems to be ok for me to include the
 				// gsi libraries, but I'm not sure. So this makes it easy to

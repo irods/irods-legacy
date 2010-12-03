@@ -166,7 +166,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * <code>{@link #PATH_SEPARATOR_CHAR}</code>.
 	 * 
 	 * @deprecate used a variable and name not matching the java.io package. Use
-	 *            seperator and pathSeperator
+	 *            separator and pathSeparator
 	 */
 	public static String PATH_SEPARATOR = "/";
 
@@ -174,7 +174,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * The path separator character.
 	 * 
 	 * @deprecate used a variable and name not matching the java.io package. Use
-	 *            seperatorChar and pathSeperatorChar
+	 *            separatorChar and pathSeparatorChar
 	 */
 	public static char PATH_SEPARATOR_CHAR = '/';
 
@@ -308,7 +308,7 @@ public class GeneralFile extends Object implements Comparable {
 		// used when parsing the filepath
 		int index;
 
-		// in case they used the local pathSeperator
+		// in case they used the local pathSeparator
 		// in the fileName instead of the PATH_SEPARATOR.
 		String localSeparator = System.getProperty("file.separator");
 
@@ -336,7 +336,7 @@ public class GeneralFile extends Object implements Comparable {
 				index = fileName.lastIndexOf(PATH_SEPARATOR);
 			}
 
-			// seperate directory and file
+			// separate directory and file
 			if ((index >= 0) && ((fileName.substring(index + 1).length()) > 0)) {
 				// have to run setDirectory(...) again
 				// because they put filepath info in the filename
@@ -365,7 +365,7 @@ public class GeneralFile extends Object implements Comparable {
 			directory.add("");
 		}
 
-		// in case they used the local pathSeperator
+		// in case they used the local pathSeparator
 		// in the fileName instead of the PATH_SEPARATOR.
 		String localSeparator = System.getProperty("file.separator");
 		int index = dir.lastIndexOf(localSeparator);

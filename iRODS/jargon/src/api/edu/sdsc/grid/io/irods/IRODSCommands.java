@@ -1790,7 +1790,7 @@ public class IRODSCommands {
 						Tag.createKeyValueTag(null), });
 
 		// add output parameter tags
-		// They get cat together seperated by '%'
+		// They get cat together separated by '%'
 		if (output != null) {
 			String temp = "";
 			for (Parameter out : output)

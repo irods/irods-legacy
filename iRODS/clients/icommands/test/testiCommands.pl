@@ -489,9 +489,9 @@ sub makeRuleFile {
 	print( FILE2 "# This first input line is the rule body.\n" );
 	print( FILE2 "# The second input line is the input parameter in the format of:\n" );
 	print( FILE2 "#   label=value. e.g., *A=$irodshome/test/foo1\n" );
-	print( FILE2 "# Multiple inputs can be specified using the \'\%\' character as the seperator.\n" );
+	print( FILE2 "# Multiple inputs can be specified using the \'\%\' character as the separator.\n" );
 	print( FILE2 "# The third input line is the output description. Multiple outputs can be specified\n" );
-	print( FILE2 "# using the \'\%\' character as the seperator.\n" );
+	print( FILE2 "# using the \'\%\' character as the separator.\n" );
 	print( FILE2 "#\n" );
 	print( FILE2 "myTestRule||msiDataObjOpen(*A,*S_FD)" );
 	print( FILE2 "##msiDataObjCreate(*B,$irodsdefresource,*D_FD)" );

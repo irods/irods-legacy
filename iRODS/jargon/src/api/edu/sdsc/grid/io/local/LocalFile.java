@@ -545,7 +545,7 @@ public class LocalFile extends GeneralFile {
 
 		index = path.lastIndexOf(separatorChar);
 		if (index == path.length() - 1) {
-			// was just a superfluous seperator at the end
+			// was just a superfluous separator at the end
 			index = path.lastIndexOf(separatorChar, index);
 		}
 		path = path.substring(0, index);

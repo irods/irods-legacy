@@ -3304,7 +3304,7 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				.add(new MetaDataField(
 						ORDERBY,
 						"return the query values sorted according to another "
-								+ "attribute. Used in the condition as a comma seperated list: "
+								+ "attribute. Used in the condition as a comma separated list: "
 								+ "ORDER_BY = FILE_TYPE_NAME, FILE_NAME",
 						MetaDataField.STRING, protocol));
 

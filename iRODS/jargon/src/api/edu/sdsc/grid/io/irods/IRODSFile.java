@@ -374,7 +374,7 @@ public class IRODSFile extends RemoteFile {
 		// used when parsing the filepath
 		int index;
 
-		// in case they used the local pathSeperator
+		// in case they used the local pathSeparator
 		// in the fileName instead of the iRODS PATH_SEPARATOR.
 		String localSeparator = System.getProperty("file.separator");
 
@@ -402,7 +402,7 @@ public class IRODSFile extends RemoteFile {
 				index = fileName.lastIndexOf(PATH_SEPARATOR);
 			}
 
-			// seperate directory and file
+			// separate directory and file
 			if ((index >= 0) && ((fileName.substring(index + 1).length()) > 0)) {
 				// have to run setDirectory(...) again
 				// because they put filepath info in the filename
@@ -427,7 +427,7 @@ public class IRODSFile extends RemoteFile {
 			return;
 		}
 
-		// in case they used the local pathSeperator
+		// in case they used the local pathSeparator
 		// in the fileName instead of the iRODS PATH_SEPARATOR.
 		String localSeparator = System.getProperty("file.separator");
 		int index = dir.lastIndexOf(localSeparator);
@@ -1228,7 +1228,7 @@ public class IRODSFile extends RemoteFile {
 	 *            "w" - write;"r" - read;"own" or "all" - owner;"n" - null;
 	 * @param userName
 	 *            The permissions are changed for this user. The user's zone may
-	 *            also be included in the username, seperated by #, i.e.
+	 *            also be included in the username, separated by #, i.e.
 	 *            username#zonename
 	 * @param recursive
 	 *            Changes this and all subdirectories

@@ -1172,7 +1172,7 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
  * micro-service. It replicates from srcDataObjInfoHead to destRescName
  * and support options flags given in flagStr.
  * Flags supported are: ALL_KW, RBUDP_TRANSFER_KW, SU_CLIENT_USER_KW
- * and UPDATE_REPL_KW. Multiple flags can be input with % as seperator.
+ * and UPDATE_REPL_KW. Multiple flags can be input with % as separator.
  * The replicated DataObjInfoHead will be put on top of the queue.
  */
  

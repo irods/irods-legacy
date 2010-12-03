@@ -514,7 +514,7 @@ freeDataObjInfo (dataObjInfo_t *dataObjInfo)
     if (dataObjInfo == NULL)
 	return (0);
 
-    /* seperate specColl */
+    /* separate specColl */
     if (dataObjInfo->specColl != NULL) free (dataObjInfo->specColl);
 
     free (dataObjInfo);

@@ -49,7 +49,7 @@ public class GSITest
 
 
       //CA locations are not defined in your cog.properties file,
-      //create a comma seperated list:
+      //create a comma separated list:
       String certificatesAuthorities = "";
       for (int i=3;i<args.length;i++) {
         certificatesAuthorities += args[i];

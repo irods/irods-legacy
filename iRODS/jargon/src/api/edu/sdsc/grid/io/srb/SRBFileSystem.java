@@ -170,7 +170,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	private SRBAccount srbAccount;
 
 	/**
-	 * Keep a seperate version string here. Have to keep track of the version on
+	 * Keep a separate version string here. Have to keep track of the version on
 	 * a per object basis, but SRBAccount.version is a static variable.
 	 */
 	private String version;

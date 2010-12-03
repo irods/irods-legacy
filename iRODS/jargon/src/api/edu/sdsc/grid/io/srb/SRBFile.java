@@ -786,7 +786,7 @@ public class SRBFile extends RemoteFile {
 				index = fileName.lastIndexOf(separator);
 			}
 
-			// seperate directory and file
+			// separate directory and file
 			if ((index >= 0) && ((fileName.substring(index + 1).length()) > 0)) {
 				// have to run setDirectory(...) again
 				// because they put filepath info in the filename

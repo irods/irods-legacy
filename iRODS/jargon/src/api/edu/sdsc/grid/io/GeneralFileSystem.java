@@ -62,7 +62,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * <code>{@link GeneralFile#PATH_SEPARATOR_CHAR}</code>.
 	 * 
 	 * @deprecate used a variable and name not matching the java.io package. Use
-	 *            GeneralFile seperator and pathSeperator
+	 *            GeneralFile separator and pathSeparator
 	 */
 	public static String PATH_SEPARATOR = GeneralFile.pathSeparator;
 
