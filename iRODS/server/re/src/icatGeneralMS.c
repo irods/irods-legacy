@@ -281,7 +281,6 @@ This documentation is generated from the iRODS code.
   - #msiVerifyDataType - Checks if files in a given collection are of a given data type(s)
   - #msiVerifyFileSizeRange - Checks to see if file sizes are NOT within a certain range
 
-
  \subsection msihdf HDF
   - #msiH5File_open - Opens an HDF file
   - #msiH5File_close - Closes an HDF file
@@ -310,6 +309,9 @@ This documentation is generated from the iRODS code.
 
  \subsection msiguinot Guinot
   - #msiGetFormattedSystemTime - Returns the local system time
+
+ \subsection msiz3950 Z3950
+  - #msiz3950Submit - Retrieves a record from a Z39.50 server
 
 **/
 
