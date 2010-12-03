@@ -82,8 +82,8 @@ usage () {
    char *msgs[]={
 "Usage : ifsck [-rhK] srcPhysicalFile|srcPhysicalDirectory ... ",
 "Check if a local data object or a local collection content is",
-"consistent in size (or optionnaly its checksum) with its",
-"registered size (and optionnaly its checksum) in iRODS.",
+"consistent in size (or optionally its checksum) with its",
+"registered size (and optionally its checksum) in iRODS.",
 "It allows to detect iRODS files which have been corrupted or",
 "modified outside the iRODS framework on the local filesytem.",
 "srcPhysicalFile or srcPhysicalDirectory must be a full path name.",
