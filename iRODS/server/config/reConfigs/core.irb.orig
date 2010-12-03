@@ -31,7 +31,7 @@ acDeleteCollByAdmin(*parColl,*childColl)||msiDeleteCollByAdmin(*parColl,*childCo
 # functions can be used by this rule:
 #    msiSetNoDirectRescInp(rescList) - sets a list of resources that cannot
 #      be used by a normal user directly. More than one resources can be 
-#      input using the character "%" as seperator. e.g., resc1%resc2%resc3.  
+#      input using the character "%" as separator. e.g., resc1%resc2%resc3.  
 #      This function is optional, but if used, should be the first function
 #      to execute because it screens the resource input. 
 #    msiSetDefaultResc(defaultRescList, optionStr) - sets the default resource
@@ -40,7 +40,7 @@ acDeleteCollByAdmin(*parColl,*childColl)||msiDeleteCollByAdmin(*parColl,*childCo
 #      executed right after the screening function msiSetNoDirectRescInp.
 #      defaultResc - the resource to use if no resource is input. A "null"
 #        means there is no defaultResc. More than one resources can be
-#      input using the character "%" as seperator.
+#      input using the character "%" as separator.
 #      optionStr - Can be "forced", "preferred" or "null". A "forced" input 
 #      means the defaultResc will be used regardless of the user input. 
 #      The forced action only apply to to users with normal privilege.
@@ -66,7 +66,7 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 #    msiSetDataObjPreferredResc(preferredRescList) - set the preferred 
 #      resources of the opened object. The copy stored in this preferred 
 #      resource will be picked if it exists. More than one resources can be
-#      input using the character "%" as seperator. e.g., resc1%resc2%resc3.
+#      input using the character "%" as separator. e.g., resc1%resc2%resc3.
 #      The most preferred resource should be at the top of the list.
 #    msiSetDataObjAvoidResc(avoidResc) - set the resource to avoid when
 #      opening an object. The copy stored in this resource will not be picked
@@ -159,7 +159,7 @@ acTrashPolicy||nop|nop
 #    msiSetPublicUserOpr(oprList) - Sets a list of operations that can
 #      be performed by the user "public". Only 2 operations are allowed -
 #      "read" - read files; "query" - browse some system level metadata. More 
-#      than one operation can be input using the character "%" as seperator. 
+#      than one operation can be input using the character "%" as separator. 
 #      e.g., read%query.
 # acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
 acSetPublicUserPolicy||nop|nop
