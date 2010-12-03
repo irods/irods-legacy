@@ -197,7 +197,7 @@ acPostProcForPhymv||nop|nop
 #        where sizePerThrInMb is an integer value in MBytes. It also accepts
 #        the word "default" which sets sizePerThrInMb to a default value of 32
 #      maxNumThr - The maximum number of threads to use. It accepts integer
-#        value up to 16. It also accepts the word "default" which sets 
+#        value up to 32. It also accepts the word "default" which sets 
 #        maxNumThr to a default value of 4. A value of 0 means no parallel
 #        I/O. This can be helpful to get around firewall issues.
 #    windowSize - the tcp window size in Bytes for the parallel transfer. 
