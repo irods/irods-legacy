@@ -595,6 +595,17 @@ public class GenQueryClassicMidLevelService {
 		return derivedMetaDataConditions;
 	}
 
+	/**
+	 * 
+	 * @param conditions
+	 * @param selects
+	 * @param numberOfRecordsWanted
+	 * @param namespace
+	 * @param distinctQuery
+	 * @return
+	 * @throws JargonException
+	 * @throws IOException
+	 */
 	public  MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted,
 			Namespace namespace, boolean distinctQuery) throws JargonException, IOException {
@@ -643,6 +654,18 @@ public class GenQueryClassicMidLevelService {
 		
 	}
 
+	/**
+	 * 
+	 * @param conditions
+	 * @param selects
+	 * @param numberOfRecordsWanted
+	 * @param partialStartIndex
+	 * @param namespace
+	 * @param distinctQuery
+	 * @return
+	 * @throws JargonException
+	 * @throws IOException
+	 */
 	public  MetaDataRecordList[] queryWithPartialStart(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted, int partialStartIndex,
 			Namespace namespace, boolean distinctQuery) throws JargonException, IOException {

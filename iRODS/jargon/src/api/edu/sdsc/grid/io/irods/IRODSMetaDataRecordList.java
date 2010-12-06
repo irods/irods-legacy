@@ -50,7 +50,7 @@ import java.io.IOException;
 /**
  * Results of long queries will only return a partial list to save on bandwidth
  * which can be iterated through by further calls to the server.
- *<P>
+ * <P>
  * IRODSMetaDataRecordList works closely with the file server to do a multi-step
  * query that does not have to return everything immediately. This class, for
  * instance, works with partial query results and, on need, issues a query for
@@ -80,13 +80,13 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	/**
 	 * Load the IRODSMetaDataRecordList internal field list with the
 	 * selectFields passed to the constructor.
-	 *<P>
+	 * <P>
 	 * Then copy the queryReturn into records[][]. The order has to be switched
 	 * to match the order of fields[], which is the same order as the
 	 * selectArray initially sent.
 	 */
-	public IRODSMetaDataRecordList(IRODSCommands irodsConnection,
-			MetaDataField[] fields, Object[] recordValues, int continuationIndex) {
+	public IRODSMetaDataRecordList(final IRODSCommands irodsConnection,
+			final MetaDataField[] fields, final Object[] recordValues, final int continuationIndex) {
 		super(fields, recordValues);
 
 		this.irodsConnection = irodsConnection;
@@ -97,7 +97,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public IRODSMetaDataRecordList(MetaDataField field, int recordValue) {
+	public IRODSMetaDataRecordList(final MetaDataField field, final int recordValue) {
 		super(field, recordValue);
 	}
 
@@ -108,7 +108,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	public IRODSMetaDataRecordList(MetaDataField field, float recordValue) {
 		super(field, recordValue);
 	}
-	
+
 	/**
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
@@ -199,7 +199,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Returns the int used by the IRODS server to refer to a query. (Kind of
 	 * like a file descriptor.)
 	 */
-	int getContinuationIndex() {
+	public int getContinuationIndex() {
 		return continuationIndex;
 	}
 
@@ -211,9 +211,9 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	public boolean isQueryComplete() {
 		if (continuationIndex >= 0) {
 			return false;
+		} else {
+			return true;
 		}
-
-		return true;
 	}
 
 	/**
@@ -236,9 +236,11 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	@Override
 	public MetaDataRecordList[] getMoreResults(int numOfResults)
 			throws IOException {
+		
 		if (continuationIndex < 0) {
 			return null;
 		}
+		
 		if (irodsConnection == null) {
 			// Maybe more query is left and something went wrong
 			// but irodsConnection wasn't loaded.

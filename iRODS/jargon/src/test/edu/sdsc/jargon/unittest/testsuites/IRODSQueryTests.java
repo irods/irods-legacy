@@ -27,7 +27,7 @@ import org.junit.runners.Suite;
   GenQueryClassicMidLevelServiceTest.class,
   IRODSQueryResultRowTest.class,
   IRODSQueryTest.class,
-  IRODSQueryTranslatorTest.class,
+  IRODSQueryTranslatorTest.class
   
 })
 public class IRODSQueryTests {
