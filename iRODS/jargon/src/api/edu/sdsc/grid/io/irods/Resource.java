@@ -63,12 +63,12 @@ public class Resource extends Domain {
 
 	private Logger log = LoggerFactory.getLogger(Resource.class);
 
-	static final String iName = "resource";
-	
-	public static final String RESC_DOWN  =  "down";
+	public static final String INAME = "resource";
+
+	public static final String RESC_DOWN = "down";
 	public static final String RESC_UP = "up";
-	public static final String RESC_AUTO_UP =  "auto-up";
-	public static final String RESC_AUTO_DOWN =  "auto-down";
+	public static final String RESC_AUTO_UP = "auto-up";
+	public static final String RESC_AUTO_DOWN = "auto-down";
 
 	private static final Object COMMA = ", ";
 
@@ -76,13 +76,13 @@ public class Resource extends Domain {
 
 	private static final Object EQUALS_AND_QUOTE = " = '";
 
-	public Resource(IRODSFileSystem irodsFileSystem) {
+	public Resource(final IRODSFileSystem irodsFileSystem) {
 		super(irodsFileSystem, "resource", "resc_type", "r_resc_main");
 	}
 
 	/**
 	 * Queries the fileSystem to aqcuire all the values for this domain. So the
-	 * user domain returns all the users.
+	 * resource domain returns all the resources.
 	 * 
 	 * @return
 	 */
@@ -91,63 +91,130 @@ public class Resource extends Domain {
 				"select resc_name from r_resc_main", null);
 	}
 
-	// mkresc Name Type Class Host Path (make Resource)
-	public void addResource(String resourceName, String resourceType,
-			String resourceClass, String host, String vaultFilePath)
-			throws IOException {
-		String[] args = { "add", name, resourceName, resourceType.toString(),
+	/**
+	 * Add a resource to iRODS
+	 * 
+	 * @param resourceName
+	 *            <code>String</code> with the unique name of the resource.
+	 * @param resourceType
+	 *            <code>String</code> with the type of the resource.
+	 * @param resourceClass
+	 *            <code>String</code> with the class of the resource.
+	 * @param host
+	 *            <code>String</code> with the host name of the resource.
+	 * @param vaultFilePath
+	 *            <code>String</code> with the absolute path of the iRODS vault
+	 *            (physical storage path).
+	 * @throws IOException
+	 */
+	public void addResource(final String resourceName,
+			final String resourceType, final String resourceClass,
+			final String host, final String vaultFilePath) throws IOException {
+		String[] args = { "add", name, resourceName, resourceType,
 				resourceClass, host, vaultFilePath };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	// rmresc Name (remove resource)
-	public void deleteResource(String resourceName) throws IOException {
+	/**
+	 * Delete a resource from iRODS.
+	 * 
+	 * @param resourceName
+	 * @throws IOException
+	 */
+	public void deleteResource(final String resourceName) throws IOException {
 		String[] args = { "rm", name, resourceName };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyClass(String resourceName, String newClass)
+	/**
+	 * Modify the class of a resource.
+	 * 
+	 * @param resourceName
+	 * @param newClass
+	 * @throws IOException
+	 */
+	public void modifyClass(final String resourceName, final String newClass)
 			throws IOException {
-		String[] args = { "modify", iName, resourceName, "class", newClass };
+		String[] args = { "modify", INAME, resourceName, "class", newClass };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyHost(String resourceName, String newHost)
+	/**
+	 * Modify the host name of a resource
+	 * 
+	 * @param resourceName
+	 * @param newHost
+	 * @throws IOException
+	 */
+	public void modifyHost(final String resourceName, final String newHost)
 			throws IOException {
-		String[] args = { "modify", iName, resourceName, "host", newHost };
+		String[] args = { "modify", INAME, resourceName, "host", newHost };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyPath(String resourceName, String newPath)
+	/**
+	 * Modify the physical vault path of a resource
+	 * 
+	 * @param resourceName
+	 * @param newPath
+	 * @throws IOException
+	 */
+	public void modifyPath(final String resourceName, final String newPath)
 			throws IOException {
-		String[] args = { "modify", iName, resourceName, "path", newPath };
+		String[] args = { "modify", INAME, resourceName, "path", newPath };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyComment(String resourceName, String newComment)
+	/**
+	 * Modify the comment field.
+	 * 
+	 * @param resourceName
+	 * @param newComment
+	 * @throws IOException
+	 */
+	public void modifyComment(final String resourceName, final String newComment)
 			throws IOException {
-		String[] args = { "modify", iName, resourceName, "comment", newComment };
+		String[] args = { "modify", INAME, resourceName, "comment", newComment };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyInfo(String resourceName, String newInfo)
+	/**
+	 * Modify the info field.
+	 * 
+	 * @param resourceName
+	 * @param newInfo
+	 * @throws IOException
+	 */
+	public void modifyInfo(final String resourceName, final String newInfo)
 			throws IOException {
-		String[] args = { "modify", iName, resourceName, "info", newInfo };
+		String[] args = { "modify", INAME, resourceName, "info", newInfo };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyFreespace(String resourceName, String newValue)
+	/**
+	 * Modify the free space
+	 * 
+	 * @param resourceName
+	 * @param newValue
+	 * @throws IOException
+	 */
+	public void modifyFreespace(final String resourceName, final String newValue)
 			throws IOException {
-		String[] args = { "modify", iName, resourceName, "type", newValue };
+		String[] args = { "modify", INAME, resourceName, "freespace", newValue };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public List<String> listResourcesInResourceGroup(String resourceGroupName)
-			throws JargonException {
+	/**
+	 * List all of the resources in a given resource group.
+	 * 
+	 * @param resourceGroupName
+	 * @return <code>List<String></code> with the resource names.
+	 * @throws JargonException
+	 */
+	public List<String> listResourcesInResourceGroup(
+			final String resourceGroupName) throws JargonException {
 		if (log.isInfoEnabled()) {
-			log
-					.info("listing resources in resource group:"
-							+ resourceGroupName);
+			log.info("listing resources in resource group:" + resourceGroupName);
 		}
 
 		List<String> resources = new ArrayList<String>();
@@ -203,11 +270,11 @@ public class Resource extends Domain {
 				return resourceGroups;
 			}
 
-			for (int i = 0; i < queryResponse.length; i++) {
+			for (String element : queryResponse) {
 				if (log.isInfoEnabled()) {
-					log.info("    resource group:" + queryResponse[i]);
+					log.info("    resource group:" + element);
 				}
-				resourceGroups.add((queryResponse[i]).trim());
+				resourceGroups.add(element.trim());
 			}
 		} catch (IRODSException ie) {
 			log.error("IRODS exception sending iadmin command, irods code="
@@ -239,8 +306,8 @@ public class Resource extends Domain {
 	 *             Generally, this should be treated as a warning, versus
 	 *             returned as an error.
 	 */
-	public void addResourceToResourceGroup(String resourceName,
-			String resourceGroupName) throws JargonException,
+	public void addResourceToResourceGroup(final String resourceName,
+			final String resourceGroupName) throws JargonException,
 			DuplicateDataException {
 
 		if (resourceName == null || resourceName.length() == 0) {
@@ -270,13 +337,10 @@ public class Resource extends Domain {
 			// already there, treat as a
 			// non-fatal condition
 			if (ie.getType() == -809000) {
-				log
-						.warn("adding a duplicate resource to resource group, resource="
-								+ resourceName
-								+ " resource group="
-								+ resourceGroupName);
+				log.warn("adding a duplicate resource to resource group, resource="
+						+ resourceName + " resource group=" + resourceGroupName);
 				throw new DuplicateDataException(
-						"duplicate resource added to resource group");
+						"duplicate resource added to resource group", ie);
 			}
 
 			log.error("IRODS exception sending iadmin command, irods code="
@@ -306,8 +370,8 @@ public class Resource extends Domain {
 	 * @throws JargonException
 	 *             an error condition caused by this call to IRODS
 	 */
-	public void removeResourceFromResourceGroup(String resourceName,
-			String resourceGroupName) throws JargonException {
+	public void removeResourceFromResourceGroup(final String resourceName,
+			final String resourceGroupName) throws JargonException {
 
 		if (resourceName == null || resourceName.length() == 0) {
 			throw new JargonException("resource name cannot be null or blank");
@@ -319,7 +383,8 @@ public class Resource extends Domain {
 		}
 
 		if (log.isInfoEnabled()) {
-			log.info("removing resource from resource group group:" + resourceGroupName);
+			log.info("removing resource from resource group group:"
+					+ resourceGroupName);
 		}
 
 		/*
@@ -388,8 +453,9 @@ public class Resource extends Domain {
 					+ ie.getType(), ie);
 
 		} catch (IOException e) {
-			log.error("IO exception sending command", e);
-			throw new JargonException("IO exception sending command", e);
+			String msg = "IO exception sending command";
+			log.error(msg, e);
+			throw new JargonException(msg, e);
 		}
 
 		log.info("avu metadata added");
@@ -441,9 +507,11 @@ public class Resource extends Domain {
 
 	/**
 	 * List the AVU metadata associated with a given iRODS Resource.
-	 * @param resourceName <code>String</code> with the name of an iRODS resource.
-	 * @return <code>List</code> of {@link org.irods.jargon.core.query.AvuData} with the 
-	 * metadata for the given iRODS Resource.
+	 * 
+	 * @param resourceName
+	 *            <code>String</code> with the name of an iRODS resource.
+	 * @return <code>List</code> of {@link org.irods.jargon.core.query.AvuData}
+	 *         with the metadata for the given iRODS Resource.
 	 * @throws JargonException
 	 */
 	public List<AvuData> listResourceMetadata(final String resourceName)
@@ -479,10 +547,8 @@ public class Resource extends Domain {
 		try {
 			resultSet = irodsGenQueryExecutor.executeIRODSQuery(irodsQuery, 0);
 		} catch (JargonQueryException e) {
-			log
-					.error("query exception for resource query: "
-							+ sb.toString(), e);
-			throw new JargonException("error in resource query");
+			log.error("query exception for resource query: " + sb.toString(), e);
+			throw new JargonException("error in resource query", e);
 		}
 
 		return AccessObjectQueryProcessingUtils

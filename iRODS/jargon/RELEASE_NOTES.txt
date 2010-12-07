@@ -40,6 +40,8 @@ from this fix, but the code itself was not consistent.
 
 *Bug 121 - Default resource when getting IRODSAccount with no-vals constructor
 
+*Bug 124 - Resource.modifyFreeSpace() - fixed method and added test
+
 ================================================================================================
 Outstanding Issues
 

@@ -9,10 +9,8 @@ import org.slf4j.LoggerFactory;
  * Query and manipulate ICAT tokens, kept in the tabel <code>r_tokn_main</code>.
  * This class should be considered obsolete and subject to removal and revamping.
  * 
- * @deprecated this class appears to be obsolete, and will be re-vamped in coming versions
  * @author iktome
  */
-@Deprecated
 public class Domain {
 	protected final String name;
 	protected final String typeName;

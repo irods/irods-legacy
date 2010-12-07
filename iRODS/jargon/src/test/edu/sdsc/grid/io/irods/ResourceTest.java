@@ -6,8 +6,15 @@ import java.util.Properties;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactoryImpl;
+import org.irods.jargon.core.accessobject.IRODSGenQueryExecutor;
 import org.irods.jargon.core.exception.DuplicateDataException;
+import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
+import org.irods.jargon.core.query.IRODSQuery;
+import org.irods.jargon.core.query.IRODSQueryResultSet;
+import org.irods.jargon.core.query.JargonQueryException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -60,6 +67,57 @@ public class ResourceTest {
 
 	@After
 	public void tearDown() throws Exception {
+	}
+
+	/*
+	 * Bug 124 - Resource.modifyFreeSpace()
+	 */
+	@Test
+	public void testModifyResourceFreeSpace() throws Exception {
+
+		String testval1 = "20";
+		String testval2 = "30";
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		resource.modifyFreespace(
+				testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY),
+				testval1);
+		String rescQuery = "SELECT RESC_NAME, RESC_FREE_SPACE WHERE RESC_NAME = '"
+				+ testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY)
+				+ "'";
+		IRODSQuery irodsQuery = IRODSQuery.instance(rescQuery, 50);
+
+		IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(irodsFileSystem.getCommands());
+
+		IRODSGenQueryExecutor irodsGenQueryExecutor = irodsAccessObjectFactory
+				.getIRODSGenQueryExcecutor();
+
+		IRODSQueryResultSet resultSet;
+
+		resultSet = irodsGenQueryExecutor.executeIRODSQuery(irodsQuery, 0);
+		String freeSpace = resultSet.getFirstResult().getColumn(1);
+		TestCase.assertEquals("first free space test did not set value",
+				testval1, freeSpace);
+
+		resource.modifyFreespace(
+				testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY),
+				testval2);
+		rescQuery = "SELECT RESC_NAME, RESC_FREE_SPACE WHERE RESC_NAME = '"
+				+ testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY)
+				+ "'";
+		irodsQuery = IRODSQuery.instance(rescQuery, 50);
+		resultSet = irodsGenQueryExecutor.executeIRODSQuery(irodsQuery, 0);
+		freeSpace = resultSet.getFirstResult().getColumn(1);
+		TestCase.assertEquals("second free space test did not set value",
+				testval2, freeSpace);
+
 	}
 
 	@Test
@@ -242,10 +300,10 @@ public class ResourceTest {
 				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
-		Assert.assertTrue("did not find expected attrib name", metaValues
-				.indexOf(expectedAVUAttrib) > -1);
-		Assert.assertTrue("did not find expected attrib value", metaValues
-				.indexOf(expectedAVUValue) > -1);
+		Assert.assertTrue("did not find expected attrib name",
+				metaValues.indexOf(expectedAVUAttrib) > -1);
+		Assert.assertTrue("did not find expected attrib value",
+				metaValues.indexOf(expectedAVUValue) > -1);
 
 	}
 
@@ -293,10 +351,10 @@ public class ResourceTest {
 				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
-		Assert.assertTrue("should have deleted attrib name", metaValues
-				.indexOf(expectedAVUAttrib) == -1);
-		Assert.assertTrue("should have deleted attrib value", metaValues
-				.indexOf(expectedAVUValue) == -1);
+		Assert.assertTrue("should have deleted attrib name",
+				metaValues.indexOf(expectedAVUAttrib) == -1);
+		Assert.assertTrue("should have deleted attrib value",
+				metaValues.indexOf(expectedAVUValue) == -1);
 
 	}
 
@@ -318,8 +376,7 @@ public class ResourceTest {
 		imetaRemoveCommand.setAttribUnits(expectedAttribUnits);
 		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
 		imetaRemoveCommand.setObjectPath(testResource);
-		invoker
-				.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
 
 		ImetaAddCommand imetaAddCommand = new ImetaAddCommand();
 		imetaAddCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
@@ -327,8 +384,7 @@ public class ResourceTest {
 		imetaAddCommand.setAttribValue(expectedAttribValue);
 		imetaAddCommand.setAttribUnits(expectedAttribUnits);
 		imetaAddCommand.setObjectPath(testResource);
-		invoker
-				.invokeCommandAndGetResultAsString(imetaAddCommand);
+		invoker.invokeCommandAndGetResultAsString(imetaAddCommand);
 
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAdminAccountFromTestProperties(testingProperties);
@@ -347,12 +403,12 @@ public class ResourceTest {
 			}
 		}
 
-		Assert.assertNotNull(
-				"did not find the testing attrib in the resource", avuDataItem);
-		Assert.assertEquals("did not get expected attrib",
-				expectedAttribName, avuDataItem.getAttribute());
-		Assert.assertEquals("did not get expected value",
-				expectedAttribValue, avuDataItem.getValue());
+		Assert.assertNotNull("did not find the testing attrib in the resource",
+				avuDataItem);
+		Assert.assertEquals("did not get expected attrib", expectedAttribName,
+				avuDataItem.getAttribute());
+		Assert.assertEquals("did not get expected value", expectedAttribValue,
+				avuDataItem.getValue());
 
 	}
 
@@ -380,8 +436,7 @@ public class ResourceTest {
 
 		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
 		imetaRemoveCommand.setObjectPath(testResource);
-		invoker
-				.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
 
 		ImetaAddCommand imetaAddCommand = new ImetaAddCommand();
 		imetaAddCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
@@ -389,16 +444,17 @@ public class ResourceTest {
 		imetaAddCommand.setAttribValue(expectedAttribValue);
 		imetaAddCommand.setAttribUnits(expectedAttribUnits);
 		imetaAddCommand.setObjectPath(testResource);
-		invoker
-				.invokeCommandAndGetResultAsString(imetaAddCommand);
+		invoker.invokeCommandAndGetResultAsString(imetaAddCommand);
 
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
 		final MetaDataSelect[] selects = {
-				MetaDataSet.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_VALUE),
-				MetaDataSet.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
+				MetaDataSet
+						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_VALUE),
+				MetaDataSet
+						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
 
 		final MetaDataCondition[] conditions = {
 				MetaDataSet.newCondition(
@@ -472,8 +528,7 @@ public class ResourceTest {
 				MetaDataSet
 						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
 
-		final MetaDataCondition[] conditions = {
-				 };
+		final MetaDataCondition[] conditions = {};
 		final MetaDataRecordList[] results = irodsFileSystem.query(conditions,
 				selects, Namespace.RESOURCE);
 
