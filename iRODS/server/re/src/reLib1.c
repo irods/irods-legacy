@@ -258,7 +258,10 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
 	free(tmparg);
     }
     else {
+      if( args[i][0] == '*')
 	addMsParam(outMsParamArray, args2[i], NULL, NULL,NULL);
+      else
+        addMsParam(outMsParamArray, args2[i],STR_MS_T, args[i], NULL);
     }
   }
   /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
@@ -881,7 +884,7 @@ readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleS
       inRuleStrct->ruleBase[l] = strdup(&r[0]->value[r[0]->len * i]);
       inRuleStrct->action[l]   = strdup(&r[1]->value[r[1]->len * i]);
       inRuleStrct->ruleHead[l] = strdup(&r[2]->value[r[2]->len * i]);
-      inRuleStrct->ruleCondition[l] = strdup(&r[3]->value[r[2]->len * i]);
+      inRuleStrct->ruleCondition[l] = strdup(&r[3]->value[r[3]->len * i]);
       inRuleStrct->ruleAction[l]    = strdup(&r[4]->value[r[4]->len * i]);
       inRuleStrct->ruleRecovery[l]  = strdup(&r[5]->value[r[5]->len * i]);
       l++;
