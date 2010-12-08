@@ -95,6 +95,7 @@
 #define EXEC_MY_RULE_KW	"execMyRule" /* the rule is invoked by rsExecMyRule */
 #define STREAM_STDOUT_KW	"streamStdout"   /* the stream stdout for 
 						  * execCmd */ 
+#define REG_REPL_KW		"regRepl"  /* register replica */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

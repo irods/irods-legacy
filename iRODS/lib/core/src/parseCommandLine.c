@@ -104,6 +104,11 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 	    rodsArgs->noPage=True;
 	    argv[i]="-Z";
 	 }
+         if (strcmp("--repl", argv[i])==0) {
+            rodsArgs->regRepl=True;
+            argv[i]="-Z";
+         }
+
       }
    }
 

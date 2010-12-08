@@ -22,9 +22,9 @@ main(int argc, char **argv) {
     int nArgv;
     
 
-    optStr = "D:fhCG:R:vV";
+    optStr = "D:fhCG:R:vVZ";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
 	printf("use -h for help.\n");
@@ -94,7 +94,7 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : ireg [-hfCvV] [-D dataType] [-R resource] [-G rescGroup]",
+"Usage : ireg [-hfCvV] [--repl] [-D dataType] [-R resource] [-G rescGroup]",
 "               physicalFilePath, irodsPath",
 " ",
 "Register a file or a directory of files and subdirectory into iRODS.",
@@ -129,6 +129,7 @@ usage ()
 " -C  the specified path is a directory. The default assumes the path is a file.",
 " -f  Force. If the target collection already exists, register the files and",
 "     subdirectories that have not releady been registered in the directory.",
+" --repl  register the physical path as a replica.",
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",

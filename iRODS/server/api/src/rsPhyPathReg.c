@@ -218,11 +218,55 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
         status = mountFileDir (rsComm, phyPathRegInp, filePath,
           rescGrpInfo->rescInfo);
     } else {
-	status = filePathReg (rsComm, phyPathRegInp, filePath,
-	  rescGrpInfo->rescInfo); 
+        if (getValByKey (&phyPathRegInp->condInput, REG_REPL_KW) != NULL) {
+	    status = filePathRegRepl (rsComm, phyPathRegInp, filePath,
+	      rescGrpInfo->rescInfo); 
+	} else {
+	    status = filePathReg (rsComm, phyPathRegInp, filePath,
+	      rescGrpInfo->rescInfo); 
+	}
     }
 
     return (status);
+}
+
+int
+filePathRegRepl (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
+rescInfo_t *rescInfo)
+{
+    dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
+    regReplica_t regReplicaInp;
+    int status;
+
+    status = getDataObjInfo (rsComm, phyPathRegInp, &dataObjInfoHead,
+      ACCESS_READ_OBJECT, 0);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "filePathRegRepl: getDataObjInfo for %s", phyPathRegInp->objPath);
+        return (status);
+    }
+    status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, NULL, 0);
+    if (status < 0) return status;
+
+    destDataObjInfo = *dataObjInfoHead;
+    rstrcpy (destDataObjInfo.filePath, filePath, MAX_NAME_LEN);
+    destDataObjInfo.rescInfo = rescInfo;
+    memset (&regReplicaInp, 0, sizeof (regReplicaInp));
+    regReplicaInp.srcDataObjInfo = dataObjInfoHead;
+    regReplicaInp.destDataObjInfo = &destDataObjInfo;
+    if (getValByKey (&phyPathRegInp->condInput, SU_CLIENT_USER_KW) != NULL) {
+        addKeyVal (&regReplicaInp.condInput, SU_CLIENT_USER_KW, "");
+        addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+    } else if (getValByKey (&phyPathRegInp->condInput,
+      IRODS_ADMIN_KW) != NULL) {
+        addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+    }
+    status = rsRegReplica (rsComm, &regReplicaInp);
+    clearKeyVal (&regReplicaInp.condInput);
+    freeAllDataObjInfo (dataObjInfoHead);
+
+    return status;
 }
 
 int
@@ -361,11 +405,16 @@ rescInfo_t *rescInfo)
 		    continue;
 		}
 	    }
-            addKeyVal (&subPhyPathRegInp.condInput, FILE_PATH_KW, 
-	      fileStatInp.fileName);
 	    subPhyPathRegInp.dataSize = myStat->st_size;
-	    status = filePathReg (rsComm, &subPhyPathRegInp, 
-	      fileStatInp.fileName, rescInfo);
+	    if (getValByKey (&phyPathRegInp->condInput, REG_REPL_KW) != NULL) {
+                status = filePathRegRepl (rsComm, &subPhyPathRegInp,
+                  fileStatInp.fileName, rescInfo);
+	    } else {
+                addKeyVal (&subPhyPathRegInp.condInput, FILE_PATH_KW, 
+	          fileStatInp.fileName);
+	        status = filePathReg (rsComm, &subPhyPathRegInp, 
+	          fileStatInp.fileName, rescInfo);
+	    }
         } else if ((myStat->st_mode & S_IFDIR) != 0) {      /* a directory */
             status = dirPathReg (rsComm, &subPhyPathRegInp,
               fileStatInp.fileName, rescInfo);

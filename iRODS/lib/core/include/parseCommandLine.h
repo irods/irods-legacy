@@ -91,6 +91,7 @@ typedef struct {
    int version;
    int retries;
    int retriesValue;
+   int regRepl;
 
    int parallel;
    int serial;

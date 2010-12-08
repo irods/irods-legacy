@@ -30,7 +30,8 @@ rodsPathInp_t *rodsPathInp)
 
 	if (destPath->objState == EXIST_ST &&
 	 myRodsArgs->force == False &&
-	 myRodsArgs->mountCollection == False) {
+	 myRodsArgs->mountCollection == False &&
+	 myRodsArgs->regRepl != True) {
 	    rodsLog (LOG_ERROR,
 	      "regUtil: iRODSPath %s already exist", destPath->outPath);
 	    return (CAT_NAME_EXISTS_AS_DATAOBJ);
@@ -121,6 +122,9 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
             addKeyVal (&dataObjOprInp->condInput, RESC_GROUP_NAME_KW,
               rodsArgs->rescGroupString);
         }
+    }
+    if (rodsArgs->regRepl == True) {
+        addKeyVal (&dataObjOprInp->condInput, REG_REPL_KW, "");
     }
 
     return (0);
