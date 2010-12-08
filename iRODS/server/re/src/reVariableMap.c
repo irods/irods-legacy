@@ -344,6 +344,8 @@ getSetValFromRsComm(char *varMap, rsComm_t **inptr, char **varValue, void *newVa
     i = getSetLeafValue(varValue,&(ptr->reconnAddr),(void *) ptr->reconnAddr  , newVarValue, RE_STRDUP);
   else  if (!strcmp(varName, "cookie") ) 
     i = getSetLeafValue(varValue,&(ptr->cookie), (void *)  CAST_INT_VOIDPTR ptr->cookie, newVarValue, RE_INT);
+  else  if (!strcmp(varName, "clientAddr") )
+    i = getSetLeafValue(varValue,&(ptr->clientAddr), (void *) ptr->clientAddr , newVarValue,RE_STR);
   else 
     return(UNDEFINED_VARIABLE_MAP_ERR);
   return(i);

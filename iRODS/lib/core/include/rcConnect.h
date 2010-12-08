@@ -88,6 +88,7 @@ typedef struct {
     int connectCnt;
     struct sockaddr_in  localAddr;   /* local address */
     struct sockaddr_in  remoteAddr;  /* remote address */
+    char clientAddr[NAME_LEN]; 	/* str version of remoteAddr */
     userInfo_t proxyUser;
     userInfo_t clientUser;
     rodsEnv myEnv;	/* the local user */

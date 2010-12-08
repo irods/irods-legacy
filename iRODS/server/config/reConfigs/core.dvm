@@ -83,6 +83,7 @@ privClient||rei->uoic->authInfo->authFlag
 privClient||rei->rsComm->clientUser->authInfo->authFlag
 # hostClient||rei->uoic->authInfo->host
 # hostClient||rei->rsComm->clientUser->authInfo->host
+clientAddr||rei->rsComm->clientAddr
 authStrClient||rei->uoic->authInfo->authStr
 authStrClient||rei->rsComm->clientUser->authInfo->authStr
 userAuthSchemeClient||rei->uoic->authInfo->authScheme
