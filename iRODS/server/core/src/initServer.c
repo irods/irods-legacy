@@ -1847,6 +1847,10 @@ initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack)
 
     setLocalAddr (rsComm->sock, &rsComm->localAddr);
     setRemoteAddr (rsComm->sock, &rsComm->remoteAddr);
+    tmpStr = inet_ntoa (rsComm->remoteAddr.sin_addr);
+    if (tmpStr == NULL || *tmpStr == '\0') tmpStr = "UNKNOWN";
+    rstrcpy (rsComm->clientAddr, tmpStr, NAME_LEN);
+
 
     return (0);
 }
