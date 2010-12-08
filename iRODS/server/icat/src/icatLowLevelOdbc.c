@@ -58,7 +58,7 @@ static int didBegin=0;
   call SQLError to get error information and log it
  */
 int
-logPsgError(int level, HENV henv, HDBC hdbc, HSTMT hstmt)
+logPsgError(int level, HENV henv, HDBC hdbc, HSTMT hstmt, int dbType)
 {
    SQLCHAR         sqlstate[ SQL_SQLSTATE_SIZE + 10];
    SQLINTEGER sqlcode;
@@ -66,13 +66,16 @@ logPsgError(int level, HENV henv, HDBC hdbc, HSTMT hstmt)
    int errorVal=-2;
    while (SQLError(henv, hdbc, hstmt, sqlstate, &sqlcode, psgErrorMsg,
 		   SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
-#ifdef MY_ICAT
-      if (strcmp((char *)sqlstate,"23000") == 0 && 
-          strstr((char *)psgErrorMsg, "Duplicate entry")) {
-#else
-      if (strstr((char *)psgErrorMsg, "duplicate key")) {
-#endif
-         errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
+      if (dbType == DB_TYPE_MYSQL) {
+	 if (strcmp((char *)sqlstate,"23000") == 0 && 
+	     strstr((char *)psgErrorMsg, "Duplicate entry")) {
+	    errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
+	 }
+      }
+      else {
+	 if (strstr((char *)psgErrorMsg, "duplicate key")) {
+	    errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
+	 }
       }
       rodsLog(level,"SQLSTATE: %s", sqlstate);
       rodsLog(level,"SQLCODE: %ld", sqlcode);
@@ -169,7 +172,6 @@ cllConnect(icatSessionStruct *icss) {
 
    icss->connectPtr=myHdbc;
 
-//#ifdef MY_ICAT
    if (icss->databaseType == DB_TYPE_MYSQL) {
       /* MySQL must be running in ANSI mode (or at least in
 	 PIPES_AS_CONCAT mode) to be able to understand Postgres
@@ -178,7 +180,6 @@ cllConnect(icatSessionStruct *icss) {
       cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
       cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
    }
-//#endif
 
    return(0);
 }
@@ -234,7 +235,6 @@ cllConnectRda(icatSessionStruct *icss) {
 
    icss->connectPtr=myHdbc;
 
-//#ifdef MY_ICAT
    if (icss->databaseType == DB_TYPE_MYSQL) {
    /*
     MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT
@@ -242,11 +242,10 @@ cllConnectRda(icatSessionStruct *icss) {
     must be st too, otherwise inserting NULL into NOT NULL column does
     not produce error.
    */
-   cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
-   cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
+      cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
+      cllExecSqlNoResult ( icss, 
+			   "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" );
    }
-//#endif
-
    return(0);
 }
 
@@ -301,7 +300,6 @@ cllConnectDbo(icatSessionStruct *icss, char *odbcEntryName) {
 
    icss->connectPtr=myHdbc;
 
-//#ifdef MY_ICAT
    if (icss->databaseType == DB_TYPE_MYSQL) {
    /*
     MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT
@@ -309,11 +307,10 @@ cllConnectDbo(icatSessionStruct *icss, char *odbcEntryName) {
     must be st too, otherwise inserting NULL into NOT NULL column does
     not produce error.
    */
-   cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
-   cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
+      cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
+      cllExecSqlNoResult ( icss, 
+			   "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" );
    }
-//#endif
-
    return(0);
 }
 
@@ -331,7 +328,7 @@ cllConnectDbo(icatSessionStruct *icss, char *odbcEntryName) {
 #define pendingRecordSize 30
 #define pBufferSize (maxPendingToRecord*pendingRecordSize)
 int
-cllCheckPending(char *sql, int option) {
+cllCheckPending(char *sql, int option, int dbType) {
    static int pendingCount=0;
    static int pendingIx=0;
    static int pendingAudits=0;
@@ -367,30 +364,28 @@ cllCheckPending(char *sql, int option) {
    /* if there are some non-Audit pending SQL, log them */
    if (pendingCount > pendingAudits) {
       int i, max;
-#ifdef MY_ICAT
       int skip;
-#endif
       /* but ignore a single pending "begin" which can be normal */
       if (pendingIx == 1) {
 	 if (strncmp((char *)&pBuffer[0], "begin", 5)==0) {
 	    return(0);
 	 }
       }
-#ifdef MY_ICAT
-      /* For mySQL, may have a few SET SESSION sql too, which we
-	 should ignore */
-      skip=1;
-      if (strncmp((char *)&pBuffer[0], "begin", 5)!=0) skip=0;
-      max = maxPendingToRecord;
-      if (pendingIx < max) max = pendingIx;
-      for (i=1;i<max && skip==1;i++) {
-	 if (strncmp((char *)&pBuffer[i*pendingRecordSize],
-		     "SET SESSION",11) !=0) {
-	    skip=0;
+      if (dbType == DB_TYPE_MYSQL) {
+	 /* For mySQL, may have a few SET SESSION sql too, which we
+	    should ignore */
+	 skip=1;
+	 if (strncmp((char *)&pBuffer[0], "begin", 5)!=0) skip=0;
+	 max = maxPendingToRecord;
+	 if (pendingIx < max) max = pendingIx;
+	 for (i=1;i<max && skip==1;i++) {
+	    if (strncmp((char *)&pBuffer[i*pendingRecordSize],
+			"SET SESSION",11) !=0) {
+	       skip=0;
+	    }
 	 }
+	 if (skip) return(0);
       }
-      if (skip) return(0);
-#endif
 
       rodsLog(LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
 	      pendingCount);
@@ -424,7 +419,7 @@ cllDisconnect(icatSessionStruct *icss) {
 
    myHdbc = icss->connectPtr;
 
-   i = cllCheckPending("", 1);
+   i = cllCheckPending("", 1, icss->databaseType);
    if (i==1) {
       i = cllExecSqlNoResult(icss, "commit"); /* auto commit any
 						 pending SQLs, including
@@ -608,7 +603,7 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
 
    if (stat == SQL_SUCCESS || stat == SQL_SUCCESS_WITH_INFO ||
       stat == SQL_NO_DATA_FOUND) {
-      cllCheckPending(sql, 0);
+      cllCheckPending(sql, 0, icss->databaseType);
       result = 0;
       if (stat == SQL_NO_DATA_FOUND) result = CAT_SUCCESS_BUT_WITH_NO_INFO;
 #ifdef NEW_ODBC
@@ -633,9 +628,10 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
       if (option==0) {
 	 logTheBindVariables(LOG_NOTICE);
       }
-      rodsLog(LOG_NOTICE, "_cllExecSqlNoResult: SQLExecDirect error: %d sql:%s",
+      rodsLog(LOG_NOTICE,"_cllExecSqlNoResult: SQLExecDirect error: %d sql:%s",
 	      stat, sql);
-      result = logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, myHstmt);
+      result = logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, myHstmt,
+			   icss->databaseType);
    }
 
    stat = SQLFreeStmt(myHstmt, SQL_DROP);
@@ -730,7 +726,8 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
       rodsLog(LOG_NOTICE, 
 	      "cllExecSqlWithResult: SQLExecDirect error: %d, sql:%s",
 	      stat, sql);
-      logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, hstmt);
+      logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, hstmt,
+		  icss->databaseType);
       return(-1);
    }
 
@@ -979,7 +976,8 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       rodsLog(LOG_NOTICE, 
 	      "cllExecSqlWithResultBV: SQLExecDirect error: %d, sql:%s",
 	      stat, sql);
-      logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, hstmt);
+      logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, hstmt,
+		  icss->databaseType);
       return(-1);
    }
 

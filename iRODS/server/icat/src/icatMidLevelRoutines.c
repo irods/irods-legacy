@@ -1024,9 +1024,9 @@ cmlAudit1(int actionId, char *clientUser, char *zone, char *targetUser,
 #ifdef ORA_ICAT
 #else
    else {
-      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
-			       and so should be committed on 
-			       disconnect if still pending. */
+      cllCheckPending("",2, icss->databaseType);
+      /* Indicate that this was an audit SQL and so should be
+	 committed on disconnect if still pending. */
    }
 #endif
    return(status);
@@ -1065,9 +1065,9 @@ cmlAudit2(int actionId, char *dataId, char *userName, char *zoneName,
 #ifdef ORA_ICAT
 #else
    else {
-      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
-			       and so should be committed on 
-			       disconnect if still pending. */
+      cllCheckPending("",2,  icss->databaseType);
+      /* Indicate that this was an audit SQL and so should be
+	 committed on disconnect if still pending. */
    }
 #endif
 
@@ -1130,9 +1130,9 @@ cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName,
 #ifdef ORA_ICAT
 #else
    else {
-      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
-			       and so should be committed on 
-			       disconnect if still pending. */
+      cllCheckPending("",2,  icss->databaseType);
+      /* Indicate that this was an audit SQL and so should be
+	 committed on disconnect if still pending. */
    }
 #endif
 
@@ -1209,9 +1209,9 @@ cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName,
 #ifdef ORA_ICAT
 #else
    else {
-      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
-			       and so should be committed on 
-			       disconnect if still pending. */
+      cllCheckPending("",2,  icss->databaseType);
+      /* Indicate that this was an audit SQL and so should be
+	 committed on disconnect if still pending. */
    }
 #endif
 
@@ -1253,9 +1253,9 @@ cmlAudit5(int actionId, char *objId, char *userId, char *comment,
 #ifdef ORA_ICAT
 #else
    else {
-      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
-			       and so should be committed on 
-			       disconnect if still pending. */
+      cllCheckPending("",2,  icss->databaseType);
+      /* Indicate that this was an audit SQL and so should be
+	 committed on disconnect if still pending. */
    }
 #endif
    return(status);
