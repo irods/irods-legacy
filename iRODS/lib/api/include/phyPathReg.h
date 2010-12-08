@@ -34,6 +34,9 @@ int
 filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,char *filePath,
 rescInfo_t *rescInfo);
 int
+filePathRegRepl (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,char *filePath,
+rescInfo_t *rescInfo);
+int
 filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,char *filePath,
 rescInfo_t *rescInfo);
 int
