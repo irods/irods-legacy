@@ -11,7 +11,7 @@
   information.
 
   These routines, like the icatHighLevelRoutines, layer on top of
-  either icatLowLevelPostgres or icatLowLevelOracle.  DBO is not ICAT,
+  either icatLowLevelOdbc or icatLowLevelOracle.  DBO is not ICAT,
   but they both use the shared low level interface to the databases.
   DBO can be built as part of either an ICAT-enabled server or a
   non-ICAT-Enabled server.
@@ -49,7 +49,7 @@
 static char openDbrName[MAX_SESSIONS][MAX_DBO_NAME_LEN+2]={"","","","","","","","","",""};
 
 int dboLogSQL=0;
-int readDboConfig(char *dbrname, char **DBUser, char**DBPasswd);
+int readDbrConfig(char *dbrname, char **DBUser, char **DBPasswd,char **DBType);
 
 icatSessionStruct dbo_icss[MAX_SESSIONS]={{0},{0},{0},{0},{0},{0},{0},{0},{0},{0}};
 
@@ -83,6 +83,7 @@ int dbrOpen(char *dbrName) {
    int status;
    char *DBUser;
    char *DBPasswd;
+   char *DBType;
    int icss_index;
    char odbcEntryName[MAX_ODBC_ENTRY_NAME+10];
 
@@ -98,14 +99,23 @@ int dbrOpen(char *dbrName) {
    }
    if (icss_index==-1) return (DBR_MAX_SESSIONS_REACHED);
 
-   status =  readDboConfig(dbrName, &DBUser, &DBPasswd);
+   status =  readDbrConfig(dbrName, &DBUser, &DBPasswd, &DBType);
    if (status) return(status);
 
-   rodsLog(LOG_NOTICE, "dbrOpen DBUser %s",DBUser);
-   rodsLog(LOG_NOTICE, "dbrOpen DBPasswd %s",DBPasswd);
+   rodsLog(LOG_NOTICE, "dbrOpen DBUser:%s DBType:%s",DBUser, DBType);
+// rodsLog(LOG_NOTICE, "dbrOpen DBPasswd %s",DBPasswd);
+//   rodsLog(LOG_NOTICE, "dbrOpen DBType %s",DBType);
 
    dbo_icss[icss_index].databaseUsername = DBUser;
    dbo_icss[icss_index].databasePassword = DBPasswd;
+
+   dbo_icss[icss_index].databaseType = DB_TYPE_POSTGRES;
+   if (strcmp(DBType, "oracle")==0) {
+      dbo_icss[icss_index].databaseType = DB_TYPE_ORACLE;
+   }
+   if (strcmp(DBType, "mysql")==0) {
+      dbo_icss[icss_index].databaseType = DB_TYPE_MYSQL;
+   }
 
    /* Initialize the dbo_icss statement pointers */
    for (i=0; i<MAX_NUM_OF_CONCURRENT_STMTS; i++) {
@@ -648,7 +658,7 @@ int dboSqlWithResults(int fd, char *sql, char *sqlFormat, char *args[10],
 }
 
 char *
-getDboConfigDir()
+getDbrConfigDir()
 {
     char *myDir;
 
@@ -659,7 +669,7 @@ getDboConfigDir()
 }
 
 int 
-readDboConfig(char *dboName, char **DBUser, char**DBPasswd) {
+readDbrConfig(char *dboName, char **DBUser, char **DBPasswd, char **DBType) {
    FILE *fptr;
    char buf[BUF_LEN];
    char *fchar;
@@ -667,10 +677,10 @@ readDboConfig(char *dboName, char **DBUser, char**DBPasswd) {
    char *dboConfigFile;
    static char foundLine[BUF_LEN];
 
-   dboConfigFile =  (char *) malloc((strlen (getDboConfigDir()) +
+   dboConfigFile =  (char *) malloc((strlen (getDbrConfigDir()) +
 				    strlen(DBR_CONFIG_FILE) + 24));
 
-   sprintf (dboConfigFile, "%s/%s", getDboConfigDir(), 
+   sprintf (dboConfigFile, "%s/%s", getDbrConfigDir(), 
 	    DBR_CONFIG_FILE);
 
    fptr = fopen (dboConfigFile, "r");
@@ -702,11 +712,12 @@ readDboConfig(char *dboName, char **DBUser, char**DBPasswd) {
 	       endOfLine=0;
 	       if (foundLine[i]=='\n') endOfLine=1;
 	       foundLine[i]='\0';
-	       if (endOfLine && state<6) return(0);
+	       if (endOfLine && state<8) return(0);
 	       if (state==0) state=1;
 	       if (state==2) state=3;
 	       if (state==4) state=5;
-	       if (state==6) {
+	       if (state==6) state=7;
+	       if (state==8) {
 		  static char unscrambledPw[NAME_LEN];
 		  obfDecodeByKey(*DBPasswd, DBKey, unscrambledPw);
 		  *DBPasswd=unscrambledPw;
@@ -724,6 +735,10 @@ readDboConfig(char *dboName, char **DBUser, char**DBPasswd) {
 	       }
 	       if (state==5) {
 		  state=6;
+		  *DBType=&foundLine[i];
+	       }
+	       if (state==7) {
+		  state=8;
 		  DBKey=&foundLine[i];
 	       }
 	    }
@@ -747,10 +762,10 @@ dboReadConfigItems(char *dboList, int maxSize) {
    char *dboConfigFile;
    static char foundLine[BUF_LEN];
 
-   dboConfigFile =  (char *) malloc((strlen (getDboConfigDir()) +
+   dboConfigFile =  (char *) malloc((strlen (getDbrConfigDir()) +
 				    strlen(DBR_CONFIG_FILE) + 24));
 
-   sprintf (dboConfigFile, "%s/%s", getDboConfigDir(), 
+   sprintf (dboConfigFile, "%s/%s", getDbrConfigDir(), 
 	    DBR_CONFIG_FILE);
 
    fptr = fopen (dboConfigFile, "r");

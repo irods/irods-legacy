@@ -47,15 +47,15 @@ insert into R_TOKN_MAIN values ('resc_type',401,'hpss file system','','','','','
 insert into R_TOKN_MAIN values ('resc_type',402,'windows file system','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_type',403,'s3','','','','','1250100000','1250100000');
 insert into R_TOKN_MAIN values ('resc_type',404,'MSS universal driver','','','','','1250100000','1250100000');
-insert into R_TOKN_MAIN values ('resc_type',405,'postgresql','','','','','1288631300','1288631300');
-insert into R_TOKN_MAIN values ('resc_type',406,'mysql','','','','','1288631300','1288631300');
-insert into R_TOKN_MAIN values ('resc_type',407,'oracle','','','','','1288631300','1288631300');
+insert into R_TOKN_MAIN values ('resc_type',405,'database','','','','','1288631300','1288631300');
 
 insert into R_TOKN_MAIN values ('resc_class',500,'cache','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_class',501,'archive','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_class',502,'compound','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_class',503,'bundle','','','','','1170000000','1170000000');
-insert into R_TOKN_MAIN values ('resc_class',504,'database','','','','','1288631300','1288631300');
+insert into R_TOKN_MAIN values ('resc_class',504,'postgresql','','','','','1288631300','1288631300');
+insert into R_TOKN_MAIN values ('resc_class',505,'mysql','','','','','1288631300','1288631300');
+insert into R_TOKN_MAIN values ('resc_class',506,'oracle','','','','','1288631300','1288631300');
 
 insert into R_TOKN_MAIN values ('rulexec_type',600,'immediate','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('rulexec_type',601,'delayed','','','','','1170000000','1170000000');

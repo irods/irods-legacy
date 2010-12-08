@@ -15,7 +15,7 @@
   interface.  For more information, see the iRODS web site.
 
   These routines, like the icatHighLevelRoutines, layer on top of
-  either icatLowLevelPostgres or icatLowLevelOracle.  RDA is not ICAT,
+  either icatLowLevelOdbc or icatLowLevelOracle.  RDA is not ICAT,
   but they both use the shared low level interface to the databases.
   RDA can be built as part of either an ICAT-enabled server or a
   non-ICAT-Enabled server.  In the later case, the Makefiles build the
@@ -89,6 +89,20 @@ int rdaOpen(char *rdaName) {
    for (i=0; i<MAX_NUM_OF_CONCURRENT_STMTS; i++) {
       rda_icss.stmtPtr[i]=0;
    }
+
+/*
+ Set the DBMS type.  The Low Level now uses this instead of the ifdefs
+ so it can interact with either at the same time (for the DBR/DBO
+ feature).  But for RDA this is still just using an ifdef to select
+ the type; DBR handles it on a per-DBR definition basis.
+*/
+   rda_icss->databaseType = DB_TYPE_POSTGRES;
+#ifdef ORA_ICAT
+   rda_icss->databaseType = DB_TYPE_ORACLE;
+#endif
+#ifdef MY_ICAT
+   rda_icss->databaseType = DB_TYPE_MYSQL;
+#endif
 
    /* Open Environment */
    i = cllOpenEnv(&rda_icss);

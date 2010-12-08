@@ -17,6 +17,10 @@
 
 #define MAX_INTEGER_SIZE 40  /* ??, for now */
 
+#define DB_TYPE_POSTGRES 1
+#define DB_TYPE_ORACLE   2
+#define DB_TYPE_MYSQL    3
+
 /* 
    These are the access permissions known to the system, listed in
    order.  The defines are here to make it clear what these are and

@@ -51,6 +51,20 @@ int cmlOpen( icatSessionStruct *icss) {
       icss->stmtPtr[i]=0;
    }
 
+/*
+ Set the ICAT DBMS type.  The Low Level now uses this instead of the
+ ifdefs so it can interact with either at the same time (for the
+ DBR/DBO feature).
+ */
+   icss->databaseType = DB_TYPE_POSTGRES;
+#ifdef ORA_ICAT
+   icss->databaseType = DB_TYPE_ORACLE;
+#endif
+#ifdef MY_ICAT
+   icss->databaseType = DB_TYPE_MYSQL;
+#endif
+
+
    /* Open Environment */
    i = cllOpenEnv(icss);
    if (i != 0) return(CAT_ENV_ERR);

@@ -126,7 +126,7 @@ SVR_ICAT_OBJS += $(svrIcatObjDir)/rdaHighLevelRoutines.o
 
 ifdef PSQICAT
 # Support Postgres
-SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 endif
 
@@ -140,7 +140,7 @@ endif
 
 ifdef MYICAT
 # Support MYSQL
-SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 INCLUDES +=	-I$(UNIXODBC_HOME)/include
 CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\" -DMY_ICAT=1
 endif
@@ -154,7 +154,7 @@ ifndef ORAICAT
 SVR_DBO_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
 endif
 INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
-CFLAGS +=	-DORA_ICAT
+#CFLAGS +=	-DORA_ICAT
 CFLAGS +=	-DORA_DBO
 endif
 ifeq ($(DBO_TYPE), postgres) 
@@ -162,7 +162,8 @@ CFLAGS +=	-DNEW_ODBC
 INCLUDES +=	-I$(svrIcatIncDir)
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 ifndef PSQICAT
-SVR_DBO_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+#INCLUDES +=	-I$(UNIXODBC_HOME)/include
+SVR_DBO_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 endif
 endif
 SVR_DBO_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o

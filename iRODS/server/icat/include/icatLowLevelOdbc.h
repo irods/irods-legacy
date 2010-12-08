@@ -1,7 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /*
-  header file for the Postgresql version of the icat low level routines.
+  header file for the ODBC version of the icat low level routines,
+  which is for Postgres or MySQL.
  */
 
 #ifndef CLL_PSQ_H

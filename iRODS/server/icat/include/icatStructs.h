@@ -29,9 +29,9 @@ typedef struct {
   void*       environPtr;       /* internal db environment handle */
   void*       connectPtr;       /* internal db connection handle */
   icatStmtStrct* stmtPtr[MAX_NUM_OF_CONCURRENT_STMTS];  /* statement handles */
-   /*  void*       genericPtr;  used internally by low level code (not currently) */
-  char *databaseUsername;      /* username for accessing the database */
+  char *databaseUsername;       /* username for accessing the database */
   char *databasePassword;       /* password (if needed) for accessing the db */
+  int         databaseType;     /* DB type, DB_TYPE_POSTGRES, etc */
 }icatSessionStruct;
 
 

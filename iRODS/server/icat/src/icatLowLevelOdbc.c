@@ -28,7 +28,7 @@ The external functions used are those that begin with SQL.
 
 */
 
-#include "icatLowLevelPostgres.h"
+#include "icatLowLevelOdbc.h"
 int _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber);
 
 int
@@ -169,14 +169,16 @@ cllConnect(icatSessionStruct *icss) {
 
    icss->connectPtr=myHdbc;
 
-#ifdef MY_ICAT
-   /* MySQL must be running in ANSI mode (or at least in
-   PIPES_AS_CONCAT mode) to be able to understand Postgres
-   SQL. STRICT_TRANS_TABLES must be st too, otherwise inserting NULL
-   into NOT NULL column does not produce error. */
-   cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
-   cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
-#endif
+//#ifdef MY_ICAT
+   if (icss->databaseType == DB_TYPE_MYSQL) {
+      /* MySQL must be running in ANSI mode (or at least in
+	 PIPES_AS_CONCAT mode) to be able to understand Postgres
+	 SQL. STRICT_TRANS_TABLES must be st too, otherwise inserting NULL
+	 into NOT NULL column does not produce error. */
+      cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
+      cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
+   }
+//#endif
 
    return(0);
 }
@@ -232,7 +234,8 @@ cllConnectRda(icatSessionStruct *icss) {
 
    icss->connectPtr=myHdbc;
 
-#ifdef MY_ICAT
+//#ifdef MY_ICAT
+   if (icss->databaseType == DB_TYPE_MYSQL) {
    /*
     MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT
     mode) to be able to understand Postgres SQL. STRICT_TRANS_TABLES
@@ -241,7 +244,8 @@ cllConnectRda(icatSessionStruct *icss) {
    */
    cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
    cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
-#endif
+   }
+//#endif
 
    return(0);
 }
@@ -297,7 +301,8 @@ cllConnectDbo(icatSessionStruct *icss, char *odbcEntryName) {
 
    icss->connectPtr=myHdbc;
 
-#ifdef MY_ICAT
+//#ifdef MY_ICAT
+   if (icss->databaseType == DB_TYPE_MYSQL) {
    /*
     MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT
     mode) to be able to understand Postgres SQL. STRICT_TRANS_TABLES
@@ -306,7 +311,8 @@ cllConnectDbo(icatSessionStruct *icss, char *odbcEntryName) {
    */
    cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
    cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
-#endif
+   }
+//#endif
 
    return(0);
 }
