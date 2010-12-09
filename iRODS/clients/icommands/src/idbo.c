@@ -214,13 +214,18 @@ execDbo(char *dbRescName, char *dboName, char *args[10]) {
       if (databaseObjControlOut != NULL &&
 	  databaseObjControlOut->outBuf != NULL &&
 	  strlen(databaseObjControlOut->outBuf)>0 ) {
+	 int ix;
 	 if(status == DBO_NOT_COMPILED_IN) {
-	    printf("Error message return by the iRODS server:\n");
+	    printf("Message returned by the iRODS server:\n");
 	 }
 	 else {
-	    printf("Error message return by the DBMS or DBO interface:\n");
+	    printf("Message returned by the DBMS or DBO interface:\n");
 	 }
 	 printf("%s",databaseObjControlOut->outBuf);
+	 ix = strlen(databaseObjControlOut->outBuf);
+	 if (databaseObjControlOut->outBuf[ix-1]!='\n') {
+	    printf("\n");
+	 }
       }
       if (Conn->rError) {
 	 rError_t *Err;
