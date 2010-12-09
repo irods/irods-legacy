@@ -602,10 +602,15 @@ getInput(char *cmdToken[], int maxTokens) {
    int nTokens;
    int tokenFlag; /* 1: start reg, 2: start ", 3: start ' */
    char *cpTokenStart;
+   char *cpStat;
 
    memset(ttybuf, 0, BIG_STR);
    fputs("iadmin>",stdout);
-   fgets(ttybuf, BIG_STR, stdin);
+   cpStat = fgets(ttybuf, BIG_STR, stdin);
+   if (cpStat==NULL) {
+      ttybuf[0]='q';
+      ttybuf[1]='\n';
+   }
    lenstr=strlen(ttybuf);
    for (i=0;i<maxTokens;i++) {
       cmdToken[i]="";
