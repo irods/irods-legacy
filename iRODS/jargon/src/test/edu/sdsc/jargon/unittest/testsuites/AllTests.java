@@ -4,6 +4,8 @@ package edu.sdsc.jargon.unittest.testsuites;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import edu.sdsc.grid.io.FileFactoryTest;
+
 /**
  * Main test suite to run all Jargon unit tests
  * @author Mike Conway, DICE
@@ -19,6 +21,7 @@ import org.junit.runners.Suite;
   ICommandInvokerTests.class,
   LocalFileTests.class,
   GeneralFileSystemTests.class,
+  FileFactoryTest.class,
   IRODSMidLevelServicesTest.class,
   IRODSQueryTests.class,
   IRODSAccessObjectTests.class,

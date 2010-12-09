@@ -41,32 +41,59 @@
 //
 package edu.sdsc.grid.io;
 
-import edu.sdsc.grid.io.local.*;
-import edu.sdsc.grid.io.srb.*;
-import edu.sdsc.grid.io.irods.*;
-import edu.sdsc.grid.io.http.*;
-import edu.sdsc.grid.io.ftp.*;
-
 import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import org.ietf.jgss.GSSCredential;
+import org.irods.jargon.core.exception.JargonRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.sdsc.grid.io.ftp.FTPAccount;
+import edu.sdsc.grid.io.ftp.FTPFile;
+import edu.sdsc.grid.io.ftp.FTPFileSystem;
+import edu.sdsc.grid.io.http.HTTPAccount;
+import edu.sdsc.grid.io.http.HTTPFile;
+import edu.sdsc.grid.io.http.HTTPFileInputStream;
+import edu.sdsc.grid.io.http.HTTPFileOutputStream;
+import edu.sdsc.grid.io.http.HTTPFileSystem;
+import edu.sdsc.grid.io.http.HTTPRandomAccessFile;
+import edu.sdsc.grid.io.irods.IRODSAccount;
+import edu.sdsc.grid.io.irods.IRODSFile;
+import edu.sdsc.grid.io.irods.IRODSFileInputStream;
+import edu.sdsc.grid.io.irods.IRODSFileOutputStream;
+import edu.sdsc.grid.io.irods.IRODSFileSystem;
+import edu.sdsc.grid.io.irods.IRODSMetaDataRecordList;
+import edu.sdsc.grid.io.irods.IRODSRandomAccessFile;
+import edu.sdsc.grid.io.local.LocalFile;
+import edu.sdsc.grid.io.local.LocalFileInputStream;
+import edu.sdsc.grid.io.local.LocalFileOutputStream;
+import edu.sdsc.grid.io.local.LocalFileSystem;
+import edu.sdsc.grid.io.local.LocalMetaDataRecordList;
+import edu.sdsc.grid.io.local.LocalRandomAccessFile;
+import edu.sdsc.grid.io.srb.SRBAccount;
+import edu.sdsc.grid.io.srb.SRBFile;
+import edu.sdsc.grid.io.srb.SRBFileInputStream;
+import edu.sdsc.grid.io.srb.SRBFileOutputStream;
+import edu.sdsc.grid.io.srb.SRBFileSystem;
+import edu.sdsc.grid.io.srb.SRBMetaDataRecordList;
+import edu.sdsc.grid.io.srb.SRBRandomAccessFile;
 
 /**
  * Operations include creating appropriately typed GeneralFile and
  * GeneralRandomAccessFile objects. Creating a file object can use a "URI" (not
  * a "URL").
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public final class FileFactory {
+
+	private static final String URI_SYNTAX_EXCEPTION_LOGGED_AND_IGNORED = "URI Syntax exception logged and ignored";
 
 	/**
 	 * Registration for other file types so they are known and used by the
@@ -74,14 +101,15 @@ public final class FileFactory {
 	 * 
 	 * 
 	 */
-	static HashMap classToType = new HashMap();
+	private static final HashMap<Serializable, Object> classToType = new HashMap<Serializable, Object>();
 
 	private static final int RAF = 0;
 	private static final int INPUT = 1;
 	private static final int OUTPUT = 2;
 	private static final int RECORD_LIST = 3;
 
-	private static Logger log = LoggerFactory.getLogger(FileFactory.class);
+	private static final Logger LOG = LoggerFactory
+			.getLogger(FileFactory.class);
 
 	static {
 
@@ -92,7 +120,7 @@ public final class FileFactory {
 					SRBRandomAccessFile.class, SRBFileInputStream.class,
 					SRBFileOutputStream.class, SRBMetaDataRecordList.class);
 		} catch (URISyntaxException e) {
-			log.warn("URI Syntax exception logged and ignored", e);
+			LOG.warn(URI_SYNTAX_EXCEPTION_LOGGED_AND_IGNORED, e);
 		}
 
 		try {
@@ -102,7 +130,7 @@ public final class FileFactory {
 					IRODSRandomAccessFile.class, IRODSFileInputStream.class,
 					IRODSFileOutputStream.class, IRODSMetaDataRecordList.class);
 		} catch (URISyntaxException e) {
-			log.warn("URI Syntax exception logged and ignored", e);
+			LOG.warn(URI_SYNTAX_EXCEPTION_LOGGED_AND_IGNORED, e);
 		}
 
 		// Could also handle anything of URLConnection: mailto, gopher,
@@ -120,7 +148,7 @@ public final class FileFactory {
 					HTTPRandomAccessFile.class, HTTPFileInputStream.class,
 					HTTPFileOutputStream.class, null);
 		} catch (URISyntaxException e) {
-			log.warn("URI Syntax exception logged and ignored", e);
+			LOG.warn(URI_SYNTAX_EXCEPTION_LOGGED_AND_IGNORED, e);
 		}
 
 		try {
@@ -129,22 +157,18 @@ public final class FileFactory {
 					FTPAccount.class, FTPFileSystem.class, FTPFile.class, null,
 					null, null, null);
 		} catch (URISyntaxException e) {
-			log.warn("URI Syntax exception logged and ignored", e);
+			LOG.warn(URI_SYNTAX_EXCEPTION_LOGGED_AND_IGNORED, e);
 		}
 
 	}
-
-	// ----------------------------------------------------------------------
-	// Utility Methods
-	// ----------------------------------------------------------------------
 
 	/**
 	 * Stores these class types for later use. Does not use the values from this
 	 * object. The connection of a GeneralFileSystem will not be used when
 	 * creating another.
 	 */
-	public static void registerFileSystem(GeneralAccount account,
-			GeneralFileSystem fileSystem, GeneralFile file) {
+	public static void registerFileSystem(final GeneralAccount account,
+			final GeneralFileSystem fileSystem, final GeneralFile file) {
 		registerFileSystem(null, account.getClass(), fileSystem.getClass(),
 				file.getClass(), null, null, null, null);
 	}
@@ -154,11 +178,12 @@ public final class FileFactory {
 	 * object. The connection of a GeneralFileSystem will not be used when
 	 * creating another.
 	 */
-	public static void registerFileSystem(URI uri, GeneralAccount account,
-			GeneralFileSystem fileSystem, GeneralFile file,
-			GeneralRandomAccessFile randomAccessFile) {
-		registerFileSystem(uri, account.getClass(), fileSystem.getClass(), file
-				.getClass(), randomAccessFile.getClass(), null, null, null);
+	public static void registerFileSystem(final URI uri,
+			final GeneralAccount account, final GeneralFileSystem fileSystem,
+			final GeneralFile file,
+			final GeneralRandomAccessFile randomAccessFile) {
+		registerFileSystem(uri, account.getClass(), fileSystem.getClass(),
+				file.getClass(), randomAccessFile.getClass(), null, null, null);
 	}
 
 	/**
@@ -166,13 +191,14 @@ public final class FileFactory {
 	 * object. The connection of a GeneralFileSystem will not be used when
 	 * creating another.
 	 */
-	public static void registerFileSystem(URI uri, GeneralAccount account,
-			GeneralFileSystem fileSystem, GeneralFile file,
-			GeneralRandomAccessFile randomAccessFile,
-			GeneralFileInputStream in, GeneralFileOutputStream out) {
-		registerFileSystem(uri, account.getClass(), fileSystem.getClass(), file
-				.getClass(), randomAccessFile.getClass(), in.getClass(), out
-				.getClass(), null);
+	public static void registerFileSystem(final URI uri,
+			final GeneralAccount account, final GeneralFileSystem fileSystem,
+			final GeneralFile file,
+			final GeneralRandomAccessFile randomAccessFile,
+			final GeneralFileInputStream in, final GeneralFileOutputStream out) {
+		registerFileSystem(uri, account.getClass(), fileSystem.getClass(),
+				file.getClass(), randomAccessFile.getClass(), in.getClass(),
+				out.getClass(), null);
 	}
 
 	/**
@@ -180,14 +206,15 @@ public final class FileFactory {
 	 * object. The connection of a GeneralFileSystem will not be used when
 	 * creating another.
 	 */
-	public static void registerFileSystem(URI uri, GeneralAccount account,
-			GeneralFileSystem fileSystem, GeneralFile file,
-			GeneralRandomAccessFile randomAccessFile,
-			GeneralFileInputStream in, GeneralFileOutputStream out,
-			MetaDataRecordList rl) {
-		registerFileSystem(uri, account.getClass(), fileSystem.getClass(), file
-				.getClass(), randomAccessFile.getClass(), in.getClass(), out
-				.getClass(), rl.getClass());
+	public static void registerFileSystem(final URI uri,
+			final GeneralAccount account, final GeneralFileSystem fileSystem,
+			final GeneralFile file,
+			final GeneralRandomAccessFile randomAccessFile,
+			final GeneralFileInputStream in, final GeneralFileOutputStream out,
+			final MetaDataRecordList rl) {
+		registerFileSystem(uri, account.getClass(), fileSystem.getClass(),
+				file.getClass(), randomAccessFile.getClass(), in.getClass(),
+				out.getClass(), rl.getClass());
 	}
 
 	/**
@@ -195,11 +222,12 @@ public final class FileFactory {
 	 * object. The connection of this GeneralFileSystem will not be used when
 	 * creating a new connection or for sending commands.
 	 */
-	static void registerFileSystem(URI uri, Class account, Class fileSystem,
-			Class file, Class randomAccessFile, Class inputStream,
-			Class outputStream, Class recordList) {
+	static void registerFileSystem(final URI uri, final Class account,
+			final Class fileSystem, final Class file,
+			final Class randomAccessFile, final Class inputStream,
+			final Class outputStream, final Class recordList) {
 		if (fileSystem == null) {
-			throw new NullPointerException("FileSystem cannot be null");
+			throw new IllegalArgumentException("FileSystem cannot be null");
 		}
 		if (account != null) {
 			classToType.put(account, fileSystem);
@@ -212,7 +240,6 @@ public final class FileFactory {
 		}
 
 		Object[] various = new Object[4];
-		boolean add = false;
 		if (randomAccessFile != null) {
 			various[0] = randomAccessFile;
 		}
@@ -231,59 +258,35 @@ public final class FileFactory {
 	/**
 	 * Returns true iff <code>fileSystem</code> been registered.
 	 */
-	static boolean isFileSystemRegistered(GeneralFileSystem fileSystem) {
+	static boolean isFileSystemRegistered(final GeneralFileSystem fileSystem) {
 		return classToType.containsKey(fileSystem.getClass());
 	}
 
-	private static Object createObject(Constructor constructor,
-			Object[] arguments) throws IOException {
-		try {
-			return constructor.newInstance(arguments);
-		} catch (InstantiationException e) {
-			log.warn("instanciation exception, logged and ignored", e);
-		} catch (IllegalAccessException e) {
-			log.warn("illegal access exception, logged and ignored", e);
-		} catch (IllegalArgumentException e) {
-			log.warn("illegal argument exception, logged and ignored", e);
-
-		} catch (InvocationTargetException e) {
-			Throwable x = e.getCause();
-			if (x instanceof IOException) {
-				log.error("IO exception creating object", e);
-				throw (IOException) x;
-			}
-			log.warn("invocation target exception logged and ignored", e);
-
-		}
-		return null;
-	}
-
-	private static Object fromMap(Object key, Object arg) throws IOException {
+	private static Object fromMap(final Object key, final Object arg)
+			throws IOException {
 		return fromMap(key, new Object[] { arg }, -1);
 	}
 
-	private static Object fromMap(Object key, Object[] arg) throws IOException {
+	private static Object fromMap(final Object key, final Object[] arg)
+			throws IOException {
 		return fromMap(key, arg, -1);
 	}
 
-	private static Object fromMap(Object key, Object arg, int subKey)
-			throws IOException {
-		return fromMap(key, new Object[] { arg }, subKey);
-	}
-
 	// first argument is the key for the Hashmap
-	private static Object fromMap(Object key, Object[] args, int subKey)
-			throws IOException {
+	private static Object fromMap(final Object key, final Object[] args,
+			final int subKey) throws IOException {
 		if ((key != null) && (args != null)) {
 			Object main = classToType.get(key);
-			if (main == null)
+			if (main == null) {
 				return null;
+			}
 			if (subKey == RECORD_LIST) {
 				// MetaDataRecordLists
 				// returns the file type which will return the array...
 				main = classToType.get(main);
-				if (main == null)
+				if (main == null) {
 					return null;
+				}
 				main = ((Object[]) main)[subKey];
 			} else if (main instanceof Object[]) {
 				main = ((Object[]) main)[subKey];
@@ -303,42 +306,47 @@ public final class FileFactory {
 						args);
 			} catch (NoSuchMethodException e) {
 				Throwable x = e.getCause();
-				if (x instanceof IOException)
+				if (x instanceof IOException) {
 					throw (IOException) x;
+				}
 				// else
-				RuntimeException re = new RuntimeException();
+				JargonRuntimeException re = new JargonRuntimeException();
 				re.initCause(e);
 				throw re;
 			} catch (InstantiationException e) {
 				Throwable x = e.getCause();
-				if (x instanceof IOException)
+				if (x instanceof IOException) {
 					throw (IOException) x;
+				}
 				// else
-				RuntimeException re = new RuntimeException();
+				JargonRuntimeException re = new JargonRuntimeException();
 				re.initCause(e);
 				throw re;
 			} catch (IllegalAccessException e) {
 				Throwable x = e.getCause();
-				if (x instanceof IOException)
+				if (x instanceof IOException) {
 					throw (IOException) x;
+				}
 				// else
-				RuntimeException re = new RuntimeException();
+				JargonRuntimeException re = new JargonRuntimeException();
 				re.initCause(e);
 				throw re;
 			} catch (IllegalArgumentException e) {
 				Throwable x = e.getCause();
-				if (x instanceof IOException)
+				if (x instanceof IOException) {
 					throw (IOException) x;
+				}
 				// else
-				RuntimeException re = new RuntimeException();
+				JargonRuntimeException re = new JargonRuntimeException();
 				re.initCause(e);
 				throw re;
 			} catch (InvocationTargetException e) {
 				Throwable x = e.getCause();
-				if (x instanceof IOException)
+				if (x instanceof IOException) {
 					throw (IOException) x;
+				}
 				// else
-				RuntimeException re = new RuntimeException();
+				JargonRuntimeException re = new JargonRuntimeException();
 				re.initCause(e);
 				throw re;
 			}
@@ -346,9 +354,6 @@ public final class FileFactory {
 		return null;
 	}
 
-	// ----------------------------------------------------------------------
-	// Factory Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Creates a filesystem appropriate to the account object.
 	 * 
@@ -360,7 +365,7 @@ public final class FileFactory {
 	 *             If an IO error occurs during the connection to the
 	 *             filesystem.
 	 */
-	public static GeneralFileSystem newFileSystem(GeneralAccount account)
+	public static GeneralFileSystem newFileSystem(final GeneralAccount account)
 			throws IOException {
 		GeneralFileSystem fs = (GeneralFileSystem) fromMap(account.getClass(),
 				account);
@@ -382,7 +387,8 @@ public final class FileFactory {
 	 *             If an IO error occurs during the connection to the
 	 *             filesystem.
 	 */
-	public static GeneralFileSystem newFileSystem(URI uri) throws IOException {
+	public static GeneralFileSystem newFileSystem(final URI uri)
+			throws IOException {
 		GeneralFileSystem fs = ((GeneralFile) fromMap(uri.getScheme(), uri))
 				.getFileSystem();
 		if (fs == null) {
@@ -403,8 +409,8 @@ public final class FileFactory {
 	 *             If an IO error occurs during the connection to the
 	 *             filesystem.
 	 */
-	public static GeneralFileSystem newFileSystem(URI uri,
-			GSSCredential gssCredential) throws IOException {
+	public static GeneralFileSystem newFileSystem(final URI uri,
+			final GSSCredential gssCredential) throws IOException {
 		GeneralFileSystem fs = ((GeneralFile) fromMap(uri.getScheme(),
 				new Object[] { uri, gssCredential })).getFileSystem();
 		if (fs == null) {
@@ -434,7 +440,7 @@ public final class FileFactory {
 	 *             If an IO error occurs testing the connection to the
 	 *             filesystem.
 	 */
-	public static GeneralFile newFile(URI uri) throws IOException {
+	public static GeneralFile newFile(final URI uri) throws IOException {
 		if (uri.getScheme().equals("file")) {
 			return new LocalFile(uri);
 		}
@@ -451,7 +457,7 @@ public final class FileFactory {
 	/**
 	 * Creates an abstract pathname using this uri. Currently supported URI
 	 * schemes are "file://", "http://", "ftp://", "srb://", and "irods://".
-	 *<P>
+	 * <P>
 	 * Including a text password in a URI string is not advisable for security
 	 * reasons. This method allows the password to obtained by more secure
 	 * methods. The connection to the file will then be made through the default
@@ -470,18 +476,20 @@ public final class FileFactory {
 	 *             If an IO error occurs testing the connection to the
 	 *             filesystem.
 	 */
-	public static GeneralFile newFile(URI uri, String password)
+	public static GeneralFile newFile(final URI uri, final String password)
 			throws IOException {
 		int index = -1;
 		String userInfo = uri.getUserInfo();
 		Class file = (Class) classToType.get(uri.getScheme());
+		URI newURI = null;
 		if (file != null && password != null) {
 			if (uri.getScheme().equals("file")) {
 				return new LocalFile(uri);
 			}
-			if ((password.indexOf(":") >= 0) || (password.indexOf("@") >= 0))
+			if ((password.indexOf(":") >= 0) || (password.indexOf("@") >= 0)) {
 				throw new IllegalArgumentException(
 						"Password contains illegal charaters");
+			}
 
 			// weird srb thing
 			if (file.equals(SRBFile.class)
@@ -499,15 +507,15 @@ public final class FileFactory {
 			}
 
 			try {
-				uri = new URI(uri.getScheme(), userInfo, uri.getHost(), uri
-						.getPort(), uri.getPath(), uri.getQuery(), uri
-						.getFragment());
+				newURI = new URI(uri.getScheme(), userInfo, uri.getHost(),
+						uri.getPort(), uri.getPath(), uri.getQuery(),
+						uri.getFragment());
 			} catch (URISyntaxException e) {
 				throw new IllegalArgumentException(
-						"Password contains illegal charaters");
+						"Password contains illegal characters", e);
 			}
 		}
-		return newFile(uri);
+		return newFile(newURI);
 	}
 
 	/**
@@ -530,8 +538,8 @@ public final class FileFactory {
 	 *             If an IO error occurs testing the connection to the
 	 *             filesystem.
 	 */
-	public static GeneralFile newFile(URI uri, GSSCredential credential)
-			throws IOException {
+	public static GeneralFile newFile(final URI uri,
+			final GSSCredential credential) throws IOException {
 		int index = -1;
 		String userInfo = uri.getUserInfo();
 		String userName, domain, password = null;
@@ -578,8 +586,9 @@ public final class FileFactory {
 				}
 			}
 
-			IRODSAccount account = new IRODSAccount(uri.getHost(), uri
-					.getPort(), userName, password, uri.getPath(), null, null);
+			IRODSAccount account = new IRODSAccount(uri.getHost(),
+					uri.getPort(), userName, password, uri.getPath(), null,
+					null);
 			account.setGSSCredential(credential);
 			return newFile(account, uri.getPath());
 		}
@@ -592,7 +601,7 @@ public final class FileFactory {
 	/**
 	 * Creates an abstract pathname using this uri. Currently supported URI
 	 * schemes are "file://", "http://", "ftp://", "srb://", and "irods://".
-	 *<P>
+	 * <P>
 	 * Including a text password in a URI string is not advisable for security
 	 * reasons. This method allows for authentication with GSI, if supported by
 	 * that filesystem.
@@ -615,8 +624,9 @@ public final class FileFactory {
 	 *             If an IO error occurs testing the connection to the
 	 *             filesystem.
 	 */
-	static GeneralFile newFile(URI uri, String proxyFilePath,
-			String certificateAurthority) throws IOException {
+	protected static GeneralFile newFile(final URI uri,
+			final String proxyFilePath, final String certificateAurthority)
+			throws IOException {
 		GeneralFile file = (GeneralFile) fromMap(uri.getScheme(), new Object[] {
 				uri, proxyFilePath, certificateAurthority });
 		if (file == null) {
@@ -640,8 +650,8 @@ public final class FileFactory {
 	 * @throws NullPointerException
 	 *             If the path argument is null.
 	 */
-	public static GeneralFile newFile(GeneralAccount account, String path)
-			throws IOException {
+	public static GeneralFile newFile(final GeneralAccount account,
+			final String path) throws IOException {
 		GeneralFile file = (GeneralFile) fromMap(account.getClass(),
 				new Object[] { account, path });
 		if (file == null) {
@@ -667,8 +677,8 @@ public final class FileFactory {
 	 * @throws NullPointerException
 	 *             If the path argument is null.
 	 */
-	public static GeneralFile newFile(GeneralAccount account, String parent,
-			String child) throws IOException {
+	public static GeneralFile newFile(final GeneralAccount account,
+			final String parent, final String child) throws IOException {
 		GeneralFile file = (GeneralFile) fromMap(account.getClass(),
 				new Object[] { account, parent, child });
 		if (file == null) {
@@ -691,7 +701,8 @@ public final class FileFactory {
 	 * @throws NullPointerException
 	 *             If the path argument is null.
 	 */
-	public static GeneralFile newFile(GeneralFileSystem fs, String path) {
+	public static GeneralFile newFile(final GeneralFileSystem fs,
+			final String path) {
 		GeneralFile file = null;
 		try {
 			file = (GeneralFile) fromMap(fs.getClass(),
@@ -702,7 +713,7 @@ public final class FileFactory {
 			}
 		} catch (IOException e) {
 			// such error an error really isn't possible.
-			log.warn("IOException, logged and ignored", e);
+			LOG.warn("IOException, logged and ignored", e);
 
 		}
 		return file;
@@ -723,8 +734,8 @@ public final class FileFactory {
 	 * @throws NullPointerException
 	 *             If the child argument is null.
 	 */
-	public static GeneralFile newFile(GeneralFileSystem fs, String parent,
-			String child) {
+	public static GeneralFile newFile(final GeneralFileSystem fs,
+			final String parent, final String child) {
 		GeneralFile file = null;
 		try {
 			file = (GeneralFile) fromMap(fs.getClass(), new Object[] { fs,
@@ -735,7 +746,7 @@ public final class FileFactory {
 			}
 		} catch (IOException e) {
 			// such error an error really isn't possible.
-			log.warn("io exception, logged and ignored", e);
+			LOG.warn("io exception, logged and ignored", e);
 		}
 		return file;
 	}
@@ -753,19 +764,26 @@ public final class FileFactory {
 	 * @throws NullPointerException
 	 *             If the child argument is null.
 	 */
-	public static GeneralFile newFile(GeneralFile parent, String child) {
+	public static GeneralFile newFile(final GeneralFile parent,
+			final String child) {
 		GeneralFile file = null;
 		try {
 			file = (GeneralFile) fromMap(parent.getFileSystem().getClass(),
 					new Object[] { parent, child });
 			if (file == null) {
 				// Default to local
-				return new LocalFile((LocalFile) parent, child);
+				if (!(parent instanceof LocalFile)) {
+					throw new IllegalArgumentException(
+							"parent is not a LocalFile");
+				}
+
+				LocalFile localFileParent = (LocalFile) parent;
+
+				return new LocalFile(localFileParent, child);
 			}
 		} catch (IOException e) {
 			// such error an error really isn't possible.
-			log.warn("io exception, logged and ignored", e);
-
+			LOG.warn("io exception, logged and ignored", e);
 		}
 		return file;
 	}
@@ -778,9 +796,9 @@ public final class FileFactory {
 	 * querying and symbolic links.
 	 */
 
-	static GeneralFile newFile(GeneralFileSystem fileSystem, String filePath,
-			MetaDataCondition[] conditions) throws NullPointerException,
-			IOException {
+	protected static GeneralFile newFile(final GeneralFileSystem fileSystem,
+			final String filePath, final MetaDataCondition[] conditions)
+			throws NullPointerException, IOException {
 		GeneralFile dir = newFile(fileSystem, filePath);
 		dir.mkdir();
 
@@ -793,10 +811,9 @@ public final class FileFactory {
 		}
 		for (int i = 0; i < rl.length; i++) {
 			// new file.link based on the result(dir, filename)
-			((SRBFile) newFile(fileSystem, rl[i].getStringValue(1), rl[i]
-					.getStringValue(0))).link(((SRBFile) newFile(dir, rl[i]
-					.getStringValue(0)
-					+ "_" + i)));
+			((SRBFile) newFile(fileSystem, rl[i].getStringValue(1),
+					rl[i].getStringValue(0))).link(((SRBFile) newFile(dir,
+					rl[i].getStringValue(0) + "_" + i)));
 		}
 
 		return dir;
@@ -815,15 +832,14 @@ public final class FileFactory {
 	 *             If an IO error occurs opening the file.
 	 */
 	public static GeneralRandomAccessFile newRandomAccessFile(
-			GeneralFileSystem fileSystem, String filePath, String mode)
-			throws IOException {
+			final GeneralFileSystem fileSystem, final String filePath,
+			final String mode) throws IOException {
 		return newRandomAccessFile(newFile(fileSystem, filePath), mode);
 	}
 
 	/**
-	 * Opens a random accecss connection to the file on an arbitrary file
-	 * system. Useful for when you don't know which the file system the file is
-	 * on.
+	 * Opens a random access connection to the file on an arbitrary file system.
+	 * Useful for when you don't know which the file system the file is on.
 	 * 
 	 * @return a GeneralRandomAccessFile object instanced from the appropriate
 	 *         subclass.
@@ -832,13 +848,19 @@ public final class FileFactory {
 	 * @throws IOException
 	 *             If an IO error occurs opening the file.
 	 */
-	public static GeneralRandomAccessFile newRandomAccessFile(GeneralFile file,
-			String mode) throws IOException {
-		GeneralRandomAccessFile raf = (GeneralRandomAccessFile) fromMap(file
-				.getClass(), new Object[] { file, mode }, RAF);
+	public static GeneralRandomAccessFile newRandomAccessFile(
+			final GeneralFile file, final String mode) throws IOException {
+
+		GeneralRandomAccessFile raf = (GeneralRandomAccessFile) fromMap(
+				file.getClass(), new Object[] { file, mode }, RAF);
 		if (raf == null) {
+			if (!(file instanceof LocalFile)) {
+				throw new IllegalArgumentException("file is not a LocalFile");
+			}
+			LocalFile localFile = (LocalFile) file;
+
 			// Default to local
-			return new LocalRandomAccessFile((LocalFile) file, mode);
+			return new LocalRandomAccessFile(localFile, mode);
 		}
 		return raf;
 	}
@@ -855,8 +877,8 @@ public final class FileFactory {
 	 * @throws IOException
 	 *             If an IO error occurs opening the file.
 	 */
-	public static GeneralRandomAccessFile newRandomAccessFile(URI uri,
-			String mode) throws IOException {
+	public static GeneralRandomAccessFile newRandomAccessFile(final URI uri,
+			final String mode) throws IOException {
 		return newRandomAccessFile(newFile(uri), mode);
 	}
 
@@ -871,13 +893,21 @@ public final class FileFactory {
 	 * @throws IOException
 	 *             If an IO error occurs opening the file.
 	 */
-	public static GeneralFileInputStream newFileInputStream(GeneralFile file)
-			throws IOException {
-		GeneralFileInputStream in = (GeneralFileInputStream) fromMap(file
-				.getClass(), new Object[] { file }, INPUT);
+	public static GeneralFileInputStream newFileInputStream(
+			final GeneralFile file) throws IOException {
+		GeneralFileInputStream in = (GeneralFileInputStream) fromMap(
+				file.getClass(), new Object[] { file }, INPUT);
 		if (in == null) {
 			// Default to local
-			return new LocalFileInputStream((LocalFile) file);
+
+			if (!(file instanceof LocalFile)) {
+				throw new IllegalArgumentException("file is not a LocalFile");
+			}
+
+			LocalFile localFile = (LocalFile) file;
+
+			return new LocalFileInputStream(localFile);
+
 		}
 		return in;
 	}
@@ -893,7 +923,7 @@ public final class FileFactory {
 	 * @throws IOException
 	 *             If an IO error occurs opening the file.
 	 */
-	public static GeneralFileInputStream newFileInputStream(URI uri)
+	public static GeneralFileInputStream newFileInputStream(final URI uri)
 			throws IOException {
 		return newFileInputStream(newFile(uri));
 	}
@@ -909,13 +939,19 @@ public final class FileFactory {
 	 * @throws IOException
 	 *             If an IO error occurs opening the file.
 	 */
-	public static GeneralFileOutputStream newFileOutputStream(GeneralFile file)
-			throws IOException {
-		GeneralFileOutputStream out = (GeneralFileOutputStream) fromMap(file
-				.getClass(), new Object[] { file }, OUTPUT);
+	public static GeneralFileOutputStream newFileOutputStream(
+			final GeneralFile file) throws IOException {
+		GeneralFileOutputStream out = (GeneralFileOutputStream) fromMap(
+				file.getClass(), new Object[] { file }, OUTPUT);
 		if (out == null) {
 			// Default to local
-			return new LocalFileOutputStream((LocalFile) file);
+			if (!(file instanceof LocalFile)) {
+				throw new IllegalArgumentException("file is not a LocalFile");
+			}
+			
+			LocalFile localFile = (LocalFile) file;
+			
+			return new LocalFileOutputStream(localFile);
 		}
 		return out;
 	}
@@ -931,7 +967,7 @@ public final class FileFactory {
 	 * @throws IOException
 	 *             If an IO error occurs opening the file.
 	 */
-	public static GeneralFileOutputStream newFileOutputStream(URI uri)
+	public static GeneralFileOutputStream newFileOutputStream(final URI uri)
 			throws IOException {
 		return newFileOutputStream(newFile(uri));
 	}
@@ -948,7 +984,8 @@ public final class FileFactory {
 	 *             If an IO error occurs opening the file.
 	 */
 	public static MetaDataRecordList newMetaDataRecordList(
-			GeneralFileSystem fileSystem, MetaDataField field, int recordValue) {
+			final GeneralFileSystem fileSystem, final MetaDataField field,
+			final int recordValue) {
 		return newMetaDataRecordList(fileSystem, field, recordValue + "", true);
 	}
 
@@ -964,7 +1001,8 @@ public final class FileFactory {
 	 *             If an IO error occurs opening the file.
 	 */
 	public static MetaDataRecordList newMetaDataRecordList(
-			GeneralFileSystem fileSystem, MetaDataField field, float recordValue) {
+			final GeneralFileSystem fileSystem, final MetaDataField field,
+			final float recordValue) {
 		return newMetaDataRecordList(fileSystem, field, recordValue + "", true);
 	}
 
@@ -980,8 +1018,8 @@ public final class FileFactory {
 	 *             If an IO error occurs opening the file.
 	 */
 	public static MetaDataRecordList newMetaDataRecordList(
-			GeneralFileSystem fileSystem, MetaDataField field,
-			String recordValue) {
+			final GeneralFileSystem fileSystem, final MetaDataField field,
+			final String recordValue) {
 		return newMetaDataRecordList(fileSystem, field, recordValue, true);
 	}
 
@@ -997,15 +1035,15 @@ public final class FileFactory {
 	 *             If an IO error occurs opening the file.
 	 */
 	public static MetaDataRecordList newMetaDataRecordList(
-			GeneralFileSystem fileSystem, MetaDataField field,
-			MetaDataTable recordValue) {
+			final GeneralFileSystem fileSystem, final MetaDataField field,
+			final MetaDataTable recordValue) {
 		return newMetaDataRecordList(fileSystem, field, recordValue, true);
 	}
 
 	// Does the work for the like above. Makes the code maintainence easier.
 	private static MetaDataRecordList newMetaDataRecordList(
-			GeneralFileSystem fileSystem, MetaDataField field,
-			Object recordValue, boolean fake) {
+			final GeneralFileSystem fileSystem, final MetaDataField field,
+			final Object recordValue, final boolean fake) {
 		MetaDataRecordList rl = null;
 		try {
 			rl = (MetaDataRecordList) fromMap(fileSystem.getClass(),
@@ -1016,8 +1054,7 @@ public final class FileFactory {
 			}
 		} catch (IOException e) {
 			// such error an error really isn't possible.
-			log.warn("io exception, logged and ignored", e);
-
+			LOG.warn("io exception, logged and ignored", e);
 		}
 		return rl;
 	}

@@ -106,7 +106,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * All the socket and protocol methods to communicate with the irods server
 	 * use this object.
 	 */
-	IRODSCommands commands;
+	protected IRODSCommands commands;
 
 	/**
 	 * Opens a socket connection to read from and write to. Loads the default

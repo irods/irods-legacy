@@ -246,10 +246,10 @@ public class IRODSCommands {
 						irodsConnection.isConnected());
 			} catch (IOException e) {
 				log
-						.warn("IOException closing connection, will try and obliterate if still open");
+						.error("IOException closing connection, will try and obliterate if still open", e);
 				irodsConnection.obliterateConnectionAndDiscardErrors();
 				throw new JargonException(
-						"error sending disconnect on a close operation");
+						"error sending disconnect on a close operation", e);
 			}
 		} else {
 			log.debug("was not connected...leaving connection alone");

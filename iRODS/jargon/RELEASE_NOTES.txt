@@ -42,6 +42,13 @@ from this fix, but the code itself was not consistent.
 
 *Bug 124 - Resource.modifyFreeSpace() - fixed method and added test
 
+*Bug 123 - eating exceptions in connection shutdown - rethrow IOException info and additional logging of error added to IRODSCommands.close()
+
+*Bug 120 - -4000 errors when using IRODSFIle
+-began evaulation of FileFactory and started on a test suite
+-will require a survey of connection creation using FileFactory, perhaps some deprecation and refactoring
+-review of use of finalizers and tighten up connection handling
+
 ================================================================================================
 Outstanding Issues
 
