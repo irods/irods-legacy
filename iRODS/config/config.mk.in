@@ -187,7 +187,7 @@ endif
 #
 #DBO=1
 ifdef DBO
-DBO_TYPE=postgres;
+DBO_TYPE=postgres
 POSTGRES_HOME=/tbox/IRODS_BUILD/iRODS/../pgsql
 ifeq ($(OS_platform), osx_platform)
 NSL=
@@ -198,8 +198,15 @@ PSQ_LIB_DIR = $(POSTGRES_HOME)/lib
 PSQ_HDR_DIR = $(POSTGRES_HOME)/include
 DBMS_LIB+= -L$(PSQ_LIB_DIR) -lodbc $(NSL) -lm
 DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
-
-#DBO_TYPE=oracle;
+# Use lines like these, in place of the Postgres items above 
+# (under ifdef DBO), for an Oracle DBR, using values for your
+# Oracle installation:
+#DBO_TYPE=oracle
+#ORACLE_HOME=/usr/local/apps/oracle/home_102
+#ORA_LIB_DIR = $(ORACLE_HOME)/lib
+#ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
+#DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
+#DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
 endif
 
 
