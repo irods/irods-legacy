@@ -207,6 +207,23 @@ DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
 #ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
 #DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
 #DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
+
+# Use lines like these, in place of the Postgres items above 
+# for mysql:
+#DBO_TYPE=mysql
+#NEW_ODBC=1
+#UNIXODBC_HOME=/usr
+#UNIXODBC_DATASOURCE=ICAT
+#ifeq ($(OS_platform), osx_platform)
+#NSL=
+#else
+#NSL=-lnsl
+#endif
+#ODBC_LIB_DIR = $(UNIXODBC_HOME)/lib
+#ODBC_HDR_DIR = $(UNIXODBC_HOME)/include
+#DBMS_LIB+= -L$(ODBC_LIB_DIR) -lodbc $(NSL) -lm
+#DBMS_INCLUDE+= -I$(ODBC_HDR_DIR)
+
 endif
 
 

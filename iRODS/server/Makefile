@@ -147,7 +147,7 @@ endif
 
 ifdef DBO
 # Support DBO
-# Just Postgres and Oracle for now
+# Postgres, Oracle, and MySQL
 CFLAGS += -DDBO
 ifeq ($(DBO_TYPE), oracle) 
 ifndef ORAICAT
@@ -166,6 +166,16 @@ ifndef PSQICAT
 SVR_DBO_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 endif
 endif
+
+ifeq ($(DBO_TYPE), mysql)
+CFLAGS +=	-DNEW_ODBC
+ifndef MYICAT
+SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
+endif
+INCLUDES +=	-I$(UNIXODBC_HOME)/include
+CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\"
+endif
+
 SVR_DBO_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
 endif  # end DBO
 
