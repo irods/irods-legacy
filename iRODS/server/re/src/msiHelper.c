@@ -757,7 +757,7 @@ msParam_t *stringOut, ruleExecInfo_t *rei)
 }
 
 /**
- * \fn msiExit (msParam_t *inpParam1, ruleExecInfo_t *rei)
+ * \fn msiExit (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
  *
  * \brief Add a user message to the error stack.
  *
@@ -768,7 +768,7 @@ msParam_t *stringOut, ruleExecInfo_t *rei)
  * \author  Jean-Yves Nief
  * \date    2010-11-22
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
+ * \remark Terrell Russell - msi documentation, 2010-12-13
  *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called
@@ -831,7 +831,7 @@ msiExit (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
                 snprintf (errMsg, ERR_MSG_LEN, "%s\n", (char *) inpParam2->inOutStruct);
                 status = atoi( (char *) inpParam1->inOutStruct);
                 addRErrorMsg (&rsComm->rError, status, errMsg);
-		return (status);
+                return (status);
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
         "msiExit: Unsupported input Param1 types %s",

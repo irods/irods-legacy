@@ -60,6 +60,7 @@ This documentation is generated from the iRODS code.
   - #msiAddKeyValToMspStr - Adds a key and value to existing msKeyValStr
   - #msiSplitPath - Splits a pathname into parent and child values
   - #msiGetSessionVarValue - Gets the value of a session variable in the rei
+  - #msiExit - Add a user message to the error stack
 
  \subsection msidatabase Database Object (DBO) and DB Resource (DBR) Microservices
   Can be called by client through irule.
