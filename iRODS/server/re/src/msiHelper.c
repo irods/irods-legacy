@@ -756,3 +756,90 @@ msParam_t *stringOut, ruleExecInfo_t *rei)
     return rei->status;
 }
 
+/**
+ * \fn msiExit (msParam_t *inpParam1, ruleExecInfo_t *rei)
+ *
+ * \brief Add a user message to the error stack.
+ *
+ * \module core
+ *
+ * \since after 2.4.1
+ *
+ * \author  Jean-Yves Nief
+ * \date    2010-11-22
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage msiExit(status,ErrorMsg)
+ *
+ * \param[in] inpParam1 - A STR_MS_T which specifies the status error to add to the error stack.
+ * \param[in] inpParam2 - A STR_MS_T which specifies the message to add to the error stack.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ * \bug  no known bugs
+**/
+int
+msiExit (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
+{
+        char errMsg[ERR_MSG_LEN];
+        int status;
+    rsComm_t *rsComm;
+
+    RE_TEST_MACRO (" Calling msiExit")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+        "msiExit: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    if ( inpParam1 == NULL ) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiExit: input Param1 is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+        if ( inpParam2 == NULL ) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiExit: input Param2 is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (inpParam1->type, STR_MS_T) == 0 && strcmp (inpParam2->type, STR_MS_T) == 0) {
+                snprintf (errMsg, ERR_MSG_LEN, "%s\n", (char *) inpParam2->inOutStruct);
+                status = atoi( (char *) inpParam1->inOutStruct);
+                addRErrorMsg (&rsComm->rError, status, errMsg);
+		return (status);
+    } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiExit: Unsupported input Param1 types %s",
+        inpParam1->type);
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+        return (rei->status);
+    }
+
+    return (rei->status);
+}
+
