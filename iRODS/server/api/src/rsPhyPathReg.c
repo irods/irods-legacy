@@ -252,6 +252,7 @@ rescInfo_t *rescInfo)
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy (destDataObjInfo.filePath, filePath, MAX_NAME_LEN);
     destDataObjInfo.rescInfo = rescInfo;
+    rstrcpy (destDataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
     memset (&regReplicaInp, 0, sizeof (regReplicaInp));
     regReplicaInp.srcDataObjInfo = dataObjInfoHead;
     regReplicaInp.destDataObjInfo = &destDataObjInfo;
