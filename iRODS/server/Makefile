@@ -173,7 +173,6 @@ ifndef MYICAT
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 endif
 INCLUDES +=	-I$(UNIXODBC_HOME)/include
-CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\"
 endif
 
 SVR_DBO_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
