@@ -641,8 +641,8 @@ int cmlTest( icatSessionStruct *icss) {
   char sql[100];
   rodsLong_t iVal;
 
-  icss->databaseUsername="schroede";
-  icss->databasePassword="";
+  strncpy(icss->databaseUsername,"schroede", DB_USERNAME_LEN);
+  strncpy(icss->databasePassword,"", DB_PASSWORD_LEN);
   i = cmlOpen(icss);
   if (i != 0) return(i);
   

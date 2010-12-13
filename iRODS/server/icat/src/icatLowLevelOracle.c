@@ -1089,12 +1089,12 @@ int cllTest(char *userArg, char *pwArg) {
    printf("userName=%s\n",userName);
    printf("password=%s\n",pwArg);
 
-   icss.databaseUsername=userName;
+   strncpy(icss.databaseUsername,userName, DB_USERNAME_LEN);
    if (pwArg==0 || *pwArg=='\0') {
-      icss.databasePassword="";
+      strcpy(icss.databasePassword,"");
    }
    else {
-      icss.databasePassword=pwArg;
+      strncpy(icss.databasePassword,pwArg,DB_PASSWORD_LEN);
    }
 
    i = cllConnect(&icss);

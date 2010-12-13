@@ -162,8 +162,8 @@ icatScramble(char *pw) {
 int chlOpen(char *DBUser, char *DBpasswd) {
    int i;
    if (logSQL) rodsLog(LOG_SQL, "chlOpen");
-   icss.databaseUsername = DBUser;
-   icss.databasePassword = DBpasswd;
+   strncpy(icss.databaseUsername, DBUser, DB_USERNAME_LEN);
+   strncpy(icss.databasePassword, DBpasswd, DB_PASSWORD_LEN);
    i = cmlOpen(&icss);
    if (i != 0) {
       rodsLog(LOG_NOTICE, "chlOpen cmlOpen failure %d",i);

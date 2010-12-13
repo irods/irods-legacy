@@ -17,6 +17,10 @@
 
 #define MAX_INTEGER_SIZE 40  /* ??, for now */
 
+#define DB_USERNAME_LEN       64
+#define DB_PASSWORD_LEN       64
+#define DB_TYPENAME_LEN       64
+
 #define DB_TYPE_POSTGRES 1
 #define DB_TYPE_ORACLE   2
 #define DB_TYPE_MYSQL    3

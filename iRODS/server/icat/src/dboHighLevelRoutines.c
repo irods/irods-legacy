@@ -49,7 +49,7 @@
 static char openDbrName[MAX_SESSIONS][MAX_DBO_NAME_LEN+2]={"","","","","","","","","",""};
 
 int dboLogSQL=0;
-int readDbrConfig(char *dbrname, char **DBUser, char **DBPasswd,char **DBType);
+int readDbrConfig(char *dbrname, char *DBUser, char *DBPasswd,char *DBType);
 
 icatSessionStruct dbo_icss[MAX_SESSIONS]={{0},{0},{0},{0},{0},{0},{0},{0},{0},{0}};
 
@@ -81,9 +81,7 @@ int dbrOpen(char *dbrName) {
 #if defined(DBO) 
    int i;
    int status;
-   char *DBUser;
-   char *DBPasswd;
-   char *DBType;
+   char DBType[DB_TYPENAME_LEN];
    int icss_index;
    char odbcEntryName[MAX_ODBC_ENTRY_NAME+10];
 
@@ -99,15 +97,11 @@ int dbrOpen(char *dbrName) {
    }
    if (icss_index==-1) return (DBR_MAX_SESSIONS_REACHED);
 
-   status =  readDbrConfig(dbrName, &DBUser, &DBPasswd, &DBType);
+   status =  readDbrConfig(dbrName, 
+			   dbo_icss[icss_index].databaseUsername,
+			   dbo_icss[icss_index].databasePassword,
+			   DBType);
    if (status) return(status);
-
-   rodsLog(LOG_NOTICE, "dbrOpen DBUser:%s DBType:%s",DBUser, DBType);
-// rodsLog(LOG_NOTICE, "dbrOpen DBPasswd %s",DBPasswd);
-//   rodsLog(LOG_NOTICE, "dbrOpen DBType %s",DBType);
-
-   dbo_icss[icss_index].databaseUsername = DBUser;
-   dbo_icss[icss_index].databasePassword = DBPasswd;
 
    dbo_icss[icss_index].databaseType = DB_TYPE_POSTGRES;
    if (strcmp(DBType, "oracle")==0) {
@@ -669,13 +663,13 @@ getDbrConfigDir()
 }
 
 int 
-readDbrConfig(char *dboName, char **DBUser, char **DBPasswd, char **DBType) {
+readDbrConfig(char *dboName, char *DBUser, char *DBPasswd, char *DBType) {
    FILE *fptr;
    char buf[BUF_LEN];
    char *fchar;
    char *key;
    char *dboConfigFile;
-   static char foundLine[BUF_LEN];
+   char foundLine[BUF_LEN];
 
    dboConfigFile =  (char *) malloc((strlen (getDbrConfigDir()) +
 				    strlen(DBR_CONFIG_FILE) + 24));
@@ -718,24 +712,24 @@ readDbrConfig(char *dboName, char **DBUser, char **DBPasswd, char **DBType) {
 	       if (state==4) state=5;
 	       if (state==6) state=7;
 	       if (state==8) {
-		  static char unscrambledPw[NAME_LEN];
-		  obfDecodeByKey(*DBPasswd, DBKey, unscrambledPw);
-		  *DBPasswd=unscrambledPw;
+		  static char unscrambledPw[DB_PASSWORD_LEN];
+		  obfDecodeByKey(DBPasswd, DBKey, unscrambledPw);
+		  strncpy(DBPasswd,unscrambledPw,DB_PASSWORD_LEN);
 		  return(0);
 	       }
 	    }
 	    else {
 	       if (state==1) {
 		  state=2;
-		  *DBUser=&foundLine[i];
+		  strncpy(DBUser,&foundLine[i],DB_USERNAME_LEN);
 	       }
 	       if (state==3) {
 		  state=4;
-		  *DBPasswd=&foundLine[i];
+		  strncpy(DBPasswd,&foundLine[i],DB_PASSWORD_LEN);
 	       }
 	       if (state==5) {
 		  state=6;
-		  *DBType=&foundLine[i];
+		  strncpy(DBType,&foundLine[i],DB_TYPENAME_LEN);
 	       }
 	       if (state==7) {
 		  state=8;

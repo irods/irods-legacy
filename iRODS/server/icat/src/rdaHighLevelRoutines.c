@@ -82,8 +82,8 @@ int rdaOpen(char *rdaName) {
    status =  readRdaConfig(rdaName, &DBUser, &DBPasswd);
    if (status) return(status);
 
-   rda_icss.databaseUsername = DBUser;
-   rda_icss.databasePassword = DBPasswd;
+   strncpy(rda_icss.databaseUsername, DBUser, DB_USERNAME_LEN);
+   strncpy(rda_icss.databasePassword, DBPasswd, DB_PASSWORD_LEN);
 
    /* Initialize the rda_icss statement pointers */
    for (i=0; i<MAX_NUM_OF_CONCURRENT_STMTS; i++) {
