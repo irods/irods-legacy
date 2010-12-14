@@ -1516,6 +1516,9 @@ usage(char *subOpt)
 "without '" RESC_DOWN "' in them will restore use of the resource.  'auto' will allow",
 "the Resource Monitoring System (if running) to set the resource status",
 "to '" RESC_AUTO_UP "' or '" RESC_AUTO_DOWN "'.",
+" ",
+"The freespace value can be simply specified, or if it starts with + or -",
+"the freespace amount will be incremented or decremented by the value.",
 ""};
 
    char *rmrescMsgs[]={

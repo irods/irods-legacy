@@ -4113,14 +4113,57 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       OK=1;
    }
    if (strcmp(option, "freespace")==0) {
+      int inType=0;      /* regular mode, just set as provided */
+      if (*optionValue=='+') {
+	 inType=1;       /* increment by the input value */
+	 optionValue++;  /* skip over the + */
+      }
+      if (*optionValue=='-') {
+	 inType=2;      /* decrement by the value */
+	 optionValue++; /* skip over the - */
+      }
       cllBindVars[cllBindVarCount++]=optionValue;
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=rescId;
       if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 4");
-      status =  cmlExecuteNoAnswerSql(
+      if (inType==0) {
+	 status =  cmlExecuteNoAnswerSql(
 		 "update R_RESC_MAIN set free_space = ?, free_space_ts = ?, modify_ts=? where resc_id=?",
 		 &icss);
+      }
+      if (inType==1) {
+#if ORA_ICAT
+   /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
+	 status =  cmlExecuteNoAnswerSql(
+		 "update R_RESC_MAIN set free_space = cast(free_space as integer) + cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
+		 &icss);
+#elif MY_ICAT
+	 status =  cmlExecuteNoAnswerSql(
+		 "update R_RESC_MAIN set free_space = free_space + ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+		 &icss);
+#else
+	 status =  cmlExecuteNoAnswerSql(
+		 "update R_RESC_MAIN set free_space = cast(free_space as bigint) + cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
+		 &icss);
+#endif
+      }
+      if (inType==2) {
+#if ORA_ICAT
+   /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
+	 status =  cmlExecuteNoAnswerSql(
+		 "update R_RESC_MAIN set free_space = cast(free_space as integer) - cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
+		 &icss);
+#elif MY_ICAT
+	 status =  cmlExecuteNoAnswerSql(
+		 "update R_RESC_MAIN set free_space = free_space - ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+		 &icss);
+#else
+	 status =  cmlExecuteNoAnswerSql(
+		 "update R_RESC_MAIN set free_space = cast(free_space as bigint) - cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
+		 &icss);
+#endif
+      }
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
 		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
