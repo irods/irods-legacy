@@ -6,21 +6,11 @@
 #define DBO_HIGHLEVEL_ROUTINES_H
 
 int dbrOpen(char *dbrName);
-int dboReadConfigItems(char *dboList, int maxChars);
 int dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *dborName,
 	       int dobrOption, char *outBuf,
 	       int maxOutBuf, char *args[10]);
 int dbrClose(char *dbrName);
 int dbrCommit(rsComm_t *rsComm, char *dbrName);
 int dbrRollback(rsComm_t *rsComm, char *dbrName);
-
-/*
-int dboIsConnected();
-int dboSqlNoResults(char *sql, char *parm[], int nparms);
-int dboSqlWithResults(char *sql, char *parm[], int nparms, char **outBuf);
-int dboCheckAccess(char *dboName, rsComm_t *rsComm);
-
-int dboDebug(char *debugMode);
-*/
 
 #endif /* DBO_HIGHLEVEL_ROUTINES_H */

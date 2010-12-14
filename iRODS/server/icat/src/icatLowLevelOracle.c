@@ -290,10 +290,10 @@ cllConnectRda(icatSessionStruct *icss) {
 }
 
 /*
- Connect to the DBMS for DBO
+ Connect to the DBMS for DBR
  */ 
 int 
-cllConnectDbo(icatSessionStruct *icss, char *unused) {
+cllConnectDbr(icatSessionStruct *icss, char *unused) {
    int stat;
    OCIEnv           *p_env;
    OCISvcCtx        *p_svc;

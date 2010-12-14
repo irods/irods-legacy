@@ -71,7 +71,7 @@ int
 _rsDatabaseRescOpen (rsComm_t *rsComm, databaseRescOpenInp_t *databaseRescOpenInp)
 {
 
-#ifdef DBO
+#ifdef DBR
     int status;
     status = dbrOpen(databaseRescOpenInp->dbrName);
     if (status < 0 ) { 
@@ -81,7 +81,7 @@ _rsDatabaseRescOpen (rsComm_t *rsComm, databaseRescOpenInp_t *databaseRescOpenIn
     }
     return (status);
 #else
-    return(DBO_NOT_COMPILED_IN);
+    return(DBR_NOT_COMPILED_IN);
 #endif
 } 
 

@@ -250,10 +250,10 @@ cllConnectRda(icatSessionStruct *icss) {
 }
 
 /*
- Connect to the DBMS for database-objects access.
+ Connect to the DBMS for database-resource/db-objects access.
  */
 int 
-cllConnectDbo(icatSessionStruct *icss, char *odbcEntryName) {
+cllConnectDbr(icatSessionStruct *icss, char *odbcEntryName) {
    RETCODE stat;
    RETCODE stat2;
 

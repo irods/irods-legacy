@@ -70,7 +70,7 @@ int
 _rsDatabaseRescClose (rsComm_t *rsComm, databaseRescCloseInp_t *databaseRescCloseInp)
 {
 
-#ifdef DBO
+#ifdef DBR
     int status;
     status = dbrClose(databaseRescCloseInp->dbrName);
     if (status < 0 ) { 
@@ -80,7 +80,7 @@ _rsDatabaseRescClose (rsComm_t *rsComm, databaseRescCloseInp_t *databaseRescClos
     }
     return (status);
 #else
-    return(DBO_NOT_COMPILED_IN);
+    return(DBR_NOT_COMPILED_IN);
 #endif
 } 
 

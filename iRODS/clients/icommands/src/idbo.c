@@ -215,7 +215,7 @@ execDbo(char *dbRescName, char *dboName, char *args[10]) {
 	  databaseObjControlOut->outBuf != NULL &&
 	  strlen(databaseObjControlOut->outBuf)>0 ) {
 	 int ix;
-	 if(status == DBO_NOT_COMPILED_IN) {
+	 if(status == DBR_NOT_COMPILED_IN) {
 	    printf("Message returned by the iRODS server:\n");
 	 }
 	 else {
@@ -275,7 +275,7 @@ dbrControl(char *dbRescName, int option) {
       if (databaseObjControlOut != NULL &&
 	  databaseObjControlOut->outBuf != NULL &&
 	  strlen(databaseObjControlOut->outBuf)>0 ) {
-	 if(status == DBO_NOT_COMPILED_IN) {
+	 if(status == DBR_NOT_COMPILED_IN) {
 	    printf("Error message return by the iRODS server:\n");
 	 }
 	 else {

@@ -509,30 +509,25 @@
 #define PHP_REQUEST_STARTUP_ERR               -1601000
 #define PHP_OPEN_SCRIPT_FILE_ERR	      -1602000
 
-/* 1,701,000 to 1,899,000  DBO errors  */
-#define DBO_NOT_COMPILED_IN             -1701000
-#define DBO_NO_DBO_SERVER               -1702000
-#define DBO_NOT_CONNECTED               -1703000
-#define DBO_ENV_ERR                     -1704000
-#define DBO_CONNECT_ERR                 -1705000
-#define DBO_DISCONNECT_ERR              -1706000
-#define DBO_CLOSE_ENV_ERR               -1707000
-#define DBO_SQL_ERR                     -1708000
-#define DBR_CONFIG_FILE_ERR             -1700000
-#define DBO_ACCESS_PROHIBITED           -1710000
-#define DBO_NAME_NOT_FOUND              -1711000
-#define DBR_MAX_SESSIONS_REACHED        -1712000
-#define DBO_INVALID_OBJECT_DESCRIPTOR   -1713000
-#define DBR_NOT_OPEN                    -1714000
-#define DBR_NAME_NOT_FOUND              -1715000
-#define DBO_INVALID_CONTROL_OPTION      -1716000
-#define DBR_ALREADY_OPEN                -1717000
-#define DBO_DOES_NOT_EXIST              -1718000
-#define DBR_ACCESS_PROHIBITED           -1719000
-#define DBO_NOT_VALID_DATATYPE          -1720000
-#define DBR_WRITABLE_BY_TOO_MANY        -1721000
-#define DBO_WRITABLE_BY_TOO_MANY        -1722000
-#define DBO_WRITABLE_BY_NON_PRIVILEGED  -1723000
+/* 1,701,000 to 1,899,000  DBR/DBO errors  */
+#define DBR_NOT_COMPILED_IN             -1701000
+#define DBR_ENV_ERR                     -1702000
+#define DBR_CONNECT_ERR                 -1703000
+#define DBR_DISCONNECT_ERR              -1704000
+#define DBR_CLOSE_ENV_ERR               -1705000
+#define DBO_SQL_ERR                     -1706000
+#define DBR_CONFIG_FILE_ERR             -1707000
+#define DBR_MAX_SESSIONS_REACHED        -1708000
+#define DBR_NOT_OPEN                    -1709000
+#define DBR_NAME_NOT_FOUND              -1710000
+#define DBO_INVALID_CONTROL_OPTION      -1711000
+#define DBR_ALREADY_OPEN                -1712000
+#define DBO_DOES_NOT_EXIST              -1713000
+#define DBR_ACCESS_PROHIBITED           -1714000
+#define DBO_NOT_VALID_DATATYPE          -1715000
+#define DBR_WRITABLE_BY_TOO_MANY        -1716000
+#define DBO_WRITABLE_BY_TOO_MANY        -1717000
+#define DBO_WRITABLE_BY_NON_PRIVILEGED  -1718000
 
 
 /* The following are handler protocol type msg. These are not real error */

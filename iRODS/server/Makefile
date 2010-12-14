@@ -145,29 +145,29 @@ INCLUDES +=	-I$(UNIXODBC_HOME)/include
 CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\" -DMY_ICAT=1
 endif
 
-ifdef DBO
-# Support DBO
+ifdef DBR
+# Support DBR
 # Postgres, Oracle, and MySQL
-CFLAGS += -DDBO
-ifeq ($(DBO_TYPE), oracle) 
+CFLAGS += -DDBR
+ifeq ($(DBR_TYPE), oracle) 
 ifndef ORAICAT
-SVR_DBO_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
+SVR_DBR_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
 endif
 INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
 #CFLAGS +=	-DORA_ICAT
-CFLAGS +=	-DORA_DBO
+CFLAGS +=	-DORA_DBR
 endif
-ifeq ($(DBO_TYPE), postgres) 
+ifeq ($(DBR_TYPE), postgres) 
 CFLAGS +=	-DNEW_ODBC
 INCLUDES +=	-I$(svrIcatIncDir)
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 ifndef PSQICAT
 #INCLUDES +=	-I$(UNIXODBC_HOME)/include
-SVR_DBO_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
+SVR_DBR_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 endif
 endif
 
-ifeq ($(DBO_TYPE), mysql)
+ifeq ($(DBR_TYPE), mysql)
 CFLAGS +=	-DNEW_ODBC
 ifndef MYICAT
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
@@ -175,8 +175,8 @@ endif
 INCLUDES +=	-I$(UNIXODBC_HOME)/include
 endif
 
-SVR_DBO_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
-endif  # end DBO
+SVR_DBR_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
+endif  # end DBR
 
 ifdef DBMS_LIB
 LDFLAGS +=	$(DBMS_LIB)
@@ -260,7 +260,7 @@ endif
 
 # All objects (except tests)
 OBJS =		$(SVR_CORE_OBJS) $(SVR_DRIVERS_OBJS) $(SVR_API_OBJS) \
-		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS) $(SVR_DBO_OBJS)
+		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS) $(SVR_DBR_OBJS)
 ifdef DDN_WOS
 OBJS+=$(SVR_DRIVERS_CPP_OBJS)
 endif
@@ -448,7 +448,7 @@ $(extendedICAT.h):
 	@touch $(extendedICAT.h)
 
 # Build server ICAT
-$(SVR_DBO_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c
+$(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
