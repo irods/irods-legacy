@@ -172,6 +172,8 @@ main(int argc, char **argv)
        i = obfSavePw(0, 0, 0, newPw);
     }
 
+    printErrorStack(Conn->rError);
+	
     rcDisconnect(Conn);
 
     exit (0);
