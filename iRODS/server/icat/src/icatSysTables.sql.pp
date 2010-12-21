@@ -394,6 +394,12 @@ create table R_QUOTA_USAGE
    modify_ts varchar(32)
 );
 
+create table R_SPECIFIC_QUERY
+(
+   sql varchar(2700),
+   create_ts varchar(32)
+);
+
 
 #ifdef mysql
 
@@ -470,3 +476,4 @@ create index idx_tokn_main1 on R_TOKN_MAIN (token_id);
 create index idx_tokn_main2 on R_TOKN_MAIN (token_name);
 create index idx_tokn_main3 on R_TOKN_MAIN (token_value);
 create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
+create unique index idx_specific_query on R_SPECIFIC_QUERY (sql);
