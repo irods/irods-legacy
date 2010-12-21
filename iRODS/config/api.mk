@@ -385,3 +385,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcDatabaseRescClose.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseObjControl.o
 LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjControl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSpecificQuery.o
+LIB_API_OBJS += $(libApiObjDir)/rcSpecificQuery.o

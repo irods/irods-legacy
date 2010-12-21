@@ -108,6 +108,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->regRepl=True;
             argv[i]="-Z";
          }
+         if (strcmp("--sql", argv[i])==0) {
+            rodsArgs->sql=True;
+            argv[i]="-Z";
+         }
 
       }
    }

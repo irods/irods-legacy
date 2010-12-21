@@ -160,6 +160,8 @@ apidef_t RcApiTable[] = {
        "databaseObjControlInp_PI", 0,  "databaseObjControlOut_PI", 0, (funcPtr) RS_DATABASE_OBJ_CONTROL},
     {DATABASE_RESC_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
        "databaseRescCloseInp_PI", 0,  NULL, 0, (funcPtr) RS_DATABASE_RESC_CLOSE},
+    {SPECIFIC_QUERY_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+       "specificQueryInp_PI", 0, "GenQueryOut_PI", 0, (funcPtr) RS_SPECIFIC_QUERY},
     {OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION},
 #ifdef COMPAT_201

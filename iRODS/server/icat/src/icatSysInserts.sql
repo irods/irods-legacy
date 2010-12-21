@@ -209,3 +209,6 @@ insert into R_OBJT_ACCESS values (9003,9001,1130,'1170000000','1170000000');
 insert into R_OBJT_ACCESS values (9003,9002,1200,'1170000000','1170000000');
 
 insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unix file system', 'bundle', 'localhost', '/tmp', '', '', '', '', '', '1250100000','1250100000');
+
+insert into R_SPECIFIC_QUERY (sql, create_ts) values ('select sql from r_specific_query', 01292940000);
+insert into R_SPECIFIC_QUERY (sql, create_ts) values ('select sql from r_specific_query where sql like ?', 01292940000);

@@ -1,5 +1,5 @@
 /* 
- * ils - The irods ls utility
+ * iquest - The irods iquest (question (query)) utility
 */
 
 #include "rodsClient.h"
@@ -14,6 +14,7 @@ void
 usage () {
    char *msgs[]={
 "Usage : iquest [-hz] [--no-page] [ [hint] format]  selectConditionString ",
+"Usage : iquest --sql 'pre-defined SQL string' [arguments] ",
 "Usage : iquest attrs",
 "Options are:",
 " -h  this help",
@@ -31,7 +32,16 @@ usage () {
 "If 'no-distinct' appears before the selectConditionString, the normal",
 "distinct option on the SQL will bypassed (this is useful in rare cases).",
 " ",
-"Examples:\n",
+"The --sql option executes a pre-defined SQL query.  The specified query must",
+"match one defined by the admin (see 'iadmin h asq' (add specific query)).",
+"A few of these may be defined at your site.  A special alias '--sql ls' will",
+"display the ones that are defined.  Generally, it is better to use the",
+"general-query (non --sql forms herein) since that generates the proper SQL",
+"(knows how to link the ICAT tables) and handles access control and other",
+"aspects of security.  If the SQL includes arguments, you enter them following",
+"the SQL.",
+" ",
+"Examples:",
 " iquest \"SELECT DATA_NAME, DATA_CHECKSUM WHERE DATA_RESC_NAME like 'demo%'\"",
 " iquest \"For %-12.12s size is %s\" \"SELECT DATA_NAME ,  DATA_SIZE  WHERE COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \"SELECT COLL_NAME WHERE COLL_NAME like '/tempZone/home/%'\"",
@@ -51,6 +61,20 @@ usage () {
       printf("%s\n",msgs[i]);
    }
    printReleaseInfo("iquest");
+}
+
+void
+printBasicGenQueryOut(genQueryOut_t *genQueryOut) {
+   int i, j;
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+      if (i>0) printf("----\n");
+      for (j=0;j<genQueryOut->attriCnt;j++) {
+	 char *tResult;
+	 tResult = genQueryOut->sqlResult[j].value;
+	 tResult += i*genQueryOut->sqlResult[j].len;
+	 printf("%s\n", tResult);
+      }
+   }
 }
 
 int
@@ -105,6 +129,60 @@ queryAndShowStrCond(rcComm_t *conn, char *hint, char *format,
      i = printGenQueryOut(stdout, format,hint,  genQueryOut);
      if (i < 0)
 	return(i);
+  }
+
+  return(0);
+
+}
+
+int
+execAndShowSpecificQuery(rcComm_t *conn, char *sql, 
+			 char *args[], int argsOffset, int noPageFlag) {
+  specificQueryInp_t specificQueryInp;
+  int status, i;
+  genQueryOut_t *genQueryOut = NULL;
+
+  char aliasName[]="ls";
+  char aliasSQL[]="select sql from r_specific_query";
+
+  memset (&specificQueryInp, 0, sizeof (specificQueryInp_t));
+  specificQueryInp.maxRows= MAX_SQL_ROWS;
+  specificQueryInp.continueInx=0;
+  specificQueryInp.sql=sql;
+  if (strcmp(aliasName, sql)==0) {
+     specificQueryInp.sql=aliasSQL;
+  }
+  i=0;
+  while (args[argsOffset] != NULL && strlen(args[argsOffset])>0) {
+	specificQueryInp.args[i++]=args[argsOffset];
+	argsOffset++;
+  }
+  status = rcSpecificQuery (conn, &specificQueryInp, &genQueryOut);
+  if (status == CAT_NO_ROWS_FOUND) {
+     printf("No rows found\n"); 
+     return(0);
+  }
+  if (status < 0 ) {
+     printError(conn, status, "rcSpecificQuery");
+     return(status);
+  }
+
+  printBasicGenQueryOut(genQueryOut);
+
+  while (status==0 && genQueryOut->continueInx > 0) {
+     if (noPageFlag==0) {
+	char inbuf[100];
+	printf("Continue? [Y/n]");
+	fgets(inbuf, 90, stdin);
+	if (strncmp(inbuf, "n", 1)==0) break;
+     }
+     specificQueryInp.continueInx=genQueryOut->continueInx;
+     status = rcSpecificQuery (conn, &specificQueryInp, &genQueryOut);
+     if (status < 0 ) {
+	printError(conn, status, "rcSpecificQuery");
+	return(status);
+     }
+     printBasicGenQueryOut(genQueryOut);
   }
 
   return(0);
@@ -172,6 +250,20 @@ main(int argc, char **argv) {
     status = clientLogin(conn);
     if (status != 0) {
        exit (3);
+    }
+
+    if (myRodsArgs.sql) {
+       status = execAndShowSpecificQuery(conn, argv[myRodsArgs.optind], 
+					 argv,
+					 myRodsArgs.optind+1,
+					 myRodsArgs.noPage);
+       rcDisconnect(conn);
+       if (status < 0) {
+	  rodsLogError(LOG_ERROR,status,"iquest Error: specificQuery (sql-query) failed");
+	  exit (4);
+       } else {
+	  exit(0);
+       }       
     }
 
     if (myRodsArgs.optind == (argc - 3)) {

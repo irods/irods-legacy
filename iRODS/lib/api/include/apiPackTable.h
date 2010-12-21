@@ -99,6 +99,7 @@ packInstructArray_t ApiPackTable[] = {
         {"databaseObjControlOut_PI", databaseObjControlOut_PI},
         {"ProcStatInp_PI", ProcStatInp_PI},
         {"databaseRescCloseInp_PI", databaseRescCloseInp_PI},
+        {"specificQueryInp_PI", specificQueryInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

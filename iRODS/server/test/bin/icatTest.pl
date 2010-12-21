@@ -667,6 +667,11 @@ runCmd(0, "ils -rA $LD1 $LD2 | grep read | wc -l", "0");
 runCmd(0, "irm -fr $LD1");
 runCmd(0, "irm -rf $LD2");
 
+# specific query
+runCmd(0, "iadmin asq 'select user_name from r_user_main'");
+runCmd(0, "iquest --sql 'select user_name from r_user_main'");
+runCmd(0, "iadmin rsq 'select user_name from r_user_main'");
+
 # simple test to exercise the clean-up AVUs sql;
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none
 runCmd(1, "iadmin rum");

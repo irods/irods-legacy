@@ -199,7 +199,7 @@ bytesBuf_t *outBsBBuf)
 
     if (RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL) {
         rodsLog (LOG_ERROR,
-          "readAndProcApiReply: outStruct error for apiNumber %d", 
+          "readAndProcApiReply: outStruct error for A apiNumber %d", 
 	  RcApiTable[apiInx].apiNumber);
 #ifndef windows_platform
         cliChkReconnAtReadEnd (conn);
@@ -209,7 +209,7 @@ bytesBuf_t *outBsBBuf)
 
     if (RcApiTable[apiInx].outBsFlag > 0 && outBsBBuf == NULL) {
         rodsLog (LOG_ERROR,
-          "readAndProcApiReply: outBsBBuf error for apiNumber %d",
+          "readAndProcApiReply: outBsBBuf error for B apiNumber %d",
           RcApiTable[apiInx].apiNumber);
 #ifndef windows_platform
         cliChkReconnAtReadEnd (conn);
@@ -300,22 +300,24 @@ bytesBuf_t *errorBBuf)
 
     if (RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL) {
         rodsLog (LOG_ERROR,
-          "readAndProcApiReply: outStruct error for apiNumber %d",
+          "readAndProcApiReply: outStruct error for C apiNumber %d",
           RcApiTable[apiInx].apiNumber);
 	if (retVal < 0)
 	    return retVal;
-	else
+	else {
             return (USER_API_INPUT_ERR);
+	}
     }
 
     if (RcApiTable[apiInx].outBsFlag > 0 && outBsBBuf == NULL) {
         rodsLog (LOG_ERROR,
-          "readAndProcApiReply: outBsBBuf error for apiNumber %d",
+          "readAndProcApiReply: outBsBBuf error for D apiNumber %d",
           RcApiTable[apiInx].apiNumber);
         if (retVal < 0)
             return retVal;
-        else
+        else {
             return (USER_API_INPUT_ERR);
+	}
     }
 
     /* handle outStruct */

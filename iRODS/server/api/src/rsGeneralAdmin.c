@@ -247,6 +247,10 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
+       if (strcmp(generalAdminInp->arg1,"specificQuery")==0) {
+	  status = chlAddSpecificQuery(rsComm, generalAdminInp->arg2);
+	  return(status);
+       }
     }
     if (strcmp(generalAdminInp->arg0,"modify")==0) {
        if (strcmp(generalAdminInp->arg1,"user")==0) {
@@ -564,6 +568,10 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        }
        if (strcmp(generalAdminInp->arg1,"unusedAVUs")==0) {
 	  status = chlDelUnusedAVUs(rsComm);
+	  return(status);
+       }
+       if (strcmp(generalAdminInp->arg1,"specificQuery")==0) {
+	  status = chlDelSpecificQuery(rsComm, generalAdminInp->arg2);
 	  return(status);
        }
     }

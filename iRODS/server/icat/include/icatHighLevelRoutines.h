@@ -10,6 +10,7 @@
 #include "ruleExecSubmit.h"
 #include "rcConnect.h"
 #include "rodsGeneralUpdate.h"
+#include "specificQuery.h" 
 
 int chlOpen(char *DBUser, char *DBpasswd);
 int chlClose();
@@ -39,6 +40,8 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 int chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result);
 int chlGenQueryAccessControlSetup(char *user, char *zone, int priv, 
     int controlFlag);
+int chlSpecificQuery(specificQueryInp_t specificQueryInp,
+                     genQueryOut_t *genQueryOut);
 
 int chlGeneralUpdate(generalUpdateInp_t generalUpdateInp);
 
@@ -110,6 +113,8 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name, char *rescName,
 int chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName, 
 		  rodsLong_t *userQuota, int *quotaStatus);
 int chlDelUnusedAVUs(rsComm_t *rsComm);
+int chlAddSpecificQuery(rsComm_t *rsComm, char *sql);
+int chlDelSpecificQuery(rsComm_t *rsComm, char *sql);
 
 char *chlGetLocalZone();
 

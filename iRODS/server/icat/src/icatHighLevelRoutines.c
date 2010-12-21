@@ -8109,3 +8109,269 @@ icatCheckResc(char *rescName) {
    }
    return(status);
 }
+
+int
+chlAddSpecificQuery(rsComm_t *rsComm, char *sql) {
+   int status, i;
+   char myTime[50];
+   if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   getNowStr(myTime);
+
+   i=0;
+   cllBindVars[i++]=sql;
+   cllBindVars[i++]=myTime;
+   cllBindVarCount=i;
+   if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery SQL 1");
+  
+   status =  cmlExecuteNoAnswerSql(
+      "insert into R_SPECIFIC_QUERY  (sql, create_ts) values (?, ?)",
+      &icss);
+
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	     "chlAddSpecificQuery cmlExecuteNoAnswerSql insert failure %d",
+	      status);
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   return(status);
+}
+
+int
+chlDelSpecificQuery(rsComm_t *rsComm, char *sql) {
+   int status, i;
+   if (logSQL) rodsLog(LOG_SQL, "chlDelSpecificQuery");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   i=0;
+   cllBindVars[i++]=sql;
+   cllBindVarCount=i;
+   if (logSQL) rodsLog(LOG_SQL, "chlDelSpecificQuery SQL 1");
+  
+   status =  cmlExecuteNoAnswerSql(
+      "delete from R_SPECIFIC_QUERY where sql = ?",
+      &icss);
+
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	     "chlDelSpecificQuery cmlExecuteNoAnswerSql delete failure %d",
+	      status);
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   return(status);
+}
+
+/* 
+This is the Specific Query, also known as a sql-based query or
+predefined query.  These are some specific queries (admin
+defined/allowed) that can be performed.  The caller provides the SQL
+which must match one that is pre-defined, along with input parameters
+(bind variables) in some cases.  The output is the same as for a
+general-query.
+*/
+#define MINIMUM_COL_SIZE 50
+
+int
+chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
+   int i, j, k;
+   int needToGetNextRow;
+
+   char combinedSQL[MAX_SQL_SIZE];
+
+   int status, statementNum;
+   int numOfCols;
+   int attriTextLen;
+   int totalLen;
+   int maxColSize;
+   int currentMaxColSize;
+   char *tResult, *tResult2;
+   char tsCreateTime[50];
+
+   int debug=0;
+
+   if (logSQL) rodsLog(LOG_SQL, "chlSpecificQuery");
+
+   icatSessionStruct *icss;
+
+   result->attriCnt=0;
+   result->rowCnt=0;
+   result->totalRowCount = 0;
+
+   currentMaxColSize=0;
+
+   icss = chlGetRcs();
+   if (icss==NULL) return(CAT_NOT_OPEN);
+#ifdef ADDR_64BITS
+   if (debug) printf("icss=%ld\n",(long int)icss);
+#else
+   if (debug) printf("icss=%d\n",(int)icss);
+#endif
+
+   if (specificQueryInp.continueInx == 0) {
+      if (specificQueryInp.sql == NULL) {
+	 return(CAT_INVALID_ARGUMENT);
+      }
+/*
+ First check that this SQL is one of the allowed forms.
+*/
+      if (logSQL) rodsLog(LOG_SQL, "chlSpecificQuery SQL 1");
+      status = cmlGetStringValueFromSql(
+	 "select create_ts from R_SPECIFIC_QUERY where sql=?",
+	 tsCreateTime, 50,
+	 specificQueryInp.sql, "" , "", icss);
+      if (status == CAT_NO_ROWS_FOUND) {
+	 return(CAT_UNKNOWN_SPECIFIC_QUERY);
+      }
+      if (status) return(status);
+
+      strncpy(combinedSQL, specificQueryInp.sql, sizeof(combinedSQL));
+
+      i=0;
+      while (specificQueryInp.args[i]!=NULL && strlen(specificQueryInp.args[i])>0) {
+	 cllBindVars[cllBindVarCount++]=specificQueryInp.args[i++];
+      }
+
+      if (logSQL) rodsLog(LOG_SQL, "chlSpecificQuery SQL 2");
+      status = cmlGetFirstRowFromSql(combinedSQL, &statementNum, 
+                                     specificQueryInp.rowOffset, icss);
+      if (status < 0) {
+	 if (status != CAT_NO_ROWS_FOUND) {
+	    rodsLog(LOG_NOTICE,
+		    "chlSpecificQuery cmlGetFirstRowFromSql failure %d",
+		    status);
+	 }
+	 return(status);
+      }
+
+      result->continueInx = statementNum+1;
+      if (debug) printf("statement number =%d\n", statementNum);
+      needToGetNextRow = 0;
+   }
+   else {
+      statementNum = specificQueryInp.continueInx-1;
+      needToGetNextRow = 1;
+      if (specificQueryInp.maxRows<=0) {  /* caller is closing out the query */
+	 status = cmlFreeStatement(statementNum, icss);
+	 return(status);
+      }
+   }
+   for (i=0;i<specificQueryInp.maxRows;i++) {
+      if (needToGetNextRow) {
+	 status = cmlGetNextRowFromStatement(statementNum, icss);
+	 if (status == CAT_NO_ROWS_FOUND) {
+            int status2;
+            status2 = cmlFreeStatement(statementNum, icss);
+	    result->continueInx=0;
+	    if (result->rowCnt==0) return(status); /* NO ROWS; in this 
+						      case a continuation call is finding no more rows */
+	    return(0);
+	 }
+	 if (status < 0) return(status);
+      }
+      needToGetNextRow = 1;
+
+      result->rowCnt++;
+      if (debug) printf("result->rowCnt=%d\n", result->rowCnt);
+      numOfCols = icss->stmtPtr[statementNum]->numOfCols;
+      if (debug) printf("numOfCols=%d\n",numOfCols);
+      result->attriCnt=numOfCols;
+      result->continueInx = statementNum+1;
+
+      maxColSize=0;
+
+      for (k=0;k<numOfCols;k++) {
+	 j = strlen(icss->stmtPtr[statementNum]->resultValue[k]);
+	 if (maxColSize <= j) maxColSize=j;
+      }
+      maxColSize++; /* for the null termination */
+      if (maxColSize < MINIMUM_COL_SIZE) {
+	 maxColSize=MINIMUM_COL_SIZE;  /* make it a reasonable size */
+      }
+      if (debug) printf("maxColSize=%d\n",maxColSize);
+
+      if (i==0) {  /* first time thru, allocate and initialize */
+	 attriTextLen= numOfCols * maxColSize;
+	 if (debug) printf("attriTextLen=%d\n",attriTextLen);
+	 totalLen = attriTextLen * specificQueryInp.maxRows;
+	 for (j=0;j<numOfCols;j++) {
+	    tResult = malloc(totalLen);
+	    if (tResult==NULL) return(SYS_MALLOC_ERR);
+	    memset(tResult, 0, totalLen);
+	    result->sqlResult[j].attriInx = 0; 
+/* In Gen-query this would be set to specificQueryInp.selectInp.inx[j]; */
+
+	    result->sqlResult[j].len = maxColSize;
+	    result->sqlResult[j].value = tResult;
+	 }
+	 currentMaxColSize = maxColSize;
+      }
+
+
+      /* Check to see if the current row has a max column size that
+         is larger than what we've been using so far.  If so, allocate
+         new result strings, copy each row value over, and free the 
+         old one. */
+      if (maxColSize > currentMaxColSize) {
+	 maxColSize += MINIMUM_COL_SIZE; /* bump it up to try to avoid
+					    some multiple resizes */
+	 if (debug) printf("Bumping %d to %d\n",
+			   currentMaxColSize, maxColSize);
+	 attriTextLen= numOfCols * maxColSize;
+	 if (debug) printf("attriTextLen=%d\n",attriTextLen);
+	 totalLen = attriTextLen * specificQueryInp.maxRows;
+	 for (j=0;j<numOfCols;j++) {
+	    char *cp1, *cp2;
+	    int k;
+	    tResult = malloc(totalLen);
+	    if (tResult==NULL) return(SYS_MALLOC_ERR);
+	    memset(tResult, 0, totalLen);
+	    cp1 = result->sqlResult[j].value;
+	    cp2 = tResult;
+	    for (k=0;k<result->rowCnt;k++) {
+	       strncpy(cp2, cp1, result->sqlResult[j].len);
+	       cp1 += result->sqlResult[j].len;
+	       cp2 += maxColSize;
+	    }
+	    free(result->sqlResult[j].value);
+	    result->sqlResult[j].len = maxColSize;
+	    result->sqlResult[j].value = tResult;
+	 }
+	 currentMaxColSize = maxColSize;
+      }
+
+      /* Store the current row values into the appropriate spots in
+         the attribute string */
+      for (j=0;j<numOfCols;j++) {
+	 tResult2 = result->sqlResult[j].value; /* ptr to value str */
+	 tResult2 += currentMaxColSize*(result->rowCnt-1);  /* skip forward 
+							       for this row */
+	 strncpy(tResult2, icss->stmtPtr[statementNum]->resultValue[j],
+		 currentMaxColSize); /* copy in the value text */
+      }
+
+   }
+
+   result->continueInx=statementNum+1;  /* the statementnumber but
+					   always >0 */
+   return(0);
+
+}

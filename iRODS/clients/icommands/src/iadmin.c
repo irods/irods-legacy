@@ -1086,6 +1086,18 @@ doCommand(char *cmdToken[]) {
       }
       return(0);
    }
+   if (strcmp(cmdToken[0],"asq") == 0) {
+      int status;
+      status = generalAdmin(0, "add", "specificQuery", cmdToken[1], 
+			    "", "", "", "", "");
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"rsq") == 0) {
+      int status;
+      status = generalAdmin(0, "rm", "specificQuery", cmdToken[1], 
+			    "", "", "", "", "");
+      return(0);
+   }
 
    /* test is only used for testing so is not included in the help */
    if (strcmp(cmdToken[0],"test") == 0) {
@@ -1306,6 +1318,8 @@ void usageMain()
 " lq [Name] List Quotas",
 " cu (calulate usage (for quotas))",
 " rum (remove unused metadata (user-defined AVUs)",
+" asq 'SQL query' (add specific query)",
+" rsq 'SQL query' (remove specific query)",
 " help (or h) [command] (this help, or more details on a command)",
 "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
 "similar admin modes in irepl, iphymv, and itrim.",
@@ -1674,6 +1688,29 @@ usage(char *subOpt)
 "See the contents of delUnusedAVUs.ir for more information.",
 ""};
 
+   char *asqMsgs[]={
+" asq 'SQL query' (add specific query)",
+"Add a specific query to the list of those allowed.",
+"Care must be taken when defining these to prevent users from accessing",
+"or updating information (in the ICAT tables) that needs to be restricted",
+"(passwords, for example) as the normal general-query access controls are",
+"bypassed via this.  This also requires an understanding of the ICAT schema",
+"(see icatSysTables.sql) to properly link tables in your SQL.",
+"These can be executed via 'iquest --sql'.",
+"Use 'iquest --sql ls' to see the currently defined list.",
+"If 'iquest --sql ls' fails see icatSysInserts.sql for the definitions of two",
+"built-in specific queries (r_specific_query) that are needed.",
+"Also see rsq.",
+""};
+
+   char *rsqMsgs[]={
+" rsq 'SQL query' (remove specific query)",
+"Remove a specific query from the list of those allowed.",
+"Use 'iquest --sql ls' to see the currently defined list.",
+"Also see asq.",
+""};
+
+
    char *helpMsgs[]={
 " help (or h) [command] (general help, or more details on a command)",
 " If you specify a command, a brief description of that command",
@@ -1697,7 +1734,7 @@ usage(char *subOpt)
 		    "rfg", "atrg", "rfrg", "at", "rt", "spass", "dspass", 
 		    "pv", "ctime", 
 		    "suq", "sgq", "lq", "cu",
-		    "rum", 
+		    "rum", "asq", "rsq",
 		    "help", "h",
 		    ""};
 
@@ -1712,7 +1749,7 @@ usage(char *subOpt)
 		    rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs,
 		    dspassMsgs, pvMsgs, ctimeMsgs, 
 		    suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
-		    rumMsgs,
+		    rumMsgs, asqMsgs, rsqMsgs,
 		    helpMsgs, helpMsgs };
 
    if (*subOpt=='\0') {
