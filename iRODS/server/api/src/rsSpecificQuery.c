@@ -15,7 +15,7 @@ rsSpecificQuery (rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
 {
     rodsServerHost_t *rodsServerHost;
     int status;
-    char *zoneHint;
+    char *zoneHint="";
 
 /*  zoneHint = getZoneHintForGenQuery (genQueryInp); (need something like this?) */
  
@@ -58,7 +58,7 @@ _rsSpecificQuery (rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
 
     if (status == CAT_UNKNOWN_SPECIFIC_QUERY) {
        int i;
-       i = addRErrorMsg (&rsComm->rError, 0, "SQL not defined");
+       i = addRErrorMsg (&rsComm->rError, 0, "The SQL is not pre-defined.\n  See 'iadmin h asq' (add specific query)");
     }
     
     if (status < 0) {

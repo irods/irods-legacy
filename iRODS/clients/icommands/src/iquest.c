@@ -14,7 +14,7 @@ void
 usage () {
    char *msgs[]={
 "Usage : iquest [-hz] [--no-page] [ [hint] format]  selectConditionString ",
-"Usage : iquest --sql 'pre-defined SQL string' [arguments] ",
+"Usage : iquest --sql 'pre-defined SQL string' [format] [arguments] ",
 "Usage : iquest attrs",
 "Options are:",
 " -h  this help",
@@ -39,7 +39,8 @@ usage () {
 "general-query (non --sql forms herein) since that generates the proper SQL",
 "(knows how to link the ICAT tables) and handles access control and other",
 "aspects of security.  If the SQL includes arguments, you enter them following",
-"the SQL.",
+"the SQL. As without --sql, you can enter a printf format statement to use in",
+"formatting the results.",
 " ",
 "Examples:",
 " iquest \"SELECT DATA_NAME, DATA_CHECKSUM WHERE DATA_RESC_NAME like 'demo%'\"",
@@ -64,15 +65,68 @@ usage () {
 }
 
 void
-printBasicGenQueryOut(genQueryOut_t *genQueryOut) {
+printFormatted(char *format, char *args[], int nargs) {
+   if (nargs==1) {
+      printf(format, args[0]);
+   }
+   if (nargs==2) {
+      printf(format, args[0], args[1]);
+   }
+   if (nargs==3) {
+      printf(format, args[0], args[1], args[2]);
+   }
+   if (nargs==4) {
+      printf(format, args[0], args[1], args[2], args[3]);
+   }
+   if (nargs==5) {
+      printf(format, args[0], args[1], args[2], args[3], args[4]);
+   }
+   if (nargs==6) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5]);
+   }
+   if (nargs==7) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5], args[6]);
+   }
+   if (nargs==8) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5], args[6], args[7]);
+   }
+   if (nargs==9) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5], args[6], args[7], args[8]);
+   }
+   if (nargs==10) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5], args[6], args[7], args[8], args[9]);
+   }
+}
+
+void
+printBasicGenQueryOut(genQueryOut_t *genQueryOut, char *format) {
    int i, j;
-   for (i=0;i<genQueryOut->rowCnt;i++) {
-      if (i>0) printf("----\n");
-      for (j=0;j<genQueryOut->attriCnt;j++) {
-	 char *tResult;
-	 tResult = genQueryOut->sqlResult[j].value;
-	 tResult += i*genQueryOut->sqlResult[j].len;
-	 printf("%s\n", tResult);
+   if (format==NULL || strlen(format)==0) {
+      for (i=0;i<genQueryOut->rowCnt;i++) {
+	 if (i>0) printf("----\n");
+	 for (j=0;j<genQueryOut->attriCnt;j++) {
+	    char *tResult;
+	    tResult = genQueryOut->sqlResult[j].value;
+	    tResult += i*genQueryOut->sqlResult[j].len;
+	    printf("%s\n", tResult);
+	 }
+      }
+   }
+   else {
+      for (i=0;i<genQueryOut->rowCnt;i++) {
+	 char *results[20];
+	 for (j=0;j<genQueryOut->attriCnt;j++) {
+	    char *tResult;
+	    tResult = genQueryOut->sqlResult[j].value;
+	    tResult += i*genQueryOut->sqlResult[j].len;
+	    results[j]=tResult;
+	 }
+	 printFormatted(format, results, j);
       }
    }
 }
@@ -141,6 +195,10 @@ execAndShowSpecificQuery(rcComm_t *conn, char *sql,
   specificQueryInp_t specificQueryInp;
   int status, i;
   genQueryOut_t *genQueryOut = NULL;
+  char *cp;
+  int nQuestionMarks, nArgs;
+  char *format="";
+  char myFormat[300]="";
 
   char aliasName[]="ls";
   char aliasSQL[]="select sql from r_specific_query";
@@ -152,6 +210,27 @@ execAndShowSpecificQuery(rcComm_t *conn, char *sql,
   if (strcmp(aliasName, sql)==0) {
      specificQueryInp.sql=aliasSQL;
   }
+  /* To differentiate format from args, count the ? in the SQL and the
+     arguments */
+  cp = specificQueryInp.sql;
+  nQuestionMarks=0;
+  while (*cp!='\0') {
+     if (*cp++=='?') nQuestionMarks++;
+  }
+  i=argsOffset;
+  nArgs=0;
+  while (args[i] != NULL && strlen(args[i])>0) {
+     nArgs++;
+     i++;
+  }
+  if (nArgs > nQuestionMarks) {
+     format = args[argsOffset];  /* this must be the format */
+     argsOffset++;
+     strncpy(myFormat, format, 300-10);
+     strcat(myFormat, "\n"); /* since \n is difficult to pass in
+				on the command line, add one by default */
+  }
+
   i=0;
   while (args[argsOffset] != NULL && strlen(args[argsOffset])>0) {
 	specificQueryInp.args[i++]=args[argsOffset];
@@ -167,7 +246,7 @@ execAndShowSpecificQuery(rcComm_t *conn, char *sql,
      return(status);
   }
 
-  printBasicGenQueryOut(genQueryOut);
+  printBasicGenQueryOut(genQueryOut, myFormat);
 
   while (status==0 && genQueryOut->continueInx > 0) {
      if (noPageFlag==0) {
@@ -182,7 +261,7 @@ execAndShowSpecificQuery(rcComm_t *conn, char *sql,
 	printError(conn, status, "rcSpecificQuery");
 	return(status);
      }
-     printBasicGenQueryOut(genQueryOut);
+     printBasicGenQueryOut(genQueryOut, format);
   }
 
   return(0);
