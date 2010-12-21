@@ -15,17 +15,85 @@ import org.irods.jargon.core.query.SelectField.SelectFieldSource;
  * 
  */
 public class TranslatedQueryCondition {
+	private final String columnName;
+	private final SelectFieldSource fieldSource;
+	private final String columnNumericTranslation;
+	private final String operator;
+	private final String value;
+
+	/**
+	 * Static initializer when the field is given as a value from the
+	 * <code>RodsGenQueryEnum</code> enumeration.
+	 * 
+	 * @param fieldName
+	 *            {@link org.irods.jargon.core.query.RodsGenQueryEnum} value for
+	 *            the condition field.
+	 * @param operator
+	 *            <code>String</code> with the operator.
+	 * @param value
+	 *            <code>String</code> with the value component of the condition.
+	 * @return <code>TranslatedQueryCondition</code> object.
+	 * @throws JargonQueryException
+	 */
 	public static TranslatedQueryCondition instance(
 			final RodsGenQueryEnum fieldName, final String operator,
 			final String value) throws JargonQueryException {
 		return new TranslatedQueryCondition(fieldName, operator, value);
 	}
-	private final String columnName;
-	private final String columnNumericTranslation;
-	private final SelectFieldSource fieldSource;
-	private final String operator;
 
-	private final String value;
+	/**
+	 * Static initializer when the field is given as a string that is the
+	 * translated name of the field in a format that GenQuery will understand.
+	 * This can be used when constructing query fields from extensible metadata
+	 * values.
+	 * 
+	 * @param fieldName
+	 *            <code>String</code> with the translated value for the
+	 *            condition.
+	 * @param operator
+	 *            <code>String</code> with the operator.
+	 * @param value
+	 *            <code>String</code> with the value component of the condition.
+	 * @return <code>TranslatedQueryCondition</code> object.
+	 * @throws JargonQueryException
+	 */
+	public static TranslatedQueryCondition instanceForExtensibleMetaData(
+			final String fieldName, final String operator, final String value,
+			final String columnNumericTranslation) throws JargonQueryException {
+		return new TranslatedQueryCondition(fieldName, operator, value,
+				columnNumericTranslation);
+	}
+
+	private TranslatedQueryCondition(final String fieldName,
+			final String operator, final String value,
+			final String columnNumericTranslation) throws JargonQueryException {
+
+		if (fieldName == null || fieldName.isEmpty()) {
+			throw new JargonQueryException(
+					"field name in condition is null or blank");
+		}
+
+		if (operator == null) {
+			throw new JargonQueryException("operator is null");
+		}
+
+		if (value == null) {
+			throw new JargonQueryException("value in condition is null");
+		}
+
+		if (columnNumericTranslation == null
+				|| columnNumericTranslation.isEmpty()) {
+			throw new JargonQueryException(
+					"columnNumericTranslation is null or blank");
+		}
+
+		this.columnName = fieldName;
+		this.fieldSource = SelectField.SelectFieldSource.EXTENSIBLE_METADATA;
+		this.operator = operator;
+		this.value = value;
+		this.columnNumericTranslation = columnNumericTranslation;
+
+	}
 
 	private TranslatedQueryCondition(final RodsGenQueryEnum fieldName,
 			final String operator, final String value)
@@ -86,26 +154,6 @@ public class TranslatedQueryCondition {
 
 	}
 
-	public String getColumnName() {
-		return columnName;
-	}
-
-	public String getColumnNumericTranslation() {
-		return columnNumericTranslation;
-	}
-
-	public SelectFieldSource getFieldSource() {
-		return fieldSource;
-	}
-
-	public String getOperator() {
-		return operator;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
@@ -137,6 +185,26 @@ public class TranslatedQueryCondition {
 		b.append("Value:");
 		b.append(value);
 		return b.toString();
+	}
+
+	public String getColumnName() {
+		return columnName;
+	}
+
+	public SelectFieldSource getFieldSource() {
+		return fieldSource;
+	}
+
+	public String getColumnNumericTranslation() {
+		return columnNumericTranslation;
+	}
+
+	public String getOperator() {
+		return operator;
+	}
+
+	public String getValue() {
+		return value;
 	}
 
 }

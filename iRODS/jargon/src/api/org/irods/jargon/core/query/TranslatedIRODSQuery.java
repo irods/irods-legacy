@@ -3,6 +3,7 @@
  */
 package org.irods.jargon.core.query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.irods.jargon.core.exception.JargonException;
@@ -12,43 +13,95 @@ import org.irods.jargon.core.exception.JargonException;
  * IRODS protocol. Essentially this is a bridge between a query stated as plain
  * text and the format of queries understood in a <code>Tag</code> format.
  * 
- * This object is immutable, and is safe to share between threads.  This class is not marked final
- * to assist in testability.
+ * This object is immutable, and is safe to share between threads. This class is
+ * not marked final to assist in testability.
  * 
  * @author Mike Conway - DICE (www.irods.org)
  * 
  */
 public class TranslatedIRODSQuery {
+	private final List<SelectField> selectFields;
+	private final List<TranslatedQueryCondition> translatedQueryConditions;
+	private final List<SelectField> groupByFields;
+	private final IRODSQuery irodsQuery;
+	private final boolean distinct;
+
+	/**
+	 * Create an instance of the query translation, this contains information
+	 * about the original iquest-like query, as well as information about the
+	 * parsed and translated query.
+	 * 
+	 * @param translatedSelectFields
+	 *            <code>List</code> of
+	 *            {@link org.irods.jargon.core.pub.query.SelectField}
+	 *            representing the selects.
+	 * @param translatedQueryConditions
+	 *            <code>List</code> of
+	 *            {@link org.irods.jargon.core.pub.query.TranslatedQueryCondition}
+	 *            representing the parsed conditions.
+	 * @param irodsQuery
+	 *            {@link org.irods.jargon.core.query.IRODSQuery} that
+	 *            encapsulates the original user query.
+	 * @param distinct
+	 *            <code>boolean</code> indicating whether this is a distinct
+	 *            query.
+	 * @return <code>TranslatedIRODSQuery</code>
+	 * @throws JargonException
+	 */
+	public static TranslatedIRODSQuery instance(
+			final List<SelectField> translatedSelectFields,
+			final List<TranslatedQueryCondition> translatedQueryConditions,
+			final IRODSQuery irodsQuery, final boolean distinct)
+			throws JargonException {
+		return new TranslatedIRODSQuery(translatedSelectFields,
+				translatedQueryConditions, new ArrayList<SelectField>(),
+				irodsQuery, distinct);
+
+	}
+
+	public static TranslatedIRODSQuery instanceWithGroupBy(
+			final List<SelectField> translatedSelectFields,
+			final List<TranslatedQueryCondition> translatedQueryConditions,
+			final List<SelectField> groupByFields, final IRODSQuery irodsQuery,
+			final boolean distinct) throws JargonException {
+		return new TranslatedIRODSQuery(translatedSelectFields,
+				translatedQueryConditions, groupByFields, irodsQuery, distinct);
+
+	}
+
+	/**
+	 * Create an instance of the query translation, this contains information
+	 * about the original iquest-like query, as well as information about the
+	 * parsed and translated query.
+	 * 
+	 * @param translatedSelectFields
+	 *            <code>List</code> of
+	 *            {@link org.irods.jargon.core.pub.query.SelectField}
+	 *            representing the selects.
+	 * @param translatedQueryConditions
+	 *            <code>List</code> of
+	 *            {@link org.irods.jargon.core.pub.query.TranslatedQueryCondition}
+	 *            representing the parsed conditions.
+	 * @param irodsQuery
+	 *            {@link org.irods.jargon.core.query.IRODSQuery} that
+	 *            encapsulates the original user query.
+	 * @return
+	 * @throws JargonException
+	 */
 	public static TranslatedIRODSQuery instance(
 			final List<SelectField> translatedSelectFields,
 			final List<TranslatedQueryCondition> translatedQueryConditions,
 			final IRODSQuery irodsQuery) throws JargonException {
 		return new TranslatedIRODSQuery(translatedSelectFields,
-				translatedQueryConditions, irodsQuery, true);
+				translatedQueryConditions, new ArrayList<SelectField>(),
+				irodsQuery, true);
 
 	}
-	public static TranslatedIRODSQuery instance(
-			final List<SelectField> translatedSelectFields,
-			final List<TranslatedQueryCondition> translatedQueryConditions,
-			final IRODSQuery irodsQuery, final boolean distinct)
-			throws JargonException {
-		return new TranslatedIRODSQuery(translatedSelectFields,
-				translatedQueryConditions, irodsQuery, distinct);
-
-	}
-	private final boolean distinct;
-	private final IRODSQuery irodsQuery;
-
-	// TODO: fix lists to be immutable wrapped
-
-	private final List<SelectField> selectFields;
-
-	private final List<TranslatedQueryCondition> translatedQueryConditions;
 
 	private TranslatedIRODSQuery(final List<SelectField> selectFields,
 			final List<TranslatedQueryCondition> translatedQueryConditions,
-			final IRODSQuery irodsQuery, final boolean distinct)
-			throws JargonException {
+			final List<SelectField> groupByFields, final IRODSQuery irodsQuery,
+			final boolean distinct) throws JargonException {
 
 		if (translatedQueryConditions == null) {
 			throw new JargonException("conditions are null");
@@ -56,6 +109,10 @@ public class TranslatedIRODSQuery {
 
 		if (selectFields == null) {
 			throw new JargonException("no select column names");
+		}
+
+		if (groupByFields == null) {
+			throw new JargonException("null groupByFields");
 		}
 
 		if (selectFields.isEmpty()) {
@@ -68,13 +125,10 @@ public class TranslatedIRODSQuery {
 
 		this.translatedQueryConditions = translatedQueryConditions;
 		this.selectFields = selectFields;
+		this.groupByFields = groupByFields;
 		this.irodsQuery = irodsQuery;
 		this.distinct = distinct;
 
-	}
-
-	public IRODSQuery getIrodsQuery() {
-		return irodsQuery;
 	}
 
 	/**
@@ -100,8 +154,31 @@ public class TranslatedIRODSQuery {
 		return translatedQueryConditions;
 	}
 
-	protected boolean isDistinct() {
+	public IRODSQuery getIrodsQuery() {
+		return irodsQuery;
+	}
+
+	public boolean isDistinct() {
 		return distinct;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("translatedIRODSQuery:");
+		sb.append("\n   selectFields:");
+		sb.append(selectFields);
+		sb.append("\n   translatedQueryConditions:");
+		sb.append(translatedQueryConditions);
+		sb.append("\n   irodsQuery:");
+		sb.append(irodsQuery);
+		sb.append("\n   distinct:");
+		sb.append(distinct);
+		return sb.toString();
+	}
+
+	public List<SelectField> getGroupByFields() {
+		return groupByFields;
 	}
 
 }

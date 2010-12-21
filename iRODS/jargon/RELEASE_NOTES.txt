@@ -49,6 +49,10 @@ from this fix, but the code itself was not consistent.
 -will require a survey of connection creation using FileFactory, perhaps some deprecation and refactoring
 -review of use of finalizers and tighten up connection handling
 
+*Bug 125 - query bug resource metadata
+-added distinct options to query
+
+
 ================================================================================================
 Outstanding Issues
 
