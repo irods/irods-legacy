@@ -46,18 +46,25 @@ import edu.sdsc.grid.io.irods.IRODSMetaDataSet;
 import edu.sdsc.grid.io.irods.Tag;
 
 /**
- * Mid level service to process a GenQuery.  This service supports the traditional Jargon queries using MetaDataSelect and MetaDataCondition.
+ * Mid level service to process a GenQuery. This service supports the
+ * traditional Jargon queries using MetaDataSelect and MetaDataCondition.
+ * 
  * @author Mike Conway - DICE (www.irods.org)
- *
+ * 
  */
 public class GenQueryClassicMidLevelService {
-	
+
+	private final IRODSCommands irodsCommands;
+
+	private Logger log = LoggerFactory.getLogger(this.getClass());
+
 	/**
 	 * Removes null and duplicate values from an array.
 	 */
-	static final Object[] cleanNullsAndDuplicates(Object[] obj) {
-		if (obj == null)
+	static final Object[] cleanNullsAndDuplicates(final Object[] obj) {
+		if (obj == null) {
 			return null;
+		}
 
 		Vector<Object> temp = new Vector<Object>(obj.length);
 		boolean anyAdd = false;
@@ -76,13 +83,15 @@ public class GenQueryClassicMidLevelService {
 
 				if (obj[i] != null) {
 					temp.add(obj[i]);
-					if (!anyAdd)
+					if (!anyAdd) {
 						anyAdd = true;
+					}
 				}
 			}
 		}
-		if (!anyAdd)
+		if (!anyAdd) {
 			return null;
+		}
 
 		// needs its own check
 		if ((obj.length == 1) && (obj[0] == null)) {
@@ -92,31 +101,39 @@ public class GenQueryClassicMidLevelService {
 		return temp.toArray((Object[]) Array.newInstance(
 				temp.get(0).getClass(), 0));
 	}
-	public static GenQueryClassicMidLevelService instance(final IRODSCommands irodsCommands) throws JargonException {
+
+	/**
+	 * Static initializer creates a service to process GenQuery
+	 * 
+	 * @param irodsCommands
+	 *            {@link IRODSCommands} that wraps a connection to an iRODS
+	 *            Agent
+	 * @return
+	 * @throws JargonException
+	 */
+	public static GenQueryClassicMidLevelService instance(
+			final IRODSCommands irodsCommands) throws JargonException {
 		return new GenQueryClassicMidLevelService(irodsCommands);
 	}
 
-	private final IRODSCommands irodsCommands;
-	
-	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
-	private GenQueryClassicMidLevelService(final IRODSCommands irodsCommands) throws JargonException {
+	private GenQueryClassicMidLevelService(final IRODSCommands irodsCommands)
+			throws JargonException {
 		if (irodsCommands == null) {
-			String msg ="irodsCommands is null";
+			String msg = "irodsCommands is null";
 			log.error(msg);
 			throw new JargonException(msg);
 		}
-		
+
 		if (!irodsCommands.isConnected()) {
 			String msg = "irodsCommands is not connected";
 			log.error(msg);
 			throw new JargonException(msg);
 		}
-		
+
 		this.irodsCommands = irodsCommands;
-		
+
 	}
-	
+
 	/**
 	 * @param namespace
 	 * @param translatedSelects
@@ -125,8 +142,8 @@ public class GenQueryClassicMidLevelService {
 	 * @throws JargonRuntimeException
 	 */
 	private List<IRODSMetaDataSelectWrapper> amendQuerySelectsWithTranslations(
-			Namespace namespace,
-			List<IRODSMetaDataSelectWrapper> translatedSelects,
+			final Namespace namespace,
+			final List<IRODSMetaDataSelectWrapper> translatedSelects,
 			boolean avuQueryAddedForNamespace) throws JargonRuntimeException {
 		String translatedField;
 		String originalField;
@@ -150,10 +167,10 @@ public class GenQueryClassicMidLevelService {
 
 			translatedField = IRODSMetaDataSet.getID(originalField);
 
-			if (log.isDebugEnabled()) {
-				log.debug("tried translating as irods meta data and got:"
-						+ translatedField);
-			}
+			
+				log.debug("tried translating as irods meta data and got:{}"
+						, translatedField);
+			
 
 			if (!translatedField.equals(originalField)) {
 				log.debug("hit on irods gen query type");
@@ -167,8 +184,7 @@ public class GenQueryClassicMidLevelService {
 
 			// no hit, see if this is extensible meta data
 
-			log
-					.debug("no translation found yet, check as extensible meta data");
+			log.debug("no translation found yet, check as extensible meta data");
 			translatedField = IRODSMetaDataSet
 					.getIDFromExtensibleMetaData(originalField);
 
@@ -187,17 +203,14 @@ public class GenQueryClassicMidLevelService {
 			 * not to create duplicate selects
 			 */
 
-			log
-					.debug("treat as an AVU, see if I've already added a select for the attribute and name for the namespace");
+			log.debug("treat as an AVU, see if I've already added a select for the attribute and name for the namespace");
 
 			if (avuQueryAddedForNamespace) {
-				log
-						.debug("avu name and attribute query already added, skipping select generation");
+				log.debug("avu name and attribute query already added, skipping select generation");
 			} else {
-				log
-						.debug("adding avu name and attribute select for this namespace");
-				MetaDataSelect avuSelect = MetaDataSet
-						.newSelection(IRODSAvu.getAttributeName(namespace));
+				log.debug("adding avu name and attribute select for this namespace");
+				MetaDataSelect avuSelect = MetaDataSet.newSelection(IRODSAvu
+						.getAttributeName(namespace));
 				IRODSMetaDataSelectWrapper avuWrapper;
 				try {
 					avuWrapper = new IRODSMetaDataSelectWrapper(avuSelect);
@@ -242,7 +255,7 @@ public class GenQueryClassicMidLevelService {
 		}
 		return amendedSelects;
 	}
-	
+
 	/**
 	 * @param namespace
 	 * @param derivedMetaDataConditions
@@ -250,32 +263,31 @@ public class GenQueryClassicMidLevelService {
 	 * @throws JargonRuntimeException
 	 */
 	private List<IRODSMetaDataConditionWrapper> amendQueryWithAVUSelects(
-			Namespace namespace,
-			List<IRODSMetaDataConditionWrapper> derivedMetaDataConditions)
+			final Namespace namespace,
+			final List<IRODSMetaDataConditionWrapper> derivedMetaDataConditions)
 			throws JargonRuntimeException {
 		List<IRODSMetaDataConditionWrapper> amendedConditions = new ArrayList<IRODSMetaDataConditionWrapper>();
 
 		for (IRODSMetaDataConditionWrapper currentCondition : derivedMetaDataConditions) {
 			if (currentCondition.getSelectType() == IRODSMetaDataConditionWrapper.SelectType.IRODS_GEN_QUERY_METADATA) {
-				if (log.isDebugEnabled()) {
-					log
-							.debug("irods gen query data condition, move as is to amended:{}"
-									, currentCondition);
-				}
+
+				log.debug(
+						"irods gen query data condition, move as is to amended:{}",
+						currentCondition);
+
 				amendedConditions.add(currentCondition);
 			} else if (currentCondition.getSelectType() == IRODSMetaDataConditionWrapper.SelectType.EXTENSIBLE_METADATA) {
-				if (log.isDebugEnabled()) {
-					log
-							.debug("extensible metadata condition, move as is to amended:{}"
-									,currentCondition);
-				}
+
+				log.debug(
+						"extensible metadata condition, move as is to amended:{}",
+						currentCondition);
+
 				amendedConditions.add(currentCondition);
 			} else if (currentCondition.getSelectType() == IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA) {
-				if (log.isDebugEnabled()) {
-					log
-							.debug("AVU condition, will break out the AVU conditions:{}"
-									,currentCondition);
-				}
+
+				log.debug(
+						"AVU condition, will break out the AVU conditions:{}",
+						currentCondition);
 
 				// add a condition for the attribute value
 				MetaDataCondition avuMetaDataCondition = MetaDataSet
@@ -293,7 +305,7 @@ public class GenQueryClassicMidLevelService {
 					log.error("exception translating a condition field", e);
 					throw new JargonRuntimeException(e);
 				}
-				
+
 				newConditionWrapper
 						.setAvuComponent(IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_VALUE_COMPONENT);
 				newConditionWrapper
@@ -302,10 +314,8 @@ public class GenQueryClassicMidLevelService {
 						.getAttributeNumericValue(namespace).toString());
 				amendedConditions.add(newConditionWrapper);
 
-				if (log.isDebugEnabled()) {
-					log.debug("added a condition for the AVU attribute value:{}"
-							,newConditionWrapper);
-				}
+				log.debug("added a condition for the AVU attribute value:{}",
+						newConditionWrapper);
 
 				// add a condition for the attribute name
 				avuMetaDataCondition = MetaDataSet.newCondition(IRODSAvu
@@ -333,80 +343,97 @@ public class GenQueryClassicMidLevelService {
 
 			}
 		}
-		
-		// now that I have the amended conditions, I need to make sure the AVU data is in the proper order to avoid pathological SQL
+
+		// now that I have the amended conditions, I need to make sure the AVU
+		// data is in the proper order to avoid pathological SQL
 		List<IRODSMetaDataConditionWrapper> amendedAndReorderedConditions = new ArrayList<IRODSMetaDataConditionWrapper>();
 
 		log.debug("reordering amended conditions to put AVU data in the right order");
 		// first, put in any non-avu query items
 		for (IRODSMetaDataConditionWrapper amendedCondition : amendedConditions) {
-			if (amendedCondition.getSelectType().equals(IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
+			if (amendedCondition.getSelectType().equals(
+					IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
 				log.debug("skip for now as avu metadata:{}", amendedCondition);
 			} else {
-				log.debug("not avu, go ahead and move to reordered condition:{}", amendedCondition);
+				log.debug(
+						"not avu, go ahead and move to reordered condition:{}",
+						amendedCondition);
 				amendedAndReorderedConditions.add(amendedCondition);
 			}
 		}
-		
+
 		// now I've done the non-AVU conditions, do AVU values
 		for (IRODSMetaDataConditionWrapper amendedCondition : amendedConditions) {
-			if (amendedCondition.getSelectType().equals(IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
-				if (amendedCondition.getAvuComponent().equals(IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_VALUE_COMPONENT)) {
-					log.debug("added attrib value component:{}", amendedCondition);
-				amendedAndReorderedConditions.add(amendedCondition);
+			if (amendedCondition.getSelectType().equals(
+					IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
+				if (amendedCondition
+						.getAvuComponent()
+						.equals(IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_VALUE_COMPONENT)) {
+					log.debug("added attrib value component:{}",
+							amendedCondition);
+					amendedAndReorderedConditions.add(amendedCondition);
 				}
 			} else {
 				log.debug("already processed:{}", amendedCondition);
 
 			}
 		}
-		
+
 		// now I've done the non-AVU conditions, do AVU attrib names
 		for (IRODSMetaDataConditionWrapper amendedCondition : amendedConditions) {
-			if (amendedCondition.getSelectType().equals(IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
-				if (amendedCondition.getAvuComponent().equals(IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_NAME_COMPONENT)) {
-					log.debug("added attrib name component:{}", amendedCondition);
-				amendedAndReorderedConditions.add(amendedCondition);
+			if (amendedCondition.getSelectType().equals(
+					IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
+				if (amendedCondition
+						.getAvuComponent()
+						.equals(IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_NAME_COMPONENT)) {
+					log.debug("added attrib name component:{}",
+							amendedCondition);
+					amendedAndReorderedConditions.add(amendedCondition);
 				}
 			} else {
 				log.debug("already processed:{}", amendedCondition);
 			}
 		}
-		
+
 		// control balance on counts
 		if (amendedConditions.size() != amendedAndReorderedConditions.size()) {
-			throw new JargonRuntimeException("original conditions and reordered conditions counts are out of balance");
+			throw new JargonRuntimeException(
+					"original conditions and reordered conditions counts are out of balance");
 		}
-		
+
 		// now clean out duplicates
-		
+
 		List<IRODSMetaDataConditionWrapper> uniqueConditions = new ArrayList<IRODSMetaDataConditionWrapper>();
 		IRODSMetaDataConditionWrapper previousMetaDataConditionWrapper = null;
-		
+
 		for (IRODSMetaDataConditionWrapper wrapper : amendedAndReorderedConditions) {
 			if (previousMetaDataConditionWrapper != null) {
-				if (wrapper.getMetaDataCondition().equals(previousMetaDataConditionWrapper.getMetaDataCondition())) {
+				if (wrapper.getMetaDataCondition()
+						.equals(previousMetaDataConditionWrapper
+								.getMetaDataCondition())) {
 					log.debug("duplicate metaDataCondition ignored:{}", wrapper);
 					continue;
-				}  
+				}
 			}
 			uniqueConditions.add(wrapper);
 			previousMetaDataConditionWrapper = wrapper;
 		}
-		
+
 		return uniqueConditions;
 	}
 
-	public Tag buildQueryTag(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted, int partialStart,
-			Namespace namespace, boolean distinctQuery) {
+	public Tag buildQueryTag(final MetaDataCondition[] conditions,
+			MetaDataSelect[] selects, final int numberOfRecordsWanted,
+			final int partialStart, final Namespace namespace,
+			final boolean distinctQuery) {
 		Tag message = new Tag(GenQueryInp_PI);
 
 		message.addTag(new Tag(maxRows, numberOfRecordsWanted));
 		message.addTag(new Tag(continueInx, 0));
 		message.addTag(new Tag(partialStartIndex, partialStart));
-		
-		int versionValue = irodsCommands.getIrodsServerProperties().getRelVersion().compareTo("rods2.3");
+
+		int versionValue = irodsCommands.getIrodsServerProperties()
+				.getRelVersion().compareTo("rods2.3");
 		if (versionValue >= 0) {
 			if (distinctQuery) {
 				// reported version is at or after the version specified in
@@ -417,7 +444,6 @@ public class GenQueryClassicMidLevelService {
 			}
 		}
 
-
 		// package the selects
 		if (selects == null) {
 			throw new JargonRuntimeException(
@@ -425,8 +451,7 @@ public class GenQueryClassicMidLevelService {
 		}
 
 		// clean up nulls and duplicates
-		selects = (MetaDataSelect[]) 
-				cleanNullsAndDuplicates(selects);
+		selects = (MetaDataSelect[]) cleanNullsAndDuplicates(selects);
 
 		// wrap the selects to assist in translating the given metadata names
 		// into values understandable by IRODS
@@ -463,8 +488,8 @@ public class GenQueryClassicMidLevelService {
 		subTags[0] = new Tag(iiLen, amendedSelects.size());
 
 		for (IRODSMetaDataSelectWrapper currentSelect : amendedSelects) {
-			subTags[j] = new Tag(inx, currentSelect
-					.getTranslatedMetaDataNumber());
+			subTags[j] = new Tag(inx,
+					currentSelect.getTranslatedMetaDataNumber());
 			j++;
 		}
 
@@ -485,8 +510,8 @@ public class GenQueryClassicMidLevelService {
 			subTags[0] = new Tag(isLen, amendedConditions.size());
 			j = 1;
 			for (IRODSMetaDataConditionWrapper tagCondition : amendedConditions) {
-				subTags[j] = new Tag(inx, tagCondition
-						.getTranslatedMetaDataNumber());
+				subTags[j] = new Tag(inx,
+						tagCondition.getTranslatedMetaDataNumber());
 				j++;
 			}
 
@@ -505,9 +530,7 @@ public class GenQueryClassicMidLevelService {
 			message.addTag(new Tag(InxValPair_PI, new Tag(isLen, 0)));
 		}
 
-		if (log.isDebugEnabled()) {
-			log.debug("query message tag:" + message.parseTag());
-		}
+		log.debug("query message tag:{}", message.parseTag());
 
 		return message;
 	}
@@ -518,18 +541,17 @@ public class GenQueryClassicMidLevelService {
 	 * @throws JargonRuntimeException
 	 */
 	private List<IRODSMetaDataConditionWrapper> classifyQuerySelectsByType(
-			MetaDataCondition[] conditions) throws JargonRuntimeException {
+			final MetaDataCondition[] conditions) throws JargonRuntimeException {
 		String translatedField;
 		String originalField;
 		// do a pre-pass to classify the conditions
 		List<IRODSMetaDataConditionWrapper> derivedMetaDataConditions = new ArrayList<IRODSMetaDataConditionWrapper>();
 
 		if (conditions != null) {
-			for (int i = 0; i < conditions.length; i++) {
+			for (MetaDataCondition condition : conditions) {
 				try {
 					derivedMetaDataConditions
-							.add(new IRODSMetaDataConditionWrapper(
-									conditions[i]));
+							.add(new IRODSMetaDataConditionWrapper(condition));
 				} catch (JargonException e) {
 					e.printStackTrace();
 					log.error("exception translating a condition field", e);
@@ -540,25 +562,19 @@ public class GenQueryClassicMidLevelService {
 			log.debug("null conditions, skipping");
 		}
 
-		log
-				.debug("conditions converted into wrappers, now resolving field names");
+		log.debug("conditions converted into wrappers, now resolving field names");
 
 		for (IRODSMetaDataConditionWrapper currentCondition : derivedMetaDataConditions) {
 
 			originalField = currentCondition.getMetaDataCondition()
 					.getFieldName();
-			if (log.isDebugEnabled()) {
-				log.debug("translating meta data condition field:"
-						+ originalField);
-			}
+			log.debug("translating meta data condition field:{}", originalField);
 
 			translatedField = IRODSMetaDataSet.getID(originalField);
 
-			if (log.isDebugEnabled()) {
-				log
-						.debug("tried translating condition field as irods meta data and got:"
-								+ translatedField);
-			}
+			log.debug(
+					"tried translating condition field as irods meta data and got:{}",
+					translatedField);
 
 			if (!translatedField.equals(originalField)) {
 				log.debug("hit on irods gen query type");
@@ -571,8 +587,7 @@ public class GenQueryClassicMidLevelService {
 
 			// no hit, see if this is extensible meta data
 
-			log
-					.debug("no translation found yet, check as extensible meta data");
+			log.debug("no translation found yet, check as extensible meta data");
 			translatedField = IRODSMetaDataSet
 					.getIDFromExtensibleMetaData(originalField);
 
@@ -588,8 +603,7 @@ public class GenQueryClassicMidLevelService {
 			currentCondition.setTranslatedMetaDataNumber(originalField);
 			currentCondition
 					.setSelectType(IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA);
-			log
-					.debug("treating this as user-defined metadata and using the original field in the condition");
+			log.debug("treating this as user-defined metadata and using the original field in the condition");
 
 		}
 		return derivedMetaDataConditions;
@@ -606,15 +620,17 @@ public class GenQueryClassicMidLevelService {
 	 * @throws JargonException
 	 * @throws IOException
 	 */
-	public  MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted,
-			Namespace namespace, boolean distinctQuery) throws JargonException, IOException {
-		
-		Tag message = buildQueryTag(conditions, selects, numberOfRecordsWanted, 0,
-				namespace, distinctQuery);
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int numberOfRecordsWanted,
+			final Namespace namespace, final boolean distinctQuery)
+			throws JargonException, IOException {
+
+		Tag message = buildQueryTag(conditions, selects, numberOfRecordsWanted,
+				0, namespace, distinctQuery);
 
 		// send command to server
-		message = irodsCommands.irodsFunction(RODS_API_REQ, message, GEN_QUERY_AN);
+		message = irodsCommands.irodsFunction(RODS_API_REQ, message,
+				GEN_QUERY_AN);
 
 		if (message == null) {
 			// query had no results
@@ -631,17 +647,18 @@ public class GenQueryClassicMidLevelService {
 		int j = 0;
 		for (int i = 0; i < attributes; i++) {
 
-			fields[i] = IRODSMetaDataSet.getField(message.getTags()[4 + i].getTag(
-					attriInx).getStringValue());
+			fields[i] = IRODSMetaDataSet.getField(message.getTags()[4 + i]
+					.getTag(attriInx).getStringValue());
 		}
 		for (int i = 0; i < rows; i++) {
 			for (j = 0; j < attributes; j++) {
 
-				results[j] = message.getTags()[4 + j].getTags()[2 + i].getStringValue();
+				results[j] = message.getTags()[4 + j].getTags()[2 + i]
+						.getStringValue();
 			}
 			if (continuation > 0) {
-				rl[i] = new IRODSMetaDataRecordList(irodsCommands, fields, results,
-						continuation);
+				rl[i] = new IRODSMetaDataRecordList(irodsCommands, fields,
+						results, continuation);
 			} else {
 				// No more results, don't bother with sending the IRODSCommand
 				// object
@@ -651,7 +668,7 @@ public class GenQueryClassicMidLevelService {
 		}
 
 		return rl;
-		
+
 	}
 
 	/**
@@ -666,15 +683,18 @@ public class GenQueryClassicMidLevelService {
 	 * @throws JargonException
 	 * @throws IOException
 	 */
-	public  MetaDataRecordList[] queryWithPartialStart(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted, int partialStartIndex,
-			Namespace namespace, boolean distinctQuery) throws JargonException, IOException {
-		
-		Tag message = buildQueryTag(conditions, selects, numberOfRecordsWanted, partialStartIndex,
-				namespace, distinctQuery);
+	public MetaDataRecordList[] queryWithPartialStart(
+			final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int numberOfRecordsWanted,
+			final int partialStartIndex, final Namespace namespace,
+			final boolean distinctQuery) throws JargonException, IOException {
+
+		Tag message = buildQueryTag(conditions, selects, numberOfRecordsWanted,
+				partialStartIndex, namespace, distinctQuery);
 
 		// send command to server
-		message = irodsCommands.irodsFunction(RODS_API_REQ, message, GEN_QUERY_AN);
+		message = irodsCommands.irodsFunction(RODS_API_REQ, message,
+				GEN_QUERY_AN);
 
 		if (message == null) {
 			// query had no results
@@ -691,17 +711,18 @@ public class GenQueryClassicMidLevelService {
 		int j = 0;
 		for (int i = 0; i < attributes; i++) {
 
-			fields[i] = IRODSMetaDataSet.getField(message.getTags()[4 + i].getTag(
-					attriInx).getStringValue());
+			fields[i] = IRODSMetaDataSet.getField(message.getTags()[4 + i]
+					.getTag(attriInx).getStringValue());
 		}
 		for (int i = 0; i < rows; i++) {
 			for (j = 0; j < attributes; j++) {
 
-				results[j] = message.getTags()[4 + j].getTags()[2 + i].getStringValue();
+				results[j] = message.getTags()[4 + j].getTags()[2 + i]
+						.getStringValue();
 			}
 			if (continuation > 0) {
-				rl[i] = new IRODSMetaDataRecordList(irodsCommands, fields, results,
-						continuation);
+				rl[i] = new IRODSMetaDataRecordList(irodsCommands, fields,
+						results, continuation);
 			} else {
 				// No more results, don't bother with sending the IRODSCommand
 				// object
@@ -711,24 +732,24 @@ public class GenQueryClassicMidLevelService {
 		}
 
 		return rl;
-		
+
 	}
-	
+
 	/**
 	 * @param selects
 	 * @return
 	 * @throws JargonRuntimeException
 	 */
 	private List<IRODSMetaDataSelectWrapper> wrapQuerySelectsForTranslation(
-			MetaDataSelect[] selects) throws JargonRuntimeException {
+			final MetaDataSelect[] selects) throws JargonRuntimeException {
 		log.debug("wrapping original selects for processing");
 		IRODSMetaDataSelectWrapper irodsMetaDataSelectWrapper = null;
 		List<IRODSMetaDataSelectWrapper> translatedSelects = new ArrayList<IRODSMetaDataSelectWrapper>();
 
-		for (int i = 0; i < selects.length; i++) {
+		for (MetaDataSelect select : selects) {
 			try {
 				irodsMetaDataSelectWrapper = new IRODSMetaDataSelectWrapper(
-						selects[i]);
+						select);
 				translatedSelects.add(irodsMetaDataSelectWrapper);
 			} catch (JargonException e) {
 				String msg = "error translating an IRODS select into an IRODSMetaDataSelectWrapper";
