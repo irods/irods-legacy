@@ -50,8 +50,8 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
                       rodsPathInp->srcPath[i].size;
                 }
             } else {
-                getDirSizeForProgStat (rodsPathInp->srcPath[i].outPath,
-                  &conn->operProgress);
+                getDirSizeForProgStat (myRodsArgs, 
+		  rodsPathInp->srcPath[i].outPath, &conn->operProgress);
             }
         }
     }

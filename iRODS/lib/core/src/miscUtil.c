@@ -1771,7 +1771,8 @@ operProgress_t *operProgress)
  * cannot be initialized in this routine.
  */
 int
-getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress)
+getDirSizeForProgStat (rodsArguments_t *rodsArgs, char *srcDir, 
+operProgress_t *operProgress)
 {
     int status = 0;
     DIR *dirPtr;
@@ -1782,6 +1783,8 @@ getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress)
     struct irodsntstat statbuf;
 #endif
     char srcChildPath[MAX_NAME_LEN];
+
+    if (isPathSymlink (rodsArgs, srcDir) > 0) return 0;
 
     dirPtr = opendir (srcDir);
     if (dirPtr == NULL) {
@@ -1798,6 +1801,8 @@ getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress)
         }
         snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
           srcDir, myDirent->d_name);
+
+	if (isPathSymlink (rodsArgs, srcChildPath) > 0) return 0;
 
 #ifndef windows_platform
         status = stat (srcChildPath, &statbuf);
@@ -1817,7 +1822,8 @@ getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress)
             operProgress->totalNumFiles++;
             operProgress->totalFileSize += statbuf.st_size;
         } else if (statbuf.st_mode & S_IFDIR) {
-            status = getDirSizeForProgStat (srcChildPath, operProgress);
+            status = getDirSizeForProgStat (rodsArgs, srcChildPath, 
+	      operProgress);
             if (status < 0) return (status);
 
 	}

@@ -225,7 +225,8 @@ int
 getCollSizeForProgStat (rcComm_t *conn, char *srcColl, 
 operProgress_t *operProgress);
 int
-getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress);
+getDirSizeForProgStat (rodsArguments_t *rodsArgs, char *srcDir,
+operProgress_t *operProgress);
 irodsGuiProgressCallbak 
 iCommandProgStat (operProgress_t *operProgress);
 int
