@@ -446,6 +446,7 @@ dataObjInfo_t **dataObjInfoHead)
 
     while (status == CAT_NAME_EXISTS_AS_DATAOBJ || 
       status == CAT_NAME_EXISTS_AS_COLLECTION || 
+      status == SYS_PHY_PATH_INUSE || 
       getErrno (status) == EISDIR) {
         appendRandomToPath (dataObjRenameInp.destDataObjInp.objPath);
 	status = rsDataObjRename (rsComm, &dataObjRenameInp);

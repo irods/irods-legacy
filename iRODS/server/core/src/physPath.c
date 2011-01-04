@@ -793,7 +793,7 @@ dataObjInfo_t *dataObjInfo)
             rodsLog (LOG_ERROR,
              "syncDataObjPhyPath:newFileName %s to %s already exists",
               dataObjInfo->filePath);
-	    return (SYS_INVALID_FILE_PATH);
+	    return (SYS_PHY_PATH_INUSE);
 	}
     }
 
