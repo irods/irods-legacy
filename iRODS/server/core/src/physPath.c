@@ -791,7 +791,7 @@ dataObjInfo_t *dataObjInfo)
         if (chkAndHandleOrphanFile (rsComm, dataObjInfo->filePath,
           rescInfo, OLD_COPY) <= 0) {
             rodsLog (LOG_ERROR,
-             "syncDataObjPhyPath:newFileName %s already inuse",
+             "syncDataObjPhyPath:newFileName %s already in use",
               dataObjInfo->filePath);
 	    return (SYS_PHY_PATH_INUSE);
 	}
