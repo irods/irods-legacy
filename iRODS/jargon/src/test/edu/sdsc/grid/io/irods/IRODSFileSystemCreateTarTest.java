@@ -22,57 +22,140 @@ import java.util.Properties;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-
 public class IRODSFileSystemCreateTarTest {
-    private static Properties testingProperties = new Properties();
-    private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
-    private static ScratchFileUtils scratchFileUtils = null;
-    public static final String IRODS_TEST_SUBDIR_PATH = "IRODSFileSystemCreateTarTest";
-    private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
+	private static Properties testingProperties = new Properties();
+	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
+	private static ScratchFileUtils scratchFileUtils = null;
+	public static final String IRODS_TEST_SUBDIR_PATH = "IRODSFileSystemCreateTarTest";
+	private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 	private static AssertionHelper assertionHelper = null;
 
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
-        testingProperties = testingPropertiesLoader.getTestProperties();
-        scratchFileUtils = new ScratchFileUtils(testingProperties);
-        scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH);
-        irodsTestSetupUtilities = new IRODSTestSetupUtilities();
-        irodsTestSetupUtilities.initializeIrodsScratchDirectory();
-        irodsTestSetupUtilities.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
+		testingProperties = testingPropertiesLoader.getTestProperties();
+		scratchFileUtils = new ScratchFileUtils(testingProperties);
+		scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH);
+		irodsTestSetupUtilities = new IRODSTestSetupUtilities();
+		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
+		irodsTestSetupUtilities
+				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
 		assertionHelper = new AssertionHelper();
-    }
+	}
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
 
-    @Before
-    public void setUp() throws Exception {
-    }
+	@Before
+	public void setUp() throws Exception {
+	}
 
-    @After
-    public void tearDown() throws Exception {
-    }
+	@After
+	public void tearDown() throws Exception {
+	}
 
-    /**
-     * Create a tar, bug testcase
-     * BUG: 34 -  [iROD-Chat:2969] Jargon: createTarFile
-     * @throws Exception
-     */
-    @Test
-    public void testCreateTar() throws Exception {
+	@Test
+	public void testExtractTar() throws Exception {
+		// test tuning variables
+		String testFileNamePrefix = "testExtractTar";
+		String extractToDir = "testExtractTarTarget";
+		String extractToSource = "testExtractTarSource";
+		String irodsNewTarFileName = "testExtractTar.tar";
 
-    	// test tuning variables
+		String testFileExtension = ".txt";
+		String collectionSubdir = IRODS_TEST_SUBDIR_PATH + "/"
+				+ extractToSource;
+		String extractToCollectionSubdir = IRODS_TEST_SUBDIR_PATH + "/"
+				+ extractToDir;
+
+		int numberOfTestFiles = 5;
+		String newTarAbsPath = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		String extractToAbsPath = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, extractToCollectionSubdir);
+
+		// create collection to tar
+		String collectionAbsPath = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, collectionSubdir);
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		ImkdirCommand imkdrCommand = new ImkdirCommand();
+		imkdrCommand.setCollectionName(collectionAbsPath);
+		invoker.invokeCommandAndGetResultAsString(imkdrCommand);
+
+		IputCommand iputCommand = new IputCommand();
+		String genFileName = "";
+		String fullPathToTestFile = "";
+
+		// generate a number of files in the subdir
+		for (int i = 0; i < numberOfTestFiles; i++) {
+			genFileName = testFileNamePrefix + String.valueOf(i)
+					+ testFileExtension;
+			fullPathToTestFile = FileGenerator
+					.generateFileOfFixedLengthGivenName(
+							testingProperties
+									.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+									+ "/", genFileName, 1);
+
+			iputCommand.setLocalFileName(fullPathToTestFile);
+			iputCommand.setIrodsFileName(collectionAbsPath);
+			iputCommand.setForceOverride(true);
+			invoker.invokeCommandAndGetResultAsString(iputCommand);
+		}
+
+		// now try and tar
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		IRODSFile newTarFile = new IRODSFile(irodsFileSystem, newTarAbsPath
+				+ '/' + irodsNewTarFileName);
+		IRODSFile irodsCollectionToTar = new IRODSFile(irodsFileSystem,
+				collectionAbsPath);
+		Assert.assertTrue(irodsCollectionToTar.exists());
+		Assert.assertTrue(irodsCollectionToTar.isDirectory());
+
+		irodsFileSystem.createTarFile(newTarFile, irodsCollectionToTar,
+				irodsFileSystem.getDefaultStorageResource());
+
+		IRODSFile targetExtract = new IRODSFile(irodsFileSystem,
+				extractToAbsPath);
+		irodsFileSystem.extractTarFile(newTarFile, targetExtract);
+
+		assertionHelper.assertIrodsFileOrCollectionExists(targetExtract
+				.getAbsolutePath());
+		String[] tarExtractedFiles = targetExtract.list();
+		TestCase.assertEquals(
+				"did not find expected extracted files in new dir",
+				numberOfTestFiles, tarExtractedFiles.length);
+
+		irodsFileSystem.close();
+
+	}
+
+	/**
+	 * Create a tar, bug testcase BUG: 34 - [iROD-Chat:2969] Jargon:
+	 * createTarFile
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testCreateTar() throws Exception {
+
+		// test tuning variables
 		String testFileNamePrefix = "tar5file";
 		String testFileExtension = ".txt";
 		String collectionSubdir = IRODS_TEST_SUBDIR_PATH + "/tar5dir";
 		int numberOfTestFiles = 5;
 		String newTarAbsPath = testingPropertiesHelper
-		.buildIRODSCollectionAbsolutePathFromTestProperties(
-				testingProperties, IRODS_TEST_SUBDIR_PATH);
-
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
 
 		String irodsNewTarFileName = "tar5NewTar.tar";
 
@@ -96,9 +179,10 @@ public class IRODSFileSystemCreateTarTest {
 			genFileName = testFileNamePrefix + String.valueOf(i)
 					+ testFileExtension;
 			fullPathToTestFile = FileGenerator
-					.generateFileOfFixedLengthGivenName(testingProperties
-							.getProperty(GENERATED_FILE_DIRECTORY_KEY)
-							+ "/", genFileName, 1);
+					.generateFileOfFixedLengthGivenName(
+							testingProperties
+									.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+									+ "/", genFileName, 1);
 
 			iputCommand.setLocalFileName(fullPathToTestFile);
 			iputCommand.setIrodsFileName(collectionAbsPath);
@@ -111,15 +195,18 @@ public class IRODSFileSystemCreateTarTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
-		IRODSFile newTarFile = new IRODSFile(irodsFileSystem, newTarAbsPath + '/' + irodsNewTarFileName);
-		IRODSFile irodsCollectionToTar = new IRODSFile(irodsFileSystem, collectionAbsPath);
+		IRODSFile newTarFile = new IRODSFile(irodsFileSystem, newTarAbsPath
+				+ '/' + irodsNewTarFileName);
+		IRODSFile irodsCollectionToTar = new IRODSFile(irodsFileSystem,
+				collectionAbsPath);
 		Assert.assertTrue(irodsCollectionToTar.exists());
 		Assert.assertTrue(irodsCollectionToTar.isDirectory());
 
-		irodsFileSystem.createTarFile(newTarFile, irodsCollectionToTar, irodsFileSystem.getDefaultStorageResource());
+		irodsFileSystem.createTarFile(newTarFile, irodsCollectionToTar,
+				irodsFileSystem.getDefaultStorageResource());
 		irodsFileSystem.close();
-		assertionHelper.assertIrodsFileOrCollectionExists(newTarAbsPath + '/' + irodsNewTarFileName);
+		assertionHelper.assertIrodsFileOrCollectionExists(newTarAbsPath + '/'
+				+ irodsNewTarFileName);
 
-
-    }
+	}
 }

@@ -27,5 +27,7 @@ public interface IRODSAccessObjectFactory {
 	 */
 	RemoteExecutionOfCommandsAO getRemoteExecutionOfCommandsAO() throws JargonException;
 
+	public abstract BulkFileOperationsAO getBulkFileOperationsAO() throws JargonException;
+
 
 }

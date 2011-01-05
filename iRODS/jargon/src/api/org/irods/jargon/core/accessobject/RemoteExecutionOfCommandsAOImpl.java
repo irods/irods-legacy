@@ -39,7 +39,7 @@ public class RemoteExecutionOfCommandsAOImpl extends AbstractIRODSAccessObject i
 	/* (non-Javadoc)
 	 * @see org.irods.jargon.core.accessobject.RemoteExecutionOfCommandsAO#executeARemoteCommandAndGetStreamGivingCommandNameAndArgs(java.lang.String, java.lang.String)
 	 */
-	@Override
+	//@Override
 	public InputStream executeARemoteCommandAndGetStreamGivingCommandNameAndArgs(final String commandToExecuteWithoutArguments, final String argumentsToPassWithCommand) throws JargonException {
 		log.info("executing remote command");
 		// input parms checked in instance method
@@ -51,7 +51,7 @@ public class RemoteExecutionOfCommandsAOImpl extends AbstractIRODSAccessObject i
 	/* (non-Javadoc)
 	 * @see org.irods.jargon.core.accessobject.RemoteExecutionOfCommandsAO#executeARemoteCommandAndGetStreamGivingCommandNameAndArgsAndHost(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	@Override
+	//@Override
 	public InputStream executeARemoteCommandAndGetStreamGivingCommandNameAndArgsAndHost(final String commandToExecuteWithoutArguments, final String argumentsToPassWithCommand,final String executionHost) throws JargonException {
 		log.info("executing remote command");
 		// input parms checked in instance method
@@ -62,7 +62,7 @@ public class RemoteExecutionOfCommandsAOImpl extends AbstractIRODSAccessObject i
 	/* (non-Javadoc)
 	 * @see org.irods.jargon.core.accessobject.RemoteExecutionOfCommandsAO#executeARemoteCommandAndGetStreamUsingAnIRODSFileAbsPathToDetermineHost(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	@Override
+	//@Override
 	public InputStream executeARemoteCommandAndGetStreamUsingAnIRODSFileAbsPathToDetermineHost(final String commandToExecuteWithoutArguments, final String argumentsToPassWithCommand,final String absolutePathOfIrodsFileThatWillBeUsedToFindHostToExecuteOn) throws JargonException {
 		log.info("executing remote command");
 		// input parms checked in instance method

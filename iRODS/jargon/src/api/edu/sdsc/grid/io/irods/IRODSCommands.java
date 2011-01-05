@@ -54,6 +54,7 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Date;
 
+import org.irods.jargon.core.accessobject.BulkFileOperationsAO;
 import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
 import org.irods.jargon.core.accessobject.IRODSAccessObjectFactoryImpl;
 import org.irods.jargon.core.accessobject.RemoteExecutionOfCommandsAO;
@@ -1682,31 +1683,36 @@ public class IRODSCommands {
 			throw new IllegalArgumentException(
 					"Directory must refer to an IRODS Collection");
 		}
+		
+		try {
+			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl.instance(this);
+			BulkFileOperationsAO bulkFileOperationsAO = irodsAccessObjectFactory.getBulkFileOperationsAO();
+			bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(tarFile.getAbsolutePath(), directory.getAbsolutePath(), resource);
+		} catch (JargonException e) {
+			log.error("error extractingBundle", e);
+			throw new IOException(e);
+		}
 
-		String[][] keyword = new String[1][2];
-		keyword[0] = new String[] { IRODSMetaDataSet.DEST_RESC_NAME_KW,
-				resource };
-
-		Tag message = new Tag(StructFileExtAndRegInp_PI, new Tag[] {
-				new Tag(objPath, tarFile.getAbsolutePath()),
-				new Tag(collection, directory.getAbsolutePath()),
-				new Tag(oprType, 0), new Tag(flags, 0),
-				Tag.createKeyValueTag(keyword) });
-
-		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
 
+	/**
+	 * Extract a bundle (tar) file in iRODS to the given iRODS directory
+	 * @param tarFile <code>IRODSFile</code> that is the bundled (tar) file to be extracted.
+	 * @param directory <code>IRODSFile</coce> that is the collection that is to be created with the extracted contents.
+	 * @throws IOException
+	 */
 	void extractBundle(IRODSFile tarFile, IRODSFile directory)
 			throws IOException {
-		Tag message = new Tag(StructFileExtAndRegInp_PI, new Tag[] {
-				new Tag(objPath, tarFile.getAbsolutePath()),
-				new Tag(collection, directory.getAbsolutePath()),
-				new Tag(oprType, 0), new Tag(flags, 0),
-				Tag.createKeyValueTag(null) });
-
-		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
+		
+		try {
+			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl.instance(this);
+			BulkFileOperationsAO bulkFileOperationsAO = irodsAccessObjectFactory.getBulkFileOperationsAO();
+			bulkFileOperationsAO.extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(tarFile.getAbsolutePath(), directory.getAbsolutePath(), "");
+		} catch (JargonException e) {
+			log.error("error extractingBundle", e);
+			throw new IOException(e);
+		}
 	}
-
 	
 	synchronized InputStream executeCommand(String command, String args,
 			String hostAddress) throws IOException {

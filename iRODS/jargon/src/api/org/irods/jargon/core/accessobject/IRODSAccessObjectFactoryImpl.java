@@ -62,6 +62,14 @@ public class IRODSAccessObjectFactoryImpl implements IRODSAccessObjectFactory {
 		return new RemoteExecutionOfCommandsAOImpl(irodsCommands);
 	}
 	
+	//@Override
+	/* (non-Javadoc)
+	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#getBulkFileOperationsAO()
+	 */
+	public BulkFileOperationsAO getBulkFileOperationsAO() throws JargonException {
+		return new BulkFileOperationsAOImpl(irodsCommands);
+	}
+	
 
 
 }

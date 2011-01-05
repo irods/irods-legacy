@@ -52,6 +52,11 @@ from this fix, but the code itself was not consistent.
 *Bug 125 - query bug resource metadata
 -added distinct options to query
 
+Bug 130 - -312000 when extracting TAR file
+-added adapted BulkFileOperationsAO code
+-added getIrodsAccessObjectFactory() to IRODSFileSystem()
+
+
 
 ================================================================================================
 Outstanding Issues

@@ -10,6 +10,7 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -390,6 +391,16 @@ public class IRODSFileSystemTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
 		Assert.assertTrue("did not create a connected irodsFileSystem",
 				irodsFileSystem.commands.isConnected());
+	}
+	
+	@Test
+	public void testGetIrodsAccessObjectFactory() throws Exception {
+		IRODSAccount irodsAccount =  testingPropertiesHelper
+		.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+		IRODSAccessObjectFactory irodsAccessObjectFactory = irodsFileSystem.getIrodsAccessObjectFactory();
+		TestCase.assertNotNull("null access object factory returned", irodsAccessObjectFactory);
+		irodsFileSystem.close();
 	}
 
 }

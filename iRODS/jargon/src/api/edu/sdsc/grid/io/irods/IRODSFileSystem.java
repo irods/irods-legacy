@@ -54,6 +54,8 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.ietf.jgss.GSSException;
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactoryImpl;
 import org.irods.jargon.core.exception.JargonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -528,9 +530,30 @@ public class IRODSFileSystem extends RemoteFileSystem {
 		commands.createBundle(newTarFile, directoryToTar, resource);
 	}
 
+	/**
+	 * Extract the files in a given bundle (tar file) to the given iRODS collection.  
+	 * @param tarFile
+	 * @param extractLocation
+	 * @throws IOException
+	 */
 	public void extractTarFile(IRODSFile tarFile, IRODSFile extractLocation)
 			throws IOException {
 		commands.extractBundle(tarFile, extractLocation);
+	}
+	
+	/**
+	 * Return an instance of a <code>IRODSAccessObjectFactory</code>.  The factory is an adapted version of the factory in the newer jargon-core API, and should be 
+	 * considered a transitional refactoring step.  This factory can be used to obtain various 'access objects' that can assist with interactions with iRODS.  
+	 * <p/>
+	 * Access objects should not be considered thread-safe, and should not be shared between threads, as they share the same connection
+	 * <p/>
+	 * In this version of Jargon, all interactions are coded into one large <code>IRODSCommands</code> object.  Introducing a simplified version of access objects into this
+	 * version of Jargon will assist in efforts to refactor and reduce the centrality of <code>IRODSCommands</code.
+	 * @return {@link IRODSAccessObjectFactory} that can create objects to interact with iRODS.
+	 * @throws JargonException
+	 */
+	public IRODSAccessObjectFactory getIrodsAccessObjectFactory() throws JargonException {
+		return IRODSAccessObjectFactoryImpl.instance(commands);
 	}
 
 	/**

@@ -3,6 +3,7 @@
  */
 package edu.sdsc.jargon.unittest.testsuites;
 
+import org.irods.jargon.core.accessobject.BulkFileOperationsAOImplTest;
 import org.irods.jargon.core.accessobject.IRODSAccessObjectFactoryImplTest;
 import org.irods.jargon.core.accessobject.IRODSGenQueryExecutorImplTest;
 import org.irods.jargon.core.accessobject.RemoteExecutionOfCommandsAOImplTest;
@@ -13,7 +14,7 @@ import org.junit.runners.Suite;
 
 @Suite.SuiteClasses({
   IRODSAccessObjectFactoryImplTest.class,
-  IRODSGenQueryExecutorImplTest.class, RemoteExecutionOfCommandsAOImplTest.class
+  IRODSGenQueryExecutorImplTest.class, RemoteExecutionOfCommandsAOImplTest.class, BulkFileOperationsAOImplTest.class
 })
 public class IRODSAccessObjectTests {
 	
