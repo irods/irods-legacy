@@ -8138,6 +8138,10 @@ chlAddSpecificQuery(rsComm_t *rsComm, char *sql) {
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    }
 
+   if (strlen(sql) < 5) {
+      return(CAT_INVALID_ARGUMENT);
+   }
+
    if (!icss.status) {
       return(CATALOG_NOT_CONNECTED);
    }
