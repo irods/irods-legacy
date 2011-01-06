@@ -208,6 +208,7 @@ This documentation is generated from the iRODS code.
   - #msiSetNumThreads - specify the parameters for determining the number of threads to use for data transfer
   - #msiSysChksumDataObj - Checksums a data object
   - #msiSysReplDataObj - Replicates a data object
+  - #msiSysMetaModify - Modifies system metadata
   - #msiStageDataObj - Stages the data object to the specified resource before operation
   - #msiNoChkFilePathPerm - Does not check file path permission when registering
   - #msiNoTrashCan - Sets the policy to no trash can

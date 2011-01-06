@@ -1842,7 +1842,7 @@ msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  * \author  Jean-Yves Nief
  * \date    2011-01-05
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
+ * \remark Terrell Russell - reviewed msi documentation, 2011-01-06
  *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called
@@ -1852,7 +1852,7 @@ msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  * \usage msiSysMetaModify(sysMetadata,value)
  *
  * \param[in] sysMetadata - A STR_MS_T which specifies the system metadata to be modified.
- *\							Allowed values are: "datatype", "comment", "expirytime".
+ *            Allowed values are: "datatype", "comment", "expirytime".
  * \param[in] value - A STR_MS_T which specifies the value to be given to the system metadata.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
