@@ -1830,3 +1830,125 @@ msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)
+ *
+ * \brief Modify system metadata.
+ *
+ * \module core
+ *
+ * \since after 2.4.1
+ *
+ * \author  Jean-Yves Nief
+ * \date    2011-01-05
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage msiSysMetaModify(sysMetadata,value)
+ *
+ * \param[in] sysMetadata - A STR_MS_T which specifies the system metadata to be modified.
+ *\							Allowed values are: "datatype", "comment", "expirytime".
+ * \param[in] value - A STR_MS_T which specifies the value to be given to the system metadata.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ * \bug  no known bugs
+**/
+int
+msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)
+{
+	keyValPair_t regParam;
+	modDataObjMeta_t modDataObjMetaInp;
+	char theTime[TIME_LEN], *mdname;
+    int status;
+    rsComm_t *rsComm;
+
+    RE_TEST_MACRO (" Calling msiSysMetaModify")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+        "msiSysMetaModify: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    if ( sysMetadata == NULL ) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiSysMetaModify: input Param1 is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if ( value == NULL ) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiSysMetaModify: input Param2 is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (sysMetadata->type, STR_MS_T) == 0 && strcmp (value->type, STR_MS_T) == 0) {
+		memset(&regParam, 0, sizeof(regParam));
+		mdname = (char *) sysMetadata->inOutStruct;
+		if ( strcmp(mdname, "datatype") == 0 ) {
+			addKeyVal(&regParam, DATA_TYPE_KW, (char *) value->inOutStruct);
+		}
+		else if ( strcmp(mdname, "comment") == 0 ) {
+			addKeyVal(&regParam, DATA_COMMENTS_KW, (char *) value->inOutStruct);
+		}
+		else if ( strcmp(mdname, "expirytime") == 0 ) {
+			rstrcpy(theTime, (char *) value->inOutStruct, TIME_LEN);
+			if ( strncmp(theTime, "+", 1) == 0 ) {
+				rstrcpy(theTime, (char *) value->inOutStruct + 1, TIME_LEN); /* skip the + */
+				status = checkDateFormat(theTime);      /* check and convert the time value */
+				getOffsetTimeStr(theTime, theTime);     /* convert delta format to now + this*/
+			} else {
+				status = checkDateFormat(theTime);      /* check and convert the time value */
+			}
+			if (status != 0)  {
+				rei->status = DATE_FORMAT_ERR;
+				rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+				"msiSysMetaModify: bad format for the input time: %s. Please refer to isysmeta help.", 
+				(char *) value->inOutStruct);
+				return (rei->status);
+			}
+			else {
+				addKeyVal(&regParam, DATA_EXPIRY_KW, theTime);
+			}
+		}
+		else {
+			rei->status = USER_BAD_KEYWORD_ERR;
+			rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+			"msiSysMetaModify: unknown system metadata or impossible to modify it: %s", 
+			(char *) sysMetadata->inOutStruct);
+		}
+		modDataObjMetaInp.dataObjInfo = rei->doi;
+		modDataObjMetaInp.regParam = &regParam;
+		rei->status = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
+    } else {     /* one or two bad input parameter type for the msi */ 
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiSysMetaModify: Unsupported input Param1 type %s or Param2 type %s",
+        sysMetadata->type, value->type);
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+        return (rei->status);
+    }
+
+    return (rei->status);
+}

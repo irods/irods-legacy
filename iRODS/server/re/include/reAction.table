@@ -372,4 +372,5 @@ microsdef_t MicrosTable[] = {
   {"msiDbrRollback", 1, (funcPtr) msiDbrRollback},
   {"msiDboExec",10,(funcPtr) msiDboExec},
   {"msiExit",2,(funcPtr) msiExit},
+  {"msiSysMetaModify",2,(funcPtr) msiSysMetaModify},
 

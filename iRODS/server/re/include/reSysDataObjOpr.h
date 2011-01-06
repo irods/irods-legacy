@@ -68,4 +68,6 @@ int
 msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei);
 int
 msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei);
+int
+msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei);
 #endif	/* RE_SYS_DATA_OBJ_OPR_H */
