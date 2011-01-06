@@ -183,7 +183,7 @@ DBMS_INCLUDE+= -I$(ODBC_HDR_DIR)
 endif
 
 #
-# DBR (database-object) options
+# DBR (database-resource) options
 #
 #DBR=1
 ifdef DBR
