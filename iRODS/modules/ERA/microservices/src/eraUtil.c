@@ -909,7 +909,7 @@ char *unescape(char *myStr)
 	char *tmpPtr;
 	
 	while ( (tmpPtr = strstr(myStr, "\\|")) ) {
-		snprintf(tmpPtr, strlen(tmpPtr)+1, tmpPtr+1);
+		snprintf(tmpPtr, strlen(tmpPtr)+1, "%s", tmpPtr+1);
 	}
 	
 	return (myStr);
