@@ -50,6 +50,7 @@ getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut)
 
     status =  rsGenQuery (rsComm, &genQueryInp, genQueryOut);
 
+    if (status >= 0) svrCloseQueryOut (rsComm, *genQueryOut);
     clearGenQueryInp (&genQueryInp);
     /* take care of mem leak */
     if (*genQueryOut != NULL) {
