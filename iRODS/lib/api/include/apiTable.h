@@ -231,6 +231,8 @@ apidef_t RcApiTable[] = {
       "ExecCmd241_PI", 0, "ExecCmdOut_PI", 0, (funcPtr) RS_EXEC_CMD241},
     {EXEC_CMD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "ExecCmd_PI", 0, "ExecCmdOut_PI", 0, (funcPtr) RS_EXEC_CMD},
+    {STREAM_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+      "fileCloseInp_PI", 0, NULL, 0, (funcPtr) RS_STREAM_CLOSE},
     {SUB_STRUCT_FILE_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, 
       REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0, 
       (funcPtr) RS_SUB_STRUCT_FILE_CREATE},

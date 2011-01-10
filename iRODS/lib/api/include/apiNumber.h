@@ -119,6 +119,7 @@
 #define PROC_STAT_AN 			690
 #define STREAM_READ_AN 			691
 #define EXEC_CMD_AN 			692
+#define STREAM_CLOSE_AN 			693
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

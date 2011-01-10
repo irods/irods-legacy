@@ -135,4 +135,5 @@
 #include "databaseRescClose.h"
 #include "streamRead.h"
 #include "specificQuery.h"
+#include "streamClose.h"
 #endif	/* API_HEADER_ALL_H */

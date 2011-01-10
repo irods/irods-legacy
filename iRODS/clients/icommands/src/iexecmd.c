@@ -131,6 +131,7 @@ main(int argc, char **argv) {
 	int i;
 	char *tmpPtr;
 	fileReadInp_t streamReadInp;
+	fileCloseInp_t streamCloseInp;
 	bytesBuf_t *streamReadOutBBuf;
 	int bytesRead;
 
@@ -168,6 +169,8 @@ main(int argc, char **argv) {
                     tmpPtr++;
                 }
 	    }
+	    streamCloseInp.fileInx = execCmdOut->status;
+	    rcStreamClose (conn, &streamCloseInp);
 	}
     }
     rcDisconnect(conn);
