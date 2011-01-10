@@ -64,7 +64,6 @@
 #define DATA_OBJ_PHYMV_AN 			631
 #define DATA_OBJ_TRIM_AN 			632
 #define OBJ_STAT_AN 			633
-#define EXEC_CMD_AN 			634
 #define SUB_STRUCT_FILE_CREATE_AN 			635
 #define SUB_STRUCT_FILE_OPEN_AN 			636
 #define SUB_STRUCT_FILE_READ_AN 			637
@@ -119,6 +118,7 @@
 #define BULK_DATA_OBJ_PUT_AN 			689
 #define PROC_STAT_AN 			690
 #define STREAM_READ_AN 			691
+#define EXEC_CMD_AN 			692
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700
@@ -144,6 +144,7 @@
 #define DATABASE_RESC_CLOSE_AN 		721
 #define SPECIFIC_QUERY_AN 			722
 
+#define EXEC_CMD241_AN 			634
 #ifdef COMPAT_201
 #define DATA_OBJ_READ201_AN             603
 #define DATA_OBJ_WRITE201_AN            604
