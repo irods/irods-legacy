@@ -73,6 +73,7 @@ packInstructArray_t ApiPackTable[] = {
         {"RegReplica_PI", RegReplica_PI},
         {"UnregDataObj_PI", UnregDataObj_PI},
         {"ExecCmd_PI", ExecCmd_PI},
+        {"ExecCmd241_PI", ExecCmd241_PI},
         {"ExecCmdOut_PI", ExecCmdOut_PI},
         {"SubStructFileFdOpr_PI", SubStructFileFdOpr_PI},
         {"SubStructFileLseekInp_PI", SubStructFileLseekInp_PI},
