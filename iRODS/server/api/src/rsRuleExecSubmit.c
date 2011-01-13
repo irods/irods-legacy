@@ -82,14 +82,14 @@ _rsRuleExecSubmit (rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp)
         reiFd = open (ruleExecSubmitInp->reiFilePath, O_CREAT|O_EXCL|O_RDWR,
           0640);
 	if (reiFd < 0) {
-	    status = SYS_OPEN_REI_FILE_ERR - errno;
-            rodsLog (LOG_ERROR,
-              "rsRuleExecSubmit: creat failed for %s, status = %d", 
-	      ruleExecSubmitInp->reiFilePath, status);
 	    if (errno == EEXIST) {
 		continue;
 	    } else {
-		return (SYS_OPEN_REI_FILE_ERR - errno);
+	        status = SYS_OPEN_REI_FILE_ERR - errno;
+                rodsLog (LOG_ERROR,
+                  "rsRuleExecSubmit: creat failed for %s, status = %d",
+                  ruleExecSubmitInp->reiFilePath, status);
+		return (status);
 	    }
 	} else {
 	    break;
