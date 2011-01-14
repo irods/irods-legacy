@@ -2,6 +2,11 @@ package org.irods.jargon.core.accessobject;
 
 import org.irods.jargon.core.exception.JargonException;
 
+/**
+ * Transitional version of an access object to create and extract bundle files in iRODS.
+ * @author Mike Conway - DICE (www.irods.org)
+ *
+ */
 public interface BulkFileOperationsAO {
 
 	/**
