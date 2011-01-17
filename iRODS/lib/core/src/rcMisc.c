@@ -1879,12 +1879,18 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
        sprintf(delayStr,"%lld%c DOUBLE UNTIL SUCCESS UPTO %s", it , u,s);
      return(4);
    }
+#if 0	/* the string to compare is "REPEAT UNTIL SUCCESS " */
    if (!strcmp(t,"REPEAT UNTIL SUCCESS")) {
+#endif
+   if (strstr(t,"REPEAT UNTIL SUCCESS")) {
      dt = dt   + atol(currTime);
      sprintf(nextTime,"%lld", dt);
      return(1);
    }
+#if 0	/* the string to compare is "DOUBLE UNTIL SUCCESS " */
    if (!strcmp(t,"DOUBLE UNTIL SUCCESS")) {
+#endif
+   if (strstr(t,"DOUBLE UNTIL SUCCESS")) {
      dt = dt   + atol(currTime);
      sprintf(nextTime,"%lld", dt);
      sprintf(delayStr,"%lld%c DOUBLE UNTIL SUCCESS", it * 2, u);
