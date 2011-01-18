@@ -1882,7 +1882,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 #if 0	/* the string to compare is "REPEAT UNTIL SUCCESS " */
    if (!strcmp(t,"REPEAT UNTIL SUCCESS")) {
 #endif
-   if (strstr(t,"REPEAT UNTIL SUCCESS")) {
+   if (strstr(t,"REPEAT UNTIL SUCCESS") != NULL) {
      dt = dt   + atol(currTime);
      sprintf(nextTime,"%lld", dt);
      return(1);
@@ -1890,7 +1890,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 #if 0	/* the string to compare is "DOUBLE UNTIL SUCCESS " */
    if (!strcmp(t,"DOUBLE UNTIL SUCCESS")) {
 #endif
-   if (strstr(t,"DOUBLE UNTIL SUCCESS")) {
+   if (strstr(t,"DOUBLE UNTIL SUCCESS") != NULL) {
      dt = dt   + atol(currTime);
      sprintf(nextTime,"%lld", dt);
      sprintf(delayStr,"%lld%c DOUBLE UNTIL SUCCESS", it * 2, u);
