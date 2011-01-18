@@ -32,7 +32,7 @@ public class MockGssCredential implements GSSCredential {
 
 	
 	public GSSName getName(Oid mech) throws GSSException {
-		return null;
+		return new MockGssName();
 	}
 
 	

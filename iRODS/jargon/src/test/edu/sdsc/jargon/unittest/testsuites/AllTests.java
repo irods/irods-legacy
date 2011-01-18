@@ -25,7 +25,8 @@ import edu.sdsc.grid.io.FileFactoryTest;
   IRODSMidLevelServicesTest.class,
   IRODSQueryTests.class,
   IRODSAccessObjectTests.class,
-  HTTPTest.class
+  HTTPTest.class, 
+  IOTests.class
 })
 
 public class AllTests {

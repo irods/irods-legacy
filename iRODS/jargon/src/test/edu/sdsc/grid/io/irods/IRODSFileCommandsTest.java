@@ -589,6 +589,10 @@ public class IRODSFileCommandsTest {
         Assert.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
     }
     
+    /*
+     * May fail if the resource group is not set up
+     * 
+     */
     @Test
     public final void testReplicateToResourceGroup() throws Exception {
     	// generate a local scratch file

@@ -618,7 +618,6 @@ public class IRODSCommands {
 	 * Create an iRODS message Tag, including header. Send the bytes of the byte
 	 * array, no error stream.
 	 */
-	// TODO: test
 	public synchronized Tag irodsFunction(IRodsPI irodsPI, byte[] errorStream,
 			int errorOffset, int errorLength, byte[] bytes, int byteOffset,
 			int byteStringLength) throws JargonException {
@@ -669,7 +668,6 @@ public class IRODSCommands {
 	 * suitable for operations that do not require error or binary streams, and
 	 * will set up empty streams for the method call.
 	 */
-	// TODO: test
 	public synchronized Tag irodsFunction(IRodsPI irodsPI)
 			throws JargonException {
 
@@ -2369,6 +2367,47 @@ public class IRODSCommands {
 		DataObjInp dataObjInp = DataObjInp.instanceForReplicateToResourceGroup(
 				irodsFile.getAbsolutePath(), resourceGroup);
 		irodsFunction(dataObjInp);
+	}
+	
+	/**
+	 * Read from a stream into a byte array. This method will delegate to the
+	 * underlying {@link IRODSConnection} and
+	 * is included in this class to provide a public hook for certain
+	 * operations.
+	 * 
+	 * @param value
+	 *            <code>byte[]</code> that will contain the data read
+	 * @param offset
+	 *            <code>int</code> offset into target array
+	 * @param length
+	 *            <code>long</code> length of data to read into array
+	 * @return
+	 * @throws JargonException
+	 */
+	public synchronized int read(final byte[] value, final int offset,
+			final int length) throws JargonException {
+
+		if (value == null || value.length == 0) {
+			throw new JargonException("null or empty value");
+		}
+
+		if (offset < 0 || offset > value.length) {
+			throw new JargonException("offset out of range");
+		}
+
+		if (length <= 0 || length > value.length) {
+			throw new JargonException("length out of range");
+		}
+
+		try {
+			return irodsConnection.read(value, offset, length);
+		} catch (UnsupportedEncodingException e) {
+			log.error("unsupported encoding", e);
+			throw new JargonException(e);
+		} catch (IOException e) {
+			log.error("io exception sending irods command", e);
+			throw new JargonException(e);
+		}
 	}
 
 }

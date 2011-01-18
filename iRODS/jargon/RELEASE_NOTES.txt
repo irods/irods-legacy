@@ -52,9 +52,12 @@ from this fix, but the code itself was not consistent.
 *Bug 125 - query bug resource metadata
 -added distinct options to query
 
-Bug 130 - -312000 when extracting TAR file
+*Bug 130 - -312000 when extracting TAR file
 -added adapted BulkFileOperationsAO code
 -added getIrodsAccessObjectFactory() to IRODSFileSystem()
+
+*Bug 119 - add enhanced streaming from remote exec of comds 
+-new access object adapted from jargon-core for RemoteExecutionOfCommandsAO.
 
 
 

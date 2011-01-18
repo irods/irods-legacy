@@ -6,6 +6,7 @@ package edu.sdsc.jargon.unittest.testsuites;
 import org.irods.jargon.core.packinstr.AbstractIRODSPackingInstructionTest;
 import org.irods.jargon.core.packinstr.CollInpTest;
 import org.irods.jargon.core.packinstr.DataObjInpTest;
+import org.irods.jargon.core.packinstr.ExecCmdStreamCloseTest;
 import org.irods.jargon.core.packinstr.ExecCmdTest;
 import org.irods.jargon.core.packinstr.GenQueryInp_PITest;
 import org.irods.jargon.core.packinstr.GenUpdateInpTest;
@@ -25,7 +26,7 @@ import org.junit.runners.Suite;
   
   GenUpdateInpTest.class, AbstractIRODSPackingInstructionTest.class,
   CollInpTest.class, DataObjInpTest.class, GenQueryInp_PITest.class,
-  GenUpdateInpTest.class, ModAvuMetadataInpTest.class, OpenedDataObjInpTest.class, ExecCmdTest.class, StructFileExtAndRegInpTest.class
+  GenUpdateInpTest.class, ModAvuMetadataInpTest.class, OpenedDataObjInpTest.class, ExecCmdTest.class, StructFileExtAndRegInpTest.class, ExecCmdStreamCloseTest.class
   
 })
 public class IRODSPackingInstructionTests {
