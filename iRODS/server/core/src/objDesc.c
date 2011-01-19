@@ -310,7 +310,13 @@ keyValPair_t *condInput, char *destRescName, char *srcRescName)
 	          status);
             } else {
 	        numDestThr = rei.status;
-	        if (numDestThr == 0) return 0;
+	        if (numDestThr == 0) {
+		    return 0;
+		} else if (numDestThr == 1 && srcRescName == NULL && 
+		  isLocalHost (rescGrpInfo->rescInfo->rescLoc)) {
+		    /* one thread and resouce on local host */
+		    return 0;
+		}
 	    }
         }
     }
