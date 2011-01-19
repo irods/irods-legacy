@@ -81,7 +81,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
 
 /* _rsDataObjPut - process put request 
  * The reply to this API can go off the main part of the API's
- * reuest/reply protocol and uses the sendAndRecvOffMainMsg call
+ * request/reply protocol and uses the sendAndRecvOffMainMsg call
  * to handle a sequence of reuest/reply until a return value of
  * SYS_HANDLER_NO_ERROR.
  * handlerFlag - INTERNAL_SVR_CALL - called internally by the server.
