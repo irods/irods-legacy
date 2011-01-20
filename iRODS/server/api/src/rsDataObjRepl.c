@@ -154,8 +154,10 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead,
           NULL, transStat, NULL, oldDataObjInfoHead);
 #endif
-        if (status >= 0 && outDataObjInfo != NULL) 
+        if (status >= 0 && outDataObjInfo != NULL) {
 	    *outDataObjInfo = *oldDataObjInfoHead;
+	    outDataObjInfo->next = NULL;
+	}
         freeAllDataObjInfo (dataObjInfoHead);
         freeAllDataObjInfo (oldDataObjInfoHead);
         /* freeAllRescGrpInfo (myRescGrpInfo); */
@@ -203,12 +205,17 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
             if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
                 /* pass back the GOOD_COPY */
                 *outDataObjInfo = *destDataObjInfo;
+		outDataObjInfo->next = NULL;
             }
 	    if (backupFlag == 0) {
-		if (allFlag == 1 && myRescGrpInfo->status < 0) {
+		if (allFlag == 1 && 
+		  (myRescGrpInfo != NULL && myRescGrpInfo->status < 0)) {
 		    status = myRescGrpInfo->status;
 		} else {
+#if 0
                     status = SYS_COPY_ALREADY_IN_RESC;
+#endif
+                    status = 0;
 		}
 	    } else {
 	        status = 0;
@@ -235,7 +242,10 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead,
           destDataObjInfo, transStat, oldDataObjInfoHead);
         if (status >= 0) {
-            if (outDataObjInfo != NULL) *outDataObjInfo = *destDataObjInfo;
+            if (outDataObjInfo != NULL) {
+		*outDataObjInfo = *destDataObjInfo;
+		outDataObjInfo->next = NULL;
+	    }
 	    if (allFlag == 0) {
 		freeAllDataObjInfo (dataObjInfoHead);
 		freeAllDataObjInfo (oldDataObjInfoHead);
@@ -826,6 +836,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     if (inpDestDataObjInfo != NULL && updateFlag == 0) {
         /* a new replica */
         *inpDestDataObjInfo = *myDestDataObjInfo;
+	inpDestDataObjInfo->next = NULL;
     }
 
     /* open the src */
