@@ -55,7 +55,7 @@
 #include "msParam.h"
 
 int
-unixFileCreate (rsComm_t *rsComm, char *fileName, int mode);
+unixFileCreate (rsComm_t *rsComm, char *fileName, int mode, rodsLong_t mySize);
 int
 unixFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode);
 int

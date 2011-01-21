@@ -8,7 +8,7 @@
 #include "unixFileDriver.h"
 
 int
-unixFileCreate (rsComm_t *rsComm, char *fileName, int mode)
+unixFileCreate (rsComm_t *rsComm, char *fileName, int mode, rodsLong_t mySize)
 {
     int fd;
     mode_t myMask;
