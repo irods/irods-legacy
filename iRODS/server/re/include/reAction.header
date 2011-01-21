@@ -1,4 +1,4 @@
-/* reAction.h - header file for Actions that are 'called' when executing the rukes by 
+/* reAction.h - header file for Actions that are 'called' when executing the rules by 
  * the rule engine modules
  */
 #ifndef RE_ACTION_H
