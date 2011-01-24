@@ -6560,6 +6560,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
 		 &icss);
 #endif
+   if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* no files, OK */
    if (status) {
       _rollback("chlModAccessControl");
       return(status);
@@ -6604,8 +6605,8 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       rodsLog(LOG_NOTICE,
 	      "chlModAccessControl cmlAudit5 failure %d",
 	      status);
-      _rollback("chlModAccessControl");
-      return(status);
+      _rollback("chlModAccessControl"); 
+     return(status);
    }
 
    status =  cmlExecuteNoAnswerSql("commit", &icss);
