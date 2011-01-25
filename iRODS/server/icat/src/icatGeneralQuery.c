@@ -1909,6 +1909,12 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 
    result->continueInx=statementNum+1;  /* the statementnumber but
 						  always >0 */
+   if (genQueryInp.options & AUTO_CLOSE) {
+      int status2;
+      result->continueInx=-1; /* Indicate more rows might have been available */
+      status2 = cmlFreeStatement(statementNum, icss);
+      return(status2);
+   }
    return(0);
 
 }

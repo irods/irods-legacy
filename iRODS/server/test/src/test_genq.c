@@ -763,6 +763,48 @@ doTest13(char *userName, char *rodsZone, char *accessPerm, char *collection,
     return(0);
 }
 
+/* Based on doTest7, but tests AUTO_CLOSE */
+int
+doTest15(char *testString, char *testString2, char *testString3) {
+    genQueryInp_t genQueryInp;
+    genQueryOut_t genQueryOut;
+    char condStr1[MAX_NAME_LEN];
+    char condStr2[MAX_NAME_LEN];
+    int status;
+
+    printf("dotest15\n");
+    rodsLogSqlReq(1);
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp));
+
+    addInxIval (&genQueryInp.selectInp, COL_TOKEN_NAME, 1);
+
+    snprintf (condStr1, MAX_NAME_LEN, "= 'data_type'");
+    addInxVal (&genQueryInp.sqlCondInp,  COL_TOKEN_NAMESPACE, condStr1);
+
+    snprintf (condStr2, MAX_NAME_LEN, "like '%s%s%s'", "%", 
+	      testString,"%");
+    addInxVal (&genQueryInp.sqlCondInp,  COL_TOKEN_VALUE2, condStr2);
+
+    genQueryInp.options=AUTO_CLOSE;
+    genQueryInp.maxRows=1;
+    if (testString3 != NULL && *testString3!='\0') {
+       genQueryInp.maxRows = atoi(testString3);
+    }
+
+    if (testString2 != NULL && *testString2!='\0') {
+       genQueryInp.rowOffset = atoi(testString2);
+    }
+
+    status  = chlGenQuery(genQueryInp, &genQueryOut);
+    printf("chlGenQuery status=%d\n",status);
+
+    if (status == 0) {
+       printGenQOut(&genQueryOut);
+    }
+    return(status);
+}
+
 
 int
 main(int argc, char **argv) {
@@ -803,6 +845,7 @@ main(int argc, char **argv) {
       if (strcmp(argv[1],"gen12")==0) mode=13;
       if (strcmp(argv[1],"gen13")==0) mode=14;
       if (strcmp(argv[1],"lsr")==0) mode=15;
+      if (strcmp(argv[1],"gen15")==0) mode=16;
    }
 
    if (argc ==3 && mode==0) {
@@ -982,6 +1025,11 @@ main(int argc, char **argv) {
       }
       if (mode==15) {
 	 status = doLs3(argv[2]);
+	 if (status <0) exit(2);
+	 exit(0);
+      }
+      if (mode==16) {
+	 status = doTest15(argv[2], argv[3], argv[4]);
 	 if (status <0) exit(2);
 	 exit(0);
       }
