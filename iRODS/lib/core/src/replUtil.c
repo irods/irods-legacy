@@ -179,6 +179,11 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
           rodsArgs->srcRescString);
     }
 
+    if (rodsArgs->rescGroup == True) {
+        addKeyVal (&dataObjInp->condInput, RESC_GROUP_NAME_KW,
+          rodsArgs->rescGroupString);
+    }
+
     if (rodsArgs->resource == True) {
         if (rodsArgs->resourceString == NULL) {
             rodsLog (LOG_ERROR,
@@ -280,7 +285,10 @@ rodsRestart_t *rodsRestart)
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
       &collHandle);
 #else
-    status = rclOpenCollection (conn, srcColl, 0, &collHandle);
+    bzero (&collHandle, sizeof (collHandle));
+    replKeyVal (&dataObjInp->condInput, &collHandle.dataObjInp.condInput);
+    status = rclOpenCollection (conn, srcColl, INCLUDE_CONDINPUT_IN_QUERY, 
+      &collHandle);
 #endif
     if (status < 0) {
         rodsLog (LOG_ERROR,

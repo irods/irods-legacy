@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "aBQMhrvVn:PR:S:TX:U";
+    optStr = "aBG:QMhrvVn:PR:S:TX:U";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -99,7 +99,7 @@ usage ()
 
    char *msgs[]={
 "Usage : irepl [-aBMPQrTvV] [-n replNum] [-R destResource] [-S srcResource]",
-"[-X restartFile]  dataObj|collection ... ",
+"[-G resourceGroup] [-X restartFile]  dataObj|collection ... ",
 " ",
 "Replicate a file in iRODS to another storage resource.",
 " ",
@@ -136,6 +136,10 @@ usage ()
 "     Replicate to all the resources in the resource group.",
 " -B  Backup mode - if a good copy already exists in this",
 "     resource, don't make another copy.",
+" -G  resourceGroup  - specifies the source resource group of the data object",
+"     to be replicated. If specified, only copies stored in this resource",
+"     group will be replicated. This option is valid only if the path to be",
+"     replicated is a collection.",
 " -P  output the progress of the replication.",
 " -Q  use RBUDP (datagram) protocol for the data transfer",
 " -U  Update (Synchronize) all old replica with the latest copy.",

@@ -380,6 +380,13 @@ genQueryOut_t **genQueryOut, keyValPair_t *condInput)
         addInxVal (&genQueryInp->sqlCondInp, COL_D_RESC_NAME, collQCond);
     }
 
+    if ((flags & INCLUDE_CONDINPUT_IN_QUERY) != 0 &&
+      condInput != NULL &&
+      (rescName = getValByKey (condInput, RESC_GROUP_NAME_KW)) != NULL) {
+        snprintf (collQCond, MAX_NAME_LEN, " = '%s'", rescName);
+        addInxVal (&genQueryInp->sqlCondInp, COL_D_RESC_GROUP_NAME, collQCond);
+    }
+
     setQueryInpForData (flags, genQueryInp);
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
