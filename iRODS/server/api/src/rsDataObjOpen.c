@@ -287,7 +287,8 @@ int phyOpenFlag, dataObjInfo_t *dataObjInfo)
         if (getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL
           && dataObjInfo->dataSize <= MAX_SZ_FOR_SINGLE_BUF) {
             status = 0;
-        } else if (dataObjInfo->dataSize < MAX_SZ_FOR_SINGLE_BUF) {
+        } else if (dataObjInfo->dataSize != UNKNOWN_FILE_SZ && 
+	  dataObjInfo->dataSize < MAX_SZ_FOR_SINGLE_BUF) {
             status = 0;
         } else {
             status = dataOpen (rsComm, l1descInx);

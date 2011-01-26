@@ -288,7 +288,8 @@ rescInfo_t *rescInfo)
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
 
     if (dataObjInfo.dataSize <= 0 && 
-      (dataObjInfo.dataSize = getSizeInVault (rsComm, &dataObjInfo)) < 0) {
+      (dataObjInfo.dataSize = getSizeInVault (rsComm, &dataObjInfo)) < 0 &&
+      dataObjInfo.dataSize != UNKNOWN_FILE_SZ) {
 	status = (int) dataObjInfo.dataSize;
         rodsLog (LOG_ERROR,
          "filePathReg: getSizeInVault for %s failed, status = %d",

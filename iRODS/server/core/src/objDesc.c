@@ -271,7 +271,7 @@ keyValPair_t *condInput, char *destRescName, char *srcRescName)
         return 0;
 
     if (dataSize < 0)
-        return 1;
+        return 0;
 
     if (dataSize <= MIN_SZ_FOR_PARA_TRAN) {
         if (inpNumThr > 0) {
