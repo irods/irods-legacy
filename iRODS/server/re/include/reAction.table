@@ -182,7 +182,7 @@ msiGetContInxFromGenQueryOut(msParam_t* genQueryOutParam, msParam_t* continueInx
 
 int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei);
 int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei);
-int msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t inVersionParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei);
+int msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei);
 int msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei);
 int writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei);
 int readXMsg(msParam_t* inStreamId, msParam_t* inCondRead, 
@@ -199,8 +199,8 @@ int msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
                msParam_t *inpParam3, msParam_t *inpParam4, 
                msParam_t *inpParam5, msParam_t *inpParam6, 
                ruleExecInfo_t *rei);
-int msiDbrCommit(msParam_t dbrName, ruleExecInfo_t *rei);
-int msiDbrRollback(msParam_t dbrName, ruleExecInfo_t *rei);
+int msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei);
+int msiDbrRollback(msParam_t *dbrName, ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
