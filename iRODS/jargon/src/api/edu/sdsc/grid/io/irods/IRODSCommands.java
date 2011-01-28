@@ -215,11 +215,11 @@ public class IRODSCommands {
 		 * is not optimal, and will be refactored at a later time
 		 */
 
-		getIrodsAccount().serverDN = irodsConnection.readMessage(false).getTag(
-				ServerDN).getStringValue();
+		getIrodsAccount().serverDN = irodsConnection.readMessage(false)
+				.getTag(ServerDN).getStringValue();
 		new GSIAuth(getIrodsAccount(), irodsConnection.getConnection(),
-				irodsConnection.getIrodsOutputStream(), irodsConnection
-						.getIrodsInputStream());
+				irodsConnection.getIrodsOutputStream(),
+				irodsConnection.getIrodsInputStream());
 	}
 
 	/**
@@ -234,11 +234,9 @@ public class IRODSCommands {
 		log.debug("check if connected...");
 
 		if (isConnected()) {
-			log
-					.debug("IRODSCommands is connected, do a disconnect and shut down the socket");
+			log.debug("IRODSCommands is connected, do a disconnect and shut down the socket");
 			try {
-				log
-						.debug("sending disconnect message, still sees connection as open");
+				log.debug("sending disconnect message, still sees connection as open");
 				irodsConnection.send(irodsConnection.createHeader(
 						RODS_DISCONNECT, 0, 0, 0, 0));
 				irodsConnection.flush();
@@ -246,8 +244,9 @@ public class IRODSCommands {
 				log.debug("shutdown complete, connection status is: {}",
 						irodsConnection.isConnected());
 			} catch (IOException e) {
-				log
-						.error("IOException closing connection, will try and obliterate if still open", e);
+				log.error(
+						"IOException closing connection, will try and obliterate if still open",
+						e);
 				irodsConnection.obliterateConnectionAndDiscardErrors();
 				throw new JargonException(
 						"error sending disconnect on a close operation", e);
@@ -296,8 +295,8 @@ public class IRODSCommands {
 				new Tag(apiVersion, IRODSAccount.getAPIVersion()),
 				new Tag(option, IRODSAccount.getOption()), });
 		String out = startupPacket.parseTag();
-		irodsConnection.send(irodsConnection.createHeader(RODS_CONNECT, out
-				.length(), 0, 0, 0));
+		irodsConnection.send(irodsConnection.createHeader(RODS_CONNECT,
+				out.length(), 0, 0, 0));
 		irodsConnection.send(out);
 		irodsConnection.flush();
 		Tag responseMessage = irodsConnection.readMessage();
@@ -312,10 +311,9 @@ public class IRODSCommands {
 		} catch (JargonException e) {
 
 			e.printStackTrace();
-			log
-					.error(
-							"JargonException is turned into IOException to fit current method signature",
-							e);
+			log.error(
+					"JargonException is turned into IOException to fit current method signature",
+					e);
 			throw new IOException(e);
 		}
 
@@ -380,8 +378,9 @@ public class IRODSCommands {
 		} catch (GeneralSecurityException e) {
 			SecurityException se = new SecurityException();
 			se.initCause(e);
-			log.error("general security exception, initCause is:"
-					+ e.getMessage(), e);
+			log.error(
+					"general security exception, initCause is:"
+							+ e.getMessage(), e);
 			throw se;
 		}
 
@@ -465,12 +464,10 @@ public class IRODSCommands {
 
 		try {
 			irodsConnection
-					.send(irodsConnection
-							.createHeader(
-									RODS_API_REQ,
-									message
-											.getBytes(ConnectionConstants.JARGON_CONNECTION_ENCODING).length,
-									errorLength, byteStringLength, intInfo));
+					.send(irodsConnection.createHeader(
+							RODS_API_REQ,
+							message.getBytes(ConnectionConstants.JARGON_CONNECTION_ENCODING).length,
+							errorLength, byteStringLength, intInfo));
 
 			irodsConnection.send(message);
 
@@ -527,12 +524,10 @@ public class IRODSCommands {
 		}
 		try {
 			irodsConnection
-					.send(irodsConnection
-							.createHeader(
-									RODS_API_REQ,
-									message
-											.getBytes(ConnectionConstants.JARGON_CONNECTION_ENCODING).length,
-									errorLength, byteStringLength, intInfo));
+					.send(irodsConnection.createHeader(
+							RODS_API_REQ,
+							message.getBytes(ConnectionConstants.JARGON_CONNECTION_ENCODING).length,
+							errorLength, byteStringLength, intInfo));
 			irodsConnection.send(message);
 			if (errorLength > 0) {
 				irodsConnection.send(errorStream, errorLength);
@@ -604,8 +599,8 @@ public class IRODSCommands {
 		if (log.isDebugEnabled()) {
 			log.debug(out);
 		}
-		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
-				.getBytes(encoding).length, errorLength, byteStringLength,
+		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ,
+				out.getBytes(encoding).length, errorLength, byteStringLength,
 				intInfo));
 		irodsConnection.send(out);
 		if (byteStringLength > 0)
@@ -641,9 +636,9 @@ public class IRODSCommands {
 		}
 
 		try {
-			irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
-					.getBytes(encoding).length, errorLength, byteStringLength,
-					irodsPI.getApiNumber()));
+			irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ,
+					out.getBytes(encoding).length, errorLength,
+					byteStringLength, irodsPI.getApiNumber()));
 			irodsConnection.send(out);
 
 			if (byteStringLength > 0) {
@@ -677,8 +672,8 @@ public class IRODSCommands {
 			throw new IllegalArgumentException(err);
 		}
 
-		return irodsFunction(RODS_API_REQ, irodsPI.getParsedTags(), irodsPI
-				.getApiNumber());
+		return irodsFunction(RODS_API_REQ, irodsPI.getParsedTags(),
+				irodsPI.getApiNumber());
 	}
 
 	/**
@@ -711,8 +706,8 @@ public class IRODSCommands {
 		if (log.isDebugEnabled()) {
 			log.debug(out);
 		}
-		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
-				.getBytes(encoding).length, errorLength, byteStringLength,
+		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ,
+				out.getBytes(encoding).length, errorLength, byteStringLength,
 				intInfo));
 		irodsConnection.send(out);
 		if (errorLength > 0)
@@ -736,10 +731,13 @@ public class IRODSCommands {
 	 * @throws java.io.IOException
 	 */
 	public String miscServerInfo() throws IOException {
-		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0,
-				0, GET_MISC_SVR_INFO_AN));
-		irodsConnection.flush();
-		Tag message = irodsConnection.readMessage();
+		Tag message;
+		synchronized (this) {
+			irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0,
+					0, 0, GET_MISC_SVR_INFO_AN));
+			irodsConnection.flush();
+			message = irodsConnection.readMessage();
+		}
 		return message.parseTag();
 		/*
 		 * <MiscSvrInfo_PI> <serverType>1</serverType>
@@ -782,7 +780,7 @@ public class IRODSCommands {
 		}
 
 		Tag message = new Tag(DataObjCopyInp_PI, new Tag[] {
-		// define the source
+				// define the source
 				new Tag(DataObjInp_PI, new Tag[] {
 						new Tag(objPath, source.getAbsolutePath()),
 						new Tag(createMode, 0), new Tag(openFlags, 0),
@@ -1037,10 +1035,13 @@ public class IRODSCommands {
 
 		Tag message;
 		try {
-			OpenedDataObjInp openedDataObjInp = OpenedDataObjInp.instanceForFileSeek(seek, fd, whence);
+			OpenedDataObjInp openedDataObjInp = OpenedDataObjInp
+					.instanceForFileSeek(seek, fd, whence);
 			message = irodsFunction(openedDataObjInp);
 		} catch (JargonException e) {
-			log.error("JargonException in file seek, will be rethrown to current contract IOException", e);
+			log.error(
+					"JargonException in file seek, will be rethrown to current contract IOException",
+					e);
 			throw new IOException(e);
 		}
 		return message.getTag(offset).getLongValue();
@@ -1116,8 +1117,7 @@ public class IRODSCommands {
 
 		// irods file doesn't exist
 		if (message == null) {
-			log
-					.warn("irods file does not exist, null was returned from the get, return with no update done");
+			log.warn("irods file does not exist, null was returned from the get, return with no update done");
 			return;
 		}
 
@@ -1178,8 +1178,7 @@ public class IRODSCommands {
 					}
 				} catch (InterruptedException e) {
 					if (log.isWarnEnabled()) {
-						log
-								.warn("interrupted exception, this is logged and ignored");
+						log.warn("interrupted exception, this is logged and ignored");
 						e.printStackTrace();
 					}
 				}
@@ -1192,8 +1191,8 @@ public class IRODSCommands {
 		} else {
 			log.info("normal file transfer started");
 			// read the message byte stream into the local file
-			irodsConnection.read(FileFactory.newRandomAccessFile(destination,
-					"rw"), length);
+			irodsConnection.read(
+					FileFactory.newRandomAccessFile(destination, "rw"), length);
 			log.info("transfer is complete");
 		}
 
@@ -1223,13 +1222,12 @@ public class IRODSCommands {
 			CollInp collInp = CollInp.instance(irodsFile.getAbsolutePath(),
 					recursiveOperation);
 
-			Tag response = irodsFunction(CollInp.PI_TAG, collInp
-					.getParsedTags(), CollInp.MKDIR_API_NBR);
+			Tag response = irodsFunction(CollInp.PI_TAG,
+					collInp.getParsedTags(), CollInp.MKDIR_API_NBR);
 
 			if (response != null) {
-				log
-						.warn("expected null response to mkdir, logged but not an error, received:"
-								+ response.parseTag());
+				log.warn("expected null response to mkdir, logged but not an error, received:"
+						+ response.parseTag());
 			}
 		} catch (JargonException e) {
 			log.error("Jargon exception in mkdir operation", e);
@@ -1273,8 +1271,7 @@ public class IRODSCommands {
 			message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PUT_AN);
 
 			if (message == null) {
-				log
-						.warn("send of put returned null, currently is ignored and null is returned from put operation");
+				log.warn("send of put returned null, currently is ignored and null is returned from put operation");
 				return;
 			}
 
@@ -1339,8 +1336,7 @@ public class IRODSCommands {
 						}
 					} catch (InterruptedException e) {
 						if (log.isWarnEnabled()) {
-							log
-									.warn("interrupted exception, this is logged and ignored");
+							log.warn("interrupted exception, this is logged and ignored");
 							e.printStackTrace();
 						}
 					}
@@ -1380,8 +1376,8 @@ public class IRODSCommands {
 							Tag.createKeyValueTag(keyword), });
 			// send the message, no result expected.
 			// exception thrown on error.
-			irodsFunction(RODS_API_REQ, message, 0, null, length, FileFactory
-					.newFileInputStream(source), DATA_OBJ_PUT_AN);
+			irodsFunction(RODS_API_REQ, message, 0, null, length,
+					FileFactory.newFileInputStream(source), DATA_OBJ_PUT_AN);
 			log.info("transfer complete");
 		}
 	}
@@ -1405,8 +1401,7 @@ public class IRODSCommands {
 		}
 
 		if (values.length < 2 || values.length > 3) {
-			log
-					.error("metadata length must be 2 (name and value) or 3 (name, value, units) ");
+			log.error("metadata length must be 2 (name and value) or 3 (name, value, units) ");
 			throw new IllegalArgumentException(
 					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
 		}
@@ -1475,8 +1470,7 @@ public class IRODSCommands {
 		}
 
 		if (values.length < 2 || values.length > 3) {
-			log
-					.error("metadata length must be 2 (name and value) or 3 (name, value, units) ");
+			log.error("metadata length must be 2 (name and value) or 3 (name, value, units) ");
 			throw new IllegalArgumentException(
 					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
 		}
@@ -1531,7 +1525,7 @@ public class IRODSCommands {
 
 	void renameFile(IRODSFile source, IRODSFile destination) throws IOException {
 		Tag message = new Tag(DataObjCopyInp_PI, new Tag[] {
-		// define the source
+				// define the source
 				new Tag(DataObjInp_PI, new Tag[] {
 						new Tag(objPath, source.getAbsolutePath()),
 						new Tag(createMode, 0), new Tag(openFlags, 0),
@@ -1554,7 +1548,7 @@ public class IRODSCommands {
 	void renameDirectory(IRODSFile source, IRODSFile destination)
 			throws IOException {
 		Tag message = new Tag(DataObjCopyInp_PI, new Tag[] {
-		// define the source
+				// define the source
 				new Tag(DataObjInp_PI, new Tag[] {
 						new Tag(objPath, source.getAbsolutePath()),
 						new Tag(createMode, 0), new Tag(openFlags, 0),
@@ -1599,8 +1593,8 @@ public class IRODSCommands {
 	 */
 	void replicate(IRODSFile file, String newResource) throws IOException {
 		try {
-			DataObjInp dataObjInp = DataObjInp.instanceForReplicate(file
-					.getAbsolutePath(), newResource);
+			DataObjInp dataObjInp = DataObjInp.instanceForReplicate(
+					file.getAbsolutePath(), newResource);
 			irodsFunction(dataObjInp);
 		} catch (JargonException e) {
 			log.error(
@@ -1681,11 +1675,15 @@ public class IRODSCommands {
 			throw new IllegalArgumentException(
 					"Directory must refer to an IRODS Collection");
 		}
-		
+
 		try {
-			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl.instance(this);
-			BulkFileOperationsAO bulkFileOperationsAO = irodsAccessObjectFactory.getBulkFileOperationsAO();
-			bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(tarFile.getAbsolutePath(), directory.getAbsolutePath(), resource);
+			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+					.instance(this);
+			BulkFileOperationsAO bulkFileOperationsAO = irodsAccessObjectFactory
+					.getBulkFileOperationsAO();
+			bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
+					tarFile.getAbsolutePath(), directory.getAbsolutePath(),
+					resource);
 		} catch (JargonException e) {
 			log.error("error extractingBundle", e);
 			throw new IOException(e);
@@ -1695,52 +1693,66 @@ public class IRODSCommands {
 
 	/**
 	 * Extract a bundle (tar) file in iRODS to the given iRODS directory
-	 * @param tarFile <code>IRODSFile</code> that is the bundled (tar) file to be extracted.
-	 * @param directory <code>IRODSFile</coce> that is the collection that is to be created with the extracted contents.
+	 * 
+	 * @param tarFile
+	 *            <code>IRODSFile</code> that is the bundled (tar) file to be
+	 *            extracted.
+	 * @param directory
+	 *            <code>IRODSFile</coce> that is the collection that is to be created with the extracted contents.
 	 * @throws IOException
 	 */
 	void extractBundle(IRODSFile tarFile, IRODSFile directory)
 			throws IOException {
-		
+
 		try {
-			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl.instance(this);
-			BulkFileOperationsAO bulkFileOperationsAO = irodsAccessObjectFactory.getBulkFileOperationsAO();
-			bulkFileOperationsAO.extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(tarFile.getAbsolutePath(), directory.getAbsolutePath(), "");
+			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+					.instance(this);
+			BulkFileOperationsAO bulkFileOperationsAO = irodsAccessObjectFactory
+					.getBulkFileOperationsAO();
+			bulkFileOperationsAO
+					.extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(
+							tarFile.getAbsolutePath(),
+							directory.getAbsolutePath(), "");
 		} catch (JargonException e) {
 			log.error("error extractingBundle", e);
 			throw new IOException(e);
 		}
 	}
-	
+
 	synchronized InputStream executeCommand(String command, String args,
 			String hostAddress) throws IOException {
-		
+
 		if (command == null || command.length() == 0) {
 			throw new IOException("no command to execute");
 		}
-		
+
 		if (args == null) {
 			throw new IOException("args are null");
 		}
-		
+
 		if (hostAddress == null) {
 			throw new IOException("hostAddress is null");
 		}
-		
+
 		log.info("execute command:{}", command);
 		log.info("host:{}", hostAddress);
 		log.info("args:{}", args);
-		
+
 		try {
-			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl.instance(this);
-			RemoteExecutionOfCommandsAO remoteExecutionOfCommandsAO = irodsAccessObjectFactory.getRemoteExecutionOfCommandsAO();
-			return remoteExecutionOfCommandsAO.executeARemoteCommandAndGetStreamGivingCommandNameAndArgsAndHost(
-					command, args, hostAddress);
+			IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+					.instance(this);
+			RemoteExecutionOfCommandsAO remoteExecutionOfCommandsAO = irodsAccessObjectFactory
+					.getRemoteExecutionOfCommandsAO();
+			return remoteExecutionOfCommandsAO
+					.executeARemoteCommandAndGetStreamGivingCommandNameAndArgsAndHost(
+							command, args, hostAddress);
 		} catch (JargonException e) {
-			log.error("Jargon exception executing remote command, will rethrow as IOException for present contracts", e);
+			log.error(
+					"Jargon exception executing remote command, will rethrow as IOException for present contracts",
+					e);
 			throw new IOException(e);
 		}
-		
+
 	}
 
 	String checksum(IRODSFile file) throws IOException {
@@ -1801,8 +1813,8 @@ public class IRODSCommands {
 				temp += out.getUniqueName() + "%";
 			// should this % be here?
 
-			message.addTag(new Tag(outParamDesc, temp.substring(0, temp
-					.length() - 1)));
+			message.addTag(new Tag(outParamDesc, temp.substring(0,
+					temp.length() - 1)));
 		}
 
 		// add input parameter tags
@@ -1825,7 +1837,7 @@ public class IRODSCommands {
 	}
 
 	/**
-	 *send when certain rules are finished?
+	 * send when certain rules are finished?
 	 */
 	void operationComplete(int status) throws IOException {
 		Tag message = new Tag(Rule.INT_PI, new Tag[] { new Tag(Rule.myInt,
@@ -1875,11 +1887,14 @@ public class IRODSCommands {
 	 * "select * from r_resc_main where resc_name=?",
 	 * "select zone_name from r_zone_main",
 	 * "select * from r_zone_main where zone_name=?",
-	 * "select user_name from r_user_main where user_type_name='rodsgroup'" ,"select user_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)"
-	 * , "select * from r_data_main where data_id=?","select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)"
+	 * "select user_name from r_user_main where user_type_name='rodsgroup'" ,
+	 * "select user_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)"
+	 * , "select * from r_data_main where data_id=?",
+	 * "select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)"
 	 * , "select coll_name from r_coll_main where parent_coll_name=?",
 	 * "select * from r_user_main where user_name=?",
-	 * "select user_name from r_user_main where user_type_name != 'rodsgroup'" ,"select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?"
+	 * "select user_name from r_user_main where user_type_name != 'rodsgroup'" ,
+	 * "select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?"
 	 * , "select distinct resc_group_name from r_resc_group",
 	 * "select coll_id from r_coll_main where coll_name = ?" *
 	 */
@@ -2273,8 +2288,7 @@ public class IRODSCommands {
 			}
 
 			if (offset < 0) {
-				log
-						.warn("offset < 0 in transfer get() operation, return from get method");
+				log.warn("offset < 0 in transfer get() operation, return from get method");
 				return;
 			} else if (offset > 0) {
 				local.seek(offset);
@@ -2303,7 +2317,7 @@ public class IRODSCommands {
 
 						// read the next header
 						operation = readInt();
-						 flags = readInt();
+						flags = readInt();
 						offset = readLong();
 						length = readLong();
 						log.debug("    reading next header");
@@ -2325,8 +2339,7 @@ public class IRODSCommands {
 						local.write(buffer, 0, read);
 					}
 				} else {
-					log
-							.error("intercepted a loop condition on parallel file get, length is > 0 but I just read and got nothing");
+					log.error("intercepted a loop condition on parallel file get, length is > 0 but I just read and got nothing");
 					throw new RuntimeException(
 							"possible loop condition in parallel file get");
 				}
@@ -2356,9 +2369,13 @@ public class IRODSCommands {
 	}
 
 	/**
-	 * Replicate the given file to all files in the given resource group. This is analagous to an irepl -a command.
-	 * @param irodsFile <code>IRODSFile</code> that should be replicated.
-	 * @param resourceGroup <code>String<code> that contains the resource group that the file will be replicated to.  The file will replicate to all
+	 * Replicate the given file to all files in the given resource group. This
+	 * is analagous to an irepl -a command.
+	 * 
+	 * @param irodsFile
+	 *            <code>IRODSFile</code> that should be replicated.
+	 * @param resourceGroup
+	 *            <code>String<code> that contains the resource group that the file will be replicated to.  The file will replicate to all
 	 * members of that resource group.
 	 * @throws JargonException
 	 */
@@ -2368,12 +2385,11 @@ public class IRODSCommands {
 				irodsFile.getAbsolutePath(), resourceGroup);
 		irodsFunction(dataObjInp);
 	}
-	
+
 	/**
 	 * Read from a stream into a byte array. This method will delegate to the
-	 * underlying {@link IRODSConnection} and
-	 * is included in this class to provide a public hook for certain
-	 * operations.
+	 * underlying {@link IRODSConnection} and is included in this class to
+	 * provide a public hook for certain operations.
 	 * 
 	 * @param value
 	 *            <code>byte[]</code> that will contain the data read

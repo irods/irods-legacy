@@ -59,7 +59,7 @@ from this fix, but the code itself was not consistent.
 *Bug 119 - add enhanced streaming from remote exec of comds 
 -new access object adapted from jargon-core for RemoteExecutionOfCommandsAO.
 
-
+*Bug - miscServerinfo causes null pointer exception
 
 ================================================================================================
 Outstanding Issues
