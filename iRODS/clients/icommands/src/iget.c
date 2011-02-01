@@ -130,7 +130,8 @@ usage () {
 
 " -f  force - write local files even it they exist already (overwrite them)",
 " -I  redirect connection - redirect the connection to connect directly",
-"       to the best resource server.",
+"       to the best (determiined by the first 10 data objects in the input",
+"       collection) resource server.",
 " -K  verify the checksum",
 " -n  replNumber - retrieve the copy with the specified replica number ",
 " -N  numThreads - the number of thread to use for the transfer. A value of",
