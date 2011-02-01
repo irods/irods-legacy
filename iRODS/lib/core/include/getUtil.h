@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 int
-getUtil (rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs, 
+getUtil (rcComm_t **myConn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs, 
 rodsPathInp_t *rodsPathInp);
 int
 getDataObjUtil (rcComm_t *conn, char *srcPath, char *targPath,
@@ -26,7 +26,7 @@ initCondForGet (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart);
 
 int
-getCollUtil (rcComm_t *conn, char *srcColl, char *targDir,
+getCollUtil (rcComm_t **myConn, char *srcColl, char *targDir,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
 rodsRestart_t *rodsRestart);
 

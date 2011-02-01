@@ -120,6 +120,7 @@
 #define STREAM_READ_AN 			691
 #define EXEC_CMD_AN 			692
 #define STREAM_CLOSE_AN 			693
+#define GET_HOST_FOR_GET_AN 			694
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

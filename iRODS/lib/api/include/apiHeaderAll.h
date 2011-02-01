@@ -136,4 +136,5 @@
 #include "streamRead.h"
 #include "specificQuery.h"
 #include "streamClose.h"
+#include "getHostForGet.h"
 #endif	/* API_HEADER_ALL_H */

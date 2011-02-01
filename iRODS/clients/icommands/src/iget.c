@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "hfKN:n:PQrvVX:R:T";
+    optStr = "hfIKN:n:PQrvVX:R:T";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -76,7 +76,7 @@ main(int argc, char **argv) {
 	gGuiProgressCB = (irodsGuiProgressCallbak) iCommandProgStat;
     }
 
-    status = getUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
+    status = getUtil (&conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
     rcDisconnect(conn);
 
@@ -91,11 +91,11 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage: iget [-fKPQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage: iget [-fIKPQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection ... destLocalFile|destLocalDir",
-"Usage : iget [-fKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection",
-"Usage : iget [-fKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
@@ -129,6 +129,8 @@ usage () {
 "Options are:",
 
 " -f  force - write local files even it they exist already (overwrite them)",
+" -I  redirect connection - redirect the connection to connect directly",
+"       to the best resource server.",
 " -K  verify the checksum",
 " -n  replNumber - retrieve the copy with the specified replica number ",
 " -N  numThreads - the number of thread to use for the transfer. A value of",

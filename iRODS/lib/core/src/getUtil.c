@@ -11,7 +11,7 @@
 #include "miscUtil.h"
 
 int
-getUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+getUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 rodsPathInp_t *rodsPathInp)
 {
     int i;
@@ -20,6 +20,7 @@ rodsPathInp_t *rodsPathInp)
     rodsPath_t *targPath;
     dataObjInp_t dataObjOprInp;
     rodsRestart_t rodsRestart;
+    rcComm_t *conn = *myConn;
 
     if (rodsPathInp == NULL) {
 	return (USER__NULL_INPUT_ERR);
@@ -71,7 +72,7 @@ rodsPathInp_t *rodsPathInp)
 	} else if (targPath->objType ==  LOCAL_DIR_T) {
             setStateForRestart (conn, &rodsRestart, targPath, myRodsArgs);
 	    addKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW, "");
-	    status = getCollUtil (conn, rodsPathInp->srcPath[i].outPath,
+	    status = getCollUtil (myConn, rodsPathInp->srcPath[i].outPath,
               targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
 	      &rodsRestart);
             if (rodsRestart.fd > 0 && status < 0) {
@@ -183,6 +184,8 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 	return (0);
     }
 
+    dataObjOprInp->oprType = GET_OPR;
+
     if (rodsArgs->force == True) { 
         addKeyVal (&dataObjOprInp->condInput, FORCE_FLAG_KW, "");
     }
@@ -262,7 +265,7 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 }
 
 int
-getCollUtil (rcComm_t *conn, char *srcColl, char *targDir, 
+getCollUtil (rcComm_t **myConn, char *srcColl, char *targDir, 
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
 rodsRestart_t *rodsRestart)
 {
@@ -276,7 +279,8 @@ rodsRestart_t *rodsRestart)
 #endif
     collHandle_t collHandle;
     collEnt_t collEnt;
-	dataObjInp_t childDataObjInp;
+    dataObjInp_t childDataObjInp;
+    rcComm_t *conn;
 
     if (srcColl == NULL || targDir == NULL) {
        rodsLog (LOG_ERROR,
@@ -291,6 +295,19 @@ rodsRestart_t *rodsRestart)
         return (USER_INPUT_OPTION_ERR);
     }
 
+    if (rodsArgs->redirectConn == True) {
+        int reconnFlag;
+        if (rodsArgs->reconnect == True) {
+            reconnFlag = RECONN_TIMEOUT;
+        } else {
+            reconnFlag = NO_RECONN;
+        }
+        /* reconnect to the resource server */
+        rstrcpy (dataObjOprInp->objPath, srcColl, MAX_NAME_LEN);
+        redirectConnToRescSvr (myConn, dataObjOprInp, myRodsEnv, reconnFlag);
+        rodsArgs->redirectConn = 0;    /* only do it once */
+    }
+    conn = *myConn;
 
     printCollOrDir (targDir, LOCAL_DIR_T, rodsArgs, dataObjOprInp->specColl);
 #if 0
@@ -386,7 +403,7 @@ rodsRestart_t *rodsRestart)
                     childDataObjInp.specColl = &collEnt.specColl;
 		else 
 		    childDataObjInp.specColl = NULL;
-                status = getCollUtil (conn, collEnt.collName, targChildPath,
+                status = getCollUtil (myConn, collEnt.collName, targChildPath,
                   myRodsEnv, rodsArgs, &childDataObjInp, rodsRestart);
                 if (status < 0 && status != CAT_NO_ROWS_FOUND) {
                     return (status);

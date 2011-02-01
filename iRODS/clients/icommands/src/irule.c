@@ -88,7 +88,7 @@ main(int argc, char **argv) {
 	      (unsigned int) time(0),getpid());
 	    status = parseCmdLinePath (myargc,myargv,myoptind,&myEnv,
 		       UNKNOWN_OBJ_T, UNKNOWN_FILE_T, 0, &rodsPathInp);
-	    status = getUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
+	    status = getUtil (&conn, &myEnv, &myRodsArgs, &rodsPathInp);
 	    if (status < 0) {
 	      rcDisconnect(conn);
 	      exit (3);

@@ -391,3 +391,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcSpecificQuery.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsStreamClose.o
 LIB_API_OBJS += $(libApiObjDir)/rcStreamClose.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetHostForGet.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetHostForGet.o

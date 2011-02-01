@@ -8,6 +8,7 @@
 #include "rcGlobalExtern.h"
 #include "miscServerFunct.h"
 #include "getHostForPut.h"
+#include "getHostForGet.h"
 #ifdef RBUDP_TRANSFER
 #include "QUANTAnet_rbudpBase_c.h"
 #endif  /* RBUDP_TRANSFER */
@@ -1429,7 +1430,16 @@ rodsEnv *myEnv, int reconnFlag)
     rcComm_t *newConn = NULL;
     rErrMsg_t errMsg;
 
-    status = rcGetHostForPut (*conn, dataObjInp, &outHost);
+    if (dataObjInp->oprType == PUT_OPR) {
+        status = rcGetHostForPut (*conn, dataObjInp, &outHost);
+    } else if (dataObjInp->oprType == GET_OPR) {
+        status = rcGetHostForGet (*conn, dataObjInp, &outHost);
+    } else {
+        rodsLog (LOG_NOTICE,
+          "redirectConnToRescSvr: Unknown oprType %d\n",
+            dataObjInp->oprType);
+	return 0;
+    }
 
     if (status < 0 || outHost == NULL || strcmp (outHost, THIS_ADDRESS) == 0)
 	return status;
