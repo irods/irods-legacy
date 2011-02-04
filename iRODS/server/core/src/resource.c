@@ -419,7 +419,8 @@ sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo)
     addInxIval(&genQueryInp.selectInp, COL_SLD_RESC_NAME, 1);
     addInxIval(&genQueryInp.selectInp, COL_SLD_LOAD_FACTOR, 1);
     addInxIval(&genQueryInp.selectInp, COL_SLD_CREATE_TIME, SELECT_MAX);
-    genQueryInp.maxRows = MAX_SQL_ROWS;
+    /* XXXXX a tmp fix to increase no. of resource to 512 */
+    genQueryInp.maxRows = MAX_SQL_ROWS * 2;
     status =  rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
     if ( status == 0 ) {
         nresc = genQueryOut->rowCnt;
@@ -1061,7 +1062,8 @@ initResc (rsComm_t *rsComm)
     addInxIval (&genQueryInp.selectInp, COL_R_MODIFY_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_R_RESC_STATUS, 1);
 
-    genQueryInp.maxRows = MAX_SQL_ROWS;
+    /* XXXXX a tmp fix to increase to no, of resource to 512 */
+    genQueryInp.maxRows = MAX_SQL_ROWS * 2;
 
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
   
