@@ -49,6 +49,7 @@
 static char openDbrName[MAX_SESSIONS][MAX_DBR_NAME_LEN+2]={"","","","","","","","","",""};
 
 int dboLogSQL=0;
+
 int readDbrConfig(char *dbrname, char *DBUser, char *DBPasswd,char *DBType);
 
 icatSessionStruct dbr_icss[MAX_SESSIONS]={{0},{0},{0},{0},{0},{0},{0},{0},{0},{0}};
@@ -506,6 +507,11 @@ int dboSqlWithResults(int fd, char *sql, char *sqlFormat, char *args[10],
    int i, ii;
    int statement;
    int rowCount, nCols;
+   int csvMode=0;
+
+   csvMode=0;
+   if (strcmp(sqlFormat, "csv")==0) csvMode=1;
+   if (strcmp(sqlFormat, "CSV")==0) csvMode=1;
 
    for (i=0;i<10;i++) {
       if (args[i]==NULL || strlen(args[i])==0) break;
@@ -532,22 +538,40 @@ int dboSqlWithResults(int fd, char *sql, char *sqlFormat, char *args[10],
       if (dbr_icss[fd].stmtPtr[statement]->numOfCols == 0) {
 	 i = cllFreeStatement(&dbr_icss[fd],statement);
 	 if (rowCount==0) return(CAT_NO_ROWS_FOUND);
-	 rstrcat(outBuf, "\n<\\rows>\n", maxOutBuf);
+	 if (!csvMode) {
+	    rstrcat(outBuf, "\n<\\rows>\n", maxOutBuf);
+	 }
+	 else {
+	    rstrcat(outBuf, "\n", maxOutBuf);	    
+	 }
 	 return(0);
       }
 
       nCols = dbr_icss[fd].stmtPtr[statement]->numOfCols;
       if (rowCount==0) {
-	 rstrcat(outBuf, "<column_descriptions>\n", maxOutBuf);
+	 if (!csvMode) rstrcat(outBuf, "<column_descriptions>\n", maxOutBuf);
 	 for (i=0; i<nCols ; i++ ) {
 	    rstrcat(outBuf, dbr_icss[fd].stmtPtr[statement]->resultColName[i],
 		    maxOutBuf);
-	    rstrcat(outBuf, "|", maxOutBuf);
+	    if (csvMode) {
+	       if (i<nCols-1) {
+		  rstrcat(outBuf, ",", maxOutBuf);
+	       }
+	       else {
+		  rstrcat(outBuf, "\n", maxOutBuf);
+	       }
+	    }
+	    else {
+	       rstrcat(outBuf, "|", maxOutBuf);
+	    }
 	 }
-	 rstrcat(outBuf, "\n<\\column_descriptions>\n<rows>\n", maxOutBuf);
+	 if (!csvMode) {
+	    rstrcat(outBuf, "\n<\\column_descriptions>\n<rows>\n", maxOutBuf);
+	 }
       }
       if (rowCount>0) rstrcat(outBuf, "\n", maxOutBuf);
-      if (nCols>0 && nCols<5 && sqlFormat!=NULL && *sqlFormat!='\0') {
+      if (nCols>0 && nCols<11 && sqlFormat!=NULL && *sqlFormat!='\0'
+	 && csvMode==0 ) {
 	 char line1[1000];
 	 if (nCols==1) {
 	    snprintf(line1, sizeof(line1), sqlFormat, 
@@ -640,7 +664,14 @@ int dboSqlWithResults(int fd, char *sql, char *sqlFormat, char *args[10],
 	 for (i=0; i<nCols ; i++ ) {
 	    rstrcat(outBuf, dbr_icss[fd].stmtPtr[statement]->resultValue[i], 
 		    maxOutBuf);
-	    rstrcat(outBuf, "|", maxOutBuf);
+	    if (csvMode) {
+	       if (i<nCols-1) {
+		  rstrcat(outBuf, ",", maxOutBuf);
+	       }
+	    }
+	    else {
+	       rstrcat(outBuf, "|", maxOutBuf);
+	    }
 	 }
       }
    }
@@ -832,9 +863,13 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL, char *dboFormat) {
 }
 
 void
-printSqlAndArgs(char *dboSQL, char *args[10], char *outBuf, int maxOutBuf) {
+printSqlAndArgsEtc(char *dbrName, 
+		   char *dboSQL, char *args[10], char *outBuf, int maxOutBuf) {
    int i;
-   rstrcpy(outBuf, "<sql>", maxOutBuf);
+   rstrcpy(outBuf, "<dbr>", maxOutBuf);
+   rstrcat(outBuf, dbrName, maxOutBuf);
+   rstrcat(outBuf, "</dbr>\n", maxOutBuf);
+   rstrcat(outBuf, "<sql>", maxOutBuf);
    rstrcat(outBuf, dboSQL, maxOutBuf);
    rstrcat(outBuf, "</sql>\n", maxOutBuf);
    for (i=0;i<10;i++) {
@@ -874,6 +909,7 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName,
    int outDesc;
    char *myOutBuf;
    int myMaxOutBuf;
+   int csvMode;
 
    myOutBuf = outBuf;
    myMaxOutBuf = maxOutBuf;
@@ -933,9 +969,13 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName,
 
    if (dboLogSQL) rodsLog(LOG_SQL, "dboExecute SQL: %s\n", dboSQL);
 
-   if (status) return(status);
+   csvMode=0;
+   if (strcmp(dboFormat, "csv")==0) csvMode=1;
+   if (strcmp(dboFormat, "CSV")==0) csvMode=1;
 
-   printSqlAndArgs(dboSQL, args, myOutBuf, myMaxOutBuf);
+   if (!csvMode) {
+      printSqlAndArgsEtc(dbrName, dboSQL, args, myOutBuf, myMaxOutBuf);
+   }
 
    outBufStrLen = strlen(myOutBuf);
 
