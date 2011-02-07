@@ -1045,6 +1045,7 @@ initResc (rsComm_t *rsComm)
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int status;
+    int continueInx;
 
     memset (&genQueryInp, 0, sizeof (genQueryInp));
 
@@ -1062,30 +1063,46 @@ initResc (rsComm_t *rsComm)
     addInxIval (&genQueryInp.selectInp, COL_R_MODIFY_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_R_RESC_STATUS, 1);
 
-    /* XXXXX a tmp fix to increase to no, of resource to 512 */
-    genQueryInp.maxRows = MAX_SQL_ROWS * 2;
+    genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-  
-    clearGenQueryInp (&genQueryInp);
+    if (RescGrpInfo != NULL) {
+        /* we are updating RescGrpInfo */
+        freeAllRescGrp (RescGrpInfo);
+        RescGrpInfo = NULL;
+    }
 
-    if (status < 0) {
-        if (status !=CAT_NO_ROWS_FOUND) {
-            rodsLog (LOG_NOTICE,
-              "initResc: rsGenQuery error, status = %d",
-              status);
+    continueInx = 1;	/* a fake one so it will do the first query */
+    while (continueInx > 0) {
+        status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+        if (status < 0) {
+            if (status !=CAT_NO_ROWS_FOUND) {
+                rodsLog (LOG_NOTICE,
+                  "initResc: rsGenQuery error, status = %d",
+                  status);
+            }
+            clearGenQueryInp (&genQueryInp);
+            return (status);
         }
-        return (status);
+
+        status = procAndQueRescResult (genQueryOut);
+
+        if (status < 0) {
+            rodsLog (LOG_NOTICE,
+              "initResc: rsGenQuery error, status = %d", status);
+            freeGenQueryOut (&genQueryOut);
+	    break;
+        } else {
+	    if (genQueryOut != NULL) {
+		continueInx = genQueryInp.continueInx = 
+		genQueryOut->continueInx;
+                freeGenQueryOut (&genQueryOut);
+	    } else {
+		continueInx = 0;
+	    }
+	}
     }
-
-    status = procAndQueRescResult (genQueryOut);
-
-    freeGenQueryOut (&genQueryOut);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE,
-          "initResc: rsGenQuery error, status = %d", status);
-    }
+    clearGenQueryInp (&genQueryInp);
     return (status);
 }
 
@@ -1188,11 +1205,13 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+#if 0	/* do multiple continueInx */
     if (RescGrpInfo != NULL) {
         /* we are updating RescGrpInfo */
         freeAllRescGrp (RescGrpInfo);
         RescGrpInfo = NULL;
     }
+#endif
     for (i = 0;i < genQueryOut->rowCnt; i++) {
         tmpRescId = &rescId->value[rescId->len * i];
         tmpRescName = &rescName->value[rescName->len * i];
