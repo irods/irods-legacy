@@ -16,6 +16,9 @@ public final class IRODSConstants {
 	 * parallel transfer.
 	 */
 	public static final int TRANSFER_THREAD_SIZE = 6000000;
+	
+	public static final int CONNECTION_TIMEOUT_VALUE = -1;
+	public static final int CONNECTION_TIMEOUT_NO_TIMEOUT = -1;
 
 	public static final int SYS_CLI_TO_SVR_COLL_STAT_REPLY = 99999997;
 	public static final int SYS_CLI_TO_SVR_COLL_STAT_SIZE = 10;

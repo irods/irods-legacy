@@ -137,7 +137,7 @@ public class IRODSCommands {
 	 *             if the host cannot be opened or created.
 	 * @throws JargonException
 	 */
-	void connect(IRODSAccount connectIrodsAccount) throws IOException,
+	void connect(final IRODSAccount connectIrodsAccount) throws IOException,
 			JargonException {
 
 		if (connectIrodsAccount == null) {
@@ -264,7 +264,8 @@ public class IRODSCommands {
 	 * @throws IOException
 	 *             if the host cannot be opened or created.
 	 */
-	private Tag sendStartupPacket(IRODSAccount irodsAccount) throws IOException {
+	private Tag sendStartupPacket(final IRODSAccount irodsAccount)
+			throws IOException {
 
 		if (irodsAccount == null) {
 			String err = "null irodsAccount";
@@ -272,18 +273,6 @@ public class IRODSCommands {
 			throw new IllegalArgumentException(err);
 		}
 
-		/*
-		 * String out2 = "<StartupPack_PI>" + "<irodsProt>"+"1"+"</irodsProt>" +
-		 * "<reconnFlag>"+"0"+"</reconnFlag>" +
-		 * "<connectCnt>"+"0"+"</connectCnt>" + "<proxyUser>"
-		 * +account.getUserName()+ "</proxyUser>" + "<proxyRcatZone>"
-		 * +account.getZone()+ "</proxyRcatZone>" + "<clientUser>"
-		 * +account.getUserName()+ "</clientUser>" + "<clientRcatZone>"
-		 * +account.getZone()+ "</clientRcatZone>" + "<relVersion>"
-		 * +account.getVersion()+ "</relVersion>" + "<apiVersion>"
-		 * +account.getAPIVersion()+ "</apiVersion>" + "<option>"
-		 * +account.getOption()+ "</option>" + "</StartupPack_PI>";
-		 */
 		Tag startupPacket = new Tag(StartupPack_PI, new Tag[] {
 				new Tag(irodsProt, "1"), new Tag(reconnFlag, "0"),
 				new Tag(connectCnt, "0"),
@@ -324,7 +313,7 @@ public class IRODSCommands {
 	 * Add the password to the end of the challenge string, pad to the correct
 	 * length, and take the md5 of that.
 	 */
-	private String challengeResponse(String challenge, String password)
+	private String challengeResponse(final String challenge, String password)
 			throws SecurityException, IOException {
 
 		if (challenge == null) {
@@ -386,8 +375,9 @@ public class IRODSCommands {
 
 		// after md5 turn any 0 into 1
 		for (int i = 0; i < chal.length; i++) {
-			if (chal[i] == 0)
+			if (chal[i] == 0) {
 				chal[i] = 1;
+			}
 		}
 
 		// return to Base64
@@ -412,8 +402,8 @@ public class IRODSCommands {
 	 * @return <code>Tag</code> representing the response from IRODS
 	 * @throws JargonException
 	 */
-	public synchronized Tag irodsFunction(String type, String message,
-			int intInfo) throws JargonException {
+	public synchronized Tag irodsFunction(final String type,
+			final String message, final int intInfo) throws JargonException {
 		return irodsFunction(type, message, 0, null, 0, null, intInfo);
 	}
 
@@ -439,9 +429,10 @@ public class IRODSCommands {
 	 *            request
 	 * @return <code>Tag</code> representing the response from IRODS
 	 */
-	public synchronized Tag irodsFunction(String type, String message,
-			byte[] errorStream, int errorOffset, int errorLength, byte[] bytes,
-			int byteOffset, int byteStringLength, int intInfo)
+	public synchronized Tag irodsFunction(final String type,
+			final String message, final byte[] errorStream,
+			final int errorOffset, final int errorLength, final byte[] bytes,
+			final int byteOffset, final int byteStringLength, final int intInfo)
 			throws JargonException {
 
 		log.info("calling irods function with byte array");
@@ -497,9 +488,11 @@ public class IRODSCommands {
 	/**
 	 * Create an iRODS message Tag, including header.
 	 */
-	public synchronized Tag irodsFunction(String type, String message,
-			int errorLength, InputStream errorStream, long byteStringLength,
-			InputStream byteStream, int intInfo) throws JargonException {
+	public synchronized Tag irodsFunction(final String type,
+			final String message, final int errorLength,
+			final InputStream errorStream, final long byteStringLength,
+			final InputStream byteStream, final int intInfo)
+			throws JargonException {
 
 		log.info("calling irods function with streams");
 		if (log.isDebugEnabled()) {
@@ -510,7 +503,7 @@ public class IRODSCommands {
 		if (type == null || type.length() == 0) {
 			String err = "null or blank type";
 			log.error(err);
-			throw new IllegalArgumentException(err); // FIXME: jargon excep
+			throw new IllegalArgumentException(err); 
 		}
 
 		if (message == null) {
@@ -558,8 +551,8 @@ public class IRODSCommands {
 	 * data in the <code>Tag</code> format, which will eventually be deprectated
 	 * for the more neutral call with <code>String</code> XML.
 	 */
-	public synchronized Tag irodsFunction(String type, Tag message, int intInfo)
-			throws IOException {
+	public synchronized Tag irodsFunction(final String type, final Tag message,
+			final int intInfo) throws IOException {
 		return irodsFunction(type, message, 0, null, 0, null, intInfo);
 	}
 
@@ -571,10 +564,10 @@ public class IRODSCommands {
 	 * which will eventually be deprectated for the more neutral call with
 	 * <code>String</code> XML.
 	 */
-	public synchronized Tag irodsFunction(String type, Tag message,
-			byte[] errorStream, int errorOffset, int errorLength, byte[] bytes,
-			int byteOffset, int byteStringLength, int intInfo)
-			throws IOException {
+	public synchronized Tag irodsFunction(final String type, final Tag message,
+			final byte[] errorStream, final int errorOffset,
+			final int errorLength, final byte[] bytes, final int byteOffset,
+			final int byteStringLength, final int intInfo) throws IOException {
 
 		if (type == null || type.length() == 0) {
 			String err = "null or blank type";
@@ -603,8 +596,9 @@ public class IRODSCommands {
 				out.getBytes(encoding).length, errorLength, byteStringLength,
 				intInfo));
 		irodsConnection.send(out);
-		if (byteStringLength > 0)
+		if (byteStringLength > 0) {
 			irodsConnection.send(bytes, byteOffset, byteStringLength);
+		}
 		irodsConnection.flush();
 		return irodsConnection.readMessage();
 	}
@@ -613,9 +607,10 @@ public class IRODSCommands {
 	 * Create an iRODS message Tag, including header. Send the bytes of the byte
 	 * array, no error stream.
 	 */
-	public synchronized Tag irodsFunction(IRodsPI irodsPI, byte[] errorStream,
-			int errorOffset, int errorLength, byte[] bytes, int byteOffset,
-			int byteStringLength) throws JargonException {
+	public synchronized Tag irodsFunction(final IRodsPI irodsPI,
+			final byte[] errorStream, final int errorOffset,
+			final int errorLength, final byte[] bytes, final int byteOffset,
+			final int byteStringLength) throws JargonException {
 
 		if (irodsPI == null) {
 			String err = "null irodsPI";
@@ -663,7 +658,7 @@ public class IRODSCommands {
 	 * suitable for operations that do not require error or binary streams, and
 	 * will set up empty streams for the method call.
 	 */
-	public synchronized Tag irodsFunction(IRodsPI irodsPI)
+	public synchronized Tag irodsFunction(final IRodsPI irodsPI)
 			throws JargonException {
 
 		if (irodsPI == null) {
@@ -679,9 +674,10 @@ public class IRODSCommands {
 	/**
 	 * Create an iRODS message Tag, including header.
 	 */
-	public synchronized Tag irodsFunction(String type, Tag message,
-			int errorLength, InputStream errorStream, long byteStringLength,
-			InputStream byteStream, int intInfo) throws IOException {
+	public synchronized Tag irodsFunction(final String type, final Tag message,
+			final int errorLength, final InputStream errorStream,
+			final long byteStringLength, final InputStream byteStream,
+			final int intInfo) throws IOException {
 
 		if (type == null || type.length() == 0) {
 			String err = "null or blank type";
@@ -710,10 +706,12 @@ public class IRODSCommands {
 				out.getBytes(encoding).length, errorLength, byteStringLength,
 				intInfo));
 		irodsConnection.send(out);
-		if (errorLength > 0)
+		if (errorLength > 0) {
 			irodsConnection.send(errorStream, errorLength);
-		if (byteStringLength > 0)
+		}
+		if (byteStringLength > 0) {
 			irodsConnection.send(byteStream, byteStringLength);
+		}
 		irodsConnection.flush();
 		return irodsConnection.readMessage();
 	}
@@ -748,8 +746,9 @@ public class IRODSCommands {
 		 */
 	}
 
-	void chmod(IRODSFile file, String permission, String user, String zoneName,
-			boolean recursive) throws IOException {
+	void chmod(final IRODSFile file, final String permission,
+			final String user, final String zoneName, final boolean recursive)
+			throws IOException {
 		Tag message = new Tag(modAccessControlInp_PI,
 				new Tag[] { new Tag(recursiveFlag, recursive ? 1 : 0),
 						new Tag(accessLevel, permission),
@@ -767,8 +766,8 @@ public class IRODSCommands {
 	 * @param overwriteFlag
 	 * @throws IOException
 	 */
-	void copy(IRODSFile source, IRODSFile destination, boolean overwriteFlag)
-			throws IOException {
+	void copy(final IRODSFile source, final IRODSFile destination,
+			final boolean overwriteFlag) throws IOException {
 		String[][] keyword = new String[2][2];
 		String resource = destination.getResource();
 		if (overwriteFlag) {
@@ -808,7 +807,8 @@ public class IRODSCommands {
 	 *            data-objects without putting them in trash
 	 * @throws IOException
 	 */
-	void deleteDirectory(IRODSFile file, boolean force) throws IOException {
+	void deleteDirectory(final IRODSFile file, final boolean force)
+			throws IOException {
 		String[][] keyword = null;
 		if (force) {
 			keyword = new String[][] {
@@ -842,7 +842,8 @@ public class IRODSCommands {
 	 *            <code>Tag</code> containing status messages from IRODS
 	 * @throws IOException
 	 */
-	private void processClientStatusMessages(Tag reply) throws IOException {
+	private void processClientStatusMessages(final Tag reply)
+			throws IOException {
 
 		boolean done = false;
 		Tag ackResult = reply;
@@ -857,9 +858,6 @@ public class IRODSCommands {
 					// the coll stat reply, otherwise, just ignore and
 					// don't send the reply.
 
-					Tag totalFilesTag = ackResult.getTag("totalFileCnt");
-					int totalFiles = Integer.parseInt((String) totalFilesTag
-							.getValue());
 					Tag fileCountTag = ackResult.getTag("filesCnt");
 					int fileCount = Integer.parseInt((String) fileCountTag
 							.getValue());
@@ -879,7 +877,8 @@ public class IRODSCommands {
 
 	}
 
-	void deleteFile(IRODSFile file, boolean force) throws IOException {
+	void deleteFile(final IRODSFile file, final boolean force)
+			throws IOException {
 		String[][] keyword = null;
 		if (force) {
 			keyword = new String[][] { new String[] {
@@ -900,13 +899,14 @@ public class IRODSCommands {
 	}
 
 	// POSIX commands
-	int fileCreate(IRODSFile file, boolean read, boolean write)
+	int fileCreate(final IRODSFile file, final boolean read, final boolean write)
 			throws IOException {
 		int rw = 0;
-		if (read && write)
+		if (read && write) {
 			rw = 2;
-		else if (write)
+		} else if (write) {
 			rw = 1;
+		}
 
 		String resource = file.getResource();
 		String[][] keyword = {
@@ -924,26 +924,28 @@ public class IRODSCommands {
 				new Tag(oprType, 0), Tag.createKeyValueTag(keyword), });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_CREATE_AN);
-		if (message != null)
+		if (message != null) {
 			return message.getTag(MsgHeader_PI).getTag(intInfo).getIntValue();
+		}
 
 		return -1;
 	}
 
-	void fileClose(int fd) throws IOException {
+	void fileClose(final int fd) throws IOException {
 		Tag message = new Tag(dataObjCloseInp_PI, new Tag[] {
 				new Tag(l1descInx, fd), new Tag(bytesWritten, 0), });
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_CLOSE_AN);
 	}
 
-	int fileOpen(IRODSFile file, boolean read, boolean write)
+	int fileOpen(final IRODSFile file, final boolean read, final boolean write)
 			throws IOException {
 		int rw = 0;
-		if (read && write)
+		if (read && write) {
 			rw = 2;
-		else if (write)
+		} else if (write) {
 			rw = 1;
+		}
 
 		Tag message = new Tag(DataObjInp_PI, new Tag[] {
 				new Tag(objPath, file.getAbsolutePath()),
@@ -953,8 +955,9 @@ public class IRODSCommands {
 				new Tag(oprType, 0), Tag.createKeyValueTag(null), });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_OPEN_AN);
-		if (message != null)
+		if (message != null) {
 			return message.getTag(MsgHeader_PI).getTag(intInfo).getIntValue();
+		}
 
 		return -1;
 	}
@@ -962,8 +965,8 @@ public class IRODSCommands {
 	/**
 	 * Read a file to the given stream.
 	 */
-	synchronized int fileRead(int fd, OutputStream destination, long length)
-			throws IOException {
+	synchronized int fileRead(final int fd, final OutputStream destination,
+			long length) throws IOException {
 
 		// shim code for Bug 40 - IRODSCommands.fileRead() with length of 0
 		// causes null message from irods
@@ -992,17 +995,17 @@ public class IRODSCommands {
 	/**
 	 * Read a file into the given byte array.
 	 */
-	synchronized int fileRead(int fd, byte buffer[], int offset, int length)
-			throws IOException {
+	synchronized int fileRead(final int fd, final byte buffer[],
+			final int offset, int length) throws IOException {
 
 		Tag message = new Tag(dataObjReadInp_PI, new Tag[] {
 				new Tag(l1descInx, fd), new Tag(len, length), });
 
-		// FIXME: bug here? length is always max
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_READ_AN);
 		// Need the total dataSize
-		if (message == null)
+		if (message == null) {
 			return -1;
+		}
 
 		length = message.getTag(MsgHeader_PI).getTag(bsLen).getIntValue();
 
@@ -1031,7 +1034,8 @@ public class IRODSCommands {
 	 * @return <code>long</code with the new offset.
 	 * @throws IOException
 	 */
-	long fileSeek(int fd, long seek, int whence) throws IOException {
+	long fileSeek(final int fd, final long seek, final int whence)
+			throws IOException {
 
 		Tag message;
 		try {
@@ -1050,7 +1054,8 @@ public class IRODSCommands {
 	/**
 	 * Write a file into the given InputStream.
 	 */
-	int fileWrite(int fd, InputStream source, long length) throws IOException {
+	int fileWrite(final int fd, final InputStream source, final long length)
+			throws IOException {
 		Tag message = new Tag(dataObjWriteInp_PI, new Tag[] {
 				new Tag(dataObjInx, fd), new Tag(len, length), });
 
@@ -1062,8 +1067,8 @@ public class IRODSCommands {
 	/**
 	 * Write a file into the given byte array.
 	 */
-	int fileWrite(int fd, byte buffer[], int offset, int length)
-			throws IOException {
+	int fileWrite(final int fd, final byte buffer[], final int offset,
+			final int length) throws IOException {
 		Tag message = new Tag(dataObjWriteInp_PI, new Tag[] {
 				new Tag(dataObjInx, fd), new Tag(len, length), });
 
@@ -1082,8 +1087,9 @@ public class IRODSCommands {
 	 * @param resource
 	 * @throws IOException
 	 */
-	synchronized void get(IRODSFile source, GeneralFile destination,
-			String resource) throws IOException {
+	synchronized void get(final IRODSFile source,
+			final GeneralFile destination, final String resource)
+			throws IOException {
 
 		/*
 		 * #define DataObjInp_PI "str objPath[MAX_NAME_LEN]; int createMode; int
@@ -1173,8 +1179,9 @@ public class IRODSCommands {
 
 				try {
 					for (int i = 0; i < threads; i++) {
-						if (transferThreads[i].isAlive())
+						if (transferThreads[i].isAlive()) {
 							transferThreads[i].join();
+						}
 					}
 				} catch (InterruptedException e) {
 					if (log.isWarnEnabled()) {
@@ -1198,7 +1205,7 @@ public class IRODSCommands {
 
 	}
 
-	synchronized void get(IRODSFile source, GeneralFile destination)
+	synchronized void get(final IRODSFile source, final GeneralFile destination)
 			throws IOException {
 
 		get(source, destination, "");
@@ -1208,7 +1215,7 @@ public class IRODSCommands {
 	/**
    *
    */
-	void mkdir(IRODSFile irodsFile, boolean recursiveOperation)
+	void mkdir(final IRODSFile irodsFile, final boolean recursiveOperation)
 			throws IOException {
 		if (irodsFile == null) {
 			log.error("directory path cannot be null");
@@ -1235,14 +1242,14 @@ public class IRODSCommands {
 		}
 	}
 
-	void put(GeneralFile source, IRODSFile destination, boolean overwriteFlag)
-			throws IOException {
+	void put(final GeneralFile source, final IRODSFile destination,
+			final boolean overwriteFlag) throws IOException {
 
 		String resource = destination.getResource();
 
 		long length = source.length();
 
-		if (length > TRANSFER_THREAD_SIZE) {
+		if (length > TRANSFER_THREAD_SIZE) { // FIXME: set to constant value
 			if (log.isInfoEnabled()) {
 				log.info("put operation will use parallel transfer, size:"
 						+ length
@@ -1331,8 +1338,9 @@ public class IRODSCommands {
 
 					try {
 						for (int i = 0; i < threads; i++) {
-							if (transferThreads[i].isAlive())
+							if (transferThreads[i].isAlive()) {
 								transferThreads[i].join();
+							}
 						}
 					} catch (InterruptedException e) {
 						if (log.isWarnEnabled()) {
@@ -1342,8 +1350,9 @@ public class IRODSCommands {
 					}
 					log.info("closing threads");
 					for (int i = 0; i < threads; i++) {
-						if (transferThreads[i].isAlive())
+						if (transferThreads[i].isAlive()) {
 							transfer[i].close();
+						}
 					}
 
 					log.info("transfer is complete");
@@ -1394,7 +1403,8 @@ public class IRODSCommands {
 	 *            units)
 	 * @throws IOException
 	 */
-	void modifyMetaData(IRODSFile file, String[] values) throws IOException {
+	void modifyMetaData(final IRODSFile file, final String[] values)
+			throws IOException {
 
 		if (file == null) {
 			throw new IllegalArgumentException("irods file must not be null");
@@ -1428,7 +1438,8 @@ public class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, MOD_AVU_METADATA_AN);
 	}
 
-	void deleteMetaData(IRODSFile file, String[] values) throws IOException {
+	void deleteMetaData(final IRODSFile file, final String[] values)
+			throws IOException {
 		Tag message = new Tag(ModAVUMetadataInp_PI, new Tag[] { new Tag("arg0",
 				"rmw"), });
 		if (file.isDirectory()) {
@@ -1462,7 +1473,7 @@ public class IRODSCommands {
 	 *            units)
 	 * @throws IOException
 	 */
-	void modifyResourceMetaData(String resourceName, String[] values)
+	void modifyResourceMetaData(final String resourceName, final String[] values)
 			throws IOException {
 
 		if (resourceName == null || resourceName.length() == 0) {
@@ -1502,7 +1513,7 @@ public class IRODSCommands {
 	 *            <code>String[]</code> with the AVU triple to delete
 	 * @throws IOException
 	 */
-	void deleteResourceMetaData(String resourceName, String[] values)
+	void deleteResourceMetaData(final String resourceName, final String[] values)
 			throws IOException {
 		Tag message = new Tag(ModAVUMetadataInp_PI, new Tag[] { new Tag("arg0",
 				"rmw"), });
@@ -1523,7 +1534,8 @@ public class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, MOD_AVU_METADATA_AN);
 	}
 
-	void renameFile(IRODSFile source, IRODSFile destination) throws IOException {
+	void renameFile(final IRODSFile source, final IRODSFile destination)
+			throws IOException {
 		Tag message = new Tag(DataObjCopyInp_PI, new Tag[] {
 				// define the source
 				new Tag(DataObjInp_PI, new Tag[] {
@@ -1545,7 +1557,7 @@ public class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_RENAME_AN);
 	}
 
-	void renameDirectory(IRODSFile source, IRODSFile destination)
+	void renameDirectory(final IRODSFile source, final IRODSFile destination)
 			throws IOException {
 		Tag message = new Tag(DataObjCopyInp_PI, new Tag[] {
 				// define the source
@@ -1566,7 +1578,7 @@ public class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_RENAME_AN);
 	}
 
-	void physicalMove(IRODSFile source, IRODSFile destination)
+	void physicalMove(final IRODSFile source, final IRODSFile destination)
 			throws IOException {
 		Tag message = new Tag(DataObjInp_PI, new Tag[] {
 				new Tag(objPath, source.getAbsolutePath()),
@@ -1579,7 +1591,7 @@ public class IRODSCommands {
 				Tag.createKeyValueTag(IRODSMetaDataSet.DEST_RESC_NAME_KW,
 						destination.getResource()) });
 
-		Tag response = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PHYMV_AN);
+		irodsFunction(RODS_API_REQ, message, DATA_OBJ_PHYMV_AN);
 	}
 
 	/**
@@ -1591,7 +1603,8 @@ public class IRODSCommands {
 	 *            <code>String</code> with the name of the new resource
 	 * @throws IOException
 	 */
-	void replicate(IRODSFile file, String newResource) throws IOException {
+	void replicate(final IRODSFile file, final String newResource)
+			throws IOException {
 		try {
 			DataObjInp dataObjInp = DataObjInp.instanceForReplicate(
 					file.getAbsolutePath(), newResource);
@@ -1604,7 +1617,8 @@ public class IRODSCommands {
 		}
 	}
 
-	void deleteReplica(IRODSFile file, String resource) throws IOException {
+	void deleteReplica(final IRODSFile file, final String resource)
+			throws IOException {
 		// NOTE: add num copies option and fix test in IRODSFileCommandsTest
 		Tag message = new Tag(DataObjInp_PI,
 				new Tag[] {
@@ -1621,7 +1635,7 @@ public class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_TRIM_AN);
 	}
 
-	String[] stat(IRODSFile file) throws IOException {
+	String[] stat(final IRODSFile file) throws IOException {
 		String[] data;
 		Tag message = new Tag(DataObjInp_PI, new Tag[] {
 				new Tag(objPath, file.getAbsolutePath()),
@@ -1664,8 +1678,8 @@ public class IRODSCommands {
 	 *            <code>.tar</code> file.
 	 * @throws IOException
 	 */
-	void createBundle(IRODSFile tarFile, IRODSFile directory, String resource)
-			throws IOException {
+	void createBundle(final IRODSFile tarFile, final IRODSFile directory,
+			final String resource) throws IOException {
 
 		if (tarFile == null || directory == null || resource == null
 				|| resource.length() == 0) {
@@ -1701,7 +1715,7 @@ public class IRODSCommands {
 	 *            <code>IRODSFile</coce> that is the collection that is to be created with the extracted contents.
 	 * @throws IOException
 	 */
-	void extractBundle(IRODSFile tarFile, IRODSFile directory)
+	void extractBundle(final IRODSFile tarFile, final IRODSFile directory)
 			throws IOException {
 
 		try {
@@ -1719,8 +1733,8 @@ public class IRODSCommands {
 		}
 	}
 
-	synchronized InputStream executeCommand(String command, String args,
-			String hostAddress) throws IOException {
+	synchronized InputStream executeCommand(final String command,
+			final String args, final String hostAddress) throws IOException {
 
 		if (command == null || command.length() == 0) {
 			throw new IOException("no command to execute");
@@ -1755,7 +1769,7 @@ public class IRODSCommands {
 
 	}
 
-	String checksum(IRODSFile file) throws IOException {
+	String checksum(final IRODSFile file) throws IOException {
 		Tag message = new Tag(DataObjInp_PI, new Tag[] {
 				new Tag(objPath, file.getAbsolutePath()),
 				new Tag(createMode, 0), new Tag(openFlags, 0),
@@ -1764,8 +1778,9 @@ public class IRODSCommands {
 				Tag.createKeyValueTag(null) });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_CHKSUM_AN);
-		if (message != null)
+		if (message != null) {
 			return message.getTag(Rule.myStr).getStringValue();
+		}
 
 		return null;
 	}
@@ -1794,8 +1809,8 @@ public class IRODSCommands {
 	 *         from IRODS for the rule invocation.
 	 * @throws IOException
 	 */
-	Tag executeRule(String rule, Parameter[] input, Parameter[] output)
-			throws IOException {
+	Tag executeRule(final String rule, final Parameter[] input,
+			final Parameter[] output) throws IOException {
 		// create the rule tag
 		Tag message = new Tag(ExecMyRuleInp_PI,
 				new Tag[] {
@@ -1809,9 +1824,10 @@ public class IRODSCommands {
 		// They get cat together separated by '%'
 		if (output != null) {
 			String temp = "";
-			for (Parameter out : output)
+			for (Parameter out : output) {
 				temp += out.getUniqueName() + "%";
-			// should this % be here?
+				// should this % be here?
+			}
 
 			message.addTag(new Tag(outParamDesc, temp.substring(0,
 					temp.length() - 1)));
@@ -1839,7 +1855,7 @@ public class IRODSCommands {
 	/**
 	 * send when certain rules are finished?
 	 */
-	void operationComplete(int status) throws IOException {
+	void operationComplete(final int status) throws IOException {
 		Tag message = new Tag(Rule.INT_PI, new Tag[] { new Tag(Rule.myInt,
 				status), });
 		irodsFunction(RODS_API_REQ, message, OPR_COMPLETE_AN);
@@ -1898,7 +1914,8 @@ public class IRODSCommands {
 	 * , "select distinct resc_group_name from r_resc_group",
 	 * "select coll_id from r_coll_main where coll_name = ?" *
 	 */
-	String[] simpleQuery(String statement, String arg) throws IOException {
+	String[] simpleQuery(final String statement, final String arg)
+			throws IOException {
 		Tag message = null;
 
 		if (arg == null) {
@@ -1948,9 +1965,10 @@ public class IRODSCommands {
 	 *         containing the results, and the ability to requery.
 	 * @throws IOException
 	 */
-	synchronized MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted,
-			Namespace namespace) throws IOException {
+	synchronized MetaDataRecordList[] query(
+			final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int numberOfRecordsWanted,
+			final Namespace namespace) throws IOException {
 		return query(conditions, selects, numberOfRecordsWanted, namespace,
 				true);
 	}
@@ -1980,9 +1998,11 @@ public class IRODSCommands {
 	 *         containing the results, and the ability to requery.
 	 * @throws IOException
 	 */
-	synchronized MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted,
-			Namespace namespace, boolean distinctQuery) throws IOException {
+	synchronized MetaDataRecordList[] query(
+			final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int numberOfRecordsWanted,
+			final Namespace namespace, final boolean distinctQuery)
+			throws IOException {
 
 		log.debug("getting GenQueryClassicMidLevelService to process query");
 		try {
@@ -1999,8 +2019,8 @@ public class IRODSCommands {
 		}
 	}
 
-	MetaDataRecordList[] getMoreResults(int continuationIndex,
-			int numberOfRecordsWanted) throws IOException {
+	MetaDataRecordList[] getMoreResults(final int continuationIndex,
+			final int numberOfRecordsWanted) throws IOException {
 		Tag message = new Tag(GenQueryInp_PI, new Tag[] {
 				new Tag(maxRows, numberOfRecordsWanted),
 				new Tag(continueInx, continuationIndex),
@@ -2013,14 +2033,14 @@ public class IRODSCommands {
 				.newSelection("file name") };
 		Tag[] subTags = new Tag[selects.length * 2 + 1];
 		subTags[0] = new Tag(iiLen, selects.length);
-		for (int i = 0; i < selects.length; i++) {
-			subTags[j] = new Tag(inx, IRODSMetaDataSet.getID(selects[i]
+		for (MetaDataSelect select : selects) {
+			subTags[j] = new Tag(inx, IRODSMetaDataSet.getID(select
 					.getFieldName()));
 			j++;
 		}
-		for (int i = 0; i < selects.length; i++) {
+		for (MetaDataSelect select : selects) {
 			// New for loop because they have to be in a certain order...
-			subTags[j] = new Tag(ivalue, selects[i].getOperation());
+			subTags[j] = new Tag(ivalue, select.getOperation());
 			j++;
 		}
 		message.addTag(new Tag(InxIvalPair_PI, subTags));
@@ -2082,8 +2102,8 @@ public class IRODSCommands {
 		/**
 		 * Used by client parallel transfer get
 		 */
-		TransferThread(String host, int port, int cookie,
-				GeneralRandomAccessFile destination) throws IOException {
+		TransferThread(final String host, final int port, final int cookie,
+				final GeneralRandomAccessFile destination) throws IOException {
 			local = destination;
 			s = new Socket(host, port);
 			byte[] outputBuffer = new byte[4];
@@ -2115,12 +2135,14 @@ public class IRODSCommands {
 		 *            number of bytes this thread should transfer
 		 * @throws java.io.IOException
 		 */
-		TransferThread(String host, int port, int cookie, InputStream in,
-				long offset, long length) throws IOException {
+		TransferThread(final String host, final int port, final int cookie,
+				final InputStream in, final long offset, final long length)
+				throws IOException {
 			this.in = in;
 			transferLength = length;
-			if (offset > 0)
+			if (offset > 0) {
 				in.skip(offset);
+			}
 			this.offset = offset;
 			s = new Socket(host, port);
 			out = s.getOutputStream();
@@ -2223,9 +2245,9 @@ public class IRODSCommands {
 			int read = 0;
 
 			// begin transfer
-			if (transferLength <= 0)
+			if (transferLength <= 0) {
 				return;
-			else {
+			} else {
 				// length has a max of 8mb?
 				buffer = new byte[IRODSConnection.OUTPUT_BUFFER_LENGTH];
 			}
@@ -2281,9 +2303,10 @@ public class IRODSCommands {
 			int read = 0;
 
 			if (operation != GET_OPR) {
-				if (log.isDebugEnabled())
+				if (log.isDebugEnabled()) {
 					log.warn("Parallel transfer expected GET, "
 							+ "server requested " + operation);
+				}
 				return;
 			}
 
@@ -2294,9 +2317,9 @@ public class IRODSCommands {
 				local.seek(offset);
 			}
 
-			if (length <= 0)
+			if (length <= 0) {
 				return;
-			else {
+			} else {
 				// length has a max of 8mb?
 				buffer = new byte[IRODSConnection.OUTPUT_BUFFER_LENGTH];
 			}
@@ -2359,12 +2382,12 @@ public class IRODSCommands {
 		return irodsAccount;
 	}
 
-	protected void setIrodsAccount(IRODSAccount irodsAccount) {
+	protected void setIrodsAccount(final IRODSAccount irodsAccount) {
 		this.irodsAccount = irodsAccount;
 	}
 
 	protected void setIrodsServerProperties(
-			IRODSServerProperties irodsServerProperties) {
+			final IRODSServerProperties irodsServerProperties) {
 		this.irodsServerProperties = irodsServerProperties;
 	}
 
@@ -2379,8 +2402,8 @@ public class IRODSCommands {
 	 * members of that resource group.
 	 * @throws JargonException
 	 */
-	protected void replicateToResourceGroup(IRODSFile irodsFile,
-			String resourceGroup) throws JargonException {
+	protected void replicateToResourceGroup(final IRODSFile irodsFile,
+			final String resourceGroup) throws JargonException {
 		DataObjInp dataObjInp = DataObjInp.instanceForReplicateToResourceGroup(
 				irodsFile.getAbsolutePath(), resourceGroup);
 		irodsFunction(dataObjInp);

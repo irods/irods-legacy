@@ -92,7 +92,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	private int outputOffset = 0;
 
 	static IRODSConnection instance(final IRODSAccount irodsAccount,
-			String encoding) throws IRODSException, JargonException {
+			final String encoding) throws IRODSException, JargonException {
 		IRODSConnection irodsSimpleConnection = new IRODSConnection(
 				irodsAccount, encoding);
 		irodsSimpleConnection.initializeConnection();
@@ -102,7 +102,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	/**
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
-	 *<P>
+	 * <P>
 	 * 
 	 * @throws IOException
 	 *             If can't close socket.
@@ -153,7 +153,8 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		this.encoding = null;
 	}
 
-	private IRODSConnection(final IRODSAccount irodsAccount, String encoding) {
+	private IRODSConnection(final IRODSAccount irodsAccount,
+			final String encoding) {
 		this.irodsAccount = irodsAccount;
 		this.encoding = encoding;
 	}
@@ -168,14 +169,19 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		log.info("opening socket");
 
 		if (connected) {
-			log
-					.warn("doing connect when already connected!, will bypass connect and proceed");
+			log.warn("doing connect when already connected!, will bypass connect and proceed");
 			return;
 		}
 
 		try {
-			connection = new Socket(irodsAccount.getHost(), irodsAccount
-					.getPort());
+			connection = new Socket(irodsAccount.getHost(),
+					irodsAccount.getPort());
+			if (IRODSConstants.CONNECTION_TIMEOUT_VALUE != IRODSConstants.CONNECTION_TIMEOUT_NO_TIMEOUT) {
+				log.warn("setting a connection timeout of:{}",
+						IRODSConstants.CONNECTION_TIMEOUT_VALUE);
+				connection.setSoTimeout(IRODSConstants.CONNECTION_TIMEOUT_VALUE);
+			}
+			
 			irodsInputStream = connection.getInputStream();
 			irodsOutputStream = connection.getOutputStream();
 		} catch (UnknownHostException e) {
@@ -184,9 +190,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			e.printStackTrace();
 			throw new JargonException("error opening socket, unknown host", e);
 		} catch (IOException e) {
-			log.error("io exception opening socket to:"
-					+ irodsAccount.getHost() + " port:"
-					+ irodsAccount.getPort(), e);
+			log.error(
+					"io exception opening socket to:" + irodsAccount.getHost()
+							+ " port:" + irodsAccount.getPort(), e);
 			e.printStackTrace();
 			throw new JargonException(e);
 		}
@@ -288,14 +294,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void send(byte[] value) throws IOException {
+	void send(final byte[] value) throws IOException {
 
 		log.debug("value length:" + value.length);
-
-		if (value == null) {
-			log.error("value cannot be null");
-			throw new IllegalArgumentException("value cannot be null");
-		}
 
 		if (value.length == 0) {
 			// nothing to send, warn and ignore
@@ -311,13 +312,10 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			outputOffset = 0;
 		} else {
 			// the message sent isn't longer than OUTPUT_BUFFER_LENGTH
-			System
-					.arraycopy(value, 0, outputBuffer, outputOffset,
-							value.length);
+			System.arraycopy(value, 0, outputBuffer, outputOffset, value.length);
 			outputOffset += value.length;
-			if (log.isDebugEnabled()) {
-				log.debug("output offset now:" + outputOffset);
-			}
+			log.debug("output offset now:{}", outputOffset);
+
 		}
 	}
 
@@ -335,7 +333,8 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void send(byte[] value, int offset, int length) throws IOException {
+	void send(final byte[] value, final int offset, final int length)
+			throws IOException {
 
 		if (value == null) {
 			log.error("value cannot be null");
@@ -376,7 +375,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void send(String value) throws IOException {
+	void send(final String value) throws IOException {
 		if (value == null) {
 			String err = "value is null";
 			log.error(err);
@@ -394,7 +393,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendInNetworkOrder(int value) throws IOException {
+	void sendInNetworkOrder(final int value) throws IOException {
 		byte bytes[] = new byte[INT_LENGTH];
 
 		Host.copyInt(value, bytes);
@@ -409,7 +408,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void send(InputStream source, long length) throws IOException {
+	void send(final InputStream source, long length) throws IOException {
 		if (source == null) {
 			String err = "value is null";
 			log.error(err);
@@ -441,7 +440,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			log.error("attempting flush when connection was closed");
 			throw new ClosedChannelException();
 		}
-		
+
 		irodsOutputStream.write(outputBuffer, 0, outputOffset);
 		outputOffset = 0;
 	}
@@ -450,7 +449,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * read length bytes from the server socket connection and write them to
 	 * destination
 	 */
-	void read(OutputStream destination, long length) throws IOException {
+	void read(final OutputStream destination, long length) throws IOException {
 
 		if (destination == null) {
 			String err = "destination is null";
@@ -468,8 +467,8 @@ public final class IRODSConnection implements IRODSManagedConnection {
 				(int) length)];
 		int n = 0;
 		while (length > 0) {
-			n = read(temp, 0, Math.min(IRODSFileSystem.BUFFER_SIZE,
-					(int) length));
+			n = read(temp, 0,
+					Math.min(IRODSFileSystem.BUFFER_SIZE, (int) length));
 			if (n > 0) {
 				length -= n;
 				destination.write(temp, 0, n);
@@ -483,7 +482,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * read length bytes from the server socket connection and write them to
 	 * destination
 	 */
-	void read(GeneralRandomAccessFile destination, long length)
+	void read(final GeneralRandomAccessFile destination, long length)
 			throws IOException {
 
 		if (destination == null) {
@@ -502,8 +501,8 @@ public final class IRODSConnection implements IRODSManagedConnection {
 				(int) length)];
 		int n = 0;
 		while (length > 0) {
-			n = read(temp, 0, Math.min(IRODSFileSystem.BUFFER_SIZE,
-					(int) length));
+			n = read(temp, 0,
+					Math.min(IRODSFileSystem.BUFFER_SIZE, (int) length));
 			if (n > 0) {
 				length -= n;
 				destination.write(temp, 0, n);
@@ -529,7 +528,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	int read(byte[] value, int offset, int length)
+	int read(final byte[] value, final int offset, final int length)
 			throws ClosedChannelException, InterruptedIOException, IOException {
 
 		if (value == null) {
@@ -546,8 +545,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 		int result = 0;
 		if (length + offset > value.length) {
-			log
-					.error("index out of bounds exception, length + offset larger then byte array");
+			log.error("index out of bounds exception, length + offset larger then byte array");
 			throw new IllegalArgumentException(
 					"length + offset larger than byte array");
 		}
@@ -555,8 +553,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		while (bytesRead < length) {
 			int read = irodsInputStream.read(value, offset + bytesRead, length
 					- bytesRead);
-			if (read == -1)
+			if (read == -1) {
 				break;
+			}
 			bytesRead += read;
 		}
 		result = bytesRead;
@@ -567,8 +566,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	/**
 	 * Create the iRODS header packet
 	 */
-	byte[] createHeader(String type, int messageLength, int errorLength,
-			long byteStringLength, int intInfo) throws IOException {
+	byte[] createHeader(final String type, final int messageLength,
+			final int errorLength, final long byteStringLength,
+			final int intInfo) throws IOException {
 		if (log.isDebugEnabled()) {
 			// to print how long this function call took
 			date = new Date().getTime();
@@ -616,7 +616,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		return readMessage(true);
 	}
 
-	Tag readMessage(boolean decode) throws IOException {
+	Tag readMessage(final boolean decode) throws IOException {
 		log.info("reading message");
 		Tag header = readHeader();
 		/*
@@ -629,12 +629,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 		Tag message = null;
 
-		if (log.isInfoEnabled()) {
-			// print how long this function call took
-			log.info((new Date().getTime() - date) + " millisecs");
-		}
+		// print how long this function call took
+		log.info("{} millisecs", (new Date().getTime() - date));
 
-		String type = header.tags[0].getStringValue();
 		int messageLength = header.tags[1].getIntValue();
 		int errorLength = header.tags[2].getIntValue();
 		int bytesLength = header.tags[3].getIntValue();
@@ -642,10 +639,11 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 		// Reports iRODS errors, throw exception if appropriate
 		if (info < 0) {
-			log.info("info less than zero:" + info);
+			log.info("info less than zero:{}", info);
 			// if nothing else, read the returned bytes and throw them away
-			if (messageLength > 0)
+			if (messageLength > 0) {
 				read(new byte[messageLength], 0, messageLength);
+			}
 
 			if (info == IRODSException.CAT_NO_ROWS_FOUND
 					|| info == IRODSException.CAT_SUCCESS_BUT_WITH_NO_INFO) {
@@ -654,13 +652,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 					byte[] errorMessage = new byte[errorLength];
 					read(errorMessage, 0, errorLength);
 					Tag errorTag = Tag.readNextTag(errorMessage, encoding);
-					log
-							.warn("IRODS error occured, no rows found or success with no info "
-									+ errorTag
-											.getTag(IRODSConstants.RErrMsg_PI)
-											.getTag(IRODSConstants.msg)
-									+ " : "
-									+ info);
+					log.warn("IRODS error occured, no rows found or success with no info "
+							+ errorTag.getTag(IRODSConstants.RErrMsg_PI)
+									.getTag(IRODSConstants.msg) + " : " + info);
 
 				}
 
@@ -668,8 +662,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 				log.info("returning null from read");
 				return null;
 			} else if (info == IRODSException.OVERWITE_WITHOUT_FORCE_FLAG) {
-				log.warn("Attempt to overwrite file without force flag. info: "
-						+ info);
+				log.warn(
+						"Attempt to overwrite file without force flag. info: {} ",
+						info);
 				throw new IRODSException(
 						"Attempt to overwrite file without force flag. ", info);
 			} else {
@@ -729,9 +724,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	Tag readHeader() throws IOException {
 		byte[] header;
 		int length = readHeaderLength();
-		if (length <= 0)
+		if (length <= 0) {
 			throw new ProtocolException();
-		else if (length > 10000000) {
+		} else if (length > 10000000) {
 			/*
 			 * Protocol failure: One cause, if running a rule that uses
 			 * msiDataObjPut or Get, then when the server requests the Put, the
@@ -789,11 +784,10 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 									// <MsgHeader_PI> + the above header
 									header = new byte[i + 1 + 14];
-									System.arraycopy(("<" + newHeader)
-											.getBytes(), 0, header, 0, 14);
-									System
-											.arraycopy(temp, 0, header, 14,
-													i + 1);
+									System.arraycopy(
+											("<" + newHeader).getBytes(), 0,
+											header, 0, 14);
+									System.arraycopy(temp, 0, header, 14, i + 1);
 									return Tag.readNextTag(header, encoding);
 								}
 							}
@@ -820,7 +814,8 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		return Host.castToInt(headerInt);
 	}
 
-	Tag readMessageBody(int length, boolean decode) throws IOException {
+	Tag readMessageBody(final int length, final boolean decode)
+			throws IOException {
 		byte[] body = new byte[length];
 		read(body, 0, length);
 		return Tag.readNextTag(body, decode, encoding);

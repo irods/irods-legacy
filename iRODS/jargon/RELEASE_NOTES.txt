@@ -1,10 +1,10 @@
 
-Jargon 2.4.X Release Notes
+Jargon 2.5 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
 Date: 10/08/2010
-Release Version: post release of Jargon 2.4.1 
+Release Version: Jargon 2.5 release candidate
 ================================================================================================
 Requirements
 
@@ -60,6 +60,13 @@ from this fix, but the code itself was not consistent.
 -new access object adapted from jargon-core for RemoteExecutionOfCommandsAO.
 
 *Bug - miscServerinfo causes null pointer exception
+
+********
+Switch to GForge bug numbering at this point, prior numbers are Bugzilla issues
+********
+[#55] Davis conn sharing probs using miscServerInfo heartbeat ping
+-add synch of miscServerInfo for connection contention issue in heartbeat used by Davis
+-added connection time-out to iRODS commands, by default set to not add timeout
 
 ================================================================================================
 Outstanding Issues
