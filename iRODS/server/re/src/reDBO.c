@@ -25,7 +25,7 @@
  *
  * \module core
  *
- * \since after 2.4.1
+ * \since 2.5
  *
  * \author Wayne Schroeder
  * \date   2010-11-23
@@ -122,7 +122,7 @@ msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDboToDataObj: input inpParam1 error. status = %d", rei->status);
+          "msiDboExec: input inpParam error. status = %d", rei->status);
         return (rei->status);
     }
 
@@ -165,7 +165,7 @@ msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
  *
  * \module core
  *
- * \since post 2.4.1
+ * \since 2.5
  *
  * \author Wayne Schroeder
  * \date   2010-11-23
@@ -205,7 +205,7 @@ msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei)
 
     if (rei == NULL || rei->rsComm == NULL) {
 	rodsLog (LOG_ERROR,
-	  "msiDboNoResults rei or rsComm is NULL");
+	  "msiDbrCommit rei or rsComm is NULL");
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
     rsComm = rei->rsComm;
@@ -215,7 +215,7 @@ msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei)
     myDbrName = parseMspForStr(dbrName);
     if (myDbrName == NULL) {
        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			   "msiDboToStdout: input inpDboName is NULL");
+			   "msiDbrCommit: input dbrName is NULL");
        return(USER__NULL_INPUT_ERR);
     }
 
@@ -235,7 +235,7 @@ msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei)
  *
  * \module core
  *
- * \since after 2.4.1
+ * \since 2.5
  *
  * \author Wayne Schroeder
  * \date   2010-11-23
@@ -275,7 +275,7 @@ msiDbrRollback(msParam_t *dbrName, ruleExecInfo_t *rei)
 
     if (rei == NULL || rei->rsComm == NULL) {
 	rodsLog (LOG_ERROR,
-	  "msiDboNoResults rei or rsComm is NULL");
+	  "msiDbrRollback rei or rsComm is NULL");
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
     rsComm = rei->rsComm;
@@ -285,7 +285,7 @@ msiDbrRollback(msParam_t *dbrName, ruleExecInfo_t *rei)
     myDbrName = parseMspForStr(dbrName);
     if (myDbrName == NULL) {
        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			   "msiDboToStdout: input inpDboName is NULL");
+			   "msiDbrRollback: input dbrName is NULL");
        return(USER__NULL_INPUT_ERR);
     }
 
