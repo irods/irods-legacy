@@ -22,6 +22,7 @@
 #include "miscUtil.h"
 #include "rodsClient.h"
 #include "rsIcatOpr.h"
+#include "resource.h"
 
 int 
 getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut)
@@ -426,6 +427,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
     inx = -1;
     while (time(NULL) <= endTime && (thrInx = allocReThr (reExec)) >= 0) {
 	myRuleExecInp = &reExec->reExecProc[thrInx].ruleExecSubmitInp;
+	chkAndUpdateResc (rsComm);
         if ((inx = getNextQueuedRuleExec (rsComm, genQueryOut, inx + 1,
           myRuleExecInp, reExec, jobType)) < 0) {
 	    /* no job to run */
@@ -779,5 +781,27 @@ procExecState_t execState)
 	}
     }
     return 0;
+}
+
+int
+chkAndUpdateResc (rsComm_t *rsComm)
+{
+    time_t curTime;
+    int status;
+
+    curTime = time (NULL);
+
+    if (LastRescUpdateTime > curTime) {
+	LastRescUpdateTime = curTime;
+	return 0;
+    }
+
+    if (curTime >= LastRescUpdateTime + RESC_UPDATE_TIME) {
+	status = updateResc (rsComm);
+	LastRescUpdateTime = curTime;
+	return status;
+    } else {
+	return 0;
+    }
 }
 

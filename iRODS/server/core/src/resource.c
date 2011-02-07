@@ -1586,3 +1586,29 @@ getRescCnt (rescGrpInfo_t *myRescGrpInfo)
     return (rescCnt);
 }
 
+int
+updateResc (rsComm_t *rsComm)
+{
+    int status;
+
+    rescGrpInfo_t *tmpRescGrpInfo, *nextRescGrpInfo;
+
+    /* free CachedRescGrpInfo */
+    freeAllRescGrpInfo (CachedRescGrpInfo);
+    CachedRescGrpInfo = NULL;
+    RescGrpInit = 0;
+
+    /* free the configured rescInfo */
+    tmpRescGrpInfo = RescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+	nextRescGrpInfo = tmpRescGrpInfo->next;
+	free (tmpRescGrpInfo->rescInfo);
+        free (tmpRescGrpInfo);
+        tmpRescGrpInfo = nextRescGrpInfo;
+    }
+    RescGrpInfo = NULL;
+    status = initResc (rsComm);
+
+    return status;
+}
+

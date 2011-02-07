@@ -118,7 +118,8 @@ int
 getMultiCopyPerResc ();
 int
 getRescCnt (rescGrpInfo_t *myRescGrpInfo);
-
+int
+updateResc (rsComm_t *rsComm);
 #ifdef  __cplusplus
 }
 #endif

@@ -131,6 +131,7 @@ reServerMain (rsComm_t *rsComm)
     reExec_t reExec;
    
     initReExec (rsComm, &reExec);
+    LastRescUpdateTime = time (NULL);
     while (1) {
 	chkAndResetRule (rsComm);
         rodsLog (LOG_NOTICE,

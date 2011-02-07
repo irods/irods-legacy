@@ -21,7 +21,7 @@
 #include "initServer.h"
 
 #define RE_SERVER_SLEEP_TIME    30
-#define RE_SERVER_EXEC_TIME     180
+#define RE_SERVER_EXEC_TIME     120
 
 uint CoreIrbTimeStamp = 0;
 

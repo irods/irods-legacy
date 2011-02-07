@@ -19,6 +19,7 @@
 
 #define MAX_RE_PROCS	4
 #define DEF_NUM_RE_PROCS	1
+#define RESC_UPDATE_TIME        60
 
 typedef enum {
     RE_PROC_IDLE,
@@ -40,6 +41,8 @@ typedef struct {
     int doFork;
     reExecProc_t reExecProc[MAX_RE_PROCS];
 } reExec_t;
+
+time_t LastRescUpdateTime;
 
 int
 getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut);
@@ -71,4 +74,6 @@ int
 matchPidInReExec (reExec_t *reExec, pid_t pid);
 int
 waitAndFreeReThr (reExec_t *reExec);
+int
+chkAndUpdateResc (rsComm_t *rsComm);
 #endif	/* RE_SERVER_LIB_H */
