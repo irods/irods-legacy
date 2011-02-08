@@ -35,6 +35,7 @@ printMainHelp()
 "ierror   - convert an irods error code to text.",
 "iexecmd  - remotely execute special commands.",
 "iexit    - exit an irods session (un-iinit).",
+"ifsck    - check if local files/directories are consistent with the associated objects/collections in iRODS.",
 "iget     - get a file from iRODS.",
 "ihelp    - display a synopsis list of the i-commands.",
 "iinit    - initialize a session, so you don't need to retype your password.",
