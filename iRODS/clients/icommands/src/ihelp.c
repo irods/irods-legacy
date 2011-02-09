@@ -29,7 +29,7 @@ printMainHelp()
 "ibun     - upload/download structured (tar) files.",
 "icd      - change the current working directory (collection).",
 "ichksum  - checksum one or more data-objects or collections.",
-"ichmod   - check the access permissions to collections or data-objects.",
+"ichmod   - change access permissions to collections or data-objects.",
 "icp      - copy a data-object (file) or collection (directory) to another.",
 "ienv     - display current irods environment.",
 "ierror   - convert an irods error code to text.",
