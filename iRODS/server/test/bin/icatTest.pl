@@ -219,6 +219,8 @@ runCmd(0, "iput $F1");
 runCmd(0, "ichmod read $U2 $F1");
 runCmd(0, "ichmod write $U2 $F1");
 runCmd(0, "ichmod null $U2 $F1");
+runCmd(0, "ichmod -M write $U2 $F1");
+runCmd(0, "ichmod -M null $U2 $F1");
 runCmd(0, "irm -f $F1");
 runCmd(0, "imkdir $D1");
 runCmd(0, "iput $F1 $D1/$F1");

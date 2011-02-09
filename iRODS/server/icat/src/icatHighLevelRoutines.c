@@ -6219,12 +6219,30 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    int len;
    char pathStartLen[20];
    int inheritFlag=0;
+   char myAccessStr[LONG_NAME_LEN];
+   int adminMode=0;
+   rodsLong_t iVal;
 
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl");
 
    if (strncmp(accessLevel, MOD_RESC_PREFIX, strlen(MOD_RESC_PREFIX))==0) {
       return(chlModAccessControlResc(rsComm, recursiveFlag,
 			accessLevel, userName, zone, pathName));
+   }
+
+   adminMode=0;
+   if (strncmp(accessLevel, MOD_ADMIN_MODE_PREFIX, 
+	       strlen(MOD_ADMIN_MODE_PREFIX))==0) {
+      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 int i;
+	 i = addRErrorMsg (&rsComm->rError, 0, 
+			   "You must be the admin to use the -M admin mode");
+	 return(CAT_NO_ACCESS_PERMISSION);
+      }
+      strncpy(myAccessStr,accessLevel+strlen(MOD_ADMIN_MODE_PREFIX),
+	      LONG_NAME_LEN);
+      accessLevel = myAccessStr;
+      adminMode=1;
    }
 
    if (strcmp(accessLevel, AP_NULL)==0) {myAccessLev=ACCESS_NULL; rmFlag=1;}
@@ -6250,14 +6268,26 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       return(CATALOG_NOT_CONNECTED);
    }
 
+   if (adminMode) {
+   /* See if the input path is a collection 
+      and, if so, get the collectionID */
+      if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 14");
+      status1 = cmlGetIntegerValueFromSql(
+	 "select coll_id from R_COLL_MAIN where coll_name=?",
+	 &iVal, pathName, 0, 0, 0, 0, &icss);
+      if (status1==CAT_NO_ROWS_FOUND) status1=CAT_UNKNOWN_COLLECTION;
+      if (status1==0) status1=iVal;
+   }
+   else {
    /* See if the input path is a collection and the user owns it,
       and, if so, get the collectionID */
-   if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 1 ");
-   status1 = cmlCheckDir(pathName,
-			 rsComm->clientUser.userName, 
-			 rsComm->clientUser.rodsZone,
-			 ACCESS_OWN, 
-			 &icss);
+      if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 1 ");
+      status1 = cmlCheckDir(pathName,
+			    rsComm->clientUser.userName, 
+			    rsComm->clientUser.rodsZone,
+			    ACCESS_OWN, 
+			    &icss);
+   }
    if (status1 >= 0) {
       snprintf(collIdStr, MAX_NAME_LEN, "%lld", status1);
    }
@@ -6271,8 +6301,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       return(CAT_INVALID_ARGUMENT);
    }
 
-   /* Not a collection with access, so see if the input path dataObj 
-      exists and the user owns it, and, if so, get the objectID */
+   /* Not a collection (with access for non-Admin) */
    if (status1 < 0) {
       status2 = splitPathByKey(pathName,
 			       logicalParentDirName, logicalEndName, '/');
@@ -6280,11 +6309,23 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	 strcpy(logicalParentDirName, "/");
 	 strcpy(logicalEndName, pathName+1);
       }
-      if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 2");
-      status2 = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
-				    rsComm->clientUser.userName, 
-				    rsComm->clientUser.rodsZone, 
-				    ACCESS_OWN, &icss);
+      if (adminMode) {
+	 if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 15");
+	 status2 = cmlGetIntegerValueFromSql(
+             "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
+	     &iVal, logicalEndName, logicalParentDirName, 0, 0, 0, &icss);
+	 if (status2==CAT_NO_ROWS_FOUND) status2=CAT_UNKNOWN_FILE;
+	 if (status2==0) status2=iVal;
+      }
+      else {
+   /* Not a collection with access, so see if the input path dataObj 
+      exists and the user owns it, and, if so, get the objectID */
+	 if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 2");
+	 status2 = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
+				       rsComm->clientUser.userName, 
+				       rsComm->clientUser.rodsZone, 
+				       ACCESS_OWN, &icss);
+      }
       if (status2 > 0) objId=status2;
    }
 
@@ -6301,7 +6342,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	 return(CAT_INVALID_ARGUMENT);
       }
       if (status1 != CAT_UNKNOWN_COLLECTION) {
-	 if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 10");
+	 if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 12");
 	 status3 = cmlCheckDirOwn(pathName,
 				  rsComm->clientUser.userName, 
 				  rsComm->clientUser.rodsZone, 
@@ -6313,7 +6354,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	 if (status2 == CAT_NO_ACCESS_PERMISSION) {
 	    /* See if this user is the owner (with no access, but still
 	       allowed to ichmod) */
-	    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 11");
+	    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 13");
 	    status3 = cmlCheckDataObjOwn(logicalParentDirName, logicalEndName,
 					 rsComm->clientUser.userName,
 					 rsComm->clientUser.rodsZone,

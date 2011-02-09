@@ -25,8 +25,9 @@ main(int argc, char **argv) {
     char zoneName[NAME_LEN];
     int doingInherit;
     char rescAccessLevel[LONG_NAME_LEN];
+    char adminModeAccessLevel[LONG_NAME_LEN];
 
-    optStr = "RrhvV";
+    optStr = "RrhvVM";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status) {
@@ -114,6 +115,12 @@ main(int argc, char **argv) {
 	  modAccessControl.accessLevel = rescAccessLevel; /* indicate resource*/
 	  modAccessControl.path = argv[optind]; /* just use the plain name */
        }
+       if (myRodsArgs.admin) {    /* admin mode, add indicator */
+	  strncpy(adminModeAccessLevel, MOD_ADMIN_MODE_PREFIX, LONG_NAME_LEN);
+	  strncat(adminModeAccessLevel, modAccessControl.accessLevel,
+		  LONG_NAME_LEN);
+	  modAccessControl.accessLevel = adminModeAccessLevel;
+       }
        status = rcModAccessControl(conn, &modAccessControl);
        if (status < 0) {
 	  rodsLogError(LOG_ERROR, status, "rcModAccessControl failure %s",
@@ -145,15 +152,16 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage: ichmod [-rhvV] null|read|write|own userOrGroup dataObj|Collection ...",
-" or    ichmod [-rhvV] inherit Collection ...",
-" or    ichmod [-rhvV] noinherit Collection ...",
+"Usage: ichmod [-rhvVM] null|read|write|own userOrGroup dataObj|Collection ...",
+" or    ichmod [-rhvVM] inherit Collection ...",
+" or    ichmod [-rhvVM] noinherit Collection ...",
 " or    ichmod [-R] null|read|write|own userOrGroup DBResource",
 " -r  recursive - set the access level for all dataObjects",
 "             in the entered collection and subCollections under it",
 " -v  verbose",
 " -V  Very verbose",
 " -R  Resource (Database Resource)",
+" -M  Admin Mode",
 " -h  this help",
 " ",
 "Modify access to dataObjects (iRODS files), collections (directories),",
@@ -183,6 +191,11 @@ usage () {
 "new dataObjects and collections added to the collection inherit the",
 "access permisions (ACLs) of the collection.  'ils -A' displays ACLs",
 "and the inheritance status.",
+" ",
+"If you are the irods administrator, you can include the -M option to",
+"run in administrator mode and set the permissions on the collection(s)",
+"and/or data-objects as if you were the owner.  This is more convenient",
+"than aliasing as the user.",
 " ",
 "To execute a Database Object (DBO) on a Database Resource (DBR), users",
 "need to have access permissions ('read', 'write', or better).  The admin",

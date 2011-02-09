@@ -24,6 +24,8 @@
 #define MOD_RESC_PREFIX "resource:"  /* Used to indicate a resource
 				      * instead of requiring a change
 				      * to the protocol */
+#define MOD_ADMIN_MODE_PREFIX "admin:" /* To indicate admin mode,
+                                          without protocol change. */
 
 typedef struct {	
    int recursiveFlag;
