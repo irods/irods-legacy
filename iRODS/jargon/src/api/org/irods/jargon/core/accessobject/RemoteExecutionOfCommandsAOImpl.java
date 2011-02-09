@@ -123,7 +123,7 @@ public class RemoteExecutionOfCommandsAOImpl extends AbstractIRODSAccessObject
 	 */
 	protected boolean isAbleToStreamLargeResults() throws JargonException {
 		if (getIrodsCommands().getIrodsServerProperties()
-				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion("rods2.4.1")) {
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
 			return true;
 		} else {
 			return false;

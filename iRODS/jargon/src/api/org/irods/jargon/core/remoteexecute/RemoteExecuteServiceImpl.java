@@ -34,6 +34,8 @@ import edu.sdsc.grid.io.irods.Tag;
  */
 public class RemoteExecuteServiceImpl implements RemoteExecutionService {
 
+	public static final String STREAMING_API_CUTOFF = "rods2.5";
+
 	private final IRODSCommands irodsCommands;
 	private final String commandToExecuteWithoutArguments;
 	private final String argumentsToPassWithCommand;
@@ -165,11 +167,20 @@ public class RemoteExecuteServiceImpl implements RemoteExecutionService {
 	public InputStream execute() throws JargonException {
 		log.info("executing a remote command:{}", toString());
 
-		ExecCmd execCmd = ExecCmd.instanceWithHostAndArgumentsToPassParameters(
-				commandToExecuteWithoutArguments, argumentsToPassWithCommand,
-				executionHost,
-				absolutePathOfIrodsFileThatWillBeUsedToFindHostToExecuteOn);
-
+		ExecCmd execCmd = null;
+		if (this.getIrodsCommands().getIrodsServerProperties()
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(STREAMING_API_CUTOFF)) {
+			execCmd = ExecCmd
+					.instanceWithHostAndArgumentsToPassParametersPost25(
+							commandToExecuteWithoutArguments,
+							argumentsToPassWithCommand, executionHost,
+							absolutePathOfIrodsFileThatWillBeUsedToFindHostToExecuteOn);
+		} else {
+			execCmd = ExecCmd.instanceWithHostAndArgumentsToPassParametersPriorTo25(
+					commandToExecuteWithoutArguments,
+					argumentsToPassWithCommand, executionHost,
+					absolutePathOfIrodsFileThatWillBeUsedToFindHostToExecuteOn);
+		}
 		Tag message;
 		StringBuilder buffer = new StringBuilder();
 
@@ -216,7 +227,7 @@ public class RemoteExecuteServiceImpl implements RemoteExecutionService {
 		log.info("executing a remote command with streaming:{}", toString());
 
 		if (!getIrodsCommands().getIrodsServerProperties()
-				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion("rods2.4.1")) {
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(STREAMING_API_CUTOFF)) {
 			log.error(
 					"cannot stream remote commands, unsupported on this iRODS version:{}",
 					getIrodsCommands().getIrodsServerProperties());
@@ -224,8 +235,9 @@ public class RemoteExecuteServiceImpl implements RemoteExecutionService {
 					"cannot stream remote commands, unsupported on this iRODS version");
 		}
 
+
 		ExecCmd execCmd = ExecCmd
-				.instanceWithHostAndArgumentsToPassParametersAllowingStreamingForLargeResults(
+				.instanceWithHostAndArgumentsToPassParametersAllowingStreamingForLargeResultsPost25(
 						commandToExecuteWithoutArguments,
 						argumentsToPassWithCommand, executionHost,
 						absolutePathOfIrodsFileThatWillBeUsedToFindHostToExecuteOn);

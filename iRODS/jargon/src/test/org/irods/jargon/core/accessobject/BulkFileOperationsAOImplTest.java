@@ -1,12 +1,12 @@
 package org.irods.jargon.core.accessobject;
 
-import java.io.File;
 import java.util.Properties;
 
 import junit.framework.Assert;
 
-import org.irods.jargon.core.exception.DataNotFoundException;
+import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.remoteexecute.RemoteExecuteServiceImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -43,7 +43,7 @@ public class BulkFileOperationsAOImplTest {
 				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
 		assertionHelper = new AssertionHelper();
 		IRODSAccount irodsAccount = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
+				.buildIRODSAccountFromTestProperties(testingProperties);
 		irodsFileSystem = new IRODSFileSystem(irodsAccount);
 	}
 
@@ -55,8 +55,9 @@ public class BulkFileOperationsAOImplTest {
 	@Test
 	public void testGetAOFromFactory() throws Exception {
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 		Assert.assertNotNull("null bulkFileOperationsAO from factory",
 				bulkFileOperationsAO);
 	}
@@ -86,7 +87,7 @@ public class BulkFileOperationsAOImplTest {
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ testSubdir);
-		irodsFile =  new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection);
 		irodsFile.mkdir();
 
 		String myTarget = "";
@@ -98,8 +99,17 @@ public class BulkFileOperationsAOImplTest {
 		}
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			return;
+		}
+
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, "");
@@ -115,8 +125,9 @@ public class BulkFileOperationsAOImplTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(null,
 				"target", "");
@@ -131,8 +142,9 @@ public class BulkFileOperationsAOImplTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods("",
 				"target", "");
 
@@ -146,9 +158,10 @@ public class BulkFileOperationsAOImplTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods("xxxx",
 				"target", null);
 
@@ -180,9 +193,10 @@ public class BulkFileOperationsAOImplTest {
 								+ testSubdir);
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, "");
 	}
@@ -230,8 +244,9 @@ public class BulkFileOperationsAOImplTest {
 		}
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, "");
@@ -251,6 +266,13 @@ public class BulkFileOperationsAOImplTest {
 		IRODSAccount irodsAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			return;
+		}
+
 		IRODSFile irodsFile = null;
 
 		String targetBunIrodsCollection = testingPropertiesHelper
@@ -258,19 +280,19 @@ public class BulkFileOperationsAOImplTest {
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ bunSubdir);
 		String targetBunFileAbsPath = targetBunIrodsCollection + "/" + tarName;
-		irodsFile =  new IRODSFile(irodsFileSystem, targetBunIrodsCollection);
+		irodsFile = new IRODSFile(irodsFileSystem, targetBunIrodsCollection);
 		irodsFile.mkdir();
 
 		// create the tar file with the same name as the one I will want to
 		// create later
-		irodsFile =  new IRODSFile(irodsFileSystem, targetBunFileAbsPath);
+		irodsFile = new IRODSFile(irodsFileSystem, targetBunFileAbsPath);
 		irodsFile.createNewFile();
 
 		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ testSubdir);
-		irodsFile =  new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection);
 		irodsFile.mkdir();
 
 		String myTarget = "";
@@ -282,9 +304,10 @@ public class BulkFileOperationsAOImplTest {
 		}
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 		bulkFileOperationsAO
 				.createABundleFromIrodsFilesAndStoreInIrodsWithForceOption(
 						targetBunFileAbsPath, targetIrodsCollection, "");
@@ -297,6 +320,81 @@ public class BulkFileOperationsAOImplTest {
 		String testSubdir = "testExtractBundleNoOverwriteNoBulk";
 		String bunSubdir = "testExtractBundleNoOverwriteNoBulkBunSubdir";
 		String testExtractTargetSubdir = "testExtractBundleNoOverwriteNoBulkExtractTargetCollection";
+
+		String fileName = "fileName.txt";
+		int count = 5;
+
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			return;
+		}
+		IRODSFile irodsFile = null;
+
+		String targetBunIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
+								+ bunSubdir);
+		String targetBunFileAbsPath = targetBunIrodsCollection + "/" + tarName;
+		irodsFile = new IRODSFile(irodsFileSystem, targetBunIrodsCollection);
+		irodsFile.mkdir();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
+								+ testSubdir);
+		irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		irodsFile.mkdir();
+
+		String myTarget = "";
+
+		for (int i = 0; i < count; i++) {
+			myTarget = targetIrodsCollection + "/c" + (10000 + i) + fileName;
+			irodsFile = new IRODSFile(irodsFileSystem, myTarget);
+			irodsFile.createNewFile();
+		}
+
+		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(irodsFileSystem.getCommands());
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
+
+		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
+				targetBunFileAbsPath, targetIrodsCollection, "");
+
+		// extract the bun file now to a different subdir
+		targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
+								+ testExtractTargetSubdir);
+
+		bulkFileOperationsAO.extractABundleIntoAnIrodsCollection(
+				targetBunFileAbsPath, targetIrodsCollection, "");
+
+		IRODSFile targetColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+
+		targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
+								+ testSubdir);
+		IRODSFile sourceColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+
+		// assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
+		// sourceColl, targetColl);
+
+	}
+
+	@Test(expected = JargonException.class)
+	public void testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExists()
+			throws Exception {
+		// gets a SYS_COPY_ALREADY_IN_RESC -46000
+		String tarName = "testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExists.tar";
+		String testSubdir = "testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExists";
+		String bunSubdir = "testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExistsBunSubdir";
+		String testExtractTargetSubdir = "testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExistsTargetCollection";
 
 		String fileName = "fileName.txt";
 		int count = 5;
@@ -325,82 +423,14 @@ public class BulkFileOperationsAOImplTest {
 
 		for (int i = 0; i < count; i++) {
 			myTarget = targetIrodsCollection + "/c" + (10000 + i) + fileName;
-			irodsFile =  new IRODSFile(irodsFileSystem, myTarget);
-			irodsFile.createNewFile();
-		}
-
-		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
-
-		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
-				targetBunFileAbsPath, targetIrodsCollection, "");
-
-		// extract the bun file now to a different subdir
-		targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
-								+ testExtractTargetSubdir);
-
-		bulkFileOperationsAO.extractABundleIntoAnIrodsCollection(
-				targetBunFileAbsPath, targetIrodsCollection, "");
-
-		IRODSFile targetColl = new IRODSFile(irodsFileSystem, targetIrodsCollection);
-
-		targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
-								+ testSubdir);
-		IRODSFile sourceColl = new IRODSFile(irodsFileSystem, targetIrodsCollection);
-
-//		assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
-//				sourceColl, targetColl);
-
-	}
-
-	@Test(expected = JargonException.class)
-	public void testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExists()
-			throws Exception {
-		// gets a SYS_COPY_ALREADY_IN_RESC -46000
-		String tarName = "testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExists.tar";
-		String testSubdir = "testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExists";
-		String bunSubdir = "testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExistsBunSubdir";
-		String testExtractTargetSubdir = "testExtractBundleNoOverwriteNoBulkWhenTargetCollectionAlreadyExistsTargetCollection";
-
-		String fileName = "fileName.txt";
-		int count = 5;
-
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
-
-		IRODSFile irodsFile = null;
-
-		String targetBunIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
-								+ bunSubdir);
-		String targetBunFileAbsPath = targetBunIrodsCollection + "/" + tarName;
-		irodsFile =  new IRODSFile(irodsFileSystem, targetBunIrodsCollection);
-		irodsFile.mkdir();
-
-		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
-								+ testSubdir);
-		irodsFile =  new IRODSFile(irodsFileSystem, targetIrodsCollection);
-		irodsFile.mkdir();
-
-		String myTarget = "";
-
-		for (int i = 0; i < count; i++) {
-			myTarget = targetIrodsCollection + "/c" + (10000 + i) + fileName;
 			irodsFile = new IRODSFile(irodsFileSystem, myTarget);
 			irodsFile.createNewFile();
 		}
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, "");
@@ -430,8 +460,12 @@ public class BulkFileOperationsAOImplTest {
 		String fileName = "fileName.txt";
 		int count = 5;
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			return;
+		}
 
 		IRODSFile irodsFile = null;
 
@@ -459,9 +493,10 @@ public class BulkFileOperationsAOImplTest {
 		}
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, "");
 
@@ -479,16 +514,18 @@ public class BulkFileOperationsAOImplTest {
 				.extractABundleIntoAnIrodsCollectionWithForceOption(
 						targetBunFileAbsPath, targetIrodsCollection, "");
 
-		IRODSFile targetColl = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile targetColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
 		targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ testSubdir);
-		IRODSFile sourceColl =  new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile sourceColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
-		//assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
-		//		sourceColl, targetColl);
+		// assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
+		// sourceColl, targetColl);
 	}
 
 	@Test
@@ -501,9 +538,12 @@ public class BulkFileOperationsAOImplTest {
 		String fileName = "fileName.txt";
 		int count = 5;
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
-
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			return;
+		}
 		IRODSFile irodsFile = null;
 
 		String targetBunIrodsCollection = testingPropertiesHelper
@@ -530,9 +570,10 @@ public class BulkFileOperationsAOImplTest {
 		}
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, "");
 
@@ -546,16 +587,18 @@ public class BulkFileOperationsAOImplTest {
 				.extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(
 						targetBunFileAbsPath, targetIrodsCollection, "");
 
-		IRODSFile targetColl =  new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile targetColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
 		targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ testSubdir);
-		IRODSFile sourceColl = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile sourceColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
-	//	assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
-	//			sourceColl, targetColl);
+		// assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
+		// sourceColl, targetColl);
 
 	}
 
@@ -601,9 +644,10 @@ public class BulkFileOperationsAOImplTest {
 		}
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
-		
+				.instance(irodsFileSystem.getCommands());
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
+
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, testResource);
 
@@ -613,7 +657,8 @@ public class BulkFileOperationsAOImplTest {
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ testExtractTargetSubdir);
 
-		IRODSFile extractSubdir = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile extractSubdir = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
 		extractSubdir.mkdirs();
 
@@ -622,21 +667,27 @@ public class BulkFileOperationsAOImplTest {
 						targetBunFileAbsPath, targetIrodsCollection,
 						testResource);
 
-		IRODSFile targetColl = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile targetColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
 		targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ testSubdir);
-		IRODSFile sourceColl =  new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile sourceColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
-		//assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
-		//		sourceColl, targetColl);
+		// assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
+		// sourceColl, targetColl);
 
 	}
 
-	/* the semantics of how 'data not found' is treated in this version of jargon is different than how it is treated in jargon-core at the connection level,
-	 * that makes detection of this error difficult.  For the time being, semantic changes in the interpretation of this condition are to be avoided.
+	/*
+	 * the semantics of how 'data not found' is treated in this version of
+	 * jargon is different than how it is treated in jargon-core at the
+	 * connection level, that makes detection of this error difficult. For the
+	 * time being, semantic changes in the interpretation of this condition are
+	 * to be avoided.
 	 */
 	@Ignore
 	public void testExtractBundleNoOverwriteWithBulkSpecifyWrongResource()
@@ -661,7 +712,7 @@ public class BulkFileOperationsAOImplTest {
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ bunSubdir);
 		String targetBunFileAbsPath = targetBunIrodsCollection + "/" + tarName;
-		irodsFile =  new IRODSFile(irodsFileSystem, targetBunIrodsCollection);
+		irodsFile = new IRODSFile(irodsFileSystem, targetBunIrodsCollection);
 		irodsFile.mkdir();
 
 		String targetIrodsCollection = testingPropertiesHelper
@@ -680,9 +731,10 @@ public class BulkFileOperationsAOImplTest {
 		}
 
 		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
-		.instance(irodsFileSystem.getCommands());
-		
-		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory.getBulkFileOperationsAO();
+				.instance(irodsFileSystem.getCommands());
+
+		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
+				.getBulkFileOperationsAO();
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, testResource);
 
@@ -692,7 +744,8 @@ public class BulkFileOperationsAOImplTest {
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ testExtractTargetSubdir);
 
-		IRODSFile extractSubdir =  new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile extractSubdir = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
 		extractSubdir.mkdirs();
 
@@ -703,16 +756,18 @@ public class BulkFileOperationsAOImplTest {
 						testingProperties
 								.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
 
-		IRODSFile targetColl = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile targetColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
 		targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH + "/"
 								+ testSubdir);
-		IRODSFile sourceColl =  new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		IRODSFile sourceColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 
-		//assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
-		//		sourceColl, targetColl);
+		// assertionHelper.assertTwoFilesAreEqualByRecursiveTreeComparison(
+		// sourceColl, targetColl);
 
 	}
 

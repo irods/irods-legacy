@@ -13,7 +13,7 @@ import java.util.Date;
  */
 public final class IRODSServerProperties {
 
-	public static final String JARGON_VERSION = "2.2";
+	public static final String JARGON_VERSION = "2.4.1";
 
 	public enum IcatEnabled {
 		ICAT_ENABLED, NO_ICAT
@@ -92,7 +92,7 @@ public final class IRODSServerProperties {
 		// The result is a negative integer if this String object
 		// lexicographically precedes the argument string.
 		int compValue = getRelVersion().compareToIgnoreCase(releaseVersion);
-		return compValue > -1;
+		return compValue >= 0;
 
 	}
 
