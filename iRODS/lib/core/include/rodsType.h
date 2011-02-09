@@ -46,13 +46,13 @@ typedef enum {  /* object type */
     UNKNOWN_FILE_T,
     LOCAL_FILE_T,
     LOCAL_DIR_T,
-    NO_INPUT_T,
+    NO_INPUT_T
 } objType_t;
 
 typedef enum {  /* object status */
     UNKNOWN_ST,
     NOT_EXIST_ST,
-    EXIST_ST,
+    EXIST_ST
 } objStat_t;
 
 typedef struct rodsStat {

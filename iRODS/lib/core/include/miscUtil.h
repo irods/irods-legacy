@@ -68,12 +68,12 @@ typedef enum {
     COLL_CLOSED,
     COLL_OPENED,
     COLL_DATA_OBJ_QUERIED,
-    COLL_COLL_OBJ_QUERIED,
+    COLL_COLL_OBJ_QUERIED
 } collState_t;
 
 typedef enum {
     RC_COMM,
-    RS_COMM,
+    RS_COMM
 } connType_t;
 
 /* struct for query by both client and server */

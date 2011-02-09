@@ -88,19 +88,19 @@ typedef enum {         /* class of SpecColl */
     NO_SPEC_COLL,
     STRUCT_FILE_COLL,
     MOUNTED_COLL,
-    LINKED_COLL,
+    LINKED_COLL
 } specCollClass_t;
 
 typedef enum {          /* structFile type */
     HAAW_STRUCT_FILE_T,        /* the UK eScience structFile */
-    TAR_STRUCT_FILE_T,	     /* The tar structFile */
+    TAR_STRUCT_FILE_T	     /* The tar structFile */
 } structFileType_t;
 
 typedef enum {          /* specColl operation type */
     NOT_SPEC_COLL_OPR,
     NON_STRUCT_FILE_SPEC_COLL_OPR,
     STRUCT_FILE_SPEC_COLL_OPR,
-    NORMAL_OPR_ON_STRUCT_FILE_COLL,
+    NORMAL_OPR_ON_STRUCT_FILE_COLL
 } structFileOprType_t;
     
 #define HAAW_STRUCT_FILE_STR		"haawStructFile"
@@ -133,7 +133,7 @@ typedef struct SpecColl {
 typedef enum {
     UNKNOW_COLL_PERM,
     READ_COLL_PERM,
-    WRITE_COLL_PERM,
+    WRITE_COLL_PERM
 } specCollPerm_t;
 
 typedef struct SpecCollCache {
@@ -263,7 +263,7 @@ typedef struct IntArray {
 
 typedef enum {	/* resource category */
     FILE_CAT,
-    DB_CAT,
+    DB_CAT
 } rescCat_t;
 
 typedef enum {
@@ -273,7 +273,7 @@ typedef enum {
     TEST_STAGE_FILE_TYPE,
     S3_FILE_TYPE,
     UNIV_MSS_FILE_TYPE,
-    WOS_FILE_TYPE,
+    WOS_FILE_TYPE
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600
@@ -296,7 +296,7 @@ typedef enum {
 
 typedef enum {
     NO_CREATE_PATH,
-    CREATE_PATH,
+    CREATE_PATH
 } createPath_t;
 
 typedef struct RescTypeDef {

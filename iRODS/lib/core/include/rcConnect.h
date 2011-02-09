@@ -29,7 +29,7 @@ typedef enum {
     PROCESSING_STATE,	 /* the process is not sending nor receiving */
     RECEIVING_STATE,
     SENDING_STATE,
-    CONN_WAIT_STATE,
+    CONN_WAIT_STATE
 } procState_t;
 
 typedef struct reconnMsg {
@@ -40,8 +40,8 @@ typedef struct reconnMsg {
 } reconnMsg_t;
 
 typedef enum {
-    PROC_LOG_NOT_DONE,	/* the proc logging in log/proc not done yet */
-    PROC_LOG_DONE,     /* the proc logging in log/proc is done */
+    PROC_LOG_NOT_DONE,  /* the proc logging in log/proc not done yet */
+    PROC_LOG_DONE       /* the proc logging in log/proc is done */
 } procLogFlag_t;
 
 /* The client connection handle */

@@ -176,7 +176,7 @@ typedef enum {
 /* position for queuing */
 typedef enum {
     BOTTOM_POS,
-    TOP_POS,
+    TOP_POS
 } irodsPosition_t;
 
 #define DEF_IRODS_PROT	NATIVE_PROT
@@ -323,7 +323,7 @@ typedef int((*funcPtr)());
 /* definition for vault filePath scheme */
 typedef enum {
     GRAFT_PATH_S,
-    RANDOM_S,
+    RANDOM_S
 } vaultPathScheme_t;
 
 #define DEF_VAULT_PATH_SCHEME	GRAFT_PATH_S
