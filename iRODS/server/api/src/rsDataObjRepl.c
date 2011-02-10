@@ -208,8 +208,9 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 		outDataObjInfo->next = NULL;
             }
 	    if (backupFlag == 0) {
-		if (allFlag == 1 && 
-		  (myRescGrpInfo != NULL && myRescGrpInfo->status < 0)) {
+		if (myRescGrpInfo != NULL && 
+	          (allFlag == 1 || myRescGrpInfo->next == NULL) && 
+		  (myRescGrpInfo->status < 0)) {
 		    status = myRescGrpInfo->status;
 		} else {
 #if 0

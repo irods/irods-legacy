@@ -140,6 +140,7 @@ replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, rescGrpInfo_t **destRescGrpInfo)
     while (tmpSrcRescGrpInfo != NULL) {
         tmpDestRescGrpInfo = (rescGrpInfo_t *) malloc (sizeof (rescGrpInfo_t));
         memset (tmpDestRescGrpInfo, 0, sizeof (rescGrpInfo_t));
+	tmpDestRescGrpInfo->status = tmpSrcRescGrpInfo->status;
         tmpDestRescGrpInfo->rescInfo = tmpSrcRescGrpInfo->rescInfo;
         rstrcpy (tmpDestRescGrpInfo->rescGroupName,
           tmpSrcRescGrpInfo->rescGroupName, NAME_LEN);
@@ -817,9 +818,16 @@ initRescGrp (rsComm_t *rsComm)
         rescGrpNameStr = &rescGrpName->value[rescGrpName->len * i];
         if (tmpRescGrpInfo != NULL && curRescGrpNameStr != NULL) {
             if (strcmp (rescGrpNameStr, curRescGrpNameStr) != 0) {
+		rescGrpInfo_t *myRescGrpInfo;
                 /* a new rescGrp. queue the current one */
                 tmpRescGrpInfo->cacheNext = CachedRescGrpInfo;
-                tmpRescGrpInfo->status = savedRescGrpStatus;
+		if (savedRescGrpStatus != 0) {
+		    myRescGrpInfo = tmpRescGrpInfo;
+		    while (myRescGrpInfo != NULL) {
+                        myRescGrpInfo->status = savedRescGrpStatus;
+			myRescGrpInfo = myRescGrpInfo->next;
+		    }
+		}
                 savedRescGrpStatus = 0;
                 CachedRescGrpInfo = tmpRescGrpInfo;
                 tmpRescGrpInfo = NULL;
