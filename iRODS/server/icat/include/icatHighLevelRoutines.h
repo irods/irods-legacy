@@ -113,8 +113,8 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name, char *rescName,
 int chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName, 
 		  rodsLong_t *userQuota, int *quotaStatus);
 int chlDelUnusedAVUs(rsComm_t *rsComm);
-int chlAddSpecificQuery(rsComm_t *rsComm, char *sql);
-int chlDelSpecificQuery(rsComm_t *rsComm, char *sql);
+int chlAddSpecificQuery(rsComm_t *rsComm, char *alias, char *sql);
+int chlDelSpecificQuery(rsComm_t *rsComm, char *sqlOrAlias);
 
 char *chlGetLocalZone();
 

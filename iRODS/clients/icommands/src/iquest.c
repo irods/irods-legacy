@@ -34,13 +34,14 @@ usage () {
 " ",
 "The --sql option executes a pre-defined SQL query.  The specified query must",
 "match one defined by the admin (see 'iadmin h asq' (add specific query)).",
-"A few of these may be defined at your site.  A special alias '--sql ls' will",
-"display the ones that are defined.  Generally, it is better to use the",
+"A few of these may be defined at your site.  A special alias 'ls' ('--sql ls')",
+"is normally defined to display these. You can specify these via the full",
+"SQL or the alias, if defined.  Generally, it is better to use the",
 "general-query (non --sql forms herein) since that generates the proper SQL",
 "(knows how to link the ICAT tables) and handles access control and other",
 "aspects of security.  If the SQL includes arguments, you enter them following",
 "the SQL. As without --sql, you can enter a printf format statement to use in",
-"formatting the results.",
+"formatting the results (except when using aliases).",
 " ",
 "Examples:",
 " iquest \"SELECT DATA_NAME, DATA_CHECKSUM WHERE DATA_RESC_NAME like 'demo%'\"",
@@ -200,16 +201,10 @@ execAndShowSpecificQuery(rcComm_t *conn, char *sql,
   char *format="";
   char myFormat[300]="";
 
-  char aliasName[]="ls";
-  char aliasSQL[]="select sql from r_specific_query";
-
   memset (&specificQueryInp, 0, sizeof (specificQueryInp_t));
   specificQueryInp.maxRows= MAX_SQL_ROWS;
   specificQueryInp.continueInx=0;
   specificQueryInp.sql=sql;
-  if (strcmp(aliasName, sql)==0) {
-     specificQueryInp.sql=aliasSQL;
-  }
   /* To differentiate format from args, count the ? in the SQL and the
      arguments */
   cp = specificQueryInp.sql;
@@ -223,7 +218,11 @@ execAndShowSpecificQuery(rcComm_t *conn, char *sql,
      nArgs++;
      i++;
   }
-  if (nArgs > nQuestionMarks) {
+  /* If the SQL is an alias, counting the ?'s won't be accurate so now
+     the following is only done if nQuestionMarks is > 0.  But this means
+     iquest won't be able to notice a Format statement when using aliases,
+     but will instead assume all are parameters to the SQL. */
+  if (nQuestionMarks>0 && nArgs>nQuestionMarks) {
      format = args[argsOffset];  /* this must be the format */
      argsOffset++;
      strncpy(myFormat, format, 300-10);

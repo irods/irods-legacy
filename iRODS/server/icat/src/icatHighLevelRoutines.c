@@ -8171,9 +8171,10 @@ icatCheckResc(char *rescName) {
 }
 
 int
-chlAddSpecificQuery(rsComm_t *rsComm, char *sql) {
+chlAddSpecificQuery(rsComm_t *rsComm, char *sql, char *alias) {
    int status, i;
    char myTime[50];
+   char tsCreateTime[50];
    if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery");
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
@@ -8190,15 +8191,36 @@ chlAddSpecificQuery(rsComm_t *rsComm, char *sql) {
 
    getNowStr(myTime);
 
-   i=0;
-   cllBindVars[i++]=sql;
-   cllBindVars[i++]=myTime;
-   cllBindVarCount=i;
-   if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery SQL 1");
-  
-   status =  cmlExecuteNoAnswerSql(
-      "insert into R_SPECIFIC_QUERY  (sql, create_ts) values (?, ?)",
-      &icss);
+   if (alias != NULL && strlen(alias)>0) {
+      if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery SQL 1");
+      status = cmlGetStringValueFromSql(
+	 "select create_ts from R_SPECIFIC_QUERY where alias=?",
+	 tsCreateTime, 50,
+	 alias, "" , "", &icss);
+      if (status==0) {
+	 i = addRErrorMsg (&rsComm->rError, 0, "Alias is not unique");
+	 return(CAT_INVALID_ARGUMENT);
+      }
+      i=0;
+      cllBindVars[i++]=sql;
+      cllBindVars[i++]=alias;
+      cllBindVars[i++]=myTime;
+      cllBindVarCount=i;
+      if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery SQL 2");
+      status =  cmlExecuteNoAnswerSql(
+	 "insert into R_SPECIFIC_QUERY  (sql, alias, create_ts) values (?, ?, ?)",
+	 &icss);
+   }
+   else {
+      i=0;
+      cllBindVars[i++]=sql;
+      cllBindVars[i++]=myTime;
+      cllBindVarCount=i;
+      if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery SQL 3");
+      status =  cmlExecuteNoAnswerSql(
+	 "insert into R_SPECIFIC_QUERY  (sql, create_ts) values (?, ?)",
+	 &icss);
+   }
 
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -8212,7 +8234,7 @@ chlAddSpecificQuery(rsComm_t *rsComm, char *sql) {
 }
 
 int
-chlDelSpecificQuery(rsComm_t *rsComm, char *sql) {
+chlDelSpecificQuery(rsComm_t *rsComm, char *sqlOrAlias) {
    int status, i;
    if (logSQL) rodsLog(LOG_SQL, "chlDelSpecificQuery");
 
@@ -8225,13 +8247,22 @@ chlDelSpecificQuery(rsComm_t *rsComm, char *sql) {
    }
 
    i=0;
-   cllBindVars[i++]=sql;
+   cllBindVars[i++]=sqlOrAlias;
    cllBindVarCount=i;
    if (logSQL) rodsLog(LOG_SQL, "chlDelSpecificQuery SQL 1");
-  
    status =  cmlExecuteNoAnswerSql(
-      "delete from R_SPECIFIC_QUERY where sql = ?",
+      "delete from R_SPECIFIC_QUERY where sql = ?", 
       &icss);
+
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      if (logSQL) rodsLog(LOG_SQL, "chlDelSpecificQuery SQL 2");
+      i=0;
+      cllBindVars[i++]=sqlOrAlias;
+      cllBindVarCount=i;
+      status =  cmlExecuteNoAnswerSql(
+	 "delete from R_SPECIFIC_QUERY where alias = ?", 
+	 &icss);
+   }
 
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -8303,18 +8334,26 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
 	 tsCreateTime, 50,
 	 specificQueryInp.sql, "" , "", icss);
       if (status == CAT_NO_ROWS_FOUND) {
-	 return(CAT_UNKNOWN_SPECIFIC_QUERY);
+	 int status2;
+	 if (logSQL) rodsLog(LOG_SQL, "chlSpecificQuery SQL 2");
+	 status2 = cmlGetStringValueFromSql(
+	    "select sql from R_SPECIFIC_QUERY where alias=?",
+	    combinedSQL, sizeof(combinedSQL),
+	    specificQueryInp.sql, "" , "", icss);
+	 if (status2 == CAT_NO_ROWS_FOUND) return(CAT_UNKNOWN_SPECIFIC_QUERY);
+	 if (status2) return(status2);
       }
-      if (status) return(status);
-
-      strncpy(combinedSQL, specificQueryInp.sql, sizeof(combinedSQL));
+      else {
+	 if (status) return(status);
+	 strncpy(combinedSQL, specificQueryInp.sql, sizeof(combinedSQL));
+      }
 
       i=0;
       while (specificQueryInp.args[i]!=NULL && strlen(specificQueryInp.args[i])>0) {
 	 cllBindVars[cllBindVarCount++]=specificQueryInp.args[i++];
       }
 
-      if (logSQL) rodsLog(LOG_SQL, "chlSpecificQuery SQL 2");
+      if (logSQL) rodsLog(LOG_SQL, "chlSpecificQuery SQL 3");
       status = cmlGetFirstRowFromSql(combinedSQL, &statementNum, 
                                      specificQueryInp.rowOffset, icss);
       if (status < 0) {

@@ -248,7 +248,8 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"specificQuery")==0) {
-	  status = chlAddSpecificQuery(rsComm, generalAdminInp->arg2);
+	  status = chlAddSpecificQuery(rsComm, generalAdminInp->arg2,
+				       generalAdminInp->arg3);
 	  return(status);
        }
     }

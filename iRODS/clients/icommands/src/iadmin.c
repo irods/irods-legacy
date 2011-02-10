@@ -1089,7 +1089,7 @@ doCommand(char *cmdToken[]) {
    if (strcmp(cmdToken[0],"asq") == 0) {
       int status;
       status = generalAdmin(0, "add", "specificQuery", cmdToken[1], 
-			    "", "", "", "", "");
+			    cmdToken[2], "", "", "", "");
       return(0);
    }
    if (strcmp(cmdToken[0],"rsq") == 0) {
@@ -1318,8 +1318,8 @@ void usageMain()
 " lq [Name] List Quotas",
 " cu (calulate usage (for quotas))",
 " rum (remove unused metadata (user-defined AVUs)",
-" asq 'SQL query' (add specific query)",
-" rsq 'SQL query' (remove specific query)",
+" asq 'SQL query' [Alias] (add specific query)",
+" rsq 'SQL query' or Alias (remove specific query)",
 " help (or h) [command] (this help, or more details on a command)",
 "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
 "similar admin modes in irepl, iphymv, and itrim.",
@@ -1689,13 +1689,16 @@ usage(char *subOpt)
 ""};
 
    char *asqMsgs[]={
-" asq 'SQL query' (add specific query)",
+" asq 'SQL query' [Alias] (add specific query)",
 "Add a specific query to the list of those allowed.",
 "Care must be taken when defining these to prevent users from accessing",
 "or updating information (in the ICAT tables) that needs to be restricted",
 "(passwords, for example) as the normal general-query access controls are",
 "bypassed via this.  This also requires an understanding of the ICAT schema",
 "(see icatSysTables.sql) to properly link tables in your SQL.",
+"If an Alias is provided, clients can use that instead of the full SQL",
+"string to select the SQL.  Aliases are checked to be sure they are unique",
+"but the same SQL can have multiple aliases.",
 "These can be executed via 'iquest --sql'.",
 "Use 'iquest --sql ls' to see the currently defined list.",
 "If 'iquest --sql ls' fails see icatSysInserts.sql for the definitions of two",
@@ -1704,7 +1707,7 @@ usage(char *subOpt)
 ""};
 
    char *rsqMsgs[]={
-" rsq 'SQL query' (remove specific query)",
+" rsq 'SQL query' or Alias (remove specific query)",
 "Remove a specific query from the list of those allowed.",
 "Use 'iquest --sql ls' to see the currently defined list.",
 "Also see asq.",

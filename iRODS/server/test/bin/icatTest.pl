@@ -673,6 +673,8 @@ runCmd(0, "irm -rf $LD2");
 runCmd(0, "iadmin asq 'select user_name from r_user_main'");
 runCmd(0, "iquest --sql 'select user_name from r_user_main'");
 runCmd(0, "iadmin rsq 'select user_name from r_user_main'");
+runCmd(0, "iadmin asq 'select user_name from r_user_main' testAlias");
+runCmd(0, "iadmin rsq testAlias");
 
 # simple test to exercise the clean-up AVUs sql;
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none

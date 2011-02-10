@@ -14,12 +14,15 @@ insert into R_TOKN_MAIN values ('data_type',1695,'database object','text','','',
 --- New table to hold specific-queries (SQL-based queries)
 create table R_SPECIFIC_QUERY
 (
+   alias varchar(1000),
    sql varchar(2700),
    create_ts varchar(32)
 );
 
 --- Add a couple built-in specific queries (to see the specific queries).
-insert into R_SPECIFIC_QUERY (sql, create_ts) values ('select sql from r_specific_query', '01292940000');
-insert into R_SPECIFIC_QUERY (sql, create_ts) values ('select sql from r_specific_query where sql like ?', '01292940000');
+insert into R_SPECIFIC_QUERY (alias, sql, create_ts) values ('ls', 'select sql from R_SPECIFIC_QUERY', '01292940000');
 
-create unique index idx_specific_query on R_SPECIFIC_QUERY (sql);
+insert into R_SPECIFIC_QUERY (alias, sql, create_ts) values ('lsl', 'select sql from R_SPECIFIC_QUERY where sql like ?', '01292940000');
+
+create index idx_specific_query1 on R_SPECIFIC_QUERY (sql);
+create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
