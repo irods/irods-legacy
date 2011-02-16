@@ -84,7 +84,11 @@ fileDriver_t FileDriverTable[] = {
 #else
     {WOS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
-
+    {NON_BLOCKING_FILE_TYPE,unixFileCreate,unixFileOpen,nbFileRead,nbFileWrite,
+    unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
+    unixFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
+    unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
+    unixFileGetFsFreeSpace, unixFileTruncate, intNoSupport, intNoSupport},
 };
 
 int NumFileDriver = sizeof (FileDriverTable) / sizeof (fileDriver_t);

@@ -88,6 +88,66 @@ unixFileRead (rsComm_t *rsComm, int fd, void *buf, int len)
 }
 
 int
+nbFileRead (rsComm_t *rsComm, int fd, void *buf, int len)
+{
+    int status;
+    struct timeval tv;
+    int nbytes;
+    int toRead;
+    char *tmpPtr;
+    fd_set set;
+
+    bzero (&tv, sizeof (tv));
+    tv.tv_sec = NB_READ_TOUT_SEC;
+
+    /* Initialize the file descriptor set. */
+    FD_ZERO (&set);
+    FD_SET (fd, &set);
+
+    toRead = len;
+    tmpPtr = (char *) buf;
+
+    while (toRead > 0) {
+#ifndef _WIN32
+        status = select (fd + 1, &set, NULL, NULL, &tv);
+        if (status == 0) {
+            /* timedout */
+            if (len - toRead > 0) {
+                return (len - toRead);
+            } else {
+                return UNIX_FILE_OPR_TIMEOUT_ERR - errno;
+            }
+        } else if (status < 0) {
+            if ( errno == EINTR) {
+                errno = 0;
+                continue;
+            } else {
+                return UNIX_FILE_READ_ERR - errno;
+            }
+        }
+#endif
+        nbytes = read (fd, (void *) tmpPtr, toRead);
+        if (nbytes < 0) {
+            if (errno == EINTR) {
+                /* interrupted */
+                errno = 0;
+                nbytes = 0;
+            } else if (toRead == len) {
+                return UNIX_FILE_READ_ERR - errno;
+            } else {
+                nbytes = 0;
+                break;
+            }
+        } else if (nbytes == 0) {
+            break;
+        }
+        toRead -= nbytes;
+        tmpPtr += nbytes;
+    }
+    return (len - toRead);
+}
+
+int
 unixFileWrite (rsComm_t *rsComm, int fd, void *buf, int len)
 {
     int status;
@@ -101,6 +161,57 @@ unixFileWrite (rsComm_t *rsComm, int fd, void *buf, int len)
     }
     return (status);
 
+}
+
+int
+nbFileWrite (rsComm_t *rsComm, int fd, void *buf, int len)
+{
+    int nbytes;
+    int toWrite;
+    char *tmpPtr;
+    fd_set set;
+    struct timeval tv;
+    int status;
+
+    bzero (&tv, sizeof (tv));
+    tv.tv_sec = NB_WRITE_TOUT_SEC;
+
+    /* Initialize the file descriptor set. */
+    FD_ZERO (&set);
+    FD_SET (fd, &set);
+
+    toWrite = len;
+    tmpPtr = (char *) buf;
+
+    while (toWrite > 0) {
+#ifndef _WIN32
+        status = select (fd + 1, NULL, &set, NULL, &tv);
+        if (status == 0) {
+            /* timedout */
+            return UNIX_FILE_OPR_TIMEOUT_ERR - errno;
+        } else if (status < 0) {
+            if ( errno == EINTR) {
+                errno = 0;
+                continue;
+            } else {
+                return UNIX_FILE_WRITE_ERR - errno;
+            }
+        }
+#endif
+        nbytes = write (fd, (void *) tmpPtr, len);
+        if (nbytes < 0) {
+            if (errno == EINTR) {
+                /* interrupted */
+                errno = 0;
+                nbytes = 0;
+            } else  {
+                return UNIX_FILE_WRITE_ERR - errno;
+	    }
+        }
+        toWrite -= nbytes;
+        tmpPtr += nbytes;
+    }
+    return (len);
 }
 
 int

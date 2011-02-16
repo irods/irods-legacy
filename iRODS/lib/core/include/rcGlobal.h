@@ -130,6 +130,7 @@ rescTypeDef_t RescTypeDef[] = {
   {"MSS universal driver", FILE_CAT, UNIV_MSS_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
   {"wos",FILE_CAT, WOS_FILE_TYPE, NO_CHK_PATH_PERM, NO_CREATE_PATH},
   {"database", DB_CAT, 0, 0, 0},
+  {"nonblocking",FILE_CAT, NON_BLOCKING_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
 };
 
 int NumRescTypeDef = sizeof (RescTypeDef) / sizeof (rescTypeDef_t);

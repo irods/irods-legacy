@@ -54,6 +54,9 @@
 #include "rcConnect.h"
 #include "msParam.h"
 
+#define NB_READ_TOUT_SEC	60	/* 60 sec timeout */
+#define NB_WRITE_TOUT_SEC	60	/* 60 sec timeout */
+
 int
 unixFileCreate (rsComm_t *rsComm, char *fileName, int mode, rodsLong_t mySize);
 int
@@ -106,5 +109,9 @@ char *cacheFilename,  rodsLong_t dataSize,
 keyValPair_t *condInput);
 int
 unixFileCopy (int mode, char *srcFileName, char *destFileName);
+int
+nbFileRead (rsComm_t *rsComm, int fd, void *buf, int len);
+int
+nbFileWrite (rsComm_t *rsComm, int fd, void *buf, int len);
 
 #endif	/* UNIX_FILE_DRIVER_H */
