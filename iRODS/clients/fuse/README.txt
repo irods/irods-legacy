@@ -90,23 +90,8 @@ It should print out a lot of debugging info.
 
 WARNING
 -------
-iRODS versions 2.4.1 or later support multi-threading in iRODS FUSE 
-and limitation 1) on "read ahead" is no longer needed.
 
-1) Our current FUSE implmentation does not support parallel operations but
-fuse-2.7.1 and later releases deploy "Read Ahead" which is a parallel
-operation and can cause iRODS Fuse to hang. The work around is:
-
-a) install fuse-2.7.0 
-
-OR
-
-b) For fuse-2.7.1 and later releases, turn off the read ahead feature at 
-mount time. e.g.,
-
-    irodsFs yourMountPoint -o max_readahead=0
-
-2) When a collection is mounted using irodsFs, users should not use iCommands
+1) When a collection is mounted using irodsFs, users should not use iCommands
 such as iput, irm, icp, etc to change the content of the collection because
 the FUSE implementation seems to cache the attributes of the contents of
 the collection.  
