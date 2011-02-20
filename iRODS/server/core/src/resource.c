@@ -420,8 +420,8 @@ sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo)
     addInxIval(&genQueryInp.selectInp, COL_SLD_RESC_NAME, 1);
     addInxIval(&genQueryInp.selectInp, COL_SLD_LOAD_FACTOR, 1);
     addInxIval(&genQueryInp.selectInp, COL_SLD_CREATE_TIME, SELECT_MAX);
-    /* XXXXX a tmp fix to increase no. of resource to 512 */
-    genQueryInp.maxRows = MAX_SQL_ROWS * 2;
+    /* XXXXX a tmp fix to increase no. of resource to 2560 */
+    genQueryInp.maxRows = MAX_SQL_ROWS * 10;
     status =  rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
     if ( status == 0 ) {
         nresc = genQueryOut->rowCnt;
@@ -785,7 +785,8 @@ initRescGrp (rsComm_t *rsComm)
     addInxIval (&genQueryInp.selectInp, COL_R_RESC_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_RESC_GROUP_NAME, ORDER_BY);
 
-    genQueryInp.maxRows = MAX_SQL_ROWS;
+    /* increased to 2560 */
+    genQueryInp.maxRows = MAX_SQL_ROWS * 10;
 
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
@@ -848,16 +849,21 @@ initRescGrp (rsComm_t *rsComm)
             }
         }
     }
-    freeGenQueryOut (&genQueryOut);
-
     /* query the remaining in cache */
     if (tmpRescGrpInfo != NULL) {
         tmpRescGrpInfo->status = savedRescGrpStatus;
         tmpRescGrpInfo->cacheNext = CachedRescGrpInfo;
         CachedRescGrpInfo = tmpRescGrpInfo;
     }
-
-    return 0;
+    if (genQueryOut != NULL &&  genQueryOut->continueInx > 0) {
+        rodsLog (LOG_NOTICE,
+          "initRescGrp: number of resources in resc groups exceed 2560");
+        freeGenQueryOut (&genQueryOut);
+	return SYS_INVALID_RESC_INPUT;
+    } else {
+        freeGenQueryOut (&genQueryOut);
+        return 0;
+    }
 }
 
 /* setDefaultResc - set the default resource and put the result in the
