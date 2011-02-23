@@ -1,5 +1,5 @@
 		Scripts for installing and uninstalling iRODS
-			Last updated Oct 2010
+			Last updated Feb 2011
 
 
 The iRODS distribution uses several configuration files and shell/Perl
@@ -9,25 +9,24 @@ scripts to manage iRODS after it has been installed.
 
 0.  Upgrading an existing iRODS installation
 
-If you are upgrading to a new version of iRODS and want to keep your
-existing state information (the ICAT, information on dataObjects,
-collections, resources, users, etc), first run the patch file for
-either PostgreSQL, Oracle, or MySQL to make some needed updates to
-tables (if any).  Assuming your iCAT database is named ICAT, this
-would be, for example:
+If you are upgrading to a new version of iRODS you will normally want
+to keep your existing state information (the ICAT, information on
+dataObjects, collections, resources, users, etc).  To do so, first run
+the patch file for either PostgreSQL, Oracle, or MySQL to make some
+needed updates to tables (if any).  Assuming your iCAT database is
+named ICAT, this would be, for example:
 
-        psql ICAT < server/icat/patches/all-patch-v2.4tov2.4.1.sql
+        psql ICAT < server/icat/patches/all-patch-v2.4.1tov2.5.sql
 
     or 
         sqlplus name@instance
-        @server/icat/patches/all-patch-v2.4tov2.4.1.sql
+        @server/icat/patches/all-patch-v2.4.1tov2.5.sql
 
     or
-        mysql ICAT < server/icat/patches/all-patch-v2.4tov2.4.1.sql
+        mysql ICAT < server/icat/patches/all-patch-v2.4.1tov2.5.sql
 
-For 2.4.1, the patch sql script will just create an index that in some
-cases may not exist.  You you get an error about the relation already
-existing, you can ignore it.
+For 2.5, the patch sql script will add some tokens for the DBR
+feature, and a table, preset rows, and indexes for specific-queries.
 
 If you are upgrading from an older version, you'll need to apply the
 patch file for each released version that has one, in sequence.
