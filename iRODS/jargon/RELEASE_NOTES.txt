@@ -3,14 +3,24 @@ Jargon 2.5 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 10/08/2010
-Release Version: Jargon 2.5 release candidate
+Date: 2/21/2011
+Release Version: Jargon 2.5 release c
 ================================================================================================
+
+News
+
+This release is for the current 'classic' Jargon API.  This is differentiated from the newer 'Jargon-core' libraries which are available in beta.  The new libraries may be used, and that use is encouraged, but please check in with the developers before proceeding.  For information on Jargon-core, go to the new GForge site, where you can check out the code, report and track issues, and find other information, including information on Maven artifacts available on the new RENCI Maven repository.
+
+GForge for Jargon-core is at:  [[https://code.renci.org/gf/project/jargon/]]
+
+
+There is a new GForge location for this Jargon 2.5 release.  The GForge project page for the 'classic' Jargon, which is called "Jargon-trunk' can be found at [[https://code.renci.org/gf/project/jargontrunk/]] Issue tracking, discussions, and feature requests are available.  Future releases of iRODS will include a move of the 'classic' Jargon code to git and Maven.  At this point the use of Bugzilla for Jargon issue tracking is deprecated.  As usual, issues can also be reported on the iRODS Chat group.
+
 Requirements
 
 -Jargon depends on Java 1.5+
 -Jargon is built using Apache ANT
--Jargon has been tested against iRODS2.2, iRODS2.3, iRODS2.4, and iRODS2.4.1
+-Jargon has been tested against iRODS2.2, iRODS2.3, iRODS2.4, iRODS2.4.1, and iRODS2.5
 
 libraries
 ---------
