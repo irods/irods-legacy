@@ -1,5 +1,7 @@
---- Run these SQL statements, using the postgresql client psql,
---- if your ICAT DBMS is postgres.
+-- Depending on your ICAT DBMS type, run this SQL statement using 
+---    the MySQL client mysql,
+---    the Oracle client sqlplus,
+---    or the PostgreSQL client psql.
 
 --- New type and classes for Database Resources (DBR)
 insert into R_TOKN_MAIN values ('resc_type',405,'database','','','','','1288631300','1288631300');
