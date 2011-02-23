@@ -570,8 +570,10 @@ Print the main usage/help information.
 void usageMain()
 {
    char *msgs[]={
-"This is an interface to the new database resource (DBR)/database",
-"object (DBO) capabilities, under development.",
+"Execute a Database Object (DBO) on a Database Resource (DBR) or",
+"perform other DBO operations.",
+"Typical usage:",
+" idbo exec DBR DBO",
 " ",
 "A single command can be entered on the command line or, if blank, it",
 "will prompt go into interactive mode and prompt for commands.",
@@ -589,7 +591,7 @@ void usageMain()
 " ",
 "You can exectute a DBO without first opening the DBR (in which case the",
 "server will open and close it), so you can run a DBO from the command",
-"line: 'idbo DBR DBO'",
+"line: 'idbo exec DBR DBO'",
 " ",
 "Like other unix utilities, a series of commands can be piped into it:",
 "'cat file1 | idbo' (maintaining one connection for all commands).",

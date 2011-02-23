@@ -34,8 +34,16 @@ else
   echo "This is just a interim partial solution while we develop a more"
   echo "comprehensive approach, but may be useful to some."
   echo "You can enter the arguments on the command-line if you'd prefer."
+  echo "Also see 'igetwild.sh -h'."
   printf "Please enter the collection to iget from: "
   read collName
+fi
+
+if [ $collName = "-h" ]; then
+  echo "Get one or more iRODS files using wildcard characters."
+  echo "Usage: igetwild.sh collection pattern b|m|e  (beginning, middle, or end)"
+  echo "Will prompt for missing items."
+  exit 0
 fi
 
 if [ $2 ]; then
