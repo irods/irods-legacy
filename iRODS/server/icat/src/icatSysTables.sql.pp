@@ -397,7 +397,7 @@ create table R_QUOTA_USAGE
 create table R_SPECIFIC_QUERY
 (
    alias varchar(1000),
-   sql varchar(2700),
+   sqlStr varchar(2700),
    create_ts varchar(32)
 );
 
@@ -477,5 +477,5 @@ create index idx_tokn_main1 on R_TOKN_MAIN (token_id);
 create index idx_tokn_main2 on R_TOKN_MAIN (token_name);
 create index idx_tokn_main3 on R_TOKN_MAIN (token_value);
 create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
-create index idx_specific_query1 on R_SPECIFIC_QUERY (sql);
+create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr);
 create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);

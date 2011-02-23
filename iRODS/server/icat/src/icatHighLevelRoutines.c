@@ -8208,7 +8208,7 @@ chlAddSpecificQuery(rsComm_t *rsComm, char *sql, char *alias) {
       cllBindVarCount=i;
       if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery SQL 2");
       status =  cmlExecuteNoAnswerSql(
-	 "insert into R_SPECIFIC_QUERY  (sql, alias, create_ts) values (?, ?, ?)",
+	 "insert into R_SPECIFIC_QUERY  (sqlStr, alias, create_ts) values (?, ?, ?)",
 	 &icss);
    }
    else {
@@ -8218,7 +8218,7 @@ chlAddSpecificQuery(rsComm_t *rsComm, char *sql, char *alias) {
       cllBindVarCount=i;
       if (logSQL) rodsLog(LOG_SQL, "chlAddSpecificQuery SQL 3");
       status =  cmlExecuteNoAnswerSql(
-	 "insert into R_SPECIFIC_QUERY  (sql, create_ts) values (?, ?)",
+	 "insert into R_SPECIFIC_QUERY  (sqlStr, create_ts) values (?, ?)",
 	 &icss);
    }
 
@@ -8251,7 +8251,7 @@ chlDelSpecificQuery(rsComm_t *rsComm, char *sqlOrAlias) {
    cllBindVarCount=i;
    if (logSQL) rodsLog(LOG_SQL, "chlDelSpecificQuery SQL 1");
    status =  cmlExecuteNoAnswerSql(
-      "delete from R_SPECIFIC_QUERY where sql = ?", 
+      "delete from R_SPECIFIC_QUERY where sqlStr = ?", 
       &icss);
 
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) {
@@ -8330,14 +8330,14 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
 */
       if (logSQL) rodsLog(LOG_SQL, "chlSpecificQuery SQL 1");
       status = cmlGetStringValueFromSql(
-	 "select create_ts from R_SPECIFIC_QUERY where sql=?",
+	 "select create_ts from R_SPECIFIC_QUERY where sqlStr=?",
 	 tsCreateTime, 50,
 	 specificQueryInp.sql, "" , "", icss);
       if (status == CAT_NO_ROWS_FOUND) {
 	 int status2;
 	 if (logSQL) rodsLog(LOG_SQL, "chlSpecificQuery SQL 2");
 	 status2 = cmlGetStringValueFromSql(
-	    "select sql from R_SPECIFIC_QUERY where alias=?",
+	    "select sqlStr from R_SPECIFIC_QUERY where alias=?",
 	    combinedSQL, sizeof(combinedSQL),
 	    specificQueryInp.sql, "" , "", icss);
 	 if (status2 == CAT_NO_ROWS_FOUND) return(CAT_UNKNOWN_SPECIFIC_QUERY);
