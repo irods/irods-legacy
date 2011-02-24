@@ -22,9 +22,9 @@ create table R_SPECIFIC_QUERY
 );
 
 -- Add a couple built-in specific queries (to see the specific queries).
-insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('ls', 'select sql from R_SPECIFIC_QUERY', '01292940000');
+insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('ls', 'select sqlStr from R_SPECIFIC_QUERY', '01292940000');
 
-insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('lsl', 'select sql from R_SPECIFIC_QUERY where sql like ?', '01292940000');
+insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('lsl', 'select sqlStr from R_SPECIFIC_QUERY where sqlStr like ?', '01292940000');
 
 create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr);
 create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
