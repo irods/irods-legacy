@@ -670,10 +670,10 @@ runCmd(0, "irm -fr $LD1");
 runCmd(0, "irm -rf $LD2");
 
 # specific query
-runCmd(0, "iadmin asq 'select user_name from r_user_main'");
-runCmd(0, "iquest --sql 'select user_name from r_user_main'");
-runCmd(0, "iadmin rsq 'select user_name from r_user_main'");
-runCmd(0, "iadmin asq 'select user_name from r_user_main' testAlias");
+runCmd(0, "iadmin asq 'select user_name from R_USER_MAIN'");
+runCmd(0, "iquest --sql 'select user_name from R_USER_MAIN'");
+runCmd(0, "iadmin rsq 'select user_name from R_USER_MAIN'");
+runCmd(0, "iadmin asq 'select user_name from R_USER_MAIN' testAlias");
 runCmd(0, "iquest --sql testAlias");
 runCmd(0, "iadmin rsq testAlias");
 
