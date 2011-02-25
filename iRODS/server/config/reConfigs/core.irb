@@ -66,7 +66,7 @@ acAclPolicy||nop|nop
 # used by this rule:
 #    msiSetNoDirectRescInp(rescList) - sets a list of resources that cannot
 #      be used by a normal user directly. More than one resources can be 
-#      input using the character "%" as separator. e.g., resc1%resc2%resc3.  
+#      input using the character "%" as seperator. e.g., resc1%resc2%resc3.  
 #      This function is optional, but if used, should be the first function
 #      to execute because it screens the resource input. 
 #    msiSetDefaultResc(defaultRescList, optionStr) - sets the default resource.
@@ -75,7 +75,7 @@ acAclPolicy||nop|nop
 #      function msiSetNoDirectRescInp.
 #      defaultResc - the resource to use if no resource is input. A "null"
 #        means there is no defaultResc. More than one resources can be
-#      input using the character "%" as separator.
+#      input using the character "%" as seperator.
 #      optionStr - Can be "forced", "preferred" or "null". A "forced" input 
 #      means the defaultResc will be used regardless of the user input. 
 #      The forced action only apply to to users with normal privilege.
@@ -106,7 +106,7 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 #    msiSetDataObjPreferredResc(preferredRescList) - set the preferred 
 #      resources of the opened object. The copy stored in this preferred 
 #      resource will be picked if it exists. More than one resources can be
-#      input using the character "%" as separator. e.g., resc1%resc2%resc3.
+#      input using the character "%" as seperator. e.g., resc1%resc2%resc3.
 #      The most preferred resource should be at the top of the list.
 #    msiSetDataObjAvoidResc(avoidResc) - set the resource to avoid when
 #      opening an object. The copy stored in this resource will not be picked
@@ -156,7 +156,7 @@ acSetMultiReplPerResc||nop|nop
 #    the file just uploaded or copied data object to the specified replResc 
 #    Valid values for the "flag" input are "all", "updateRepl" and 
 #    "rbudpTransfer". More than one flag values can be set using the 
-#    "%" character as separator. e.g., "all%updateRepl". "updateRepl" means 
+#    "%" character as seperator. e.g., "all%updateRepl". "updateRepl" means 
 #    update an existing stale copy to the latest copy. The "all" flag means 
 #    replicate to all resources in a resource group or update all stale 
 #    copies if the "updateRepl" flag is also set. "rbudpTransfer" means
@@ -177,6 +177,9 @@ acSetMultiReplPerResc||nop|nop
 # acPostProcForPut|$objPath like /tempZone/home/rods/nvo/*|delayExec(<PLUSET>1m</PLUSET>,msiSysReplDataObj(nvoReplResc,null),nop)|nop
 # acPostProcForPut||msiSysReplDataObj(demoResc8,all)|nop
 #acPostProcForPut||msiSetDataTypeFromExt|nop
+#acPostProcForPut|$objPath like /tempZone/home/rods/tg/*|msiSysReplDataObj(nvoReplResc,null)|nop
+#acPostProcForPut|$objPath like /tempZone/home/rods/mytest/*|writeLine(serverLog,"File Path is $filePath")|nop
+#acPostProcForPut|$objPath like /tempZone/home/rods/mytest/*|writeLine(serverLog,"File Path is $filePath")##msiSplitPath($filePath,*fileDir, *fileName)##msiExecCmd(send.sh, "*fileDir *fileName", null, null,null,*Junk)##writeLine(serverLog,"After File Path is *fileDir *fileName")|nop
 acPostProcForPut||nop|nop
 acPostProcForCopy||nop|nop
 acPostProcForFilePathReg||nop|nop
@@ -197,7 +200,7 @@ acPostProcForPhymv||nop|nop
 #        where sizePerThrInMb is an integer value in MBytes. It also accepts
 #        the word "default" which sets sizePerThrInMb to a default value of 32
 #      maxNumThr - The maximum number of threads to use. It accepts integer
-#        value up to 32. It also accepts the word "default" which sets 
+#        value up to 16. It also accepts the word "default" which sets 
 #        maxNumThr to a default value of 4. A value of 0 means no parallel
 #        I/O. This can be helpful to get around firewall issues.
 #    windowSize - the tcp window size in Bytes for the parallel transfer. 
@@ -237,6 +240,7 @@ acPostProcForDelete||nop|nop
 #    msiNoChkFilePathPerm() - Do not check file path permission when registering
 #    a file. WARNING - This function can create a security problem if used.
 acNoChkFilePathPerm||nop|nop
+#acNoChkFilePathPerm||msiNoChkFilePathPerm()|nop
 #
 # 13) acTrashPolicy - This rule set the policy for whether the trash can
 # should be used. The default policy is the trash can will be used. Only
@@ -251,7 +255,7 @@ acTrashPolicy||nop|nop
 #    msiSetPublicUserOpr(oprList) - Sets a list of operations that can
 #      be performed by the user "public". Only 2 operations are allowed -
 #      "read" - read files; "query" - browse some system level metadata. More 
-#      than one operation can be input using the character "%" as separator. 
+#      than one operation can be input using the character "%" as seperator. 
 #      e.g., read%query.
 # acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
 acSetPublicUserPolicy||nop|nop
@@ -299,6 +303,7 @@ acSetReServerNumProc||msiSetReServerNumProc(default)|nop
 # 18) acPreprocForCollCreate - This is the PreProcessing rule for creating
 # a collection. Currently there is no function written specifically
 # for this rule.
+# acPreprocForCollCreate||writeLine(serverLog,"TEST:acPreProcForCollCreate:$collName")|nop
 acPreprocForCollCreate||nop|nop
 #
 # 19) acPostProcForCollCreate - This rule set the post-processing policy for
@@ -498,6 +503,10 @@ acPreProcForObjRename(*sourceObject,*destObject)||nop|nop
 # renaming (logicaly moving) data and collections
 #
 #acPostProcForObjRename(*sourceObject,*destObject)||writeLine(serverLog,"TEST:acPostProcForObjRename from *sourceObject to *destObject")|nop
+# Testing to see if the allrules call gets the *variables.
+#acPostProcForObjRename(*sourceObject,*destObject)||applyAllRules(acPostProcForObjRenameALL(*sourceObject,*destObject),0,0)|nop
+#acPostProcForObjRenameALL(*AA,*BB)||writeLine(serverLog,I was called! *AA *BB )|nop 
+#acPostProcForObjRenameALL(*AA,*BB)||writeLine(serverLog,DestObject: *AA)|nop 
 acPostProcForObjRename(*sourceObject,*destObject)||nop|nop
 #
 # 48) acPreProcForGenQuery - This rule set the pre-processing policy for
@@ -562,6 +571,18 @@ acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(off)|nop
 # of the extracted tar file (from ibun -x). There is not micro-service
 # associated with this rule.
 acPostProcForTarFileReg||nop|nop
+# 53) acPostProcForDataObjWrite - Rule for pre processing the write buffer
+# the argument passed is of type BUF_LEN_MS_T 
+#acPostProcForDataObjWrite(*WriteBuffer)||writeLine(serverLog,"TEST:acPostProcForDataObjWrite")|nop
+# rule below used for testing. dont uncomment this....
+######acPostProcForDataObjWrite(*WriteBuffer)||msiCutBufferInHalf(*WriteBuffer)|nop
+acPostProcForDataObjWrite(*WriteBuffer)||nop|nop
+# 54) acPostProcForDataObjRead - Rule for post processing the read buffer
+# the argument passed is of type BUF_LEN_MS_T 
+#acPostProcForDataObjRead(*ReadBuffer)||writeLine(serverLog,"TEST:acPostProcForDataObjRead")|nop
+# rule below used for testing. dont uncomment this....
+#####acPostProcForDataObjRead(*ReadBuffer)||msiCutBufferInHalf(*ReadBuffer)|nop
+acPostProcForDataObjRead(*ReadBuffer)||nop|nop
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate||acSetCreateConditions##acDOC|nop##null
