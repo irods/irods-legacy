@@ -133,5 +133,27 @@ int chlInsRuleTable(rsComm_t *rsComm,
 		    char *ruleRecovery, char *ruleIdStr, char *myTime);
 int chlVersionRuleBase(rsComm_t *rsComm,
 		       char *baseName, char *myTime);
-
+/*int chlDatabaseObjectAdmin(rsComm_t *rsComm, 
+			   databaseObjectAdminInp_t *databaseObjectAdminInp,
+			   databaseObjectAdminOut_t *databaseObjectAdminOut);*/
+int chlInsDvmTable(rsComm_t *rsComm,
+	       char *baseName, char *varName, char *action,
+	       char *var2CMap, char *myTime);
+int chlInsFnmTable(rsComm_t *rsComm,
+	       char *baseName, char *funcName,
+	       char *func2CMap, char *myTime); 
+int chlInsMsrvcTable(rsComm_t *rsComm,
+		     char *moduleName, 
+		     char *msrvcName,
+		     char *msrvcSignature, 
+		     char *msrvcVersion, 
+		     char *msrvcHost, 
+		     char *msrvcLocation, 
+		     char *msrvcLanguage, 
+		     char *msrvcTypeName, 
+		     char *myTime); 
+int chlVersionDvmBase(rsComm_t *rsComm,
+		  char *baseName, char *myTime);
+int chlVersionFnmBase(rsComm_t *rsComm,
+		  char *baseName, char *myTime); 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

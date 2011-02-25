@@ -47,9 +47,9 @@ int insertWhere(char *condition, int option);
 extern icatSessionStruct *chlGetRcs();
 
 #ifdef EXTENDED_ICAT
-#define MAX_LINKS_TABLES_OR_COLUMNS 230+EXTENDED_TABLES_AND_COLUMNS
+#define MAX_LINKS_TABLES_OR_COLUMNS 500+EXTENDED_TABLES_AND_COLUMNS
 #else
-#define MAX_LINKS_TABLES_OR_COLUMNS 230
+#define MAX_LINKS_TABLES_OR_COLUMNS 500
 #endif
 
 #define MAX_TSQL 100

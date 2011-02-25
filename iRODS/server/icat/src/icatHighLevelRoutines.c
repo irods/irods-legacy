@@ -8106,6 +8106,340 @@ chlInsRuleTable(rsComm_t *rsComm,
    return(0);
 }
 
+/* 
+ * chlInsDvmTable - Insert  a new iRODS DVM table row.
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+int
+chlInsDvmTable(rsComm_t *rsComm, 
+		char *baseName, char *varName, char *action, 
+		char *var2CMap, char *myTime) {
+   int status;
+   int i;
+   rodsLong_t seqNum = -1;
+   char *dvmIdStr;
+   if (logSQL) rodsLog(LOG_SQL, "chlInsDvmTable");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   /* first check if the DVM already exists */
+   if (logSQL) rodsLog(LOG_SQL, "chlInsDvmTable SQL 1");
+   i=0;
+   cllBindVars[i++]=baseName;
+   cllBindVars[i++]=varName;
+   cllBindVars[i++]=action;
+   cllBindVars[i++]=var2CMap;
+   cllBindVarCount=i;
+   status =  cmlGetIntegerValueFromSqlV3(
+       "select dvm_id from R_RULE_DVM where  dvm_base_name = ? and  dvm_ext_var_name = ? and  dvm_condition = ? and dvm_int_map_path = ? ", 
+       &seqNum,
+       &icss);
+   if (status != 0 &&  status != CAT_NO_ROWS_FOUND) {
+       rodsLog(LOG_NOTICE,
+	      "chlInsDvmTable cmlGetIntegerValueFromSqlV3 find DVM if any failure %d",status);
+      return(status);
+   }
+   if (seqNum < 0) {
+     seqNum = cmlGetNextSeqVal(&icss);
+     if (seqNum < 0) {
+       rodsLog(LOG_NOTICE, "chlInsDvmTable cmlGetNextSeqVal failure %d",
+	       seqNum);
+       _rollback("chlInsDvmTable");
+       return(seqNum);
+     }
+     snprintf(dvmIdStr, MAX_NAME_LEN, "%lld", seqNum);
+
+     i=0;
+     cllBindVars[i++]=dvmIdStr;
+     cllBindVars[i++]=baseName;
+     cllBindVars[i++]=varName;
+     cllBindVars[i++]=action;
+     cllBindVars[i++]=var2CMap;
+     cllBindVars[i++]=rsComm->clientUser.userName;
+     cllBindVars[i++]=rsComm->clientUser.rodsZone;
+     cllBindVars[i++]=myTime;
+     cllBindVars[i++]=myTime;
+     cllBindVarCount=i;
+     if (logSQL) rodsLog(LOG_SQL, "chlInsDvmTable SQL 2");
+     status =  cmlExecuteNoAnswerSql(
+       "insert into R_RULE_DVM(dvm_id, dvm_base_name, dvm_ext_var_name, dvm_condition, dvm_int_map_path, dvm_owner_name, dvm_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+       &icss);
+     if (status != 0) {
+       rodsLog(LOG_NOTICE,
+	       "chlInsDvmTable cmlExecuteNoAnswerSql DVM Main Insert failure %d",status);
+       return(status);
+     }
+   }
+   else {
+     snprintf(dvmIdStr, MAX_NAME_LEN, "%lld", seqNum);
+   }
+   if (logSQL) rodsLog(LOG_SQL, "chlInsDvmTable SQL 3");
+   i = 0;
+   cllBindVars[i++]=baseName;
+   cllBindVars[i++]=dvmIdStr;
+   cllBindVars[i++]=rsComm->clientUser.userName;
+   cllBindVars[i++]=rsComm->clientUser.rodsZone;
+   cllBindVars[i++]=myTime;
+   cllBindVars[i++]=myTime;
+   cllBindVarCount=i;
+   status =  cmlExecuteNoAnswerSql(
+      "insert into R_RULE_DVM_MAP  (map_dvm_base_name, dvm_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+                                   &icss);
+   if (status != 0) {
+     rodsLog(LOG_NOTICE,
+	     "chlInsDvmTable cmlExecuteNoAnswerSql DVM Map insert failure %d" , status);
+
+     return(status);
+   }
+
+   return(0);
+}
+
+
+
+/* 
+ * chlInsFnmTable - Insert  a new iRODS FNM table row.
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+int
+chlInsFnmTable(rsComm_t *rsComm, 
+		char *baseName, char *funcName, 
+		char *func2CMap, char *myTime) {
+   int status;
+   int i;
+   rodsLong_t seqNum = -1;
+   char *fnmIdStr;
+   if (logSQL) rodsLog(LOG_SQL, "chlInsFnmTable");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   /* first check if the FNM already exists */
+   if (logSQL) rodsLog(LOG_SQL, "chlInsFnmTable SQL 1");
+   i=0;
+   cllBindVars[i++]=baseName;
+   cllBindVars[i++]=funcName;
+   cllBindVars[i++]=func2CMap;
+   cllBindVarCount=i;
+   status =  cmlGetIntegerValueFromSqlV3(
+       "select fnm_id from R_RULE_FNM where  fnm_base_name = ? and  fnm_ext_func_name = ? and  fnm_int_func_name = ? ", 
+       &seqNum,
+       &icss);
+   if (status != 0 &&  status != CAT_NO_ROWS_FOUND) {
+       rodsLog(LOG_NOTICE,
+	      "chlInsFnmTable cmlGetIntegerValueFromSqlV3 find FNM if any failure %d",status);
+      return(status);
+   }
+   if (seqNum < 0) {
+     seqNum = cmlGetNextSeqVal(&icss);
+     if (seqNum < 0) {
+       rodsLog(LOG_NOTICE, "chlInsFnmTable cmlGetNextSeqVal failure %d",
+	       seqNum);
+       _rollback("chlInsFnmTable");
+       return(seqNum);
+     }
+     snprintf(fnmIdStr, MAX_NAME_LEN, "%lld", seqNum);
+
+     i=0;
+     cllBindVars[i++]=fnmIdStr;
+     cllBindVars[i++]=baseName;
+     cllBindVars[i++]=funcName;
+     cllBindVars[i++]=func2CMap;
+     cllBindVars[i++]=rsComm->clientUser.userName;
+     cllBindVars[i++]=rsComm->clientUser.rodsZone;
+     cllBindVars[i++]=myTime;
+     cllBindVars[i++]=myTime;
+     cllBindVarCount=i;
+     if (logSQL) rodsLog(LOG_SQL, "chlInsFnmTable SQL 2");
+     status =  cmlExecuteNoAnswerSql(
+       "insert into R_RULE_FNM(fnm_id, fnm_base_name, fnm_ext_func_name, fnm_int_func_name, fnm_owner_name, fnm_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?)", 
+       &icss);
+     if (status != 0) {
+       rodsLog(LOG_NOTICE,
+	       "chlInsFnmTable cmlExecuteNoAnswerSql FNM Main Insert failure %d",status);
+       return(status);
+     }
+   }
+   else {
+     snprintf(fnmIdStr, MAX_NAME_LEN, "%lld", seqNum);
+   }
+   if (logSQL) rodsLog(LOG_SQL, "chlInsFnmTable SQL 3");
+   i = 0;
+   cllBindVars[i++]=baseName;
+   cllBindVars[i++]=fnmIdStr;
+   cllBindVars[i++]=rsComm->clientUser.userName;
+   cllBindVars[i++]=rsComm->clientUser.rodsZone;
+   cllBindVars[i++]=myTime;
+   cllBindVars[i++]=myTime;
+   cllBindVarCount=i;
+   status =  cmlExecuteNoAnswerSql(
+      "insert into R_RULE_FNM_MAP  (map_fnm_base_name, fnm_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+                                   &icss);
+   if (status != 0) {
+     rodsLog(LOG_NOTICE,
+	     "chlInsFnmTable cmlExecuteNoAnswerSql FNM Map insert failure %d" , status);
+
+     return(status);
+   }
+
+   return(0);
+}
+
+
+
+
+
+/* 
+ * chlInsMsrvcTable - Insert  a new iRODS MSRVC table row (actually in two tables).
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+int chlInsMsrvcTable(rsComm_t *rsComm,
+                     char *moduleName, char *msrvcName,
+                     char *msrvcSignature,  char *msrvcVersion,
+                     char *msrvcHost, char *msrvcLocation,
+                     char *msrvcLanguage,  char *msrvcTypeName,
+                     char *myTime) 
+{
+   int status;
+   int i;
+   rodsLong_t seqNum = -1;
+   char *msrvcIdStr;
+   if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   /* first check if the MSRVC already exists */
+   if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 1");
+   i=0;
+   cllBindVars[i++]=moduleName;
+   cllBindVars[i++]=msrvcName;
+   cllBindVarCount=i;
+   status =  cmlGetIntegerValueFromSqlV3(
+       "select msrvc_id from R_MICROSRVC_MAIN where  msrvc_module_name = ? and  msrvc_name = ? ", 
+       &seqNum,
+       &icss);
+   if (status != 0 &&  status != CAT_NO_ROWS_FOUND) {
+       rodsLog(LOG_NOTICE,
+	      "chlInsMsrvcTable cmlGetIntegerValueFromSqlV3 find MSRVC if any failure %d",status);
+      return(status);
+   }
+   if (seqNum < 0) { /* No micro-service found */
+     seqNum = cmlGetNextSeqVal(&icss);
+     if (seqNum < 0) {
+       rodsLog(LOG_NOTICE, "chlInsMsrvcTable cmlGetNextSeqVal failure %d",
+	       seqNum);
+       _rollback("chlInsMsrvcTable");
+       return(seqNum);
+     }
+     snprintf(msrvcIdStr, MAX_NAME_LEN, "%lld", seqNum);
+     /* inserting in R_MICROSRVC_MAIN */
+     i=0;
+     cllBindVars[i++]=msrvcIdStr;
+     cllBindVars[i++]=msrvcName;
+     cllBindVars[i++]=moduleName;
+     cllBindVars[i++]=msrvcSignature;
+     cllBindVars[i++]=rsComm->clientUser.userName;
+     cllBindVars[i++]=rsComm->clientUser.rodsZone;
+     cllBindVars[i++]=myTime;
+     cllBindVars[i++]=myTime;
+     cllBindVarCount=i;
+     if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 2");
+     status =  cmlExecuteNoAnswerSql(
+       "insert into R_MICROSRVC_MAIN(msrvc_id, msrvc_name, msrvc_module_name, msrvc_signature, msrvc_doxygen, msrvc_variations, msrvc_owner_name, msrvc_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?,   'NONE', 'NONE',  ?, ?, ?, ?)", 
+       &icss);
+     if (status != 0) {
+       rodsLog(LOG_NOTICE,
+	       "chlInsMsrvcTable cmlExecuteNoAnswerSql R_MICROSRVC_MAIN Insert failure %d",status);
+       return(status);
+     }
+     /* inserting in R_MICROSRVC_VER */
+     i=0;
+     cllBindVars[i++]=msrvcIdStr;
+     cllBindVars[i++]=msrvcVersion;
+     cllBindVars[i++]=msrvcHost;
+     cllBindVars[i++]=msrvcLocation;
+     cllBindVars[i++]=msrvcLanguage;
+     cllBindVars[i++]=msrvcTypeName;
+     cllBindVars[i++]=rsComm->clientUser.userName;
+     cllBindVars[i++]=rsComm->clientUser.rodsZone;
+     cllBindVars[i++]=myTime;
+     cllBindVars[i++]=myTime;
+     cllBindVarCount=i;
+     if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 3");
+     status =  cmlExecuteNoAnswerSql(
+       "insert into R_MICROSRVC_VER(msrvc_id, msrvc_version, msrvc_host, msrvc_location, msrvc_language, msrvc_type_name, msrvc_owner_name, msrvc_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?)", 
+       &icss);
+     if (status != 0) {
+       rodsLog(LOG_NOTICE,
+	       "chlInsMsrvcTable cmlExecuteNoAnswerSql R_MICROSRVC_VER Insert failure %d",status);
+       return(status);
+     }
+   }
+   else { /* micro-service already there */
+     snprintf(msrvcIdStr, MAX_NAME_LEN, "%lld", seqNum);
+   }
+   /* Check if same host and location exists - if so no need to insert a new row */
+   if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 4");
+   i=0;
+   cllBindVars[i++]=msrvcIdStr;
+   cllBindVars[i++]=msrvcHost;
+   cllBindVars[i++]=msrvcLocation;
+   cllBindVarCount=i;
+   status =  cmlGetIntegerValueFromSqlV3(
+	 "select msrvc_id from R_MICROSRVC_VER where  msrvc_id = ? and  msrvc_host = ? and  msrvc_location = ? ",
+	 &seqNum,
+	 &icss);
+   if (status != 0 &&  status != CAT_NO_ROWS_FOUND) {
+     rodsLog(LOG_NOTICE,
+	     "chlInsMsrvcTable cmlGetIntegerValueFromSqlV3 find MSRVC_HOST if any failure %d",status);
+     return(status);
+   }
+   if (seqNum >= 0) {
+
+   }
+   /* @@@@@@ */
+   i = 0;
+   cllBindVars[i++]=moduleName;
+   cllBindVars[i++]=msrvcIdStr;
+   cllBindVars[i++]=rsComm->clientUser.userName;
+   cllBindVars[i++]=rsComm->clientUser.rodsZone;
+   cllBindVars[i++]=myTime;
+   cllBindVars[i++]=myTime;
+   cllBindVarCount=i;
+   status =  cmlExecuteNoAnswerSql(
+      "insert into R_RULE_MSRVC_MAP  (map_msrvc_base_name, msrvc_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+                                   &icss);
+   if (status != 0) {
+     rodsLog(LOG_NOTICE,
+	     "chlInsMsrvcTable cmlExecuteNoAnswerSql MSRVC Map insert failure %d" , status);
+
+     return(status);
+   }
+
+   return(0);
+}
+
+
 /*
  * chlVersionRuleBase - Version out the old base maps with timestamp 
  * Input - rsComm_t *rsComm  - the server handle,
@@ -8119,7 +8453,7 @@ chlVersionRuleBase(rsComm_t *rsComm,
 
   int i, status;
 
-  if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable");
+  if (logSQL) rodsLog(LOG_SQL, "chlVersionRuleBase");
 
   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
     return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
@@ -8147,6 +8481,95 @@ chlVersionRuleBase(rsComm_t *rsComm,
 
   return(0);
 }
+
+
+/*
+ * chlVersionDvmBase - Version out the old dvm base maps with timestamp 
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+
+
+int
+chlVersionDvmBase(rsComm_t *rsComm,
+		   char *baseName, char *myTime) {
+
+  int i, status;
+
+  if (logSQL) rodsLog(LOG_SQL, "chlVersionDvmBase");
+
+  if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+    return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+  }
+
+  if (!icss.status) {
+    return(CATALOG_NOT_CONNECTED);
+  }
+
+  i=0;
+  cllBindVars[i++]=myTime;
+  cllBindVars[i++]=myTime;
+  cllBindVars[i++]=baseName;
+  cllBindVarCount=i;
+  if (logSQL) rodsLog(LOG_SQL, "chlVersionDvmBase SQL 1");
+  
+  status =  cmlExecuteNoAnswerSql(
+	  "update R_RULE_DVM_MAP set map_version = ?, modify_ts = ? where map_base_name = ? and map_version = '0'",&icss);
+  if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+    rodsLog(LOG_NOTICE,
+	    "chlVersionDvmBase cmlExecuteNoAnswerSql DVM Map version update  failure %d" , status);
+    return(status);
+
+  }
+
+  return(0);
+}
+
+
+/*
+ * chlVersionFnmBase - Version out the old fnm base maps with timestamp 
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+
+
+int
+chlVersionFnmBase(rsComm_t *rsComm,
+		   char *baseName, char *myTime) {
+
+  int i, status;
+
+  if (logSQL) rodsLog(LOG_SQL, "chlVersionFnmBase");
+
+  if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+    return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+  }
+
+  if (!icss.status) {
+    return(CATALOG_NOT_CONNECTED);
+  }
+
+  i=0;
+  cllBindVars[i++]=myTime;
+  cllBindVars[i++]=myTime;
+  cllBindVars[i++]=baseName;
+  cllBindVarCount=i;
+  if (logSQL) rodsLog(LOG_SQL, "chlVersionFnmBase SQL 1");
+  
+  status =  cmlExecuteNoAnswerSql(
+	  "update R_RULE_FNM_MAP set map_version = ?, modify_ts = ? where map_base_name = ? and map_version = '0'",&icss);
+  if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+    rodsLog(LOG_NOTICE,
+	    "chlVersionFnmBase cmlExecuteNoAnswerSql FNM Map version update  failure %d" , status);
+    return(status);
+
+  }
+
+  return(0);
+}
+
+
+
 
 
 
