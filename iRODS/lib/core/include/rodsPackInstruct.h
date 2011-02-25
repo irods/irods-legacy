@@ -120,7 +120,8 @@
 #define CollEnt_PI "int objType; int replNum; int replStatus; int dataMode; double dataSize; str $collName; str $dataName; str $dataId; str $createTime; str $modifyTime; str $chksum; str $resource; str $rescGrp; str $phyPath; str $ownerName; struct SpecColl_PI;" 
 #define CollOprStat_PI "int filesCnt; int totalFileCnt; double bytesWritten; str lastObjPath[MAX_NAME_LEN];"
 /* XXXXX end of HDF5 PI */
-#define RuleStruct_PI "int maxNumOfRules; str *ruleBase[maxNumOfRules]; str *action[maxNumOfRules]; str *ruleHead[maxNumOfRules]; str *ruleCondition[maxNumOfRules]; str *ruleAction[maxNumOfRules]; str *ruleRecovery[maxNumOfRules];"
-
-
+#define RuleStruct_PI "int maxNumOfRules; str *ruleBase[maxNumOfRules]; str *action[maxNumOfRules]; str *ruleHead[maxNumOfRules]; str *ruleCondition[maxNumOfRules]; str *ruleAction[maxNumOfRules]; str *ruleRecovery[maxNumOfRules]; double ruleId[maxNumOfRules];"
+#define DVMapStruct_PI "int maxNumOfDVars; str *varName[maxNumOfDVars]; str *action[maxNumOfDVars]; str *var2CMap[maxNumOfDVars]; double varId[maxNumOfDVars];"
+#define FNMapStruct_PI "int maxNumOfFMaps; str *funcName[maxNumOfFMaps]; str *func2CMap[maxNumOfFMaps]; double fmapId[maxNumOfFMaps];"
+#define MsrvcStruct_PI "int maxNumOfMsrvcs; double msrvcId[maxNumOfMsrvcs]; str moduleName[maxNumOfMsrvcs]; str msrvcName[maxNumOfMsrvcs];  str msrvcSiganture[maxNumOfMsrvcs];  str msrvcVersion[maxNumOfMsrvcs];  str msrvcHost[maxNumOfMsrvcs];  str msrvcLocation[maxNumOfMsrvcs];  str msrvcLanguage[maxNumOfMsrvcs];  str msrvcTypeName[maxNumOfMsrvcs];  double msrvcStatus[maxNumOfMsrvcs];" 
 #endif	/* PACK_INSTRUCT_H */

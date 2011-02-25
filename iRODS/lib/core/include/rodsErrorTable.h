@@ -506,6 +506,7 @@
 #define CUT_ACTION_ON_SUCCESS_PROCESSED_ERR   -1109000
 #define MSI_OPERATION_NOT_ALLOWED 	      -1110000
 #define  MAX_NUM_OF_ACTION_IN_RULE_EXCEEDED   -1111000
+#define MSRVC_FILE_READ_ERROR                 -1112000
 
 /* 1,600,000 to 1,700,000  - PHP scripting error */
 #define PHP_EXEC_SCRIPT_ERR                   -1600000

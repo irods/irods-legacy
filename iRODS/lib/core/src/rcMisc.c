@@ -4312,4 +4312,20 @@ isPathSymlink (rodsArguments_t *rodsArgs, char *path)
     return 0;
 }
 
+/* Added by RAJA Nov 22 2010 */
+int
+clearAuthResponseInp (void *inauthResponseInp)
+{
+  authResponseInp_t *authResponseInp;
+  
+  authResponseInp = (authResponseInp_t *) inauthResponseInp;
 
+  if (authResponseInp == NULL) {
+    return 0;
+  }
+  free(authResponseInp->username);
+  free(authResponseInp->response);
+  memset (authResponseInp, 0, sizeof (authResponseInp_t));
+
+  return (0);
+}

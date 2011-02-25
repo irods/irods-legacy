@@ -168,6 +168,8 @@ clearDataObjInp (dataObjInp_t *dataObjInp);
 int
 clearCollInp (collInp_t *collInp);
 int
+clearAuthResponseInp (void * myInStruct);
+int
 isInteger (char *inStr);
 int
 addIntArray (intArray_t *intArray, int value);

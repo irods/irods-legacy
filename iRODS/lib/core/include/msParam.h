@@ -53,6 +53,10 @@ extern "C" {
 #define RcvXmsgOut_MS_T         "RcvXmsgOut_PI"
 #define StructFileExtAndRegInp_MS_T         "StructFileExtAndRegInp_PI"
 #define RuleStruct_MS_T         "RuleStruct_PI"
+#define DVMapStruct_MS_T        "DVMapStruct_PI"
+#define FNMapStruct_MS_T        "FNMapStruct_PI"
+#define MsrvcStruct_MS_T         "MsrvcStruct_PI"
+
 /* micro service input/output parameter */
 typedef struct MsParam {
     char *label;

@@ -45,6 +45,7 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 
     if (status == 0 || dataObjOutBBuf.len > 0) {
 	/* data included */
+      /**** Removed by Raja as this can cause problems when the data sizes are different - say when post processing is done....Dec 2 2010
 	if (dataObjInp->dataSize > 0 && 
 	  dataObjInp->dataSize != dataObjOutBBuf.len) { 
              rodsLog (LOG_NOTICE,
@@ -52,6 +53,7 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
               dataObjOutBBuf.len, dataObjInp->dataSize);
             return (SYS_COPY_LEN_ERR);
 	}
+      ****/
 	status = getIncludeFile (conn, &dataObjOutBBuf, locFilePath);
 	free (dataObjOutBBuf.buf);
 #ifdef RBUDP_TRANSFER
