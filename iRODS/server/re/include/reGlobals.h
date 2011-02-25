@@ -14,6 +14,8 @@ rulefmapdef_t coreRuleFuncMapDef;
 ruleStruct_t appRuleStrct;
 rulevardef_t appRuleVarDef;
 rulefmapdef_t appRuleFuncMapDef;
+msrvcStruct_t coreMsrvcStruct;
+msrvcStruct_t appMsrvcStruct;
 int reTestFlag = 0;
 int reLoopBackFlag = 0;
 int GlobalAllRuleExecFlag = 0;

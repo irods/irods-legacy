@@ -523,6 +523,83 @@ parseAction(char *inAction,char *action, char *args[], int *argc)
 }
 
 int
+makeActionFromMParam(char *outAction, char *action, msParam_t *mP[], int argc, int len)
+{
+  int i,j;
+  char *args; 
+  char cv[MAX_ACTION_SIZE];
+  strncpy(outAction,action,len);
+  if (argc == 0)
+    return(0);
+  strcat(outAction,"(");
+  for (i = 0; i < argc; i++) {
+    if (i != 0)
+      strcat(outAction,",");
+    if (mP[i]->type == NULL) {
+      args = (char *) mP[i]->label;
+    }
+    else if (!strcmp(mP[i]->type, STR_MS_T) ) {
+      args = (char *) mP[i]->inOutStruct;
+    } else if (!strcmp(mP[i]->type, INT_MS_T) || !strcmp(mP[i]->type, BUF_LEN_MS_T) ) {
+      sprintf(cv,"%d",(int) mP[i]->inOutStruct);
+      args = cv;
+    } else if (!strcmp(mP[i]->type, DOUBLE_MS_T) ) {
+      sprintf(cv,"%lld",(rodsLong_t) mP[i]->inOutStruct);
+      args = cv;
+    } else if (!strcmp(mP[i]->type, DataObjInp_MS_T) ) {
+      dataObjInp_t dataObjInp, *myDataObjInp;
+      j = parseMspForDataObjInp (mP[i], &dataObjInp, &myDataObjInp, 0);
+      if (j < 0)
+	args = (char *) mP[i]->label;
+      args = (char *) myDataObjInp->objPath;
+    } else if (!strcmp(mP[i]->type, CollInp_MS_T )) {
+      collInp_t collCreateInp, *myCollCreateInp;
+      j = parseMspForCollInp (mP[i], &collCreateInp, &myCollCreateInp, 0);
+      if (j < 0)
+        args = (char *) mP[i]->label;
+      args = (char *) myCollCreateInp->collName;
+    } else if (!strcmp(mP[i]->type,  DataObjCopyInp_MS_T)) {
+      dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
+      j = parseMspForDataObjCopyInp (mP[i], &dataObjCopyInp, &myDataObjCopyInp);
+      if (j < 0)
+        args = (char *) mP[i]->label;
+      snprintf (cv, MAX_ACTION_SIZE, "COPY(%s,%s)",
+		myDataObjCopyInp->srcDataObjInp.objPath, myDataObjCopyInp->destDataObjInp.objPath);
+      args = cv;
+    } else if (!strcmp(mP[i]->type,  DataObjReadInp_MS_T) 
+	       || !strcmp(mP[i]->type, DataObjCloseInp_MS_T)
+	       || !strcmp(mP[i]->type, DataObjWriteInp_MS_T) ) {
+      openedDataObjInp_t  *myDataObjReadInp;
+      myDataObjReadInp = (openedDataObjInp_t  *) mP[i]->inOutStruct;
+      snprintf (cv, MAX_ACTION_SIZE, "OPEN(%d)",myDataObjReadInp->len);
+      args = cv;
+    } else if (!strcmp(mP[i]->type, ExecCmd_MS_T  )) {
+      execCmd_t *execCmd;
+      execCmd = (execCmd_t *)  mP[i]->inOutStruct;
+      args = execCmd->cmd;
+    } else {
+      args = (char *) mP[i]->label;
+    }
+    if (args[0] != '"') {
+      if (strstr(args, ",") != 0) {
+	strcat(outAction,"\"");
+	rstrcat(outAction, args,len);
+	strcat(outAction,"\"");
+      }
+      else {
+	rstrcat(outAction, args,len);
+      }
+    }
+    else {
+      rstrcat(outAction, args,len);
+    }
+  }
+  rstrcat(outAction,")",len);
+  return(0);
+}
+
+
+int
 makeAction(char *outAction,char *action, char *args[], int argc, int len)
 {
   int i;
@@ -1012,10 +1089,12 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   int argc;
   char *tmparg;
+  char tmpActStr[MAX_ACTION_SIZE];
 
+  /***
   if (GlobalREDebugFlag)
     reDebug("    ExecMicroSrvc", -3, inAction, inMsParamArray,rei);
-
+  ***/
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
     return(i);
@@ -1142,6 +1221,10 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
   /* #endif  */ 
 
 
+  if (GlobalREDebugFlag) {
+    makeActionFromMParam(tmpActStr,action, (msParam_t **) myArgv,numOfStrArgs, MAX_ACTION_SIZE);
+    reDebug("    ExecMicroSrvc", -4, tmpActStr, inMsParamArray,rei);
+  }
 
   freeRuleArgs (args, argc);
 

@@ -32,6 +32,15 @@ This documentation is generated from the iRODS code.
   - #msiAdmInsertRulesFromStructIntoDB - Writes a rule structure into the current rule base
   - #msiGetRulesFromDBIntoStruct - Populates a rule structure with rules from the given base name
   - #msiAdmWriteRulesFromStructIntoFile - Writes to file the rules within a given rule structure
+  - #msiAdmReadDVMapsFromFileIntoStruct - Reads dvm configuration file into a variable mapping structure
+  - #msiAdmInsertDVMapsFromStructIntoDB - Writes a variable mapping  structure into the current dvm base
+  - #msiGetDVMapsFromDBIntoStruct - Populates a dvm structure with variable mappings from the given base name
+  - #msiAdmWriteDVMapsFromStructIntoFile - Writes to file the variable mappings within a given dvm structure
+
+  - #msiAdmReadFNMapsFromFileIntoStruct - Reads fnm configuration file into a function mapping structure
+  - #msiAdmInsertFNMapsFromStructIntoDB - Writes a function mapping  structure into the current fnm base
+  - #msiGetFNMapsFromDBIntoStruct - Populates a fnm structure function mappings  from the given base name
+  - #msiAdmWriteFNMapsFromStructIntoFile - Writes to file the function mappings within a given fnm structure
   
  \subsection msiworkflow Workflow Microservices
   - #nop, #null       - No action

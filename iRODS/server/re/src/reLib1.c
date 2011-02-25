@@ -261,7 +261,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
       if( args[i][0] == '*')
 	addMsParam(outMsParamArray, args2[i], NULL, NULL,NULL);
       else
-        addMsParam(outMsParamArray, args2[i],STR_MS_T, args[i], NULL);
+	addMsParam(outMsParamArray, args2[i],STR_MS_T, args[i], NULL);
     }
   }
   /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
@@ -377,7 +377,6 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
     return(i);
   }
-
 
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
@@ -902,6 +901,164 @@ readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleS
   return(0);
 }
 
+
+int
+readDVMapStructFromDB(char *dvmBaseName, char *versionStr, rulevardef_t *inDvmStrct, ruleExecInfo_t *rei)
+{
+  int i,l,status;
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
+  sqlResult_t *r[3];
+  memset(&genQueryInp, 0, sizeof(genQueryInp));
+  genQueryInp.maxRows = MAX_SQL_ROWS;
+
+  snprintf(condstr, MAX_NAME_LEN, "= '%s'", dvmBaseName);
+  addInxVal(&genQueryInp.sqlCondInp, COL_DVM_BASE_MAP_BASE_NAME, condstr);
+  snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
+  addInxVal(&genQueryInp.sqlCondInp, COL_DVM_BASE_MAP_VERSION, condstr2);
+  
+  addInxIval(&genQueryInp.selectInp, COL_DVM_EXT_VAR_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_DVM_CONDITION, 1);
+  addInxIval(&genQueryInp.selectInp, COL_DVM_INT_MAP_PATH, 1);
+
+  l = inDvmStrct->MaxNumOfDVars;
+  status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+  while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
+    r[0] = getSqlResultByInx (genQueryOut, COL_DVM_EXT_VAR_NAME);
+    r[1] = getSqlResultByInx (genQueryOut, COL_DVM_CONDITION);
+    r[2] = getSqlResultByInx (genQueryOut, COL_DVM_INT_MAP_PATH);
+    for (i = 0; i<genQueryOut->rowCnt; i++) {
+      inDvmStrct->varName[l]   = strdup(&r[0]->value[r[0]->len * i]);
+      inDvmStrct->action[l] = strdup(&r[1]->value[r[1]->len * i]);
+      inDvmStrct->var2CMap[l] = strdup(&r[2]->value[r[2]->len * i]);
+      l++;
+    }
+    genQueryInp.continueInx =  genQueryOut->continueInx;
+    freeGenQueryOut (&genQueryOut);
+    if (genQueryInp.continueInx  > 0) {
+      /* More to come */
+      status =  rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+    }
+    else
+      break;
+  }
+  inDvmStrct->MaxNumOfDVars = l;
+  return(0);
+}
+
+
+
+int
+readFNMapStructFromDB(char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmStrct, ruleExecInfo_t *rei)
+{
+  int i,l,status;
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
+  sqlResult_t *r[3];
+  memset(&genQueryInp, 0, sizeof(genQueryInp));
+  genQueryInp.maxRows = MAX_SQL_ROWS;
+
+  snprintf(condstr, MAX_NAME_LEN, "= '%s'", fnmBaseName);
+  addInxVal(&genQueryInp.sqlCondInp, COL_FNM_BASE_MAP_BASE_NAME, condstr);
+  snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
+  addInxVal(&genQueryInp.sqlCondInp, COL_FNM_BASE_MAP_VERSION, condstr2);
+  
+  addInxIval(&genQueryInp.selectInp, COL_FNM_EXT_FUNC_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_FNM_INT_FUNC_NAME, 1);
+
+  l = inFnmStrct->MaxNumOfFMaps;
+  status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+  while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
+    r[0] = getSqlResultByInx (genQueryOut, COL_FNM_EXT_FUNC_NAME);
+    r[1] = getSqlResultByInx (genQueryOut, COL_FNM_INT_FUNC_NAME);
+    for (i = 0; i<genQueryOut->rowCnt; i++) {
+      inFnmStrct->funcName[l]   = strdup(&r[0]->value[r[0]->len * i]);
+      inFnmStrct->func2CMap[l] = strdup(&r[2]->value[r[1]->len * i]);
+      l++;
+    }
+    genQueryInp.continueInx =  genQueryOut->continueInx;
+    freeGenQueryOut (&genQueryOut);
+    if (genQueryInp.continueInx  > 0) {
+      /* More to come */
+      status =  rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+    }
+    else
+      break;
+  }
+  inFnmStrct->MaxNumOfFMaps = l;
+  return(0);
+}
+
+
+
+int
+readMsrvcStructFromDB(char *moduleName, char *versionStr, msrvcStruct_t *inMsrvcStrct, ruleExecInfo_t *rei)
+{
+  int i,l,status;
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
+  sqlResult_t *r[6];
+  memset(&genQueryInp, 0, sizeof(genQueryInp));
+  genQueryInp.maxRows = MAX_SQL_ROWS;
+
+  snprintf(condstr, MAX_NAME_LEN, "= '%s'", moduleName);
+  addInxVal(&genQueryInp.sqlCondInp, COL_MSRVC_MODULE_NAME, condstr);
+  snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
+  addInxVal(&genQueryInp.sqlCondInp, COL_MSRVC_VERSION, condstr2);
+  
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_MODULE_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_SIGNATURE, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_VERSION, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_HOST, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_LOCATION, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_LANGUAGE, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_TYPE_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_STATUS, 1);
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_ID, 1);
+
+  l = inMsrvcStrct->MaxNumOfMsrvcs;
+  status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+  while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
+    r[0] = getSqlResultByInx (genQueryOut, COL_MSRVC_MODULE_NAME);
+    r[1] = getSqlResultByInx (genQueryOut, COL_MSRVC_NAME);
+    r[2] = getSqlResultByInx (genQueryOut, COL_MSRVC_SIGNATURE);
+    r[3] = getSqlResultByInx (genQueryOut, COL_MSRVC_VERSION);
+    r[4] = getSqlResultByInx (genQueryOut, COL_MSRVC_HOST);
+    r[5] = getSqlResultByInx (genQueryOut, COL_MSRVC_LOCATION);
+    r[6] = getSqlResultByInx (genQueryOut, COL_MSRVC_LANGUAGE);
+    r[7] = getSqlResultByInx (genQueryOut, COL_MSRVC_TYPE_NAME);
+    r[8] = getSqlResultByInx (genQueryOut, COL_MSRVC_STATUS);
+    r[9] = getSqlResultByInx (genQueryOut, COL_MSRVC_ID);
+    for (i = 0; i<genQueryOut->rowCnt; i++) {
+      inMsrvcStrct->moduleName[l] = strdup(&r[0]->value[r[0]->len * i]);
+      inMsrvcStrct->msrvcName[l]   = strdup(&r[1]->value[r[1]->len * i]);
+      inMsrvcStrct->msrvcSignature[l] = strdup(&r[2]->value[r[2]->len * i]);
+      inMsrvcStrct->msrvcVersion[l] = strdup(&r[3]->value[r[3]->len * i]);
+      inMsrvcStrct->msrvcHost[l]    = strdup(&r[4]->value[r[4]->len * i]);
+      inMsrvcStrct->msrvcLocation[l]  = strdup(&r[5]->value[r[5]->len * i]);
+      inMsrvcStrct->msrvcLanguage[l]  = strdup(&r[6]->value[r[6]->len * i]);
+      inMsrvcStrct->msrvcTypeName[l]  = strdup(&r[7]->value[r[7]->len * i]);
+      inMsrvcStrct->msrvcStatus[l]  = atol(&r[8]->value[r[8]->len * i]);
+      inMsrvcStrct->msrvcId[l]  = atol(&r[9]->value[r[9]->len * i]);
+      l++;
+    }
+    genQueryInp.continueInx =  genQueryOut->continueInx;
+    freeGenQueryOut (&genQueryOut);
+    if (genQueryInp.continueInx  > 0) {
+      /* More to come */
+      status =  rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+    }
+    else
+      break;
+  }
+  inMsrvcStrct->MaxNumOfMsrvcs = l;
+  return(0);
+}
+
 int
 readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
 {
@@ -910,6 +1067,7 @@ readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
   char l1[MAX_RULE_LENGTH];
   char l2[MAX_RULE_LENGTH];
   char l3[MAX_RULE_LENGTH];
+
    char rulesFileName[MAX_NAME_LEN];
    FILE *file;
    char buf[MAX_RULE_LENGTH];
@@ -952,7 +1110,12 @@ readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
      inRuleStrct->ruleCondition[i] = strdup(l1); /** condition **/
      rSplitStr(l3, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH, '|');
      inRuleStrct->ruleAction[i] = strdup(l1);  /** function calls **/
-     inRuleStrct->ruleRecovery[i] = strdup(l2);  /** rollback calls **/
+     rSplitStr(l2, l1, MAX_RULE_LENGTH, l3, MAX_RULE_LENGTH,'|');
+     inRuleStrct->ruleRecovery[i] = strdup(l1);  /** rollback calls **/
+     if (strlen(l3) > 0)
+       inRuleStrct->ruleId[i] = atoll(l3);   /** ruleId **/
+     else
+       inRuleStrct->ruleId[i] = (long int) i;  /** ruleId **/
      i++;
    }
    fclose (file);
@@ -1016,7 +1179,7 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
   int i = 0;
   char l0[MAX_DVAR_LENGTH];
   char l1[MAX_DVAR_LENGTH];
-  /*  char l2[MAX_DVAR_LENGTH];*/
+  char l2[MAX_DVAR_LENGTH];
   char l3[MAX_DVAR_LENGTH];
    char dvarsFileName[MAX_NAME_LEN];
    FILE *file;
@@ -1049,11 +1212,16 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
      inRuleVarDef->varName[i] = strdup(l1);  /** varName **/
      rSplitStr(l0, l1, MAX_DVAR_LENGTH, l3, MAX_DVAR_LENGTH,'|');
      inRuleVarDef->action[i] = strdup(l1); /** action **/
-     inRuleVarDef->var2CMap[i] = strdup(l3);  /** var2CMap **/
+     rSplitStr(l3, l1, MAX_DVAR_LENGTH, l2, MAX_DVAR_LENGTH,'|');
+     inRuleVarDef->var2CMap[i] = strdup(l1);  /** var2CMap **/
+     if (strlen(l2) > 0)
+       inRuleVarDef->varId[i] = atoll(l2);   /** varId **/
+     else
+       inRuleVarDef->varId[i] = i; /** ruleId **/
      i++;
    }
    fclose (file);
-   inRuleVarDef->MaxNumOfDVars = i;
+   inRuleVarDef->MaxNumOfDVars = (long int)  i;
    return(0);
 }
 
@@ -1063,8 +1231,8 @@ readFuncMapStructFromFile(char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef)
   int i = 0;
   char l0[MAX_FMAP_LENGTH];
   char l1[MAX_FMAP_LENGTH];
-  /*char l2[MAX_FMAP_LENGTH];
-    char l3[MAX_FMAP_LENGTH];*/
+  char l2[MAX_FMAP_LENGTH];
+  /*  char l3[MAX_FMAP_LENGTH];*/
    char fmapsFileName[MAX_NAME_LEN];
    FILE *file;
    char buf[MAX_FMAP_LENGTH];
@@ -1094,11 +1262,84 @@ readFuncMapStructFromFile(char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef)
        continue;
      rSplitStr(buf, l1, MAX_FMAP_LENGTH, l0, MAX_FMAP_LENGTH, '|');
      inRuleFuncMapDef->funcName[i] = strdup(l1);  /** funcName **/
-     inRuleFuncMapDef->func2CMap[i] = strdup(l0);  /** func2CMap **/
+     rSplitStr(l0,l1, MAX_FMAP_LENGTH, l2, MAX_FMAP_LENGTH,'|');
+     inRuleFuncMapDef->func2CMap[i] = strdup(l1);  /** func2CMap **/
+     if (strlen(l2) > 0)
+       inRuleFuncMapDef->fmapId[i] = atoll(l2);   /** fmapId **/
+     else
+       inRuleFuncMapDef->fmapId[i] = i;  /** fmapId **/
      i++;
    }
    fclose (file);
-   inRuleFuncMapDef->MaxNumOfFMaps = i;
+   inRuleFuncMapDef->MaxNumOfFMaps = (long int) i;
+   return(0);
+}
+
+int
+readMsrvcStructFromFile(char *msrvcFileName, msrvcStruct_t* inMsrvcStruct)
+{
+  int i = 0;
+  char l0[MAX_RULE_LENGTH];
+  char l1[MAX_RULE_LENGTH];
+  char l2[MAX_RULE_LENGTH];
+  char mymsrvcFileName[MAX_NAME_LEN];
+  FILE *file;
+  char buf[MAX_RULE_LENGTH];
+  char *configDir;
+
+
+   i = inMsrvcStruct->MaxNumOfMsrvcs;
+
+   if (msrvcFileName[0] == '/' || msrvcFileName[0] == '\\' ||
+       msrvcFileName[1] == ':') {
+     snprintf (mymsrvcFileName,MAX_NAME_LEN, "%s",msrvcFileName);
+   }
+   else {
+     configDir = getConfigDir ();
+     snprintf (mymsrvcFileName,MAX_NAME_LEN, "%s/reConfigs/%s.msi", configDir,msrvcFileName);
+   }
+   file = fopen(mymsrvcFileName, "r");
+   if (file == NULL) {
+     rodsLog(LOG_NOTICE,
+	     "readMservcStructFromFile() could not open msrvc file %s\n",
+	     mymsrvcFileName);
+     return(MSRVC_FILE_READ_ERROR);
+   }
+  buf[MAX_RULE_LENGTH-1]='\0';
+   while (fgets (buf, MAX_RULE_LENGTH-1, file) != NULL) {
+     if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
+     if (buf[0] == '#' || strlen(buf) < 4) 
+       continue;
+     rSplitStr(buf, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
+     inMsrvcStruct->moduleName[i] = strdup(l1);  
+
+     rSplitStr(l0, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH,'|');
+     inMsrvcStruct->msrvcName[i] = strdup(l1);
+     rSplitStr(l2, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
+     inMsrvcStruct->msrvcSignature[i] = strdup(l1);  
+
+     rSplitStr(l0, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH,'|');
+     inMsrvcStruct->msrvcVersion[i] = strdup(l1);
+     rSplitStr(l2, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
+     inMsrvcStruct->msrvcHost[i] = strdup(l1);
+
+     rSplitStr(l0, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH,'|');
+     inMsrvcStruct->msrvcLocation[i] = strdup(l1);
+     rSplitStr(l2, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
+     inMsrvcStruct->msrvcLanguage[i] = strdup(l1);
+
+     rSplitStr(l0, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH,'|');
+     inMsrvcStruct->msrvcTypeName[i] = strdup(l1);
+     rSplitStr(l2, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
+     inMsrvcStruct->msrvcStatus[i] = atol(l1);
+     if (strlen(l0) > 0)  
+       inMsrvcStruct->msrvcId[i] = atol(l1);
+     else 
+       inMsrvcStruct->msrvcId[i] = (long int) i;
+     i++;
+   }
+   fclose (file);
+   inMsrvcStruct->MaxNumOfMsrvcs = i;
    return(0);
 }
 
@@ -1307,10 +1548,142 @@ insertRulesIntoDB(char * baseName, ruleStruct_t *coreRuleStruct,
 
 
 int
+insertDVMapsIntoDB(char * baseName, dvmStruct_t *coreDVMStruct,
+		  ruleExecInfo_t *rei)
+{
+  generalRowInsertInp_t generalRowInsertInp;
+  int rc1, i;
+  endTransactionInp_t endTransactionInp;
+  char myTime[50];
+
+  memset (&endTransactionInp, 0, sizeof (endTransactionInp_t));
+  getNowStr(myTime);
+
+  /* Before inserting rules and its base map, we need to first version out the base map */
+  generalRowInsertInp.tableName = "versionDVMBase";
+  generalRowInsertInp.arg1 = baseName;
+  generalRowInsertInp.arg2 = myTime;
+
+  rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+  if (rc1 < 0) {
+    endTransactionInp.arg0 = "rollback";
+    rsEndTransaction(rei->rsComm, &endTransactionInp);
+    return(rc1);
+  }
+
+  for (i = 0; i < coreDVMStruct->MaxNumOfDVars; i++) {
+    generalRowInsertInp.tableName = "dvmTable";
+    generalRowInsertInp.arg1 = baseName;
+    generalRowInsertInp.arg2 = coreDVMStruct->varName[i];
+    generalRowInsertInp.arg3 = coreDVMStruct->action[i];
+    generalRowInsertInp.arg4 = coreDVMStruct->var2CMap[i];
+    generalRowInsertInp.arg5 = myTime;
+
+    rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+    if (rc1 < 0) {
+      endTransactionInp.arg0 = "rollback";
+      rsEndTransaction(rei->rsComm, &endTransactionInp);
+      return(rc1);
+    }
+  }
+
+  endTransactionInp.arg0 = "commit";
+  rc1 = rsEndTransaction(rei->rsComm, &endTransactionInp);
+  return(rc1);
+}
+
+int
+insertFNMapsIntoDB(char * baseName, fnmapStruct_t *coreFNMStruct,
+		  ruleExecInfo_t *rei)
+{
+  generalRowInsertInp_t generalRowInsertInp;
+  int rc1, i;
+  endTransactionInp_t endTransactionInp;
+  char myTime[50];
+
+  memset (&endTransactionInp, 0, sizeof (endTransactionInp_t));
+  getNowStr(myTime);
+
+  /* Before inserting rules and its base map, we need to first version out the base map */
+  generalRowInsertInp.tableName = "versionFNMBase";
+  generalRowInsertInp.arg1 = baseName;
+  generalRowInsertInp.arg2 = myTime;
+
+  rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+  if (rc1 < 0) {
+    endTransactionInp.arg0 = "rollback";
+    rsEndTransaction(rei->rsComm, &endTransactionInp);
+    return(rc1);
+  }
+
+  for (i = 0; i < coreFNMStruct->MaxNumOfFMaps; i++) {
+    generalRowInsertInp.tableName = "fnmTable";
+    generalRowInsertInp.arg1 = baseName;
+    generalRowInsertInp.arg2 = coreFNMStruct->funcName[i];
+    generalRowInsertInp.arg3 = coreFNMStruct->func2CMap[i];
+    generalRowInsertInp.arg4 = myTime;
+
+    rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+    if (rc1 < 0) {
+      endTransactionInp.arg0 = "rollback";
+      rsEndTransaction(rei->rsComm, &endTransactionInp);
+      return(rc1);
+    }
+  }
+
+  endTransactionInp.arg0 = "commit";
+  rc1 = rsEndTransaction(rei->rsComm, &endTransactionInp);
+  return(rc1);
+}
+
+
+
+int
+insertMSrvcsIntoDB(char * baseName, msrvcStruct_t *coreMsrvcStruct,
+		  ruleExecInfo_t *rei)
+{
+
+  generalRowInsertInp_t generalRowInsertInp;
+  int rc1, i;
+  endTransactionInp_t endTransactionInp;
+  char myTime[100];
+
+  memset (&endTransactionInp, 0, sizeof (endTransactionInp_t));
+  getNowStr(myTime);
+
+  for (i = 0; i < coreMsrvcStruct->MaxNumOfMsrvcs; i++) {
+    generalRowInsertInp.tableName = "msrvcTable";
+    generalRowInsertInp.arg1 = baseName;
+    generalRowInsertInp.arg2 = coreMsrvcStruct->msrvcName[i];
+    generalRowInsertInp.arg3 = coreMsrvcStruct->msrvcSignature[i];
+    generalRowInsertInp.arg4 = coreMsrvcStruct->msrvcVersion[i];
+    generalRowInsertInp.arg5 = coreMsrvcStruct->msrvcHost[i];
+    generalRowInsertInp.arg6 = coreMsrvcStruct->msrvcLocation[i];
+    generalRowInsertInp.arg7 = coreMsrvcStruct->msrvcLanguage[i];
+    generalRowInsertInp.arg8 = coreMsrvcStruct->msrvcTypeName[i];
+    snprintf(myTime,100, "%s|%ld", myTime,coreMsrvcStruct->msrvcStatus[i]);
+    generalRowInsertInp.arg9 = myTime;
+
+
+    rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+    if (rc1 < 0) {
+      endTransactionInp.arg0 = "rollback";
+      rsEndTransaction(rei->rsComm, &endTransactionInp);
+      return(rc1);
+    }
+  }
+
+  endTransactionInp.arg0 = "commit";
+  rc1 = rsEndTransaction(rei->rsComm, &endTransactionInp);
+  return(rc1);
+
+}
+
+
+int
 writeRulesIntoFile(char * inFileName, ruleStruct_t *myRuleStruct,
                   ruleExecInfo_t *rei)
 {
-
   int i;
   FILE *file;
   char fileName[MAX_NAME_LEN];
@@ -1325,7 +1698,6 @@ writeRulesIntoFile(char * inFileName, ruleStruct_t *myRuleStruct,
     snprintf (fileName,MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir,inFileName);
   }
 
-
   file = fopen(fileName, "w");
   if (file == NULL) {
     rodsLog(LOG_NOTICE,
@@ -1334,10 +1706,82 @@ writeRulesIntoFile(char * inFileName, ruleStruct_t *myRuleStruct,
     return(FILE_OPEN_ERR);
   }
   for( i = 0; i < myRuleStruct->MaxNumOfRules; i++) {
-    fprintf(file, "%s|%s|%s|%s\n", myRuleStruct->ruleHead[i],
+    fprintf(file, "%s|%s|%s|%s|%ld\n", myRuleStruct->ruleHead[i],
 	    myRuleStruct->ruleCondition[i],
 	    myRuleStruct->ruleAction[i],
-	    myRuleStruct->ruleRecovery[i]);
+	    myRuleStruct->ruleRecovery[i],
+	    myRuleStruct->ruleId[i]);
+            
+  }
+  fclose (file);
+  return(0);
+}
+
+int
+writeDVMapsIntoFile(char * inFileName, dvmStruct_t *myDVMapStruct,
+                  ruleExecInfo_t *rei)
+{
+  int i;
+  FILE *file;
+  char fileName[MAX_NAME_LEN];
+  char *configDir;
+
+  if (inFileName[0] == '/' || inFileName[0] == '\\' ||
+      inFileName[1] == ':') {
+    snprintf (fileName,MAX_NAME_LEN, "%s",inFileName);
+  }
+  else {
+    configDir = getConfigDir ();
+    snprintf (fileName,MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir,inFileName);
+  }
+
+  file = fopen(fileName, "w");
+  if (file == NULL) {
+    rodsLog(LOG_NOTICE,
+	    "writeDVMapsIntoFile() could not open rules file %s for writing\n",
+	    fileName);
+    return(FILE_OPEN_ERR);
+  }
+  for( i = 0; i < myDVMapStruct->MaxNumOfDVars; i++) {
+    fprintf(file, "%s|%s|%s|%ld\n", myDVMapStruct->varName[i],
+	    myDVMapStruct->action[i],
+	    myDVMapStruct->var2CMap[i],
+	    myDVMapStruct->varId[i]);
+  }
+  fclose (file);
+  return(0);
+}
+
+
+int
+writeFNMapsIntoFile(char * inFileName, fnmapStruct_t *myFNMapStruct,
+                  ruleExecInfo_t *rei)
+{
+  int i;
+  FILE *file;
+  char fileName[MAX_NAME_LEN];
+  char *configDir;
+
+  if (inFileName[0] == '/' || inFileName[0] == '\\' ||
+      inFileName[1] == ':') {
+    snprintf (fileName,MAX_NAME_LEN, "%s",inFileName);
+  }
+  else {
+    configDir = getConfigDir ();
+    snprintf (fileName,MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir,inFileName);
+  }
+
+  file = fopen(fileName, "w");
+  if (file == NULL) {
+    rodsLog(LOG_NOTICE,
+	    "writeFNMapsIntoFile() could not open rules file %s for writing\n",
+	    fileName);
+    return(FILE_OPEN_ERR);
+  }
+  for( i = 0; i < myFNMapStruct->MaxNumOfFMaps; i++) {
+    fprintf(file, "%s|%s|%ld\n", myFNMapStruct->funcName[i],
+	    myFNMapStruct->func2CMap[i],
+	    myFNMapStruct->fmapId[i]);
   }
   fclose (file);
   return(0);
@@ -1345,13 +1789,66 @@ writeRulesIntoFile(char * inFileName, ruleStruct_t *myRuleStruct,
 
 
 
+int
+writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
+                  ruleExecInfo_t *rei)
+{
+  int i;
+  FILE *file;
+  char fileName[MAX_NAME_LEN];
+  char *configDir;
 
+  if (inFileName[0] == '/' || inFileName[0] == '\\' ||
+      inFileName[1] == ':') {
+    snprintf (fileName,MAX_NAME_LEN, "%s",inFileName);
+  }
+  else {
+    configDir = getConfigDir ();
+    snprintf (fileName,MAX_NAME_LEN, "%s/reConfigs/%s.msi", configDir,inFileName);
+  }
+
+  file = fopen(fileName, "w");
+  if (file == NULL) {
+    rodsLog(LOG_NOTICE,
+	    "writeMsrvcsIntoFile() could not open microservics file %s for writing\n",
+	    fileName);
+    return(FILE_OPEN_ERR);
+  }
+  for( i = 0; i < myMsrvcStruct->MaxNumOfMsrvcs; i++) {
+    fprintf(file, "%s|%s|%s|%s|%s|%s|%s|%s|%ld|%ld\n", 
+	    myMsrvcStruct->moduleName[i],
+	    myMsrvcStruct->msrvcName[i],
+	    myMsrvcStruct->msrvcSignature[i],
+	    myMsrvcStruct->msrvcVersion[i],
+	    myMsrvcStruct->msrvcHost[i],
+	    myMsrvcStruct->msrvcLocation[i],
+	    myMsrvcStruct->msrvcLanguage[i],
+	    myMsrvcStruct->msrvcTypeName[i],
+	    myMsrvcStruct->msrvcStatus[i],
+	    myMsrvcStruct->msrvcId[i]);
+  }
+  fclose (file);
+  return(0);
+}
+
+
+/************** moved to stringOpr.c
 void *
 mymalloc(char *file,int line, int x)
 {
     void *p;
         p = malloc(x);
         rodsLog(LOG_NOTICE, "MYMALLOC: %s:%i:%i=%x",file,line,x,p);
+       return(p);
+}
+
+void *
+mycalloc(char *file,int line, int x, int y)
+{
+    void *p;
+    p = malloc(x * y );
+    bzero(p, x * y);
+    rodsLog(LOG_NOTICE, "MYCALLOC: %s:%i:%i:%i=%x",file,line,x,y,p);
        return(p);
 }
 
@@ -1369,3 +1866,4 @@ mystrdup(char *file,int line, char *x)
         rodsLog(LOG_NOTICE, "MYSTRDUP: %s:%i=%d",file,line,p);
        return(p);
 }
+moved to stringOpr.c *****/

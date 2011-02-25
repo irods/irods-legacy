@@ -673,7 +673,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 int
 reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei)
 {
-  int i, m, s, status, sleepT;
+  int i, m, s, status, sleepT, j;
   char hdr[HEADER_TYPE_LEN];
   char myHostName[MAX_NAME_LEN];
   char *readhdr = NULL;
@@ -683,15 +683,56 @@ reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArr
   static int mNum = 0;
   static int sNum = 0;
   char condRead[NAME_LEN];
-
-
+  char myActionStr[10][MAX_NAME_LEN + 10];
+  int aNum = 0;
+  char seActionStr[10 * MAX_NAME_LEN + 100];
   myHostName[0] = '\0';
+
   gethostname (myHostName, MAX_NAME_LEN);
   sleepT = 1;
   condRead[0] = '\0'; 
   snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
 
-  i = _writeXMsg(GlobalREDebugFlag, hdr, actionStr);
+  if (flag == -4) {
+    if (rei->doi != NULL && rei->doi->objPath != NULL) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  DATA:%s", rei->doi->objPath);
+      aNum++;
+    }
+    if (rei->doinp != NULL && rei->doinp->objPath != NULL) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  DATAIN:%s",rei->doinp->objPath);
+      aNum++;
+    }
+    if (rei->doi != NULL && rei->doi->rescName != NULL) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  RESC:%s",rei->doi->rescName);
+      aNum++;
+    }
+    if (rei->rgi != NULL && rei->rgi->rescInfo->rescName != NULL) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  RESC:%s",rei->rgi->rescInfo->rescName);
+      aNum++;
+    }
+    if (rei->doi != NULL && rei->doi->rescGroupName != NULL && strlen(rei->doi->rescGroupName) > 0) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  RESCGRP:%s",rei->doi->rescGroupName);
+      aNum++;
+    }
+    if (rei->rgi != NULL && rei->rgi->rescGroupName != NULL && strlen(rei->rgi->rescGroupName) > 0) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  RESCGRP:%s",rei->rgi->rescGroupName);
+      aNum++;
+    }
+    if (rei->coi != NULL && rei->coi->collName != NULL) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  COLL:%s", rei->coi->collName);
+      aNum++;
+    }
+    strcpy(seActionStr, actionStr);
+    for (j = 0; j < aNum; j++) {
+      strncat(seActionStr, myActionStr[j], 10 * MAX_NAME_LEN + 100);
+    }
+    i = _writeXMsg(GlobalREDebugFlag, hdr, seActionStr);
+  }
+  else {
+    i = _writeXMsg(GlobalREDebugFlag, hdr, actionStr);
+  }
+  
+
   while ( GlobalREDebugFlag > 3 ) {
     s = sNum;
     m = mNum;

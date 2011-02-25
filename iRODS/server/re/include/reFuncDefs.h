@@ -200,6 +200,9 @@ int applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc
 int applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag);
 
+int applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf);
+int applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteOutBBuf);
+
 int clearMsparamInRei (ruleExecInfo_t *rei);
 
 int _delayExec(char *inActionCall, char *recoveryActionCall, 
@@ -279,8 +282,30 @@ int writeRulesIntoFile(char * fileName, ruleStruct_t *myRuleStruct,
 		   ruleExecInfo_t *rei);
 int readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleStrct, 
 			 ruleExecInfo_t *rei);
+int insertDVMapsIntoDB(char * baseName, dvmStruct_t *coreDVMStruct,
+		   ruleExecInfo_t *rei);
+int writeDVMapsIntoFile(char * inFileName, dvmStruct_t *myDVMapStruct,
+			ruleExecInfo_t *rei);
+int readDVMapStructFromDB(char *dvmBaseName, char *versionStr, rulevardef_t *inDvmStrct, 
+			  ruleExecInfo_t *rei);
+int insertFNMapsIntoDB(char * baseName, fnmapStruct_t *coreFNMStruct,
+		   ruleExecInfo_t *rei);
+int writeFNMapsIntoFile(char * inFileName, fnmapStruct_t *myFNMapStruct,
+			ruleExecInfo_t *rei);
+int readFNMapStructFromDB(char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmStrct,
+			  ruleExecInfo_t *rei);
+int insertMSrvcsIntoDB(char * baseName, msrvcStruct_t *coreFNMStruct,
+		   ruleExecInfo_t *rei);
+int readMsrvcStructFromDB(char *moduleName, char *versionStr, msrvcStruct_t *inMsrvcStrct,
+			  ruleExecInfo_t *rei);
+int readMsrvcStructFromFile(char *msrvcFileName, msrvcStruct_t* inMsrvcStruct);
+int writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
+		    ruleExecInfo_t *rei);
+
 
 int _writeXMsg(int streamId, char *hdr, char *msg);
 int _readXMsg(int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr, char **msg,char **user, char **addr);
 int reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei);
+
+
 #endif  /* RE_FUNCDEFS_H */

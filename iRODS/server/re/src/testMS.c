@@ -91,3 +91,17 @@ int msiAW1(msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei)
 
 }
 
+
+int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei)
+{
+
+  RE_TEST_MACRO ("Test for msiCutBufferInHalf\n");
+
+  if (mPIn == NULL || mPIn->inpOutBuf == NULL ) {
+    rodsLog (LOG_ERROR, "msiCutBufferInHalf: input is NULL.");
+    return (USER__NULL_INPUT_ERR);
+  }
+  mPIn->inpOutBuf->len = (mPIn->inpOutBuf->len) / 2;
+  return(0);
+
+}
