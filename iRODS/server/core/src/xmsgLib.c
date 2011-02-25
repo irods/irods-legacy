@@ -11,14 +11,19 @@
 #include "rsApiHandler.h"
 #include "reGlobalsExtern.h"
 #include "miscServerFunct.h"
+
+
 #ifndef windows_platform
 pthread_mutex_t ReqQueCondMutex;
 pthread_cond_t ReqQueCond;
 pthread_cond_t ReqQueCond;
 pthread_t ProcReqThread[NUM_XMSG_THR];
+pthread_mutex_t MessQueCondMutex;  /* RAJA Nov 29 2010 */
 #endif
 
 xmsgReq_t *XmsgReqHead = NULL;
+xmsgReq_t *XmsgReqTail = NULL; /* points to last item in Q RAJA Nov 19 2010 */
+
 ticketHashQue_t XmsgHashQue[NUM_HASH_SLOT];
 xmsgQue_t XmsgQue;
 
@@ -29,9 +34,32 @@ initThreadEnv ()
 #ifndef windows_platform
     pthread_mutex_init (&ReqQueCondMutex, NULL);
     pthread_cond_init (&ReqQueCond, NULL);
+    pthread_mutex_init (&MessQueCondMutex, NULL);  /* RAJA Nov 29 2010 */
 #endif
 
     return (0);
+}
+
+
+int
+addXmsgToQues(irodsXmsg_t *irodsXmsg,  ticketMsgStruct_t *ticketMsgStruct) {
+
+  int status;
+  
+#ifndef windows_platform
+  pthread_mutex_lock (&MessQueCondMutex);
+#endif
+     
+  addXmsgToXmsgQue (irodsXmsg, &XmsgQue);
+  status = addXmsgToTicketMsgStruct (irodsXmsg, ticketMsgStruct);
+
+#ifndef windows_platform
+  pthread_mutex_unlock (&MessQueCondMutex);
+#endif
+
+
+  return(status);
+
 }
 
 int
@@ -142,9 +170,15 @@ ticketMsgStruct_t *ticketMsgStruct)
     xmsg->ticketMsgStruct = ticketMsgStruct;
     xmsg->seqNumber = ticketMsgStruct->nxtSeqNumber;
     ticketMsgStruct->nxtSeqNumber =  ticketMsgStruct->nxtSeqNumber + 1;
-    rodsLog (LOG_ERROR,
-	     "SEQNum: %i", ticketMsgStruct->nxtSeqNumber );
 
+    /***
+    rodsLog (LOG_ERROR,
+	     "TickNum: %i SEQNum: %i Sender:%s@%s", 
+	     ticketMsgStruct->ticket.rcvTicket,
+	     ticketMsgStruct->nxtSeqNumber,
+	     xmsg->sendUserName,
+	     xmsg->sendAddr);
+    ***/
     return (0);
 }
 
@@ -173,6 +207,10 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
 
 }
 
+
+
+
+
 int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg) 
 {
   int status,i ;
@@ -200,12 +238,103 @@ int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg)
 
     /* now locate the irodsXmsg_t */
 
+#ifndef windows_platform
+    pthread_mutex_lock (&MessQueCondMutex);
+#endif
+
     tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
+
+    if (tmpIrodsXmsg == NULL) {
+#ifndef windows_platform
+    pthread_mutex_unlock (&MessQueCondMutex);
+#endif
+      return SYS_NO_XMSG_FOR_MSG_NUMBER;
+    } 
 
     while (tmpIrodsXmsg != NULL) {
       if ((i = checkMsgCondition(tmpIrodsXmsg, msgCond)) == 0 ) break;
       tmpIrodsXmsg = tmpIrodsXmsg->tnext;
     }
+
+    *outIrodsXmsg = tmpIrodsXmsg;
+    if (tmpIrodsXmsg == NULL) {
+#ifndef windows_platform
+      pthread_mutex_unlock (&MessQueCondMutex);
+#endif
+      return SYS_NO_XMSG_FOR_MSG_NUMBER;
+    } else {
+      return 0;
+    }
+}
+
+
+#ifdef  AAAAA
+int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg) 
+{
+  int status,i ;
+  irodsXmsg_t *tmpIrodsXmsg, *prevIrodsXmsg;
+    ticketMsgStruct_t *ticketMsgStruct;
+    int rcvTicket;
+    char *msgCond;
+
+    rcvTicket = rcvXmsgInp->rcvTicket;
+    msgCond = rcvXmsgInp->msgCondition;
+
+    if (outIrodsXmsg == NULL) {
+        rodsLog (LOG_ERROR,
+          "getIrodsXmsgByMsgNum: input outIrodsXmsg is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    /* locate the ticketMsgStruct_t */
+
+    status = getTicketMsgStructByTicket (rcvTicket, &ticketMsgStruct);
+
+    if (status < 0) {
+        return status;
+    }
+
+    /* now locate the irodsXmsg_t */
+
+
+    tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
+    prevIrodsXmsg = NULL;
+
+    while (tmpIrodsXmsg != NULL) {
+      if ((i = checkMsgCondition(tmpIrodsXmsg, msgCond)) == 0 ) {
+	/*** RAJA Dec 16 2010 added to make it be part of a mutex ***/
+#ifndef windows_platform
+	pthread_mutex_lock (&MessQueCondMutex);
+#endif
+	if (prevIrodsXmsg == NULL ) {
+	  if (ticketMsgStruct->xmsgQue.head == tmpIrodsXmsg ) { /* message still there */
+	    if ((i = checkMsgCondition(tmpIrodsXmsg, msgCond)) == 0 ) {
+	      break;
+	    }
+	  }
+	  else {
+	    tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
+#ifndef windows_platform
+	    pthread_mutex_unlock (&MessQueCondMutex);
+#endif
+	    continue;
+	  }
+	} /* end of then of prevIrodsXmsg == NULL if */
+	else if  ( prevIrodsXmsg->tnext == tmpIrodsXmsg) { /* message still there */
+	  if ((i = checkMsgCondition(tmpIrodsXmsg, msgCond)) == 0 ) {
+	    break;
+	  }
+	} /* end of else  of prevIrodsXmsg == NULL if */
+
+#ifndef windows_platform
+	  pthread_mutex_unlock (&MessQueCondMutex);
+#endif
+
+      } /* end of main if */
+      prevIrodsXmsg = tmpIrodsXmsg;
+      tmpIrodsXmsg = prevIrodsXmsg->tnext;
+      
+    } /* end of while */
     
     *outIrodsXmsg = tmpIrodsXmsg;
     if (tmpIrodsXmsg == NULL) {
@@ -214,6 +343,7 @@ int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg)
 	return 0;
     }
 }
+#endif /*  AAAAA */
 
 int 
 getIrodsXmsgByMsgNum (int rcvTicket, int msgNumber, 
@@ -372,23 +502,29 @@ ticketHashQue_t *ticketHQue)
 int
 addReqToQue (int sock)
 {
-    xmsgReq_t *myXmsgReq, *tmpXmsgReq;
+  xmsgReq_t *myXmsgReq;
 
-#ifndef windows_platform
-    pthread_mutex_lock (&ReqQueCondMutex);
-#endif
     myXmsgReq = calloc (1, sizeof (xmsgReq_t));
 
     myXmsgReq->sock = sock;
 
+#ifndef windows_platform
+    pthread_mutex_lock (&ReqQueCondMutex);
+#endif
+
     if (XmsgReqHead == NULL) {
 	XmsgReqHead = myXmsgReq;
+	XmsgReqTail = myXmsgReq; /* points to last item in Q RAJA Nov 19 2010 */
     } else {
+	/* RAJA Nov 19 2010 
         tmpXmsgReq = XmsgReqHead;
 	while (tmpXmsgReq->next != NULL) {
 	    tmpXmsgReq = tmpXmsgReq->next;
 	}
 	tmpXmsgReq->next = myXmsgReq;
+	*/
+        XmsgReqTail->next  = myXmsgReq;
+	XmsgReqTail = myXmsgReq;
     }
 
 #ifndef windows_platform
@@ -479,6 +615,9 @@ procReqRoutine ()
 	}
 	memset (&rsComm, 0, sizeof (rsComm));
 	initRsCommWithStartupPack (&rsComm, startupPack);
+	/***** added by RAJA Nov 12, 2010 to take care of memory leak  found by J-Y **/
+	if (startupPack != NULL) free (startupPack);
+	/***** added by RAJA Nov 12, 2010 to take care of memory leak  found by J-Y **/
 	rsComm.sock = myXmsgReq->sock;
         status = sendVersion (rsComm.sock, 0, 0, NULL, 0);
 
@@ -633,17 +772,24 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
     if (irodsXmsg == NULL || rcvXmsgOut == NULL) {
         rodsLog (LOG_ERROR,
           "_rsRcvXmsg: input irodsXmsg or rcvXmsgOut is NULL");
+#ifndef windows_platform
+    pthread_mutex_unlock (&MessQueCondMutex);
+#endif
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
+
     sendXmsgInfo = irodsXmsg->sendXmsgInfo;
     ticketMsgStruct = irodsXmsg->ticketMsgStruct;
+
+    /*    rodsLog (LOG_ERROR,
+	     "_rsRcvXmsg: SEQNum=%d, numRcv=%d", irodsXmsg->seqNumber,
+	     sendXmsgInfo->numRcv); */
+    sendXmsgInfo = irodsXmsg->sendXmsgInfo;
 
     sendXmsgInfo->numRcv--;
 
     if (sendXmsgInfo->numRcv <= 0 && sendXmsgInfo->numDeli <= 0) {
 	/* done with this msg */
-	rmXmsgFromXmsgQue (irodsXmsg, &XmsgQue);
-	rmXmsgFromXmsgTcketQue (irodsXmsg, &ticketMsgStruct->xmsgQue);
 	rcvXmsgOut->msg = sendXmsgInfo->msg;
 	rcvXmsgOut->seqNumber  = irodsXmsg->seqNumber;
 	rcvXmsgOut->msgNumber  = sendXmsgInfo->msgNumber;
@@ -653,15 +799,21 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
 	  NAME_LEN);
 	rstrcpy (rcvXmsgOut->sendAddr, irodsXmsg->sendAddr,
 		 NAME_LEN);
+	rmXmsgFromXmsgQue (irodsXmsg, &XmsgQue);
+	rmXmsgFromXmsgTcketQue (irodsXmsg, &ticketMsgStruct->xmsgQue);
 	clearSendXmsgInfo (sendXmsgInfo);
+	/** added by Raja Nov 9, 2010 to take care of memory leak found by J-Y **/
+	free(sendXmsgInfo);
+	/** added by Raja Nov 9, 2010 to take care of memory leak found by J-Y **/
 	free (irodsXmsg);
-	/* take out the ticket too ? */
+	/* take out the ticket too ?    DONT!!!! commented out by RAJA Dec 16. 2010  garbage collect later*******
 	if (ticketMsgStruct->xmsgQue.head == NULL &&
 	  (!(ticketMsgStruct->ticket.flag & MULTI_MSG_TICKET) || 
 	  time (NULL) >= ticketMsgStruct->ticket.expireTime)) {
 	    rmTicketMsgStructFromHQue (ticketMsgStruct, 
 	      (ticketHashQue_t *) ticketMsgStruct->ticketHashQue);
 	}
+        **** commnneted out ****/
     } else {
 	rcvXmsgOut->msg = strdup (sendXmsgInfo->msg);
 	rcvXmsgOut->seqNumber  = irodsXmsg->seqNumber;
@@ -672,6 +824,9 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
 	rstrcpy (rcvXmsgOut->sendAddr, irodsXmsg->sendAddr,
 		 NAME_LEN);
     }
+#ifndef windows_platform
+    pthread_mutex_unlock (&MessQueCondMutex);
+#endif
     return (0);
 }
 
@@ -686,6 +841,9 @@ clearAllXMessages(ticketMsgStruct_t *ticketMsgStruct)
     tmpIrodsXmsg2 = tmpIrodsXmsg->tnext;
     rmXmsgFromXmsgQue (tmpIrodsXmsg, &XmsgQue);
     clearSendXmsgInfo (tmpIrodsXmsg->sendXmsgInfo);
+    /** added by Raja Nov 9, 2010 to take care of memory leak found by J-Y **/
+    free(tmpIrodsXmsg->sendXmsgInfo);
+    /** added by Raja Nov 9, 2010 to take care of memory leak found by J-Y **/
     free (tmpIrodsXmsg);
     tmpIrodsXmsg = tmpIrodsXmsg2;
   }
@@ -694,3 +852,4 @@ clearAllXMessages(ticketMsgStruct_t *ticketMsgStruct)
   ticketMsgStruct->xmsgQue.tail = NULL;
   return(0);
 }
+

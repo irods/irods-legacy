@@ -833,7 +833,7 @@ initServerMain (rsComm_t *svrComm)
             memset (av, 0, sizeof (av));
             rodsLog(LOG_NOTICE, "Starting irodsXmsgServer");
             av[0] = "irodsXmsgServer";
-            execv(av[0], av);
+	    execv(av[0], av); 
             exit(1);
         }
     }

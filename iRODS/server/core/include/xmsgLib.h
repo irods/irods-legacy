@@ -25,7 +25,7 @@
 
 #define NUM_HASH_SLOT		47	/* number of slots for the ticket
 					 * hash key */
-#define NUM_XMSG_THR		10
+#define NUM_XMSG_THR		40       /* used to be 10 */
 
 int 
 initThreadEnv ();
@@ -70,5 +70,7 @@ int
 _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut);
 
 int clearAllXMessages(ticketMsgStruct_t *ticketMsgStruct);
+
+int addXmsgToQues(irodsXmsg_t *irodsXmsg,  ticketMsgStruct_t *ticketMsgStruct); 
 #endif	/* XMSG_LIB_H */
 

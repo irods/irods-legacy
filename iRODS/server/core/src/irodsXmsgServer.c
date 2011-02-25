@@ -8,6 +8,9 @@
 #include "xmsgLib.h"
 #include "rsGlobal.h"
 
+int loopCnt=-1;  /* make it -1 to run infinitel */
+
+
 int
 main(int argc, char **argv)
 {
@@ -46,7 +49,7 @@ main(int argc, char **argv)
          rodsLogLevel(LOG_NOTICE); /* default */
     }
 
-    while ((c=getopt(argc, argv,"sScvD:")) != EOF) {
+    while ((c=getopt(argc, argv,"sSc:vD:")) != EOF) {
         switch (c) {
             case 's':
                 runMode = SINGLE_PASS;
@@ -56,6 +59,9 @@ main(int argc, char **argv)
                 break;
             case 'v':   /* verbose */
                 flagval |= v_FLAG;
+                break;
+            case 'c':
+	      loopCnt = atoi(optarg);
                 break;
             case 'D':   /* user specified a log directory */
                 logDir = strdup (optarg);
@@ -74,9 +80,10 @@ main(int argc, char **argv)
 
 
     status = xmsgServerMain ();
-
+    /*
     cleanupAndExit (status); 
-
+    */
+    sleep(5);
     exit (0);
 }
 
@@ -172,7 +179,16 @@ xmsgServerMain ()
             continue;
         }
 
+
 	addReqToQue (newSock);
+
+	if (loopCnt > 0) {
+	  loopCnt--;
+	  if (loopCnt == 0){
+	    return(0);
+	  }
+	}
+	  
 
     }
     /* RAJA removed June 13, 2088 to avoid compiler warning in solaris
