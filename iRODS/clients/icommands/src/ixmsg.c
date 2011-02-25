@@ -6,7 +6,7 @@
 
 rodsEnv myRodsEnv;
 rErrMsg_t errMsg;
-
+int  connectFlag = 0;
 int 
 printIxmsgHelp(char *cmd) {
 
@@ -26,22 +26,35 @@ printIxmsgHelp(char *cmd) {
 
 
 int 
-sendIxmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp){
+sendIxmsg( rcComm_t **inconn, sendXmsgInp_t *sendXmsgInp){
   int status;
+  int sleepSec = 1;
+  rcComm_t *conn;
 
-  conn = rcConnectXmsg (&myRodsEnv, &errMsg);
-  if (conn == NULL) {
-    fprintf (stderr, "rcConnect error\n");
-    exit (1);
-  }
-  status = clientLogin(conn);
-  if (status != 0) {
-    fprintf (stderr, "clientLogin error\n");
-    rcDisconnect(conn);
-    exit (7);
+  conn = *inconn;
+
+  while (connectFlag == 0) {
+    conn = rcConnectXmsg (&myRodsEnv, &errMsg);
+    if  (conn == NULL) {
+      sleep(sleepSec);
+      sleepSec = 2 * sleepSec;
+      if (sleepSec > 10) sleepSec = 10;
+      continue;
+    }
+    status = clientLogin(conn);
+    if (status != 0) {
+      rcDisconnect(conn);
+      fprintf (stderr, "clientLogin error...Will try again\n");
+      sleep(sleepSec);
+      sleepSec = 2 * sleepSec;
+      if (sleepSec > 10) sleepSec = 10;
+      continue;
+    }
+    *inconn = conn;
+    connectFlag = 1;
   }
   status = rcSendXmsg (conn, sendXmsgInp);
-  rcDisconnect(conn);
+  /*  rcDisconnect(conn); **/
   if (status < 0) {
     fprintf (stderr, "rsSendXmsg error. status = %d\n", status);
     exit (9);
@@ -140,7 +153,10 @@ main(int argc, char **argv)
       sendXmsgInp.sendXmsgInfo.msg = msgBuf;
 
       if (strlen(msgBuf) > 0) {
-	status = sendIxmsg(conn, &sendXmsgInp);
+	status = sendIxmsg(&conn, &sendXmsgInp);
+	if (connectFlag == 1) {
+	  rcDisconnect(conn); 
+	}
 	if (status < 0) 
 	  exit(8);
 	exit(0);
@@ -148,33 +164,25 @@ main(int argc, char **argv)
       printf("Message Header : %s\n", msgHdr);
       printf("Message Address: %s\n",sendXmsgInp.sendAddr);
       while (fgets (msgBuf, 3999, stdin) != NULL) {
-        if (strstr(msgBuf,"/EOM") == msgBuf)
+        if (strstr(msgBuf,"/EOM") == msgBuf) {
+	  if (connectFlag == 1) {
+	    rcDisconnect(conn); 
+	  }
 	  exit(0);
+	}
 	sendXmsgInp.sendXmsgInfo.msgNumber = mNum;
 	if (mNum != 0) mNum++;
 	sendXmsgInp.sendXmsgInfo.msg = msgBuf;
-	status = sendIxmsg(conn, &sendXmsgInp);
-	if (status < 0)
-	  exit(8);
-	/****
-        conn = rcConnectXmsg (&myRodsEnv, &errMsg);
-	if (conn == NULL) {
-	  fprintf (stderr, "rcConnect error\n");
-	  exit (1);
-	}
-	status = clientLogin(conn);
-	if (status != 0) {
-	  fprintf (stderr, "clientLogin error\n");
-	  rcDisconnect(conn);
-	  exit (7);
-	}
-	status = rcSendXmsg (conn, &sendXmsgInp);
-	rcDisconnect(conn);
+	status = sendIxmsg(&conn, &sendXmsgInp);
 	if (status < 0) {
-	  fprintf (stderr, "rsSendXmsg error. status = %d\n", status);
-	  exit (9);
+	  if (connectFlag == 1) {
+	    rcDisconnect(conn); 
+	  }
+	  exit(8);
 	}
-	****/
+      }
+      if (connectFlag == 1) {
+	rcDisconnect(conn); 
       }
     }
     else if (!strcmp(cmd, "r")) {
@@ -185,52 +193,43 @@ main(int argc, char **argv)
       if (mNum == 0) mNum--;
 
       while ( mNum != 0 ) {
-	/****
-	conn = rcConnectXmsg (&myRodsEnv, &errMsg);
-	if (conn == NULL) {
-	  fprintf (stderr, "rcConnect error\n");
-	  exit (1);
+	if (connectFlag == 0) {
+	  conn = rcConnectXmsg (&myRodsEnv, &errMsg);
+	  if (conn == NULL) {
+	    sleep(sleepSec);
+	    sleepSec = 2 * sleepSec;
+	    if (sleepSec > 10) sleepSec = 10;
+	    continue;
+	  }
+	  status = clientLogin(conn);
+	  if (status != 0) {
+	    rcDisconnect(conn);
+	    sleep(sleepSec);
+	    sleepSec = 2 * sleepSec;
+	    if (sleepSec > 10) sleepSec = 10;
+	    continue;
+	  }
+	  connectFlag = 1;
 	}
-	status = clientLogin(conn);
-
-	if (status != 0) {
-	  fprintf (stderr, "clientLogin error\n");
-	  rcDisconnect(conn);
-	  exit (7);
-	}
-	***/
-	conn = rcConnectXmsg (&myRodsEnv, &errMsg);
-	if (conn == NULL) {
-	  sleep(sleepSec);
-	  sleepSec = 2 * sleepSec;
-	  if (sleepSec > 10) sleepSec = 10;
-	  continue;
-	}
-	status = clientLogin(conn);
-	if (status != 0) {
-	  rcDisconnect(conn);
-	  sleep(sleepSec);
-	  sleepSec = 2 * sleepSec;
-	  if (sleepSec > 10) sleepSec = 10;
-	  continue;
-	}
-	
 	if (strlen(condStr) > 0)
 	  sprintf(rcvXmsgInp.msgCondition, "(*XSEQNUM  >= %d) && (%s)", sNum, condStr);
 	else
 	  sprintf(rcvXmsgInp.msgCondition, "*XSEQNUM >= %d ", sNum);
 
 	status = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
-        rcDisconnect(conn);
+	/*        rcDisconnect(conn); */
  	if (status  >= 0) {
-	  printf ("%s:%s@%s#%i:: %s", 
-		  rcvXmsgOut->msgType, rcvXmsgOut->sendUserName,rcvXmsgOut->sendAddr,
-		  rcvXmsgOut->seqNumber, rcvXmsgOut->msg);
+	  printf ("%s:%s#%i::%s: %s", 
+		  rcvXmsgOut->sendUserName,rcvXmsgOut->sendAddr,
+		  rcvXmsgOut->seqNumber, rcvXmsgOut->msgType, rcvXmsgOut->msg);
 	  if (rcvXmsgOut->msg[strlen(rcvXmsgOut->msg)-1] != '\n')
 	    printf("\n");
 	  sleepSec = 1;
 	  mNum--;
 	  sNum = rcvXmsgOut->seqNumber + 1;
+	  free(rcvXmsgOut->msg);
+	  free(rcvXmsgOut);
+	  rcvXmsgOut = NULL;
 	}
 	else {
 	  sleep(sleepSec);
@@ -238,6 +237,9 @@ main(int argc, char **argv)
 	  if (sleepSec > 10) sleepSec = 10;
 	}
 
+      }
+      if (connectFlag == 1) {
+	rcDisconnect(conn); 
       }
     }
     else if (!strcmp(cmd, "t")) {
