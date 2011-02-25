@@ -9,14 +9,47 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
+#include "reGlobalsExtern.h"
 
+int
+applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf)
+{
+    int i;
+    ruleExecInfo_t rei2;
+    msParamArray_t msParamArray;
+
+    memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
+    memset ((char*)&msParamArray, 0, sizeof(msParamArray_t));
+
+    rei2.rsComm = rsComm;
+    if (rsComm != NULL) {
+      rei2.uoic = &rsComm->clientUser;
+      rei2.uoip = &rsComm->proxyUser;
+    }
+    addMsParam(&msParamArray, "*ReadBuf", BUF_LEN_MS_T, 
+	       (void *) dataObjReadOutBBuf->len , dataObjReadOutBBuf);
+    i =  applyRule("acPostProcForDataObjRead(*ReadBuf)",&msParamArray, &rei2, NO_SAVE_REI);
+    if (i < 0) {
+      if (rei2.status < 0) {
+        i = rei2.status;
+      }
+      rodsLog (LOG_ERROR,
+               "rsDataObjRead: acPostProcForDataObjRead error=%d",i);
+      clearMsParamArray(&msParamArray,0);
+      return i;
+    }
+    clearMsParamArray(&msParamArray,0);
+
+    return(0);
+
+}
 
 int
 rsDataObjRead (rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp, 
 bytesBuf_t *dataObjReadOutBBuf)
 {
     int bytesRead;
-
+    int i;
     int l1descInx = dataObjReadInp->l1descInx;
 
     if (l1descInx < 2 || l1descInx >= NUM_L1_DESC) {
@@ -35,7 +68,14 @@ bytesBuf_t *dataObjReadOutBBuf)
     } else {
         bytesRead = l3Read (rsComm, l1descInx, dataObjReadInp->len,
           dataObjReadOutBBuf);
+	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
+	i = applyRuleForPostProcForRead(rsComm, dataObjReadOutBBuf);
+	if (i < 0)
+	  return(i);  
+	bytesRead = dataObjReadOutBBuf->len;
+	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
     }
+
     return (bytesRead);
 }
 

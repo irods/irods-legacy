@@ -10,12 +10,46 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
+#include "reGlobalsExtern.h"
+
+int
+applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf)
+{
+    int i;
+    ruleExecInfo_t rei2;
+    msParamArray_t msParamArray;
+
+    memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
+    memset ((char*)&msParamArray, 0, sizeof(msParamArray_t));
+
+    rei2.rsComm = rsComm;
+    if (rsComm != NULL) {
+      rei2.uoic = &rsComm->clientUser;
+      rei2.uoip = &rsComm->proxyUser;
+    }
+    addMsParam(&msParamArray, "*WriteBuf", BUF_LEN_MS_T, 
+	       (void *) dataObjWriteInpBBuf->len , dataObjWriteInpBBuf);
+    i =  applyRule("acPostProcForDataObjWrite(*WriteBuf)",&msParamArray, &rei2, NO_SAVE_REI);
+    if (i < 0) {
+      if (rei2.status < 0) {
+        i = rei2.status;
+      }
+      rodsLog (LOG_ERROR,
+               "rsDataObjWrite: acPostProcForDataObjWrite error=%d",i);
+      clearMsParamArray(&msParamArray,0);
+      return i;
+    }
+    clearMsParamArray(&msParamArray,0);
+
+    return(0);
+
+}
 
 int
 rsDataObjWrite (rsComm_t *rsComm, openedDataObjInp_t *dataObjWriteInp, 
 bytesBuf_t *dataObjWriteInpBBuf)
 {
-    int bytesWritten;
+    int i, bytesWritten;
 
     int l1descInx = dataObjWriteInp->l1descInx;
 
@@ -33,8 +67,14 @@ bytesBuf_t *dataObjWriteInpBBuf)
           dataObjWriteInp, dataObjWriteInpBBuf);
         dataObjWriteInp->l1descInx = l1descInx;
     } else {
-        bytesWritten = l3Write (rsComm, l1descInx, dataObjWriteInp->len,
-         dataObjWriteInpBBuf);
+	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
+        i = applyRuleForPostProcForWrite(rsComm, dataObjWriteInpBBuf);
+	if (i < 0)   
+	  return(i);  
+	dataObjWriteInp->len = dataObjWriteInpBBuf->len;
+	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
+	bytesWritten = l3Write (rsComm, l1descInx, dataObjWriteInp->len,
+			      dataObjWriteInpBBuf);
     }
 
     return (bytesWritten);

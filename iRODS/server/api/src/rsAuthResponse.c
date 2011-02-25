@@ -197,6 +197,9 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
       rsComm->clientUser.authInfo.authFlag = authCheckOut->privLevel;
    } 
 
+   /*** Added by RAJA Nov 16 2010 **/
+   if (authCheckOut->serverResponse != NULL) free(authCheckOut->serverResponse);
+   /*** Added by RAJA Nov 16 2010 **/
    free (authCheckOut);
 
    return (status);

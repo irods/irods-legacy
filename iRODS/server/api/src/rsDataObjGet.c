@@ -21,7 +21,7 @@ int
 rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
 {
-    int status;
+  int status, status2;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
@@ -36,6 +36,17 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
     } else if (remoteFlag == LOCAL_HOST) {
         status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
           dataObjOutBBuf, BRANCH_MSG);
+	/** since the object is read here, we apply post procesing RAJA Dec 2 2010 **/
+	if (dataObjOutBBuf != NULL && dataObjOutBBuf->len > 0) {
+	  status2 = applyRuleForPostProcForRead(rsComm, dataObjOutBBuf);
+	  if (status2 >= 0) {
+	    if (status > 0)
+	      return(dataObjOutBBuf->len);
+	  }
+	  else 
+	    return(status2); /* need to dealloc anything??? */
+	}
+	/** since the object is read here, we apply post procesing RAJA Dec 2 2010 **/
     } else {
        int l1descInx;
 	status = _rcDataObjGet (rodsServerHost->conn, dataObjInp, portalOprOut,

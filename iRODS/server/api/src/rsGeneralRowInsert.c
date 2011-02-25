@@ -87,6 +87,49 @@ _rsGeneralRowInsert(rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
 				  generalRowInsertInp->arg2);
       return(status);
     }
+    if (strcmp(generalRowInsertInp->tableName,"dvmTable") == 0) {
+      status = chlInsDvmTable(rsComm,
+			       generalRowInsertInp->arg1,
+			       generalRowInsertInp->arg2,
+			       generalRowInsertInp->arg3,
+			       generalRowInsertInp->arg4,
+			       generalRowInsertInp->arg5);
+      return(status);
+    }
+    if (strcmp(generalRowInsertInp->tableName,"versionDVMBase") == 0) {
+      status = chlVersionDvmBase(rsComm,
+				  generalRowInsertInp->arg1,
+				  generalRowInsertInp->arg2);
+      return(status);
+    }
+    if (strcmp(generalRowInsertInp->tableName,"fnmTable") == 0) {
+      status = chlInsFnmTable(rsComm,
+			       generalRowInsertInp->arg1,
+			       generalRowInsertInp->arg2,
+			       generalRowInsertInp->arg3,
+			       generalRowInsertInp->arg4);
+      return(status);
+    }
+    if (strcmp(generalRowInsertInp->tableName,"versionFNMBase") == 0) {
+      status = chlVersionFnmBase(rsComm,
+				  generalRowInsertInp->arg1,
+				  generalRowInsertInp->arg2);
+      return(status);
+    }
+
+    if (strcmp(generalRowInsertInp->tableName,"msrvcTable") == 0) {
+      status = chlInsMsrvcTable(rsComm,
+			      generalRowInsertInp->arg1,
+			      generalRowInsertInp->arg2,
+			      generalRowInsertInp->arg3,
+			      generalRowInsertInp->arg4,
+			      generalRowInsertInp->arg5,
+			      generalRowInsertInp->arg6,
+			      generalRowInsertInp->arg7,
+			      generalRowInsertInp->arg8,
+			      generalRowInsertInp->arg9);
+      return(status);
+    }
     return(CAT_INVALID_ARGUMENT);
 } 
 #endif
