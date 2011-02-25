@@ -198,8 +198,9 @@ LDFLAGS += $(LIB_KRB_AUTH)
 endif
 
 # for checking memleak
-# LDFLAGS +=	-L/data/mwan/rods/ccmalloc/ccmalloc-0.4.0/lib
-
+ifdef CCMALLOC
+LDFLAGS += -L$(CCMALLOC_DIR)/lib
+endif
 
 
 
