@@ -1702,14 +1702,10 @@ int
 initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack)
 {
     char *tmpStr;
-    static char tmpStr2[201]; /** RAJA added to take care of memory leak Nov 15 2010 found by J-Y **/
+    static char tmpStr2[LONG_NAME_LEN]; /** RAJA added to take care of memory 
+                                         * leak Nov 15 2010 found by J-Y **/
     /* always use NATIVE_PROT as a client. e.g., server to server comm */
-    /*
-    tmpStr = malloc (NAME_LEN * 2);
-    snprintf (tmpStr, NAME_LEN * 2, "%s=%d", IRODS_PROT, NATIVE_PROT);
-    putenv (tmpStr);
-    */
-    snprintf (tmpStr2, 200, "%s=%d", IRODS_PROT, NATIVE_PROT);
+    snprintf (tmpStr2, LONG_NAME_LEN, "%s=%d", IRODS_PROT, NATIVE_PROT);
     putenv (tmpStr2);
 
     if (startupPack != NULL) {
@@ -1848,13 +1844,12 @@ initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack)
 #endif
         
     }
-    if (rsComm->sock != 0) { /* added by RAJA Nov 16 2010 to remove error messages from xmsLog */
-      setLocalAddr (rsComm->sock, &rsComm->localAddr);
-      setRemoteAddr (rsComm->sock, &rsComm->remoteAddr);
+    if (rsComm->sock != 0) { /* added by RAJA Nov 16 2010 to remove error 
+                              * messages from xmsLog */
+        setLocalAddr (rsComm->sock, &rsComm->localAddr);
+        setRemoteAddr (rsComm->sock, &rsComm->remoteAddr);
     } /* added by RAJA Nov 16 2010 to remove error messages from xmsLog */
 
-    setLocalAddr (rsComm->sock, &rsComm->localAddr);
-    setRemoteAddr (rsComm->sock, &rsComm->remoteAddr);
     tmpStr = inet_ntoa (rsComm->remoteAddr.sin_addr);
     if (tmpStr == NULL || *tmpStr == '\0') tmpStr = "UNKNOWN";
     rstrcpy (rsComm->clientAddr, tmpStr, NAME_LEN);
