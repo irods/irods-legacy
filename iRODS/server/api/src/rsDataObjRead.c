@@ -17,6 +17,7 @@ applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf)
     int i;
     ruleExecInfo_t rei2;
     msParamArray_t msParamArray;
+    int *myInOutStruct;
 
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     memset ((char*)&msParamArray, 0, sizeof(msParamArray_t));
@@ -26,8 +27,16 @@ applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf)
       rei2.uoic = &rsComm->clientUser;
       rei2.uoip = &rsComm->proxyUser;
     }
+#if 0
     addMsParam(&msParamArray, "*ReadBuf", BUF_LEN_MS_T, 
 	       (void *) dataObjReadOutBBuf->len , dataObjReadOutBBuf);
+#else
+    bzero (&msParamArray, sizeof (msParamArray));
+    myInOutStruct = (int*)malloc (sizeof (int));
+    *myInOutStruct = dataObjReadOutBBuf->len;
+    addMsParamToArray (&msParamArray, "*ReadBuf", BUF_LEN_MS_T, myInOutStruct,
+      dataObjReadOutBBuf, 0);
+#endif
     i =  applyRule("acPostProcForDataObjRead(*ReadBuf)",&msParamArray, &rei2, NO_SAVE_REI);
     if (i < 0) {
       if (rei2.status < 0) {

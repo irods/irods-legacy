@@ -18,6 +18,7 @@ applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf)
     int i;
     ruleExecInfo_t rei2;
     msParamArray_t msParamArray;
+    int *myInOutStruct;
 
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     memset ((char*)&msParamArray, 0, sizeof(msParamArray_t));
@@ -27,8 +28,16 @@ applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf)
       rei2.uoic = &rsComm->clientUser;
       rei2.uoip = &rsComm->proxyUser;
     }
+#if 0
     addMsParam(&msParamArray, "*WriteBuf", BUF_LEN_MS_T, 
 	       (void *) dataObjWriteInpBBuf->len , dataObjWriteInpBBuf);
+#else
+    bzero (&msParamArray, sizeof (msParamArray));
+    myInOutStruct = (int*)malloc (sizeof (int));
+    *myInOutStruct = dataObjWriteInpBBuf->len;
+    addMsParamToArray (&msParamArray, "*WriteBuf", BUF_LEN_MS_T, myInOutStruct,
+      dataObjWriteInpBBuf, 0);
+#endif
     i =  applyRule("acPostProcForDataObjWrite(*WriteBuf)",&msParamArray, &rei2, NO_SAVE_REI);
     if (i < 0) {
       if (rei2.status < 0) {
