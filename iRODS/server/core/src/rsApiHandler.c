@@ -173,10 +173,11 @@ bytesBuf_t *bsBBuf)
         } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
 	  "ModAVUMetadataInp_PI")  == 0) {
 	    clearModAVUMetadataInp ((modAVUMetadataInp_t *) myInStruct);
-        } else if (strcmp (RsApiTable[apiInx].inPackInstruct, /* Added by RAJA Nov 22 2010 */
+        } else if (strcmp (RsApiTable[apiInx].inPackInstruct, 
  	     "authResponseInp_PI")  == 0) {
+            /* Added by RAJA Nov 22 2010 */
 	    clearAuthResponseInp ((void *) myInStruct);
-	    } 
+	} 
         free (myInStruct);
         myInStruct = NULL;
     }
