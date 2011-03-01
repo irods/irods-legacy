@@ -86,6 +86,22 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
        msParam_t *outMsParam;
 #endif
        memset((char*)&rei,0,sizeof(rei));
+       rei.rsComm = rsComm;
+       if (rsComm != NULL) {
+          /* Include the user info for possible use by the rule.  Note
+	     that when this is called (as the agent is initializing),
+	     this user info is not confirmed yet.  For password
+	     authentication though, the agent will soon exit if this
+	     is not valid.  But tor GSI, the user information may not
+	     be present and/or may be changed when the authentication
+	     completes, so it may not be safe to use this in a GSI
+	     enabled environment.  This addition of user information
+	     was requested by ARCS/IVEC (Sean Fleming) to avoid a
+	     local patch.
+          */
+	  rei.uoic = &rsComm->clientUser;
+	  rei.uoip = &rsComm->proxyUser;
+       }
        status = applyRule ("acAclPolicy", NULL, &rei, NO_SAVE_REI);
        ruleResult = rei.status;
        if (status==0) {

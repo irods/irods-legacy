@@ -51,7 +51,15 @@ acGetUserByDN(*arg,*OUT)||nop|nop
 # cases, access control to the data-objects is enforced.  Even with
 # STRICT access control, the admin user is not restricted so various
 # microservices and queries will still be able to evaluate system-wide
-# information.
+# information.  
+# Post irods 2.5, $userNameClient is available altho this
+# is only secure in a irods-password environment (not GSI), but you can
+# then have rules for specific users:
+#   acAclPolicy|$userNameClient == quickshare|nop|nop
+#   acAclPolicy||msiAclPolicy(STRICT)|nop 
+# which was requested by ARCS (Sean Fleming).  See rsGenQuery.c for more
+# information on $userNameClient.  But the typical use is to just set it
+# strict or not for all users:
 acAclPolicy||nop|nop
 #acAclPolicy||msiAclPolicy(STRICT)|nop
 #
