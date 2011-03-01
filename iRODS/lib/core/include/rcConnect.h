@@ -39,6 +39,25 @@ typedef struct reconnMsg {
     int flag;
 } reconnMsg_t;
 
+typedef struct dataSeg {
+    int len;
+    int flags;	/* unused flag to fill out 64 bits */
+    rodsLong_t offset;
+    struct dataSeg *next;
+} dataSeg_t;
+
+typedef enum {
+    FILE_RESTART_OFF,
+    FILE_RESTART_ON
+} fileRestartFlag_t;
+
+typedef struct {
+    fileRestartFlag_t flags;
+    int segSize;
+    rodsLong_t fileSize;
+    dataSeg_t *dataSegHead;	/* head of the completed dataSeg */
+} fileRestart_t;
+
 typedef enum {
     PROC_LOG_NOT_DONE,  /* the proc logging in log/proc not done yet */
     PROC_LOG_DONE       /* the proc logging in log/proc is done */
@@ -74,6 +93,7 @@ typedef struct {
     procState_t clientState;
     procState_t reconnThrState;
     operProgress_t operProgress;
+    fileRestart_t fileRestart;
 } rcComm_t;
 
 typedef struct {
