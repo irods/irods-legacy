@@ -236,6 +236,18 @@ create table R_RULE_DVM
    modify_ts varchar(32)
 );
 
+create table R_RULE_DVM_MAP
+ (
+   map_dvm_version varchar(250) DEFAULT '0',
+   map_dvm_base_name varchar(250) not null,
+   dvm_id INT64TYPE not null,
+   map_owner_name varchar(250) not null,
+   map_owner_zone varchar(250) not null,
+   r_comment varchar(1000),
+   create_ts varchar(32) ,
+   modify_ts varchar(32)
+ );
+
 create table R_RULE_FNM
 (
    fnm_id INT64TYPE not null,
@@ -250,6 +262,49 @@ create table R_RULE_FNM
    create_ts varchar(32) ,
    modify_ts varchar(32)
 );
+
+create table R_RULE_FNM_MAP
+ (
+   map_fnm_version varchar(250) DEFAULT '0',
+   map_fnm_base_name varchar(250) not null,
+   fnm_id INT64TYPE not null,
+   map_owner_name varchar(250) not null,
+   map_owner_zone varchar(250) not null,
+   r_comment varchar(1000),
+   create_ts varchar(32) ,
+   modify_ts varchar(32)
+ );
+
+create table R_MICROSRVC_MAIN
+ {
+   msrvc_id INT64TYPE not null,
+   msrvc_name varchar(250) not null,
+   msrvc_module_name  varchar(250) not null,
+   msrvc_signature varchar(2700) not null,
+   msrvc_doxygen varchar(2500) not null,
+   msrvc_variations varchar(2500) not null,
+   msrvc_owner_name varchar(250) not null,
+   msrvc_owner_zone varchar(250) not null,
+   r_comment varchar(1000),
+   create_ts varchar(32),
+   modify_ts varchar(32)
+ };
+
+create table R_MICROSRVC_VER
+ (
+   msrvc_id INT64TYPE not null,
+   msrvc_version varchar(250) DEFAULT '0',
+   msrvc_host varchar(250) DEFAULT 'ALL', 
+   msrvc_location varchar(500), 
+   msrvc_language varchar(250) DEFAULT 'C',
+   msrvc_type_name varchar(250) DEFAULT 'IRODS COMPILED', 
+   msrvc_status INT64TYPE DEFAULT 1,
+   msrvc_owner_name varchar(250) not null,
+   msrvc_owner_zone varchar(250) not null,
+   r_comment varchar(1000),
+   create_ts varchar(32) ,
+   modify_ts varchar(32)
+ );
 
 create table R_RULE_EXEC
  (
@@ -375,6 +430,8 @@ create table R_USER_AUTH
    user_auth_name      varchar(1000),
    create_ts varchar(32)
 );
+
+
 
 
 create table R_QUOTA_MAIN
