@@ -133,6 +133,8 @@ int chlInsRuleTable(rsComm_t *rsComm,
 		    char *ruleRecovery, char *ruleIdStr, char *myTime);
 int chlVersionRuleBase(rsComm_t *rsComm,
 		       char *baseName, char *myTime);
+int chlVersionDvmBase(rsComm_t *rsComm,
+		       char *baseName, char *myTime);
 /*int chlDatabaseObjectAdmin(rsComm_t *rsComm, 
 			   databaseObjectAdminInp_t *databaseObjectAdminInp,
 			   databaseObjectAdminOut_t *databaseObjectAdminOut);*/

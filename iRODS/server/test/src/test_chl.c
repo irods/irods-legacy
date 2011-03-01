@@ -758,6 +758,64 @@ testVersionRuleBase(rsComm_t *rsComm, char *baseName) {
 }
 
 int
+testVersionDvmBase(rsComm_t *rsComm, char *baseName) {
+   int status;
+   char myTime[]="01277237323";
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlVersionDvmBase(rsComm, baseName, (char *)&myTime);
+
+   return(status);
+}
+
+int
+testInsFnmTable(rsComm_t *rsComm, char *arg1, char *arg2, char *arg3, 
+		char *arg4) {
+   int status;
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlInsFnmTable(rsComm, arg1, arg2, arg3, arg4);
+
+   return(status);
+}
+
+int
+testInsMsrvcTable(rsComm_t *rsComm, char *arg1, char *arg2, char *arg3, 
+		  char *arg4, char *arg5, char *arg6, char *arg7, char *arg8,
+		  char *arg9) {
+   int status;
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlInsMsrvcTable(rsComm, arg1, arg2, arg3, arg4,
+			     arg5, arg6, arg7, arg8, arg9);
+
+   return(status);
+}
+
+int
+testInsDvmTable(rsComm_t *rsComm,  char *arg1, char *arg2, char *arg3, 
+		char *arg4) {
+   int status;
+   char myTime[]="01277237323";
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlInsDvmTable(rsComm, arg1, arg2, arg3, arg4, myTime);
+   return(status);
+}
+
+int
+testVersionFnmBase(rsComm_t *rsComm, char *arg1) {
+   int status;
+   char myTime[]="01277237323";
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlVersionFnmBase(rsComm, arg1, myTime);
+
+   return(status);
+}
+
+
+int
 main(int argc, char **argv) {
    int status;
    rsComm_t *Comm;
@@ -1016,6 +1074,32 @@ main(int argc, char **argv) {
 
    if (strcmp(argv[1],"versionrulebase")==0) {
      status = testVersionRuleBase(Comm, argv[2]);
+     didOne=1;
+   }
+
+   if (strcmp(argv[1],"versiondvmbase")==0) {
+     status = testVersionDvmBase(Comm, argv[2]);
+     didOne=1;
+   }
+
+   if (strcmp(argv[1],"versionfnmbase")==0) {
+     status = testVersionFnmBase(Comm, argv[2]);
+     didOne=1;
+   }
+
+   if (strcmp(argv[1],"insfnmtable")==0) {
+      status = testInsFnmTable(Comm, argv[2], argv[3], argv[4], argv[5] );
+      didOne=1;
+   }
+
+   if (strcmp(argv[1],"insdvmtable")==0) {
+      status = testInsDvmTable(Comm, argv[2], argv[3], argv[4], argv[5] );
+      didOne=1;
+   }
+
+   if (strcmp(argv[1],"insmsrvctable")==0) {
+      status = testInsMsrvcTable(Comm, argv[2], argv[3], argv[4], argv[5],
+			       argv[6], argv[7], argv[8], argv[9], argv[10]);
      didOne=1;
    }
 

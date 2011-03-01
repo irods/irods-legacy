@@ -8118,7 +8118,7 @@ chlInsDvmTable(rsComm_t *rsComm,
    int status;
    int i;
    rodsLong_t seqNum = -1;
-   char *dvmIdStr;
+   char dvmIdStr[MAX_NAME_LEN];
    if (logSQL) rodsLog(LOG_SQL, "chlInsDvmTable");
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
@@ -8216,7 +8216,7 @@ chlInsFnmTable(rsComm_t *rsComm,
    int status;
    int i;
    rodsLong_t seqNum = -1;
-   char *fnmIdStr;
+   char fnmIdStr[MAX_NAME_LEN];
    if (logSQL) rodsLog(LOG_SQL, "chlInsFnmTable");
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
@@ -8317,7 +8317,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
    int status;
    int i;
    rodsLong_t seqNum = -1;
-   char *msrvcIdStr;
+   char msrvcIdStr[MAX_NAME_LEN];
    if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable");
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
@@ -8427,7 +8427,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
    cllBindVars[i++]=myTime;
    cllBindVarCount=i;
    status =  cmlExecuteNoAnswerSql(
-      "insert into R_RULE_MSRVC_MAP  (map_msrvc_base_name, msrvc_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+      "insert into R_RULE_MSRVC_MAP  (msrvc_map_base_name, msrvc_id, msrvc_map_owner_name,msrvc_map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
                                    &icss);
    if (status != 0) {
      rodsLog(LOG_NOTICE,
@@ -8445,8 +8445,6 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
  * Input - rsComm_t *rsComm  - the server handle,
  *    input values.
  */
-
-
 int
 chlVersionRuleBase(rsComm_t *rsComm,
 		   char *baseName, char *myTime) {
@@ -8488,12 +8486,9 @@ chlVersionRuleBase(rsComm_t *rsComm,
  * Input - rsComm_t *rsComm  - the server handle,
  *    input values.
  */
-
-
 int
 chlVersionDvmBase(rsComm_t *rsComm,
 		   char *baseName, char *myTime) {
-
   int i, status;
 
   if (logSQL) rodsLog(LOG_SQL, "chlVersionDvmBase");
@@ -8514,7 +8509,7 @@ chlVersionDvmBase(rsComm_t *rsComm,
   if (logSQL) rodsLog(LOG_SQL, "chlVersionDvmBase SQL 1");
   
   status =  cmlExecuteNoAnswerSql(
-	  "update R_RULE_DVM_MAP set map_version = ?, modify_ts = ? where map_base_name = ? and map_version = '0'",&icss);
+	  "update R_RULE_DVM_MAP set map_dvm_version = ?, modify_ts = ? where map_dvm_base_name = ? and map_dvm_version = '0'",&icss);
   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
     rodsLog(LOG_NOTICE,
 	    "chlVersionDvmBase cmlExecuteNoAnswerSql DVM Map version update  failure %d" , status);
@@ -8531,8 +8526,6 @@ chlVersionDvmBase(rsComm_t *rsComm,
  * Input - rsComm_t *rsComm  - the server handle,
  *    input values.
  */
-
-
 int
 chlVersionFnmBase(rsComm_t *rsComm,
 		   char *baseName, char *myTime) {
@@ -8557,7 +8550,7 @@ chlVersionFnmBase(rsComm_t *rsComm,
   if (logSQL) rodsLog(LOG_SQL, "chlVersionFnmBase SQL 1");
   
   status =  cmlExecuteNoAnswerSql(
-	  "update R_RULE_FNM_MAP set map_version = ?, modify_ts = ? where map_base_name = ? and map_version = '0'",&icss);
+	  "update R_RULE_FNM_MAP set map_fnm_version = ?, modify_ts = ? where map_fnm_base_name = ? and map_fnm_version = '0'",&icss);
   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
     rodsLog(LOG_NOTICE,
 	    "chlVersionFnmBase cmlExecuteNoAnswerSql FNM Map version update  failure %d" , status);

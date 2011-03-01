@@ -276,7 +276,7 @@ create table R_RULE_FNM_MAP
  );
 
 create table R_MICROSRVC_MAIN
- {
+ (
    msrvc_id INT64TYPE not null,
    msrvc_name varchar(250) not null,
    msrvc_module_name  varchar(250) not null,
@@ -288,7 +288,7 @@ create table R_MICROSRVC_MAIN
    r_comment varchar(1000),
    create_ts varchar(32),
    modify_ts varchar(32)
- };
+ );
 
 create table R_MICROSRVC_VER
  (
@@ -305,6 +305,16 @@ create table R_MICROSRVC_VER
    create_ts varchar(32) ,
    modify_ts varchar(32)
  );
+
+create table R_RULE_MSRVC_MAP  
+(
+  msrvc_id INT64TYPE, 
+  msrvc_map_base_name varchar(250) not null, 
+  msrvc_map_owner_name varchar (250) not null,
+  msrvc_map_owner_zone varchar (250) not null, 
+  create_ts varchar(32), 
+  modify_ts varchar(32)
+);
 
 create table R_RULE_EXEC
  (
