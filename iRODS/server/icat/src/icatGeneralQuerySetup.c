@@ -156,8 +156,8 @@ icatGeneralQuerySetup() {
   sTable( "R_RULE_BASE_MAP", "R_RULE_BASE_MAP", 0);
   sTable( "R_RULE_DVM_MAP", "R_RULE_DVM_MAP", 0);
   sTable( "R_RULE_FNM_MAP", "R_RULE_FNM_MAP", 0);
-  sTable( "r_rule_dvm",  "r_rule_dvm", 0);
-  sTable( "r_rule_fnm",  "r_rule_fnm", 0);
+  sTable( "R_RULE_DVM",  "R_RULE_DVM", 0);
+  sTable( "R_RULE_FNM",  "R_RULE_FNM", 0);
 
   sTable( "R_QUOTA_MAIN", "R_QUOTA_MAIN", 0);
   sTable( "R_QUOTA_USAGE", "R_QUOTA_USAGE", 0);
@@ -438,18 +438,18 @@ icatGeneralQuerySetup() {
   sColumn(COL_RULE_BASE_MAP_CREATE_TIME,"R_RULE_BASE_MAP", "create_ts");
   sColumn(COL_RULE_BASE_MAP_MODIFY_TIME,"R_RULE_BASE_MAP", "modify_ts");
 
-  sColumn(COL_DVM_ID,           "r_rule_dvm", "dvm_id");
-  sColumn(COL_DVM_VERSION,      "r_rule_dvm", "dvm_version");
-  sColumn(COL_DVM_BASE_NAME,    "r_rule_dvm", "dvm_base_name");
-  sColumn(COL_DVM_EXT_VAR_NAME, "r_rule_dvm", "dvm_name");
-  sColumn(COL_DVM_CONDITION,    "r_rule_dvm", "dvm_condition");
-  sColumn(COL_DVM_INT_MAP_PATH, "r_rule_dvm", "dvm_name");
-  sColumn(COL_DVM_STATUS,       "r_rule_dvm", "dvm_status");
-  sColumn(COL_DVM_OWNER_NAME,   "r_rule_dvm", "dvm_owner_name");
-  sColumn(COL_DVM_OWNER_ZONE,   "r_rule_dvm", "dvm_owner_zone");
-  sColumn(COL_DVM_COMMENT,      "r_rule_dvm", "r_comment");
-  sColumn(COL_DVM_CREATE_TIME,  "r_rule_dvm", "create_ts");
-  sColumn(COL_DVM_MODIFY_TIME,  "r_rule_dvm", "modify_ts");
+  sColumn(COL_DVM_ID,           "R_RULE_DVM", "dvm_id");
+  sColumn(COL_DVM_VERSION,      "R_RULE_DVM", "dvm_version");
+  sColumn(COL_DVM_BASE_NAME,    "R_RULE_DVM", "dvm_base_name");
+  sColumn(COL_DVM_EXT_VAR_NAME, "R_RULE_DVM", "dvm_name");
+  sColumn(COL_DVM_CONDITION,    "R_RULE_DVM", "dvm_condition");
+  sColumn(COL_DVM_INT_MAP_PATH, "R_RULE_DVM", "dvm_name");
+  sColumn(COL_DVM_STATUS,       "R_RULE_DVM", "dvm_status");
+  sColumn(COL_DVM_OWNER_NAME,   "R_RULE_DVM", "dvm_owner_name");
+  sColumn(COL_DVM_OWNER_ZONE,   "R_RULE_DVM", "dvm_owner_zone");
+  sColumn(COL_DVM_COMMENT,      "R_RULE_DVM", "r_comment");
+  sColumn(COL_DVM_CREATE_TIME,  "R_RULE_DVM", "create_ts");
+  sColumn(COL_DVM_MODIFY_TIME,  "R_RULE_DVM", "modify_ts");
 
   sColumn(COL_DVM_BASE_MAP_VERSION,    "R_RULE_DVM_MAP", "map_dvm_version"); 
   sColumn(COL_DVM_BASE_MAP_BASE_NAME,  "R_RULE_DVM_MAP", "map_dvm_base_name");
@@ -459,17 +459,17 @@ icatGeneralQuerySetup() {
   sColumn(COL_DVM_BASE_MAP_CREATE_TIME,"R_RULE_DVM_MAP", "create_ts");
   sColumn(COL_DVM_BASE_MAP_MODIFY_TIME,"R_RULE_DVM_MAP", "modify_ts");
 
-  sColumn(COL_FNM_ID,           "r_rule_fnm", "fnm_id");
-  sColumn(COL_FNM_VERSION,      "r_rule_fnm", "fnm_version");
-  sColumn(COL_FNM_BASE_NAME,    "r_rule_fnm", "fnm_base_name");
-  sColumn(COL_FNM_EXT_FUNC_NAME,"r_rule_fnm", "fnm_ext_func_name");
-  sColumn(COL_FNM_INT_FUNC_NAME,"r_rule_fnm", "fnm_int_func_name");
-  sColumn(COL_FNM_STATUS,       "r_rule_fnm", "fnm_status");
-  sColumn(COL_FNM_OWNER_NAME,   "r_rule_fnm", "fnm_owner_name");
-  sColumn(COL_FNM_OWNER_ZONE,   "r_rule_fnm", "fnm_owner_zone");
-  sColumn(COL_FNM_COMMENT,      "r_rule_fnm", "r_comment");
-  sColumn(COL_FNM_CREATE_TIME,  "r_rule_fnm", "create_ts");
-  sColumn(COL_FNM_MODIFY_TIME,  "r_rule_fnm", "modify_ts");
+  sColumn(COL_FNM_ID,           "R_RULE_FNM", "fnm_id");
+  sColumn(COL_FNM_VERSION,      "R_RULE_FNM", "fnm_version");
+  sColumn(COL_FNM_BASE_NAME,    "R_RULE_FNM", "fnm_base_name");
+  sColumn(COL_FNM_EXT_FUNC_NAME,"R_RULE_FNM", "fnm_ext_func_name");
+  sColumn(COL_FNM_INT_FUNC_NAME,"R_RULE_FNM", "fnm_int_func_name");
+  sColumn(COL_FNM_STATUS,       "R_RULE_FNM", "fnm_status");
+  sColumn(COL_FNM_OWNER_NAME,   "R_RULE_FNM", "fnm_owner_name");
+  sColumn(COL_FNM_OWNER_ZONE,   "R_RULE_FNM", "fnm_owner_zone");
+  sColumn(COL_FNM_COMMENT,      "R_RULE_FNM", "r_comment");
+  sColumn(COL_FNM_CREATE_TIME,  "R_RULE_FNM", "create_ts");
+  sColumn(COL_FNM_MODIFY_TIME,  "R_RULE_FNM", "modify_ts");
 
   sColumn(COL_FNM_BASE_MAP_VERSION,    "R_RULE_FNM_MAP", "map_fnm_version"); 
   sColumn(COL_FNM_BASE_MAP_BASE_NAME,  "R_RULE_FNM_MAP", "map_fnm_base_name");
