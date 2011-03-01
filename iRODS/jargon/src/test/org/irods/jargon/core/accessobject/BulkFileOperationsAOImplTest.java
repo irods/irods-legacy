@@ -3,6 +3,7 @@ package org.irods.jargon.core.accessobject;
 import java.util.Properties;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.exception.JargonException;
@@ -111,9 +112,15 @@ public class BulkFileOperationsAOImplTest {
 		BulkFileOperationsAO bulkFileOperationsAO = accessObjectFactory
 				.getBulkFileOperationsAO();
 
+		boolean didFail = false;
+		try {
 		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
 				targetBunFileAbsPath, targetIrodsCollection, "");
-		assertionHelper.assertIrodsFileOrCollectionExists(targetBunFileAbsPath);
+		} catch (JargonException je) {
+			didFail = true;
+		}
+		
+		TestCase.assertTrue("expected this to fail with JargonException", didFail);
 
 	}
 

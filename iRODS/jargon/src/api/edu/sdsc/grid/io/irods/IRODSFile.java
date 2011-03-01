@@ -45,9 +45,12 @@
 //
 package edu.sdsc.grid.io.irods;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.exception.JargonRuntimeException;
@@ -56,21 +59,32 @@ import org.irods.jargon.core.pub.domain.AvuData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.sdsc.grid.io.local.*;
-import edu.sdsc.grid.io.*;
+import edu.sdsc.grid.io.DirectoryMetaData;
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileSystem;
+import edu.sdsc.grid.io.GeneralMetaData;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.Namespace;
+import edu.sdsc.grid.io.RemoteFile;
+import edu.sdsc.grid.io.ResourceMetaData;
+import edu.sdsc.grid.io.local.LocalFile;
 
 /**
  * An abstract representation of file and directory pathnames on an iRODS
  * server.
- *<P>
+ * <P>
  * Shares many similarities with the java.io.File class: User interfaces and
  * operating systems use system-dependent pathname strings to name files and
  * directories. This class presents an abstract, system-independent view of
  * hierarchical pathnames. An abstract pathname has two components:
- *<P>
+ * <P>
  * Instances of the IRODSFile class are immutable; that is, once created, the
  * abstract pathname represented by a IRODSFile object will never change.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since JARGON2.0
@@ -112,9 +126,8 @@ public class IRODSFile extends RemoteFile {
 	static final int WRITE_PERMISSIONS = 1120;
 
 	private static Logger log = LoggerFactory.getLogger(IRODSFile.class);
-	
-	MetaDataRecordList[] rl1, rl2;
 
+	MetaDataRecordList[] rl1, rl2;
 
 	/**
 	 * Connection to the iRODS server.
@@ -169,25 +182,25 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Creates a new IRODSFile instance by converting the given pathname string
 	 * into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the iRODS server
 	 * @param filePath
 	 *            A pathname string
 	 */
-	public IRODSFile(IRODSFileSystem fileSystem, String filePath) {
+	public IRODSFile(final IRODSFileSystem fileSystem, final String filePath) {
 		this(fileSystem, "", filePath);
 	}
 
 	/**
 	 * Creates a new iRODSFile instance from a parent pathname string and a
 	 * child pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new IRODSFile instance is created as if by
 	 * invoking the single-argument IRODSFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent pathname string is taken to denote a directory, and
 	 * the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -197,7 +210,7 @@ public class IRODSFile extends RemoteFile {
 	 * system-dependent default directory. Otherwise each pathname string is
 	 * converted into an abstract pathname and the child abstract pathname is
 	 * resolved against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the iRODS server
@@ -206,7 +219,8 @@ public class IRODSFile extends RemoteFile {
 	 * @param child
 	 *            The child pathname string
 	 */
-	public IRODSFile(IRODSFileSystem fileSystem, String parent, String child) {
+	public IRODSFile(final IRODSFileSystem fileSystem, final String parent,
+			final String child) {
 		super(fileSystem, parent, child);
 		resource = iRODSFileSystem.getDefaultStorageResource();
 		makePathCanonical(parent);
@@ -215,11 +229,11 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Creates a new IRODSFile instance from a parent abstract pathname and a
 	 * child pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new IRODSFile instance is created as if by
 	 * invoking the single-argument IRODSFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent abstract pathname is taken to denote a directory,
 	 * and the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -229,14 +243,14 @@ public class IRODSFile extends RemoteFile {
 	 * against a system-dependent default directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the child abstract
 	 * pathname is resolved against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param parent
 	 *            The parent abstract pathname
 	 * @param child
 	 *            The child pathname string
 	 */
-	public IRODSFile(IRODSFile parent, String child) {
+	public IRODSFile(final IRODSFile parent, final String child) {
 		this((IRODSFileSystem) parent.getFileSystem(),
 				parent.getAbsolutePath(), child);
 	}
@@ -244,10 +258,10 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Creates a new IRODSFile instance by converting the given file: URI into
 	 * an abstract pathname.
-	 *<P>
+	 * <P>
 	 * iRODS URI protocol:<br>
 	 * irods:// [ userName [ : password ] @ ] host [ : port ][ / path ]
-	 *<P>
+	 * <P>
 	 * example:<br>
 	 * irods://irods@irods.sdsc.edu:21/pub/testfile.txt
 	 * 
@@ -258,7 +272,7 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IllegalArgumentException
 	 *             If the preconditions on the parameter do not hold.
 	 */
-	public IRODSFile(URI uri) throws IOException, URISyntaxException {
+	public IRODSFile(final URI uri) throws IOException, URISyntaxException {
 		super(uri);
 
 		if (uri.getScheme().equals("irods")) {
@@ -288,8 +302,8 @@ public class IRODSFile extends RemoteFile {
 					homeDirectory = uri.getPath();
 				}
 
-				setFileSystem(new IRODSFileSystem(new IRODSAccount(uri
-						.getHost(), uri.getPort(), userName, password,
+				setFileSystem(new IRODSFileSystem(new IRODSAccount(
+						uri.getHost(), uri.getPort(), userName, password,
 						homeDirectory, zone, "")) // default resource see
 				);
 
@@ -328,16 +342,19 @@ public class IRODSFile extends RemoteFile {
 	 * held values.
 	 */
 	protected void finalize() throws Throwable {
-		if (deleteOnExit)
+		if (deleteOnExit) {
 			delete();
+		}
 
 		super.finalize();
 
-		if (resource != null)
+		if (resource != null) {
 			resource = null;
+		}
 
-		if (dataType != null)
+		if (dataType != null) {
 			dataType = null;
+		}
 	}
 
 	/**
@@ -353,11 +370,12 @@ public class IRODSFile extends RemoteFile {
 	 *             - if the argument is not an object of the approriate
 	 *             subclass.
 	 */
-	protected void setFileSystem(GeneralFileSystem fileSystem)
+	protected void setFileSystem(final GeneralFileSystem fileSystem)
 			throws IllegalArgumentException, ClassCastException {
-		if (fileSystem == null)
+		if (fileSystem == null) {
 			throw new IllegalArgumentException(
 					"Illegal fileSystem, cannot be null");
+		}
 
 		this.fileSystem = fileSystem;
 		iRODSFileSystem = (IRODSFileSystem) fileSystem;
@@ -496,8 +514,9 @@ public class IRODSFile extends RemoteFile {
 		}
 
 		// if dir not absolute
-		if (dir.startsWith(iRODSFileSystem.IRODS_ROOT))
+		if (dir.startsWith(iRODSFileSystem.IRODS_ROOT)) {
 			absolutePath = true;
+		}
 
 		// if directory not already absolute
 		if (directory.size() > 0) {
@@ -537,8 +556,9 @@ public class IRODSFile extends RemoteFile {
 				directory.remove(i);
 				directory.remove(i - 1);
 				i--;
-				if (i > 0)
+				if (i > 0) {
 					i--;
+				}
 			} else if (canonicalTest.equals("..")) {
 				// at root, just remove the ..
 				directory.remove(i);
@@ -598,8 +618,8 @@ public class IRODSFile extends RemoteFile {
 	 *             If an IOException occurs.
 	 */
 
-	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
-			throws IOException {
+	public void copyTo(final GeneralFile destinationFile,
+			final boolean forceOverwrite) throws IOException {
 		copyTo(destinationFile, forceOverwrite, "");
 	}
 
@@ -621,14 +641,15 @@ public class IRODSFile extends RemoteFile {
 	 *            which the source file will be copied.
 	 * @throws IOException
 	 */
-	public void copyTo(GeneralFile destinationFile, final boolean forceOverwrite, final String resource)
+	public void copyTo(GeneralFile destinationFile,
+			final boolean forceOverwrite, final String resource)
 			throws IOException {
-		
+
 		if (log.isInfoEnabled()) {
 			log.info("copying file:" + this.getAbsolutePath() + " to file:"
 					+ destinationFile.getAbsolutePath());
 		}
-		
+
 		if (destinationFile == null) {
 			log.error("dest file is null");
 			throw new IllegalArgumentException("file cannot be null");
@@ -638,7 +659,7 @@ public class IRODSFile extends RemoteFile {
 			log.error("resource is null");
 			throw new IllegalArgumentException(
 					"resource cannot be null, set to blank if not used");
-			
+
 		}
 
 		if (isDirectory()) {
@@ -648,10 +669,11 @@ public class IRODSFile extends RemoteFile {
 
 			destinationFile.mkdir();
 			while (fileList != null && fileList.length > 0) {
-				for (int i = 0; i < fileList.length; i++) {
-					fileList[i].copyTo(FileFactory.newFile(
-							destinationFile.getFileSystem(), destinationFile.getAbsolutePath(),
-							fileList[i].getName()), forceOverwrite);
+				for (GeneralFile element : fileList) {
+					element.copyTo(FileFactory.newFile(
+							destinationFile.getFileSystem(),
+							destinationFile.getAbsolutePath(),
+							element.getName()), forceOverwrite);
 				}
 				fileList = listFilesNext(false);
 			}
@@ -659,31 +681,31 @@ public class IRODSFile extends RemoteFile {
 			if (!forceOverwrite && destinationFile.isDirectory()) {
 				log.info("no force overwrite an dest file is directory");
 				// change the destination from a directory to a file
-				destinationFile = FileFactory.newFile(destinationFile, getName());
+				destinationFile = FileFactory.newFile(destinationFile,
+						getName());
 			}
 			try {
 				if (destinationFile instanceof LocalFile) {
 					if (destinationFile.exists()) {
 						if (forceOverwrite) {
-							log
-									.info("deleting a local file because forceOverwrite was specified");
+							log.info("deleting a local file because forceOverwrite was specified");
 							destinationFile.delete();
 						} else {
-							log
-									.error("file:"
-											+ destinationFile.getAbsolutePath()
-											+ " already exists, and overwriting was not allowed");
+							log.error("file:"
+									+ destinationFile.getAbsolutePath()
+									+ " already exists, and overwriting was not allowed");
 							throw new IOException(
 									"File exists and overwriting not allowed");
 						}
 					}
 
-					iRODSFileSystem.commands.get(this, destinationFile, resource);
+					iRODSFileSystem.commands.get(this, destinationFile,
+							resource);
 
 				} else if (destinationFile instanceof IRODSFile) {
 					log.info("dest is an IRODS file");
-					iRODSFileSystem.commands.copy(this, (IRODSFile) destinationFile,
-							forceOverwrite);
+					iRODSFileSystem.commands.copy(this,
+							(IRODSFile) destinationFile, forceOverwrite);
 				} else {
 					super.copyTo(destinationFile, forceOverwrite);
 				}
@@ -698,8 +720,8 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	/**
-	 * Copies this file to another file. This object is the destination file. The
-	 * source file is given as the argument. If the destination file, does
+	 * Copies this file to another file. This object is the destination file.
+	 * The source file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
@@ -710,8 +732,8 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(final GeneralFile sourceFile, final boolean forceOverwrite)
-			throws IOException {
+	public void copyFrom(final GeneralFile sourceFile,
+			final boolean forceOverwrite) throws IOException {
 		if (log.isInfoEnabled()) {
 			log.info("copy of:" + sourceFile.getAbsolutePath() + " to:"
 					+ this.getAbsolutePath());
@@ -726,21 +748,23 @@ public class IRODSFile extends RemoteFile {
 
 			mkdir();
 			if (fileList != null) {
-				for (int i = 0; i < fileList.length; i++) {
-					FileFactory.newFile(this, fileList[i].getName()).copyFrom(
-							fileList[i], forceOverwrite);
+				for (GeneralFile element : fileList) {
+					FileFactory.newFile(this, element.getName()).copyFrom(
+							element, forceOverwrite);
 				}
 			}
 		} else {
 			if (!forceOverwrite && isDirectory()) {
 				// change the destination from a directory to a file
-				GeneralFile subFile = FileFactory.newFile(this, sourceFile.getName());
+				GeneralFile subFile = FileFactory.newFile(this,
+						sourceFile.getName());
 				subFile.copyFrom(sourceFile);
 				return;
 			}
 			try {
 				if (sourceFile instanceof LocalFile) {
-					iRODSFileSystem.commands.put(sourceFile, this, forceOverwrite);
+					iRODSFileSystem.commands.put(sourceFile, this,
+							forceOverwrite);
 				} else if (sourceFile instanceof IRODSFile) {
 					iRODSFileSystem.commands.copy((IRODSFile) sourceFile, this,
 							forceOverwrite);
@@ -748,10 +772,9 @@ public class IRODSFile extends RemoteFile {
 					super.copyFrom(sourceFile, forceOverwrite);
 				}
 			} catch (IRODSException e) {
-				log
-						.error(
-								"exception in copyFrom, rethrown as IOException for File contract",
-								e);
+				log.error(
+						"exception in copyFrom, rethrown as IOException for File contract",
+						e);
 				IOException io = new IOException();
 				io.initCause(e);
 				throw io;
@@ -793,8 +816,8 @@ public class IRODSFile extends RemoteFile {
 	 *         containing the results, and the ability to requery.
 	 * @throws IOException
 	 */
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects) throws IOException {
 		return query(conditions, selects, true);
 	}
 
@@ -802,22 +825,22 @@ public class IRODSFile extends RemoteFile {
 	 * Queries the file server to find all files that match a set of conditions.
 	 * For all those that match, the fields indicated in the select array are
 	 * returned in the result object.
-	 *<P>
+	 * <P>
 	 * While condition and select array objects have all been checked for
 	 * self-consistency during their construction, there are additional problems
 	 * that must be detected at query time:
-	 *<P>
+	 * <P>
 	 * <ul>
 	 * <li>Redundant selection fields
 	 * <li>Redundant query fields
 	 * <li>Fields incompatible with a file server
 	 * </ul>
-	 *<P>
+	 * <P>
 	 * For instance, it is possible to build a condition object appropriate for
 	 * the iRODS, then pass that object in a local file system query. That will
 	 * find that the condition is incompatible and generate a mismatch
 	 * exception.
-	 *<P>
+	 * <P>
 	 * Query is implemented by the file-server-specific classes, like that for
 	 * the iRODS, FTP, etc. Those classes must re-map condition and select field
 	 * names and operator codes to those required by a particular file server
@@ -852,7 +875,8 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IOException
 	 */
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, boolean distinctQuery) throws IOException {
+			final MetaDataSelect[] selects, final boolean distinctQuery)
+			throws IOException {
 
 		MetaDataCondition iConditions[] = null;
 		String fieldName = null;
@@ -911,7 +935,7 @@ public class IRODSFile extends RemoteFile {
 	 * @return The metadata values for this file refered to by
 	 *         <code>fieldName</code>
 	 */
-	public String firstQueryResult(String fieldName) throws IOException {
+	public String firstQueryResult(final String fieldName) throws IOException {
 		try {
 			MetaDataSelect[] temp = { MetaDataSet.newSelection(fieldName) };
 			MetaDataRecordList[] rl = query(temp);
@@ -939,7 +963,7 @@ public class IRODSFile extends RemoteFile {
 	 *            name, attrib value) or (attrib name, attrib value, attrib
 	 *            units)
 	 */
-	public void modifyMetaData(String[] metaData) throws IOException {
+	public void modifyMetaData(final String[] metaData) throws IOException {
 		if (metaData.length < 2 || metaData.length > 3) {
 			throw new IllegalArgumentException(
 					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
@@ -986,7 +1010,8 @@ public class IRODSFile extends RemoteFile {
 	 *            units)
 	 * @throws JargonException
 	 */
-	public void overwriteMetaData(String[] metaData) throws JargonException {
+	public void overwriteMetaData(final String[] metaData)
+			throws JargonException {
 		if (metaData.length < 2 || metaData.length > 3) {
 			throw new IllegalArgumentException(
 					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
@@ -1047,7 +1072,7 @@ public class IRODSFile extends RemoteFile {
 	 * of any length (including zero length). _ allows you to match on a single
 	 * character.
 	 */
-	public void deleteMetaData(String[] metaData) throws IOException {
+	public void deleteMetaData(final String[] metaData) throws IOException {
 		if (metaData == null && metaData.length < 2) {
 			throw new IllegalArgumentException(
 					"The metadata must contain at least "
@@ -1084,31 +1109,31 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs during the system change.
 	 */
-	public void setResource(String resourceName) throws IOException {
+	public void setResource(final String resourceName) throws IOException {
 
 		if (resourceName == null) {
 			throw new IllegalArgumentException("resourceName is null");
 		}
 
-		// Make sure valid resource
-		MetaDataRecordList[] rl = fileSystem.query(MetaDataSet
-				.newSelection(ResourceMetaData.COLL_RESOURCE_NAME));
+		MetaDataSelect[] select = { MetaDataSet
+				.newSelection(ResourceMetaData.COLL_RESOURCE_NAME) };
 
-		if (rl == null) {
-			log
-					.warn("no resources returned from query, accept the given resource:"
-							+ resourceName);
-			resource = resourceName;
-			return;
-		}
+		MetaDataCondition[] condition = { MetaDataSet.newCondition(
+				ResourceMetaData.COLL_RESOURCE_NAME, MetaDataCondition.EQUAL,
+				resourceName) };
+
+		// Make sure valid resource
+		MetaDataRecordList[] rl = fileSystem.query(condition, select, 100);
 
 		boolean resourceFound = false;
 
-		for (MetaDataRecordList rescName : rl) {
-			if (resourceName.equals(rescName.getStringValue(0))) {
-				resourceFound = true;
-				resource = resourceName;
-				break;
+		if (rl != null) {
+			for (MetaDataRecordList rescName : rl) {
+				if (resourceName.equals(rescName.getStringValue(0))) {
+					resourceFound = true;
+					resource = resourceName;
+					break;
+				}
 			}
 		}
 
@@ -1189,8 +1214,9 @@ public class IRODSFile extends RemoteFile {
 		}
 
 		dataType = firstQueryResult(IRODSMetaDataSet.FILE_TYPE);
-		if (dataType != null)
+		if (dataType != null) {
 			return dataType;
+		}
 
 		return "generic";
 	}
@@ -1198,18 +1224,21 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * replicate this file to the given resource
 	 */
-	public void replicate(String newResource) throws IOException {
+	public void replicate(final String newResource) throws IOException {
 		iRODSFileSystem.commands.replicate(this, newResource);
 	}
 
 	/**
 	 * Replicate this file to the given resourceGroup. This will cause a
-	 * replication to all resources in the resource group.  This is analagous to an <code>irepl -a</code> command.
-	 * @param resourceGroup <code>String</code> with the target resource group.  The file will be replicated to all
-	 * members of that resource group.
+	 * replication to all resources in the resource group. This is analagous to
+	 * an <code>irepl -a</code> command.
+	 * 
+	 * @param resourceGroup
+	 *            <code>String</code> with the target resource group. The file
+	 *            will be replicated to all members of that resource group.
 	 * @throws JargonException
 	 */
-	public void replicateToResourceGroup(String resourceGroup)
+	public void replicateToResourceGroup(final String resourceGroup)
 			throws JargonException {
 
 		log.info("replicating file:{}", this.getAbsolutePath());
@@ -1236,7 +1265,7 @@ public class IRODSFile extends RemoteFile {
 	 *             If an IOException occurs.
 	 */
 	public void changePermissions(String permission, String userName,
-			boolean recursive) throws IOException {
+			final boolean recursive) throws IOException {
 		int index = userName.indexOf('#');
 		String zone = "";
 		if (index > 0) { // username can't be of zero length
@@ -1278,7 +1307,7 @@ public class IRODSFile extends RemoteFile {
 		return canRead(true);
 	}
 
-	boolean canRead(boolean update) {
+	boolean canRead(final boolean update) {
 		if (update || (pathNameType == PATH_IS_UNKNOWN)
 				|| pathNameType == PATH_IS_FILE) {
 			try {
@@ -1319,7 +1348,7 @@ public class IRODSFile extends RemoteFile {
 		return canWrite(true);
 	}
 
-	boolean canWrite(boolean update) {
+	boolean canWrite(final boolean update) {
 		if (log.isInfoEnabled()) {
 			log.info("checking if i can write:" + this.getAbsolutePath());
 		}
@@ -1363,8 +1392,9 @@ public class IRODSFile extends RemoteFile {
 	 */
 	public String getPermissions() throws IOException {
 		int permit = filePermissions();
-		if (permit < 0)
+		if (permit < 0) {
 			permit = directoryPermissions();
+		}
 
 		if (permit >= READ_PERMISSIONS) {
 			if (permit >= WRITE_PERMISSIONS) {
@@ -1398,11 +1428,13 @@ public class IRODSFile extends RemoteFile {
 		if (rl != null) {
 			// return highest value
 			for (MetaDataRecordList record : rl) {
-				if (record.getIntValue(0) > permissions)
+				if (record.getIntValue(0) > permissions) {
 					permissions = record.getIntValue(0);
+				}
 			}
-		} else
+		} else {
 			return -1;
+		}
 
 		return permissions;
 	}
@@ -1427,11 +1459,13 @@ public class IRODSFile extends RemoteFile {
 		if (rl != null) {
 			// return highest value
 			for (MetaDataRecordList record : rl) {
-				if (record.getIntValue(0) > permissions)
+				if (record.getIntValue(0) > permissions) {
 					permissions = record.getIntValue(0);
+				}
 			}
-		} else
+		} else {
 			return -1;
+		}
 
 		return permissions;
 	}
@@ -1470,8 +1504,7 @@ public class IRODSFile extends RemoteFile {
 			// catch already exists (as a directory probably) and just return
 			// false
 			if (e.getType() != -511017) {
-				log
-						.error("irods exception when creating new file, is not an already exists exception");
+				log.error("irods exception when creating new file, is not an already exists exception");
 				throw e;
 			}
 		}
@@ -1487,7 +1520,7 @@ public class IRODSFile extends RemoteFile {
 	 * @return the irods file descriptor, so doesn't need to be opened again.
 	 *         returns -1 if false, on error, or if file exists.
 	 */
-	int createNewFile(boolean fd, boolean rw) throws IOException {
+	int createNewFile(final boolean fd, final boolean rw) throws IOException {
 		if (!fd) {
 			createNewFile();
 			return -1;
@@ -1580,19 +1613,24 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IOException
 	 *             If a file could not be created
 	 */
-	public static GeneralFile createTempFile(String prefix, String suffix,
-			GeneralFile directory) throws IOException, IllegalArgumentException {
+	public static GeneralFile createTempFile(final String prefix,
+			String suffix, GeneralFile directory) throws IOException,
+			IllegalArgumentException {
 		String randomChars = "";
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 8; i++) {
 			randomChars += ((char) (65 + Math.random() * 25));
+		}
 
-		if (prefix == null)
+		if (prefix == null) {
 			throw new NullPointerException();
-		if (prefix.length() < 3)
+		}
+		if (prefix.length() < 3) {
 			throw new IllegalArgumentException("Prefix string too short");
+		}
 
-		if (suffix == null)
+		if (suffix == null) {
 			suffix = ".tmp";
+		}
 
 		if (directory == null) {
 			IRODSFileSystem fs = new IRODSFileSystem();
@@ -1603,9 +1641,9 @@ public class IRODSFile extends RemoteFile {
 		GeneralFile temp = FileFactory.newFile(directory, prefix + randomChars
 				+ suffix);
 
-		if (temp.createNewFile())
+		if (temp.createNewFile()) {
 			return temp;
-		else {
+		} else {
 			log.error("io exception, temp file already exists");
 			throw new IOException("The temp file already exists.");
 		}
@@ -1631,7 +1669,7 @@ public class IRODSFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file or directory is
 	 *         successfully deleted; <code>false</code> otherwise
 	 */
-	public boolean delete(boolean force) {
+	public boolean delete(final boolean force) {
 		try {
 			if (isDirectory()) {
 				if (log.isDebugEnabled()) {
@@ -1663,10 +1701,11 @@ public class IRODSFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file successfully deleted;
 	 *         <code>false</code> otherwise
 	 */
-	public boolean deleteReplica(String resource) {
+	public boolean deleteReplica(final String resource) {
 		try {
-			if (resource == null)
+			if (resource == null) {
 				return false;
+			}
 
 			if (isFile()) {
 				iRODSFileSystem.commands.deleteReplica(this, resource);
@@ -1716,10 +1755,11 @@ public class IRODSFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			if (obj instanceof IRODSFile) {
 				IRODSFile temp = (IRODSFile) obj;
@@ -1757,8 +1797,9 @@ public class IRODSFile extends RemoteFile {
 
 			rl = fileSystem.query(conditions, selects, 3);
 
-			if (rl != null)
+			if (rl != null) {
 				return true;
+			}
 
 			// if it is a directory
 			conditions = new MetaDataCondition[1];
@@ -1769,8 +1810,9 @@ public class IRODSFile extends RemoteFile {
 					.newSelection(GeneralMetaData.DIRECTORY_NAME);
 			rl = fileSystem.query(conditions, selects, 3);
 
-			if (rl != null)
+			if (rl != null) {
 				return true;
+			}
 
 		} catch (IOException e) {
 			log.warn("io exception is logged and ignored", e);
@@ -1833,7 +1875,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Tests whether the file denoted by this abstract pathname is a directory.
 	 * Also known on iRODS as a collection.
-	 *<P>
+	 * <P>
 	 * An iRODS collection is a logical name given to a set of data sets. All
 	 * data sets stored in iRODS are stored in some collection. A collection can
 	 * have sub-collections, and hence provides a hierarchical structure. A
@@ -1859,7 +1901,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Tests whether the file denoted by this abstract pathname is a directory.
 	 * Also known on iRODS as a collection.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param update
 	 *            If true, send a new query to iRODS to determine if this
@@ -1870,7 +1912,7 @@ public class IRODSFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
 	 */
-	boolean isDirectory(boolean update) {
+	boolean isDirectory(final boolean update) {
 		if (update || (pathNameType == PATH_IS_UNKNOWN)) {
 			// run the code below
 		} else if (pathNameType == PATH_IS_FILE) {
@@ -1904,7 +1946,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Tests whether the file denoted by this abstract pathname is a normal
 	 * file. A file is <em>normal</em> if it is not a directory or a container.
-	 *<P>
+	 * <P>
 	 * In the terminology of iRODS, files are known as data sets. A data set is
 	 * a "stream-of-bytes" entity that can be uniquely identified. For example,
 	 * a file in HPSS or Unix is a data set, or a LOB stored in an iRODS Vault
@@ -1927,7 +1969,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Tests whether the file denoted by this abstract pathname is a file. Also
 	 * known on iRODS as a dataset.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param update
 	 *            If true, send a new query to iRODS to determine if this
@@ -1938,7 +1980,7 @@ public class IRODSFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
 	 */
-	public boolean isFile(boolean update) {
+	public boolean isFile(final boolean update) {
 		if ((pathNameType == PATH_IS_UNKNOWN) || update) {
 			// run the code below
 		} else if (pathNameType == PATH_IS_FILE) {
@@ -2016,14 +2058,14 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Returns an array of strings naming the files and directories in the
 	 * directory denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * There is no guarantee that the name strings in the resulting array will
 	 * appear in any specific order; they are not, in particular, guaranteed to
 	 * appear in alphabetical order.
-	 *<P>
+	 * <P>
 	 * If this IRODSFile object denotes a file, the directory containing that
 	 * file will be listed instead.
-	 *<P>
+	 * <P>
 	 * This method will return all the files in the directory. Listing
 	 * directories with a large number of files may take a very long time. The
 	 * more generic IRODSFile.query() method could be used to iterate through
@@ -2043,7 +2085,7 @@ public class IRODSFile extends RemoteFile {
 	 * 
 	 * @see list()
 	 */
-	public String[] list(MetaDataCondition[] conditions) {
+	public String[] list(final MetaDataCondition[] conditions) {
 		MetaDataSelect selects[] = {
 				MetaDataSet.newSelection(GeneralMetaData.FILE_NAME),
 				MetaDataSet.newSelection(GeneralMetaData.DIRECTORY_NAME), };
@@ -2090,12 +2132,12 @@ public class IRODSFile extends RemoteFile {
 			if (rl2 != null) {
 				String absolutePath = null;
 				String relativePath = null;
-				for (int i = 0; i < rl2.length; i++) {
+				for (MetaDataRecordList element : rl2) {
 					// only one record per rl
-					absolutePath = rl2[i].getStringValue(1);
+					absolutePath = element.getStringValue(1);
 					relativePath = absolutePath.substring(absolutePath
 							.lastIndexOf("/") + 1);
-					rl2[i].setValue(0, relativePath);
+					element.setValue(0, relativePath);
 				}
 			}
 		} catch (IOException e) {
@@ -2119,16 +2161,15 @@ public class IRODSFile extends RemoteFile {
 		}
 
 		list = new Vector();
-		for (int i = 0; i < temp.length; i++) {
-			if (temp[i].getStringValue(0) != null) {
+		for (MetaDataRecordList element : temp) {
+			if (element.getStringValue(0) != null) {
 				// only one record per rl
-				list.add(temp[i].getStringValue(0));
+				list.add(element.getStringValue(0));
 			}
 		}
 
 		return (String[]) list.toArray(new String[0]);
 	}
-
 
 	/**
 	 * Returns a list of files in this directory, in groups of numbering
@@ -2141,7 +2182,7 @@ public class IRODSFile extends RemoteFile {
 	 *            start a new list
 	 * @return
 	 */
-	private GeneralFile[] listFilesNext(boolean reset) {
+	private GeneralFile[] listFilesNext(final boolean reset) {
 		if (isDirectory(reset)) {
 			Vector<GeneralFile> list = null;
 			MetaDataRecordList[] temp;
@@ -2174,12 +2215,12 @@ public class IRODSFile extends RemoteFile {
 					if (rl2 != null) {
 						String absolutePath = null;
 						String relativePath = null;
-						for (int i = 0; i < rl2.length; i++) {
+						for (MetaDataRecordList element : rl2) {
 							// only one record per rl
-							absolutePath = rl2[i].getStringValue(1);
+							absolutePath = element.getStringValue(1);
 							relativePath = absolutePath.substring(absolutePath
 									.lastIndexOf("/") + 1);
-							rl2[i].setValue(0, relativePath);
+							element.setValue(0, relativePath);
 						}
 					}
 				} catch (IOException e) {
@@ -2189,10 +2230,12 @@ public class IRODSFile extends RemoteFile {
 			} else {
 				// Using old query----------------------------------------------
 				try {
-					if (rl1 != null && rl1[rl1.length - 1] != null)
+					if (rl1 != null && rl1[rl1.length - 1] != null) {
 						rl1 = rl1[rl1.length - 1].getMoreResults();
-					if (rl2 != null && rl2[rl2.length - 1] != null)
+					}
+					if (rl2 != null && rl2[rl2.length - 1] != null) {
 						rl2 = rl2[rl2.length - 1].getMoreResults();
+					}
 				} catch (IOException e) {
 					log.warn("io exception is logged and ignored", e);
 					return null;
@@ -2215,11 +2258,11 @@ public class IRODSFile extends RemoteFile {
 			}
 
 			list = new Vector();
-			for (int i = 0; i < temp.length; i++) {
-				if (temp[i].getStringValue(0) != null) {
+			for (MetaDataRecordList element : temp) {
+				if (element.getStringValue(0) != null) {
 					// only one record per rl
-					list.add(FileFactory.newFile(this, temp[i]
-							.getStringValue(0)));
+					list.add(FileFactory.newFile(this,
+							element.getStringValue(0)));
 				}
 			}
 			return list.toArray(new GeneralFile[0]);
@@ -2275,7 +2318,7 @@ public class IRODSFile extends RemoteFile {
 	 * the physical resource of the files will also be moved. If both filepaths
 	 * are equal, but the resources different, only a physical resource move
 	 * will occur.
-	 *<P>
+	 * <P>
 	 * Whether or not this method can move a file from one filesystem to another
 	 * is platform-dependent. The return value should always be checked to make
 	 * sure that the rename operation was successful.
@@ -2292,8 +2335,8 @@ public class IRODSFile extends RemoteFile {
 	 *             - If dest is null
 	 * 
 	 */
-	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
-			NullPointerException {
+	public boolean renameTo(final GeneralFile dest)
+			throws IllegalArgumentException, NullPointerException {
 		try {
 			if (dest instanceof IRODSFile) {
 				// if the path is different
@@ -2308,9 +2351,10 @@ public class IRODSFile extends RemoteFile {
 				}
 
 				// if the resource is different
-				if (!getResource().equals(((IRODSFile) dest).getResource()))
+				if (!getResource().equals(((IRODSFile) dest).getResource())) {
 					iRODSFileSystem.commands.physicalMove(this,
 							(IRODSFile) dest);
+				}
 			} else {
 				return super.renameTo(dest);
 			}
@@ -2336,8 +2380,7 @@ public class IRODSFile extends RemoteFile {
 	 * <blockquote><tt>
 	 * new {@link #IRODSFile(java.net.URI) IRODSFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
-   * </tt>
-	 * </blockquote>
+	 * </tt> </blockquote>
 	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
@@ -2388,8 +2431,7 @@ public class IRODSFile extends RemoteFile {
 	 * <blockquote><tt>
 	 * new {@link #IRODSFile(java.net.URI) IRODSFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
-   * </tt>
-	 * </blockquote>
+	 * </tt> </blockquote>
 	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
@@ -2406,22 +2448,23 @@ public class IRODSFile extends RemoteFile {
 	 * @see java.net.URI
 	 * @see java.net.URI#toURL()
 	 */
-	public URI toURI(boolean includePassword) {
-		if (!includePassword)
+	public URI toURI(final boolean includePassword) {
+		if (!includePassword) {
 			return toURI();
+		}
 
 		URI uri = null;
 
 		try {
 			if (isDirectory()) {
 				uri = new URI("irods", iRODSFileSystem.getUserName() + ":"
-						+ iRODSFileSystem.getPassword(), iRODSFileSystem
-						.getHost(), iRODSFileSystem.getPort(),
+						+ iRODSFileSystem.getPassword(),
+						iRODSFileSystem.getHost(), iRODSFileSystem.getPort(),
 						getAbsolutePath() + "/", "", "");
 			} else {
 				uri = new URI("irods", iRODSFileSystem.getUserName() + ":"
-						+ iRODSFileSystem.getPassword(), iRODSFileSystem
-						.getHost(), iRODSFileSystem.getPort(),
+						+ iRODSFileSystem.getPassword(),
+						iRODSFileSystem.getHost(), iRODSFileSystem.getPort(),
 						getAbsolutePath(), "", "");
 			}
 		} catch (URISyntaxException e) {
@@ -2476,8 +2519,8 @@ public class IRODSFile extends RemoteFile {
 			log.error("null pointer exception getting irodsFileLength", e1);
 			throw new JargonRuntimeException(e1);
 		} catch (IOException e1) {
-			log.error("IOException getting irodsFileLength for: {}", this
-					.getAbsolutePath(), e1);
+			log.error("IOException getting irodsFileLength for: {}",
+					this.getAbsolutePath(), e1);
 			throw new JargonRuntimeException(e1);
 		}
 
@@ -2491,13 +2534,12 @@ public class IRODSFile extends RemoteFile {
 	 * @throws NumberFormatException
 	 */
 	private long extractFileLengthFromLengthQueryResult(long length,
-			MetaDataRecordList[] fileList) throws NumberFormatException {
+			final MetaDataRecordList[] fileList) throws NumberFormatException {
 		if (fileList != null) {
 
-			log
-					.debug(
-							"got metadata back from file length query, result length={}",
-							fileList.length);
+			log.debug(
+					"got metadata back from file length query, result length={}",
+					fileList.length);
 
 			if (fileList.length > 0) {
 				length = Long.parseLong(fileList[0].getStringValue(1));

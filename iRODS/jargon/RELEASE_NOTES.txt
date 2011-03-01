@@ -1,15 +1,15 @@
 
-Jargon 2.5 Release Notes
+Jargon post 2.5 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
 Date: 2/21/2011
-Release Version: Jargon 2.5 release c
+Release Version: Jargon 2.5.x 
 ================================================================================================
 
 News
 
-This release is for the current 'classic' Jargon API.  This is differentiated from the newer 'Jargon-core' libraries which are available in beta.  The new libraries may be used, and that use is encouraged, but please check in with the developers before proceeding.  For information on Jargon-core, go to the new GForge site, where you can check out the code, report and track issues, and find other information, including information on Maven artifacts available on the new RENCI Maven repository.
+This release is for the current 'classic' Jargon API, post the release of iRODS 2.5.  This is differentiated from the newer 'Jargon-core' libraries which are available in beta.  The new libraries may be used, and that use is encouraged, but please check in with the developers before proceeding.  For information on Jargon-core, go to the new GForge site, where you can check out the code, report and track issues, and find other information, including information on Maven artifacts available on the new RENCI Maven repository.
 
 GForge for Jargon-core is at:  [[https://code.renci.org/gf/project/jargon/]]
 
@@ -33,51 +33,11 @@ libraries
 
 ================================================================================================
 Features and Changes
-
-*Did a periodic mass cleanup/format/import cleanup. This had not been done for a while.
-
-*Bug 115 - copyFrom() for http files results in protocol exception 
-Normalized copyFrom and copyTo in the various file implementations, added unit tests.  There may be some subtle contract changes
-from this fix, but the code itself was not consistent.
-
-*Bug 116 - Query with Query multiple user AVU on Collection returns no result - added tests, iRODS was patched to support this post 2.4.1
-
-*Bug 118 - problems with query of resc status and free space
-**added literals to Resource class for various states
-**changed num<, num> etc to n<, n> for numeric comparison operators
-
-*Refactored remote execution code, enhanced streaming from server-side commands (work in progress)
-
-*Bug 121 - Default resource when getting IRODSAccount with no-vals constructor
-
-*Bug 124 - Resource.modifyFreeSpace() - fixed method and added test
-
-*Bug 123 - eating exceptions in connection shutdown - rethrow IOException info and additional logging of error added to IRODSCommands.close()
-
-*Bug 120 - -4000 errors when using IRODSFIle
--began evaulation of FileFactory and started on a test suite
--will require a survey of connection creation using FileFactory, perhaps some deprecation and refactoring
--review of use of finalizers and tighten up connection handling
-
-*Bug 125 - query bug resource metadata
--added distinct options to query
-
-*Bug 130 - -312000 when extracting TAR file
--added adapted BulkFileOperationsAO code
--added getIrodsAccessObjectFactory() to IRODSFileSystem()
-
-*Bug 119 - add enhanced streaming from remote exec of comds 
--new access object adapted from jargon-core for RemoteExecutionOfCommandsAO.
-
-*Bug - miscServerinfo causes null pointer exception
-
 ********
-Switch to GForge bug numbering at this point, prior numbers are Bugzilla issues
+Switched to GForge bug numbering as of iRODS2.5
 ********
-[#55] Davis conn sharing probs using miscServerInfo heartbeat ping
--add synch of miscServerInfo for connection contention issue in heartbeat used by Davis
--added connection time-out to iRODS commands, by default set to not add timeout
 
+ [#112] [iROD-Chat:5741] (Jargon) IRODSFile.setResource(...) is limited 300 resources
 ================================================================================================
 Outstanding Issues
 
