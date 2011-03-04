@@ -8316,7 +8316,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
 {
    int status;
    int i;
-   rodsLong_t seqNum = -1;
+   rodsLong_t seqNum = -1, seqNum2;
    char msrvcIdStr[MAX_NAME_LEN];
    if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable");
 
@@ -8397,43 +8397,44 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
    }
    else { /* micro-service already there */
      snprintf(msrvcIdStr, MAX_NAME_LEN, "%lld", seqNum);
-   }
-   /* Check if same host and location exists - if so no need to insert a new row */
-   if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 4");
-   i=0;
-   cllBindVars[i++]=msrvcIdStr;
-   cllBindVars[i++]=msrvcHost;
-   cllBindVars[i++]=msrvcLocation;
-   cllBindVarCount=i;
-   status =  cmlGetIntegerValueFromSqlV3(
-	 "select msrvc_id from R_MICROSRVC_VER where  msrvc_id = ? and  msrvc_host = ? and  msrvc_location = ? ",
-	 &seqNum,
-	 &icss);
-   if (status != 0 &&  status != CAT_NO_ROWS_FOUND) {
-     rodsLog(LOG_NOTICE,
-	     "chlInsMsrvcTable cmlGetIntegerValueFromSqlV3 find MSRVC_HOST if any failure %d",status);
-     return(status);
-   }
-   if (seqNum >= 0) {
-
-   }
-   /* @@@@@@ */
-   i = 0;
-   cllBindVars[i++]=moduleName;
-   cllBindVars[i++]=msrvcIdStr;
-   cllBindVars[i++]=rsComm->clientUser.userName;
-   cllBindVars[i++]=rsComm->clientUser.rodsZone;
-   cllBindVars[i++]=myTime;
-   cllBindVars[i++]=myTime;
-   cllBindVarCount=i;
-   status =  cmlExecuteNoAnswerSql(
-      "insert into R_RULE_MSRVC_MAP  (msrvc_map_base_name, msrvc_id, msrvc_map_owner_name,msrvc_map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
-                                   &icss);
-   if (status != 0) {
-     rodsLog(LOG_NOTICE,
-	     "chlInsMsrvcTable cmlExecuteNoAnswerSql MSRVC Map insert failure %d" , status);
-
-     return(status);
+     seqNum2 = seqNum;
+     /* Check if same host and location exists - if so no need to insert a new row */
+     if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 4");
+     i=0;
+     cllBindVars[i++]=msrvcIdStr;
+     cllBindVars[i++]=msrvcHost;
+     cllBindVars[i++]=msrvcLocation;
+     cllBindVarCount=i;
+     status =  cmlGetIntegerValueFromSqlV3(
+	   "select msrvc_id from R_MICROSRVC_VER where  msrvc_id = ? and  msrvc_host = ? and  msrvc_location = ? ",
+	    &seqNum, &icss);
+     if (status != 0 &&  status != CAT_NO_ROWS_FOUND) {
+       rodsLog(LOG_NOTICE,
+	       "chlInsMsrvcTable cmlGetIntegerValueFromSqlV4 find MSRVC_HOST if any failure %d",status);
+       return(status);
+     }
+     /* insert a new row into version table */
+     i=0;
+     cllBindVars[i++]=msrvcIdStr;
+     cllBindVars[i++]=msrvcVersion;
+     cllBindVars[i++]=msrvcHost;
+     cllBindVars[i++]=msrvcLocation;
+     cllBindVars[i++]=msrvcLanguage;
+     cllBindVars[i++]=msrvcTypeName;
+     cllBindVars[i++]=rsComm->clientUser.userName;
+     cllBindVars[i++]=rsComm->clientUser.rodsZone;
+     cllBindVars[i++]=myTime;
+     cllBindVars[i++]=myTime;
+     cllBindVarCount=i;
+     if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 3");
+     status =  cmlExecuteNoAnswerSql(
+       "insert into R_MICROSRVC_VER(msrvc_id, msrvc_version, msrvc_host, msrvc_location, msrvc_language, msrvc_type_name, msrvc_owner_name, msrvc_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?)", 
+       &icss);
+     if (status != 0) {
+       rodsLog(LOG_NOTICE,
+	       "chlInsMsrvcTable cmlExecuteNoAnswerSql R_MICROSRVC_VER Insert failure %d",status);
+       return(status);
+     }
    }
 
    return(0);
