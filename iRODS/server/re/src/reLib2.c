@@ -1091,10 +1091,7 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
   char *tmparg;
   char tmpActStr[MAX_ACTION_SIZE];
 
-  /***
-  if (GlobalREDebugFlag)
-    reDebug("    ExecMicroSrvc", -3, inAction, inMsParamArray,rei);
-  ***/
+
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
     return(i);

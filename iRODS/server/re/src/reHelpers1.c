@@ -694,19 +694,27 @@ reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArr
   snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
 
   if (flag == -4) {
-    if (rei->doi != NULL && rei->doi->objPath != NULL) {
+    if (rei->uoic != NULL && rei->uoic->userName != NULL && rei->uoic->rodsZone != NULL) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  USER:%s@%s", rei->uoic->userName, rei->uoic->rodsZone);
+      aNum++;
+    }
+    if (rei->doi != NULL && rei->doi->objPath != NULL && strlen(rei->doi->objPath) > 0 ) {
       snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  DATA:%s", rei->doi->objPath);
       aNum++;
     }
-    if (rei->doinp != NULL && rei->doinp->objPath != NULL) {
+    if (rei->doi != NULL && rei->doi->filePath != NULL && strlen(rei->doi->filePath) > 0) {
+      snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  FILE:%s", rei->doi->filePath);
+      aNum++;
+    }
+    if (rei->doinp != NULL && rei->doinp->objPath != NULL && strlen(rei->doinp->objPath) > 0) {
       snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  DATAIN:%s",rei->doinp->objPath);
       aNum++;
     }
-    if (rei->doi != NULL && rei->doi->rescName != NULL) {
+    if (rei->doi != NULL && rei->doi->rescName != NULL && strlen(rei->doi->rescName) > 0) {
       snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  RESC:%s",rei->doi->rescName);
       aNum++;
     }
-    if (rei->rgi != NULL && rei->rgi->rescInfo->rescName != NULL) {
+    if (rei->rgi != NULL && rei->rgi->rescInfo->rescName != NULL && strlen(rei->rgi->rescInfo->rescName) > 0) {
       snprintf(myActionStr[aNum],MAX_NAME_LEN + 10 , "  RESC:%s",rei->rgi->rescInfo->rescName);
       aNum++;
     }
