@@ -13,7 +13,7 @@
 #include "reGlobalsExtern.h"
 
 int
-applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf)
+applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf, char *objPath)
 {
     int i;
     ruleExecInfo_t rei2;
@@ -28,6 +28,9 @@ applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf)
       rei2.uoic = &rsComm->clientUser;
       rei2.uoip = &rsComm->proxyUser;
     }
+    rei2.doi = mallocAndZero(sizeof(dataObjInfo_t));
+    strcpy(rei2.doi->objPath,objPath);
+
 #if 0
     addMsParam(&msParamArray, "*WriteBuf", BUF_LEN_MS_T, 
 	       (void *) dataObjWriteInpBBuf->len , dataObjWriteInpBBuf);
@@ -77,7 +80,7 @@ bytesBuf_t *dataObjWriteInpBBuf)
         dataObjWriteInp->l1descInx = l1descInx;
     } else {
 	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
-        i = applyRuleForPostProcForWrite(rsComm, dataObjWriteInpBBuf);
+      i = applyRuleForPostProcForWrite(rsComm, dataObjWriteInpBBuf, L1desc[l1descInx].dataObjInfo->objPath);
 	if (i < 0)   
 	  return(i);  
 	dataObjWriteInp->len = dataObjWriteInpBBuf->len;

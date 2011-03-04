@@ -12,7 +12,7 @@
 #include "reGlobalsExtern.h"
 
 int
-applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf)
+applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath)
 {
     int i;
     ruleExecInfo_t rei2;
@@ -27,6 +27,9 @@ applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf)
       rei2.uoic = &rsComm->clientUser;
       rei2.uoip = &rsComm->proxyUser;
     }
+    rei2.doi = mallocAndZero(sizeof(dataObjInfo_t));
+    strcpy(rei2.doi->objPath,objPath);
+
 #if 0
     addMsParam(&msParamArray, "*ReadBuf", BUF_LEN_MS_T, 
 	       (void *) dataObjReadOutBBuf->len , dataObjReadOutBBuf);
@@ -78,7 +81,7 @@ bytesBuf_t *dataObjReadOutBBuf)
         bytesRead = l3Read (rsComm, l1descInx, dataObjReadInp->len,
           dataObjReadOutBBuf);
 	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
-	i = applyRuleForPostProcForRead(rsComm, dataObjReadOutBBuf);
+	i = applyRuleForPostProcForRead(rsComm, dataObjReadOutBBuf, L1desc[l1descInx].dataObjInfo->objPath);
 	if (i < 0)
 	  return(i);  
 	bytesRead = dataObjReadOutBBuf->len;

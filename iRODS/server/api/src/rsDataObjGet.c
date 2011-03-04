@@ -38,7 +38,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
           dataObjOutBBuf, BRANCH_MSG);
 	/** since the object is read here, we apply post procesing RAJA Dec 2 2010 **/
 	if (dataObjOutBBuf != NULL && dataObjOutBBuf->len > 0) {
-	  status2 = applyRuleForPostProcForRead(rsComm, dataObjOutBBuf);
+	  status2 = applyRuleForPostProcForRead(rsComm, dataObjOutBBuf, dataObjInp->objPath);
 	  if (status2 >= 0) {
 	    if (status > 0)
 	      return(dataObjOutBBuf->len);
