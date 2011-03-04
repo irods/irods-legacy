@@ -1100,6 +1100,14 @@ main(int argc, char **argv) {
    if (strcmp(argv[1],"insmsrvctable")==0) {
       status = testInsMsrvcTable(Comm, argv[2], argv[3], argv[4], argv[5],
 			       argv[6], argv[7], argv[8], argv[9], argv[10]);
+      if (status==0) {
+	/* do it a second time to test another logic path and
+           different SQL.  Since no commit is part of the chl
+           function, and there is not corresponding Delete call, this
+           is an easy way to do this. */
+	status = testInsMsrvcTable(Comm, argv[2], argv[3], argv[4], argv[5],
+			   argv[6], argv[7], argv[8], argv[9], argv[10]);
+      }
      didOne=1;
    }
 
