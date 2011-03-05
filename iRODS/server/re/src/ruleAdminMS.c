@@ -597,8 +597,6 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
   
 }
 
-/**************** Micro-Services for  ruleDB ********************************/
-
 /**
  * \fn msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
  *
@@ -628,7 +626,7 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
  * \param[in] inIrbFileNameParam - a msParam of type STR_MS_T, a Rules file in irb format,
  *      either in 'server/config/reConfigs/' and without the .irb extension, 
  *      or a full file path in another directory on the server.
- * \param[out] outCoreRuleStruct - of type RuleStruct_MS_T (can be NULL in  which case it is allocated)
+ * \param[out] outCoreRuleStruct - a msParam of type RuleStruct_MS_T (can be NULL in which case it is allocated)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -921,10 +919,48 @@ msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inC
 }
 
 
-/** Data Variable Mappings **/
-
-
-
+/**
+ * \fn msiAdmReadDVMapsFromFileIntoStruct(msParam_t *inDvmFileNameParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Reads a DVM configuration file into a DVM structure
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note Reads the given file in the configuration directory
+ * 'server/config/reConfigs' or any file in the server local file system and 
+ * puts them into a DVM structure.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inDvmFileNameParam - a msParam of type STR_MS_T
+ * \param[in] outCoreDVMapStruct - a msParam of type RuleStruct_MS_T 
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmInsertDVMapsFromStructIntoDB, msiGetDVMapsFromDBIntoStruct, msiAdmWriteDVMapsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int msiAdmReadDVMapsFromFileIntoStruct(msParam_t *inDvmFileNameParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei)
 {
 
@@ -965,7 +1001,47 @@ int msiAdmReadDVMapsFromFileIntoStruct(msParam_t *inDvmFileNameParam, msParam_t 
   return(0);
 }
 
-
+/**
+ * \fn msiAdmInsertDVMapsFromStructIntoDB(msParam_t *inDvmBaseNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Writes a DVM structure into the current DVM base
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that reads the contents of a DVM structure and writes them as
+ * a new DVM base set in the iCAT.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inDvmBaseNameParam - a msParam of type STR_MS_T, the name of the target database
+ * \param[in] inCoreDVMapStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified iCAT tables are modified
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadDVMapsFromFileIntoStruct, msiGetDVMapsFromDBIntoStruct, msiAdmWriteDVMapsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int msiAdmInsertDVMapsFromStructIntoDB(msParam_t *inDvmBaseNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei)
 {
 
@@ -992,9 +1068,49 @@ int msiAdmInsertDVMapsFromStructIntoDB(msParam_t *inDvmBaseNameParam, msParam_t 
 }
 
 
+/**
+ * \fn msiGetDVMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Populates a DVM structure with DVMs from the given base name
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that queries the iCAT for DVM with a given base name and version number and populates a DVM rule structure.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inDvmBaseNameParam - a msParam of type STR_MS_T, the name of the base being queried
+ * \param[in] inVersionParam - a msParam of type STR_MS_T, which is the version string of the base being queried (use 0 for current version)
+ * \param[in] outCoreDVMapStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadDVMapsFromFileIntoStruct, msiAdmInsertDVMapsFromStructIntoDB, msiAdmWriteDVMapsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int
-msiGetDVMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, 
-			    msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei)
+msiGetDVMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei)
 {
     
   int i;
@@ -1035,6 +1151,47 @@ msiGetDVMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVersion
   return(0);
 }
 
+/**
+ * \fn msiAdmWriteDVMapsFromStructIntoFile(msParam_t *inDvmFileNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Writes to file the DVMs within a given DVM structure
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that writes into a given file the contents of a given DVM structure.
+ * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inDvmFileNameParam - a msParam of type STR_MS_T, the name of the file to be written
+ * \param[in] inCoreDVMapStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect A new DVM file is created
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadDVMapsFromFileIntoStruct, msiAdmInsertDVMapsFromStructIntoDB, msiGetDVMapsFromDBIntoStruct
+ * \bug  no known bugs
+**/
 int
 msiAdmWriteDVMapsFromStructIntoFile(msParam_t *inDvmFileNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei)
 {
@@ -1059,8 +1216,49 @@ msiAdmWriteDVMapsFromStructIntoFile(msParam_t *inDvmFileNameParam, msParam_t *in
 
 }
 
-/** Function Mappings **/
 
+/**
+ * \fn msiAdmReadFNMapsFromFileIntoStruct(msParam_t *inFnmFileNameParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Reads a FNM configuration file into a FNM structure
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note Reads the given file in the configuration directory
+ * 'server/config/reConfigs' or any file in the server local file system and 
+ * puts them into a FNM structure.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inFnmFileNameParam - a msParam of type STR_MS_T
+ * \param[in] outCoreFNMapStruct - a msParam of type RuleStruct_MS_T 
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmInsertFNMapsFromStructIntoDB, msiGetFNMapsFromDBIntoStruct, msiAdmWriteFNMapsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int msiAdmReadFNMapsFromFileIntoStruct(msParam_t *inFnmFileNameParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei)
 {
 
@@ -1102,6 +1300,47 @@ int msiAdmReadFNMapsFromFileIntoStruct(msParam_t *inFnmFileNameParam, msParam_t 
 }
 
 
+/**
+ * \fn msiAdmInsertFNMapsFromStructIntoDB(msParam_t *inFnmBaseNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Writes a FNM structure into the current FNM base
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that reads the contents of a FNM structure and writes them as
+ * a new FNM base set in the iCAT.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inFnmBaseNameParam - a msParam of type STR_MS_T, the name of the target database
+ * \param[in] inCoreFNMapStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified iCAT tables are modified
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadFNMapsFromFileIntoStruct, msiGetFNMapsFromDBIntoStruct, msiAdmWriteFNMapsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int msiAdmInsertFNMapsFromStructIntoDB(msParam_t *inFnmBaseNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei)
 {
 
@@ -1128,9 +1367,49 @@ int msiAdmInsertFNMapsFromStructIntoDB(msParam_t *inFnmBaseNameParam, msParam_t 
 }
 
 
+/**
+ * \fn msiGetFNMapsFromDBIntoStruct(msParam_t *inFnmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Populates a FNM structure with FNMs from the given base name
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that queries the iCAT for FNM with a given base name and version number and populates a FNM rule structure.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inFnmBaseNameParam - a msParam of type STR_MS_T, the name of the base being queried
+ * \param[in] inVersionParam - a msParam of type STR_MS_T, which is the version string of the base being queried (use 0 for current version)
+ * \param[in] outCoreFNMapStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadFNMapsFromFileIntoStruct, msiAdmInsertFNMapsFromStructIntoDB, msiAdmWriteFNMapsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int
-msiGetFNMapsFromDBIntoStruct(msParam_t *inFnmBaseNameParam, msParam_t *inVersionParam, 
-			    msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei)
+msiGetFNMapsFromDBIntoStruct(msParam_t *inFnmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei)
 {
     
   int i;
@@ -1171,6 +1450,48 @@ msiGetFNMapsFromDBIntoStruct(msParam_t *inFnmBaseNameParam, msParam_t *inVersion
   return(0);
 }
 
+
+/**
+ * \fn msiAdmWriteFNMapsFromStructIntoFile(msParam_t *inFnmFileNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Writes to file the FNMs within a given FNM structure
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that writes into a given file the contents of a given FNM structure.
+ * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inFnmFileNameParam - a msParam of type STR_MS_T, the name of the file to be written
+ * \param[in] inCoreFNMapStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect A new FNM file is created
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadFNMapsFromFileIntoStruct, msiAdmInsertFNMapsFromStructIntoDB, msiGetFNMapsFromDBIntoStruct
+ * \bug  no known bugs
+**/
 int
 msiAdmWriteFNMapsFromStructIntoFile(msParam_t *inFnmFileNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei)
 {
@@ -1196,8 +1517,48 @@ msiAdmWriteFNMapsFromStructIntoFile(msParam_t *inFnmFileNameParam, msParam_t *in
 }
 
 
-/** MicroServicess **/
-
+/**
+ * \fn msiAdmReadMSrvcsFromFileIntoStruct(msParam_t *inMsrvcFileNameParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Reads a microservice configuration file into a microservice structure
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note Reads the given file in the configuration directory
+ * 'server/config/reConfigs' or any file in the server local file system and 
+ * puts them into a microservice structure.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inMsrvcFileNameParam - a msParam of type STR_MS_T
+ * \param[in] outCoreMsrvcStruct - a msParam of type RuleStruct_MS_T 
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmInsertMSrvcsFromStructIntoDB, msiGetMSrvcsFromDBIntoStruct, msiAdmWriteMSrvcsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int msiAdmReadMSrvcsFromFileIntoStruct(msParam_t *inMsrvcFileNameParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
 {
 
@@ -1239,6 +1600,47 @@ int msiAdmReadMSrvcsFromFileIntoStruct(msParam_t *inMsrvcFileNameParam, msParam_
 }
 
 
+/**
+ * \fn msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Writes a microservice structure into the current microservice base
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that reads the contents of a microservice structure and writes them as
+ * a new microservice base set in the iCAT.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inMsrvcBaseNameParam - a msParam of type STR_MS_T, the name of the target database
+ * \param[in] inCoreMsrvcStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified iCAT tables are modified
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadMSrvcsFromFileIntoStruct, msiGetMSrvcsFromDBIntoStruct, msiAdmWriteMSrvcsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei)
 {
 
@@ -1265,9 +1667,49 @@ int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_
 }
 
 
+/**
+ * \fn msiGetMSrvcsFromDBIntoStruct(msParam_t *inMsrvcBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Populates a microservice structure with microservices from the given base name
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that queries the iCAT for microservices with a given base name and version number and populates a microservice rule structure.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inMsrvcBaseNameParam - a msParam of type STR_MS_T, the name of the base being queried
+ * \param[in] inVersionParam - a msParam of type STR_MS_T, which is the version string of the base being queried (use 0 for current version)
+ * \param[in] outCoreMsrvcStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadMSrvcsFromFileIntoStruct, msiAdmInsertMSrvcsFromStructIntoDB, msiAdmWriteMSrvcsFromStructIntoFile
+ * \bug  no known bugs
+**/
 int
-msiGetMSrvcsFromDBIntoStruct(msParam_t *inMsrvcBaseNameParam, msParam_t *inVersionParam, 
-			    msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
+msiGetMSrvcsFromDBIntoStruct(msParam_t *inMsrvcBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
 {
     
   int i;
@@ -1308,6 +1750,47 @@ msiGetMSrvcsFromDBIntoStruct(msParam_t *inMsrvcBaseNameParam, msParam_t *inVersi
   return(0);
 }
 
+/**
+ * \fn msiAdmWriteMSrvcsFromStructIntoFile(msParam_t *inMsrvcFileNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei)
+ *
+ * \brief  Writes to file the microservices within a given microservice structure
+ *
+ * \module core 
+ *
+ * \since after 2.5
+ *
+ * \author  Arcot Rajasekar
+ * \date    2011
+ * 
+ * \remark Terrell Russell - msi documentation, 2011-03-05
+ * 
+ * \note This microservice requires iRODS administration privileges.
+ *  
+ * \note  This is a microservice that writes into a given file the contents of a given microservice structure.
+ * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
+ *
+ * \usage
+ *
+ *
+ * \param[in] inMsrvcFileNameParam - a msParam of type STR_MS_T, the name of the file to be written
+ * \param[in] inCoreMsrvcStruct - a msParam of type RuleStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect A new microservice file is created
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiAdmReadMSrvcsFromFileIntoStruct, msiAdmInsertMSrvcsFromStructIntoDB, msiGetMSrvcsFromDBIntoStruct
+ * \bug  no known bugs
+**/
 int
 msiAdmWriteMSrvcsFromStructIntoFile(msParam_t *inMsrvcFileNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei)
 {
