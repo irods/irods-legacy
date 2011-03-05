@@ -25,22 +25,31 @@ This documentation is generated from the iRODS code.
   - #msiAdmAppendToTopOfCoreIRB - Prepends another irb file to the core.irb file
   - #msiAdmAddAppRuleStruct - Adds application level IRB rules and DVM and FNM mappings to the rule engine
   - #msiAdmClearAppRuleStruct - Clears application level IRB rules and DVM and FNM mappings that were loaded into the rule engine
+
   - #msiAdmShowIRB      - Displays the currently loaded rules
-  - #msiAdmShowDVM      - Displays the currently loaded variable name mappings
+  - #msiAdmShowDVM      - Displays the currently loaded data variable mappings
   - #msiAdmShowFNM      - Displays the currently loaded microservices and action (function) name mappings
-  - #msiAdmReadRulesFromFileIntoStruct - Reads configuration file into a rule structure
+
+  - #msiAdmReadRulesFromFileIntoStruct - Reads a rule configuration file into a rule structure
   - #msiAdmInsertRulesFromStructIntoDB - Writes a rule structure into the current rule base
   - #msiGetRulesFromDBIntoStruct - Populates a rule structure with rules from the given base name
   - #msiAdmWriteRulesFromStructIntoFile - Writes to file the rules within a given rule structure
-  - #msiAdmReadDVMapsFromFileIntoStruct - Reads dvm configuration file into a variable mapping structure
-  - #msiAdmInsertDVMapsFromStructIntoDB - Writes a variable mapping  structure into the current dvm base
-  - #msiGetDVMapsFromDBIntoStruct - Populates a dvm structure with variable mappings from the given base name
-  - #msiAdmWriteDVMapsFromStructIntoFile - Writes to file the variable mappings within a given dvm structure
 
-  - #msiAdmReadFNMapsFromFileIntoStruct - Reads fnm configuration file into a function mapping structure
-  - #msiAdmInsertFNMapsFromStructIntoDB - Writes a function mapping  structure into the current fnm base
-  - #msiGetFNMapsFromDBIntoStruct - Populates a fnm structure function mappings  from the given base name
-  - #msiAdmWriteFNMapsFromStructIntoFile - Writes to file the function mappings within a given fnm structure
+  - #msiAdmReadDVMapsFromFileIntoStruct - Reads a DVM configuration file into a DVM structure
+  - #msiAdmInsertDVMapsFromStructIntoDB - Writes a DVM structure into the current DVM base
+  - #msiGetDVMapsFromDBIntoStruct - Populates a DVM structure with DVMs from the given base name
+  - #msiAdmWriteDVMapsFromStructIntoFile - Writes to file the DVMs within a given DVM structure
+
+  - #msiAdmReadFNMapsFromFileIntoStruct - Reads a FNM configuration file into a FNM structure
+  - #msiAdmInsertFNMapsFromStructIntoDB - Writes an FNM structure into the current FNM base
+  - #msiGetFNMapsFromDBIntoStruct - Populates an FNM structure with FNMs from the given base name
+  - #msiAdmWriteFNMapsFromStructIntoFile - Writes to file the FNMs within a given FNM structure
+
+  - #msiAdmReadMSrvcsFromFileIntoStruct - Reads a microservice configuration file into a microservice structure
+  - #msiAdmInsertMSrvcsFromStructIntoDB - Writes a microservice structure into the current microservices base
+  - #msiGetMSrvcsFromDBIntoStruct - Populates a microservice structure with microservices from the given base name
+  - #msiAdmWriteMSrvcsFromStructIntoFile - Writes to file the microservices within a given microservice structure
+
   
  \subsection msiworkflow Workflow Microservices
   - #nop, #null       - No action
