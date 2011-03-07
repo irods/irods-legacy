@@ -40,7 +40,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"installPostgres.pl"} = "March 2010";
+$version{"installPostgres.pl"} = "March 2011";
 
 
 
@@ -343,9 +343,9 @@ foreach $ver (keys %version)
 # Postgres FTP site access
 $POSTGRES_FTP_ACCOUNT_NAME     = "anonymous";
 $POSTGRES_FTP_ACCOUNT_PASSWORD = "anonymous@";
-$POSTGRES_FTP_POSTGRES_DIR     = "pub/PostgreSQL/source";
+$POSTGRES_FTP_POSTGRES_DIR     = "pub/postgresql/source";
 $POSTGRES_FTP_ODBC_DIR         = "postgresql/odbc/versions/src";
-$POSTGRES_FTP_HOST             = "ftp5.us.postgresql.org";
+$POSTGRES_FTP_HOST             = "ftp10.us.postgresql.org";
 
 
 # UNIX ODBC FTP site access

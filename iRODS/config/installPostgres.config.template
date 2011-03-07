@@ -133,8 +133,8 @@ $ODBC_SOURCE     = "unixODBC-2.2.12.tar.gz";
 # 	$UNIXODBC_FTP_ODBC_DIR is the directory path for UNIX ODBC source
 # 	at the UNIX ODBC FTP site.
 #
-# Defaults:
-# 	$POSTGRES_FTP_HOST = "ftp8.us.postgresql.org";
+# Defaults (set in scripts/perl/installPostgres.pl):
+# 	$POSTGRES_FTP_HOST = "ftp10.us.postgresql.org";
 # 	$POSTGRES_FTP_ACCOUNT_NAME = "anonymous";
 # 	$POSTGRES_FTP_ACCOUNT_PASSWORD = "anonymous@";
 # 	$POSTGRES_FTP_POSTGRES_DIR = "postgresql/source";
