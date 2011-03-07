@@ -233,6 +233,54 @@ SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
 endif
 
+ifdef RULE_ENGINE_N
+CFLAGS +=       -DRULE_ENGINE
+
+SVR_RE_OBJS =	\
+		$(svrReObjDir)/extractAvuMS.o \
+		$(svrReObjDir)/genQueryMS.o \
+		$(svrReObjDir)/icatAdminMS.o \
+		$(svrReObjDir)/icatGeneralMS.o \
+		$(svrReObjDir)/keyValPairMS.o \
+		$(svrReObjDir)/mailMS.o \
+		$(svrReObjDir)/miscMS.o \
+		$(svrReObjDir)/printMS.o \
+		$(svrReObjDir)/reDataObjOpr.o \
+		$(svrReObjDir)/msiHelper.o \
+		$(svrReObjDir)/nre.reHelpers1.o \
+		$(svrReObjDir)/nre.reHelpers2.o \
+		$(svrReObjDir)/arithmetics.o \
+		$(svrReObjDir)/rules.o \
+		$(svrReObjDir)/parser.o \
+		$(svrReObjDir)/conversion.o \
+		$(svrReObjDir)/index.o \
+		$(svrReObjDir)/region.o \
+		$(svrReObjDir)/datetime.o \
+		$(svrReObjDir)/hashtable.o \
+		$(svrReObjDir)/functions.o \
+		$(svrReObjDir)/typing.o \
+		$(svrReObjDir)/utils.o \
+		$(svrReObjDir)/cache.o \
+		$(svrReObjDir)/reIn2p3SysRule.o \
+		$(svrReObjDir)/nre.reLib1.o	\
+		$(svrReObjDir)/nre.reLib2.o \
+		$(svrReObjDir)/reNaraMetaData.o \
+		$(svrReObjDir)/reStruct.o \
+		$(svrReObjDir)/reSysDataObjOpr.o \
+		$(svrReObjDir)/reVariableMap.o \
+		$(svrReObjDir)/regExpMatch.o \
+		$(svrReObjDir)/ruleAdminMS.o \
+		$(svrReObjDir)/nre.systemMS.o \
+		$(svrReObjDir)/xmsgMS.o \
+		$(svrReObjDir)/reDBO.o \
+		$(svrReObjDir)/reRDA.o \
+		$(svrReObjDir)/testMS.o \
+		$(svrReObjDir)/reAutoReplicateService.o
+
+INCLUDES +=	-I$(svrReIncDir)
+SERVER_BINS +=	$(serverBinDir)/irodsReServer
+SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
+endif
 
 # icat Tests
 ifdef RODS_CAT

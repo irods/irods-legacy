@@ -371,6 +371,7 @@ msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - created msi documentation, 2009-06-11
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Hao Xu - added support for INT_MS_T for offset
  * 
  * \note  Can be called by client through iRule
  *
@@ -383,7 +384,7 @@ msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *  *R_BUF\%*W_LEN
  *
  * \param[in] inpParam1 - a msParam of type DataObjLseekInp_MS_T or INT_MS_T or a STR_MS_T which would be the descriptor.
- * \param[in] inpParam2 - Optional - a msParam of type DOUBLE_MS_T or a STR_MS_T which would be the offset.
+ * \param[in] inpParam2 - Optional - a msParam of type INT_MS_T or DOUBLE_MS_T or a STR_MS_T which would be the offset.
  * \param[in] inpParam3 - Optional - a msParam of type INT_MS_T or a STR_MS_T which would be from where. Can be SEEK_SET, SEEK_CUR, and SEEK_END.
  * \param[out] outParam - a msParam of type Double_MS_T or DataObjLseekOut_MS_T which is the return status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -449,7 +450,9 @@ ruleExecInfo_t *rei)
     }
 
     if (inpParam2 != NULL) {
-        if (strcmp (inpParam2->type, STR_MS_T) == 0) {
+        if (strcmp (inpParam2->type, INT_MS_T) == 0) {
+        	myDataObjLseekInp->offset = *(int *)inpParam2->inOutStruct;
+        } else if (strcmp (inpParam2->type, STR_MS_T) == 0) {
             /* str input */
             if (strcmp ((char *) inpParam2->inOutStruct, "null") != 0) {
                 myDataObjLseekInp->offset = strtoll (inpParam2->inOutStruct, 

@@ -153,13 +153,14 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
     }
   }
   /**** End of Test Stub  ****/
-
+  memset(&collInfo, 0, sizeof(collInfo_t));
   snprintf(collInfo.collName, sizeof(collInfo.collName), 
 	   "%s/%s",parColl,childName);
   snprintf(collInfo.collOwnerName, sizeof(collInfo.collOwnerName),
 	   "%s",rei->uoio->userName);
   snprintf(collInfo.collOwnerZone, sizeof(collInfo.collOwnerZone),
 	   "%s",rei->uoio->rodsZone);
+	   
 
 #ifdef RODS_CAT
   i =  chlRegCollByAdmin(rei->rsComm, &collInfo );
@@ -237,7 +238,6 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
       return(0);
    }
    /**** End of Test Stub  ****/
-
 
    snprintf(collInfo.collName, sizeof(collInfo.collName), 
 	    "%s/%s",parColl,childName);

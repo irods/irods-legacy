@@ -70,7 +70,7 @@ endif
 # RULE_ENGINE defines whether the Rule Engine is enabled. 
 # Enable this normally unless you are debugging some 
 # particular module and dont want the rule engine to mess up the flow.
-RULE_ENGINE=1
+RULE_ENGINE_N=1
 
 
 

@@ -146,12 +146,10 @@ int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
     writeId = where->inOutStruct;
 
   if (inString->inOutStruct == NULL) {
-    writeStr = (char *) malloc(strlen(inString->label) + MAX_COND_LEN);
-    strcpy(writeStr , inString->label);
+    writeStr = strdup((char *) inString->label);
   }
   else {
-    writeStr = (char *) malloc(strlen(inString->inOutStruct) + MAX_COND_LEN);
-    strcpy(writeStr , inString->inOutStruct);
+    writeStr = strdup((char *) inString->inOutStruct);
   }
   i = _writeString(writeId, writeStr, rei);
 
