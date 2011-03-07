@@ -13,11 +13,11 @@
 
 
 #if 0
-int
+int 
 applyActionCall(char *actionCall,  ruleExecInfo_t *rei, int reiSaveFlag)
 {
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-  char action[MAX_ACTION_SIZE];
+  char action[MAX_ACTION_SIZE];  
   int i, argc;
 
   i = parseAction(actionCall,action,args, &argc);
@@ -40,8 +40,8 @@ applyRule(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   char ruleCondition[MAX_RULE_LENGTH * 3];
   char ruleAction[MAX_RULE_LENGTH * 3];
   char ruleRecovery[MAX_RULE_LENGTH * 3];
-  char ruleHead[MAX_RULE_LENGTH * 3];
-  char ruleBase[MAX_RULE_LENGTH * 3];
+  char ruleHead[MAX_RULE_LENGTH * 3]; 
+  char ruleBase[MAX_RULE_LENGTH * 3]; 
   int  first = 0;
   ruleExecInfo_t  *saveRei;
   int reTryWithoutRecovery = 0;
@@ -75,7 +75,7 @@ applyRule(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
     if (i == 0) {
     ******/
     if (reTestFlag > 0) {
-	  if (reTestFlag == COMMAND_TEST_1)
+	  if (reTestFlag == COMMAND_TEST_1) 
 	    fprintf(stdout,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
@@ -96,14 +96,14 @@ applyRule(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 	  }
 	}
 	if (reTestFlag > 0) {
-	  if (reTestFlag == COMMAND_TEST_1)
+	  if (reTestFlag == COMMAND_TEST_1) 
 	    fprintf(stdout,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Executing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
 	  else if (rei != NULL && rei->rsComm != NULL && rei->rsComm->rError != NULL)
 	    rodsLog (LOG_NOTICE,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
 	}
-	status =
+	status = 
 	   executeRuleBody(action, ruleAction, ruleRecovery, args, argc, rei, reiSaveFlag);
 	if ( status == 0) {
 	  if (reiSaveFlag == SAVE_REI)
@@ -139,7 +139,7 @@ applyRule(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 }
 #endif
 
-int
+int 
 applyRuleArg(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 	       ruleExecInfo_t *rei, int reiSaveFlag)
 {
@@ -151,7 +151,7 @@ applyRuleArg(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 }
 
 
-int
+int 
 applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 		      msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag)
 {
@@ -165,7 +165,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
     pFlag = 1;
   }
   for (i = 0; i < argc ; i++) {
-    if (args[i][0] == '*') {
+    if (args[i][0] == '*') { 
       if ((mP = getMsParamByLabel (inMsParamArray, args[i])) == NULL) {
 	addMsParam(inMsParamArray, args[i], NULL, NULL,NULL);
       }
@@ -180,7 +180,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   /* RAJA ADDED Jul 14, 2008 to get back the changed args */
   if (i == 0) {
     for (i = 0; i < argc ; i++) {
-      if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL)
+      if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL) 
 	strcpy(args[i], (char *) mP->inOutStruct);
       /**** DANGER, DANGER: Potential overflow..... ****/
     }
@@ -191,7 +191,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   if (pFlag == 1)
     free(inMsParamArray);
   return(i);
-
+  
 }
 
 int
@@ -222,7 +222,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
 
 
   parseAction(ruleHead, tmpStr,args2, &argc2);
-
+  
   /* stick things into msParamArray in rei */
   /**** changed by RAJA Jul 11, 2007 so that conversion of values in the internal strings also happen ****
   for (i = 0; i < argc ; i++) {
@@ -237,7 +237,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
   for (i = 0; i < argc ; i++) {
     if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL) {
       tmparg = NULL;
-      if (mP->inOutStruct == NULL || (!strcmp(mP->type, STR_MS_T)
+      if (mP->inOutStruct == NULL || (!strcmp(mP->type, STR_MS_T) 
 				      && !strcmp(mP->inOutStruct,mP->label) )) {
 	convertArgWithVariableBinding(args[i],&tmparg,inMsParamArray,rei);
 	if (tmparg != NULL)
@@ -247,7 +247,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
       }
       else if (!strcmp(mP->type, STR_MS_T) ) {
 	convertArgWithVariableBinding(mP->inOutStruct,&tmparg,inMsParamArray,rei);
-	if (tmparg != NULL)
+	if (tmparg != NULL) 
 	  addMsParam(outMsParamArray,args2[i],mP->type, tmparg, mP->inpOutBuf);
 	else
 	  addMsParam(outMsParamArray,args2[i],mP->type, mP->inOutStruct, mP->inpOutBuf);
@@ -265,7 +265,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
     }
   }
   /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
-  if ((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL)
+  if ((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL) 
     /*    if (getMsParamByLabel (outMsParamArray,"ruleExecOut") != NULL)  RAJA CHANGED Sep 25 2007 ***/
     if (getMsParamByLabel (outMsParamArray,"ruleExecOut") == NULL)
       addMsParam(outMsParamArray,"ruleExecOut",mP->type, mP->inOutStruct, mP->inpOutBuf);
@@ -277,7 +277,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
 
 
 int
-finalizeMsParamNew(char *inAction,char *ruleHead,
+finalizeMsParamNew(char *inAction,char *ruleHead, 
 		   msParamArray_t *inMsParamArray, msParamArray_t *outMsParamArray,
 		   ruleExecInfo_t *rei, int status)
 {
@@ -295,7 +295,7 @@ finalizeMsParamNew(char *inAction,char *ruleHead,
   parseAction(inAction, tmpStr,args2, &argc2);
 
   /* get the old msParamArray  */
-  popStack(&msParamStack,tmpStr);
+  popStack(&msParamStack,tmpStr);   
 #ifdef ADDR_64BITS
   oldMsParamArray = (msParamArray_t *) strtoll (tmpStr, 0, 0);
 #else
@@ -320,7 +320,7 @@ finalizeMsParamNew(char *inAction,char *ruleHead,
   freeRuleArgs (args, argc);
   freeRuleArgs (args2, argc2);
   /* XXXX fix memleak. MW */
-  /* free(rei->msParamArray);  no need to free outMsParamArray. It was
+  /* free(rei->msParamArray);  no need to free outMsParamArray. It was 
    * set to rei->msParamArray */
   clearMsparamInRei (rei);
   rei->msParamArray = oldMsParamArray;
@@ -338,8 +338,8 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
   char ruleCondition[MAX_RULE_LENGTH * 3];
   char ruleAction[MAX_RULE_LENGTH * 3];
   char ruleRecovery[MAX_RULE_LENGTH * 3];
-  char ruleHead[MAX_RULE_LENGTH * 3];
-  char ruleBase[MAX_RULE_LENGTH * 3];
+  char ruleHead[MAX_RULE_LENGTH * 3]; 
+  char ruleBase[MAX_RULE_LENGTH * 3]; 
   int  first = 0;
   ruleExecInfo_t  *saveRei;
   int reTryWithoutRecovery = 0;
@@ -348,7 +348,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
   /*int numOfStrArgs;*/
   int ii;
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-  char action[MAX_ACTION_SIZE];
+  char action[MAX_ACTION_SIZE];  
   msParamArray_t *outMsParamArray;
 
   if (strlen (rei->ruleName) == 0) {
@@ -364,8 +364,8 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 
   ruleInx = -1; /* new rule */
 
-  if (GlobalREDebugFlag)
-    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei);
+  if (GlobalREDebugFlag) 
+    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei); 
 
 
   if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
@@ -393,14 +393,14 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     i = executeMicroServiceNew(inAction,inMsParamArray,rei);
     return(i);
   }
-  /**** not needed **
-  if (GlobalREDebugFlag)
-    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei);
+  /**** not needed ** 
+  if (GlobalREDebugFlag) 
+    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei); 
   *****/
   while (i == 0) {
     getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
-    if (GlobalREDebugFlag)
-      reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei);
+    if (GlobalREDebugFlag) 
+      reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei); 
 
     i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
     if (i != 0)
@@ -413,7 +413,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     if (i == 0) {
     ******/
     if (reTestFlag > 0) {
-	  if (reTestFlag == COMMAND_TEST_1)
+	  if (reTestFlag == COMMAND_TEST_1) 
 	    fprintf(stdout,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
@@ -434,14 +434,14 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  }
 	}
 	if (reTestFlag > 0) {
-	  if (reTestFlag == COMMAND_TEST_1)
+	  if (reTestFlag == COMMAND_TEST_1) 
 	    fprintf(stdout,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Executing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
 	  else
 	    rodsLog (LOG_NOTICE,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
 	}
-	status =
+	status = 
 	   executeRuleBodyNew(action, ruleAction, ruleRecovery, outMsParamArray, rei, reiSaveFlag);
 	if ( status == 0  || status == CUT_ACTION_ON_SUCCESS_PROCESSED_ERR) {
 	  if (reiSaveFlag == SAVE_REI)
@@ -449,7 +449,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
 	  return(0);
 	}
-	else if ( status == CUT_ACTION_PROCESSED_ERR ||
+	else if ( status == CUT_ACTION_PROCESSED_ERR || 
 	  status == MSI_OPERATION_NOT_ALLOWED) {
 	  if (reiSaveFlag == SAVE_REI)
 	    freeRuleExecInfoStruct(saveRei, 0);
@@ -502,8 +502,8 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
   char ruleCondition[MAX_RULE_LENGTH * 3];
   char ruleAction[MAX_RULE_LENGTH * 3];
   char ruleRecovery[MAX_RULE_LENGTH * 3];
-  char ruleHead[MAX_RULE_LENGTH * 3];
-  char ruleBase[MAX_RULE_LENGTH * 3];
+  char ruleHead[MAX_RULE_LENGTH * 3]; 
+  char ruleBase[MAX_RULE_LENGTH * 3]; 
   int  first = 0;
   int  success = 0;
   ruleExecInfo_t  *saveRei;
@@ -513,7 +513,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
   /*int numOfStrArgs;*/
   /*int ii;*/
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-  char action[MAX_ACTION_SIZE];
+  char action[MAX_ACTION_SIZE];  
   msParamArray_t *outMsParamArray;
 
   ruleInx = -1; /* new rule */
@@ -521,8 +521,8 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   GlobalAllRuleExecFlag = allRuleExecFlag;
 
-  if (GlobalREDebugFlag)
-    reDebug("ApplyAllRules", -1, inAction,inMsParamArray,rei);
+  if (GlobalREDebugFlag) 
+    reDebug("ApplyAllRules", -1, inAction,inMsParamArray,rei); 
 
   if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
     i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
@@ -551,8 +551,8 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   while (i == 0) {
     getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
-    if (GlobalREDebugFlag)
-      reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei);
+    if (GlobalREDebugFlag) 
+      reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei); 
 
     if (outMsParamArray == NULL) {
       i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
@@ -561,7 +561,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	return(i);
       }
       outMsParamArray = rei->msParamArray;
-
+      
     }
 
     /*****
@@ -570,7 +570,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     if (i == 0) {
     ******/
     if (reTestFlag > 0) {
-	  if (reTestFlag == COMMAND_TEST_1)
+	  if (reTestFlag == COMMAND_TEST_1) 
 	    fprintf(stdout,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
@@ -591,14 +591,14 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  }
 	}
 	if (reTestFlag > 0) {
-	  if (reTestFlag == COMMAND_TEST_1)
+	  if (reTestFlag == COMMAND_TEST_1) 
 	    fprintf(stdout,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Executing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
 	  else
 	    rodsLog (LOG_NOTICE,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
 	}
-	status =
+	status = 
 	   executeRuleBodyNew(action, ruleAction, ruleRecovery, outMsParamArray, rei, reiSaveFlag);
 	if ( status == 0) {
 	  if (reiSaveFlag == SAVE_REI)
@@ -694,13 +694,13 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
   char l2[MAX_RULE_LENGTH];
   char l3[MAX_RULE_LENGTH];
   int status;
-  char action[MAX_ACTION_SIZE];
+  char action[MAX_ACTION_SIZE];  
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   int argc;
 
 
   rstrcpy(buf, ruleDef, MAX_RULE_LENGTH);
-
+  
   if (strstr(buf,"|") == NULL) {
     status = applyRule(ruleDef, inMsParamArray, rei,1);
     return(status);
@@ -738,11 +738,11 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
     return(i);
-
+  
   freeRuleArgs (args, argc);
 
   if (reTestFlag > 0) {
-    if (reTestFlag == COMMAND_TEST_1)
+    if (reTestFlag == COMMAND_TEST_1) 
       fprintf(stdout,"+Testing MyRule Rule for Action:%s\n",inAction);
     else if (reTestFlag == HTML_TEST_1)
       fprintf(stdout,"+Testing MyRule for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",inAction);
@@ -753,14 +753,14 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
   i = checkRuleConditionNew(action,  ruleCondition, inMsParamArray, rei, reiSaveFlag);
   if (i == TRUE) {
     if (reTestFlag > 0) {
-      if (reTestFlag == COMMAND_TEST_1)
+      if (reTestFlag == COMMAND_TEST_1) 
 	fprintf(stdout,"+Executing MyRule  for Action:%s\n",action);
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Executing MyRule for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",action);
 	  else if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
 	    rodsLog (LOG_NOTICE,"+Executing MyRule for Action:%s\n",action);
     }
-    status =
+    status = 
 	   executeMyRuleBody(action, ruleAction, ruleRecovery, inMsParamArray, rei, reiSaveFlag);
     if (status < 0) {
       rodsLog (LOG_NOTICE,"execMyRule %s Failed with status %i",ruleDef, status);
@@ -778,7 +778,7 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
 {
   int i;
   char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
-
+  
   strcpy(r2,irbSet);
   coreRuleStrct.MaxNumOfRules = 0;
   appRuleStrct.MaxNumOfRules = 0;
@@ -795,7 +795,7 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   strcpy(r2,dvmSet);
   coreRuleVarDef.MaxNumOfDVars = 0;
   appRuleVarDef.MaxNumOfDVars = 0;
-
+  
   while (strlen(r2) > 0) {
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
     if (i == 0)
@@ -807,7 +807,7 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   strcpy(r2,fnmSet);
   coreRuleFuncMapDef.MaxNumOfFMaps = 0;
   appRuleFuncMapDef.MaxNumOfFMaps = 0;
-
+  
   while (strlen(r2) > 0) {
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
     if (i == 0)
@@ -862,7 +862,7 @@ readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleS
   addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_BASE_NAME, condstr);
   snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
   addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_VERSION, condstr2);
-
+  
   addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_PRIORITY, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_BASE_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_NAME, 1);
@@ -917,7 +917,7 @@ readDVMapStructFromDB(char *dvmBaseName, char *versionStr, rulevardef_t *inDvmSt
   addInxVal(&genQueryInp.sqlCondInp, COL_DVM_BASE_MAP_BASE_NAME, condstr);
   snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
   addInxVal(&genQueryInp.sqlCondInp, COL_DVM_BASE_MAP_VERSION, condstr2);
-
+  
   addInxIval(&genQueryInp.selectInp, COL_DVM_EXT_VAR_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_DVM_CONDITION, 1);
   addInxIval(&genQueryInp.selectInp, COL_DVM_INT_MAP_PATH, 1);
@@ -964,7 +964,7 @@ readFNMapStructFromDB(char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmS
   addInxVal(&genQueryInp.sqlCondInp, COL_FNM_BASE_MAP_BASE_NAME, condstr);
   snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
   addInxVal(&genQueryInp.sqlCondInp, COL_FNM_BASE_MAP_VERSION, condstr2);
-
+  
   addInxIval(&genQueryInp.selectInp, COL_FNM_EXT_FUNC_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_FNM_INT_FUNC_NAME, 1);
 
@@ -1008,7 +1008,7 @@ readMsrvcStructFromDB(char *moduleName, char *versionStr, msrvcStruct_t *inMsrvc
   addInxVal(&genQueryInp.sqlCondInp, COL_MSRVC_MODULE_NAME, condstr);
   snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
   addInxVal(&genQueryInp.sqlCondInp, COL_MSRVC_VERSION, condstr2);
-
+  
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_MODULE_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_SIGNATURE, 1);
@@ -1082,7 +1082,7 @@ readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
    else {
      configDir = getConfigDir ();
      snprintf (rulesFileName,MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir,ruleBaseName);
-   }
+   }     
    file = fopen(rulesFileName, "r");
    if (file == NULL) {
      rodsLog(LOG_NOTICE,
@@ -1093,7 +1093,7 @@ readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
    buf[MAX_RULE_LENGTH-1]='\0';
    while (fgets (buf, MAX_RULE_LENGTH-1, file) != NULL) {
      if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
-     if (buf[0] == '#' || strlen(buf) < 4)
+     if (buf[0] == '#' || strlen(buf) < 4) 
        continue;
      rSplitStr(buf, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
      inRuleStrct->action[i] = strdup(l1);  /** action **/
@@ -1101,7 +1101,7 @@ readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
      if ((t = strstr(inRuleStrct->action[i],"(")) != NULL) {
        *t = '\0';
      }
-     /*****     rSplitStr(l0, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH, '|');
+     /*****     rSplitStr(l0, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH, '|'); 
 		inRuleStrct->ruleHead[i] = strdup(l1);
 		rSplitStr(l2, l1, MAX_RULE_LENGTH, l3, MAX_RULE_LENGTH,'|');
       *****/
@@ -1138,13 +1138,13 @@ clearRuleStruct(ruleStruct_t *inRuleStrct)
       free(inRuleStrct->ruleAction[i]);
     if (inRuleStrct->ruleRecovery[i]  != NULL)
       free(inRuleStrct->ruleRecovery[i]);
-
+    
   }
   inRuleStrct->MaxNumOfRules  = 0;
   return(0);
 }
 
-int clearDVarStruct(rulevardef_t *inRuleVarDef)
+int clearDVarStruct(rulevardef_t *inRuleVarDef) 
 {
   int i;
   for (i = 0 ; i < inRuleVarDef->MaxNumOfDVars; i++) {
@@ -1206,7 +1206,7 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
    buf[MAX_DVAR_LENGTH-1]='\0';
    while (fgets (buf, MAX_DVAR_LENGTH-1, file) != NULL) {
      if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
-     if (buf[0] == '#' || strlen(buf) < 4)
+     if (buf[0] == '#' || strlen(buf) < 4) 
        continue;
      rSplitStr(buf, l1, MAX_DVAR_LENGTH, l0, MAX_DVAR_LENGTH, '|');
      inRuleVarDef->varName[i] = strdup(l1);  /** varName **/
@@ -1258,7 +1258,7 @@ readFuncMapStructFromFile(char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef)
    buf[MAX_FMAP_LENGTH-1]='\0';
    while (fgets (buf, MAX_FMAP_LENGTH-1, file) != NULL) {
      if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
-     if (buf[0] == '#' || strlen(buf) < 4)
+     if (buf[0] == '#' || strlen(buf) < 4) 
        continue;
      rSplitStr(buf, l1, MAX_FMAP_LENGTH, l0, MAX_FMAP_LENGTH, '|');
      inRuleFuncMapDef->funcName[i] = strdup(l1);  /** funcName **/
@@ -1308,15 +1308,15 @@ readMsrvcStructFromFile(char *msrvcFileName, msrvcStruct_t* inMsrvcStruct)
   buf[MAX_RULE_LENGTH-1]='\0';
    while (fgets (buf, MAX_RULE_LENGTH-1, file) != NULL) {
      if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
-     if (buf[0] == '#' || strlen(buf) < 4)
+     if (buf[0] == '#' || strlen(buf) < 4) 
        continue;
      rSplitStr(buf, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
-     inMsrvcStruct->moduleName[i] = strdup(l1);
+     inMsrvcStruct->moduleName[i] = strdup(l1);  
 
      rSplitStr(l0, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH,'|');
      inMsrvcStruct->msrvcName[i] = strdup(l1);
      rSplitStr(l2, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
-     inMsrvcStruct->msrvcSignature[i] = strdup(l1);
+     inMsrvcStruct->msrvcSignature[i] = strdup(l1);  
 
      rSplitStr(l0, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH,'|');
      inMsrvcStruct->msrvcVersion[i] = strdup(l1);
@@ -1332,9 +1332,9 @@ readMsrvcStructFromFile(char *msrvcFileName, msrvcStruct_t* inMsrvcStruct)
      inMsrvcStruct->msrvcTypeName[i] = strdup(l1);
      rSplitStr(l2, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
      inMsrvcStruct->msrvcStatus[i] = atol(l1);
-     if (strlen(l0) > 0)
+     if (strlen(l0) > 0)  
        inMsrvcStruct->msrvcId[i] = atol(l1);
-     else
+     else 
        inMsrvcStruct->msrvcId[i] = (long int) i;
      i++;
    }
@@ -1374,7 +1374,7 @@ findNextRule (char *action,  int *ruleInx)
 
 
 int
-getRule(int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
+getRule(int ri, char *ruleBase, char *ruleHead, char *ruleCondition, 
 	char *ruleAction, char *ruleRecovery, int rSize)
 {
 
@@ -1421,14 +1421,14 @@ initializeMsParam(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int arg
   snprintf(tmpStr,NAME_LEN, "%d", (uint) rei->msParamArray);  /* pointer stored as long integer */
 #endif
   pushStack(&msParamStack,tmpStr);            /* pointer->integer->string stored in stack */
-
+  
   /* make a new msParamArray in rei */
   rei->msParamArray = malloc(sizeof(msParamArray_t));
   rei->msParamArray->len = 0;
   rei->msParamArray->msParam = NULL;
 
   parseAction(ruleHead, tmpStr,args2, &argc2);
-
+  
   if (argc < argc2)
     return(INSUFFICIENT_INPUT_ARG_ERR);
 
@@ -1446,7 +1446,7 @@ initializeMsParam(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int arg
   freeRuleArgs (args2, argc2);
 
   return(0);
-
+  
 }
 
 int
@@ -1464,7 +1464,7 @@ finalizeMsParam(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   parseAction(ruleHead, tmpStr,args2, &argc2);
 
   /* get the old msParamArray  */
-  popStack(&msParamStack,tmpStr);
+  popStack(&msParamStack,tmpStr);   
 #ifdef ADDR_64BITS
   oldMsParamArray = (msParamArray_t *) strtoll (tmpStr, 0, 0);
 #else
@@ -1711,7 +1711,7 @@ writeRulesIntoFile(char * inFileName, ruleStruct_t *myRuleStruct,
 	    myRuleStruct->ruleAction[i],
 	    myRuleStruct->ruleRecovery[i],
 	    myRuleStruct->ruleId[i]);
-
+            
   }
   fclose (file);
   return(0);
@@ -1815,7 +1815,7 @@ writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
     return(FILE_OPEN_ERR);
   }
   for( i = 0; i < myMsrvcStruct->MaxNumOfMsrvcs; i++) {
-    fprintf(file, "%s|%s|%s|%s|%s|%s|%s|%s|%ld|%ld\n",
+    fprintf(file, "%s|%s|%s|%s|%s|%s|%s|%s|%ld|%ld\n", 
 	    myMsrvcStruct->moduleName[i],
 	    myMsrvcStruct->msrvcName[i],
 	    myMsrvcStruct->msrvcSignature[i],
