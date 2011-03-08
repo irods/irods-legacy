@@ -114,6 +114,11 @@ ifdef hardware_platform
 MY_CFLAG+= -D$(hardware_platform)
 endif
 
+# special packing for osx 10.6 or higher
+ifdef osx_106plus
+MY_CFLAG+=osx_106plus
+endif
+
 ifeq ($(CC_IS_GCC), 1)
 MY_CFLAG+=-Wall
 endif
@@ -152,6 +157,9 @@ endif
 ifdef TAR_STRUCT_FILE
 MY_CFLAG+= -DTAR_STRUCT_FILE
 ifdef TAR_EXEC_PATH
+ifdef GNU_TAR
+MY_CFLAG+= -DGNU_TAR
+endif
 MY_CFLAG+= -DTAR_EXEC_PATH=\"$(TAR_EXEC_PATH)\"
 else
 MY_CFLAG+= -I$(tarDir) -I$(tarDir)/listhash \
