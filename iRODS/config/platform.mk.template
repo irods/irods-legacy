@@ -116,7 +116,7 @@ endif
 
 # special packing for osx 10.6 or higher
 ifdef osx_106plus
-MY_CFLAG+=osx_106plus
+MY_CFLAG+=-Dosx_106plus
 endif
 
 ifeq ($(CC_IS_GCC), 1)
