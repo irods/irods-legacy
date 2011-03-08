@@ -180,7 +180,13 @@ int
 chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
 {
     void *dirPtr = NULL;
-    struct dirent myFileDirent;
+#if defined(solaris_platform)
+    char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];
+    struct dirent *myFileDirent = (struct dirent *) fileDirent;
+#else
+    struct dirent fileDirent;
+    struct dirent *myFileDirent = &fileDirent;
+#endif
     int status;
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
@@ -191,14 +197,14 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
         return (0);
     }
 
-    while ((status = fileReaddir (fileType, rsComm, dirPtr, &myFileDirent))
+    while ((status = fileReaddir (fileType, rsComm, dirPtr, myFileDirent))
       >= 0) {
-        if (strcmp (myFileDirent.d_name, ".") == 0 ||
-          strcmp (myFileDirent.d_name, "..") == 0) {
+        if (strcmp (myFileDirent->d_name, ".") == 0 ||
+          strcmp (myFileDirent->d_name, "..") == 0) {
             continue;
         }
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", cacheDir, 
-	  myFileDirent.d_name);
+	  myFileDirent->d_name);
 
         status = fileStat (fileType, rsComm, childPath, &myFileStat);
 

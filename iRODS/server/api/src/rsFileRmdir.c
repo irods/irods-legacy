@@ -76,7 +76,13 @@ _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp)
 	 * it is only used to remove cache directory of structured 
 	 * files */
 	void *dirPtr = NULL;
-	struct dirent myFileDirent;
+#if defined(solaris_platform)
+        char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];
+        struct dirent *myFileDirent = (struct dirent *) fileDirent;
+#else
+        struct dirent fileDirent;
+        struct dirent *myFileDirent = &fileDirent;
+#endif
 
 	if (strstr (fileRmdirInp->dirName, CACHE_DIR_STR) == NULL) {
             rodsLog (LOG_ERROR,
@@ -96,17 +102,17 @@ _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp)
         }
 
 	while ((status = fileReaddir (fileRmdirInp->fileType, rsComm,
-	  dirPtr, &myFileDirent)) >= 0) {
+	  dirPtr, myFileDirent)) >= 0) {
 	    struct stat statbuf;
 	    char myPath[MAX_NAME_LEN];
 	
-            if (strcmp (myFileDirent.d_name, ".") == 0 ||
-              strcmp (myFileDirent.d_name, "..") == 0) {
+            if (strcmp (myFileDirent->d_name, ".") == 0 ||
+              strcmp (myFileDirent->d_name, "..") == 0) {
                 continue;
             }
 
             snprintf (myPath, MAX_NAME_LEN, "%s/%s",
-                  fileRmdirInp->dirName, myFileDirent.d_name);
+                  fileRmdirInp->dirName, myFileDirent->d_name);
 
 	    status = fileStat (fileRmdirInp->fileType, rsComm, 
 	      myPath, &statbuf);
