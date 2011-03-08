@@ -20,8 +20,6 @@
 #				aix_platform
 #				osx_platform
 #				linux_platform
-#       osx_106plus - set to 1 if the platform is osx_platform and the
-#        version is 10.6 or higher
 #
 #	FILE_64BITS	Whether 64-bit file sizes are supported.
 #
