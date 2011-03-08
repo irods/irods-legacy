@@ -154,6 +154,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     rodsLong_t srcId, destId;
     int multiCopyFlag;
     int renameFlag = 0;
+    int acPreProcFromRenameFlag = 0;
 
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
@@ -255,6 +256,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         args[0] = srcDataObjInp->objPath; 
         args[1] = destDataObjInp->objPath;
         argc = 2;
+	acPreProcFromRenameFlag = 1;
 	i =  applyRuleArg("acPreProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
 	if (i < 0) {
 	  if (rei2.status < 0) {
@@ -300,38 +302,41 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         }
 
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-        args[0] = srcDataObjInp->objPath;
-        args[1] = destDataObjInp->objPath;
-        argc = 2;
-        i =  applyRuleArg("acPreProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
-        if (i < 0) {
-          if (rei2.status < 0) {
-            i = rei2.status;
-          }
-          rodsLog (LOG_ERROR,
-                   "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
-                   args[0], args[1], i);
-          return i;
-        }
+	if (acPreProcFromRenameFlag == 0) {
+	  args[0] = srcDataObjInp->objPath;
+	  args[1] = destDataObjInp->objPath;
+	  argc = 2;
+	  i =  applyRuleArg("acPreProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
+	  if (i < 0) {
+	    if (rei2.status < 0) {
+	      i = rei2.status;
+	    }
+	    rodsLog (LOG_ERROR,
+		     "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
+		     args[0], args[1], i);
+	    return i;
+	  }
+	}
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
 	status = chlMoveObject (rsComm, srcId, destId);
 
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
-        i =  applyRuleArg("acPostProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
-        if (i < 0) {
-          if (rei2.status < 0) {
-            i = rei2.status;
-          }
-          rodsLog (LOG_ERROR,
-                   "rsDataObjRename: acPostProcForObjRename error for source %s and destination %s,stat=%d",
-                   args[0], args[1], i);
-          return i;
-        }
-        /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
-    }
+	if (acPreProcFromRenameFlag == 0) {
+	  i =  applyRuleArg("acPostProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
+	  if (i < 0) {
+	    if (rei2.status < 0) {
+	      i = rei2.status;
+	    }
+	    rodsLog (LOG_ERROR,
+		     "rsDataObjRename: acPostProcForObjRename error for source %s and destination %s,stat=%d",
+		     args[0], args[1], i);
+	    return i;
+	  }
+	}
+	/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+	  
+	}
 
     if (status >= 0) {
         if (multiCopyFlag > 0) {
