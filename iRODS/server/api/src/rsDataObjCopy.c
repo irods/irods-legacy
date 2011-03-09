@@ -133,7 +133,7 @@ transStat_t **transStat)
     openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
     int srcL1descInx;
-    int status;
+    int status, status2;
     char *destRescName, *srcRescName;
 
     destDataObjInp = L1desc[destL1descInx].dataObjInp;
@@ -203,8 +203,9 @@ transStat_t **transStat)
         dataObjCloseInp.bytesWritten = srcDataObjInfo->dataSize;
     }
 
-    rsDataObjClose (rsComm, &dataObjCloseInp);
+    status2 = rsDataObjClose (rsComm, &dataObjCloseInp);
 
-    return (status);
+    if (status) return (status);
+    return(status2);
 }
 
