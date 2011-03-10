@@ -157,7 +157,7 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	strcat(cmdArgv, " ");
 	strcat(cmdArgv, name);
 	strcat(cmdArgv, " ");
-	sprintf (strmode, "%i", mode);
+	sprintf (strmode, "%o", mode);
 	strcat(cmdArgv, strmode);
 	rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
 	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
