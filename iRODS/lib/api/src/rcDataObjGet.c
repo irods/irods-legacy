@@ -32,7 +32,7 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 	{
 	/* local file exists */
 	if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) {
-	    return (OVERWITE_WITHOUT_FORCE_FLAG);
+	    return (OVERWRITE_WITHOUT_FORCE_FLAG);
 		}
     }
 

@@ -562,7 +562,7 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
           rescGrpInfo->rescInfo, rescGrpInfo->rescGroupName);
 
         clearKeyVal (&dataObjInp->condInput);
-    } while (l1descInx == OVERWITE_WITHOUT_FORCE_FLAG);
+    } while (l1descInx == OVERWRITE_WITHOUT_FORCE_FLAG);
 
     if (l1descInx >= 0) {
         l3Close (rsComm, l1descInx);
