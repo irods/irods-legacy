@@ -9,7 +9,7 @@
 #include "parseCommandLine.h"
 
 #define MAX_SQL 300
-#define BIG_STR 200
+#define BIG_STR 3000
 
 /* The simpleQuery input sql is passed as an argument (along with up
    to 4 bind variables) so that is is clear what is going on.  But the
