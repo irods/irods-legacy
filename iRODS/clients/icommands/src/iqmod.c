@@ -26,6 +26,17 @@ modDelayedRule(char *ruleId, char *fieldName, char *fieldValue) {
    ruleExecModInp_t ruleExecModInp;
    memset(&ruleExecModInp, 0, sizeof(ruleExecModInp));
 
+   /* for the time fields, convert from YYYY-MM-DD.hh:mm:ss in sec of unix time 
+	  if necessary */
+   if ( strcmp(fieldName, "exeTime") == 0 || strcmp(fieldName, "estimateExeTime") == 0 ||
+        strcmp(fieldName, "lastExeTime") == 0 ) {
+	status = checkDateFormat(fieldValue);
+	if ( status == DATE_FORMAT_ERR ) {
+		printf("Time format error: it should be sec in unix time or YYYY-MM-DD.hh:mm:ss.\n");
+		return (status);
+	}
+   }
+   
    strncpy(ruleExecModInp.ruleId, ruleId, NAME_LEN);
    addKeyVal(&ruleExecModInp.condInput, fieldName, fieldValue);
 
