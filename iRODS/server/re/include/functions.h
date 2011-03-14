@@ -39,8 +39,6 @@ int getParamIOType(char *iotypes, int index);
 
 FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc);
 
-char *errMsgToString(rError_t *errmsg, char *buf, int buflen /* = 0 */);
-
 #ifdef	__cplusplus
 }
 #endif

@@ -310,4 +310,7 @@ void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ru
 char *generateErrMsg(char *msg, long errloc, char* ruleBaseName, char errbuf[ERR_MSG_LEN]);
 
 int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str);
+void logErrMsg(rError_t *errmsg);
+char *errMsgToString(rError_t *errmsg, char *buf, int buflen);
+
 #endif

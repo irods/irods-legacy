@@ -965,3 +965,30 @@ int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str) {
   }
   return 0;
 }
+
+void logErrMsg(rError_t *errmsg) {
+    char errbuf[ERR_MSG_LEN*1024];
+    errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
+#ifdef DEBUG
+    writeToTmp("err.log", "begin errlog\n");
+    writeToTmp("err.log", errbuf);
+    writeToTmp("err.log", "end errlog\n");
+#endif
+    rodsLog (LOG_ERROR, "%s", errbuf);
+}
+
+char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
+    errbuf[0] = '\0';
+    int p = 0;
+    int i;
+    for(i=errmsg->len-1;i>=0;i--) {
+        if(i!=errmsg->len-1) {
+            snprintf(errbuf+p, buflen-p, "caused by: %s\n", errmsg->errMsg[i]->msg);
+        } else {
+            snprintf(errbuf+p, buflen-p, "%s\n", errmsg->errMsg[i]->msg);
+        }
+        p = strnlen(errbuf, buflen);
+    }
+    return errbuf;
+
+}

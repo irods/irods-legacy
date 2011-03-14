@@ -31,4 +31,6 @@ int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *
 void copyFromEnv(Res**params, char **paramNames, int paramsCount, Hashtable *env, Region *r);
 int actionTableLookUp (char *action);
 rError_t *newRError();
+Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamArray,
+		  ruleExecInfo_t *rei, int reiSaveFlag, Region *r);
 #endif

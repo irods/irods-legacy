@@ -509,3 +509,31 @@ int actionTableLookUp (char *action)
 
 	return (UNMATCHED_ACTION_ERR);
 }
+
+Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamArray,
+		  ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
+    rei->status = 0;
+    Env *env = newEnv(newHashTable(100),newHashTable(100),newHashTable(100));
+    getSystemFunctions(env->funcDesc, r);
+
+    Res *res;
+    rError_t errmsgBuf;
+    errmsgBuf.errMsg = NULL;
+    errmsgBuf.len = 0;
+    if(inMsParamArray!=NULL) {
+        convertMsParamArrayToEnv(inMsParamArray, env->current, &errmsgBuf, r);
+    }
+
+    res = parseAndComputeExpression(inAction, env, rei, reiSaveFlag, &errmsgBuf, r);
+    if(rei->msParamArray != NULL) {
+        clearMsParamArray(rei->msParamArray, 0);
+    	convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
+    }
+    
+    if(TYPE(res)==T_ERROR) {
+        logErrMsg(&errmsgBuf);
+    }
+    freeRErrorContent(&errmsgBuf);
+    return res;
+
+}

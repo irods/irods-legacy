@@ -341,15 +341,6 @@ applyRuleArg(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   return(i);
 }
 
-void logErrMsg(rError_t *errmsg) {
-#ifdef DEBUG
-	char errbuf[ERR_MSG_LEN*1024];
-	errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
-        writeToTmp("err.log", "begin errlog\n");
-        writeToTmp("err.log", errbuf);
-        writeToTmp("err.log", "end errlog\n");
-#endif
-} 
 /*
  * devnote: this method differs from applyRuleArg in that it allows passing in a preallocated msParamArray_t
  */
@@ -381,7 +372,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   Res *res = computeExpressionWithParams(action, args, argc, rei, reiSaveFlag, inMsParamArray, &errmsgBuf, r);
   i = processReturnRes(res);
   region_free(r);
-  //applyRule(tmpStr, inMsParamArray, rei, reiSaveFlag);
+  /* applyRule(tmpStr, inMsParamArray, rei, reiSaveFlag); */
 #if 0
   /* RAJA ADDED Jul 14, 2008 to get back the changed args */
   if (i == 0) {
@@ -404,136 +395,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 
 }
 
-//int
-//initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
-//		     msParamArray_t *inMsParamArray,  ruleExecInfo_t *rei)
-//{
-//  int i;
-//  msParam_t *mP;
-//  char tmpStr[NAME_LEN];
-//  char *args2[MAX_NUM_OF_ARGS_IN_ACTION];
-//  int argc2 = 0;
-//  msParamArray_t *outMsParamArray;
-//  char *tmparg;
-//
-//  /* save the old msParamArray in rei */
-//#ifdef ADDR_64BITS
-//  snprintf(tmpStr,NAME_LEN, "%lld", (rodsLong_t) rei->msParamArray);  /* pointer stored as long integer */
-//#else
-//  snprintf(tmpStr,NAME_LEN, "%d", (uint) rei->msParamArray);  /* pointer stored as long integer */
-//#endif
-//  pushStack(&msParamStack,tmpStr);            /* pointer->integer->string stored in stack */
-//
-//  /* make a new msParamArray in rei */
-//  rei->msParamArray = malloc(sizeof(msParamArray_t));
-//  rei->msParamArray->len = 0;
-//  rei->msParamArray->msParam = NULL;
-//  outMsParamArray = rei->msParamArray;
-//
-//
-//  parseAction(ruleHead, tmpStr,args2, &argc2);
-//
-//  /* stick things into msParamArray in rei */
-//  /**** changed by RAJA Jul 11, 2007 so that conversion of values in the internal strings also happen ****
-//  for (i = 0; i < argc ; i++) {
-//    if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL) {
-//      addMsParam(outMsParamArray,args2[i],mP->type, mP->inOutStruct, mP->inpOutBuf);
-//    }
-//    else {
-//      addMsParam(outMsParamArray, args2[i], NULL, NULL,NULL);
-//    }
-//  }
-//  **** changed by RAJA Jul 11, 2007 so that conversion of values in the internal strings also happen ****/
-//  for (i = 0; i < argc ; i++) {
-//    if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL) {
-//      tmparg = NULL;
-//      if (mP->inOutStruct == NULL || (!strcmp(mP->type, STR_MS_T)
-//				      && !strcmp(mP->inOutStruct,mP->label) )) {
-//	convertArgWithVariableBinding(args[i],&tmparg,inMsParamArray,rei);
-//	if (tmparg != NULL)
-//	  addMsParam(outMsParamArray,args2[i],mP->type, tmparg, mP->inpOutBuf);
-//	else
-//	  addMsParam(outMsParamArray,args2[i],mP->type, mP->inOutStruct, mP->inpOutBuf);
-//      }
-//      else if (!strcmp(mP->type, STR_MS_T) ) {
-//	convertArgWithVariableBinding(mP->inOutStruct,&tmparg,inMsParamArray,rei);
-//	if (tmparg != NULL)
-//	  addMsParam(outMsParamArray,args2[i],mP->type, tmparg, mP->inpOutBuf);
-//	else
-//	  addMsParam(outMsParamArray,args2[i],mP->type, mP->inOutStruct, mP->inpOutBuf);
-//      }
-//      else
-//	addMsParam(outMsParamArray,args2[i],mP->type, mP->inOutStruct, mP->inpOutBuf);
-//      if (tmparg != NULL)
-//	free(tmparg);
-//    }
-//    else {
-//	addMsParam(outMsParamArray, args2[i], NULL, NULL,NULL);
-//    }
-//  }
-//  /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
-//  if ((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL)
-//    /*    if (getMsParamByLabel (outMsParamArray,"ruleExecOut") != NULL)  RAJA CHANGED Sep 25 2007 ***/
-//    if (getMsParamByLabel (outMsParamArray,"ruleExecOut") == NULL)
-//      addMsParam(outMsParamArray,"ruleExecOut",mP->type, mP->inOutStruct, mP->inpOutBuf);
-//  /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
-//
-//  freeRuleArgs (args2, argc2);
-//  return (0);
-//}
-//
-//
-//int
-//finalizeMsParamNew(char *inAction,char *ruleHead,
-//		   msParamArray_t *inMsParamArray, msParamArray_t *outMsParamArray,
-//		   ruleExecInfo_t *rei, int status)
-//{
-//
-//  msParamArray_t *oldMsParamArray;
-//  char tmpStr[NAME_LEN];
-//  msParam_t *mP;
-//  int i;
-//  char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-//  int argc = 0;
-//  char *args2[MAX_NUM_OF_ARGS_IN_ACTION];
-//  int argc2 = 0;
-//
-//  parseAction(ruleHead, tmpStr,args, &argc);
-//  parseAction(inAction, tmpStr,args2, &argc2);
-//
-//  /* get the old msParamArray  */
-//  popStack(&msParamStack,tmpStr);
-//#ifdef ADDR_64BITS
-//  oldMsParamArray = (msParamArray_t *) strtoll (tmpStr, 0, 0);
-//#else
-//  oldMsParamArray = (msParamArray_t *) atoi(tmpStr);
-//#endif
-//
-//  for (i = 0; i < argc2; i++) {
-//    if ((mP = getMsParamByLabel (outMsParamArray, args[i])) != NULL) {
-//      rmMsParamByLabel (inMsParamArray, args2[i],0);
-//      addMsParam(inMsParamArray, args2[i], mP->type, mP->inOutStruct, mP->inpOutBuf);
-//    }
-//  }
-//
-//  /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
-//  if ((mP = getMsParamByLabel (outMsParamArray, "ruleExecOut")) != NULL) {
-//    rmMsParamByLabel (inMsParamArray,  "ruleExecOut",0);
-//    addMsParam(inMsParamArray,"ruleExecOut",mP->type, mP->inOutStruct, mP->inpOutBuf);
-//  }
-//  /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
-//
-//  /* XXXX should use clearMsparamInRei (rei); ? */
-//  freeRuleArgs (args, argc);
-//  freeRuleArgs (args2, argc2);
-//  /* XXXX fix memleak. MW */
-//  /* free(rei->msParamArray);  no need to free outMsParamArray. It was
-//   * set to rei->msParamArray */
-//  clearMsparamInRei (rei);
-//  rei->msParamArray = oldMsParamArray;
-//  return(0);
-//}
-// utility function
+/* utility function */
 int processReturnRes(Res *res) {
         int ret;
         switch(TYPE(res)) {
@@ -544,14 +406,28 @@ int processReturnRes(Res *res) {
             ret = (int)res->value.d;
             break;
         default:
-            ret = -1; // wrong type error
+            ret = -1; /* wrong type error */
             break;
     }
         return ret;
 }
-int computeExpression(char *expr, ruleExecInfo_t *rei, int rsf, char *res) {
-    return applyRule(expr, NULL, rei, 0);
+int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char *res) {
+	#ifdef DEBUG
+	writeToTmp("entry.log", "computeExpression: ");
+	writeToTmp("entry.log", inAction);
+	writeToTmp("entry.log", "\n");
+	#endif
+
+	Region *r = make_region(0, NULL);
+
+	Res *res0 = parseAndComputeExpressionNewEnv(inAction, NULL, rei, reiSaveFlag, r);
+	char *res1 = convertResToString(res0);
+	snprintf(res, MAX_COND_LEN, "%s", res1);
+	free(res1);
+	region_free(r);
+	return rei->status;
 }
+
 
 /** this was applyRulePA and got changed to applyRule ***/
 int
@@ -566,34 +442,15 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     if (GlobalREDebugFlag)
         reDebug("ApplyRule", -1, inAction,inMsParamArray,rei);
 
-    Region *r = make_region(0, NULL);
-    Env *env = newEnv(newHashTable(100),newHashTable(100),newHashTable(100));
-    getSystemFunctions(env->funcDesc, r);
+	Region *r = make_region(0, NULL);
 
-    Res *res;
-    rError_t errmsgBuf;
-    errmsgBuf.errMsg = NULL;
-    errmsgBuf.len = 0;
-    if(inMsParamArray!=NULL) {
-        convertMsParamArrayToEnv(inMsParamArray, env->current, &errmsgBuf, r);
-    }
-
-    //sleep(30);
-    res = parseAndComputeExpression(inAction, env, rei, reiSaveFlag, &errmsgBuf, r);
-    if(rei->msParamArray != NULL) {
-        clearMsParamArray(rei->msParamArray, 0); // free struct
-    	convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
-    }
-
+	Res *res = parseAndComputeExpressionNewEnv(inAction, inMsParamArray, rei, reiSaveFlag, r);
     int ret;
     ret = processReturnRes(res);
-    deleteEnv(env, 3);
+
     region_free(r);
-    if(ret!=0) {
-      logErrMsg(&errmsgBuf);
-    }
-    freeRErrorContent(&errmsgBuf);
-    return ret;
+
+    return rei->status;
 
 }
 
@@ -610,16 +467,16 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     writeToTmp("entry.log", "(set GlobalAllRuleExecFlag and forward to applyRule)\n");
     #endif
 
-    // store global flag in a temp variables
+    /* store global flag in a temp variables */
     int tempFlag = GlobalAllRuleExecFlag;
-    // set global flag
+    /* set global flag */
     GlobalAllRuleExecFlag = allRuleExecFlag;
 
     if (GlobalREDebugFlag)
         reDebug("ApplyAllRules", -1, inAction,inMsParamArray,rei);
 
     int ret = applyRule(inAction, inMsParamArray, rei, reiSaveFlag);
-    //restore global flag
+    /* restore global flag */
     GlobalAllRuleExecFlag = tempFlag;
     return ret;
 }
@@ -638,8 +495,8 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 
 {
     int status;
-  // todo rule out rules with "|" that are not separators
-  if (strstr(ruleDef,"|") == NULL) { // not a rule
+  /* todo rule out rules with "|" that are not separators */
+  if (strstr(ruleDef,"|") == NULL) { /* not a rule */
     status = applyRule(ruleDef, inMsParamArray, rei,1);
     return(status);
   }
@@ -1271,95 +1128,6 @@ getRule(int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
   }
   return(0);
 }
-
-//int
-//initializeMsParam(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
-//	  ruleExecInfo_t *rei)
-//{
-//
-//  msParam_t *mP;
-//  char tmpStr[NAME_LEN];
-//  char *args2[MAX_NUM_OF_ARGS_IN_ACTION];
-//  int argc2 = 0;
-//  int i;
-//
-//  /* save the old msParamArray in rei */
-//#ifdef ADDR_64BITS
-//  snprintf(tmpStr,NAME_LEN, "%lld", (rodsLong_t) rei->msParamArray);  /* pointer stored as long integer */
-//#else
-//  snprintf(tmpStr,NAME_LEN, "%d", (uint) rei->msParamArray);  /* pointer stored as long integer */
-//#endif
-//  pushStack(&msParamStack,tmpStr);            /* pointer->integer->string stored in stack */
-//
-//  /* make a new msParamArray in rei */
-//  rei->msParamArray = malloc(sizeof(msParamArray_t));
-//  rei->msParamArray->len = 0;
-//  rei->msParamArray->msParam = NULL;
-//
-//  parseAction(ruleHead, tmpStr,args2, &argc2);
-//
-//  if (argc < argc2)
-//    return(INSUFFICIENT_INPUT_ARG_ERR);
-//
-//  /* stick things into msParamArray in rei */
-//  for (i = 0; i < argc2 ; i++) {
-//    if (args[i][0] == '*') {
-//      /* this is an output and hence an empty struct is added here */
-//      addMsParam(rei->msParamArray, args2[i], "", NULL,NULL);
-//    }
-//    else {
-//      mP = (msParam_t *) args[i];
-//      addMsParam(rei->msParamArray, args2[i], "int *msParam", mP, NULL);
-//    }
-//  }
-//  freeRuleArgs (args2, argc2);
-//
-//  return(0);
-//
-//}
-//
-//int
-//finalizeMsParam(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
-//	  ruleExecInfo_t *rei, int status)
-//{
-//
-//  msParamArray_t *oldMsParamArray;
-//  char tmpStr[NAME_LEN];
-//  msParam_t *mP;
-//  int i;
-//  char *args2[MAX_NUM_OF_ARGS_IN_ACTION];
-//  int argc2 = 0;
-//
-//  parseAction(ruleHead, tmpStr,args2, &argc2);
-//
-//  /* get the old msParamArray  */
-//  popStack(&msParamStack,tmpStr);
-//#ifdef ADDR_64BITS
-//  oldMsParamArray = (msParamArray_t *) strtoll (tmpStr, 0, 0);
-//#else
-//  oldMsParamArray = (msParamArray_t *) atoi(tmpStr);
-//#endif
-//
-//  for (i = 0; i < argc; i++) {
-//    if (args[i][0] == '*') { /* it has not been bound  and hence an output */
-//      mP = getMsParamByLabel (rei->msParamArray, args2[i]);
-//      rmMsParamByLabel (oldMsParamArray, args[i], 0);
-//      addMsParam(oldMsParamArray, args[i], mP->type, mP->inOutStruct, mP->inpOutBuf);
-//    }
-//    else {
-//      /* currently nothing, should I also copy fromnew to old
-//	 because something changed. for the present it is considered a constant */
-//    }
-//  }
-//  freeRuleArgs (args2, argc2);
-//
-//  free(rei->msParamArray);
-//  rei->msParamArray = oldMsParamArray;
-//  return(0);
-//}
-
-
-
 
 int
 insertRulesIntoDB(char * baseName, ruleStruct_t *coreRuleStruct,

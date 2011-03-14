@@ -1409,21 +1409,6 @@ ExprType *parseFuncTypeFromString(char *string, Region *r) {
     deleteHashTable(vt, nop);
     return exprType;
 }
-char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
-    errbuf[0] = '\0';
-    int p = 0;
-    int i;
-    for(i=errmsg->len-1;i>=0;i--) {
-        if(i!=errmsg->len-1) {
-            snprintf(errbuf+p, buflen-p, "caused by: %s\n", errmsg->errMsg[i]->msg);
-        } else {
-            snprintf(errbuf+p, buflen-p, "%s\n", errmsg->errMsg[i]->msg);
-        }
-        p = strnlen(errbuf, buflen);
-    }
-    return errbuf;
-
-}
 
 
 void getSystemFunctions(Hashtable *ft, Region *r) {
