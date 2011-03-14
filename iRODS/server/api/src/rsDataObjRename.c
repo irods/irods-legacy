@@ -272,21 +272,22 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 	status = chlRenameObject (rsComm, srcId, destObj);
 
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
-        i =  applyRuleArg("acPostProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
-        if (i < 0) {
-          if (rei2.status < 0) {
-            i = rei2.status;
-          }
-          rodsLog (LOG_ERROR,
-                   "rsDataObjRename: acPostProcForObjRename error for source %s and destination %s,stat=%d",
-                   args[0], args[1], i);
-          return i;
-        }
+	if (strcmp (srcColl, destColl) == 0) {
+	  i =  applyRuleArg("acPostProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
+	  if (i < 0) {
+	    if (rei2.status < 0) {
+	      i = rei2.status;
+	    }
+	    rodsLog (LOG_ERROR,
+		     "rsDataObjRename: acPostProcForObjRename error for source %s and destination %s,stat=%d",
+		     args[0], args[1], i);
+	    return i;
+	  }
+	}
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
+	
     }
-
+    
     if (status < 0) {
 	return (status);
     }
@@ -322,22 +323,18 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 	status = chlMoveObject (rsComm, srcId, destId);
 
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-	if (acPreProcFromRenameFlag == 0) {
-	  i =  applyRuleArg("acPostProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
-	  if (i < 0) {
-	    if (rei2.status < 0) {
-	      i = rei2.status;
-	    }
-	    rodsLog (LOG_ERROR,
-		     "rsDataObjRename: acPostProcForObjRename error for source %s and destination %s,stat=%d",
-		     args[0], args[1], i);
-	    return i;
+	i =  applyRuleArg("acPostProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
+	if (i < 0) {
+	  if (rei2.status < 0) {
+	    i = rei2.status;
 	  }
+	  rodsLog (LOG_ERROR,
+		   "rsDataObjRename: acPostProcForObjRename error for source %s and destination %s,stat=%d",
+		   args[0], args[1], i);
+	  return i;
 	}
 	/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-	  
-	}
-
+    }
     if (status >= 0) {
         if (multiCopyFlag > 0) {
     	    status = chlCommit(rsComm);
