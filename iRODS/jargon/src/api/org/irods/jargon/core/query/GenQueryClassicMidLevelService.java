@@ -410,7 +410,7 @@ public class GenQueryClassicMidLevelService {
 			if (previousMetaDataConditionWrapper != null) {
 				if (wrapper.getMetaDataCondition()
 						.equals(previousMetaDataConditionWrapper
-								.getMetaDataCondition())) {
+								.getMetaDataCondition()) && wrapper.getAvuComponent() != IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_NAME_COMPONENT) {
 					log.debug("duplicate metaDataCondition ignored:{}", wrapper);
 					continue;
 				}
@@ -709,17 +709,20 @@ public class GenQueryClassicMidLevelService {
 		MetaDataField[] fields = new MetaDataField[attributes];
 		MetaDataRecordList[] rl = new MetaDataRecordList[rows];
 		int j = 0;
+		
 		for (int i = 0; i < attributes; i++) {
 
 			fields[i] = IRODSMetaDataSet.getField(message.getTags()[4 + i]
 					.getTag(attriInx).getStringValue());
 		}
+		
 		for (int i = 0; i < rows; i++) {
 			for (j = 0; j < attributes; j++) {
 
 				results[j] = message.getTags()[4 + j].getTags()[2 + i]
 						.getStringValue();
 			}
+			
 			if (continuation > 0) {
 				rl[i] = new IRODSMetaDataRecordList(irodsCommands, fields,
 						results, continuation);

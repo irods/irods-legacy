@@ -589,6 +589,107 @@ public class IRODSFileSystemMetadataQueryTest {
 				recordList);
 
 	}
+	
+	/*
+	 * Bug [#147] SQL incorrect for gen query associated with '<=' or '>=' or '<' or '>' comparisons
+	 */
+	@Test
+	public void testQueryFileWithAVUUsingGtEqAndLtEq() throws Exception {
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "testQueryFileWithAVUUsingGtEqAndLtEq.txt";
+		String testFileName2 = "testQueryFileWithAVUUsingGtEqAndLtEq2.txt";
+
+		
+		String fileStatusAvuAttrib = "fileStatus";
+		String fileStatusAvuValue = "fileStatusVal";
+		
+		String fileIdAttribA = "fileIdA";
+		String fileIdValueA = "5";
+		String fileIdValueA2 = "8";
+
+		
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+		
+		// generate a file and put into irods
+		String fullPathToTestFile2 = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName2, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile2);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
+				.getIrodsFileName()
+				+ '/' + testFileName);
+		
+		// add AVU's
+		
+		String[] metaData = { fileStatusAvuAttrib, fileStatusAvuValue };
+		irodsFile.modifyMetaData(metaData);
+		
+		String[] metaDataFileId = { fileIdAttribA, fileIdValueA };
+		irodsFile.modifyMetaData(metaDataFileId);
+		
+
+		 irodsFile = new IRODSFile(irodsFileSystem, iputCommand
+					.getIrodsFileName()
+					+ '/' + testFileName2);
+			
+			// add AVU's file 2
+			
+			String[] metaData2 = { fileStatusAvuAttrib, fileStatusAvuValue };
+			irodsFile.modifyMetaData(metaData2);
+			
+			String[] metaDataFileId2 = { fileIdAttribA, fileIdValueA2 };
+			irodsFile.modifyMetaData(metaDataFileId2);
+			
+			MetaDataCondition[] condition = new MetaDataCondition[3];
+			condition[0] = MetaDataSet.newCondition(fileStatusAvuAttrib,
+					MetaDataCondition.EQUAL, fileStatusAvuValue);
+			condition[1] = MetaDataSet.newCondition(fileIdAttribA,
+					MetaDataCondition.GREATER_OR_EQUAL, "1");
+			condition[2] = MetaDataSet.newCondition(fileIdAttribA,
+					MetaDataCondition.LESS_OR_EQUAL, "5");
+			
+		String[] selects = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(selects);
+		MetaDataRecordList[] recordList = irodsFileSystem.query(
+				condition, select, Namespace.FILE);
+		Assert.assertTrue("did not return query result for file I just added",
+				recordList != null);
+		
+		Assert.assertEquals("did not find the 1 file", 1, recordList.length);
+
+		irodsFileSystem.close();
+
+	}
 
 	static final void addAVUsToDir(IRODSFileSystem irodsFileSystem,
 			String subdirAbsolutePath, String attr, String val)
