@@ -13,10 +13,10 @@
 #include "stringOpr.h"
 #endif
 
-// precond: len(valueOrExpression) < size(desc->valueOrExpression)
+/* precond: len(valueOrExpression) < size(desc->valueOrExpression) */
 FunctionDesc *newFunctionDesc(char *valueOrExpression, char *type, void *func, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
-    //desc->arity = arity;
+    /*desc->arity = arity; */
     desc->func = func;
     desc->next = NULL;
     desc->type = type == NULL? NULL:parseFuncTypeFromString(type, r);
@@ -29,13 +29,13 @@ FunctionDesc *newFunctionDescChain(char *valueOrExpression, char *type, void *fu
     return desc;
 }
 
-// precond: length of params == 3
+/* precond: length of params == 3 */
 Res *smsi_ifExec(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
     Res *res = evaluateExpression3(params[0],rei,reiSaveFlag,env,errmsg,r);
     if(TYPE(res) == T_ERROR) {
             return res;
     }
-//                printTree(params[2], 0);
+/*                printTree(params[2], 0); */
     if(res->value.d == 0) {
         switch(((Node *)params[2])->type) {
             case ACTIONS:
@@ -236,15 +236,15 @@ Res *smsi_fail(void **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiS
 
 Res *smsi_assign(void **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
-    // An smsi shares the same env as the enclosing rule.
-    // Therefore, our modification to the env is reflected to the enclosing rule automatically.
+    /* An smsi shares the same env as the enclosing rule. */
+    /* Therefore, our modification to the env is reflected to the enclosing rule automatically. */
     Res *val = evaluateExpression3(subtrees[1], rei, reiSaveFlag,  env, errmsg,r);
     if(TYPE(val)==T_ERROR) {
         return val;
     }
     char *varName;
-    varName = ((Node*)subtrees[0])->text; // the first subtree is an ACTIONS node that has only one TEXT subtree
-//		char buf[MAX_COND_LEN * 2];
+    varName = ((Node*)subtrees[0])->text; /* the first subtree is an ACTIONS node that has only one TEXT subtree */
+/*		char buf[MAX_COND_LEN * 2]; */
     return setVariableValue(varName, val, rei, env, errmsg, r);
 }
 
@@ -351,7 +351,7 @@ Res *smsi_min(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(((Res *)params[0])->value.c.len > 0) {
 		Res *res = newRes(r);
                 ExprType *elemType = ((Res *)params[0])->type->ext.cons.typeArgs[0];
-		// allocate memory for elements
+		/* allocate memory for elements */
                 res->type = newCollType(elemType, r);
                 res->value.c.len = ((Res *)params[0])->value.c.len-1;
                 res->value.c.elems = (Res **) region_alloc(r, sizeof(Res *)*res->value.c.len);
@@ -368,7 +368,7 @@ Res *smsi_min(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
         Res *smsi_cons(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
             Res *res = newRes(r);
             ExprType *elemType = ((Res *)params[0])->type;
-            // allocate memory for elements
+            /* allocate memory for elements */
             res->type = newCollType(elemType, r);
             res->value.c.len = ((Res *)params[1])->value.c.len+1;
             res->value.c.elems = (Res **) region_alloc(r, sizeof(Res *)*res->value.c.len);
@@ -393,7 +393,7 @@ Res *smsi_min(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                 return newErrorRes(r, -1);
             }
 
-            // allocate memory for elements
+            /* allocate memory for elements */
             res->type = newCollType(elemType, r);
             res->value.c.len = coll->value.c.len;
             res->value.c.elems = (Res **) region_alloc(r, sizeof(Res *)*res->value.c.len);
@@ -405,7 +405,7 @@ Res *smsi_min(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             Res *res = newRes(r);
             ExprType *elemType =
                 n == 0?newSimpType(T_DYNAMIC, r):((Res *)params[0])->type;
-            // allocate memory for elements
+            /* allocate memory for elements */
             res->type = newCollType(elemType, r);
             res->value.c.len = n;
             res->value.c.elems = (Res **) region_alloc(r, sizeof(Res *)*n);
@@ -442,7 +442,7 @@ Res *smsi_min(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 	}
         Res *smsi_pair(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
             Res *res = newRes(r);
-		// allocate memory for elements
+		/* allocate memory for elements */
             ExprType **typeArgs = (ExprType **) region_alloc(r, sizeof(ExprType *) * 2);
             res->value.c.len = 2;
             res->value.c.elems = (Res **) region_alloc(r, sizeof(Res *)*2);
@@ -481,7 +481,7 @@ Res *smsi_min(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		Res* timestr = params[0];
 		char* format;
 		if(TYPE((Res *)params[0])!=STRING ||
-			(n == 2 && TYPE((Res *)params[1])!=STRING)) { // error not a string
+			(n == 2 && TYPE((Res *)params[1])!=STRING)) { /* error not a string */
                         res->type = newSimpType(T_ERROR,r);
 			res->value.e = UNSUPPORTED_OP_OR_TYPE;
                         snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res(params[0]), n==2?typeName_Res(params[1]):"null");
@@ -923,7 +923,7 @@ Res *smsi_like_regex(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
         pattern = params[1]->value.s.pointer;
         bufstr = strdup(params[0]->value.s.pointer);
         #ifdef _POSIX_VERSION
-        // make the regexp match whole strings
+        /* make the regexp match whole strings */
         char *buf2;
         buf2 = matchWholeString(pattern);
         regex_t regbuf;
@@ -942,8 +942,8 @@ Res *smsi_like_regex(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
         strcat(res->value.s,expr2->value.s);
         strcat(res->value.s,",");
         strcat(res->value.s,buf);*/
-        //strcat(res->value.s,",");
-        //strcat(res->value.s, ch);
+        /*strcat(res->value.s,","); */
+        /*strcat(res->value.s, ch); */
         free(buf2);
         free(bufstr);
         return res;
@@ -957,7 +957,7 @@ Res *smsi_notlike_regex(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
         pattern = params[1]->value.s.pointer;
         bufstr = strdup(params[0]->value.s.pointer);
         #ifdef _POSIX_VERSION
-        // make the regexp match whole strings
+        /* make the regexp match whole strings */
         char *buf2;
         buf2 = matchWholeString(pattern);
 
@@ -987,7 +987,7 @@ Res *smsi_notlike_regex(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 
 Res *smsi_eval(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **params = (Res **)paramsr;
-    //printf("\neval: %s\n", params[0]->value.s.pointer);
+    /*printf("\neval: %s\n", params[0]->value.s.pointer); */
     return eval(params[0]->value.s.pointer, env, rei, reiSaveFlag, errmsg, r);
 }
 
@@ -1167,7 +1167,7 @@ Res *smsi_writeString(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, in
 }
 
 Res *smsi_triml(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
-    // if the length of delim is 0, strstr should return str
+    /* if the length of delim is 0, strstr should return str */
     Res *strres = (Res *)paramsr[0];
     Res *delimres = (Res *)paramsr[1];
 
@@ -1176,10 +1176,10 @@ Res *smsi_triml(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
 
     char *p = strstr(str, delim);
     if(p!=NULL) {
-        // found
+        /* found */
         return newStringRes(r, p+strlen(delim));
     } else {
-        // not found return the original string
+        /* not found return the original string */
         return strres;
     }
 
@@ -1204,22 +1204,22 @@ Res *smsi_trimr(void **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
         p = strstr(p+1, delim);
     }
     if(newp == NULL) {
-        // not found
+        /* not found */
         return strres;
     } else {
-        // found set where newp points to to \0
+        /* found set where newp points to to \0 */
         char temp = *newp;
         *newp = '\0';
 
         Res *res = newStringRes(r, str);
-        // restore
+        /* restore */
         *newp = temp;
         return res;
     }
 
 }
 
-// utilities
+/* utilities */
 FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
             ExprType *fTypeCopy = fDesc->type;
 
@@ -1256,7 +1256,7 @@ int getParamIOType(char *iotypes, int index) {
         return iotypes[index];
     } else if(repeat) {
         return iotypes[l-1];
-    } else { // error
+    } else { /* error */
         return -1;
     }
 }
@@ -1293,7 +1293,7 @@ ExprType *getTypeFromChar(char **ch, Hashtable *vtable, Region *r) {
                 (*ch)++;
                 restype = newCollType(getTypeFromChar(ch, vtable, r),r);
                 break;
-            case 'p': // product type
+            case 'p': /* product type */
                 (*ch)++;
                 int arity = **ch - '0';
                 char name[3];
@@ -1306,23 +1306,23 @@ ExprType *getTypeFromChar(char **ch, Hashtable *vtable, Region *r) {
                 }
                 restype = newConsType(arity, cpString(name, r), typeArgs, r);
                 break;
-            case 'f': // flexible type, non dynamic coercion allowed
+            case 'f': /* flexible type, non dynamic coercion allowed */
                 (*ch)++;
                 restype = getTypeFromChar(ch, vtable, r);
-                restype->coercionAllowed = 1; // = 0;
+                restype->coercionAllowed = 1; /* = 0; */
                 break;
-            case '`': // irods type
+            case '`': /* irods type */
                 chEnd = *ch;
                 while(*chEnd!='`') {
                     if(*chEnd == '\0') {
-                        // todo handle error
+                        /* todo handle error */
                     }
                     chEnd++;
                 }
-                // temporarily change chEnd to \0
+                /* temporarily change chEnd to \0 */
                 *chEnd = '\0';
                 restype = newIRODSType((*ch)+1, r);
-                // restore chEnd
+                /* restore chEnd */
                 *chEnd = '`';
                 *ch = chEnd+1;
                 break;
@@ -1336,18 +1336,18 @@ ExprType *getTypeFromChar(char **ch, Hashtable *vtable, Region *r) {
                     if((tvar = lookupFromHashTable(vtable, vname))==NULL) {
                         insertIntoHashTable(vtable, vname, tvar = newTVar(r));
                         if(**ch == '{') {
-                            // union
+                            /* union */
                             (*ch)++;
                             while(**ch != '}') {
                                 T_VAR_DISJUNCT(tvar, T_VAR_NUM_DISJUNCTS(tvar)++) = getTypeFromChar(ch, vtable, r)->t;
                             }
-                            (*ch)++; // skip }
+                            (*ch)++; /* skip } */
                         }
                     }
                     restype = tvar;
                 } else {
                     (*ch)++;
-                    //error
+                    /*error */
                     return NULL;
                 }
                 break;
@@ -1384,7 +1384,7 @@ ExprType *parseFuncTypeFromString(char *string, Region *r) {
         vararg = ONCE;
     }
 
-    ExprType **paramTypes = (ExprType **) region_alloc(r, sizeof(ExprType *)*MAX_FUNC_PARAMS); // assume that there are 10 params maximum
+    ExprType **paramTypes = (ExprType **) region_alloc(r, sizeof(ExprType *)*MAX_FUNC_PARAMS); /* assume that there are 10 params maximum */
     int i;
     Hashtable *vt = newHashTable(MAX_FUNC_PARAMS);
     i=0;
@@ -1395,15 +1395,15 @@ ExprType *parseFuncTypeFromString(char *string, Region *r) {
     }
     arity = i;
     if(*p=='*') {
-        p++; // skip *
+        p++; /* skip * */
     }
     if(*p=='+') {
-        p++; // skip +
+        p++; /* skip + */
     }
     if(*p=='>') {
-        p++; // skip >
+        p++; /* skip > */
     }
-    //p = string + (strlen(string)-1);
+    /*p = string + (strlen(string)-1); */
     ExprType *retType = getTypeFromChar(&p,vt, r);
     ExprType *exprType = newFuncTypeVarArg(arity, vararg, paramTypes, retType, r);
     deleteHashTable(vt, nop);

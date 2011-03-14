@@ -74,9 +74,9 @@ Hashtable* copyHashtableCharPtrToIntPtr(void **buf, Hashtable *h) {
         prev->next = bcopy;
       }
 
-      // copy key
+      /* copy key */
       allocateArray(p, char, strlen(b->key) + 1, bcopy->key, b->key);
-      // copy value
+      /* copy value */
       allocateArray(p, int, 1, bcopy->value, b->value);
 
       prev = bcopy;
@@ -113,9 +113,9 @@ Hashtable* copyHashtableCharPtrToCondIndexValPtr(void **buf, Hashtable *h) {
         prev->next = bcopy;
       }
 
-      // copy key
+      /* copy key */
       allocateArray(p, char, strlen(b->key) + 1, bcopy->key, b->key);
-      // copy value
+      /* copy value */
       bcopy->value = copyCondIndexVal(&p, bcopy->value);
 
       prev = bcopy;
@@ -135,7 +135,7 @@ Cache *copyCache(void **buf, Cache *c) {
     Cache *ccopy = ((Cache *)p);
     *ccopy = *c;
     p+=sizeof(Cache);
-    //allocate(p, Cache, ccopy, *c);
+    /*allocate(p, Cache, ccopy, *c); */
 
     ccopy->offset = *buf;
     ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet);
@@ -149,7 +149,7 @@ Cache *copyCache(void **buf, Cache *c) {
 #define APPLY_DIFF(p, d) if((p)!=NULL){void *temp = p; temp+=(d); (p)=temp;}
 Cache *restoreCache(void *buf) {
     if(((CacheRecordDesc *)buf)->type != Cache_T) {
-        // error
+        /* error */
         return NULL;
     }
     Cache *cache = (Cache *)(buf + sizeof(CacheRecordDesc)/sizeof(void));
@@ -260,7 +260,7 @@ Cache *restoreCache(void *buf) {
                     APPLY_DIFF(((CondIndexVal *)p)->condExp, diff);
                     APPLY_DIFF(((CondIndexVal *)p)->valIndex, diff);
 
-                    //((Cache *)p)->offset += diff;
+                    /*((Cache *)p)->offset += diff; */
                     p+=sizeof(CondIndexVal)/sizeof(void);
                 }
                 break;
@@ -334,7 +334,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
           shmid = shmget(key, SHMMAX, IPC_CREAT /*| IPC_EXCL*/ | 0666);
         } else {
           shmid = shmget(key, SHMMAX, 0666);
-          if(shmid != -1) { // not server process and shm is successfully allocated
+          if(shmid != -1) { /* not server process and shm is successfully allocated */
             void *shm = shmat(shmid, addr, 0);
             Cache *cache = restoreCache(shm);
             coreRuleIndex = cache->coreRuleIndex;
@@ -397,15 +397,15 @@ ret:
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct, Region *r)
 {
   int i = 0;
-//  char l0[MAX_RULE_LENGTH];
-//  char l1[MAX_RULE_LENGTH];
-//  char l2[MAX_RULE_LENGTH];
-//  char l3[MAX_RULE_LENGTH];
+/*  char l0[MAX_RULE_LENGTH]; */
+/*  char l1[MAX_RULE_LENGTH]; */
+/*  char l2[MAX_RULE_LENGTH]; */
+/*  char l3[MAX_RULE_LENGTH]; */
    char rulesFileName[MAX_NAME_LEN];
-//   FILE *file;
-//   char buf[MAX_RULE_LENGTH];
+/*   FILE *file; */
+/*   char buf[MAX_RULE_LENGTH]; */
    char *configDir;
-//   char *t;
+/*   char *t; */
    i = inRuleStrct->MaxNumOfRules;
 
    if (ruleBaseName[0] == '/' || ruleBaseName[0] == '\\' ||

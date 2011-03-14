@@ -32,15 +32,15 @@ extern Op new_ops[];
 
 #define POINTER_BUF_SIZE 1024
 typedef struct pointer {
-	FILE *fp; // file
-	char buf[POINTER_BUF_SIZE]; // buffer
-	int len; // len of string in buf
-	int p; // pointer to next char in buf
-	long fpos; // position of the beginning of the buffer in file
-        int strp; // pointer to next char in strbuf
-        char *strbuf; // string buffer
+	FILE *fp; /* file */
+	char buf[POINTER_BUF_SIZE]; /* buffer */
+	int len; /* len of string in buf */
+	int p; /* pointer to next char in buf */
+	long fpos; /* position of the beginning of the buffer in file */
+        int strp; /* pointer to next char in strbuf */
+        char *strbuf; /* string buffer */
         int isFile;
-        char ruleBaseName[MAX_NAME_LEN]; // core, app, or empty string
+        char ruleBaseName[MAX_NAME_LEN]; /* core, app, or empty string */
 } Pointer;
 
 

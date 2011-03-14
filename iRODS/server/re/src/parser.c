@@ -64,9 +64,9 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
 	return node;
 }
 void setBase(Node *node, char *base, Region *r) {
-//    if(strcmp(base, "test")!=0) {
-//        printf("error");
-//    }
+/*    if(strcmp(base, "test")!=0) { */
+/*        printf("error"); */
+/*    } */
         node->base= region_alloc(r, sizeof(char)*(strlen(base)+1));
         strcpy(node->base, base);
 
@@ -224,7 +224,7 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
         getFPos(&start, e);
         token->exprloc = start.exprloc;
         char ch = lookAhead(e, 0);
-        if (ch == -1) { // reach the end of stream
+        if (ch == -1) { /* reach the end of stream */
             token->type = EOS;
             strcpy(token->text, "EOS");
             break;
@@ -266,7 +266,7 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
                 }
                 nextChar(e);
                 break;
-            } else if (ch == '*' || ch == '$') { // variable
+            } else if (ch == '*' || ch == '$') { /* variable */
                 ch = nextChar(e);
                 if (ch == '_' || isalpha(ch)) {
                     ch = nextChar(e);
@@ -445,7 +445,7 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
 
             skip(e, "}", &token, rulegen);
             ERROR(token.type==ERROR);
-            //deleteTree(rule);
+            /*deleteTree(rule); */
         }
         else {
             Label condstart;
@@ -453,7 +453,7 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
             *numberOfRules = 1;
             nextTokenRuleGen(e, &token, rulegen);
             if(token.type==TEXT && strcmp(token.text, "|") == 0)
-            { // empty condition
+            { /* empty condition */
                 cond = createTextNode("true", &condstart,r);
             }
             else
@@ -466,13 +466,13 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
 
             parseRuleActions(e, acti, rulegen, backwardCompatible, acti+1,errmsg, r);
             ERROR(acti[0]==NULL || acti[0]->type == ERROR);
-            //deleteTree(acti[1]);
+            /*deleteTree(acti[1]); */
             acti[1] = NULL;
             skip(e, "|", &token, rulegen);
             ERROR(token.type == ERROR);
             parseRuleActions(e, reco, rulegen, backwardCompatible, reco+1,errmsg, r);
             ERROR(reco[0]==NULL || reco[0]->type == ERROR);
-            //deleteTree(reco[1]);
+            /*deleteTree(reco[1]); */
             reco[1] = NULL;
             Node** subtrees = setDegree(rule, 4,r);
             ERROR(subtrees == NULL);
@@ -528,7 +528,7 @@ void parseRuleName(Pointer *e, Node **name, Region *r) {
 	Node *params[MAX_COND_LEN];
 
 	if(res.type==2 && strcmp(res.text,"(")==0) {
-		// parse parameter list
+		/* parse parameter list */
 		while(1) {
 			Token token, token2;
 			Label es;
@@ -594,7 +594,7 @@ void parseRuleActions(Pointer *e, Node **node, int rulegen, int backwardCompatib
         if(strcmp(token2.text,":::")==0) {
             nextTermRuleGen(e, &value2, MIN_PREC, rulegen,errmsg,r);
             ERROR(value2 == NULL || value2->type == ERROR);
-            //deleteTree(recoveries[n-1]);
+            /*deleteTree(recoveries[n-1]); */
             recoveries[n-1] = value2;
             value2 = NULL;
             nextTokenRuleGen(e, &token2, rulegen);
@@ -626,7 +626,7 @@ void parseRuleActions(Pointer *e, Node **node, int rulegen, int backwardCompatib
                     if(rulegen) {
                         continue;
                     } else {
-                        // possible beginning of a new rule
+                        /* possible beginning of a new rule */
                         break;
                     }
 		}
@@ -775,7 +775,7 @@ void parseActionArgumentBackwardCompatible(Pointer *e, Node **node, rError_t *er
 
 }
 void nextTermRuleGen(Pointer *e, Node **node, int prec, int rulegen /* = 0 */, rError_t *errmsg, Region *r) {
-//	Label * start = getFPos(e);
+/*	Label * start = getFPos(e); */
 	Token token;
 	Node *term = NULL;
 	Node *value = NULL;
@@ -845,7 +845,7 @@ void convertStringToExpression(Token *token, char *base, Node **node, Region *r)
             st[0] = 0;
             end[0] = strlen(str);
             while(token->vars[i]!=-1) {
-                // this string contains reference to vars
+                /* this string contains reference to vars */
                 int vs = token->vars[i];
                 i++;
                 if(!isalpha(str[vs+1]) && str[vs+1]!='_') {
@@ -868,7 +868,7 @@ void convertStringToExpression(Token *token, char *base, Node **node, Region *r)
             *node = createStringNode(sbuf, &pos,r);
             ERROR(*node == NULL || (*node)->type == ERROR);
             for(k=1;k<noi;k++) {
-                strncpy(sbuf, str+end[k-1], st[k]-end[k-1]); // var
+                strncpy(sbuf, str+end[k-1], st[k]-end[k-1]); /* var */
                 strcpy(sbuf+st[k]-end[k-1], delim);
                 Node *node0 = *node;
                 pos.exprloc = start + end[k-1];
@@ -913,7 +913,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
 	ERROR(token.type == ERROR || (token.type == TEXT && strcmp(token.text, "|")==0));
 	if(token.type == TEXT && ((token.text[0]=='*' && strlen(token.text)>1) ||
 	   (token.text[0]=='$' && strlen(token.text)>1) ||
-	   strcmp(token.text, "nop") == 0)) { // variables or nop
+	   strcmp(token.text, "nop") == 0)) { /* variables or nop */
 		*node = createTextNode(token.text, &start,r);
 		ERROR(*node == NULL);
 		return;
@@ -931,12 +931,12 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
             Node *reco;
             parseRuleActions(e, node, rulegen, 0, &reco,errmsg, r);
             ERROR(*node ==NULL || (*node)->type==ERROR);
-            //deleteTree(reco);
+            /*deleteTree(reco); */
             ERROR(skip(e, etok, &token, rulegen)==0);
             return;
 	} else if (isUnaryOp(&token)) {
 		nextValueRuleGen(e, &value, rulegen,errmsg, r);
-                *node = value; // copy value to node so because error handling works on node only
+                *node = value; /* copy value to node so because error handling works on node only */
 		ERROR (value == NULL || value->type==ERROR);
 		*node = createUnaryFunctionNode(token.text, value, &start,r);
 		ERROR(*node == NULL || (*node)->type == ERROR);
@@ -952,7 +952,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
 	} else if(token.type == STRING) {
             convertStringToExpression(&token, e->ruleBaseName, node, r);
             return;
-	} else { // function
+	} else { /* function */
             ERROR(! isalpha(token.text[0]));
 		Label estart;
                 getFPos(&estart, e);
@@ -972,7 +972,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     parseRuleActions(e, &value, rulegen, 0, &reco,errmsg,r);
                     *node = value;
                     ERROR(value->type == ERROR);
-                    if(value->degree==1) { // single action sequences are converted back to expressions
+                    if(value->degree==1) { /* single action sequences are converted back to expressions */
                         value = value->subtrees[0];
                     }
                     params[1] = value;
@@ -996,13 +996,13 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                             parseRuleActions(e, &value, rulegen, 0, &reco,errmsg,r);
                             *node = value;
                             ERROR(value->type == ERROR);
-                            if(value->degree==1) { // single action sequences are converted back to expressions
+                            if(value->degree==1) { /* single action sequences are converted back to expressions */
                                 value = value->subtrees[0];
                             }
                             params[2] = value;
                             params[4] = reco;
                             ERROR(skip(e, "}", &tk, rulegen)==0);
-                        } else { // if
+                        } else { /* if */
                             pushback(e, &tk);
                             nextValueRuleGen(e, &(params[2]), rulegen, errmsg, r);
                             ERROR(params[2]==NULL || params[2]->type == ERROR);
@@ -1026,7 +1026,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     ERROR(value==NULL || value->type == ERROR);
                     params[n++] = value;
                     params[n++] = reco;
-                    //deleteTree(reco);
+                    /*deleteTree(reco); */
                     ERROR(skip(e, "}", &tk, rulegen)==0);
                     *node = createFunctionNode(fn, params, n, &estart,r);
                     return;
@@ -1044,7 +1044,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     ERROR(value->type == ERROR);
                     params[n++] = value;
                     params[n++] = reco;
-                    //deleteTree(reco);
+                    /*deleteTree(reco); */
                     ERROR(skip(e, "}", &tk, rulegen)==0);
                     *node = createFunctionNode(fn, params, n, &estart,r);
                     return;
@@ -1089,10 +1089,10 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                                 *node = value;
 
                                 ERROR(value==NULL || value->type == ERROR);
-                                if(value->degree==1) { // single action sequences are converted back to expressions
+                                if(value->degree==1) { /* single action sequences are converted back to expressions */
                                     value = value->subtrees[0];
                                 }
-    //                            deleteTree(reco);
+    /*                            deleteTree(reco); */
                                 params[n++]=value;
                                 nextTokenRuleGen(e, &token2, rulegen);
                                 ERROR(token2.type!=TEXT);
@@ -1127,10 +1127,10 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
  * return number of vars or -1 if no string found
  */
 int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char escape, int vars[]) {
-	int mode=1; // 1 string 3 escape
+	int mode=1; /* 1 string 3 escape */
         int nov = 0;
 	char* value0=value;
-//        Label * start = getFPos(e);
+/*        Label * start = getFPos(e); */
 	*value = lookAhead(e, 0);
 	value++;
 	char ch = nextChar(e);
@@ -1286,7 +1286,7 @@ StringList *getVarNamesInExprNodeAux(Node *expr, StringList *vars, Region *r) {
                 nvars->str = expr->text;
                 return nvars;
             }
-            // non var
+            /* non var */
         default:
             for(i =0;i<expr->degree;i++) {
                 vars = getVarNamesInExprNodeAux(expr->subtrees[i], vars, r);
@@ -1310,9 +1310,9 @@ void nextChars(Pointer *p, int len) {
 int nextChar(Pointer *p) {
     if(p->isFile) {
 	int ch = lookAhead(p, 1);
-	//if(ch != -1) {
+	/*if(ch != -1) { */
 		p->p++;
-	//}
+	/*} */
 	return ch;
     } else {
         if(p->strbuf[p->strp] == '\0') {
@@ -1320,7 +1320,7 @@ int nextChar(Pointer *p) {
         }
         int ch = p->strbuf[++p->strp];
         if(ch == '\0') {
-            ch = -1; // return -1 for eos
+            ch = -1; /* return -1 for eos */
 	}
 	return ch;
     }
@@ -1364,12 +1364,12 @@ void initPointer2(Pointer *p, char *buf) {
 void readToBuffer(Pointer *p) {
     if(p->isFile) {
 	int move = (p->len+1)/2;
-	move = move > p->p? p->p : move; // prevent next char from being deleted
+	move = move > p->p? p->p : move; /* prevent next char from being deleted */
 	int startpos = p->len - move;
 	int load = POINTER_BUF_SIZE - startpos;
-	// move remaining to the top of the buffer
+	/* move remaining to the top of the buffer */
 	memcpy(p->buf,p->buf+move,startpos*sizeof(char));
-	// load from file
+	/* load from file */
 	int count = fread(p->buf+startpos, sizeof(char), load, p->fp);
 	p->len = startpos + count;
 	p->p -= move;
@@ -1397,7 +1397,7 @@ void clearBuffer(Pointer *p) {
    }
 }
 
-// assume that n is less then POINTER_BUF_SIZE
+/* assume that n is less then POINTER_BUF_SIZE */
 int dupString(Pointer *p, Label * start, int n, char *buf) {
    if(p->isFile) {
 	Label curr;
@@ -1470,7 +1470,7 @@ Label *getFPos(Label *l, Pointer *p) {
         l->base = p->ruleBaseName;
         return l;
 }
-// assume that n is less then POINTER_BUF_SIZE/2
+/* assume that n is less then POINTER_BUF_SIZE/2 */
 int lookAhead(Pointer *p, int n) {
 	if(p->isFile) {
 		if(p->p+n >= p->len) {
@@ -1489,9 +1489,9 @@ int lookAhead(Pointer *p, int n) {
 
 }
 
-// backward compatibility with the previous version
+/* backward compatibility with the previous version */
 char *functionParameters(char *e, char *value) {
-	int mode=0; // 0 params 1 string 2 string2 3 escape 4 escape2
+	int mode=0; /* 0 params 1 string 2 string2 3 escape 4 escape2 */
 	int l0 = 0;
 	while(*e!=0) {
 		*value = *e;
@@ -1544,7 +1544,7 @@ char *functionParameters(char *e, char *value) {
 	return e;
 }
 char *nextStringString(char *e, char *value) {
-	int mode=1; // 1 string 3 escape
+	int mode=1; /* 1 string 3 escape */
 	char* e0=e;
 	char* value0=value;
 			*value = *e;
@@ -1573,7 +1573,7 @@ char *nextStringString(char *e, char *value) {
 	return e0;
 }
 char *nextString2String(char *e, char *value) {
-	int mode=1; // 1 string 3 escape
+	int mode=1; /* 1 string 3 escape */
 	char* e0=e;
 	char* value0 = value;
 	*value = *e;
@@ -1605,7 +1605,7 @@ char *nextString2String(char *e, char *value) {
 
 char * nextRuleSection(char* buf, char* value) {
 	char* e=buf;
-	int mode=0; // 0 section 1 string 2 string2 3 escape 4 escape2
+	int mode=0; /* 0 section 1 string 2 string2 3 escape 4 escape2 */
 	while(*e!=0) {
 		*value = *e;
 		switch(mode) {
@@ -1656,7 +1656,7 @@ char * nextRuleSection(char* buf, char* value) {
 void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
     skipWhitespace(e);
     char ch = lookAhead(e, 0);
-    if (ch==-1) { // reach the end of stream
+    if (ch==-1) { /* reach the end of stream */
         token->type = EOS;
         strcpy(token->text,"EOS");
     } else {
@@ -1669,7 +1669,7 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
             skipWhitespace(e);
         } else {
             nextStringBase(e, token->text, ",)", 0, '\\', token->vars);
-            // remove trailing ws
+            /* remove trailing ws */
             int l0;
             l0 = strlen(token->text);
             while(isspace(token->text[l0-1])) {

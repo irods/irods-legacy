@@ -13,7 +13,7 @@ typedef struct condIndexVal CondIndexVal;
 
 struct condIndexVal {
     Node *condExp;
-    Hashtable *valIndex; // char * -> int *
+    Hashtable *valIndex; /* char * -> int * */
 };
 
 
@@ -22,14 +22,14 @@ extern Hashtable *appRuleIndex;
 extern Hashtable *coreRuleFuncMapDefIndex;
 extern Hashtable *appRuleFuncMapDefIndex;
 extern Hashtable *microsTableIndex;
-// this is an index of indexed rules
-// indexed rules are rules such that
-// 1. all rules has the same rule name
-// 2. all rules has an empty param list
-// 3. no other rule has the same rule name
-// 4. the rule conditions are all of the form exp = "string", where exp is the same and "string" is distinct for all rules
-// when a subset of rules are indexed rules, the condIndex
-extern Hashtable *condIndex; // char * -> CondIndexVal *
+/* this is an index of indexed rules */
+/* indexed rules are rules such that */
+/* 1. all rules has the same rule name */
+/* 2. all rules has an empty param list */
+/* 3. no other rule has the same rule name */
+/* 4. the rule conditions are all of the form exp = "string", where exp is the same and "string" is distinct for all rules */
+/* when a subset of rules are indexed rules, the condIndex */
+extern Hashtable *condIndex; /* char * -> CondIndexVal * */
 
 void clearIndex(Hashtable **ruleIndex);
 

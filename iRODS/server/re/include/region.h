@@ -8,20 +8,20 @@
 #include <setjmp.h>
 
 #define DEFAULT_BLOCK_SIZE 1024
-// the alignment in the region in bytes
+/* the alignment in the region in bytes */
 #define ALIGNMENT 4
 
 struct error {
     int code;
     char msg[1024];
-    void *obj; // a generic point to an object which is the source of the error
+    void *obj; /* a generic point to an object which is the source of the error */
 };
 
 struct region_node {
-	unsigned char *block; // pointer to memory block
-	int size; // size of the memory block in bytes
-	int used; // used bytes of the memory block
-	struct region_node *next; // pointer to the next region
+	unsigned char *block; /* pointer to memory block */
+	int size; /* size of the memory block in bytes */
+	int used; /* used bytes of the memory block */
+	struct region_node *next; /* pointer to the next region */
         
 };
 
@@ -43,13 +43,13 @@ typedef struct region_desc {
 #define DELETED(x) (((RegionDesc *)(((void*)(x))-sizeof(RegionDesc)))->del)
 #define SIZE(x) (((RegionDesc *)(((void*)(x))-sizeof(RegionDesc)))->size)
 
-// create a region with initial size is
-// if s == 0 then the initial size is DEFAULT_BLOCK_SIZE
-// returns NULL if it runs out of memory
+/* create a region with initial size is */
+/* if s == 0 then the initial size is DEFAULT_BLOCK_SIZE */
+/* returns NULL if it runs out of memory */
 Region *make_region(size_t is, jmp_buf *label);
-// allocation s bytes in region r
-// return NULL if it runs out of memory
+/* allocation s bytes in region r */
+/* return NULL if it runs out of memory */
 void *region_alloc(Region *r, size_t s);
-// free region r
+/* free region r */
 void region_free(Region *r);
 #endif

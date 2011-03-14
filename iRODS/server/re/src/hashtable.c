@@ -43,7 +43,7 @@ Hashtable *newHashTable(int size) {
  * returns 0 if out of memory
  */
 int insertIntoHashTable(Hashtable *h, char* key, void *value) {
-//    printf("insert %s=%s\n", key, value==NULL?"null":"<value>");
+/*    printf("insert %s=%s\n", key, value==NULL?"null":"<value>"); */
 	struct bucket *b = newBucket(strdup(key), value);
 	if(b==NULL) {
 		return 0;
@@ -74,7 +74,7 @@ void* updateInHashTable(Hashtable *h, char* key, void* value) {
 				void* tmp = b0->value;
 				b0->value = value;
 				return tmp;
-				// free not the value
+				/* free not the value */
 			}
                         b0=b0->next;
 		}
@@ -166,7 +166,7 @@ void deleteBucket(struct bucket *b0, void (*f)(void *)) {
 		if(b0->next!=NULL) {
 			deleteBucket(b0->next, f);
 		}
-                // todo do not delete keys if they are allocated in regions
+                /* todo do not delete keys if they are allocated in regions */
                 free(b0->key);
 		f(b0->value);
 		free(b0);
@@ -177,7 +177,7 @@ void nop(void *a) {
 
 
 
-unsigned long B_hash(unsigned char* string) { // Bernstein hash
+unsigned long B_hash(unsigned char* string) { /* Bernstein hash */
 	unsigned long hash = HASH_BASE;
 	while(*string!='\0') {
 	    hash = ((hash << 5) + hash) + (int)*string;
@@ -186,7 +186,7 @@ unsigned long B_hash(unsigned char* string) { // Bernstein hash
 	return hash;
 
 }
-unsigned long sdbm_hash(char* str) { // sdbm
+unsigned long sdbm_hash(char* str) { /* sdbm */
         unsigned long hash = 0;
         while (*str!='\0') {
             hash = ((int)*str) + (hash << 6) + (hash << 16) - hash;

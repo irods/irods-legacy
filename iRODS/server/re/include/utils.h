@@ -20,10 +20,10 @@
 #define MAX_PARAMS_LEN 100
 #define MAX_ERRMSG_LEN (2*1024)
 
-// parser error -1203000
+/* parser error -1203000 */
 #define PARSER_ERROR -1203000
 #define UNPARSED_SUFFIX -1203001
-// runtime error -1205000
+/* runtime error -1205000 */
 #define RUNTIME_ERROR -1205000
 #define DIVISION_BY_ZERO -1205001
 #define BUFFER_OVERFLOW -1205002
@@ -36,10 +36,10 @@
 #define UNABLE_TO_WRITE_VAR -1205009
 #define UNABLE_TO_READ_VAR -1205010
 #define STRING_OVERFLOW -1205011
-// system error -1207000
+/* system error -1207000 */
 #define OUT_OF_MEMORY -1207001
 #define UNKNOWN_ERROR -1207000
-// type error -1209000
+/* type error -1209000 */
 #define TYPE_ERROR -1209000
 
 #define DATETIME_MS_T "DATETIME_MS_T"
@@ -82,16 +82,16 @@ typedef ExprType *ExprTypePtr;
 typedef struct bucket Bucket;
 typedef Bucket *BucketPtr;
 
-// variable type
+/* variable type */
 struct vtype {
 		int vid;
 		int numDisjuncts;
 		TypeConstructor disjuncts[100];
-//                TypeConstructor lowerBound;
+/*                TypeConstructor lowerBound; */
 };
-// constructed type
+/* constructed type */
 struct cons_type {
-		char typeConsName[10]; // constructor
+		char typeConsName[10]; /* constructor */
 		int arity;
 		ExprType** typeArgs;
 };
@@ -115,13 +115,13 @@ union expr_type_ext {
     struct irods_type irods;
     struct func_type func;
 };
-// expression type
+/* expression type */
 struct expr_type {
     TypeConstructor t;
     int coercionAllowed;
     union expr_type_ext ext;
 };
-// value
+/* value */
 typedef struct res Res;
 struct coll {
 	int len;
@@ -178,7 +178,7 @@ typedef enum node_type {
 	TVAR = 100,
 } NodeType;
 
-// todo change text of dynamically allocated array
+/* todo change text of dynamically allocated array */
 #define MAX_NODE_TEXT_LEN 1023
 
 typedef struct label {
@@ -192,9 +192,9 @@ typedef struct token {
         long exprloc;
 } Token;
 typedef struct node {
-	NodeType type; // syntax type
-	ExprType *exprType; // expression type
-        ExprType *coercion; // coersed type
+	NodeType type; /* syntax type */
+	ExprType *exprType; /* expression type */
+        ExprType *coercion; /* coersed type */
 	char text[MAX_NODE_TEXT_LEN+1];
 	long expr;
 	int degree;
@@ -263,7 +263,7 @@ Res* newIntRes(Region *r, int n);
 Res* newDoubleRes(Region *r, double a);
 Res* newBoolRes(Region *r, int n);
 Res* newErrorRes(Region *r, int errcode);
-// precond: len(s) < size of res1->value.s
+/* precond: len(s) < size of res1->value.s */
 Res* newStringRes(Region *r, char *s);
 Res* newDatetimeRes(Region *r, long dt);
 Res* newCollRes(int size, ExprType *elemType, Region *r);
@@ -288,7 +288,7 @@ msParamArray_t *newMsParamArray();
 void deleteMsParamArray(msParamArray_t *msParamArray);
 
 /** debugging functions */
-//void errorInsert(char *errmsg, char *insert);
+/*void errorInsert(char *errmsg, char *insert); */
 int writeToTmp(char *fileName, char *text);
 void printMsParamArray(msParamArray_t *msParamArray, char *buf2);
 void printHashtable(Hashtable *env, char* buf2);

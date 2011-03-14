@@ -14,23 +14,23 @@ extern "C" {
 
 #define MAX_FUNC_PARAMS 20
 typedef struct function_desc {
-    //int arity;
+    /*int arity; */
     char inOutValExp[10];
-    // a string indicating whether a value or an expression should be passed in or out
-    // each char represents one param,
-    // a = actions,
-    // e = expresion,
-    // i = input value
-    // o = output variable
-    // p = i/o variable
-    // * = repeat previous
+    /* a string indicating whether a value or an expression should be passed in or out */
+    /* each char represents one param, */
+    /* a = actions, */
+    /* e = expresion, */
+    /* i = input value */
+    /* o = output variable */
+    /* p = i/o variable */
+    /* * = repeat previous */
     void *(*func)();
     ExprType *type;
     struct function_desc *next;
 } FunctionDesc ;
 
 FunctionDesc *newFunctionDesc(/*int arity, */char *valueOrExpression, char* type, void *func, Region *r);
-//Hashtable *getSystemFunctionTypes(Region *r);
+/*Hashtable *getSystemFunctionTypes(Region *r); */
 void getSystemFunctions(Hashtable *ft, Region *r);
 
 Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r);

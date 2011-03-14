@@ -54,8 +54,8 @@ Res* getValueFromCollection(char *typ, void *inPtr, int inx, Region *r) {
 
   if (!strcmp(typ,StrArray_MS_T)) {
     strArray_t *strA;
-	// ->size size of an element
-	// ->len  length of the array
+	/* ->size size of an element */
+	/* ->len  length of the array */
     strA = (strArray_t  *) inPtr;
     if (inx >= strA->len) {
       return NULL;
@@ -75,10 +75,10 @@ Res* getValueFromCollection(char *typ, void *inPtr, int inx, Region *r) {
     return res;
   }
   else if (!strcmp(typ,GenQueryOut_MS_T)) {
-    keyValPair_t *k; // element value
-    genQueryOut_t *g = (genQueryOut_t *) inPtr; // the result set
-    char *cname, *aval; // key and value
-    sqlResult_t *v; // a result row
+    keyValPair_t *k; /* element value */
+    genQueryOut_t *g = (genQueryOut_t *) inPtr; /* the result set */
+    char *cname, *aval; /* key and value */
+    sqlResult_t *v; /* a result row */
     if (g->rowCnt == 0 || inx >= g->rowCnt) {
       return NULL;
     }
@@ -90,19 +90,11 @@ Res* getValueFromCollection(char *typ, void *inPtr, int inx, Region *r) {
 		v = g->sqlResult+i;
 		cname = (char *) getAttrNameFromAttrId(v->attriInx);
 		aval = v->value+ v->len*inx;
-                j  = addKeyVal (k, cname,aval); // addKeyVal duplicates the strings
+                j  = addKeyVal (k, cname,aval); /* addKeyVal duplicates the strings */
 		if (j < 0)
 			return NULL;
 	}
 	res = newUninterpretedRes(r, KeyValPair_MS_T, k, NULL);
-	//res->value.uninterpreted.inOutStruct = k;
-//		k  = res->value.keyValPairs;
-//		for (i = 0; i < g->attriCnt; i++) {
-//			v = g->sqlResult+i;
-//			/* assumes same ordering :-) */
-//			aval = v->value+v->len * inx;
-//			k->value[i] = (char *) strdup(aval);
-//		}
     return res;
   }
   else
@@ -111,8 +103,8 @@ Res* getValueFromCollection(char *typ, void *inPtr, int inx, Region *r) {
 int getCollectionSize(char *typ, void *inPtr, Region *r) {
   if (!strcmp(typ,StrArray_MS_T)) {
     strArray_t *strA;
-	// ->size size of an element
-	// ->len  length of the array
+	/* ->size size of an element */
+	/* ->len  length of the array */
     strA = (strArray_t  *) inPtr;
     return strA->len;
   }
@@ -122,7 +114,7 @@ int getCollectionSize(char *typ, void *inPtr, Region *r) {
     return intA->len;
   }
   else if (!strcmp(typ,GenQueryOut_MS_T)) {
-    genQueryOut_t *g = (genQueryOut_t *) inPtr; // the result set
+    genQueryOut_t *g = (genQueryOut_t *) inPtr; /* the result set */
     return g->rowCnt;
   }
   else
@@ -134,12 +126,12 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
     writeToTmp("relog.txt", mP->type);
     writeToTmp("relog.txt", "\n");
     #endif
-	if (strcmp(mP->type, DOUBLE_MS_T) == 0) { // if the parameter is an integer
+	if (strcmp(mP->type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
 		convertDoubleValue(res, *(double *)mP->inOutStruct,r);
 		return 0;
-	} else if (strcmp(mP->type, INT_MS_T) == 0) { // if the parameter is an integer
-            // this could be int, bool, or datatime
-            if(res->type == NULL) { // output parameter
+	} else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
+            /* this could be int, bool, or datatime */
+            if(res->type == NULL) { /* output parameter */
                 res->value.d = *(int *)mP->inOutStruct;
                 res->type = newSimpType(T_INT, r);
             } else
@@ -155,7 +147,7 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
                     convertIntValue(res, *(int *)mP->inOutStruct,r);
             }
             return 0;
-	} else if (strcmp(mP->type, STR_MS_T) == 0) { // if the parameter is a string
+	} else if (strcmp(mP->type, STR_MS_T) == 0) { /* if the parameter is a string */
 		convertStrValue(res, (char *)mP->inOutStruct,r);
 		return 0;
 	} else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
@@ -185,11 +177,11 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 }
 /************************ Microservice parameter type to ExprType ***********************/
 ExprType *convertToExprType(char *type, Region *r) {
-	if (strcmp(type, DOUBLE_MS_T) == 0) { // if the parameter is an integer
+	if (strcmp(type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
 		return newSimpType(T_DOUBLE, r);
-	} else if (strcmp(type, INT_MS_T) == 0) { // if the parameter is an integer
+	} else if (strcmp(type, INT_MS_T) == 0) { /* if the parameter is an integer */
 		return newSimpType(T_INT, r);
-	} else if (strcmp(type, STR_MS_T) == 0) { // if the parameter is a string
+	} else if (strcmp(type, STR_MS_T) == 0) { /* if the parameter is a string */
 		return newSimpType(T_STRING, r);
 /*
 	} else if(strcmp(type, DATETIME_MS_T) == 0) {
@@ -232,30 +224,30 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
         var->inpOutBuf = NULL;
         var->label = NULL;
 			switch(TYPE(res)) {
-				case T_ERROR: // error message
+				case T_ERROR: /* error message */
 					var->inOutStruct = (int *)malloc(sizeof(int));
 					*((int *)var->inOutStruct) = res->value.e;
 					var->type = strdup(INT_MS_T);
 					break;
-				case T_DOUBLE: // number
+				case T_DOUBLE: /* number */
 					var->inOutStruct = (double *)malloc(sizeof(double));
 					*((double *)var->inOutStruct) = res->value.d;
 					var->type = strdup(DOUBLE_MS_T);
 					break;
-				case T_INT: // number
+				case T_INT: /* number */
 					var->inOutStruct = (int *)malloc(sizeof(int));
 					*((int *)var->inOutStruct) = (int)res->value.d;
 					var->type = strdup(INT_MS_T);
 					break;
-				case T_STRING: // string
+				case T_STRING: /* string */
 					var->inOutStruct = strdup(res->value.s.pointer);
 					var->type = strdup(STR_MS_T);
 					break;
-				case T_DATETIME: // date time
-					//var->inOutStruct = (time_t *)malloc(sizeof(time_t));
-					//*((time_t *)var->inOutStruct) = res->value.t;
-					//var->type = strdup(DATETIME_MS_T);
-                                    // Here we pass datatime as an integer to reuse exiting packing instructions. Need to change to long int.
+				case T_DATETIME: /* date time */
+					/*var->inOutStruct = (time_t *)malloc(sizeof(time_t)); */
+					/**((time_t *)var->inOutStruct) = res->value.t; */
+					/*var->type = strdup(DATETIME_MS_T); */
+                                    /* Here we pass datatime as an integer to reuse exiting packing instructions. Need to change to long int. */
 					var->inOutStruct = (int *)malloc(sizeof(int));
 					*((int *)var->inOutStruct) = (int)res->value.t;
 					var->type = strdup(INT_MS_T);
@@ -296,8 +288,8 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
                                 			var->type = strdup(KeyValPair_MS_T);
                                                 	break;
                                                 default:
-                                                    // current there is no existing packing instructions for arbitrary collection
-                                                    // report error
+                                                    /* current there is no existing packing instructions for arbitrary collection */
+                                                    /* report error */
                                                     addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary collection type");
                                                     return -1;
 					}
@@ -312,7 +304,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
                                 var->type = strdup(res->type->ext.irods.name);
                                 break;
                             default:
-                                //error
+                                /*error */
                                 addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary type");
                                 return -1;
 			}
@@ -342,8 +334,8 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 			int ret = convertResToMsParam(v, res, errmsg);
 			v->label = strdup(b->key);
                         if(ret != 0) {
-                            // error
-                            // todo free msParamArray
+                            /* error */
+                            /* todo free msParamArray */
                             return ret;
                         }
 			var->msParam[var->len++] = v;
@@ -450,7 +442,7 @@ char* convertResToString(Res *res0) {
                         return res;
 
             default:
-                //sprintf(res, "error: unsupported type %d", TYPE(res0));
+                /*sprintf(res, "error: unsupported type %d", TYPE(res0)); */
                 return NULL;
 	}
 }
@@ -468,11 +460,11 @@ void printMsParamArray(msParamArray_t *msParamArray, char *buf2) {
         if(mP->inOutStruct == NULL) {
             strncat(buf2, "<null>", MAX_COND_LEN);
         } else {
-            if (strcmp(mP->type, DOUBLE_MS_T) == 0) { // if the parameter is an integer
+            if (strcmp(mP->type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
                 snprintf(buf3, MAX_COND_LEN, "%f:",*(double *)mP->inOutStruct);
-            } else if (strcmp(mP->type, INT_MS_T) == 0) { // if the parameter is an integer
+            } else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
                 snprintf(buf3, MAX_COND_LEN, "%d:",*(int *)mP->inOutStruct);
-            } else if (strcmp(mP->type, STR_MS_T) == 0) { // if the parameter is a string
+            } else if (strcmp(mP->type, STR_MS_T) == 0) { /* if the parameter is a string */
                 snprintf(buf3, MAX_COND_LEN, "%s:",(char *)mP->inOutStruct);
             } else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
                 snprintf(buf3, MAX_COND_LEN, "%ld:",*(time_t *)mP->inOutStruct);

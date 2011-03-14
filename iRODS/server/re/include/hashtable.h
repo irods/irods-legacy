@@ -15,7 +15,7 @@ struct bucket {
 };
 typedef struct hashtable {
 	struct bucket **buckets;
-	int size; // capacity
+	int size; /* capacity */
 	int len;
 } Hashtable;
 

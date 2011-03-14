@@ -67,10 +67,10 @@ Res* evaluateExpression3(Node *expr, ruleExecInfo_t *rei, int reiSaveFlag, Env *
                                 break;
 			}
 
-			// not a variable, evaluate as a function
+			/* not a variable, evaluate as a function */
 		case APPLICATION:
 			oper1 = expr->text;
-                        // try to evaluate as a function,
+                        /* try to evaluate as a function, */
 /*
                         printf("start execing %s\n", oper1);
                         printEnvToStdOut(env);
@@ -93,7 +93,7 @@ Res* evaluateExpression3(Node *expr, ruleExecInfo_t *rei, int reiSaveFlag, Env *
                         res = newErrorRes(r, -1);
                         break;
 	}
-        // coercions are applied at application locations only
+        /* coercions are applied at application locations only */
         return res;
 }
 
@@ -101,14 +101,15 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
         char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
         char *buf2;
         char buf3[ERR_MSG_LEN];
-        // we can ignore non top level type constructors therefore, we only need to call dereference rather than instantiate
+        /* we can ignore non top level type constructors
+         * therefore, we only need to call dereference rather than instantiate */
         ExprType *coercion = dereference(node->coercion, tvarEnv, r);
         if(coercion->t == T_VAR) {
             if(T_VAR_NUM_DISJUNCTS(coercion) == 0) {
                 printf("error");
             }
-            // here T_VAR must be a set of bounds
-            // we fix the set of bounds to the default bound
+            /* here T_VAR must be a set of bounds
+             * we fix the set of bounds to the default bound */
             ExprType *defaultType = newSimpType(T_VAR_DISJUNCT(coercion,0), r);
             updateInHashTable(tvarEnv, getTVarName(coercion->ext.tvar.vid, buf), defaultType);
             coercion = defaultType;
@@ -182,7 +183,7 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
                     }
                     break;
                 case T_CONS:
-                    // we can ignore the not top level type constructor and leave type checking to when it is derefed
+                    /* we can ignore the not top level type constructor and leave type checking to when it is derefed */
                     switch(TYPE(res)) {
                         case T_CONS:
                             return res;
@@ -230,7 +231,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
                                 return newErrorRes(r, (int)res->value.d);
                             }
                             if(TYPE(res) == T_ERROR) {
-                                // run recovery chain
+                                /* run recovery chain */
                                 if(reco!=NULL) {
                                     int i2;
                                     for(i2 = reco->degree-1>i?reco->degree-1:i;i2>=0;i2--) {
@@ -277,12 +278,12 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
         Env *nEnv = newEnv(newHashTable(100), env->global, env->funcDesc);
         Hashtable *localTVarEnv = NULL;
         
-        // look up function descriptor
+        /* look up function descriptor */
         FunctionDesc *fd = lookupFromHashTable(env->funcDesc, fn);
         char *vOrE, desc[MAX_PARAMS_LEN];
         vOrE = desc;
         if(fd!=NULL) {
-            // find matching arity
+            /* find matching arity */
             int found = 0;
             while(fd!=NULL) {
                 if((!strchr(fd->inOutValExp, '*') && !strchr(fd->inOutValExp, '+') && strlen(fd->inOutValExp) == n) ||
@@ -304,7 +305,7 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
         }
         if(fd!=NULL) {
             strncpy(vOrE, fd->inOutValExp, MAX_PARAMS_LEN);
-        } else { // dynamically generate descriptor string based on the subtrees
+        } else { /* dynamically generate descriptor string based on the subtrees */
             for(i=0;i<n;i++) {
                 if(isLocalVariableNode(subtrees[i])) {
                     if(lookupFromHashTable(env->current, subtrees[i]->text)!=NULL ||
@@ -324,18 +325,18 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
 
         localTVarEnv = newHashTable(100);
         List *localTypingConstraints = newList(r);
-        // evaluation parameters and try to resolve remaining tvars with unification
+        /* evaluation parameters and try to resolve remaining tvars with unification */
         for(i=0;i<n;i++) {
             switch(getParamIOType(vOrE,i)) {
-                case 'i': // input
-                case 'p': // input/output
+                case 'i': /* input */
+                case 'p': /* input/output */
                     args[i] = evaluateExpression3(subtrees[i], rei, reiSaveFlag,  env, errmsg, newRegion);
                     if(TYPE((Res *)args[i])==T_ERROR) {
                         res = args[i];
                         RETURN;
                     }
                     if(subtrees[i]->coercion!=NULL && subtrees[i]->coercion->t == TVAR) {
-                        // ExprType *bn;
+                        /* ExprType *bn; */
                         TypingConstraint *tc = newTypingConstraint(((Res *)args[i])->type, subtrees[i]->coercion, LT, subtrees[i] ,r);
                         char buf[ERR_MSG_LEN], buf2[1024], buf3[1024];
                         switch(simplifyLocally(tc, localTVarEnv, newRegion)) {
@@ -358,26 +359,26 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
                         }
                     }
                     break;
-                case 'o': // output
-                case 'e': // expression
-                case 'a': // actions
+                case 'o': /* output */
+                case 'e': /* expression */
+                case 'a': /* actions */
                     break;
             }
         }
-        // solve local typing constraints
-        //typingConstraintsToString(localTypingConstraints, localTVarEnv, buf, 1024);
-        //printf("%s\n", buf);
+        /* solve local typing constraints */
+        /*typingConstraintsToString(localTypingConstraints, localTVarEnv, buf, 1024); */
+        /*printf("%s\n", buf); */
         Node *errnode;
         if(!solveConstraints(localTypingConstraints, localTVarEnv, errmsg, &errnode, r)) {
             res = newErrorRes(r, -1);
             RETURN;
         }
-        //printVarTypeEnvToStdOut(localTVarEnv);
-        // do the conversion
+        /*printVarTypeEnvToStdOut(localTVarEnv); */
+        /* do the conversion */
         for(i=0;i<n;i++) {
             switch(getParamIOType(vOrE,i)) {
-                case 'i': // input
-                case 'p': // input/output
+                case 'i': /* input */
+                case 'p': /* input/output */
                     if(subtrees[i]->coercion!=NULL) {
                         args[i] = processCoercion(subtrees[i], args[i], localTVarEnv, errmsg, newRegion);
                     }
@@ -386,11 +387,11 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
                         RETURN;
                     }
                     break;
-                case 'o': // output
+                case 'o': /* output */
                     args[i] = newStringRes(newRegion, "");
                     break;
-                case 'e': // expression
-                case 'a': // actions
+                case 'e': /* expression */
+                case 'a': /* actions */
                     args[i] = subtrees[i];
                     break;
             }
@@ -410,26 +411,26 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
         for(i=0;i<n;i++) {
             Res *resp = NULL;
             switch(getParamIOType(vOrE,i)) {
-                case 'i': // input
+                case 'i': /* input */
                     break;
-                case 'o': // output
-                    // we don't do coercion here because we only apply coersion at application position
+                case 'o': /* output */
+                    /* we don't do coercion here because we only apply coersion at application position */
                     if(TYPE((Res *)args[i])==T_ERROR) {
                         res = args[i];
                         RETURN ;
                     }
                     resp = setVariableValue(subtrees[i]->text,args[i],rei,env,errmsg,r);
                     break;
-                case 'p': // input/output
-                    // we don't do coercion here because we only apply coersion at application position
+                case 'p': /* input/output */
+                    /* we don't do coercion here because we only apply coersion at application position */
                     if(TYPE((Res *)args[i])==T_ERROR) {
                         res = args[i];
                         RETURN;
                     }
                     resp = setVariableValue(subtrees[i]->text,args[i],rei,env,errmsg,r);
                     break;
-                case 'e': // expression
-                case 'a': // actions
+                case 'e': /* expression */
+                case 'a': /* actions */
                     break;
             }
             if(resp!=NULL && TYPE(resp)==T_ERROR) {
@@ -452,8 +453,8 @@ ret:
 Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
         char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
         char buf2[ERR_MSG_LEN];
-	if(vn[0]=='*') { // local variable
-		// try to get local var from env
+	if(vn[0]=='*') { /* local variable */
+		/* try to get local var from env */
 		Res* res0 = (Res *)lookupFromHashTable(env->current, vn);
 		if(res0==NULL) {
                     res0 = (Res *) lookupFromHashTable(env->global, vn);
@@ -466,7 +467,7 @@ Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, En
 		} else {
                     return res0;
 		}
-	} else if(vn[0]=='$') { // session variable
+	} else if(vn[0]=='$') { /* session variable */
                 Res *res = getSessionVar("",vn,rei, env, errmsg,r);
 		if(res==NULL) {
 		    snprintf(buf, ERR_MSG_LEN, "error: unable to read session variable %s.", vn);
@@ -494,24 +495,24 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
   int i, vinx;
   varValue = NULL;
 
-  // Maps varName to the standard name and make varMap point to it.
-  // It seems that for each pair of varName and standard name there is a list of actions that are supported.
-  // vinx stores the index of the current pair so that we can start for the next pair if the current pair fails.
-  vinx = getVarMap(action,varName, &varMap, 0); // reVariableMap.c
+  /* Maps varName to the standard name and make varMap point to it. */
+  /* It seems that for each pair of varName and standard name there is a list of actions that are supported. */
+  /* vinx stores the index of the current pair so that we can start for the next pair if the current pair fails. */
+  vinx = getVarMap(action,varName, &varMap, 0); /* reVariableMap.c */
   while (vinx >= 0) {
-	// Get the value of session variable referenced by varMap.
-      i = getVarValue(varMap, rei, (char **)&varValue); // reVariableMap.c
-      // convert to char * because getVarValue requires char *
+	/* Get the value of session variable referenced by varMap. */
+      i = getVarValue(varMap, rei, (char **)&varValue); /* reVariableMap.c */
+      /* convert to char * because getVarValue requires char * */
       if (i >= 0) {
             if (varValue != NULL) {
                 Res *res = NULL;
                 FunctionDesc *fd = (FunctionDesc *) lookupBucketFromHashTable(env->funcDesc, varMap);
                 if (fd == NULL) {
-                    // default to string
+                    /* default to string */
                     res = newStringRes(r, (char *) varValue);
                     free(varValue);
                 } else {
-                    ExprType *type = T_FUNC_RET_TYPE(getFuncDescFromChain(0, fd)->type); // get var type from varMap
+                    ExprType *type = T_FUNC_RET_TYPE(getFuncDescFromChain(0, fd)->type); /* get var type from varMap */
                     switch (type->t) {
                         case T_STRING:
                             res = newStringRes(r, (char *) varValue);
@@ -532,7 +533,7 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
                             res->type = type;
                             break;
                         default:
-                            // unsupported type error
+                            /* unsupported type error */
                             res = NULL;
                             addRErrorMsg(errmsg, -1, "error: unsupported session variable type");
                     }
@@ -542,16 +543,16 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
             } else {
                 return NULL;
             }
-    } else if (i == NULL_VALUE_ERR) { // Try next varMap, starting from vinx+1.
+    } else if (i == NULL_VALUE_ERR) { /* Try next varMap, starting from vinx+1. */
       free(varMap);
       vinx = getVarMap(action,varName, &varMap, vinx+1);
-    } else { // On error, return 0.
+    } else { /* On error, return 0. */
       free(varMap);
       if (varValue != NULL) free (varValue);
       return NULL;
     }
   }
-  // varMap not found, return 0.
+  /* varMap not found, return 0. */
   if (varValue != NULL) free (varValue);
   return NULL;
 }
@@ -580,20 +581,20 @@ Res* execAction3(char *actionName, Res** args, int nargs, Node *node, Env *env, 
 	mapExternalFuncToInternalProc2(action);
 
 	int actionInx = actionTableLookUp(action);
-	if (actionInx < 0) { // rule
-		// no action (microservice) found, try to lookup a rule
+	if (actionInx < 0) { /* rule */
+		/* no action (microservice) found, try to lookup a rule */
 		int actionRet = execRule(actionName, args, nargs,  env, rei, reiSaveFlag, errmsg, r);
 		if (actionRet == NO_RULE_FOUND_ERR || actionRet == NO_MORE_RULES_ERR) {
 			snprintf(buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, coreRules.len);
                         generateErrMsg(buf, node->expr, node->base, buf2);
                         addRErrorMsg(errmsg, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR, buf2);
-                        //dumpHashtableKeys(coreRules);
+                        /*dumpHashtableKeys(coreRules); */
 			return newErrorRes(r, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR);
 		}
 		else {
 			return newIntRes(r, actionRet);
 		}
-	} else { // microservice
+	} else { /* microservice */
 		return execMicroService3(action, args, nargs, node, env, rei, errmsg, r);
 	}
 }
@@ -610,7 +611,7 @@ Res* execMicroService3 (char *msName, Res **args, int nargs, Node *node, Env *en
 	msParam_t *myArgv[MAX_PARAMS_LEN];
         Res *res;
 
-	// look up the micro service
+	/* look up the micro service */
 	actionInx = actionTableLookUp(msName);
 
         char errbuf[ERR_MSG_LEN];
@@ -632,7 +633,7 @@ Res* execMicroService3 (char *msName, Res **args, int nargs, Node *node, Env *en
             return newErrorRes(r, ret);
         }
 
-	// convert arguments from Res to msParam_t
+	/* convert arguments from Res to msParam_t */
         char buf[1024];
 	for (i = 0; i < numOfStrArgs; i++) {
             myArgv[i] = (msParam_t *)malloc(sizeof(msParam_t));
@@ -662,7 +663,7 @@ Res* execMicroService3 (char *msName, Res **args, int nargs, Node *node, Env *en
             sprintf(buf,"**%d",i);
             myArgv[i]->label = strdup(buf);
 	}
-        // convert env to msparam array
+        /* convert env to msparam array */
         rei->msParamArray = newMsParamArray();
         int ret = convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
         if(ret!=0) {
@@ -703,7 +704,7 @@ Res* execMicroService3 (char *msName, Res **args, int nargs, Node *node, Env *en
             res = newErrorRes(r, ii);
             RETURN;
         }
-        // converts back env
+        /* converts back env */
 	ret = updateMsParamArrayToEnv(rei->msParamArray, env, errmsg, r);
         if(ret!=0) {
             generateErrMsg("execMicroService3: error env from MsParamArray", node->expr, node->base, errbuf);
@@ -713,7 +714,7 @@ Res* execMicroService3 (char *msName, Res **args, int nargs, Node *node, Env *en
             res = newErrorRes(r, ret);
             RETURN;
         }
-        // params
+        /* params */
 	for (i = 0; i < numOfStrArgs; i++) {
             if(myArgv[i] != NULL) {
                 int ret =
@@ -757,13 +758,13 @@ Res* execMicroService3 (char *msName, Res **args, int nargs, Node *node, Env *en
 
 
 int execRuleFromCondIndex(char *ruleName, CondIndexVal *civ, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
-            //printTree(civ->condExp, 0);
+            /*printTree(civ->condExp, 0); */
             Res* res = evaluateExpression3(civ->condExp, rei, reiSaveFlag, env,  errmsg, r);
             if(TYPE(res) == T_ERROR) {
                 return res->value.e;
             }
             if(TYPE(res) != T_STRING) {
-                // todo try coercion
+                /* todo try coercion */
                 addRErrorMsg(errmsg, -1, "error: the lhs of indexed rule condition does not evaluate to a string");
                 return -1;
             }
@@ -776,7 +777,7 @@ int execRuleFromCondIndex(char *ruleName, CondIndexVal *civ, Env *env, ruleExecI
                 return(NO_MORE_RULES_ERR);
             }
 
-            Node* rule = getRuleNode(*index+1000); // increase the index to move it to core rules index below 1000 are app rules
+            Node* rule = getRuleNode(*index+1000); /* increase the index to move it to core rules index below 1000 are app rules */
 
             ruleExecInfo_t  *saveRei;
 
@@ -821,8 +822,8 @@ int execRule(char *ruleName, Res** args, int argc, /*char** p, int pc, */Env *en
     strcpy(action, ruleName);
     mapExternalFuncToInternalProc2(action);
 
-    // try to find rule by cond index
-    if(condIndex!=NULL) { // if index has been initialized
+    /* try to find rule by cond index */
+    if(condIndex!=NULL) { /* if index has been initialized */
         CondIndexVal *civ = (CondIndexVal *)lookupFromHashTable(condIndex, ruleName);
         if(civ != NULL) {
             if(argc!=0) {
@@ -832,7 +833,7 @@ int execRule(char *ruleName, Res** args, int argc, /*char** p, int pc, */Env *en
                 return(NO_MORE_RULES_ERR);
             }
             status = execRuleFromCondIndex(ruleName, civ,  env, rei, reiSaveFlag, errmsg, r);
-            // restore global flag
+            /* restore global flag */
             GlobalAllRuleExecFlag = tempFlag;
             return status;
         }
@@ -856,7 +857,7 @@ int execRule(char *ruleName, Res** args, int argc, /*char** p, int pc, */Env *en
         }
 
         if (GlobalREDebugFlag)
-            reDebug("  GotRule", ruleInx, ruleName, NULL, rei); // pass in NULL for inMsParamArray for now
+            reDebug("  GotRule", ruleInx, ruleName, NULL, rei); /* pass in NULL for inMsParamArray for now */
 #ifndef DEBUG
         if (reTestFlag > 0) {
             if (reTestFlag == COMMAND_TEST_1)
@@ -867,7 +868,7 @@ int execRule(char *ruleName, Res** args, int argc, /*char** p, int pc, */Env *en
                 rodsLog(LOG_NOTICE, "+Testing Rule Number:%i for Action:%s\n", ruleInx, action);
         }
 #endif
-        //printTree(rule, 0);
+        /*printTree(rule, 0); */
         if (reiSaveFlag == SAVE_REI) {
             if (first == 0) {
                 saveRei = (ruleExecInfo_t *) mallocAndZero(sizeof (ruleExecInfo_t));
@@ -880,7 +881,7 @@ int execRule(char *ruleName, Res** args, int argc, /*char** p, int pc, */Env *en
 
         status = execRuleNodeRes(rule, args, argc,  env, rei, reiSaveFlag, errmsg, r);
         int ret = 0;
-        if (tempFlag == 0) { // apply first rule
+        if (tempFlag == 0) { /* apply first rule */
             switch (status) {
                 case 0:
                     ret = 1;
@@ -898,7 +899,7 @@ int execRule(char *ruleName, Res** args, int argc, /*char** p, int pc, */Env *en
             }
 
 
-        } else { // apply all rules
+        } else { /* apply all rules */
             switch (status) {
                 case 0:
                     if (reiSaveFlag == SAVE_REI)
@@ -921,7 +922,7 @@ int execRule(char *ruleName, Res** args, int argc, /*char** p, int pc, */Env *en
         if (ret) {
             if (reiSaveFlag == SAVE_REI)
                 freeRuleExecInfoStruct(saveRei, 0);
-            // restore global flag
+            /* restore global flag */
             GlobalAllRuleExecFlag = tempFlag;
 
             rei->status = status;
@@ -937,7 +938,7 @@ int execRule(char *ruleName, Res** args, int argc, /*char** p, int pc, */Env *en
             if (reiSaveFlag == SAVE_REI)
                     freeRuleExecInfoStruct(saveRei, 0);
     }
-    // restore global flag
+    /* restore global flag */
     GlobalAllRuleExecFlag = tempFlag;
 
     if(success) {
@@ -997,7 +998,7 @@ int execRuleNodeRes(Node *rule, Res** args, int argc, Env *env, ruleExecInfo_t *
             return(i);
 
         Res *res = evaluateExpression3(ruleCondition, rei, reiSaveFlag,  envNew, errmsg, rNew);
-        // todo consolidate every error into T_ERROR except OOM
+        /* todo consolidate every error into T_ERROR except OOM */
         if (TYPE(res)!=T_ERROR && res->value.d) {
 #ifndef DEBUG
 #if 0
@@ -1012,9 +1013,9 @@ int execRuleNodeRes(Node *rule, Res** args, int argc, Env *env, ruleExecInfo_t *
 #endif
 #endif
             status = executeRuleBodyNode(action, ruleAction, ruleRecovery,  envNew, rei, reiSaveFlag, errmsg,rNew);
-            // copy parameters
+            /* copy parameters */
             copyFromEnv(args, paramsNames, inParamsCount, envNew->current, r);
-            // copy global variables
+            /* copy global variables */
             cpHashtable(envNew->global, r);
             deleteEnv(envNew, 1);
             region_free(rNew);
@@ -1046,8 +1047,8 @@ int executeRuleActionNode(Node *inAction, Env *env, ruleExecInfo_t *rei, int rei
 {
 	Res *res =
 	evaluateExpression3(inAction, rei, reiSaveFlag,  env, errmsg, r);
-	//sprintf(buf, "%s return value type: %d, value: %d", inAction, res.type, res.value.e);
-	//RE_TEST_MACRO(buf);
+	/*sprintf(buf, "%s return value type: %d, value: %d", inAction, res.type, res.value.e); */
+	/*RE_TEST_MACRO(buf); */
 	if(TYPE(res) == T_ERROR) {
 #ifndef DEBUG
             char errbuf[ERR_MSG_LEN];
@@ -1067,7 +1068,7 @@ int executeRuleActionNode(Node *inAction, Env *env, ruleExecInfo_t *rei, int rei
         } else if(TYPE(res) == T_SUCCESS) {
                 return 1;
         } else {
-		// discard result
+		/* discard result */
 		return 0;
 	}
 }

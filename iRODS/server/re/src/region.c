@@ -3,7 +3,7 @@
 #include "region.h"
 #include <string.h>
 
-// utility function
+/* utility function */
 struct region_node *make_region_node(size_t is) {
 	struct region_node *node = malloc(sizeof(Region));
 	if(node == NULL) {
@@ -38,7 +38,7 @@ Region *make_region(size_t is, jmp_buf *label) {
 	
 	r->head = r->active = node;
         r->label = label;
-        r->error.code = 0; // set no error
+        r->error.code = 0; /* set no error */
 	return r;
 }
 void *region_alloc_nodesc(Region *r, size_t s) {
@@ -52,9 +52,9 @@ void *region_alloc_nodesc(Region *r, size_t s) {
             }
             struct region_node *next = make_region_node(blocksize);
             if(next == NULL) {
-                if(r->label == NULL) { // no error handler
+                if(r->label == NULL) { /* no error handler */
                     return NULL;
-                } else { // with error handler
+                } else { /* with error handler */
                     longjmp(*(r->label), -1);
                 }
             }
@@ -90,7 +90,7 @@ void region_free(Region *r) {
 	free(r);
 }
 
-// tests
+/* tests */
 void assert(int res) {
 	if(!res) {
 		printf("error");

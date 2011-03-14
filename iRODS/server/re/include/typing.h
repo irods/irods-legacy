@@ -22,4 +22,4 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
 Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t* errmsg, Node **errnode, Region *r);
 Satisfiability simplifyLocally(TypingConstraint *typingConstraints, Hashtable *typingEnv, Region *r);
 int solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t* errmsg, Node **errnode, Region *r);
-#endif // TYPING_H
+#endif /* TYPING_H */

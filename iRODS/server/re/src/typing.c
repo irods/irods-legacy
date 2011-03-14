@@ -103,7 +103,7 @@ Satisfiability simplifyR(ExprType *type, ExprType *expected, ExprType **bn, Regi
                     break;
                 }
         }
-        // ExprType *gcd;
+        /* ExprType *gcd; */
         if(*bn == NULL) {
             return ABSERDITY;
         } else {
@@ -122,7 +122,7 @@ Satisfiability simplifyL(ExprType *type, ExprType *expected, ExprType **an, Regi
         *an = NULL;
         for(i=0;i<type->ext.tvar.numDisjuncts;i++) {
             a.t = T_VAR_DISJUNCT(type,i);
-//                b->t = T_VAR_DISJUNCT(expected,k);
+/*                b->t = T_VAR_DISJUNCT(expected,k); */
             if(tautologyLt(&a, expected)) {
                 *an = type;
                 break;
@@ -195,11 +195,11 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
             }
             *an = gcd;
             return TAUTOLOGY | CONTIGENCY;
-        } else if(type->ext.tvar.numDisjuncts==0) { // free
+        } else if(type->ext.tvar.numDisjuncts==0) { /* free */
             *an = type;
             *bn = expected;
             return CONTIGENCY;
-        } else /*if(expected->ext.tvar.numDisjuncts==0)*/ { // free
+        } else /*if(expected->ext.tvar.numDisjuncts==0)*/ { /* free */
             *an = type;
             *bn = expected;
             return CONTIGENCY;
@@ -319,11 +319,11 @@ int solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t *er
 /*
             char buf2[1024], buf3[1024];
 */
-            // printf("dereferencing %s and %s.\n", typeToString(tc->a, typingEnv, buf2, 1024), typeToString(tc->b, typingEnv, buf3, 1024));
+            /* printf("dereferencing %s and %s.\n", typeToString(tc->a, typingEnv, buf2, 1024), typeToString(tc->b, typingEnv, buf3, 1024)); */
             ExprType *a = dereference(tc->a, typingEnv, r);
             ExprType *b = dereference(tc->b, typingEnv, r);
-            // printf("warning: collasping %s with %s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024));
-                        //printVarTypeEnvToStdOut(typingEnv);
+            /* printf("warning: collasping %s with %s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024)); */
+                        /*printVarTypeEnvToStdOut(typingEnv); */
             if (a->t == T_VAR && b->t == T_VAR && T_VAR_ID(a) == T_VAR_ID(b)) {
             } else if (a->t == T_VAR && T_VAR_NUM_DISJUNCTS(a) == 0) {
                 insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(a), buf), b);
@@ -343,7 +343,7 @@ int solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t *er
                 printf("error: simplified type does not have variable on either side.");
 
             }
-            // printVarTypeEnvToStdOut(typingEnv);
+            /* printVarTypeEnvToStdOut(typingEnv); */
             listRemove(typingConstraints, ln);
         } else {
             break;
@@ -354,7 +354,7 @@ int solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t *er
 Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t *errmsg, Node **errnode, Region *r) {
     ListNode *ln;
     int changed;
-    // printf("start\n");
+    /* printf("start\n"); */
     do {
         ln = typingConstraints->head;
         changed = 0;
@@ -364,21 +364,21 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
             ExprType *b = tc->b;
             char buf2[1024], buf3[1024], errmsgbuf1[ERR_MSG_LEN], errmsgbuf2[ERR_MSG_LEN];
             ListNode *next = ln->next;
-            // printf("simplifying %s<%s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024));
+            /* printf("simplifying %s<%s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024)); */
             switch(simplifyLocally(tc, typingEnv, r)) {
                 case TAUTOLOGY:
                     listRemove(typingConstraints, ln);
                     ln=next;
                     changed = 1;
-            // printf("tautology\n");
+            /* printf("tautology\n"); */
                     break;
                 case ABSERDITY:
                     *errnode = ((TypingConstraint*)ln->value)->node;
                     snprintf(errmsgbuf1, ERR_MSG_LEN, "unsolvable %s<%s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024));
                     generateErrMsg(errmsgbuf1, (*errnode)->expr, (*errnode)->base, errmsgbuf2);
                     addRErrorMsg(errmsg, -1, errmsgbuf2);
-                    //printVarTypeEnvToStdOut(typingEnv);
-            // printf("abserdity\n");
+                    /*printVarTypeEnvToStdOut(typingEnv); */
+            /* printf("abserdity\n"); */
                     return ABSERDITY;
                     TypingConstraint *curr;
                 case CONTIGENCY:
@@ -390,12 +390,12 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
                     }
                     ln=next;
                     changed |= (a != tc->a || b != tc-> b);
-                    //if(a != tc->a || b != tc-> b) {
-                    //    printf("simplified %s<%s to %s<%s.\n",
-                    //            typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024),
-                    //            typeToString(tc->a, typingEnv, buf2, 1024), typeToString(tc->b, typingEnv, buf3, 1024));
-                    //}
-            // printf("contigency\n");
+                    /*if(a != tc->a || b != tc-> b) { */
+                    /*    printf("simplified %s<%s to %s<%s.\n", */
+                    /*            typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024), */
+                    /*            typeToString(tc->a, typingEnv, buf2, 1024), typeToString(tc->b, typingEnv, buf3, 1024)); */
+                    /*} */
+            /* printf("contigency\n"); */
                     break;
             }
         }
@@ -405,7 +405,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
 }
 
 ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
-    //printTree(node, 0);
+    /*printTree(node, 0); */
     int i;
     char *localErrorMsg;
     ExprType *res3 = NULL;
@@ -413,8 +413,8 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
     char buf[1024];
     char buf2[1024];
     char buf3[1024];
-    //printf("typeing %s\n",fn);
-    //printVarTypeEnvToStdOut(var_type_table);
+    /*printf("typeing %s\n",fn); */
+    /*printVarTypeEnvToStdOut(var_type_table); */
     if(strcmp(fn, "foreach") == 0) {
         ERROR2(node->degree != 3,"wrong number of arguments to microservice");
         ERROR2(node->subtrees[0]->type!=TEXT,"argument form error");
@@ -422,15 +422,15 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
         ExprType *varType = (ExprType *)lookupFromHashTable(var_type_table, varname);
         ExprType *collType = varType == NULL? NULL:dereference(varType, var_type_table, r);
         if(collType!=NULL) {
-            // error if res is not a collection type or a type variable (primitive union type excluded)
+            /* error if res is not a collection type or a type variable (primitive union type excluded) */
             ERROR2(collType->t != CONS && (collType->t != TVAR || T_VAR_NUM_DISJUNCTS(collType)!=0 ), "foreach is applied to a non collection type");
-            // overwrite type of collection variable
+            /* overwrite type of collection variable */
             if(collType->t == TVAR) {
                 unifyTVarL(collType, newCollType(newTVar(r), r), var_type_table,
                         r);
                 collType = dereference(collType, var_type_table, r);
             }
-            // dereference element type as only top level vars are dereferenced by the dereference function and we are accessing a subtree of the type
+            /* dereference element type as only top level vars are dereferenced by the dereference function and we are accessing a subtree of the type */
             updateInHashTable(var_type_table, varname, dereference(T_CONS_TYPE_ARG(collType, 0), var_type_table, r));
         } else {
             ExprType *elemType;
@@ -442,7 +442,7 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
         res3 = typeExpression3(node->subtrees[2],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
         ERROR2(res3->t == T_ERROR, "foreach recovery type error");
 
-        updateInHashTable(var_type_table, varname, collType); // restore type of collection variable
+        updateInHashTable(var_type_table, varname, collType); /* restore type of collection variable */
         return res3;
     } else {
         ERROR2(strcmp(fn, "assign") == 0 &&
@@ -502,8 +502,8 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
                                 generateErrMsg(buf, (*errnode)->expr, (*errnode)->base, buf4);
                                 ERROR2(1, buf4);
                         }
-//                        printType(paramType, NULL);
-//                        printType(gcd, NULL);
+/*                        printType(paramType, NULL); */
+/*                        printType(gcd, NULL); */
                 } else {
                     gcd = unifyWith(
                         paramType,
@@ -521,7 +521,7 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
                     }
                     ERROR2(gcd == NULL,buf);
                 }
-                node->subtrees[i]->coercion = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i); // set coersion to parameter
+                node->subtrees[i]->coercion = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i); /* set coersion to parameter */
                 if(param_type_i != T_FUNC_ARITY(fTypeCopy) - 1 || fTypeCopy->ext.func.vararg==ONCE) {
                     param_type_i++;
                 }
@@ -540,7 +540,7 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
             if((i=typeParameters(params, expr->degree, expr->subtrees, funcDesc, var_type_table, typingConstraints, errmsg, errnode,r)) >= 0) {
                 return params[i];
         }
-		// unknown action
+		/* unknown action */
             return newSimpType(T_DYNAMIC, r);
         }
     }
@@ -567,7 +567,7 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
 			if(expr->text[0]=='$' || expr->text[0]=='*') {
 				ExprType* t = (ExprType *)lookupFromHashTable(varTypes, expr->text);
 				if(t==NULL) {
-					// define new variable
+					/* define new variable */
 					t = newTVar(r);
 					insertIntoHashTable(varTypes, expr->text, t);
 				}
@@ -576,19 +576,19 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
 			} else if(strcmp(expr->text,"nop")==0) {
 				return newSimpType(T_INT, r);
 			}
-			// not a variable, evaluate as a function
+			/* not a variable, evaluate as a function */
 		case APPLICATION:
-                        // try to type as a function
+                        /* try to type as a function */
                         return typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
 		case ACTIONS:
                         if(expr->degree == 0) {
-                            // type of empty action sequence == T_INT
+                            /* type of empty action sequence == T_INT */
                             return newSimpType(T_INT, r);
                         }
                         for(i=0;i<expr->degree;i++) {
-                                //printf("typing action in actions");
+                                /*printf("typing action in actions"); */
     				res = typeExpression3(expr->subtrees[i], funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-                                //printVarTypeEnvToStdOut(varTypes);
+                                /*printVarTypeEnvToStdOut(varTypes); */
 				if(res->t == T_ERROR) {
 					return res;
 				}

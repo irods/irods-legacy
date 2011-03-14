@@ -60,7 +60,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
 	if (*ruleIndex == NULL)
 		return 0;
 
-    // generate main index
+    /* generate main index */
 	int i;
 	for (i=0;i<inRuleSet->len;i++) {
             Node *ruleNode = inRuleSet->rules[i];
@@ -77,7 +77,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
 		}
 	}
 
-	// generate rule condition index
+	/* generate rule condition index */
 	condIndex = newHashTable(MAX_NUM_OF_RULES);
 
     Hashtable *processedRuleNames = newHashTable(MAX_NUM_RULES * 2);
@@ -91,7 +91,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
         while(resumingBucket!=NULL) {
 
             if(lookupFromHashTable(processedRuleNames, resumingBucket->key)) {
-               // group already processed, continue
+               /* group already processed, continue */
                resumingBucket = resumingBucket->next;
                continue;
             }
@@ -102,9 +102,9 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
 
             int currIndex = *(int *)curr->value;
             Node *ruleNode = inRuleSet->rules[currIndex];
-            if(!(ruleNode->subtrees[0]->degree == 0 && // no params
-               ruleNode->subtrees[1]->type == APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && // comparison
-               ruleNode->subtrees[1]->degree == 2 && ruleNode->subtrees[1]->subtrees[1]->type == STRING // with a string
+            if(!(ruleNode->subtrees[0]->degree == 0 && /* no params */
+               ruleNode->subtrees[1]->type == APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && /* comparison */
+               ruleNode->subtrees[1]->degree == 2 && ruleNode->subtrees[1]->subtrees[1]->type == STRING /* with a string */
                )) {
                 continue;
             }
@@ -115,7 +115,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
             int groupRuleCount = 0;
             Hashtable *processedStrs = newHashTable(MAX_NUM_RULES * 2);
 
-            // add curr to group
+            /* add curr to group */
             ruleGroup[groupRuleCount] = currIndex;
             strGroup[groupRuleCount] = ruleNode->subtrees[1]->subtrees[1]->text;
             insertIntoHashTable(processedStrs, strGroup[groupRuleCount], strGroup[groupRuleCount]);
@@ -127,15 +127,15 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
                     curr = curr->next;
                     if(curr == NULL) {
                         if(groupRuleCount > 1) {
-                            // generate cond index if there are more than one rules in this group
+                            /* generate cond index if there are more than one rules in this group */
                             Hashtable *groupHashtable = newHashTable(groupRuleCount * 2);
                             CondIndexVal *civ = (CondIndexVal *)malloc(sizeof(CondIndexVal));
                             civ->condExp = condNode->subtrees[0];
                             civ->valIndex = groupHashtable;
-                            // todo currently we assume that only core rules are indexed
+                            /* todo currently we assume that only core rules are indexed */
                             insertIntoHashTable(condIndex, ruleName, civ);
                             #ifdef DEBUG
-                            // printf("inserting rule group %s into condIndex\n", ruleName);
+                            /* printf("inserting rule group %s into condIndex\n", ruleName); */
                             #endif
                             int k;
                             for(k=0;k<groupRuleCount;k++) {
@@ -143,7 +143,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
                                 *index = ruleGroup[k];
                                 insertIntoHashTable(groupHashtable, strGroup[k], index);
                                 #ifdef DEBUG
-                                // printf("inserting rule cond str %s, index %d into condIndex\n", strGroup[k], ruleGroup[k]);
+                                /* printf("inserting rule cond str %s, index %d into condIndex\n", strGroup[k], ruleGroup[k]); */
                                 #endif
                             }
                         }
@@ -157,16 +157,16 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
                 } else {
                     currIndex = *(int *)curr->value;
                     ruleNode = inRuleSet->rules[currIndex];
-                    if(!(ruleNode->subtrees[0]->degree == 0 && // no params
-                       ruleNode->subtrees[1]->type == APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && // comparison
-                       ruleNode->subtrees[1]->degree == 2 && ruleNode->subtrees[1]->subtrees[1]->type == STRING && // with a string
-                       lookupFromHashTable(processedStrs, ruleNode->subtrees[1]->subtrees[1]->text) == NULL && // string is new
-                       eqExprNodeSyntactic(condNode->subtrees[0], ruleNode->subtrees[1]->subtrees[0]) // exp is the same
+                    if(!(ruleNode->subtrees[0]->degree == 0 && /* no params */
+                       ruleNode->subtrees[1]->type == APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && /* comparison */
+                       ruleNode->subtrees[1]->degree == 2 && ruleNode->subtrees[1]->subtrees[1]->type == STRING && /* with a string */
+                       lookupFromHashTable(processedStrs, ruleNode->subtrees[1]->subtrees[1]->text) == NULL && /* string is new */
+                       eqExprNodeSyntactic(condNode->subtrees[0], ruleNode->subtrees[1]->subtrees[0]) /* exp is the same */
                        )) {
-                       // criteria failed break out of loop
+                       /* criteria failed break out of loop */
                         break;
                     } else {
-                        // add curr to group
+                        /* add curr to group */
                         ruleGroup[groupRuleCount] = currIndex;
                         strGroup[groupRuleCount] = ruleNode->subtrees[1]->subtrees[1]->text;
                         insertIntoHashTable(processedStrs, strGroup[groupRuleCount], strGroup[groupRuleCount]);
@@ -235,7 +235,7 @@ int findNextRuleFromIndex(Hashtable *ruleIndex, char *action, int *index)
 	int  i=*index;
 
 	if (ruleIndex!=NULL) {
-//        dumpHashtableKeys(coreRuleIndex);
+/*        dumpHashtableKeys(coreRuleIndex); */
 		struct bucket *b=lookupBucketFromHashTable(ruleIndex, action);
 
 		while (b!=NULL && *((int *)(b->value))<i) {
@@ -279,7 +279,7 @@ int findNextRule2(char *action,  int *ruleInx)
 	i  = i - 1000;
 	if (coreRuleIndex != NULL) {
 		int ii = findNextRuleFromIndex(coreRuleIndex, action, &i);
-//		dumpHashtableKeys(coreRuleIndex);
+/*		dumpHashtableKeys(coreRuleIndex); */
 		*ruleInx = i + 1000;
 		return ii;
 	} /*else {

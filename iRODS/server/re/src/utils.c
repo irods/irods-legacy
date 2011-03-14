@@ -2,10 +2,10 @@
  */
 #include "utils.h"
 #include "conversion.h"
-// make a new type by substituting tvars with fresh tvars
+/* make a new type by substituting tvars with fresh tvars */
 ExprType *dupType(ExprType *ty, Region *r) {
     Hashtable *varTable = newHashTable(100);
-    // todo add oom handler here
+    /* todo add oom handler here */
     Region *keyRegion = make_region(0, NULL);
     ExprType *dup = dupTypeAux(ty, r, varTable, keyRegion);
     deleteHashTable(varTable, nop);
@@ -123,14 +123,14 @@ int coercible(ExprType *a, ExprType *b) {
  */
 ExprType* unifyTVarL(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r) {
     char buf[128];
-    if(type->ext.tvar.numDisjuncts==0) { // free
+    if(type->ext.tvar.numDisjuncts==0) { /* free */
         insertIntoHashTable(varTypes, getTVarName(type->ext.tvar.vid, buf), expected);
         return dereference(expected, varTypes, r);
-    } else { // union type
+    } else { /* union type */
         int i;
         ExprType *ty = NULL;
         for(i=0;i<type->ext.tvar.numDisjuncts;i++) {
-                if(T_VAR_DISJUNCT(type,i) == expected->t) { // union types can only include primitive types
+                if(T_VAR_DISJUNCT(type,i) == expected->t) { /* union types can only include primitive types */
                     ty = expected;
                     break;
                 }
@@ -144,14 +144,14 @@ ExprType* unifyTVarL(ExprType *type, ExprType* expected, Hashtable *varTypes, Re
 }
 ExprType* unifyTVarR(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r) {
     char buf[128];
-    if(expected->ext.tvar.numDisjuncts==0) { // free
+    if(expected->ext.tvar.numDisjuncts==0) { /* free */
         insertIntoHashTable(varTypes, getTVarName(expected->ext.tvar.vid, buf), type);
         return dereference(expected, varTypes, r);
-    } else { // union type
+    } else { /* union type */
         int i;
         ExprType *ty = NULL;
         for(i=0;i<expected->ext.tvar.numDisjuncts;i++) {
-            if(type->t == T_VAR_DISJUNCT(expected,i)) { // union types can only include primitive types
+            if(type->t == T_VAR_DISJUNCT(expected,i)) { /* union types can only include primitive types */
                 ty = type;
             }
         }
@@ -169,14 +169,14 @@ ExprType* unifyTVarR(ExprType *type, ExprType* expected, Hashtable *varTypes, Re
  */
 ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r) {
     char buf[128];
-    // dereference types to get the most specific type
-    // as dereference only deref top level types, it is necessary to call dereference again
-    // when unification is needed for subexpressions of the types which can be performed by calling this function
+    /* dereference types to get the most specific type */
+    /* as dereference only deref top level types, it is necessary to call dereference again */
+    /* when unification is needed for subexpressions of the types which can be performed by calling this function */
     type = dereference(type, varTypes, r);
     expected = dereference(expected, varTypes, r);
     if(type->t == T_VAR && expected->t == T_VAR) {
         if(type->ext.tvar.vid == expected->ext.tvar.vid) {
-            // if both dereference to the same tvar then do not modify var types table
+            /* if both dereference to the same tvar then do not modify var types table */
             return type;
         } else if(type->ext.tvar.numDisjuncts > 0 && expected->ext.tvar.numDisjuncts > 0) {
             TypeConstructor c[10];
@@ -206,14 +206,14 @@ ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Reg
                 return gcd;
             }
         } else {
-            if(type->ext.tvar.numDisjuncts==0) { // free
+            if(type->ext.tvar.numDisjuncts==0) { /* free */
                 insertIntoHashTable(varTypes, getTVarName(type->ext.tvar.vid, buf), expected);
                 return dereference(expected, varTypes, r);
-            } else if(expected->ext.tvar.numDisjuncts==0) { // free
+            } else if(expected->ext.tvar.numDisjuncts==0) { /* free */
                 insertIntoHashTable(varTypes, getTVarName(expected->ext.tvar.vid, buf), type);
                 return dereference(expected, varTypes, r);
             } else {
-                // error unreachable
+                /* error unreachable */
                 return NULL;
             }
         }
@@ -241,7 +241,7 @@ ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes,
 				ExprType *elemType = unifyWith(
                                         type->ext.cons.typeArgs[i],
                                         expected->ext.cons.typeArgs[i],
-                                        varTypes,r); // unifyWithCoercion performs dereference
+                                        varTypes,r); /* unifyWithCoercion performs dereference */
 				if(elemType == NULL) {
 					return NULL;
 				}
@@ -283,7 +283,7 @@ ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes,
                         return NULL;
                 }
                 return expected;
-	} else if(expected->t == type->t) { // primitive types
+	} else if(expected->t == type->t) { /* primitive types */
                 return expected;
 	} else {
             return NULL;
@@ -302,10 +302,10 @@ int unifyPrim(ExprType *type, TypeConstructor prim, Hashtable *typeVars, Region 
 }
 */
 
-// counter for tvar generator
+/* counter for tvar generator */
 int tvarNumber = 0;
 
-// utility function
+/* utility function */
 char* getTVarName(int vid, char name[128]) {
     snprintf(name, 128, "?%d",vid);
     return name;
@@ -325,8 +325,8 @@ ExprType *newTVar(Region *r) {
     t->t=T_VAR;
     t->ext.tvar.vid = tvarNumber ++;
     t->ext.tvar.numDisjuncts = 0;
-    //char name[128];
-    //getTVarName(t->ext.tvar.vid, name);
+    /*char name[128]; */
+    /*getTVarName(t->ext.tvar.vid, name); */
     return t;
 }
 ExprType *newSimpType(TypeConstructor type, Region *r) {
@@ -355,7 +355,7 @@ ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes
         t->ext.func.retType = retType;
         return t;
 }
-// precond: len(cons) should be smaller than the size of cons in t
+/* precond: len(cons) should be smaller than the size of cons in t */
 ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r) {
 	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
         t->coercionAllowed = 0;
@@ -365,7 +365,7 @@ ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r) {
         strcpy(t->ext.cons.typeConsName, cons);
         return t;
 }
-// precond: len(name) should be smaller than the size of t->ext.irods.name
+/* precond: len(name) should be smaller than the size of t->ext.irods.name */
 ExprType *newIRODSType(char *name, Region *r) {
         ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
         t->t = T_IRODS;
@@ -388,7 +388,7 @@ Res* newCollRes(int size, ExprType *elemType, Region *r) {
         res1->value.c.elems = (Res **)region_alloc(r, sizeof(Res *)*size);
 	return res1;
 }
-// used in cpRes only
+/* used in cpRes only */
 Res* newCollRes2(int size, Region *r) {
 	Res *res1 = newRes(r);
         res1->type = NULL;
@@ -426,7 +426,7 @@ Res* newBoolRes(Region *r, int n) {
         res1->value.d = n;
 	return res1;
 }
-// precond: len(s) < size of res1->value.s
+/* precond: len(s) < size of res1->value.s */
 Res* newStringRes(Region *r, char *s) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
         res1->type = newSimpType(T_STRING,r);
@@ -478,29 +478,29 @@ Res *cpRes(Res *res, Region *r) {
 
     } else if (TYPE(res) == T_CONS) {
         if(IN_REGION(res, r)) {
-            // the collection is in region r, we need to inspect every element to see if they need to be copied
+            /* the collection is in region r, we need to inspect every element to see if they need to be copied */
             int i;
             for(i=0;i<res->value.c.len;i++) {
                 if(IN_REGION(res->value.c.elems[i], r)) {
-                    // the element is in region r
+                    /* the element is in region r */
                     res->value.c.elems[i] = cpRes(res->value.c.elems[i], r);
-                    // the assignment should not change the value
+                    /* the assignment should not change the value */
                 } else {
                     res->value.c.elems[i] = cpRes(res->value.c.elems[i], r);
-                    // the assignment should change the value
+                    /* the assignment should change the value */
                 }
             }
             res->type = cpType(res->type, r);
             return res;
 
         } else {
-            // the collection is not in region r
+            /* the collection is not in region r */
             Res *collRes = newCollRes2(res->value.c.len, r);
 
             int i;
             for(i=0;i<res->value.c.len;i++) {
                 if(IN_REGION(res->value.c.elems[i], r)) {
-                    // the element is in region r
+                    /* the element is in region r */
                     collRes->value.c.elems[i] = cpRes(res->value.c.elems[i], r);
                 } else {
                     collRes->value.c.elems[i] = cpRes(res->value.c.elems[i], r);
@@ -555,7 +555,7 @@ ExprType *cpType(ExprType *type, Region *r) {
 
     }
 }
-// copy res values from other region to r
+/* copy res values from other region to r */
 void cpHashtable(Hashtable *env, Region *r) {
 	int i;
 
@@ -582,7 +582,7 @@ Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rE
             snprintf(errbuf, ERR_MSG_LEN, "error: assign a nonstring value to session variable %s.", varName);
             addRErrorMsg(errmsg, -1, errbuf);
             return newErrorRes(r, -1);
-            // todo find the proper error code
+            /* todo find the proper error code */
         }
         i = getVarMap("", varName, &varMap, 0);
         if (i < 0) {
@@ -596,7 +596,7 @@ Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rE
     else if(varName[0] == '*') {
         if(lookupFromHashTable(env->current, varName)==NULL) {
         if(lookupFromHashTable(env->global, varName)==NULL) {
-            // new variable
+            /* new variable */
             if(insertIntoHashTable(env->current, varName, val) == 0) {
                 snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
                 addRErrorMsg(errmsg, UNSUPPORTED_SESSION_VAR, errbuf);
@@ -633,7 +633,7 @@ char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
     Region *r = make_region(0, NULL);
         ExprType *etype = type;
         if(etype->t == T_VAR && var_types != NULL) {
-            // dereference
+            /* dereference */
             etype = dereference(etype, var_types, r);
         }
         snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", etype == NULL?"?":typeName_ExprType(etype));
@@ -664,7 +664,7 @@ ExprType *dereference(ExprType *type, Hashtable *type_table, Region *r) {
     if(type->t == T_VAR) {
         char name[128];
         getTVarName(type->ext.tvar.vid, name);
-        // printf("deref: %s\n", name);
+        /* printf("deref: %s\n", name); */
         ExprType *deref = lookupFromHashTable(type_table, name);
         if(deref == NULL)
             return type;
@@ -806,8 +806,8 @@ msParamArray_t *newMsParamArray() {
 }
 
 void deleteMsParamArray(msParamArray_t *msParamArray) {
-  clearMsParamArray(msParamArray,0); // do not delete inOutStruct because global varaibles of iRODS type may share it
-                                    // to do write a function that delete inOutStruct of msParamArray if it is not shared
+  clearMsParamArray(msParamArray,0); /* do not delete inOutStruct because global varaibles of iRODS type may share it */
+                                    /* to do write a function that delete inOutStruct of msParamArray if it is not shared */
   free(msParamArray);
 
 }
@@ -874,7 +874,7 @@ void listRemove(List *list, ListNode *node) {
             } else {
                 prev->next = node->next;
             }
-            //free(node);
+            /*free(node); */
             break;
         }
         prev = curr;
@@ -919,16 +919,16 @@ void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ru
         strncat(buf, " ", 1024);
     }
     strncat(buf, "^", 1024);
-    //printf("readRuleSetFromFile: error parsing rule: line %d, row %d\n%s\n", coor[0], coor[1], buf);
+    /*printf("readRuleSetFromFile: error parsing rule: line %d, row %d\n%s\n", coor[0], coor[1], buf); */
     snprintf(errbuf, ERR_MSG_LEN,
             "%s\nline %d, row %d\n%s\n", msg, coor[0], coor[1], buf);
     deletePointer(e);
-    //fclose(fp);
+    /*fclose(fp); */
 
 }
 char *generateErrMsg(char *msg, long errloc, char *ruleBaseName, char errmsg[ERR_MSG_LEN]) {
     if(*ruleBaseName==0) {
-        snprintf(errmsg, ERR_MSG_LEN, "<source>\n%s", msg); // __source_is_unknown__
+        snprintf(errmsg, ERR_MSG_LEN, "<source>\n%s", msg); /* __source_is_unknown__ */
         return errmsg;
     }
     char ruleBasePath[MAX_NAME_LEN];

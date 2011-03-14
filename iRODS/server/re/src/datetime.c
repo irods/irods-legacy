@@ -25,7 +25,7 @@ int strttime(char* timestr, char* timeformat, time_t* t) {
 	if (*t == -1) {
 		return 0;
 	}
-	//printf("seconds since the Epoch: %ld\n", (long) t);
+	/*printf("seconds since the Epoch: %ld\n", (long) t); */
 	return 1;
 }
 /*

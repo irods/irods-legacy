@@ -4,7 +4,7 @@
 #define CACHE_H
 #include "rules.h"
 #include "index.h"
-#define CACHE_ENABLE 0 // 1
+#define CACHE_ENABLE 0
 
 #define CONCAT2(a,b) a##b
 #define CONCAT(a,b) CONCAT2(a,b)
