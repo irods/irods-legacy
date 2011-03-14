@@ -253,7 +253,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     int destFd;
     int srcFd;
     void *buf;
-    transStat_t *myTransStat;
+    transferStat_t *myTransStat;
     rodsLong_t curOffset = 0;
     rcComm_t *conn;
 
@@ -712,7 +712,7 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     int destFd;
     int srcFd;
     void *buf;
-    transStat_t *myTransStat;
+    transferStat_t *myTransStat;
     rodsLong_t curOffset = 0;
     rcComm_t *conn;
 

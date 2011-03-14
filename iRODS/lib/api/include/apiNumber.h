@@ -44,9 +44,9 @@
 #define DATA_PUT_AN 			607
 #define DATA_OBJ_GET_AN 		608
 #define DATA_GET_AN 			609
-#define DATA_OBJ_REPL_AN 		610
+#define DATA_OBJ_REPL250_AN 		610
 #define DATA_COPY_AN 			611
-#define DATA_OBJ_COPY_AN 		613
+#define DATA_OBJ_COPY250_AN 		613
 #define SIMPLE_QUERY_AN 		614
 #define DATA_OBJ_UNLINK_AN 		615
 #define REG_DATA_OBJ_AN 			619
@@ -61,7 +61,7 @@
 #define DATA_OBJ_RSYNC_AN 			628
 #define DATA_OBJ_CHKSUM_AN 			629
 #define PHY_PATH_REG_AN 			630
-#define DATA_OBJ_PHYMV_AN 			631
+#define DATA_OBJ_PHYMV250_AN 			631
 #define DATA_OBJ_TRIM_AN 			632
 #define OBJ_STAT_AN 			633
 #define SUB_STRUCT_FILE_CREATE_AN 			635
@@ -121,6 +121,9 @@
 #define EXEC_CMD_AN 			692
 #define STREAM_CLOSE_AN 			693
 #define GET_HOST_FOR_GET_AN 			694
+#define DATA_OBJ_REPL_AN 		695
+#define DATA_OBJ_COPY_AN 		696
+#define DATA_OBJ_PHYMV_AN 		697
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

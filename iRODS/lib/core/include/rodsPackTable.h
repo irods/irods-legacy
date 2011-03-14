@@ -81,6 +81,7 @@ packInstructArray_t RodsPackTable[] = {
 	{"GenQueryOut_PI", GenQueryOut_PI},
 	{"DataObjInfo_PI", DataObjInfo_PI},
 	{"TransStat_PI", TransStat_PI},
+	{"TransferStat_PI", TransferStat_PI},
 	{"RescGrpInfo_PI", RescGrpInfo_PI},
 	{"AuthInfo_PI", AuthInfo_PI},
 	{"UserOtherInfo_PI", UserOtherInfo_PI},

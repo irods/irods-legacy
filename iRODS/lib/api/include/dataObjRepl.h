@@ -18,29 +18,33 @@
 #include "dataCopy.h"
 
 #if defined(RODS_SERVER)
+#define RS_DATA_OBJ_REPL250 rsDataObjRepl250
 #define RS_DATA_OBJ_REPL rsDataObjRepl
 /* prototype for the server handler */
 int
-rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+rsDataObjRepl250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 transStat_t **transStat);
 int
+rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+transferStat_t **transferStat);
+int
 _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-transStat_t *transStat, dataObjInfo_t *outDataObjInfo);
+transferStat_t *transStat, dataObjInfo_t *outDataObjInfo);
 #if 0
 int
 _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
+transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
 dataObjInfo_t *destDataObjInfo);
 #endif
 int
 _rsDataObjReplUpdate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
-transStat_t *transStat, dataObjInfo_t *oldDataObjInfo);
+transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo);
 int
 _rsDataObjReplNewCopy (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
+transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
 dataObjInfo_t *outDataObjInfo);
 int
 _rsDataObjReplS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -84,6 +88,7 @@ int
 stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead);
 #else
 #define RS_DATA_OBJ_REPL NULL
+#define RS_DATA_OBJ_REPL250 NULL
 #endif
 
 #ifdef  __cplusplus
@@ -111,8 +116,11 @@ extern "C" {
 int
 rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp);
 int
-_rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp,
+_rcDataObjRepl250 (rcComm_t *conn, dataObjInp_t *dataObjInp,
 transStat_t **transStat);
+int
+_rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp,
+transferStat_t **transferStat);
 int
 getCacheDataInfoOfCompObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,

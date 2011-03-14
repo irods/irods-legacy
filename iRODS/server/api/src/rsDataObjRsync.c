@@ -249,7 +249,7 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 #endif
     dataObjCopyInp_t dataObjCopyInp;
     char *destObjPath;
-    transStat_t *transStat = NULL;
+    transferStat_t *transStat = NULL;
 
     /* always have the FORCE flag on */
     addKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW, "");

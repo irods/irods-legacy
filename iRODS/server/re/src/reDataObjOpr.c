@@ -981,7 +981,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
-    transStat_t *transStat = NULL;
+    transferStat_t *transStat = NULL;
     char *outBadKeyWd;
     int validKwFlags;
 
@@ -1121,7 +1121,7 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
     rsComm_t *rsComm; 
     dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
     dataObjInp_t *myDataObjInp;
-    transStat_t *transStat = NULL;
+    transferStat_t *transStat = NULL;
     char *outBadKeyWd;
     int validKwFlags;
 
@@ -1800,7 +1800,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
-    transStat_t *transStat = NULL;
+    transferStat_t *transStat = NULL;
 
     RE_TEST_MACRO ("    Calling msiDataObjPhymv")
 
@@ -2363,7 +2363,7 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
     rsComm_t *rsComm; 
     collInp_t collInp, *myCollInp;
     int i, continueInx, status;
-    transStat_t *transStat = NULL;
+    transferStat_t *transStat = NULL;
     strArray_t optArray;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
@@ -3535,7 +3535,7 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
 {
      rsComm_t *rsComm;
      dataObjInp_t dataObjInp, *myDataObjInp;
-     transStat_t *transStat = NULL;
+     transferStat_t *transStat = NULL;
 
      RE_TEST_MACRO (" Calling msiDataObjReplWithOptions")
 

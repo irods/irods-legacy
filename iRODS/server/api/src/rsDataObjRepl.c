@@ -24,17 +24,35 @@
 #include "fileStageToCache.h"
 #include "unbunAndRegPhyBunfile.h"
 
+int
+rsDataObjRepl250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+transStat_t **transStat)
+{
+    int status;
+    transferStat_t *transferStat = NULL;
+
+    status = rsDataObjRepl (rsComm, dataObjInp, &transferStat);
+
+    if (transStat != NULL && status >= 0 && transferStat != NULL) {
+	*transStat = (transStat_t *) malloc (sizeof (transStat_t));
+        (*transStat)->numThreads = transferStat->numThreads;
+        (*transStat)->bytesWritten = transferStat->bytesWritten;
+	free (transferStat);
+    }
+    return status;
+}
+
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
  * Input -
  *    rsComm_t *rsComm 
  *    dataObjInp_t *dataObjInp - The replication input
- *    transStat_t **transStat - transfer stat output
+ *    transferStat_t **transStat - transfer stat output
  */
 
 int
 rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-transStat_t **transStat)
+transferStat_t **transStat)
 {
     int status;
 
@@ -76,8 +94,8 @@ transStat_t **transStat)
         return status;
     }
 
-    *transStat = malloc (sizeof (transStat_t));
-    memset (*transStat, 0, sizeof (transStat_t));
+    *transStat = malloc (sizeof (transferStat_t));
+    memset (*transStat, 0, sizeof (transferStat_t));
 
     status = _rsDataObjRepl (rsComm, dataObjInp, 
      *transStat, NULL); 
@@ -86,7 +104,7 @@ transStat_t **transStat)
     
 int
 _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
+transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 {
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
@@ -298,7 +316,7 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 int
 _rsDataObjReplUpdate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
-transStat_t *transStat, dataObjInfo_t *oldDataObjInfo)
+transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo)
 {
     dataObjInfo_t *destDataObjInfo;
     dataObjInfo_t *srcDataObjInfo;
@@ -373,7 +391,7 @@ transStat_t *transStat, dataObjInfo_t *oldDataObjInfo)
 int
 _rsDataObjReplNewCopy (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
+transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
 dataObjInfo_t *outDataObjInfo)
 {
     dataObjInfo_t *srcDataObjInfo;
@@ -472,7 +490,7 @@ dataObjInfo_t *outDataObjInfo)
 int
 _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
+transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
 dataObjInfo_t *inpDestDataObjInfo) 
 {
     dataObjInfo_t *destDataObjInfo;
@@ -1193,7 +1211,7 @@ rsReplAndRequeDataObjInfo (rsComm_t *rsComm,
 dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr)
 {
     dataObjInfo_t *dataObjInfoHead, *myDataObjInfo;
-    transStat_t transStat;
+    transferStat_t transStat;
     dataObjInp_t dataObjInp;
     char tmpStr[NAME_LEN];
     int status;
@@ -1246,7 +1264,7 @@ dataObjInfo_t *outCacheObjInfo)
 {
     int status;
     rescInfo_t *cacheResc;
-    transStat_t transStat;
+    transferStat_t transStat;
     dataObjInp_t dataObjInp;
     char tmpStr[NAME_LEN];
 

@@ -78,7 +78,7 @@ typedef struct {
     version_t *svrVersion;	/* the server's version */
     rError_t *rError;
     int flag;
-    transStat_t transStat;
+    transferStat_t transStat;
     int apiInx;
     int status;
     int windowSize;

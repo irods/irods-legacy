@@ -33,7 +33,7 @@ collOprStat_t **collOprStat)
     dataObjInp_t dataObjInp;
     collEnt_t *collEnt;
     int handleInx;
-    transStat_t myTransStat;
+    transferStat_t myTransStat;
     int totalFileCnt;
     int fileCntPerStatOut;
     int savedStatus = 0;

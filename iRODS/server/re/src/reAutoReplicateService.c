@@ -321,7 +321,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
    dataObjInp_t myDataObjInp;
    dataObjInfo_t *myDataObjInfo=NULL;
    unregDataObj_t myUnregDataObjInp;
-   transStat_t *transStat=NULL;
+   transferStat_t *transStat=NULL;
 
    ReplicaCheckStatusStruct *pReplicaStatus;
    int nReplicas;
@@ -607,6 +607,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
             repl_storage_error = 1;
             return t;
          }
+         if (transStat != NULL) free (transStat);
       }
    }
 

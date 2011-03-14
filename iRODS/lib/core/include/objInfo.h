@@ -322,10 +322,18 @@ typedef struct RescClass {
     int classType;
 } rescClass_t;
 
+/* transStat_t is being replaced by transferStat_t because of the 64 bits
+ * padding */
 typedef struct {
     int numThreads;
     rodsLong_t bytesWritten;
 } transStat_t;
+
+typedef struct {
+    int numThreads;
+    int flags;		/* padding to 64 bits */
+    rodsLong_t bytesWritten;
+} transferStat_t;
 
 #define FILE_CNT_PER_STAT_OUT	10	/* the default file count per 
 					 * collOprStat output */

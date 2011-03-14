@@ -105,7 +105,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     int retval;
     openedDataObjInp_t dataObjCloseInp;
     int allFlag;
-    transStat_t *transStat = NULL;
+    transferStat_t *transStat = NULL;
     dataObjInp_t replDataObjInp;
 
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {

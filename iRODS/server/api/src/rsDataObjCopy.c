@@ -17,8 +17,26 @@
 #include "getRemoteZoneResc.h"
 
 int
-rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
+rsDataObjCopy250 (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 transStat_t **transStat)
+{
+    int status;
+    transferStat_t *transferStat = NULL;
+
+    status = rsDataObjCopy (rsComm, dataObjCopyInp, &transferStat);
+
+    if (transStat != NULL && status >= 0 && transferStat != NULL) {
+        *transStat = (transStat_t *) malloc (sizeof (transStat_t));
+        (*transStat)->numThreads = transferStat->numThreads;
+        (*transStat)->bytesWritten = transferStat->bytesWritten;
+        free (transferStat);
+    }
+    return status;
+}
+
+int
+rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
+transferStat_t **transStat)
 {
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
     int srcL1descInx, destL1descInx;
@@ -48,8 +66,8 @@ transStat_t **transStat)
     }
 
 #if 0
-    *transStat = malloc (sizeof (transStat_t));
-    memset (*transStat, 0, sizeof (transStat_t));
+    *transStat = malloc (sizeof (transferStat_t));
+    memset (*transStat, 0, sizeof (transferStat_t));
 #endif
 
     if (strcmp (srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
@@ -127,7 +145,7 @@ transStat_t **transStat)
 
 int
 _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag,
-transStat_t **transStat)
+transferStat_t **transStat)
 {
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
     openedDataObjInp_t dataObjCloseInp;
@@ -196,8 +214,8 @@ transStat_t **transStat)
 
     dataObjCloseInp.l1descInx = destL1descInx;
     if (status >= 0) {
-        *transStat = malloc (sizeof (transStat_t));
-        memset (*transStat, 0, sizeof (transStat_t));
+        *transStat = malloc (sizeof (transferStat_t));
+        memset (*transStat, 0, sizeof (transferStat_t));
         (*transStat)->bytesWritten = srcDataObjInfo->dataSize;
         (*transStat)->numThreads = destDataObjInp->numThreads;
         dataObjCloseInp.bytesWritten = srcDataObjInfo->dataSize;

@@ -9,32 +9,52 @@ int
 rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp)
 {
     int status;
-    transStat_t *transStat = NULL;
+    transferStat_t *transferStat = NULL;
 
-    memset (&conn->transStat, 0, sizeof (transStat_t));
+    memset (&conn->transStat, 0, sizeof (transferStat_t));
 
     dataObjInp->oprType = PHYMV_OPR;
 
-    status = _rcDataObjPhymv (conn, dataObjInp, &transStat);
+    status = _rcDataObjPhymv (conn, dataObjInp, &transferStat);
 
-    if (status >= 0 && transStat != NULL) {
-	conn->transStat = *(transStat);
+    if (status >= 0 && transferStat != NULL) {
+	conn->transStat = *(transferStat);
+    } else if (status == SYS_UNMATCHED_API_NUM) {
+         /* try older version */
+        transStat_t *transStat = NULL;
+        status = _rcDataObjPhymv250 (conn, dataObjInp, &transStat);
+        if (status >= 0 && transStat != NULL) {
+            conn->transStat.numThreads = transferStat->numThreads;
+            conn->transStat.bytesWritten = transferStat->bytesWritten;
+            conn->transStat.flags = 0;
+        }
+        if (transStat != NULL) free (transStat);
+        return status;
     }
-
-    if (transStat != NULL) {
-	free (transStat);
+    if (transferStat != NULL) {
+        free (transferStat);
     }
-
     return (status);
 }
 
 int
 _rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp, 
-transStat_t **transStat)
+transferStat_t **transferStat)
 {
     int status;
 
     status = procApiRequest (conn, DATA_OBJ_PHYMV_AN,  dataObjInp, NULL,
+        (void **) transferStat, NULL);
+    return (status);
+}
+
+int
+_rcDataObjPhymv250 (rcComm_t *conn, dataObjInp_t *dataObjInp,
+transStat_t **transStat)
+{
+    int status;
+
+    status = procApiRequest (conn, DATA_OBJ_PHYMV250_AN,  dataObjInp, NULL,
         (void **) transStat, NULL);
     return (status);
 }

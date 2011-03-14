@@ -481,7 +481,7 @@ int
 replDataObjForBundle (rsComm_t *rsComm, char *collName, char *dataName,
 char *rescName, int adminFlag, dataObjInfo_t *outCacheObjInfo)
 {
-    transStat_t transStat;
+    transferStat_t transStat;
     dataObjInp_t dataObjInp;
     int status;
 

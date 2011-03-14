@@ -14,17 +14,35 @@
 #include "dataObjCreate.h"
 #include "getRemoteZoneResc.h"
 
+int
+rsDataObjPhymv250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+transStat_t **transStat)
+{
+    int status;
+    transferStat_t *transferStat = NULL;
+
+    status = rsDataObjPhymv (rsComm, dataObjInp, &transferStat);
+
+    if (transStat != NULL && status >= 0 && transferStat != NULL) {
+        *transStat = (transStat_t *) malloc (sizeof (transStat_t));
+        (*transStat)->numThreads = transferStat->numThreads;
+        (*transStat)->bytesWritten = transferStat->bytesWritten;
+        free (transferStat);
+    }
+    return status;
+}
+
 /* rsDataObjPhymv - The Api handler of the rcDataObjPhymv call - phymove
  * a data object from one resource to another.
  * Input -
  *    rsComm_t *rsComm
  *    dataObjInp_t *dataObjInp - The replication input
- *    transStat_t **transStat - transfer stat output
+ *    transferStat_t **transStat - transfer stat output
  */
 
 int
 rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-transStat_t **transStat)
+transferStat_t **transStat)
 {
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
@@ -50,8 +68,8 @@ transStat_t **transStat)
         return status;
     }
 
-    *transStat = malloc (sizeof (transStat_t));
-    memset (*transStat, 0, sizeof (transStat_t));
+    *transStat = malloc (sizeof (transferStat_t));
+    memset (*transStat, 0, sizeof (transferStat_t));
 
     if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
 	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
@@ -111,7 +129,7 @@ transStat_t **transStat)
 int
 _rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transStat_t *transStat, int multiCopyFlag)
+transferStat_t *transStat, int multiCopyFlag)
 {
     dataObjInfo_t *srcDataObjInfo;
     rescGrpInfo_t *tmpRescGrpInfo;

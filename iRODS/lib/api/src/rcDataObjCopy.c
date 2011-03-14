@@ -9,21 +9,31 @@ int
 rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp)
 {
     int status;
-    transStat_t *transStat = NULL;
+    transferStat_t *transferStat = NULL;
 
-    memset (&conn->transStat, 0, sizeof (transStat_t));
+    memset (&conn->transStat, 0, sizeof (transferStat_t));
 
     dataObjCopyInp->srcDataObjInp.oprType = COPY_SRC;
     dataObjCopyInp->destDataObjInp.oprType = COPY_DEST;
 
-    status = _rcDataObjCopy (conn, dataObjCopyInp, &transStat);
+    status = _rcDataObjCopy (conn, dataObjCopyInp, &transferStat);
 
-    if (status >= 0 && transStat != NULL) {
-        conn->transStat = *(transStat);
+    if (status >= 0 && transferStat != NULL) {
+        conn->transStat = *(transferStat);
+    } else if (status == SYS_UNMATCHED_API_NUM) {
+         /* try older version */
+        transStat_t *transStat = NULL;
+        status = _rcDataObjCopy250 (conn, dataObjCopyInp, &transStat);
+        if (status >= 0 && transStat != NULL) {
+            conn->transStat.numThreads = transferStat->numThreads;
+            conn->transStat.bytesWritten = transferStat->bytesWritten;
+            conn->transStat.flags = 0;
+        }
+        if (transStat != NULL) free (transStat);
+        return status;
     }
-
-    if (transStat != NULL) {
-        free (transStat);
+    if (transferStat != NULL) {
+        free (transferStat);
     }
 
     return (status);
@@ -31,11 +41,23 @@ rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp)
 
 int
 _rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
-transStat_t **transStat)
+transferStat_t **transferStat)
 {
     int status;
 
     status = procApiRequest (conn, DATA_OBJ_COPY_AN,  dataObjCopyInp, NULL,
+        (void **) transferStat, NULL);
+
+    return status;
+}
+
+int
+_rcDataObjCopy250 (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
+transStat_t **transStat)
+{
+    int status;
+
+    status = procApiRequest (conn, DATA_OBJ_COPY250_AN,  dataObjCopyInp, NULL,
         (void **) transStat, NULL);
 
     return status;
