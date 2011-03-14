@@ -8,6 +8,9 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 
+/* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
+#define VERIFY_DIV(_v1_,_v2_) ((_v2_)?(_v1_)/(_v2_):0.0)
+
 static uint Myumask = INIT_UMASK_VAL;
 
 int
@@ -1861,12 +1864,22 @@ iCommandProgStat (operProgress_t *operProgress)
 	printf (
           "%-lld/%-lld - %5.2f%% of files done   ", 
 	  operProgress->totalNumFilesDone, operProgress->totalNumFiles, 
+#if 0
 	  (float) operProgress->totalNumFilesDone/operProgress->totalNumFiles *
+#else
+          (float) VERIFY_DIV
+            (operProgress->totalNumFilesDone,operProgress->totalNumFiles) *
+#endif
 	  100.0);
 	printf ("%-.3f/%-.3f MB - %5.2f%% of file sizes done\n",
 	  (float) operProgress->totalFileSizeDone / 1048600.0,
 	  (float) operProgress->totalFileSize / 1048600.0,
+#if 0
 	  (float) operProgress->totalFileSizeDone/operProgress->totalFileSize *
+#else
+          (float) VERIFY_DIV
+	    (operProgress->totalFileSizeDone,operProgress->totalFileSize) *
+#endif
 	  100.0);
         printf ("Processing %s - %-.3f MB\n", myFile,
          (float) operProgress->curFileSize / 1048600.0);
@@ -1874,7 +1887,12 @@ iCommandProgStat (operProgress_t *operProgress)
         printf ("%s - %-.3f/%-.3f MB - %5.2f%% done\n", myFile,
          (float) operProgress->curFileSizeDone / 1048600.0,
          (float) operProgress->curFileSize / 1048600.0,
+#if 0
          (float) operProgress->curFileSizeDone/operProgress->curFileSize *
+#else
+	 (float) VERIFY_DIV
+	   (operProgress->curFileSizeDone,operProgress->curFileSize) *
+#endif
          100.0);
 	/* done. don't print again */
 	if (operProgress->curFileSizeDone == operProgress->curFileSize) {
