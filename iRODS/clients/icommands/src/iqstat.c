@@ -126,7 +126,9 @@ showRuleExec(char *name, char *ruleName, int allFlag)
    if (ruleName!=NULL && *ruleName!='\0') {
       int i;
       i =  genQueryInp.sqlCondInp.len;
-      i2a[i]=COL_RULE_EXEC_NAME;
+      /*  i2a[i]=COL_RULE_EXEC_NAME;
+      sprintf(v2,"='%s'",ruleName);  */
+      i2a[i]=COL_RULE_EXEC_ID;
       sprintf(v2,"='%s'",ruleName);
       condVal[i]=v2;
       genQueryInp.sqlCondInp.len++;
@@ -321,13 +323,13 @@ Print the main usage/help information.
 void usage()
 {
    char *msgs[]={
-"Usage: iqstat [-luvVh] [-u user] [rule name]", 
+"Usage: iqstat [-luvVh] [-u user] [ruleId]", 
 "Show information about your pending iRODS rule executions", 
 "or for the entered user.",
 " -a        display requests of all users",
 " -l        for long format",
 " -u user   for the specified user",
-" rule_name for the specified rule",
+" ruleId for the specified rule",
 " ",
 "See also iqdel and iqmod",
 ""};
