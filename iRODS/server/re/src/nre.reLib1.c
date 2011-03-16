@@ -424,8 +424,13 @@ int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char
 	char *res1 = convertResToString(res0);
 	snprintf(res, MAX_COND_LEN, "%s", res1);
 	free(res1);
-	region_free(r);
-	return rei == NULL? TYPE(res0) == T_ERROR? res0->value.e : 0 : rei->status;
+
+	int ret;
+    ret = processReturnRes(res);
+
+    region_free(r);
+
+    return ret;
 }
 
 
