@@ -512,6 +512,12 @@ int actionTableLookUp (char *action)
 
 Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamArray,
 		  ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
+    int freeRei = 0;
+    if(rei == NULL) {
+        rei = (ruleExecInfo_t *) malloc(sizeof(ruleExecInfo_t));
+        memset(rei, 0, sizeof(ruleExecInfo_t));
+        freeRei = 1;
+    }
     rei->status = 0;
     Env *env = newEnv(newHashTable(100),newHashTable(100),newHashTable(100));
     getSystemFunctions(env->funcDesc, r);
@@ -534,6 +540,9 @@ Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamAr
         logErrMsg(&errmsgBuf);
     }
     freeRErrorContent(&errmsgBuf);
+    if(freeRei) {
+        free(rei);
+    }
     return res;
 
 }

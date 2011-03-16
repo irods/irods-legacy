@@ -425,7 +425,7 @@ int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char
 	snprintf(res, MAX_COND_LEN, "%s", res1);
 	free(res1);
 	region_free(r);
-	return rei->status;
+	return rei == NULL? TYPE(res0) == T_ERROR? res0->value.e : 0 : rei->status;
 }
 
 
@@ -450,7 +450,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 
     region_free(r);
 
-    return rei->status;
+    return ret;
 
 }
 
