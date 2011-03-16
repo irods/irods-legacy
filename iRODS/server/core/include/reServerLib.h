@@ -20,6 +20,7 @@
 #define MAX_RE_PROCS	4
 #define DEF_NUM_RE_PROCS	1
 #define RESC_UPDATE_TIME        60
+#define RE_EXE	"irodsReServer"
 
 typedef enum {
     RE_PROC_IDLE,
@@ -76,4 +77,15 @@ int
 waitAndFreeReThr (reExec_t *reExec);
 int
 chkAndUpdateResc (rsComm_t *rsComm);
+int
+postForkExecProc (rsComm_t *rsComm, reExecProc_t *reExecProc);
+int
+execRuleExec (reExecProc_t *reExecProc);
+int
+fillExecSubmitInp (ruleExecSubmitInp_t *ruleExecSubmitInp,  char *exeStatus,
+char *exeTime, char *ruleExecId, char *reiFilePath, char *ruleName,
+char *userName, char *exeAddress, char *exeFrequency, char *priority,
+char *estimateExeTime, char *notificationAddr);
+int
+reServerSingleExec (rsComm_t *rsComm, char *ruleExecId);
 #endif	/* RE_SERVER_LIB_H */

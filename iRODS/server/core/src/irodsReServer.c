@@ -28,6 +28,7 @@ main(int argc, char **argv)
     char *logDir = NULL;
     char *tmpStr;
     int logFd;
+    char *ruleExecId = NULL;
 
     ProcessType = RE_SERVER_PT;
 
@@ -69,7 +70,7 @@ main(int argc, char **argv)
     openlog("rodsReServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
 #endif
 
-    while ((c=getopt(argc, argv,"sSvD:")) != EOF) {
+    while ((c=getopt(argc, argv,"sSvD:j:")) != EOF) {
         switch (c) {
 	    case 's':
 		runMode = SINGLE_PASS;
@@ -83,6 +84,9 @@ main(int argc, char **argv)
             case 'D':   /* user specified a log directory */
 		logDir = strdup (optarg);
 		break;
+	    case 'j':
+		runMode = SINGLE_PASS;
+		ruleExecId = strdup (optarg);
             default:
                 usage (argv[0]);
                 exit (1);
@@ -106,8 +110,16 @@ main(int argc, char **argv)
         cleanupAndExit (status);
     }
 
-    status = reServerMain (&rsComm);
-
+    if (ruleExecId != NULL) {
+	status = reServerSingleExec (&rsComm, ruleExecId);
+	if (status >= 0) {
+            exit (0);
+        } else {
+             exit (1);
+        }
+    } else {
+        status = reServerMain (&rsComm);
+    }
     cleanupAndExit (status);
 
     exit (0);
@@ -118,6 +130,7 @@ int usage (char *prog)
     fprintf(stderr, "Usage: %s [-sSv] [-D logDir] \n",prog);
     fprintf(stderr, "-s   Run like a client process - no fork\n");
     fprintf(stderr, "-S   Run like a daemon server process - forked\n");
+    fprintf(stderr, "-j jobID   Run a single job\n");
     return 0;
 }
 

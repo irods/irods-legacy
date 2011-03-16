@@ -198,8 +198,10 @@ reExec_t *reExec, int jobType)
 
     for (i = startInx; i < genQueryOut->rowCnt; i++) {
 	char *exeStatusStr, *exeTimeStr, *ruleExecIdStr;
+#if 0
         struct stat statbuf;
         int fd;
+#endif
 	
 
 	exeStatusStr = &exeStatus->value[exeStatus->len * i];
@@ -225,7 +227,7 @@ reExec_t *reExec, int jobType)
                   ruleExecIdStr);
 	    }
 	}
-
+#if 0
         rstrcpy (queuedRuleExec->reiFilePath,
           &reiFilePath->value[reiFilePath->len * i], MAX_NAME_LEN);
 	if (stat (queuedRuleExec->reiFilePath, &statbuf) < 0) {
@@ -289,6 +291,19 @@ reExec_t *reExec, int jobType)
 	  &estimateExeTime->value[estimateExeTime->len * i], NAME_LEN);
 	rstrcpy (queuedRuleExec->notificationAddr, 
 	  &notificationAddr->value[notificationAddr->len * i], NAME_LEN);
+#else
+	status = fillExecSubmitInp (queuedRuleExec, exeStatusStr, exeTimeStr,
+	  ruleExecIdStr, 
+	  &reiFilePath->value[reiFilePath->len * i], 
+	  &ruleName->value[ruleName->len * i],
+	  &userName->value[userName->len * i],
+	  &exeAddress->value[exeAddress->len * i],
+	  &exeFrequency->value[exeFrequency->len * i],
+	  &priority->value[priority->len * i],
+	  &estimateExeTime->value[estimateExeTime->len * i],
+	  &notificationAddr->value[notificationAddr->len * i]);
+	if (status < 0) continue;
+#endif
 	return (i);
     }
     return (-1);
@@ -451,11 +466,12 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
 	runCnt ++;
 	if (reExec->doFork == 0) {
 	    /* single thread. Just call runRuleExec */  
-	    status = runRuleExec (&reExec->reExecProc[thrInx]);
+	    status = execRuleExec (&reExec->reExecProc[thrInx]);
             postProcRunRuleExec (rsComm, &reExec->reExecProc[thrInx]);
             freeReThr (reExec, thrInx);
             continue;
 	} else {
+#if 0
 	    if ((reExec->reExecProc[thrInx].pid = fork()) == 0) {
 		/* child. need to disconnect Rcat */ 
 		rodsServerHost_t *rodsServerHost = NULL;
@@ -489,6 +505,30 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
 		} else {
 		    exit (1);
 		}
+#else	/* if 0 */
+#ifdef R_EXEC_PROC
+	    if ((reExec->reExecProc[thrInx].pid = fork()) == 0) {
+	        /* child. need to disconnect Rcat */
+
+	        if ((status = resetRcatHost (rsComm, MASTER_RCAT, 
+		  rsComm->myEnv.rodsZone)) == LOCAL_HOST) {
+#ifdef RODS_CAT
+	            resetRcat (rsComm);
+#endif
+	        }
+		/* this call don't come back */
+		execRuleExec (&reExec->reExecProc[thrInx]);
+#else
+	    if ((reExec->reExecProc[thrInx].pid = fork()) == 0) {
+                status = postForkExecProc (rsComm,  
+                  &reExec->reExecProc[thrInx]);
+		if (status >= 0) {
+                    exit (0);
+                } else {
+                    exit (1);
+                }
+#endif
+#endif
 	    } else { 
 #ifdef RE_SERVER_DEBUG
 		rodsLog (LOG_NOTICE,
@@ -508,6 +548,64 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
     }
 
     return (runCnt);
+}
+
+int
+postForkExecProc (rsComm_t *rsComm, reExecProc_t *reExecProc)
+{
+    int status;
+
+    /* child. need to disconnect Rcat */
+    rodsServerHost_t *rodsServerHost = NULL;
+
+    if ((status = resetRcatHost (rsComm, MASTER_RCAT, rsComm->myEnv.rodsZone)) 
+      == LOCAL_HOST) {
+#ifdef RODS_CAT
+        resetRcat (rsComm);
+#endif
+    }
+    if ((status = getAndConnRcatHost (rsComm, MASTER_RCAT,
+     rsComm->myEnv.rodsZone, &rodsServerHost)) == LOCAL_HOST) {
+#ifdef RODS_CAT
+        status = connectRcat (rsComm);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "runQueuedRuleExec: connectRcat error. status=%d", status);
+        }
+#endif
+    }
+    seedRandom ();
+    status = runRuleExec (reExecProc);
+    postProcRunRuleExec (rsComm, reExecProc);
+#ifdef RE_SERVER_DEBUG
+    rodsLog (LOG_NOTICE,
+      "runQueuedRuleExec: process %d exiting", getpid ());
+#endif
+    return (reExecProc->status);
+}
+
+int
+execRuleExec (reExecProc_t *reExecProc)
+{
+    int status;
+    char *av[NAME_LEN];
+    int avInx = 0;
+
+    av[avInx] = strdup (RE_EXE);
+    avInx++;
+    av[avInx] = strdup ("-j");
+    avInx++;
+    av[avInx] = strdup (reExecProc->ruleExecSubmitInp.ruleExecId);
+    avInx++;
+    av[avInx] = NULL;
+
+    status =  execv (av[0], av);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "execExecProc: execv of ID %s error, errno = %d",
+          reExecProc->ruleExecSubmitInp.ruleExecId, errno);
+    }
+    return status;
 }
 
 #ifndef windows_platform
@@ -803,5 +901,180 @@ chkAndUpdateResc (rsComm_t *rsComm)
     } else {
 	return 0;
     }
+}
+
+int
+fillExecSubmitInp (ruleExecSubmitInp_t *ruleExecSubmitInp,  char *exeStatus,
+char *exeTime, char *ruleExecId, char *reiFilePath, char *ruleName,
+char *userName, char *exeAddress, char *exeFrequency, char *priority, 
+char *estimateExeTime, char *notificationAddr)
+{
+    int status;
+    struct stat statbuf;
+    int fd;
+
+    rstrcpy (ruleExecSubmitInp->reiFilePath, reiFilePath, MAX_NAME_LEN);
+    if (stat (ruleExecSubmitInp->reiFilePath, &statbuf) < 0) {
+        status = UNIX_FILE_STAT_ERR - errno;
+        rodsLog (LOG_ERROR,
+         "fillExecSubmitInp: stat error for rei file %s, status = %d",
+         ruleExecSubmitInp->reiFilePath, status);
+        return status;
+    }
+
+    if (statbuf.st_size > ruleExecSubmitInp->packedReiAndArgBBuf->len) {
+	if (ruleExecSubmitInp->packedReiAndArgBBuf->buf != NULL)
+            free (ruleExecSubmitInp->packedReiAndArgBBuf->buf);
+        ruleExecSubmitInp->packedReiAndArgBBuf->buf =
+           malloc ((int) statbuf.st_size);
+        ruleExecSubmitInp->packedReiAndArgBBuf->len = statbuf.st_size;
+    }
+
+    fd = open (ruleExecSubmitInp->reiFilePath, O_RDONLY,0);
+    if (fd < 0) {
+        status = UNIX_FILE_OPEN_ERR - errno;
+        rodsLog (LOG_ERROR,
+         "fillExecSubmitInp: open error for rei file %s, status = %d",
+         ruleExecSubmitInp->reiFilePath, status);
+        return (status);
+    }
+
+    status = read (fd, ruleExecSubmitInp->packedReiAndArgBBuf->buf,
+      ruleExecSubmitInp->packedReiAndArgBBuf->len);
+
+    close (fd);
+    if (status != statbuf.st_size) {
+        if (status < 0) {
+            status = UNIX_FILE_READ_ERR - errno;
+            rodsLog (LOG_ERROR,
+             "fillExecSubmitInp: read error for file %s, status = %d",
+             ruleExecSubmitInp->reiFilePath, status);
+        } else {
+            rodsLog (LOG_ERROR,
+             "fillExecSubmitInp:read error for %s,toRead %d, read %d",
+              ruleExecSubmitInp->reiFilePath,
+              ruleExecSubmitInp->packedReiAndArgBBuf->len, status);
+            return (SYS_COPY_LEN_ERR);
+        }
+    }
+
+    rstrcpy (ruleExecSubmitInp->exeTime, exeTime, NAME_LEN);
+    rstrcpy (ruleExecSubmitInp->exeStatus, exeStatus, NAME_LEN);
+    rstrcpy (ruleExecSubmitInp->ruleExecId, ruleExecId, NAME_LEN);
+
+    rstrcpy (ruleExecSubmitInp->ruleName, ruleName, META_STR_LEN);
+    rstrcpy (ruleExecSubmitInp->userName, userName, NAME_LEN);
+    rstrcpy (ruleExecSubmitInp->exeAddress, exeAddress, NAME_LEN);
+    rstrcpy (ruleExecSubmitInp->exeFrequency, exeFrequency, NAME_LEN);
+    rstrcpy (ruleExecSubmitInp->priority, priority, NAME_LEN);
+    rstrcpy (ruleExecSubmitInp->estimateExeTime, estimateExeTime, NAME_LEN);
+    rstrcpy (ruleExecSubmitInp->notificationAddr, notificationAddr, NAME_LEN);
+
+    return 0;
+}
+
+int
+reServerSingleExec (rsComm_t *rsComm, char *ruleExecId)
+{
+    reExecProc_t reExecProc;
+    int status;
+    sqlResult_t *ruleName, *reiFilePath, *userName, *exeAddress,
+      *exeTime, *exeFrequency, *priority, *lastExecTime, *exeStatus,
+      *estimateExeTime, *notificationAddr;
+    genQueryOut_t *genQueryOut = NULL;
+
+    status = getReInfoById (rsComm, ruleExecId, &genQueryOut);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "reServerSingleExec: getReInfoById error for %s, status = %d",
+          ruleExecId, status);
+	return status;
+    }
+    bzero (&reExecProc, sizeof (reExecProc));
+    /* init reComm */
+    reExecProc.reComm.proxyUser = rsComm->proxyUser;
+    reExecProc.reComm.myEnv = rsComm->myEnv;
+    reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf =
+      (bytesBuf_t *) calloc (1, sizeof (bytesBuf_t));
+    reExecProc.procExecState = RE_PROC_RUNNING;
+
+    if ((ruleName = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "reServerSingleExec: getSqlResultByInx for EXEC_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((reiFilePath = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_REI_FILE_PATH)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "reServerSingleExec: getSqlResultByInx for REI_FILE_PATH failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((userName = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_USER_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "reServerSingleExec: getSqlResultByInx for USER_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((exeAddress = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_ADDRESS)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "reServerSingleExec: getSqlResultByInx for EXEC_ADDRESS failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((exeTime = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_TIME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "reServerSingleExec: getSqlResultByInx for EXEC_TIME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((exeFrequency = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_FREQUENCY)) == NULL) {
+        rodsLog (LOG_NOTICE,
+         "reServerSingleExec:getResultByInx for RULE_EXEC_FREQUENCY failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((priority = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_PRIORITY)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "reServerSingleExec: getSqlResultByInx for PRIORITY failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((lastExecTime = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_LAST_EXE_TIME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "reServerSingleExec: getSqlResultByInx for LAST_EXE_TIME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((exeStatus = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_STATUS)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "reServerSingleExec: getSqlResultByInx for EXEC_STATUS failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((estimateExeTime = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_ESTIMATED_EXE_TIME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+         "reServerSingleExec: getResultByInx for ESTIMATED_EXE_TIME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((notificationAddr = getSqlResultByInx (genQueryOut,
+     COL_RULE_EXEC_NOTIFICATION_ADDR)) == NULL) {
+        rodsLog (LOG_NOTICE,
+         "reServerSingleExec:getResultByInx for NOTIFICATION_ADDR failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    status = fillExecSubmitInp (&reExecProc.ruleExecSubmitInp, 
+      exeStatus->value, exeTime->value, ruleExecId, reiFilePath->value,
+      ruleName->value, userName->value, exeAddress->value, exeFrequency->value,
+      priority->value, estimateExeTime->value, notificationAddr->value);
+
+    if (status < 0) return status;
+    seedRandom ();
+    status = runRuleExec (&reExecProc);
+    postProcRunRuleExec (rsComm, &reExecProc);
+
+    return (reExecProc.status);
 }
 
