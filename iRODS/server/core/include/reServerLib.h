@@ -87,5 +87,5 @@ char *exeTime, char *ruleExecId, char *reiFilePath, char *ruleName,
 char *userName, char *exeAddress, char *exeFrequency, char *priority,
 char *estimateExeTime, char *notificationAddr);
 int
-reServerSingleExec (rsComm_t *rsComm, char *ruleExecId);
+reServerSingleExec (rsComm_t *rsComm, char *ruleExecId, int jobType);
 #endif	/* RE_SERVER_LIB_H */

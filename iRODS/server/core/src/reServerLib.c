@@ -83,6 +83,7 @@ getReInfoById (rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut)
     addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_FREQUENCY, 1);
     addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_PRIORITY, 1);
     addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_ESTIMATED_EXE_TIME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_NOTIFICATION_ADDR, 1);
     addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_LAST_EXE_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_STATUS, 1);
 
@@ -471,42 +472,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
             freeReThr (reExec, thrInx);
             continue;
 	} else {
-#if 0
-	    if ((reExec->reExecProc[thrInx].pid = fork()) == 0) {
-		/* child. need to disconnect Rcat */ 
-		rodsServerHost_t *rodsServerHost = NULL;
-
-                if ((status = resetRcatHost (rsComm, MASTER_RCAT,
-                 rsComm->myEnv.rodsZone)) == LOCAL_HOST) {
-#ifdef RODS_CAT
-                    resetRcat (rsComm);
-#endif
-		}
-        	if ((status = getAndConnRcatHost (rsComm, MASTER_RCAT,
-                 rsComm->myEnv.rodsZone, &rodsServerHost)) == LOCAL_HOST) {
-#ifdef RODS_CAT
-                    status = connectRcat (rsComm);
-                    if (status < 0) {
-                        rodsLog (LOG_ERROR,
-                          "runQueuedRuleExec: connectRcat error. status=%d",
-			  status);
-        	    }
-#endif
-    		}
-		seedRandom ();
-		status = runRuleExec (&reExec->reExecProc[thrInx]);
-                postProcRunRuleExec (rsComm, &reExec->reExecProc[thrInx]);
-#ifdef RE_SERVER_DEBUG
-		rodsLog (LOG_NOTICE,
-		  "runQueuedRuleExec: process %d exiting", getpid ());
-#endif
-		if (reExec->reExecProc[thrInx].status >= 0) {
-		    exit (0);
-		} else {
-		    exit (1);
-		}
-#else	/* if 0 */
-#ifdef R_EXEC_PROC
+#ifdef RE_EXEC_PROC
 	    if ((reExec->reExecProc[thrInx].pid = fork()) == 0) {
 	        /* child. need to disconnect Rcat */
 
@@ -527,7 +493,6 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
                 } else {
                     exit (1);
                 }
-#endif
 #endif
 	    } else { 
 #ifdef RE_SERVER_DEBUG
@@ -590,12 +555,18 @@ execRuleExec (reExecProc_t *reExecProc)
     int status;
     char *av[NAME_LEN];
     int avInx = 0;
+    
 
     av[avInx] = strdup (RE_EXE);
     avInx++;
     av[avInx] = strdup ("-j");
     avInx++;
     av[avInx] = strdup (reExecProc->ruleExecSubmitInp.ruleExecId);
+    avInx++;
+    av[avInx] = strdup ("-t");
+    avInx++;
+    av[avInx] = malloc (sizeof (int) * 2);
+    sprintf (av[avInx], "%d", reExecProc->jobType);
     avInx++;
     av[avInx] = NULL;
 
@@ -974,7 +945,7 @@ char *estimateExeTime, char *notificationAddr)
 }
 
 int
-reServerSingleExec (rsComm_t *rsComm, char *ruleExecId)
+reServerSingleExec (rsComm_t *rsComm, char *ruleExecId, int jobType)
 {
     reExecProc_t reExecProc;
     int status;
@@ -983,13 +954,6 @@ reServerSingleExec (rsComm_t *rsComm, char *ruleExecId)
       *estimateExeTime, *notificationAddr;
     genQueryOut_t *genQueryOut = NULL;
 
-    status = getReInfoById (rsComm, ruleExecId, &genQueryOut);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "reServerSingleExec: getReInfoById error for %s, status = %d",
-          ruleExecId, status);
-	return status;
-    }
     bzero (&reExecProc, sizeof (reExecProc));
     /* init reComm */
     reExecProc.reComm.proxyUser = rsComm->proxyUser;
@@ -997,6 +961,24 @@ reServerSingleExec (rsComm_t *rsComm, char *ruleExecId)
     reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf =
       (bytesBuf_t *) calloc (1, sizeof (bytesBuf_t));
     reExecProc.procExecState = RE_PROC_RUNNING;
+    reExecProc.jobType = jobType;
+
+    status = getReInfoById (rsComm, ruleExecId, &genQueryOut);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "reServerSingleExec: getReInfoById error for %s, status = %d",
+          ruleExecId, status);
+	return status;
+    }
+
+    bzero (&reExecProc, sizeof (reExecProc));
+    /* init reComm */
+    reExecProc.reComm.proxyUser = rsComm->proxyUser;
+    reExecProc.reComm.myEnv = rsComm->myEnv;
+    reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf =
+      (bytesBuf_t *) calloc (1, sizeof (bytesBuf_t));
+    reExecProc.procExecState = RE_PROC_RUNNING;
+    reExecProc.jobType = jobType;
 
     if ((ruleName = getSqlResultByInx (genQueryOut,
      COL_RULE_EXEC_NAME)) == NULL) {
