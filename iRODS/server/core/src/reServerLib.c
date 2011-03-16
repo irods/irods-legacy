@@ -482,7 +482,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
 	            resetRcat (rsComm);
 #endif
 	        }
-		/* this call don't come back */
+		/* this call doesn't come back */
 		execRuleExec (&reExec->reExecProc[thrInx]);
 #else
 	    if ((reExec->reExecProc[thrInx].pid = fork()) == 0) {
