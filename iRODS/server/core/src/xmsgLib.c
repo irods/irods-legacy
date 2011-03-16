@@ -199,7 +199,7 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
 
   i  = replaceMsParams(condStr, &XMsgMsParamArray);
   i =  computeExpression(condStr, NULL, 0, res);
-  if (i == 1) 
+  if (strcmp(res, "true") == 0)
     return(0);
   else 
     return(1);
