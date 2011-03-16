@@ -426,7 +426,7 @@ int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char
 	free(res1);
 
 	int ret;
-    ret = processReturnRes(res);
+    ret = processReturnRes(res0);
 
     region_free(r);
 
