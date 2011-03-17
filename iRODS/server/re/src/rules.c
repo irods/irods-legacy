@@ -536,6 +536,7 @@ Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamAr
     	convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
     }
     
+    deleteEnv(env, 3);
     if(TYPE(res)==T_ERROR) {
         logErrMsg(&errmsgBuf);
     }
