@@ -987,7 +987,7 @@ char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
         } else {
             snprintf(errbuf+p, buflen-p, "%s\n", errmsg->errMsg[i]->msg);
         }
-        p = strlen(errbuf, buflen);
+        p = strlen(errbuf);
     }
     return errbuf;
 
