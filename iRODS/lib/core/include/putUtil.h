@@ -41,7 +41,7 @@ putFileUtil (rcComm_t *conn, char *srcPath, char *targPath,
 rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs, 
 dataObjInp_t *dataObjOprInp);
 int
-initCondForPut (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+initCondForPut (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 dataObjInp_t *dataObjOprInp, bulkOprInp_t *bulkOprInp,
 rodsRestart_t *rodsRestart);
 int

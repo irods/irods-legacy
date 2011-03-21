@@ -127,6 +127,7 @@
 #define USER_NAME_CLIENT_KW     "userNameClient"
 #define RODS_ZONE_CLIENT_KW     "rodsZoneClient"
 #define HOST_CLIENT_KW           "hostClient"
+#define CLIENT_ADDR_KW           "clientAddr"
 #define USER_TYPE_CLIENT_KW     "userTypeClient"
 #define AUTH_STR_CLIENT_KW      "authStrClient" /* user distin name */
 #define USER_AUTH_SCHEME_CLIENT_KW     "userAuthSchemeClient"

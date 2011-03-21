@@ -112,7 +112,19 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->sql=True;
             argv[i]="-Z";
          }
-
+         if (strcmp("--lfrestart", argv[i])==0) {
+            rodsArgs->lfrestart=True;
+            argv[i]="-Z";
+            if (i + 2 < argc) {
+	       if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--lfrestart option needs an iput file");
+		    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->lfrestartFileString=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
       }
    }
 

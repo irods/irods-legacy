@@ -67,6 +67,7 @@
 #define SqlResult_PI "int attriInx; int reslen; str *value(rowCnt)(reslen);"  
 
 #define GenQueryOut_PI "int rowCnt; int attriCnt; int continueInx; int totalRowCount; struct SqlResult_PI[MAX_SQL_ATTR];"
+#define GenArraysInp_PI "int rowCnt; int attriCnt; int continueInx; int totalRowCount; struct KeyValPair_PI; struct SqlResult_PI[MAX_SQL_ATTR];"
 #define DataObjInfo_PI "str objPath[MAX_NAME_LEN]; str rescName[NAME_LEN]; str rescGroupName[NAME_LEN]; str dataType[NAME_LEN]; double dataSize; str chksum[NAME_LEN]; str version[NAME_LEN]; str filePath[MAX_NAME_LEN]; str *rescInfo; str dataOwnerName[NAME_LEN]; str dataOwnerZone[NAME_LEN]; int  replNum; int  replStatus; str statusString[NAME_LEN]; double  dataId; double collId; int  dataMapId; int flags; str dataComments[LONG_NAME_LEN]; str dataMode[SHORT_STR_LEN]; str dataExpiry[TIME_LEN]; str dataCreate[TIME_LEN]; str dataModify[TIME_LEN]; str dataAccess[NAME_LEN]; int  dataAccessInx; int writeFlag; str destRescName[NAME_LEN]; str backupRescName[NAME_LEN]; str subPath[MAX_NAME_LEN]; int *specColl; int *next;"
 
 /* transStat_t is being replaced by transferStat_t because of the 64 bits
@@ -127,4 +128,6 @@
 #define DVMapStruct_PI "int maxNumOfDVars; str *varName[maxNumOfDVars]; str *action[maxNumOfDVars]; str *var2CMap[maxNumOfDVars]; double varId[maxNumOfDVars];"
 #define FNMapStruct_PI "int maxNumOfFMaps; str *funcName[maxNumOfFMaps]; str *func2CMap[maxNumOfFMaps]; double fmapId[maxNumOfFMaps];"
 #define MsrvcStruct_PI "int maxNumOfMsrvcs; double msrvcId[maxNumOfMsrvcs]; str moduleName[maxNumOfMsrvcs]; str msrvcName[maxNumOfMsrvcs];  str msrvcSiganture[maxNumOfMsrvcs];  str msrvcVersion[maxNumOfMsrvcs];  str msrvcHost[maxNumOfMsrvcs];  str msrvcLocation[maxNumOfMsrvcs];  str msrvcLanguage[maxNumOfMsrvcs];  str msrvcTypeName[maxNumOfMsrvcs];  double msrvcStatus[maxNumOfMsrvcs];" 
+#define DataSeg_PI "double len; double offset;"
+#define FileRestartInfo_PI "str fileName[MAX_NAME_LEN]; int numSeg; int flags; double fileSize; struct *DataSeg_PI[numSeg];"
 #endif	/* PACK_INSTRUCT_H */

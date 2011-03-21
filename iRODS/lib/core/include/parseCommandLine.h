@@ -88,6 +88,8 @@ typedef struct {
    int extract; 
    int restart;
    char *restartFileString;
+   int lfrestart;
+   char *lfrestartFileString;
    int version;
    int retries;
    int retriesValue;

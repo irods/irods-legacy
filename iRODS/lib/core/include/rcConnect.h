@@ -39,11 +39,10 @@ typedef struct reconnMsg {
     int flag;
 } reconnMsg_t;
 
+/* one seq per thread */
 typedef struct dataSeg {
-    int len;
-    int flags;	/* unused flag to fill out 64 bits */
+    rodsLong_t len;
     rodsLong_t offset;
-    struct dataSeg *next;
 } dataSeg_t;
 
 typedef enum {
@@ -52,10 +51,17 @@ typedef enum {
 } fileRestartFlag_t;
 
 typedef struct {
-    fileRestartFlag_t flags;
-    int segSize;
+    char fileName[MAX_NAME_LEN];	/* the file name to restart */
+    int numSeg;         /* number of segments. should equal to num threads */
+    int flags;		/* no used for now */
     rodsLong_t fileSize;
-    dataSeg_t *dataSegHead;	/* head of the completed dataSeg */
+    dataSeg_t *dataSeg;  /* pointer to and array of dataSeg */
+} fileRestartInfo_t;
+
+typedef struct {
+    fileRestartFlag_t flags;
+    char infoFile[MAX_NAME_LEN];	/* file containing restart info */
+    fileRestartInfo_t info;
 } fileRestart_t;
 
 typedef enum {

@@ -120,6 +120,8 @@ packInstructArray_t RodsPackTable[] = {
 	{"DVMapStruct_PI", DVMapStruct_PI},
 	{"FNMapStruct_PI", FNMapStruct_PI},
         {"MsrvcStruct_PI", MsrvcStruct_PI},
+        {"DataSeg_PI", DataSeg_PI},
+        {"FileRestartInfo_PI", FileRestartInfo_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

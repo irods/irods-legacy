@@ -26,7 +26,7 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
 	return (USER__NULL_INPUT_ERR);
     }
 
-    status = initCondForPut (myRodsEnv, myRodsArgs, &dataObjOprInp, 
+    status = initCondForPut (conn, myRodsEnv, myRodsArgs, &dataObjOprInp, 
       &bulkOprInp, &rodsRestart);
 
     if (status < 0) return status;
@@ -178,7 +178,7 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
 }
 
 int
-initCondForPut (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+initCondForPut (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjOprInp, bulkOprInp_t *bulkOprInp, 
 rodsRestart_t *rodsRestart)
 {
@@ -359,6 +359,12 @@ rodsRestart_t *rodsRestart)
     /* Not needed - dataObjOprInp->createMode = 0700; */
     /* mmap in rbudp needs O_RDWR */
     dataObjOprInp->openFlags = O_RDWR;
+
+    if (rodsArgs->lfrestart == True) {
+        conn->fileRestart.flags = FILE_RESTART_ON;
+	rstrcpy (conn->fileRestart.infoFile, rodsArgs->lfrestartFileString, 
+	  MAX_NAME_LEN);
+    }
 
     return (0);
 }
