@@ -413,14 +413,20 @@ spawnAgent (agentProc_t *connReq, agentProc_t **agentProcHead)
 #endif
 	/* close any socket still in the queue */
 #ifndef SINGLE_SVR_THR
+	/* These queues may be inconsistent because of the multi-threading 
+         * of the parent. set sock to -1 if it has been closed */
 	tmpAgentProc = ConnReqHead;
 	while (tmpAgentProc != NULL) {
+	    if (tmpAgentProc->sock == -1) break;
 	    close (tmpAgentProc->sock);
+	    tmpAgentProc->sock = -1;
 	    tmpAgentProc = tmpAgentProc->next;
 	}
         tmpAgentProc = SpawnReqHead;
         while (tmpAgentProc != NULL) {
+	    if (tmpAgentProc->sock == -1) break;
             close (tmpAgentProc->sock);
+	    tmpAgentProc->sock = -1;
             tmpAgentProc = tmpAgentProc->next;
         }
 #endif
