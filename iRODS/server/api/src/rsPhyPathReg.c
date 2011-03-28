@@ -277,6 +277,7 @@ rescInfo_t *rescInfo)
     dataObjInfo_t dataObjInfo;
     int status;
     char *rescGroupName = NULL;
+    char *chksum;
 
     initDataObjInfoWithInp (&dataObjInfo, phyPathRegInp);
     if ((rescGroupName = getValByKey (&phyPathRegInp->condInput, 
@@ -295,6 +296,22 @@ rescInfo_t *rescInfo)
          "filePathReg: getSizeInVault for %s failed, status = %d",
           dataObjInfo.objPath, status);
 	return (status);
+    }
+
+    if ((chksum = getValByKey (&phyPathRegInp->condInput, 
+      REG_CHKSUM_KW)) != NULL) {
+        rstrcpy (dataObjInfo.chksum, chksum, NAME_LEN);
+    }
+    else if ((chksum = getValByKey (&phyPathRegInp->condInput, 
+           VERIFY_CHKSUM_KW)) != NULL) {
+        status = _dataObjChksum (rsComm, &dataObjInfo, &chksum);
+        if (status < 0) {
+            rodsLog (LOG_ERROR, 
+             "rodsPathReg: _dataObjChksum for %s failed, status = %d",
+             dataObjInfo.objPath, status);
+            return (status);
+        }
+        rstrcpy (dataObjInfo.chksum, chksum, NAME_LEN);
     }
 
     status = svrRegDataObj (rsComm, &dataObjInfo);

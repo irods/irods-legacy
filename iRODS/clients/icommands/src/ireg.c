@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int nArgv;
     
 
-    optStr = "D:fhCG:R:vVZ";
+    optStr = "D:fhkKCG:R:vVZ";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
@@ -94,7 +94,7 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : ireg [-hfCvV] [--repl] [-D dataType] [-R resource] [-G rescGroup]",
+"Usage : ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource] [-G rescGroup]",
 "               physicalFilePath, irodsPath",
 " ",
 "Register a file or a directory of files and subdirectory into iRODS.",
@@ -131,6 +131,8 @@ usage ()
 " -C  the specified path is a directory. The default assumes the path is a file.",
 " -f  Force. If the target collection already exists, register the files and",
 "     subdirectories that have not releady been registered in the directory.",
+" -k  calculate a checksum on the iRODS client and store with the file details.",
+" -K  calculate a checksum on the iRODS server and store with the file details.",
 " --repl  register the physical path as a replica.",
 " -v  verbose",
 " -V  Very verbose",

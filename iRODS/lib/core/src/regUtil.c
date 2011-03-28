@@ -37,6 +37,20 @@ rodsPathInp_t *rodsPathInp)
 	    return (CAT_NAME_EXISTS_AS_DATAOBJ);
 	}
 
+        if (myRodsArgs->collection == False && myRodsArgs->checksum == True) {
+            status = rcChksumLocFile (srcPath->outPath, REG_CHKSUM_KW,
+              &dataObjOprInp.condInput);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "regUtil: rcChksumLocFile error for %s, status = %d",
+                  srcPath, status);
+                return (status);
+            }
+        }
+        else if (myRodsArgs->collection == False && myRodsArgs->verifyChecksum == True) {
+            addKeyVal (&dataObjOprInp.condInput, VERIFY_CHKSUM_KW, "");
+        }
+
         addKeyVal (&dataObjOprInp.condInput, FILE_PATH_KW, srcPath->outPath);
 	rstrcpy (dataObjOprInp.objPath, destPath->outPath, MAX_NAME_LEN);
 
