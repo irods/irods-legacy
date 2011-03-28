@@ -75,6 +75,11 @@ struct allowedUser *AllowedUserHead = NULL;
 struct allowedUser *DisallowedUserHead = NULL;
 int MaxConnections = DEF_MAX_CONNECTION;		/* no control */
 
+/* manage server process permissions */
+#ifdef RUN_SERVER_AS_ROOT
+uid_t ServiceUid = 0;
+#endif
+
 #endif	/* RS_GLOBAL_H */
 
 

@@ -33,6 +33,14 @@ main(int argc, char **argv)
 
     ProcessType = RE_SERVER_PT;
 
+#ifdef RUN_SERVER_AS_ROOT
+#ifndef windows_platform
+    if (initServiceUser() < 0) {
+        exit (1);
+    }
+#endif
+#endif
+
 #ifndef _WIN32
     signal(SIGINT, signalExit);
     signal(SIGHUP, signalExit);

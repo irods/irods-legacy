@@ -23,6 +23,14 @@ main(int argc, char *argv[])
 
     ProcessType = AGENT_PT;
 
+#ifdef RUN_SERVER_AS_ROOT
+#ifndef windows_platform
+    if (initServiceUser() < 0) {
+        exit (1);
+    }
+#endif
+#endif
+
 #ifdef windows_platform
 	iRODSNtAgentInit(argc, argv);
 #endif

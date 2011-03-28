@@ -2251,3 +2251,124 @@ readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv)
     return (status);
 }
 
+
+#ifdef RUN_SERVER_AS_ROOT
+
+/* initServiceUser - set the username/uid of the unix user to
+ *      run the iRODS daemons as if configured using the 
+ *      irodsServiceUser environment variable. Will also
+ *      set effective uid to service user.
+ */
+int
+initServiceUser() 
+{
+#ifndef windows_platform
+    char *serviceUser;
+    struct passwd *pwent;
+    
+    serviceUser = getenv("irodsServiceUser");
+    if (serviceUser == NULL || getuid() != 0) {
+        /* either the option is not set, or not running     */
+        /* with the necessary root permission. Just return. */
+        return (0);
+    }
+    
+    /* clear errno before getpwnam to distinguish an error from user */
+    /* not existing. pwent == NULL && errno == 0 means no entry      */
+    errno = 0;
+    pwent = getpwnam(serviceUser);
+    if (pwent) {
+        ServiceUid = pwent->pw_uid;
+        return (changeToServiceUser());
+    }
+
+    if (errno) {
+        rodsLogError(LOG_ERROR, SYS_USER_RETRIEVE_ERR,
+                     "setServiceUser: error in getpwnam %s, errno = %d",
+                     serviceUser, errno);
+        return (SYS_USER_RETRIEVE_ERR - errno);
+    }
+    else {
+        rodsLogError(LOG_ERROR, SYS_USER_RETRIEVE_ERR,
+                     "setServiceUser: user %s doesn't exist", serviceUser);
+        return (SYS_USER_RETRIEVE_ERR);
+    }
+#else
+    return (0);
+#endif
+}
+
+/* isServiceUserSet - check if the service user has been configured
+ */
+int
+isServiceUserSet()
+{
+    if (ServiceUid) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+/* changeToRootUser - take on root privilege by setting the process
+ *                    effective uid to zero.
+ */
+int
+changeToRootUser()
+{
+    int prev_errno, my_errno;
+
+    if (!isServiceUserSet()) {
+        /* not configured ... just return */
+        return (0);
+    }
+
+#ifndef windows_platform
+    /* preserve the errno from before. We'll often be   */
+    /* called after a "permission denied" type error,   */
+    /* so we need to preserve this previous error state */
+    prev_errno = errno;
+    if (seteuid(0) == -1) {
+        my_errno = errno;
+        errno = prev_errno;
+        rodsLogError(LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno, 
+                     "changeToRootUser: can't change to root user id");
+        return (SYS_USER_NO_PERMISSION - my_errno);
+    }
+#endif
+
+    return (0);
+}
+
+/* changeToServiceUser - set the process effective uid to that of the
+ *                       configured service user. Normally used to give
+ *                       up root permission.
+ */
+int
+changeToServiceUser()
+{
+    int prev_errno, my_errno;
+
+    if (!isServiceUserSet()) {
+        /* not configured ... just return */
+        return (0);
+    }
+
+#ifndef windows_platform
+    prev_errno = errno;
+    if (seteuid(ServiceUid) == -1) {
+        my_errno = errno;
+        errno = prev_errno;
+        rodsLogError(LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno, 
+                     "changeToServiceUser: can't change to service user id");
+        return (SYS_USER_NO_PERMISSION - my_errno);
+    }
+#endif
+
+    return (0);
+}
+
+#endif /* RUN_SERVER_AS_ROOT */
+
+

@@ -126,4 +126,14 @@ setupSrvPortalForParaOpr (rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 int oprType, portalOprOut_t **portalOprOut);
 int
 readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv);
+#ifdef RUN_SERVER_AS_ROOT
+int 
+initServiceUser ();
+int
+isServiceUserSet ();
+int
+changeToRootUser ();
+int 
+changeToServiceUser ();
+#endif
 #endif	/* MISC_SERVER_FUNCT_H */

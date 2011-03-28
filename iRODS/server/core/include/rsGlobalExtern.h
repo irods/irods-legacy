@@ -75,5 +75,10 @@ extern struct allowedUser *AllowedUserHead;
 extern struct allowedUser *DisallowedUserHead;
 extern int MaxConnections;          /* no control */
 
+/* manage server process permissions */
+#ifdef RUN_SERVER_AS_ROOT
+extern uid_t ServiceUid;
+#endif
+
 #endif  /* RS_GLOBAL_EXTERN_H */
 

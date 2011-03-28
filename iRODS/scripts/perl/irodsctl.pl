@@ -269,7 +269,7 @@ $scriptName = $0;
 setPrintVerbose( 1 );
 
 # Make sure we are not being run as root.
-if ( $thisUserID == 0 )
+if ( $thisUserID == 0 && not defined $ENV{'irodsServiceUser'})
 {
 	printError( "Usage error:\n" );
 	printError( "    This script should *not* be run as root.\n" );

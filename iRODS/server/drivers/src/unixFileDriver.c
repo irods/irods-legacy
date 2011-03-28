@@ -256,6 +256,17 @@ unixFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf)
 
     status = stat (filename, statbuf);
 
+#ifdef RUN_SERVER_AS_ROOT
+    if (status < 0 && errno == EACCES && isServiceUserSet()) {
+        /* if the file can't be accessed due to permission denied */
+        /* try again using root credentials.                      */
+        if (changeToRootUser() == 0) {
+            status = stat (filename, statbuf);
+            changeToServiceUser();
+        }
+    }
+#endif
+
     if (status < 0) {
         status = UNIX_FILE_STAT_ERR - errno;
         rodsLog (LOG_DEBUG, "unixFileStat: stat of %s error, status = %d",
@@ -271,6 +282,17 @@ unixFileFstat (rsComm_t *rsComm, int fd, struct stat *statbuf)
     int status;
 
     status = fstat (fd, statbuf);
+
+#ifdef RUN_SERVER_AS_ROOT
+    if (status < 0 && errno == EACCES && isServiceUserSet()) {
+        /* if the file can't be accessed due to permission denied */
+        /* try again using root credentials.                      */
+        if (changeToRootUser() == 0) {
+            status = fstat (fd, statbuf);
+            changeToServiceUser();
+        }
+    }
+#endif
 
     if (status < 0) {
         status = UNIX_FILE_FSTAT_ERR - errno;
@@ -379,6 +401,18 @@ unixFileOpendir (rsComm_t *rsComm, char *dirname, void **outDirPtr)
 
 
     dirPtr = opendir (dirname);
+
+#ifdef RUN_SERVER_AS_ROOT
+    if (dirPtr == NULL && errno == EACCES && isServiceUserSet()) {
+        /* if the directory can't be accessed due to permission */
+        /* denied try again using root credentials.             */
+        if (changeToRootUser() == 0) {
+            dirPtr = opendir (dirname);
+            changeToServiceUser();
+        }
+    }
+#endif
+
     if (dirPtr != NULL) {
         *outDirPtr = (void *) dirPtr;
 	status = 0;

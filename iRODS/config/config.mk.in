@@ -363,3 +363,10 @@ WOS_DIR=/home/mwan/myapps/ddn/woscpp
 BOOST_DIR=/home/mwan/myapps/boost/boost_1_44_0
 endif
 
+# RUN_SERVER_AS_ROOT - Defines whether the iRODS server contains code
+# that will allow the iRODS servers to switch between root and service
+# user permissions for specific operations. Even if set here, will only
+# be enabled if a) the server is started as root, and b) the environment
+# variable irodsServiceUser is set to the desired system user.
+# RUN_SERVER_AS_ROOT = 1
+ 

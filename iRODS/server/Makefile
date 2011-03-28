@@ -195,6 +195,9 @@ ifdef EXTENDED_ICAT
 CFLAGS +=		-DEXTENDED_ICAT
 INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
+ifdef RUN_SERVER_AS_ROOT
+CFLAGS +=       -DRUN_SERVER_AS_ROOT
+endif
 
 # re
 ifdef RULE_ENGINE
