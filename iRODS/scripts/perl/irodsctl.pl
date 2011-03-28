@@ -237,6 +237,10 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # The default value is 0750 (DEFAULT_DIR_MODE).
 # $DefDirMode=0700;
 
+# $LOGFILE_INT - specifies the server log interval in number of days.
+# The default is 5 days.
+# $LOGFILE_INT=5;
+
 				  $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
 if ($irodsEnvFile)		{ $ENV{'irodsEnvFile'}        = $irodsEnvFile; }
 if ($irodsPort)			{ $ENV{'irodsPort'}           = $irodsPort; }
@@ -254,6 +258,7 @@ if ($PREPOSTPROCFORGENQUERYFLAG)    { $ENV{'PREPOSTPROCFORGENQUERYFLAG'} = $PREP
 if ($GLOBALREDEBUGFLAG)         { $ENV{'GLOBALREDEBUGFLAG'}   = $GLOBALREDEBUGFLAG; }
 if ($DefFileMode)		{ $ENV{'DefFileMode'}         = $DefFileMode; }
 if ($DefDirMode)		{ $ENV{'DefDirMode'}          = $DefDirMode; }
+if ($LOGFILE_INT)		{ $ENV{'LOGFILE_INT'}          = $LOGFILE_INT; }
 
 
 
