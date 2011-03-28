@@ -53,6 +53,7 @@
 #define T_FUNC_RET_TYPE(x) ((x)->ext.func.retType)
 #define T_VAR_ID(x) ((x)->ext.tvar.vid)
 #define T_VAR_DISJUNCT(x, n) ((x)->ext.tvar.disjuncts[n])
+#define T_VAR_DISJUNCTS(x) ((x)->ext.tvar.disjuncts)
 #define T_VAR_NUM_DISJUNCTS(x) ((x)->ext.tvar.numDisjuncts)
 #define T_FUNC_ARITY(x) ((x)->ext.func.arity)
 #define T_CONS_ARITY(x) ((x)->ext.cons.arity)
@@ -86,17 +87,17 @@ typedef Bucket *BucketPtr;
 struct vtype {
 		int vid;
 		int numDisjuncts;
-		TypeConstructor disjuncts[100];
+		TypeConstructor *disjuncts;
 /*                TypeConstructor lowerBound; */
 };
 /* constructed type */
 struct cons_type {
-		char typeConsName[10]; /* constructor */
+		char *typeConsName; /* constructor */
 		int arity;
 		ExprType** typeArgs;
 };
 struct irods_type {
-        char name[100];
+        char *name;
 };
 enum vararg {
     ONCE = 0,
@@ -195,7 +196,7 @@ typedef struct node {
 	NodeType type; /* syntax type */
 	ExprType *exprType; /* expression type */
         ExprType *coercion; /* coersed type */
-	char text[MAX_NODE_TEXT_LEN+1];
+	char *text;
 	long expr;
 	int degree;
 	struct node **subtrees;
@@ -243,7 +244,8 @@ char* getTVarNameRegionFromExprType(ExprType *tvar, Region *r);
 extern int tvarNumber;
 ExprType *dupType(ExprType *ty, Region *r);
 int typeEqSyntatic(ExprType *a, ExprType *b);
-ExprType *newTVar();
+ExprType *newTVar(Region *r);
+ExprType *newTVar2(int numDisjuncts, TypeConstructor disjuncts[], Region *r);
 ExprType *newCollType(ExprType *elemType, Region *r);
 ExprType *newFuncType(int arity, ExprType **paramTypes, ExprType *elemType, Region *r);
 ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType *elemType, Region *r);

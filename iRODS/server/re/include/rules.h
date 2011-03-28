@@ -6,7 +6,8 @@
 #include "utils.h"
 #include "arithmetics.h"
 #include "typing.h"
-#define MAX_NUM_RULES 5000
+#define MAX_NUM_RULES 50000
+#define MAX_NUM_APP_RULES 10000
 
 typedef struct ruleSet {
 	int len;

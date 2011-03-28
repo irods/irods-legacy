@@ -70,7 +70,7 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable, Region *keyRe
             for(i=0;i<ty->ext.func.arity;i++) {
                 paramTypes[i] = dupTypeAux(ty->ext.func.paramsType[i],r,varTable,keyRegion);
             }
-            newt = newFuncTypeVarArg(ty->ext.func.arity, ty->ext.func.vararg, paramTypes, dupType(ty->ext.func.retType,r), r);
+            newt = newFuncTypeVarArg(ty->ext.func.arity, ty->ext.func.vararg, paramTypes, dupTypeAux(ty->ext.func.retType,r, varTable, keyRegion), r);
             newt->coercionAllowed = ty->coercionAllowed;
             return newt;
         case T_CONS:
@@ -87,13 +87,8 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable, Region *keyRe
             if(exist != NULL)
                 return exist;
             else {
-                newt = newTVar(r);
+                newt = newTVar2(T_VAR_NUM_DISJUNCTS(ty), T_VAR_DISJUNCTS(ty), r);
                 newt->coercionAllowed = ty->coercionAllowed;
-                int i;
-                for(i=0;i<T_VAR_NUM_DISJUNCTS(ty);i++) {
-                    T_VAR_DISJUNCT(newt, i) = T_VAR_DISJUNCT(ty, i);
-                }
-                T_VAR_NUM_DISJUNCTS(newt) = T_VAR_NUM_DISJUNCTS(ty);
                 insertIntoHashTable(varTable, name, newt);
                 return newt;
             }
@@ -197,9 +192,7 @@ ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Reg
                 if(cp-c==1) {
                     gcd = newSimpType(*c, r);
                 } else {
-                    gcd = newTVar(r);
-                    T_VAR_NUM_DISJUNCTS(gcd) = cp-c;
-                    memcpy(gcd->ext.tvar.disjuncts, c, (cp-c)*sizeof(TypeConstructor));
+                    gcd = newTVar2(cp-c, c, r);
                 }
                 updateInHashTable(varTypes, getTVarName(type->ext.tvar.vid, buf), gcd);
                 updateInHashTable(varTypes, getTVarName(expected->ext.tvar.vid, buf), gcd);
@@ -319,16 +312,29 @@ char* getTVarNameRegionFromExprType(ExprType *tvar, Region *r) {
     return getTVarNameRegion(tvar->ext.tvar.vid, r);
 }
 
+ExprType *newTVar2(int numDisjuncts, TypeConstructor disjuncts[], Region *r) {
+	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
+    t->coercionAllowed = 0;
+    t->t=T_VAR;
+    t->ext.tvar.vid = tvarNumber ++;
+    t->ext.tvar.numDisjuncts = numDisjuncts;
+    t->ext.tvar.disjuncts = numDisjuncts == 0? NULL : (TypeConstructor *)region_alloc(r, sizeof(TypeConstructor) * numDisjuncts);
+    if(numDisjuncts!=0) {
+        memcpy(t->ext.tvar.disjuncts, disjuncts, numDisjuncts*sizeof(TypeConstructor));
+    }
+    return t;
+}
+
 ExprType *newTVar(Region *r) {
 	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
     t->coercionAllowed = 0;
     t->t=T_VAR;
     t->ext.tvar.vid = tvarNumber ++;
     t->ext.tvar.numDisjuncts = 0;
-    /*char name[128]; */
-    /*getTVarName(t->ext.tvar.vid, name); */
+    t->ext.tvar.disjuncts = NULL;
     return t;
 }
+
 ExprType *newSimpType(TypeConstructor type, Region *r) {
 	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
         t->t=type;
@@ -362,6 +368,7 @@ ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r) {
         t->t=T_CONS;
         t->ext.cons.arity = arity;
         t->ext.cons.typeArgs = paramTypes;
+        t->ext.cons.typeConsName = (char *)region_alloc(r,(strlen(cons)+1) * sizeof(char));
         strcpy(t->ext.cons.typeConsName, cons);
         return t;
 }
@@ -370,13 +377,14 @@ ExprType *newIRODSType(char *name, Region *r) {
         ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
         t->t = T_IRODS;
         t->coercionAllowed = 0;
+        t->ext.irods.name = (char *)region_alloc(r,(strlen(name)+1) * sizeof(char));
         strcpy(t->ext.irods.name, name);
         return t;
 }
 ExprType *newCollType(ExprType *elemType, Region *r) {
         ExprType **typeArgs = (ExprType**) region_alloc(r, sizeof(ExprType*));
         typeArgs[0] = elemType;
-        return newConsType(1, cpString(LIST, r), typeArgs, r);
+        return newConsType(1, LIST, typeArgs, r);
 }
 
 /** Res functions */
@@ -526,32 +534,41 @@ char *cpString(char *str, Region *r) {
     strcpy(strCp, str);
     return strCp;
 }
-ExprType *cpType(ExprType *type, Region *r) {
-    if(IN_REGION(type, r)) {
-        return type;
+ExprType *cpType(ExprType *ty, Region *r) {
+    if(IN_REGION(ty, r)) {
+        return ty;
     }
     ExprType **paramTypes;
     int i;
-    ExprType *typeCp;
-    switch(type->t) {
+    ExprType *newt;
+    switch(ty->t) {
         case T_FUNC:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*type->ext.func.arity);
-            for(i=0;i<type->ext.func.arity;i++) {
-                paramTypes[i] = dupType(type->ext.func.paramsType[i],r);
+            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*ty->ext.func.arity);
+            for(i=0;i<ty->ext.func.arity;i++) {
+                paramTypes[i] = cpType(ty->ext.func.paramsType[i],r);
             }
-            return newFuncTypeVarArg(type->ext.func.arity, type->ext.func.vararg, paramTypes, cpType(type->ext.func.retType,r), r);
+            newt = newFuncTypeVarArg(ty->ext.func.arity, ty->ext.func.vararg, paramTypes, cpType(ty->ext.func.retType,r), r);
+            newt->coercionAllowed = ty->coercionAllowed;
+            return newt;
         case T_CONS:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*type->ext.cons.arity);
-            for(i=0;i<type->ext.cons.arity;i++) {
-                paramTypes[i] = cpType(type->ext.cons.typeArgs[i],r);
+            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*ty->ext.cons.arity);
+            for(i=0;i<ty->ext.cons.arity;i++) {
+                paramTypes[i] = cpType(ty->ext.cons.typeArgs[i],r);
             }
-            char *name = cpString(type->ext.cons.typeConsName, r);
-            return newConsType(type->ext.cons.arity, name, paramTypes, r);
+            newt = newConsType(ty->ext.cons.arity, ty->ext.cons.typeConsName, paramTypes, r);
+            newt->coercionAllowed = ty->coercionAllowed;
+            return newt;
         case T_VAR:
+            newt = newTVar2(T_VAR_NUM_DISJUNCTS(ty), T_VAR_DISJUNCTS(ty), r);
+            newt->coercionAllowed = ty->coercionAllowed;
+            return newt;
+        case T_IRODS:
+            newt = newIRODSType(ty->ext.irods.name, r);
+            return newt;
         default:
-            typeCp = newSimpType(type->t, r);
-            *typeCp = *type;
-            return typeCp;
+            newt = (ExprType *)region_alloc(r, sizeof(ExprType));
+            memcpy(newt, ty, sizeof(ExprType));
+            return newt;
 
     }
 }
@@ -627,7 +644,7 @@ void printType(ExprType *type, Hashtable *var_types) {
     typeToString(type, var_types, buf, 1024);
     printf("%s", buf);
 }
-#define BUFFER(buf, bufsize) buf+strlen(buf), bufsize-strlen(buf)
+
 char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize) {
     buf[0] = '\0';
     Region *r = make_region(0, NULL);
@@ -640,12 +657,12 @@ char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
         if(etype->t == T_VAR) {
             snprintf(buf+strlen(buf), bufsize-strlen(buf), "%d", etype->ext.tvar.vid);
             if(T_VAR_NUM_DISJUNCTS(type)!=0) {
-                snprintf(BUFFER(buf, bufsize), "{");
+                snprintf(buf+strlen(buf), bufsize-strlen(buf), "{");
                 int i;
                 for(i=0;i<T_VAR_NUM_DISJUNCTS(type);i++) {
-                    snprintf(BUFFER(buf, bufsize), "%s ", typeName_TypeConstructor(T_VAR_DISJUNCT(type, i)));
+                    snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", typeName_TypeConstructor(T_VAR_DISJUNCT(type, i)));
                 }
-                snprintf(BUFFER(buf, bufsize), "}");
+                snprintf(buf+strlen(buf), bufsize-strlen(buf), "}");
             }
         } else if(etype->t == T_CONS) {
             snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", T_CONS_TYPE_NAME(etype));
@@ -987,7 +1004,7 @@ char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
         } else {
             snprintf(errbuf+p, buflen-p, "%s\n", errmsg->errMsg[i]->msg);
         }
-        p = strlen(errbuf);
+        p += strlen(errbuf+p);
     }
     return errbuf;
 

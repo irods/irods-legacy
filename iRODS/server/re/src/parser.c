@@ -48,8 +48,12 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
 	if(node == NULL)
 		return NULL;
 	node->type=type;
-	strncpy(node->text, text, MAX_NODE_TEXT_LEN);
-	node->text[MAX_NODE_TEXT_LEN] = '\0';
+        if(text!=NULL) {
+            node->text = (char *)region_alloc(r,(strlen(text) + 1) * sizeof(char));
+            strcpy(node->text, text);
+        } else {
+            node->text = NULL;
+        }
 	node->subtrees = NULL;
 	node->degree = 0;
 	node->expr = eloc == NULL? 0 : eloc->exprloc;
@@ -282,7 +286,7 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
                 }
             }
             char op[100];
-            dupString(e, &start, 99, op);
+            dupString(e, &start, 10, op);
             int found = 0;
             for (i = 0; i < num_ops; i++) {
                 int len = strlen(new_ops[i].string);
@@ -1380,10 +1384,14 @@ void readToBuffer(Pointer *p) {
 
 void seekInFile(Pointer *p, long x) {
    if(p -> isFile) {
-	fseek(p->fp, x * sizeof(char), SEEK_SET);
-	clearBuffer(p);
-	p->fpos = x * sizeof(char);
-	readToBuffer(p);
+       if(p->fpos < x * sizeof(char) || p->fpos + p->len >= x * sizeof(char)) {
+           fseek(p->fp, x * sizeof(char), SEEK_SET);
+           clearBuffer(p);
+           p->fpos = x * sizeof(char);
+           readToBuffer(p);
+       } else {
+           p->p = x * sizeof(char) - p->fpos;
+       }
    } else {
         p->strp = x;
    }
@@ -1403,8 +1411,12 @@ int dupString(Pointer *p, Label * start, int n, char *buf) {
 	Label curr;
         getFPos(&curr, p);
 	seekInFile(p, start->exprloc);
-	int len = p->len > n?n : p->len;
-	memcpy(buf, p->buf, len * sizeof(char));
+        int len = 0;
+        int ch;
+        while(len < n && (ch=lookAhead(p, 0)) != -1) {
+            buf[len++] = (char) ch;
+            nextChar(p);
+        }
 	buf[len] = '\0';
 	seekInFile(p, curr.exprloc);
 	return len;

@@ -489,10 +489,10 @@ void copyFromEnv(Res **args, char **inParams, int inParamsCount, Hashtable *env,
 Node* getRuleNode(int ri)
 {
 
-	if (ri < 1000) {
+	if (ri < MAX_NUM_APP_RULES) {
 		return appRules.rules[ri];
 	} else {
-		ri = ri - 1000;
+		ri = ri - MAX_NUM_APP_RULES;
 		return coreRules.rules[ri];
 	}
 	return(NULL);

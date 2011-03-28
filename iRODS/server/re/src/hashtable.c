@@ -43,7 +43,9 @@ Hashtable *newHashTable(int size) {
  * returns 0 if out of memory
  */
 int insertIntoHashTable(Hashtable *h, char* key, void *value) {
-/*    printf("insert %s=%s\n", key, value==NULL?"null":"<value>"); */
+/*
+    printf("insert %s=%s\n", key, value==NULL?"null":"<value>");
+*/
 	struct bucket *b = newBucket(strdup(key), value);
 	if(b==NULL) {
 		return 0;

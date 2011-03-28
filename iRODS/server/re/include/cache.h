@@ -20,8 +20,8 @@
     ((CacheRecordDesc *)p)->length = n; \
     p+= sizeof(CacheRecordDesc); \
     lval = ((elemTy *)p); \
-    memcpy(lval, val, sizeof(elemTy)*n); \
-    p+=sizeof(elemTy) * n;
+    memcpy(lval, val, sizeof(elemTy)*(n)); \
+    p+=sizeof(elemTy) * (n);
 #define SHMMAX 30000000
 #define SHM_BASE_ADDR ((void *)0x80000000)
 
@@ -44,6 +44,7 @@ enum cacheRecordType {
         Hashtable_T,
         RuleSet_T,
         CondIndexVal_T,
+        TypeConstructor_T,
         char_T,
         int_T,
     };
@@ -54,12 +55,12 @@ typedef struct {
 
 extern int isServer;
 
-ExprType *copyExprType(void **buf, ExprType *type);
-Node *copyNode(void **buf, Node *node);
-Hashtable* copyHashtableCharPrtToIntPtr(void **buf, Hashtable *h);
-RuleSet *copyRuleSet(void **buf, RuleSet *h);
-CondIndexVal *copyCondIndexVal(void **buf, CondIndexVal *civ);
-Cache *copyCache(void **buf, Cache *c);
+ExprType *copyExprType(unsigned char **buf, ExprType *type, Hashtable *objectMap);
+Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap);
+Hashtable* copyHashtableCharPrtToIntPtr(unsigned char **buf, Hashtable *h, Hashtable *objectMap);
+RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap);
+CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable *objectMap);
+Cache *copyCache(unsigned char **buf, Cache *c);
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct, Region *r);
 int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct);
 

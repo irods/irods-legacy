@@ -33,7 +33,7 @@ void clearIndex(Hashtable **ruleIndex)
 int createRuleIndex(ruleStruct_t *inRuleStrct, Hashtable **ruleIndex)
 {
 	clearIndex(ruleIndex);
-	*ruleIndex = newHashTable(MAX_NUM_OF_RULES*2);
+	*ruleIndex = newHashTable(MAX_NUM_RULES*2);
 	if (*ruleIndex == NULL)
 		return 0;
 	int i;
@@ -56,35 +56,35 @@ int createRuleIndex(ruleStruct_t *inRuleStrct, Hashtable **ruleIndex)
 int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
 {
 	clearIndex(ruleIndex);
-	*ruleIndex = newHashTable(MAX_NUM_OF_RULES*2);
+	*ruleIndex = newHashTable(MAX_NUM_RULES*2);
 	if (*ruleIndex == NULL)
 		return 0;
 
     /* generate main index */
-	int i;
-	for (i=0;i<inRuleSet->len;i++) {
-            Node *ruleNode = inRuleSet->rules[i];
-            if(ruleNode == NULL)
-                continue;
-		char *key = ruleNode->subtrees[0]->text;
-		int *value=(int *)malloc(sizeof(int));
-		*value = i;
+    int i;
+    for (i=0;i<inRuleSet->len;i++) {
+        Node *ruleNode = inRuleSet->rules[i];
+        if(ruleNode == NULL)
+            continue;
+            char *key = ruleNode->subtrees[0]->text;
+            int *value=(int *)malloc(sizeof(int));
+            *value = i;
 
-		if (insertIntoHashTable(*ruleIndex, key,value) == 0) {
-			deleteHashTable(*ruleIndex, free);
-			*ruleIndex=NULL;
-			return 0;
-		}
-	}
+            if (insertIntoHashTable(*ruleIndex, key,value) == 0) {
+                    deleteHashTable(*ruleIndex, free);
+                    *ruleIndex=NULL;
+                    return 0;
+            }
+    }
 
-	/* generate rule condition index */
-	condIndex = newHashTable(MAX_NUM_OF_RULES);
+    /* generate rule condition index */
+    condIndex = newHashTable(MAX_NUM_RULES);
 
     Hashtable *processedRuleNames = newHashTable(MAX_NUM_RULES * 2);
-    int ruleGroup[MAX_NUM_OF_RULES];
-	char *strGroup[MAX_NUM_OF_RULES];
-	for(i=0;i<(*ruleIndex)->size;i++) {
-	    struct bucket *b = (*ruleIndex)->buckets[i];
+    int ruleGroup[MAX_NUM_RULES];
+    char *strGroup[MAX_NUM_RULES];
+    for(i=0;i<(*ruleIndex)->size;i++) {
+        struct bucket *b = (*ruleIndex)->buckets[i];
 
         struct bucket *resumingBucket = b;
 
@@ -178,10 +178,10 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
             deleteHashTable(processedStrs, nop);
         }
 
-	}
+    }
     deleteHashTable(processedRuleNames, nop);
 
-	return 1;
+    return 1;
 }
 /**
  * returns 0 if out of memory
@@ -260,7 +260,7 @@ int findNextRule2(char *action,  int *ruleInx)
 
 	if (i < 0)
 		i = 0;
-	if (i < 1000) {
+	if (i < MAX_NUM_APP_RULES) {
 		if (appRuleIndex != NULL) {
 			int ii = findNextRuleFromIndex(appRuleIndex, action, ruleInx);
 			if (ii!=NO_MORE_RULES_ERR) {
@@ -274,18 +274,18 @@ int findNextRule2(char *action,  int *ruleInx)
 				}
 			}
 		}*/
-		i = 1000;
+		i = MAX_NUM_APP_RULES;
 	}
-	i  = i - 1000;
+	i  = i - MAX_NUM_APP_RULES;
 	if (coreRuleIndex != NULL) {
 		int ii = findNextRuleFromIndex(coreRuleIndex, action, &i);
 /*		dumpHashtableKeys(coreRuleIndex); */
-		*ruleInx = i + 1000;
+		*ruleInx = i + MAX_NUM_APP_RULES;
 		return ii;
 	} /*else {
 		for ( ; i < coreRuleStrct.MaxNumOfRules; i++) {
 			if (!strcmp( coreRuleStrct.action[i],action)) {
-				*ruleInx = i + 1000;
+				*ruleInx = i + MAX_NUM_APP_RULES;
 				return(0);
 			}
 		}*/

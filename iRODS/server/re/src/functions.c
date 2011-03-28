@@ -540,8 +540,8 @@ Res *smsi_arity(void **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 		if(findNextRule2(val->value.s.pointer, &ruleInx)<0) {
                     return newErrorRes(r, -1);
                 }
-                if(ruleInx >= 1000)
-                    return newIntRes(r, coreRules.rules[ruleInx-1000]->subtrees[0]->degree);
+                if(ruleInx >= MAX_NUM_APP_RULES)
+                    return newIntRes(r, coreRules.rules[ruleInx-MAX_NUM_APP_RULES]->subtrees[0]->degree);
                 else
                     return newIntRes(r, appRules.rules[ruleInx]->subtrees[0]->degree);
 }
@@ -1334,14 +1334,18 @@ ExprType *getTypeFromChar(char **ch, Hashtable *vtable, Region *r) {
 
                     ExprType *tvar;
                     if((tvar = lookupFromHashTable(vtable, vname))==NULL) {
-                        insertIntoHashTable(vtable, vname, tvar = newTVar(r));
                         if(**ch == '{') {
+                            int n = 0;
+                            TypeConstructor tc[100];
                             /* union */
                             (*ch)++;
                             while(**ch != '}') {
-                                T_VAR_DISJUNCT(tvar, T_VAR_NUM_DISJUNCTS(tvar)++) = getTypeFromChar(ch, vtable, r)->t;
+                                tc[n++] = getTypeFromChar(ch, vtable, r)->t;
                             }
                             (*ch)++; /* skip } */
+                            insertIntoHashTable(vtable, vname, tvar = newTVar2(n, tc, r));
+                        } else {
+                            insertIntoHashTable(vtable, vname, tvar = newTVar(r));
                         }
                     }
                     restype = tvar;
@@ -1463,12 +1467,12 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "!", newFunctionDesc("i", "b>b",smsi_not, r));
     insertIntoHashTable(ft, "&&", newFunctionDesc("ii", "bb>b",smsi_and, r));
     insertIntoHashTable(ft, "%%", newFunctionDesc("ii", "bb>b",smsi_or, r));
-    insertIntoHashTable(ft, "==", newFunctionDesc("ii", "f0{dbst}f0>b",smsi_eq, r));
-    insertIntoHashTable(ft, "!=", newFunctionDesc("ii", "f0{dbst}f0>b",smsi_neq, r));
-    insertIntoHashTable(ft, ">", newFunctionDesc("ii", "f0{dst}f0>b", smsi_gt, r));
-    insertIntoHashTable(ft, "<", newFunctionDesc("ii", "f0{dst}f0>b", smsi_lt, r));
-    insertIntoHashTable(ft, ">=", newFunctionDesc("ii", "f0{dst}f0>b", smsi_ge, r));
-    insertIntoHashTable(ft, "<=", newFunctionDesc("ii", "f0{dst}f0>b", smsi_le, r));
+    insertIntoHashTable(ft, "==", newFunctionDesc("ii", "f0{idbst}f0>b",smsi_eq, r));
+    insertIntoHashTable(ft, "!=", newFunctionDesc("ii", "f0{idbst}f0>b",smsi_neq, r));
+    insertIntoHashTable(ft, ">", newFunctionDesc("ii", "f0{idst}f0>b", smsi_gt, r));
+    insertIntoHashTable(ft, "<", newFunctionDesc("ii", "f0{idst}f0>b", smsi_lt, r));
+    insertIntoHashTable(ft, ">=", newFunctionDesc("ii", "f0{idst}f0>b", smsi_ge, r));
+    insertIntoHashTable(ft, "<=", newFunctionDesc("ii", "f0{idst}f0>b", smsi_le, r));
     insertIntoHashTable(ft, "floor", newFunctionDesc("i", "fd>i", smsi_floor, r));
     insertIntoHashTable(ft, "ceiling", newFunctionDesc("i", "fd>i", smsi_ceiling, r));
     insertIntoHashTable(ft, "abs", newFunctionDesc("i", "fd>d", smsi_abs, r));

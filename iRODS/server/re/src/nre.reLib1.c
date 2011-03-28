@@ -1090,19 +1090,19 @@ findNextRule (char *action,  int *ruleInx)
 
    if (i < 0)
      i = 0;
-   if (i < 1000) {
+   if (i < MAX_NUM_APP_RULES) {
      for( ; i < appRuleStrct.MaxNumOfRules; i++) {
        if (!strcmp( appRuleStrct.action[i],action)) {
 	 *ruleInx = i;
 	 return(0);
        }
      }
-     i = 1000;
+     i = MAX_NUM_APP_RULES;
    }
-   i  = i - 1000;
+   i  = i - MAX_NUM_APP_RULES;
    for( ; i < coreRuleStrct.MaxNumOfRules; i++) {
      if (!strcmp( coreRuleStrct.action[i],action)) {
-       *ruleInx = i + 1000;
+       *ruleInx = i + MAX_NUM_APP_RULES;
        return(0);
      }
    }
@@ -1116,7 +1116,7 @@ getRule(int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
 	char *ruleAction, char *ruleRecovery, int rSize)
 {
 
-  if (ri < 1000) {
+  if (ri < MAX_NUM_APP_RULES) {
     rstrcpy( ruleBase , appRuleStrct.ruleBase[ri], rSize);
     rstrcpy( ruleHead , appRuleStrct.ruleHead[ri], rSize);
     rstrcpy( ruleCondition , appRuleStrct.ruleCondition[ri], rSize);
@@ -1124,7 +1124,7 @@ getRule(int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
     rstrcpy( ruleRecovery , appRuleStrct.ruleRecovery[ri], rSize);
   }
   else {
-    ri = ri - 1000;
+    ri = ri - MAX_NUM_APP_RULES;
     rstrcpy( ruleBase , coreRuleStrct.ruleBase[ri], rSize);
     rstrcpy( ruleHead , coreRuleStrct.ruleHead[ri], rSize);
     rstrcpy( ruleCondition , coreRuleStrct.ruleCondition[ri], rSize);

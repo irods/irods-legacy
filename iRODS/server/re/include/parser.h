@@ -30,7 +30,7 @@ typedef struct op {
 extern int num_ops;
 extern Op new_ops[];
 
-#define POINTER_BUF_SIZE 1024
+#define POINTER_BUF_SIZE 128
 typedef struct pointer {
 	FILE *fp; /* file */
 	char buf[POINTER_BUF_SIZE]; /* buffer */

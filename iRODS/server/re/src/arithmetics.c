@@ -777,7 +777,7 @@ int execRuleFromCondIndex(char *ruleName, CondIndexVal *civ, Env *env, ruleExecI
                 return(NO_MORE_RULES_ERR);
             }
 
-            Node* rule = getRuleNode(*index+1000); /* increase the index to move it to core rules index below 1000 are app rules */
+            Node* rule = getRuleNode(*index+MAX_NUM_APP_RULES); /* increase the index to move it to core rules index below MAX_NUM_APP_RULES are app rules */
 
             ruleExecInfo_t  *saveRei;
 

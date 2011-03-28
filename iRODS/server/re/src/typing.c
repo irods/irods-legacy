@@ -94,48 +94,60 @@ int tautologyLtBase(ExprType *a, ExprType *b) {
 Satisfiability simplifyR(ExprType *type, ExprType *expected, ExprType **bn, Region *r) {
     ExprType b;
     if(expected->ext.tvar.numDisjuncts > 0) {
-        int k;
-        *bn = NULL;
-        for(k=0;k<expected->ext.tvar.numDisjuncts;k++) {
-                b.t = T_VAR_DISJUNCT(expected,k);
-                if(tautologyLt(type, &b)) {
-                    *bn = expected;
-                    break;
-                }
+        TypeConstructor c[100];
+        TypeConstructor* cp = c;
+        int i;
+        for(i=0;i<expected->ext.tvar.numDisjuncts;i++) {
+            b.t = T_VAR_DISJUNCT(expected, i);;
+            if(tautologyLt(type, &b)) {
+                *(cp++)=T_VAR_DISJUNCT(expected, i);
+            }
         }
-        /* ExprType *gcd; */
-        if(*bn == NULL) {
+        if(cp == c) {
             return ABSERDITY;
         } else {
+            if(cp-c==1) {
+                *bn = newSimpType(*c, r);
+            } else if (cp-c == T_VAR_NUM_DISJUNCTS(expected)) {
+                *bn = expected;
+            } else {
+                *bn = newTVar2(cp-c, c, r);
+            }
             return TAUTOLOGY;
         }
     } else {
         *bn = expected;
-        return TAUTOLOGY | CONTIGENCY;
+        return CONTIGENCY;
     }
 }
 
 Satisfiability simplifyL(ExprType *type, ExprType *expected, ExprType **an, Region *r) {
     ExprType a;
     if(type->ext.tvar.numDisjuncts > 0) {
+        TypeConstructor c[100];
+        TypeConstructor* cp = c;
         int i;
-        *an = NULL;
         for(i=0;i<type->ext.tvar.numDisjuncts;i++) {
-            a.t = T_VAR_DISJUNCT(type,i);
-/*                b->t = T_VAR_DISJUNCT(expected,k); */
+            a.t = T_VAR_DISJUNCT(type, i);
             if(tautologyLt(&a, expected)) {
-                *an = type;
-                break;
+                *(cp++)=T_VAR_DISJUNCT(type, i);
             }
         }
-        if(*an == NULL) {
+        if(cp == c) {
             return ABSERDITY;
         } else {
+            if(cp-c==1) {
+                *an = newSimpType(*c, r);
+            } else if (cp-c == T_VAR_NUM_DISJUNCTS(type)) {
+                *an = type;
+            } else {
+                *an = newTVar2(cp-c, c, r);
+            }
             return TAUTOLOGY;
         }
     } else {
         *an = type;
-        return TAUTOLOGY | CONTIGENCY;
+        return CONTIGENCY;
     }
 }
 Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprType **bn, Region *r) {
@@ -167,9 +179,7 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
                 } else if (cp-c == T_VAR_NUM_DISJUNCTS(expected)) {
                     gcd = expected;
                 } else {
-                    gcd = newTVar(r);
-                    T_VAR_NUM_DISJUNCTS(gcd) = cp-c;
-                    memcpy(gcd->ext.tvar.disjuncts, c, (cp-c)*sizeof(TypeConstructor));
+                    gcd = newTVar2(cp-c, c, r);
                 }
                 *bn = gcd;
             }
@@ -189,9 +199,7 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
             } else if(cp-c == T_VAR_NUM_DISJUNCTS(type)) {
                 gcd = type;
             } else {
-                gcd = newTVar(r);
-                T_VAR_NUM_DISJUNCTS(gcd) = cp-c;
-                memcpy(gcd->ext.tvar.disjuncts, c, (cp-c)*sizeof(TypeConstructor));
+                gcd = newTVar2(cp-c, c, r);
             }
             *an = gcd;
             return TAUTOLOGY | CONTIGENCY;
@@ -248,6 +256,9 @@ Satisfiability simplifyLocally(TypingConstraint *tc, Hashtable *typingEnv, Regio
         }
 
     } else if(tc->b->t==TVAR) {
+        if(tc->b->ext.tvar.vid == 42) {
+            printf("error");
+        }
         if(simplifyR(tc->a, tc->b, &bn, r) != ABSERDITY) {
             if(tc->b!= bn) {
                 insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(tc->b), tvarname), bn);
@@ -307,6 +318,11 @@ Satisfiability simplifyLocally(TypingConstraint *tc, Hashtable *typingEnv, Regio
  * 0 not solved
  */
 int solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t *errmsg, Node ** errnode, Region *r) {
+/*
+    char buf0[1024];
+    typingConstraintsToString(typingConstraints, typingEnv, buf0, 1024);
+    printf("solving constraints: %s\n", buf0);
+*/
     char buf[128];
     while(typingConstraints->head != NULL) {
         Satisfiability sat = simplify(typingConstraints, typingEnv, errmsg, errnode, r);
@@ -322,7 +338,9 @@ int solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t *er
             /* printf("dereferencing %s and %s.\n", typeToString(tc->a, typingEnv, buf2, 1024), typeToString(tc->b, typingEnv, buf3, 1024)); */
             ExprType *a = dereference(tc->a, typingEnv, r);
             ExprType *b = dereference(tc->b, typingEnv, r);
-            /* printf("warning: collasping %s with %s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024)); */
+/*
+            printf("warning: collasping %s with %s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024));
+*/
                         /*printVarTypeEnvToStdOut(typingEnv); */
             if (a->t == T_VAR && b->t == T_VAR && T_VAR_ID(a) == T_VAR_ID(b)) {
             } else if (a->t == T_VAR && T_VAR_NUM_DISJUNCTS(a) == 0) {
@@ -364,7 +382,10 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
             ExprType *b = tc->b;
             char buf2[1024], buf3[1024], errmsgbuf1[ERR_MSG_LEN], errmsgbuf2[ERR_MSG_LEN];
             ListNode *next = ln->next;
-            /* printf("simplifying %s<%s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024)); */
+/*
+            printf("simplifying %s<%s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024));
+                    printVarTypeEnvToStdOut(typingEnv); 
+*/
             switch(simplifyLocally(tc, typingEnv, r)) {
                 case TAUTOLOGY:
                     listRemove(typingConstraints, ln);
@@ -374,6 +395,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
                     break;
                 case ABSERDITY:
                     *errnode = ((TypingConstraint*)ln->value)->node;
+
                     snprintf(errmsgbuf1, ERR_MSG_LEN, "unsolvable %s<%s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024));
                     generateErrMsg(errmsgbuf1, (*errnode)->expr, (*errnode)->base, errmsgbuf2);
                     addRErrorMsg(errmsg, -1, errmsgbuf2);

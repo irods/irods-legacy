@@ -10,56 +10,84 @@
 #include "functions.h"
 
 
-ExprType *copyExprType(void **buf, ExprType *type) {
-  void *p = *buf;
-  allocate(p, ExprType, tcopy, *type);
-  if(tcopy->t == T_FUNC) {
-    tcopy->ext.func.retType = copyExprType(&p, tcopy->ext.func.retType);
-    allocateArray(p, ExprTypePtr, tcopy->ext.func.arity, tcopy->ext.func.paramsType, type->ext.func.paramsType);
-    int i;
-    for (i=0;i<tcopy->ext.func.arity;i++) {
-        tcopy->ext.func.paramsType[i] = copyExprType(&p, type->ext.func.paramsType[i]);
-    }
-  } else if(tcopy->t == T_CONS) {
+ExprType *copyExprType(unsigned char **buf, ExprType *type, Hashtable *objectMap) {
+  unsigned char *p = *buf;
+  ExprType *shared;
+  char tvarNameBuf[128];
+  if((shared = (ExprType *)lookupFromHashTable(objectMap, typeName_TypeConstructor(type->t))) != NULL) {
+/*
+      printf("simp type %s is shared\n", typeName_TypeConstructor(type->t));
+*/
+      return shared;
+  } else if(type->t == T_VAR && (shared=(ExprType *)lookupFromHashTable(objectMap, typeName_TypeConstructor(type->t)))!=NULL) {
+/*
+      printf("tvar %s is shared\n", tvarNameBuf);
+*/
+      return shared;
+  } else {
+      allocate(p, ExprType, tcopy, *type);
+      if(tcopy->t == T_FUNC) {
+        tcopy->ext.func.retType = copyExprType(&p, tcopy->ext.func.retType, objectMap);
+        allocateArray(p, ExprTypePtr, tcopy->ext.func.arity, tcopy->ext.func.paramsType, type->ext.func.paramsType);
+        int i;
+        for (i=0;i<tcopy->ext.func.arity;i++) {
+            tcopy->ext.func.paramsType[i] = copyExprType(&p, type->ext.func.paramsType[i], objectMap);
+        }
+      } else if(tcopy->t == T_CONS) {
 
-    allocateArray(p, ExprTypePtr, tcopy->ext.cons.arity, tcopy->ext.cons.typeArgs, type->ext.cons.typeArgs);
-    int i;
-    for (i=0;i<tcopy->ext.cons.arity;i++) {
-        tcopy->ext.cons.typeArgs[i] = copyExprType(&p, type->ext.cons.typeArgs[i]);
-    }
+        allocateArray(p, ExprTypePtr, tcopy->ext.cons.arity, tcopy->ext.cons.typeArgs, type->ext.cons.typeArgs);
+        int i;
+        for (i=0;i<tcopy->ext.cons.arity;i++) {
+            tcopy->ext.cons.typeArgs[i] = copyExprType(&p, type->ext.cons.typeArgs[i], objectMap);
+        }
+        allocateArray(p, char, strlen(type->ext.cons.typeConsName)+1, tcopy->ext.cons.typeConsName, type->ext.cons.typeConsName);
+      } else if(tcopy->t == T_VAR) {
+          if(tcopy->ext.tvar.numDisjuncts != 0) {
+              allocateArray(p, TypeConstructor, tcopy->ext.tvar.numDisjuncts, tcopy->ext.tvar.disjuncts, type->ext.tvar.disjuncts);
+          }
+          insertIntoHashTable(objectMap, getTVarName(tcopy->ext.tvar.vid, tvarNameBuf), tcopy);
+/*
+          printf("tvar %s is added to shared objects\n", tvarNameBuf);
+*/
+      } else if(tcopy->t == T_IRODS) {
+        allocateArray(p, char, strlen(type->ext.irods.name)+1, tcopy->ext.irods.name, type->ext.irods.name);
+      }
+      *buf = p;
+      return tcopy;
   }
-  *buf = p;
-  return tcopy;
 }
 
-Node *copyNode(void **buf, Node *node) {
-  void *p = *buf;
+Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap) {
+  unsigned char *p = *buf;
   allocate(p, Node, ncopy, *node);
-  if(ncopy->exprType != NULL) ncopy -> exprType = copyExprType(&p, ncopy->exprType);
-  if(ncopy->coercion!=NULL) ncopy -> coercion = copyExprType(&p, ncopy->coercion);
+  if(ncopy->exprType != NULL) ncopy -> exprType = copyExprType(&p, ncopy->exprType, objectMap);
+  if(ncopy->coercion!=NULL) ncopy -> coercion = copyExprType(&p, ncopy->coercion, objectMap);
   if(ncopy->base!=NULL) {
       allocateArray(p, char, strlen(node->base)+1, ncopy->base, node->base);
+  }
+  if(ncopy->text!=NULL) {
+      allocateArray(p, char, strlen(node->text)+1, ncopy->text, node->text);
   }
   allocateArray(p, NodePtr, ncopy->degree, ncopy->subtrees, node->subtrees);
   int i;
   for(i=0;i<ncopy->degree;i++) {
-    ncopy ->subtrees[i] = copyNode(&p, node->subtrees[i]);
+    ncopy ->subtrees[i] = copyNode(&p, node->subtrees[i], objectMap);
   }
   *buf = p;
   return ncopy;
 }
-RuleSet *copyRuleSet(void **buf, RuleSet *h) {
-  void *p = *buf;
+RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap) {
+  unsigned char *p = *buf;
   allocate(p, RuleSet, rscopy, *h);
   int i =0;
   for(i=0;i<h->len;i++) {
-    rscopy->rules[i] = copyNode(&p, rscopy->rules[i]);
+    rscopy->rules[i] = copyNode(&p, rscopy->rules[i], objectMap);
   }
   *buf = p;
   return rscopy;
 }
-Hashtable* copyHashtableCharPtrToIntPtr(void **buf, Hashtable *h) {
-  void *p = *buf;
+Hashtable* copyHashtableCharPtrToIntPtr(unsigned char **buf, Hashtable *h) {
+  unsigned char *p = *buf;
   allocate(p, Hashtable, hcopy, *h);
   allocateArray(p, BucketPtr, h->size, hcopy->buckets, h->buckets);
   int i;
@@ -88,17 +116,17 @@ Hashtable* copyHashtableCharPtrToIntPtr(void **buf, Hashtable *h) {
 
 }
 
-CondIndexVal *copyCondIndexVal(void **buf, CondIndexVal *civ) {
-    void *p = *buf;
+CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable *objectMap) {
+    unsigned char *p = *buf;
     allocate(p, CondIndexVal, civcopy, *civ);
-    civcopy->condExp = copyNode(&p, civcopy->condExp);
+    civcopy->condExp = copyNode(&p, civcopy->condExp, objectMap);
     civcopy->valIndex = copyHashtableCharPtrToIntPtr(&p, civcopy->valIndex);
     *buf = p;
     return civcopy;
 }
 
-Hashtable* copyHashtableCharPtrToCondIndexValPtr(void **buf, Hashtable *h) {
-  void *p = *buf;
+Hashtable* copyHashtableCharPtrToCondIndexValPtr(unsigned char **buf, Hashtable *h, Hashtable *objectMap) {
+  unsigned char *p = *buf;
   allocate(p, Hashtable, hcopy, *h);
   allocateArray(p, BucketPtr, h->size, hcopy->buckets, h->buckets);
   int i;
@@ -116,7 +144,7 @@ Hashtable* copyHashtableCharPtrToCondIndexValPtr(void **buf, Hashtable *h) {
       /* copy key */
       allocateArray(p, char, strlen(b->key) + 1, bcopy->key, b->key);
       /* copy value */
-      bcopy->value = copyCondIndexVal(&p, bcopy->value);
+      bcopy->value = copyCondIndexVal(&p, bcopy->value, objectMap);
 
       prev = bcopy;
       b = b->next;
@@ -127,8 +155,11 @@ Hashtable* copyHashtableCharPtrToCondIndexValPtr(void **buf, Hashtable *h) {
 
 }
 
-Cache *copyCache(void **buf, Cache *c) {
-    void *p = *buf;
+Cache *copyCache(unsigned char **buf, Cache *c) {
+    Hashtable *objectMap = newHashTable(100);
+
+
+    unsigned char *p = *buf;
     ((CacheRecordDesc *)p)->type = Cache_T;
     ((CacheRecordDesc *)p)->length = 1;
     p+= sizeof(CacheRecordDesc);
@@ -136,39 +167,50 @@ Cache *copyCache(void **buf, Cache *c) {
     *ccopy = *c;
     p+=sizeof(Cache);
     /*allocate(p, Cache, ccopy, *c); */
+    /* shared objects */
+    Region *r = make_region(0, NULL);
+    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_INT), copyExprType(&p, newSimpType(T_INT, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_BOOL), copyExprType(&p, newSimpType(T_BOOL, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_DOUBLE), copyExprType(&p, newSimpType(T_DOUBLE, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_DATETIME), copyExprType(&p, newSimpType(T_DATETIME, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_STRING), copyExprType(&p, newSimpType(T_STRING, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_DYNAMIC), copyExprType(&p, newSimpType(T_DYNAMIC, r), objectMap));
+    region_free(r);
 
     ccopy->offset = *buf;
-    ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet);
+    ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet, objectMap);
     ccopy->coreRuleIndex = ccopy->coreRuleIndex == NULL? NULL:copyHashtableCharPtrToIntPtr(&p, ccopy->coreRuleIndex);
-    ccopy->condIndex = ccopy->condIndex == NULL? NULL:copyHashtableCharPtrToCondIndexValPtr(&p, ccopy->condIndex);
-    ccopy->dataSize = (p - (*buf))/sizeof(void);
+    ccopy->condIndex = ccopy->condIndex == NULL? NULL:copyHashtableCharPtrToCondIndexValPtr(&p, ccopy->condIndex, objectMap);
+    ccopy->dataSize = (p - (*buf));
 
     *buf = p;
+
+    deleteHashTable(objectMap, nop);
     return ccopy;
 }
 #define APPLY_DIFF(p, d) if((p)!=NULL){void *temp = p; temp+=(d); (p)=temp;}
-Cache *restoreCache(void *buf) {
+Cache *restoreCache(unsigned char *buf) {
     if(((CacheRecordDesc *)buf)->type != Cache_T) {
         /* error */
         return NULL;
     }
-    Cache *cache = (Cache *)(buf + sizeof(CacheRecordDesc)/sizeof(void));
-    void *bufCopy = malloc(cache->dataSize);
+    Cache *cache = (Cache *)(buf + sizeof(CacheRecordDesc));
+    unsigned char *bufCopy = malloc(cache->dataSize);
     if(bufCopy == NULL) {
         return NULL;
     }
     memcpy(bufCopy, buf, cache->dataSize);
 
-    cache = (Cache *)(bufCopy + sizeof(CacheRecordDesc)/sizeof(void));
-    void *bufOffset = cache->offset;
-    void *bufCopyOffset = bufCopy;
+    cache = (Cache *)(bufCopy + sizeof(CacheRecordDesc));
+    unsigned char *bufOffset = cache->offset;
+    unsigned char *bufCopyOffset = bufCopy;
 
     long diff = bufCopyOffset - bufOffset;
-    void *p = bufCopy;
+    unsigned char *p = bufCopy;
     while(p < bufCopyOffset + cache->dataSize) {
         enum cacheRecordType type = ((CacheRecordDesc *)p)->type;
         int length = ((CacheRecordDesc *)p)->length;
-        p+=sizeof(CacheRecordDesc)/sizeof(void);
+        p+=sizeof(CacheRecordDesc);
         int i;
         switch(type) {
             case Cache_T:
@@ -177,33 +219,36 @@ Cache *restoreCache(void *buf) {
                     APPLY_DIFF(((Cache *)p)->coreRuleIndex, diff);
                     APPLY_DIFF(((Cache *)p)->coreRuleSet, diff);
                     APPLY_DIFF(((Cache *)p)->offset, diff);
-                    p+=sizeof(Cache)/sizeof(void);
+                    p+=sizeof(Cache);
                 }
                 break;
             case Hashtable_T:
                 for(i=0;i<length;i++) {
                     APPLY_DIFF(((Hashtable *)p)->buckets, diff);
-                    p+=sizeof(Hashtable)/sizeof(void);
+                    p+=sizeof(Hashtable);
                 }
                 break;
             case Bucket_T:
                 for(i=0;i<length;i++) {
                     APPLY_DIFF(((Bucket *)p)->key, diff);
                     APPLY_DIFF(((Bucket *)p)->next, diff);
-                    p+=sizeof(Bucket)/sizeof(void);
+                    p+=sizeof(Bucket);
                 }
                 break;
             case BucketPtr_T:
                 for(i=0;i<length;i++) {
                     APPLY_DIFF(*((BucketPtr *)p), diff);
-                    p+=sizeof(BucketPtr)/sizeof(void);
+                    p+=sizeof(BucketPtr);
                 }
                 break;
+            case TypeConstructor_T:
+                p+= length * sizeof(TypeConstructor);
+                break;
             case char_T:
-                p+= length * (sizeof(char)/sizeof(void));
+                p+= length * sizeof(char);
                 break;
             case int_T:
-                p+=length * (sizeof(int)/sizeof(void));
+                p+=length * sizeof(int);
                 break;
             case ExprType_T:
                 for(i=0;i<length;i++) {
@@ -214,19 +259,26 @@ Cache *restoreCache(void *buf) {
                             break;
                         case T_CONS:
                             APPLY_DIFF(((ExprType *)p)->ext.cons.typeArgs, diff);
+                            APPLY_DIFF(((ExprType *)p)->ext.cons.typeConsName, diff);
+                            break;
+                        case T_VAR:
+                            APPLY_DIFF(((ExprType *)p)->ext.tvar.disjuncts, diff);
+                            break;
+                        case T_IRODS:
+                            APPLY_DIFF(((ExprType *)p)->ext.irods.name, diff);
                             break;
                         default:
                             break;
                     }
 
-                    p+=sizeof(ExprType)/sizeof(void);
+                    p+=sizeof(ExprType);
                 }
 
                 break;
             case ExprTypePtr_T:
                 for(i=0;i<length;i++) {
                     APPLY_DIFF(*((ExprTypePtr *)p), diff);
-                    p+=sizeof(ExprTypePtr)/sizeof(void);
+                    p+=sizeof(ExprTypePtr);
                 }
                 break;
             case Node_T:
@@ -234,13 +286,13 @@ Cache *restoreCache(void *buf) {
                     APPLY_DIFF(((Node *)p)->coercion, diff);
                     APPLY_DIFF(((Node *)p)-> exprType, diff);
                     APPLY_DIFF(((Node *)p)->subtrees, diff);
-                    p+=sizeof(Node)/sizeof(void);
+                    p+=sizeof(Node);
                 }
                 break;
             case NodePtr_T:
                 for(i=0;i<length;i++) {
                     APPLY_DIFF(*((NodePtr *)p), diff);
-                    p+=sizeof(NodePtr)/sizeof(void);
+                    p+=sizeof(NodePtr);
                 }
                 break;
             case RuleSet_T:
@@ -251,7 +303,7 @@ Cache *restoreCache(void *buf) {
                     }
 
 
-                    p+=sizeof(RuleSet)/sizeof(void);
+                    p+=sizeof(RuleSet);
                 }
                 break;
             case CondIndexVal_T:
@@ -261,7 +313,7 @@ Cache *restoreCache(void *buf) {
                     APPLY_DIFF(((CondIndexVal *)p)->valIndex, diff);
 
                     /*((Cache *)p)->offset += diff; */
-                    p+=sizeof(CondIndexVal)/sizeof(void);
+                    p+=sizeof(CondIndexVal);
                 }
                 break;
         }
@@ -301,12 +353,14 @@ int lockMutex(sem_t **mutex) {
       sem_wait(*mutex);
       sem_getvalue(*mutex, &v);
       printf("sem val1: %d\n", v);
+      sem_close(*mutex);
       return 0;
     }
 
 }
 void unlockMutex(sem_t **mutex) {
   int v;
+  *mutex = sem_open(SEM_NAME,O_CREAT,0644,1);
   sem_getvalue(*mutex, &v);
   printf("sem val2: %d\n", v);
   sem_post(*mutex);
@@ -320,53 +374,45 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
     strcpy(r2,irbSet);
     int res = 0;
     Region *r = make_region(0, NULL);
+    unsigned char *buf = NULL;
+    int loadToBuf;
+    int unlock_mutex = 0;
+    sem_t *mutex = NULL;
     if(CACHE_ENABLE) {
-        sem_t *mutex;
 
         if(lockMutex(&mutex) != 0) {
             res = -1;
             RETURN;
         }
+        unlock_mutex = 1;
+        
         int shmid = - 1;
         int key = 1200;
         void *addr = SHM_BASE_ADDR;
         if(isServer) {
-          shmid = shmget(key, SHMMAX, IPC_CREAT /*| IPC_EXCL*/ | 0666);
-        } else {
-          shmid = shmget(key, SHMMAX, 0666);
-          if(shmid != -1) { /* not server process and shm is successfully allocated */
-            void *shm = shmat(shmid, addr, 0);
-            Cache *cache = restoreCache(shm);
-            coreRuleIndex = cache->coreRuleIndex;
-            coreRules = *(cache->coreRuleSet);
-            condIndex = cache->condIndex;
-          }
-        }
-
-        if(isServer || shmid == -1) {
-            while (strlen(r2) > 0) {
-                    int i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
-                    if (i == 0)
-                      i = readRuleStructAndRuleSetFromFile(r1, inRuleStruct, r);
-                    if (i != 0) {
-                      unlockMutex(&mutex);
-                      res = i;
-                      RETURN;
-                    }
-                    strcpy(r2,r3);
-            }
-            if(isServer && shmid!= -1) {
+            loadToBuf = 1;
+            shmid = shmget(key, SHMMAX, IPC_CREAT /*| IPC_EXCL*/ | 0666);
+            if(shmid!= -1) {
                 void *shm = shmat(shmid, SHM_BASE_ADDR, 0);
-                void *buf = shm;
-                Cache cacheBuf;
-                cacheBuf.coreRuleIndex = coreRuleIndex;
-                cacheBuf.coreRuleSet = &coreRules;
-                cacheBuf.condIndex = condIndex;
-                copyCache(&buf, &cacheBuf);
+                buf = shm;
+            } else {
+                buf = (unsigned char *)malloc(SHMMAX);
+            }
+        } else {
+            shmid = shmget(key, SHMMAX, 0666);
+            if(shmid != -1) { /* not server process and shm is successfully allocated */
+                loadToBuf = 0;
+                buf = shmat(shmid, addr, 0);
+            } else {
+                loadToBuf = 1;
+                buf = (unsigned char *)malloc(SHMMAX);
             }
         }
-        unlockMutex(&mutex);
     } else {
+        loadToBuf = 1;
+        buf = malloc(SHMMAX);
+    }
+    if(loadToBuf) {
         while (strlen(r2) > 0) {
                 int i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
                 if (i == 0)
@@ -377,20 +423,34 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
                 }
                 strcpy(r2,r3);
         }
-        void *buf = malloc(SHMMAX);
         Cache cacheBuf;
         cacheBuf.coreRuleIndex = coreRuleIndex;
         cacheBuf.coreRuleSet = &coreRules;
         cacheBuf.condIndex = condIndex;
+#ifdef DEBUG
+        unsigned char *bufStart = buf;
+#endif
         Cache *cacheNew = copyCache(&buf, &cacheBuf);
+#ifdef DEBUG
+        printf("Buffer usage: %fM\n", ((double)(buf-bufStart))/(1024*1024));
+#endif
         deleteHashTable(coreRuleIndex, free);
         deleteHashTable(condIndex, (void (*)(void *))deleteCondIndexVal);
         coreRuleIndex = cacheNew->coreRuleIndex;
         coreRules = *cacheNew->coreRuleSet;
         condIndex = cacheNew->condIndex;
+    } else {
+        Cache *cache = restoreCache(buf);
+        coreRuleIndex = cache->coreRuleIndex;
+        coreRules = *(cache->coreRuleSet);
+        condIndex = cache->condIndex;
     }
 
 ret:
+    if(unlock_mutex)
+    {
+        unlockMutex(&mutex);
+    }
     region_free(r);
     return res;
 }
