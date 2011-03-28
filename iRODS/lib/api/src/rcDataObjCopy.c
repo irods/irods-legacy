@@ -25,8 +25,8 @@ rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp)
         transStat_t *transStat = NULL;
         status = _rcDataObjCopy250 (conn, dataObjCopyInp, &transStat);
         if (status >= 0 && transStat != NULL) {
-            conn->transStat.numThreads = transferStat->numThreads;
-            conn->transStat.bytesWritten = transferStat->bytesWritten;
+            conn->transStat.numThreads = transStat->numThreads;
+            conn->transStat.bytesWritten = transStat->bytesWritten;
             conn->transStat.flags = 0;
         }
         if (transStat != NULL) free (transStat);
