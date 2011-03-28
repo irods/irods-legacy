@@ -24,8 +24,8 @@ rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp)
         transStat_t *transStat = NULL;
         status = _rcDataObjPhymv250 (conn, dataObjInp, &transStat);
         if (status >= 0 && transStat != NULL) {
-            conn->transStat.numThreads = transferStat->numThreads;
-            conn->transStat.bytesWritten = transferStat->bytesWritten;
+            conn->transStat.numThreads = transStat->numThreads;
+            conn->transStat.bytesWritten = transStat->bytesWritten;
             conn->transStat.flags = 0;
         }
         if (transStat != NULL) free (transStat);
