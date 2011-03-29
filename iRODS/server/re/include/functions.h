@@ -24,7 +24,7 @@ typedef struct function_desc {
     /* o = output variable */
     /* p = i/o variable */
     /* * = repeat previous */
-    void *(*func)();
+    Res *(*func)(void **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
     ExprType *type;
     struct function_desc *next;
 } FunctionDesc ;
