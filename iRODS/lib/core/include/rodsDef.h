@@ -98,6 +98,8 @@
 #define TRANS_SZ        (40*1024*1024)
 #define LARGE_SPACE     1000000000
 #define UNKNOWN_FILE_SZ	-99	/* value to indicate the file sz is unknown */
+#define MIN_RESTART_SIZE	(64*1024*1024)
+#define RESTART_FILE_UPDATE_SIZE  (32*1024*1024)
 
 #ifdef PARA_OPR
 #define DEF_NUM_TRAN_THR        4

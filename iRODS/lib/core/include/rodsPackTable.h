@@ -50,6 +50,7 @@ packConstantArray_t PackConstantTable[] = {
         {"H5S_MAX_RANK", 32},
         {"H5DATASPACE_MAX_RANK", 32},
 	{"HUGE_NAME_LEN", HUGE_NAME_LEN},
+	{"MAX_NUM_CONFIG_TRAN_THR", MAX_NUM_CONFIG_TRAN_THR},
 	/* end of HDF5 */ 
         {PACK_TABLE_END_PI, 0},
 };

@@ -366,6 +366,9 @@ rodsLong_t dataSize)
     rodsLong_t totalWritten = 0;
     int bytesRead;
     int progressCnt = 0;
+    fileRestartInfo_t *info = &conn->fileRestart.info;
+    rodsLong_t lastUpdateSize = 0;
+
 
 #ifdef windows_platform
 	in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
@@ -383,6 +386,7 @@ rodsLong_t dataSize)
     dataObjWriteInpBBuf.buf = malloc (TRANS_BUF_SZ);
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = l1descInx;
+    initFileRestart (conn, locFilePath, dataSize, 1);
 
     if (gGuiProgressCB != NULL) conn->operProgress.flag = 1;
 
@@ -404,6 +408,22 @@ rodsLong_t dataSize)
         } else {
             totalWritten += bytesWritten;
 	    conn->transStat.bytesWritten = totalWritten;
+	    if (info->numSeg > 0) {	/* file restart */
+	        info->dataSeg[0].len += bytesWritten;
+		if (totalWritten - lastUpdateSize >= RESTART_FILE_UPDATE_SIZE) {
+		    /* time to write to the restart file */
+		    status = writeLfRestartFile (&conn->fileRestart);
+		    if (status < 0) {
+                        rodsLog (LOG_ERROR,
+                         "putFile: writeLfRestartFile for %s, status = %d",
+                         locFilePath, status);
+                         free (dataObjWriteInpBBuf.buf);
+                         close (in_fd);
+                         return status;
+		    }
+		    lastUpdateSize = totalWritten;
+		}
+	    }
             if (gGuiProgressCB != NULL) {
                 if (progressCnt >= (MAX_PROGRESS_CNT - 1)) {
                     conn->operProgress.curFileSizeDone +=
@@ -420,6 +440,9 @@ rodsLong_t dataSize)
     free (dataObjWriteInpBBuf.buf);
     close (in_fd);
 
+    if (info->numSeg > 0) {	/* file restart */
+	clearLfRestartFile (&conn->fileRestart); 
+    }
     if (dataSize <= 0 || totalWritten == dataSize) {
         if (gGuiProgressCB != NULL) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
@@ -1003,3 +1026,133 @@ initRbudpClient (rbudpBase_t *rbudpBase, portList_t *myPortList)
 }
 #endif  /* RBUDP_TRANSFER */
 
+int
+initFileRestart (rcComm_t *conn, char *fileName, rodsLong_t fileSize, 
+int numThr)
+{
+    fileRestart_t *fileRestart = &conn->fileRestart;
+    fileRestartInfo_t *info = &fileRestart->info;
+
+    if (fileRestart->flags != FILE_RESTART_ON || 
+      fileSize < MIN_RESTART_SIZE || numThr <= 0) {
+	info->numSeg = 0;	/* indicate no restart */
+	return 0;
+    }
+    if (numThr > MAX_NUM_CONFIG_TRAN_THR) {
+        rodsLog (LOG_NOTICE,
+         "initFileRestart: input numThr %d larger than max %d ",
+          numThr, MAX_NUM_CONFIG_TRAN_THR);
+	info->numSeg = 0;	/* indicate no restart */
+	return 0;
+    }
+    info->numSeg = numThr;
+    info->fileSize = fileSize;
+    rstrcpy (info->fileName, fileName, MAX_NAME_LEN);
+    bzero (info->dataSeg, sizeof (dataSeg_t) * MAX_NUM_CONFIG_TRAN_THR);
+    return 0;
+}
+
+int
+writeLfRestartFile (fileRestart_t *fileRestart)
+{
+    bytesBuf_t *packedBBuf = NULL;
+    int status, fd;
+
+    status =  packStruct ((void *) &fileRestart->info, &packedBBuf,
+      "FileRestartInfo_PI", RodsPackTable, 0, XML_PROT);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "writeLfRestartFile: packStruct error for %s, status = %d",
+          fileRestart->info.fileName, status);
+	return status;
+    }
+    /* write it to a file */
+    fd = open (fileRestart->infoFile, O_CREAT|O_TRUNC|O_WRONLY, 0640);
+    if (fd < 0) {
+        status = UNIX_FILE_OPEN_ERR - errno;
+        rodsLog (LOG_ERROR,
+          "writeLfRestartFile: open failed for %s, status = %d",
+          fileRestart->infoFile, status);
+        return (status);
+    }
+
+    status = write (fd, packedBBuf->buf, packedBBuf->len);
+    close (fd);
+
+    if (packedBBuf != NULL) {
+        clearBBuf (packedBBuf);
+        free (packedBBuf);
+    }
+    if (status < 0) {
+        status = UNIX_FILE_WRITE_ERR - errno;
+        rodsLog (LOG_ERROR,
+          "writeLfRestartFile: write failed for %s, status = %d",
+          fileRestart->infoFile, status);
+        return (status);
+    }
+    return status;
+}
+
+int
+clearLfRestartFile (fileRestart_t *fileRestart)
+{
+    unlink (fileRestart->infoFile);
+    bzero (&fileRestart->info, sizeof (fileRestartInfo_t));
+
+    return 0;
+}
+
+#if 0	/* XXXXX not done */
+int
+lfRestartByInfo (fileRestart_t *fileRestart, char *targPath)
+{
+    rodsLong_t localOffset = 0;
+    rodsLong_t irodsOffset = 0;
+    bytesBuf_t dataObjWriteInpBBuf;
+    int status, i;
+    int localFd, irodsFd;
+    dataObjInp_t dataObjOpenInp;
+    fileRestartInfo_t *info = &fileRestart->info;
+
+#ifdef windows_platform
+    localFd = iRODSNt_bopen(info->fileName, O_RDONLY,0);
+#else
+    localFd = open (info->fileName, O_RDONLY, 0);
+#endif
+    if (localFd < 0) { /* error */
+        status = USER_FILE_DOES_NOT_EXIST - errno;
+        rodsLogError (LOG_ERROR, status,
+        "cannot open file %s, status = %d", info->fileName, status);
+        return (status);
+    }
+
+    bzero (&dataObjOpenInp, sizeof (dataObjOpenInp));
+    rstrcpy (dataObjOpenInp.objPath, targPath, MAX_NAME_LEN);
+    dataObjOpenInp.openFlags = O_WRONLY;
+    addKeyVal (&dataObjOpenInp.condInput, FORCE_FLAG_KW, "");
+
+    irodsFd = rcDataObjOpen (conn, &dataObjOpenInp);
+    if (irodsFd < 0) { /* error */
+        rodsLogError (LOG_ERROR, status,
+        "cannot open target file %s, status = %d", targPath, status);
+	close (localFd);
+        return (status);
+    }
+
+    bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
+    dataObjWriteInpBBuf.buf = malloc (TRANS_BUF_SZ);
+    dataObjWriteInpBBuf.len = 0;
+
+    for (i = 0; i < info->numSeg; i++) {
+	rodsLong_t gap = info->dataSeg[i].offset - localOffset;
+	if (gap < 0) {
+	    /* should not be here */
+	} else if (gap > 0) {
+	    /* need to upload data in gap */
+
+	}
+
+    }
+    rturn status;
+}
+#endif

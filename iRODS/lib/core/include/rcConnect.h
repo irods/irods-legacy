@@ -53,15 +53,15 @@ typedef enum {
 typedef struct {
     char fileName[MAX_NAME_LEN];	/* the file name to restart */
     int numSeg;         /* number of segments. should equal to num threads */
-    int flags;		/* no used for now */
+    int flags;		/* not used for now  */
     rodsLong_t fileSize;
-    dataSeg_t *dataSeg;  /* pointer to and array of dataSeg */
+    dataSeg_t dataSeg[MAX_NUM_CONFIG_TRAN_THR];
 } fileRestartInfo_t;
 
 typedef struct {
     fileRestartFlag_t flags;
     char infoFile[MAX_NAME_LEN];	/* file containing restart info */
-    fileRestartInfo_t info;
+    fileRestartInfo_t info;	/* must be the last item because of PI */
 } fileRestart_t;
 
 typedef enum {

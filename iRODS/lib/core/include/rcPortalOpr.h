@@ -80,6 +80,13 @@ int packetSize);
 int
 initRbudpClient (rbudpBase_t *rbudpBase, portList_t *myPortList);
 #endif  /* RBUDP_TRANSFER */
+int
+initFileRestart (rcComm_t *conn, char *fileName, rodsLong_t fileSize,
+int numThr);
+int
+writeLfRestartFile (fileRestart_t *fileRestart);
+int
+clearLfRestartFile (fileRestart_t *fileRestart);
 #ifdef  __cplusplus
 }
 #endif
