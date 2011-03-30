@@ -50,6 +50,7 @@ int irodsWinMain(int argc, char **argv)
     int uFlag = 0;
     char tmpStr1[100], tmpStr2[100];
     char *logDir = NULL;
+    char *tmpStr;
 
 
     ProcessType = SERVER_PT;	/* I am a server */
@@ -62,7 +63,14 @@ int irodsWinMain(int argc, char **argv)
 #endif
 #endif
 
-    rodsLogLevel (LOG_NOTICE);
+    tmpStr = getenv (SP_LOG_LEVEL);
+    if (tmpStr != NULL) {
+       int i;
+       i = atoi(tmpStr);
+       rodsLogLevel(i);
+    } else {
+      rodsLogLevel(LOG_NOTICE); /* default */
+    }
 
 #ifdef IRODS_SYSLOG
 /* Open a connection to syslog */
