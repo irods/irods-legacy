@@ -19,8 +19,8 @@ struct error {
 
 struct region_node {
 	unsigned char *block; /* pointer to memory block */
-	int size; /* size of the memory block in bytes */
-	int used; /* used bytes of the memory block */
+	size_t size; /* size of the memory block in bytes */
+	size_t used; /* used bytes of the memory block */
 	struct region_node *next; /* pointer to the next region */
         
 };

@@ -26,7 +26,7 @@
 #define SHM_BASE_ADDR ((void *)0x80000000)
 
 typedef struct {
-    void *offset;
+    unsigned char *offset;
     long dataSize;
     RuleSet *coreRuleSet;
     Hashtable *coreRuleIndex;

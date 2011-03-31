@@ -144,7 +144,7 @@ Hashtable* copyHashtableCharPtrToCondIndexValPtr(unsigned char **buf, Hashtable 
       /* copy key */
       allocateArray(p, char, strlen(b->key) + 1, bcopy->key, b->key);
       /* copy value */
-      bcopy->value = copyCondIndexVal(&p, bcopy->value, objectMap);
+      bcopy->value = copyCondIndexVal(&p, (CondIndexVal *)bcopy->value, objectMap);
 
       prev = bcopy;
       b = b->next;
@@ -188,14 +188,14 @@ Cache *copyCache(unsigned char **buf, Cache *c) {
     deleteHashTable(objectMap, nop);
     return ccopy;
 }
-#define APPLY_DIFF(p, d) if((p)!=NULL){void *temp = p; temp+=(d); (p)=temp;}
+#define APPLY_DIFF(p, t, d) if((p)!=NULL){unsigned char *temp = (unsigned char *)p; temp+=(d); (p)=(t *)temp;}
 Cache *restoreCache(unsigned char *buf) {
     if(((CacheRecordDesc *)buf)->type != Cache_T) {
         /* error */
         return NULL;
     }
     Cache *cache = (Cache *)(buf + sizeof(CacheRecordDesc));
-    unsigned char *bufCopy = malloc(cache->dataSize);
+    unsigned char *bufCopy = (unsigned char *)malloc(cache->dataSize);
     if(bufCopy == NULL) {
         return NULL;
     }
@@ -215,29 +215,29 @@ Cache *restoreCache(unsigned char *buf) {
         switch(type) {
             case Cache_T:
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(((Cache *)p)->condIndex, diff);
-                    APPLY_DIFF(((Cache *)p)->coreRuleIndex, diff);
-                    APPLY_DIFF(((Cache *)p)->coreRuleSet, diff);
-                    APPLY_DIFF(((Cache *)p)->offset, diff);
+                    APPLY_DIFF(((Cache *)p)->condIndex, Hashtable, diff);
+                    APPLY_DIFF(((Cache *)p)->coreRuleIndex, Hashtable, diff);
+                    APPLY_DIFF(((Cache *)p)->coreRuleSet, RuleSet, diff);
+                    APPLY_DIFF(((Cache *)p)->offset, unsigned char, diff);
                     p+=sizeof(Cache);
                 }
                 break;
             case Hashtable_T:
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(((Hashtable *)p)->buckets, diff);
+                    APPLY_DIFF(((Hashtable *)p)->buckets, struct bucket *, diff);
                     p+=sizeof(Hashtable);
                 }
                 break;
             case Bucket_T:
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(((Bucket *)p)->key, diff);
-                    APPLY_DIFF(((Bucket *)p)->next, diff);
+                    APPLY_DIFF(((Bucket *)p)->key, char, diff);
+                    APPLY_DIFF(((Bucket *)p)->next, struct bucket, diff);
                     p+=sizeof(Bucket);
                 }
                 break;
             case BucketPtr_T:
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(*((BucketPtr *)p), diff);
+                    APPLY_DIFF(*((BucketPtr *)p), struct bucket, diff);
                     p+=sizeof(BucketPtr);
                 }
                 break;
@@ -254,18 +254,18 @@ Cache *restoreCache(unsigned char *buf) {
                 for(i=0;i<length;i++) {
                     switch(((ExprType *)p)->t) {
                         case T_FUNC:
-                            APPLY_DIFF(((ExprType *)p)->ext.func.retType, diff);
-                            APPLY_DIFF(((ExprType *)p)->ext.func.paramsType, diff);
+                            APPLY_DIFF(((ExprType *)p)->ext.func.retType, ExprType, diff);
+                            APPLY_DIFF(((ExprType *)p)->ext.func.paramsType, ExprType *, diff);
                             break;
                         case T_CONS:
-                            APPLY_DIFF(((ExprType *)p)->ext.cons.typeArgs, diff);
-                            APPLY_DIFF(((ExprType *)p)->ext.cons.typeConsName, diff);
+                            APPLY_DIFF(((ExprType *)p)->ext.cons.typeArgs, ExprType *, diff);
+                            APPLY_DIFF(((ExprType *)p)->ext.cons.typeConsName, char, diff);
                             break;
                         case T_VAR:
-                            APPLY_DIFF(((ExprType *)p)->ext.tvar.disjuncts, diff);
+                            APPLY_DIFF(((ExprType *)p)->ext.tvar.disjuncts, TypeConstructor, diff);
                             break;
                         case T_IRODS:
-                            APPLY_DIFF(((ExprType *)p)->ext.irods.name, diff);
+                            APPLY_DIFF(((ExprType *)p)->ext.irods.name, char, diff);
                             break;
                         default:
                             break;
@@ -277,21 +277,21 @@ Cache *restoreCache(unsigned char *buf) {
                 break;
             case ExprTypePtr_T:
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(*((ExprTypePtr *)p), diff);
+                    APPLY_DIFF(*((ExprTypePtr *)p), ExprType, diff);
                     p+=sizeof(ExprTypePtr);
                 }
                 break;
             case Node_T:
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(((Node *)p)->coercion, diff);
-                    APPLY_DIFF(((Node *)p)-> exprType, diff);
-                    APPLY_DIFF(((Node *)p)->subtrees, diff);
+                    APPLY_DIFF(((Node *)p)->coercion, ExprType, diff);
+                    APPLY_DIFF(((Node *)p)-> exprType, ExprType, diff);
+                    APPLY_DIFF(((Node *)p)->subtrees, NodePtr, diff);
                     p+=sizeof(Node);
                 }
                 break;
             case NodePtr_T:
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(*((NodePtr *)p), diff);
+                    APPLY_DIFF(*((NodePtr *)p), Node, diff);
                     p+=sizeof(NodePtr);
                 }
                 break;
@@ -299,7 +299,7 @@ Cache *restoreCache(unsigned char *buf) {
                 for(i=0;i<length;i++) {
                     int j;
                     for(j=0;j<((RuleSet *)p)->len;j++) {
-                        APPLY_DIFF(((RuleSet *)p)->rules[j], diff);
+                        APPLY_DIFF(((RuleSet *)p)->rules[j], Node, diff);
                     }
 
 
@@ -309,8 +309,8 @@ Cache *restoreCache(unsigned char *buf) {
             case CondIndexVal_T:
 
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(((CondIndexVal *)p)->condExp, diff);
-                    APPLY_DIFF(((CondIndexVal *)p)->valIndex, diff);
+                    APPLY_DIFF(((CondIndexVal *)p)->condExp, Node, diff);
+                    APPLY_DIFF(((CondIndexVal *)p)->valIndex, Hashtable, diff);
 
                     /*((Cache *)p)->offset += diff; */
                     p+=sizeof(CondIndexVal);
@@ -393,7 +393,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
             loadToBuf = 1;
             shmid = shmget(key, SHMMAX, IPC_CREAT /*| IPC_EXCL*/ | 0666);
             if(shmid!= -1) {
-                void *shm = shmat(shmid, SHM_BASE_ADDR, 0);
+                unsigned char *shm = (unsigned char *)shmat(shmid, SHM_BASE_ADDR, 0);
                 buf = shm;
             } else {
                 buf = (unsigned char *)malloc(SHMMAX);
@@ -402,7 +402,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
             shmid = shmget(key, SHMMAX, 0666);
             if(shmid != -1) { /* not server process and shm is successfully allocated */
                 loadToBuf = 0;
-                buf = shmat(shmid, addr, 0);
+                buf = (unsigned char *)shmat(shmid, addr, 0);
             } else {
                 loadToBuf = 1;
                 buf = (unsigned char *)malloc(SHMMAX);
@@ -410,7 +410,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
         }
     } else {
         loadToBuf = 1;
-        buf = malloc(SHMMAX);
+        buf = (unsigned char *)malloc(SHMMAX);
     }
     if(loadToBuf) {
         while (strlen(r2) > 0) {

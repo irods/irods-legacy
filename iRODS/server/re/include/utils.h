@@ -208,11 +208,9 @@ typedef Node *NodePtr;
 typedef char *charPtr;
 
 typedef struct typingConstraint TypingConstraint;
-typedef enum typingConstraintType TypingConstraintType;
-
-enum typingConstraintType {
+typedef enum typingConstraintType {
     LT
-};
+} TypingConstraintType;
 
 struct typingConstraint {
    ExprType *a;

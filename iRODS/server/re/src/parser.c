@@ -71,7 +71,7 @@ void setBase(Node *node, char *base, Region *r) {
 /*    if(strcmp(base, "test")!=0) { */
 /*        printf("error"); */
 /*    } */
-        node->base= region_alloc(r, sizeof(char)*(strlen(base)+1));
+        node->base= (char *)region_alloc(r, sizeof(char)*(strlen(base)+1));
         strcpy(node->base, base);
 
 }
@@ -651,16 +651,17 @@ error:
 }
 void nextActionBackwardCompatible(Pointer *e, Node **node, rError_t *errmsg, Region *r) {
 	Token token;
-            Label pos;
+        Label pos;
 	Node* value=NULL, *reco=NULL;
 	Node *params[MAX_COND_LEN];
 	int n=0;
-
+        char *fn;
+        
 	nextTokenRuleGen(e, &token, 0);
 	ERROR(token.type != TEXT);
         Label estart;
         getFPos(&estart, e);
-        char *fn = token.text;
+        fn = token.text;
         if(strcmp(fn, "ifExec") == 0) {
             nextTermRuleGen(e, &(params[0]), MIN_PREC, 0, errmsg, r);
             ERROR(params[0]->type == ERROR);

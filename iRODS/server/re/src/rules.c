@@ -390,6 +390,8 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
 Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
     Res *res;
     char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
+    int rulegen;
+    
 #ifdef DEBUG
     snprintf(buf, 1024, "parseAndComputeExpression: %s\n", expr);
     writeToTmp("entry.log", buf);
@@ -405,7 +407,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
         res = newErrorRes(r, -1);
         RETURN;
     }
-    int rulegen = strstr(expr, "##")==NULL?1:0;
+    rulegen = strstr(expr, "##")==NULL?1:0;
     nextTermRuleGen(e, &node, MIN_PREC, rulegen,errmsg, r);
     if(node==NULL) {
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");

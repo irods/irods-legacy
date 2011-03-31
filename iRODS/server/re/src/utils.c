@@ -62,6 +62,7 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable, Region *keyRe
     ExprType **paramTypes;
     int i;
     ExprType *newt;
+    ExprType *exist;
     char *name;
     char buf[128];
     switch(ty->t) {
@@ -83,7 +84,7 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable, Region *keyRe
             return newt;
         case T_VAR:
             name = getTVarName(ty->ext.tvar.vid, buf);
-            ExprType *exist = lookupFromHashTable(varTable, name);
+            exist = (ExprType *)lookupFromHashTable(varTable, name);
             if(exist != NULL)
                 return exist;
             else {
@@ -530,7 +531,7 @@ Res *cpRes(Res *res, Region *r) {
 }
 
 char *cpString(char *str, Region *r) {
-    char *strCp = region_alloc(r, (strlen(str)+1) * sizeof(char) );
+    char *strCp = (char *)region_alloc(r, (strlen(str)+1) * sizeof(char) );
     strcpy(strCp, str);
     return strCp;
 }
@@ -682,7 +683,7 @@ ExprType *dereference(ExprType *type, Hashtable *type_table, Region *r) {
         char name[128];
         getTVarName(type->ext.tvar.vid, name);
         /* printf("deref: %s\n", name); */
-        ExprType *deref = lookupFromHashTable(type_table, name);
+        ExprType *deref = (ExprType *)lookupFromHashTable(type_table, name);
         if(deref == NULL)
             return type;
         else

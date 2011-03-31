@@ -155,7 +155,7 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
         if(type->ext.tvar.vid == expected->ext.tvar.vid) {
             *an = type;
             *bn = expected;
-            return TAUTOLOGY | CONTIGENCY;
+            return CONTIGENCY;
         } else if(type->ext.tvar.numDisjuncts > 0 && expected->ext.tvar.numDisjuncts > 0) {
             TypeConstructor c[100];
             TypeConstructor* cp = c;
@@ -202,7 +202,7 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
                 gcd = newTVar2(cp-c, c, r);
             }
             *an = gcd;
-            return TAUTOLOGY | CONTIGENCY;
+            return CONTIGENCY;
         } else if(type->ext.tvar.numDisjuncts==0) { /* free */
             *an = type;
             *bn = expected;
@@ -423,7 +423,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
         }
     } while(changed);
 
-    return CONTIGENCY | TAUTOLOGY;
+    return CONTIGENCY;
 }
 
 ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {

@@ -82,7 +82,7 @@ Res* getValueFromCollection(char *typ, void *inPtr, int inx, Region *r) {
     if (g->rowCnt == 0 || inx >= g->rowCnt) {
       return NULL;
     }
-	k = malloc(sizeof(keyValPair_t));
+	k = (keyValPair_t *)malloc(sizeof(keyValPair_t));
         k->len = 0;
         k->keyWord = NULL;
         k->value = NULL;
@@ -152,7 +152,7 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 		return 0;
 	} else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
 		res->value.t = *(time_t *)mP->inOutStruct;
-		TYPE(res) = DATETIME;
+		TYPE(res) = T_DATETIME;
 		return 0;
 /*
 	} else if(strcmp(mP->type, StrArray_MS_T) == 0) {
@@ -221,6 +221,7 @@ void convertCollectionToRes(msParam_t *mP, Res* res) {
 int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
 	strArray_t *arr;
 	intArray_t *arr2;
+        int maxlen;
         var->inpOutBuf = NULL;
         var->label = NULL;
 			switch(TYPE(res)) {
@@ -259,7 +260,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
 							arr = (strArray_t *)malloc(sizeof(strArray_t));
 							arr->len = res->value.c.len;
 							int i;
-							int maxlen = 0;
+							maxlen = 0;
 							for(i=0;i<res->value.c.len;i++) {
 								int slen = res->value.c.elems[i]->value.s.len;
 								maxlen = maxlen < slen? slen: maxlen;
@@ -324,7 +325,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
             var->len = 0;
             var->msParam = (msParam_t **) malloc(sizeof(msParam_t *)*(env->len));
         } else {
-            var->msParam = realloc(var->msParam, sizeof(msParam_t *)*(var->len + env->len));
+            var->msParam = (msParam_t **) realloc(var->msParam, sizeof(msParam_t *)*(var->len + env->len));
         }
 	for(i=0;i<env->size;i++) {
 		struct bucket *b = env->buckets[i];

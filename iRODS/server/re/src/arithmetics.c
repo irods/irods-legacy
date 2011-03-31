@@ -278,8 +278,9 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
         Env *nEnv = newEnv(newHashTable(100), env->global, env->funcDesc);
         Hashtable *localTVarEnv = NULL;
         
+        List *localTypingConstraints = NULL;
         /* look up function descriptor */
-        FunctionDesc *fd = lookupFromHashTable(env->funcDesc, fn);
+        FunctionDesc *fd = (FunctionDesc *)lookupFromHashTable(env->funcDesc, fn);
         char *vOrE, desc[MAX_PARAMS_LEN];
         vOrE = desc;
         if(fd!=NULL) {
@@ -324,7 +325,7 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
         }
 
         localTVarEnv = newHashTable(100);
-        List *localTypingConstraints = newList(r);
+        localTypingConstraints = newList(r);
         /* evaluation parameters and try to resolve remaining tvars with unification */
         for(i=0;i<n;i++) {
             switch(getParamIOType(vOrE,i)) {
@@ -332,7 +333,7 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
                 case 'p': /* input/output */
                     args[i] = evaluateExpression3(subtrees[i], rei, reiSaveFlag,  env, errmsg, newRegion);
                     if(TYPE((Res *)args[i])==T_ERROR) {
-                        res = args[i];
+                        res = (Res *)args[i];
                         RETURN;
                     }
                     if(subtrees[i]->coercion!=NULL && subtrees[i]->coercion->t == TVAR) {
@@ -380,10 +381,10 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
                 case 'i': /* input */
                 case 'p': /* input/output */
                     if(subtrees[i]->coercion!=NULL) {
-                        args[i] = processCoercion(subtrees[i], args[i], localTVarEnv, errmsg, newRegion);
+                        args[i] = processCoercion(subtrees[i], (Res *)args[i], localTVarEnv, errmsg, newRegion);
                     }
                     if(TYPE((Res *)args[i])==T_ERROR) {
-                        res = args[i];
+                        res = (Res *)args[i];
                         RETURN;
                     }
                     break;
@@ -416,18 +417,18 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
                 case 'o': /* output */
                     /* we don't do coercion here because we only apply coersion at application position */
                     if(TYPE((Res *)args[i])==T_ERROR) {
-                        res = args[i];
+                        res = (Res *)args[i];
                         RETURN ;
                     }
-                    resp = setVariableValue(subtrees[i]->text,args[i],rei,env,errmsg,r);
+                    resp = setVariableValue(subtrees[i]->text,(Res *)args[i],rei,env,errmsg,r);
                     break;
                 case 'p': /* input/output */
                     /* we don't do coercion here because we only apply coersion at application position */
                     if(TYPE((Res *)args[i])==T_ERROR) {
-                        res = args[i];
+                        res = (Res *)args[i];
                         RETURN;
                     }
-                    resp = setVariableValue(subtrees[i]->text,args[i],rei,env,errmsg,r);
+                    resp = setVariableValue(subtrees[i]->text,(Res *)args[i],rei,env,errmsg,r);
                     break;
                 case 'e': /* expression */
                 case 'a': /* actions */
@@ -676,27 +677,27 @@ Res* execMicroService3 (char *msName, Res **args, int nargs, Node *node, Env *en
 
 
 	if (numOfStrArgs == 0)
-		ii = (*myFunc) (rei) ;
+		ii = (*(int (*)(ruleExecInfo_t *))myFunc) (rei) ;
 	else if (numOfStrArgs == 1)
-		ii = (*myFunc) (myArgv[0],rei);
+		ii = (*(int (*)(msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],rei);
 	else if (numOfStrArgs == 2)
-		ii = (*myFunc) (myArgv[0],myArgv[1],rei);
+		ii = (*(int (*)(msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],rei);
 	else if (numOfStrArgs == 3)
-		ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],rei);
+		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],rei);
 	else if (numOfStrArgs == 4)
-		ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],rei);
+		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],rei);
 	else if (numOfStrArgs == 5)
-		ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],rei);
+		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],rei);
 	else if (numOfStrArgs == 6)
-		ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],rei);
+		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],rei);
 	else if (numOfStrArgs == 7)
-		ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],rei);
+		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],rei);
 	else if (numOfStrArgs == 8)
-		ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],rei);
+		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],rei);
 	else if (numOfStrArgs == 9)
-		ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],myArgv[8],rei);
+		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],myArgv[8],rei);
 	else if (numOfStrArgs == 10)
-		ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],
+		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],
 		                myArgv[8],myArgv [9],rei);
         if(ii<0) {
             rei->status = ii;
