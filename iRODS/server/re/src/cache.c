@@ -9,6 +9,11 @@
 #include "rules.h"
 #include "functions.h"
 
+RuleEngineStatus _ruleEngineStatus = UNINITIALIZED;
+
+RuleEngineStatus getRuleEngineStatus() {
+    return _ruleEngineStatus;
+}
 
 ExprType *copyExprType(unsigned char **buf, ExprType *type, Hashtable *objectMap) {
   unsigned char *p = *buf;
@@ -452,6 +457,8 @@ ret:
         unlockMutex(&mutex);
     }
     region_free(r);
+    _ruleEngineStatus = INITIALIZED;
+
     return res;
 }
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct, Region *r)

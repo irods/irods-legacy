@@ -46,15 +46,23 @@ enum cacheRecordType {
         CondIndexVal_T,
         TypeConstructor_T,
         char_T,
-        int_T,
+        int_T
     };
+
 typedef struct {
     enum cacheRecordType type;
     int length;
 } CacheRecordDesc;
 
+typedef enum ruleEngineStatus {
+    UNINITIALIZED,
+    INITIALIZED
+} RuleEngineStatus;
+
+extern RuleEngineStatus _ruleEngineStatus;
 extern int isServer;
 
+RuleEngineStatus getRuleEngineStatus();
 ExprType *copyExprType(unsigned char **buf, ExprType *type, Hashtable *objectMap);
 Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap);
 Hashtable* copyHashtableCharPrtToIntPtr(unsigned char **buf, Hashtable *h, Hashtable *objectMap);
