@@ -226,6 +226,14 @@ chkObjExist (rcComm_t *conn, char *inpPath, char *hostname)
 	memset (&genQueryInp, 0, sizeof (genQueryInp));
 	addInxIval(&genQueryInp.selectInp, COL_D_DATA_ID, 1);
 	genQueryInp.maxRows = 0;
+/*
+ Use the AUTO_CLOSE option to close down the statement after the
+ query, avoiding later 'too many concurrent statements' errors (and
+ CAT_SQL_ERR: -806000) later.  This could also be done by asking for 2
+ rows (maxRows), but the rows are not needed, just the status.
+ This may also fix a segfault error which might be related.
+ */
+	genQueryInp.options = AUTO_CLOSE;
 	
 	snprintf (condStr, MAX_NAME_LEN, "='%s'", inpPath);
     addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr);
