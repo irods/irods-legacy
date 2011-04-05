@@ -8,19 +8,11 @@ typedef struct {
 
 int print_hello(ruleExecInfo_t *c);
 int print_hello_arg(msParam_t* xs, ruleExecInfo_t *rei );
-int whileExec(msParam_t* condition, msParam_t* whileBody,
-	      msParam_t* recoverWhileBody, ruleExecInfo_t *rei);
-int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step, 
-	    msParam_t* forBody, msParam_t* recoverForBody, ruleExecInfo_t *rei);
 int delayExec(msParam_t* condition, msParam_t* workflow, 
 	      msParam_t* recoverWorkFlow, ruleExecInfo_t *rei);
 int remoteExec(msParam_t* hostName, msParam_t* condition, msParam_t* workflow, 
 	      msParam_t* recoverWorkFlow, ruleExecInfo_t *rei);
-int forEachExec(msParam_t* list, msParam_t* setOfWFS, msParam_t* recoverSetOfWFS,
-	      ruleExecInfo_t *rei);
 int msiSleep(msParam_t* sec, msParam_t* microsec, ruleExecInfo_t *rei);
-int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
-int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
 int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei);
 int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei);
 int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei);
@@ -36,10 +28,6 @@ int msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecIn
 int msiPrintKeyValPair(msParam_t* where, msParam_t* inKVPair,  ruleExecInfo_t *rei);
 int msiGetValByKey(msParam_t* inKVPair,  msParam_t* inKey, msParam_t* outVal,  ruleExecInfo_t *rei);
 int msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei);
-int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
-int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
-	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei);
-int breakExec(ruleExecInfo_t *rei);
 int msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, 
 	msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei);
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
@@ -275,14 +263,9 @@ microsdef_t MicrosTable[] = {
   {"msiNoChkFilePathPerm",0,(funcPtr) msiNoChkFilePathPerm},
   {"msiNoTrashCan",0,(funcPtr) msiNoTrashCan},
   {"msiSetPublicUserOpr",1,(funcPtr) msiSetPublicUserOpr},
-  {"whileExec",3,(funcPtr) whileExec},
-  {"forExec",5,(funcPtr) forExec},
   {"delayExec",3,(funcPtr) delayExec},
   {"remoteExec",4,(funcPtr) remoteExec},
-  {"forEachExec",3,(funcPtr) forEachExec},
   {"msiSleep",2,(funcPtr) msiSleep},
-  {"writeString",2,(funcPtr) writeString},
-  {"writeLine",2,(funcPtr) writeLine},
   {"writeBytesBuf",2,(funcPtr) writeBytesBuf},
   {"writePosInt",2,(funcPtr) writePosInt},
   {"writeKeyValPairs",3,(funcPtr) writeKeyValPairs},
@@ -296,9 +279,6 @@ microsdef_t MicrosTable[] = {
   {"msiPrintKeyValPair",2,(funcPtr) msiPrintKeyValPair},
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},
   {"msiAddKeyVal",3,(funcPtr) msiAddKeyVal},
-  {"assign",2,(funcPtr) assign},
-  {"ifExec",5,(funcPtr) ifExec},
-  {"break",0,(funcPtr) breakExec},
   {"applyAllRules",3,(funcPtr) msiApplyAllRules},
   {"msiExecStrCondQuery",2,(funcPtr) msiExecStrCondQuery},
   {"msiExecStrCondQueryWithOptions",4,(funcPtr) msiExecStrCondQueryWithOptions},

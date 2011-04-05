@@ -71,6 +71,7 @@ fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedRe
 int evaluateExpression(char *expr, char *eaVal, ruleExecInfo_t *rei) {
     return computeExpression(expr, rei, 0, eaVal);
 }
+#if 0
 int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
 {
   char *varName;
@@ -392,7 +393,6 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
     free(elseStr);
   }
   return(i);
-
 }
 
 /**
@@ -593,6 +593,7 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
     return(0);
   return(i);
 }
+#endif
 
 /**
  * \fn delayExec(msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
@@ -712,7 +713,7 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
     argc = 0;
   }
   else {
-    actionCall = malloc(strlen(inActionCall) + strlen(recoveryActionCall) + 3);
+    actionCall = (char *) malloc(strlen(inActionCall) + strlen(recoveryActionCall) + 3);
     sprintf(actionCall,"%s|%s",inActionCall,recoveryActionCall);
     args[0] = NULL;
     args[1] = NULL;
@@ -726,7 +727,7 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
     return(i);
   }
   /* fill Conditions into Submit Struct */
-  ruleSubmitInfo = mallocAndZero(sizeof(ruleExecSubmitInp_t));
+  ruleSubmitInfo = (ruleExecSubmitInp_t *) mallocAndZero(sizeof(ruleExecSubmitInp_t));
   i  = fillSubmitConditions (actionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei);
   if (actionCall != inActionCall) 
     free (actionCall);
@@ -852,7 +853,7 @@ int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, r
   parseHostAddrStr (tmpStr1, &execMyRuleInp.addr);
 #endif
   snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s",  (char*)mPB->inOutStruct,(char*)mPC->inOutStruct);
-  addKeyVal(&execMyRuleInp.condInput,"execCondition",mPA->inOutStruct);
+  addKeyVal(&execMyRuleInp.condInput,"execCondition",(char *) mPA->inOutStruct);
   
   tmpParamArray =  (msParamArray_t *) malloc (sizeof (msParamArray_t));
   memset (tmpParamArray, 0, sizeof (msParamArray_t));
@@ -1204,8 +1205,8 @@ msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
 
   int sec, microsec;
 
-  sec = atoi(secPtr->inOutStruct);
-  microsec = atoi(microsecPtr->inOutStruct);
+  sec = atoi((char *) secPtr->inOutStruct);
+  microsec = atoi((char *) microsecPtr->inOutStruct);
 
   rodsSleep (sec, microsec);
   return(0);
@@ -1271,9 +1272,9 @@ msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam,
   int reiSaveFlag;
   int allRuleExecFlag;
 
-  action = actionParam->inOutStruct;
-  reiSaveFlag = atoi(reiSaveFlagParam->inOutStruct);
-  allRuleExecFlag = atoi(allRuleExecFlagParam->inOutStruct);
+  action = (char *) actionParam->inOutStruct;
+  reiSaveFlag = atoi((char *) reiSaveFlagParam->inOutStruct);
+  allRuleExecFlag = atoi((char *) allRuleExecFlagParam->inOutStruct);
   i = applyAllRules(action, rei->msParamArray, rei, reiSaveFlag,allRuleExecFlag);
   return(i);
 
@@ -1357,10 +1358,10 @@ msiGetDiffTime(msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3,
 	
 	
 	/* get time values from strings */
-	seconds = atol(inpParam2->inOutStruct) - atol(inpParam1->inOutStruct);
+	seconds = atol((char *) inpParam2->inOutStruct) - atol((char *)inpParam1->inOutStruct);
 	
 	/* get desired output format */
-	format = inpParam3->inOutStruct;
+	format = (char *) inpParam3->inOutStruct;
 
 	
 	/* did they ask for human readable format? */
@@ -1444,7 +1445,7 @@ msiGetSystemTime(msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei)
 	}
 	
 
-	format = inpParam->inOutStruct;
+	format = (char *) inpParam->inOutStruct;
 	
 	if (!format || strcmp(format, "human")) {
 		getNowStr(tStr);
