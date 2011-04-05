@@ -6,6 +6,21 @@ typedef struct {
 } microsdef_t;
 
 
+#ifndef RULE_ENGINE_N
+int whileExec(msParam_t* condition, msParam_t* whileBody,
+	      msParam_t* recoverWhileBody, ruleExecInfo_t *rei);
+int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step, 
+	    msParam_t* forBody, msParam_t* recoverForBody, ruleExecInfo_t *rei);
+int forEachExec(msParam_t* list, msParam_t* setOfWFS, msParam_t* recoverSetOfWFS,
+	      ruleExecInfo_t *rei);
+int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
+int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
+int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
+int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
+	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei);
+int breakExec(ruleExecInfo_t *rei);
+#endif
+
 int print_hello(ruleExecInfo_t *c);
 int print_hello_arg(msParam_t* xs, ruleExecInfo_t *rei );
 int delayExec(msParam_t* condition, msParam_t* workflow, 
@@ -263,6 +278,16 @@ microsdef_t MicrosTable[] = {
   {"msiNoChkFilePathPerm",0,(funcPtr) msiNoChkFilePathPerm},
   {"msiNoTrashCan",0,(funcPtr) msiNoTrashCan},
   {"msiSetPublicUserOpr",1,(funcPtr) msiSetPublicUserOpr},
+#ifndef RULE_ENGINE_N
+  {"whileExec",3,(funcPtr) whileExec},
+  {"forExec",5,(funcPtr) forExec},
+  {"forEachExec",3,(funcPtr) forEachExec},
+  {"writeString",2,(funcPtr) writeString},
+  {"writeLine",2,(funcPtr) writeLine},
+  {"assign",2,(funcPtr) assign},
+  {"ifExec",5,(funcPtr) ifExec},
+  {"break",0,(funcPtr) breakExec},
+#endif
   {"delayExec",3,(funcPtr) delayExec},
   {"remoteExec",4,(funcPtr) remoteExec},
   {"msiSleep",2,(funcPtr) msiSleep},
@@ -355,3 +380,4 @@ microsdef_t MicrosTable[] = {
   {"msiDboExec",10,(funcPtr) msiDboExec},
   {"msiExit",2,(funcPtr) msiExit},
   {"msiSysMetaModify",2,(funcPtr) msiSysMetaModify},
+
