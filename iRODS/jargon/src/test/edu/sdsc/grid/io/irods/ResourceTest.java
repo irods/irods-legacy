@@ -119,6 +119,57 @@ public class ResourceTest {
 				testval2, freeSpace);
 
 	}
+	
+	/*
+	 *[#157] adding Resource.modifyStatus()
+	 */
+	@Test
+	public void testModifyResourceStatus() throws Exception {
+
+		String testval1 = "a";
+		String testval2 = "b";
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		resource.modifyStatus(
+				testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY),
+				testval1);
+		String rescQuery = "SELECT RESC_NAME, RESC_STATUS WHERE RESC_NAME = '"
+				+ testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY)
+				+ "'";
+		IRODSQuery irodsQuery = IRODSQuery.instance(rescQuery, 50);
+
+		IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(irodsFileSystem.getCommands());
+
+		IRODSGenQueryExecutor irodsGenQueryExecutor = irodsAccessObjectFactory
+				.getIRODSGenQueryExcecutor();
+
+		IRODSQueryResultSet resultSet;
+
+		resultSet = irodsGenQueryExecutor.executeIRODSQuery(irodsQuery, 0);
+		String status = resultSet.getFirstResult().getColumn(1);
+		TestCase.assertEquals("first status did not set value",
+				testval1, status);
+
+		resource.modifyStatus(
+				testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY),
+				testval2);
+		rescQuery = "SELECT RESC_NAME, RESC_STATUS WHERE RESC_NAME = '"
+				+ testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY)
+				+ "'";
+		irodsQuery = IRODSQuery.instance(rescQuery, 50);
+		resultSet = irodsGenQueryExecutor.executeIRODSQuery(irodsQuery, 0);
+		status = resultSet.getFirstResult().getColumn(1);
+		TestCase.assertEquals("second status test did not set value",
+				testval2, status);
+
+	}
 
 	@Test
 	public final void testListResourceGroups() throws Exception {

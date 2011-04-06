@@ -1,4 +1,6 @@
 /**
+
+
  *   Copyright (c) Oct 9, 2008  DICE Research,
  *   University of California, San Diego (UCSD), San Diego, CA, USA.
  *
@@ -162,6 +164,19 @@ public class Resource extends Domain {
 	public void modifyPath(final String resourceName, final String newPath)
 			throws IOException {
 		String[] args = { "modify", INAME, resourceName, "path", newPath };
+		irodsFileSystem.commands.admin(args);
+	}
+
+	/**
+	 * Modify the status
+	 * 
+	 * @param resourceName
+	 * @param newValue
+	 * @throws IOException
+	 */
+	public void modifyStatus(final String resourceName, final String newValue)
+			throws IOException {
+		String[] args = { "modify", INAME, resourceName, "status", newValue };
 		irodsFileSystem.commands.admin(args);
 	}
 
