@@ -630,6 +630,9 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         rodsLogError (LOG_ERROR, conn->svrVersion->status,
           "connectToRhost: error returned from host %s status = %d",
           conn->host, conn->svrVersion->status);
+	if (conn->svrVersion->status == SYS_EXCEED_CONNECT_CNT)
+	    rodsLog (LOG_ERROR,
+	      "It is likely %s is a localhost but not recognized by this server. A line can be added to the server/config/irodsHost file to fix the problem", conn->host);
 	close (conn->sock);
         return conn->svrVersion->status;
     }
