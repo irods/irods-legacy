@@ -22,6 +22,8 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -140,6 +142,163 @@ public class LocalFileTest {
 		Assert.assertTrue("did not find file I just put", res
 				.indexOf(targetFileName) > -1);
 	}
+	
+	/*
+	 * [#156] [iROD-Chat:6033] Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
+	 * this succeeded in the original bug, where 6000 failed
+	 */
+	@Test
+	public final void testCopyToGeneralFileUsing5000XByteFile()
+			throws Exception {
+		
+		String targetFileName = "testCopyToGeneralFileUsing5000ByteFile.txt";
+		int targetFileLength = 5000  * 1024;
+		
+		GeneralAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		GeneralFileSystem fileSystem = FileFactory.newFileSystem(account);
+		String targetCollection = testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		GeneralFile file = FileFactory.newFile(fileSystem, targetCollection);
+
+		String fullPathToLocalFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY),
+						targetFileName, targetFileLength);
+		GeneralFile localFile = new LocalFile(fullPathToLocalFile);
+
+		if (localFile.canRead()) {
+			GeneralFile remoteFile = FileFactory.newFile(file, localFile
+					.getName());
+			localFile.copyTo(remoteFile, true);
+		}
+		
+		IRODSFile irodsFile = (IRODSFile) FileFactory.newFile(fileSystem, targetCollection + "/" + targetFileName);
+		TestCase.assertNotNull("null irodsFile", irodsFile);
+		TestCase.assertTrue("file does not exist", irodsFile.exists());
+		TestCase.assertEquals("wrong file length", targetFileLength, irodsFile.length());
+		irodsFile.close();
+	}
+	
+	/*
+	 * [#156] [iROD-Chat:6033] Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
+	 * this failed in the original bug, where 5000 succeeded
+	 */
+	@Test
+	public final void testCopyToGeneralFileUsing6000XByteFile()
+			throws Exception {
+		
+		String targetFileName = "testCopyToGeneralFileUsing6000ByteFile.txt";
+		int targetFileLength = 6000 * 1024;
+		
+		GeneralAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		GeneralFileSystem fileSystem = FileFactory.newFileSystem(account);
+		String targetCollection = testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		GeneralFile file = FileFactory.newFile(fileSystem, targetCollection);
+
+		String fullPathToLocalFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY),
+						targetFileName, targetFileLength);
+		GeneralFile localFile = new LocalFile(fullPathToLocalFile);
+
+		if (localFile.canRead()) {
+			GeneralFile remoteFile = FileFactory.newFile(file, localFile
+					.getName());
+			localFile.copyTo(remoteFile, true);
+		}
+		
+		IRODSFile irodsFile = (IRODSFile) FileFactory.newFile(fileSystem, targetCollection + "/" + targetFileName);
+		TestCase.assertNotNull("null irodsFile", irodsFile);
+		TestCase.assertTrue("file does not exist", irodsFile.exists());
+		TestCase.assertEquals("wrong file length", targetFileLength, irodsFile.length());
+		irodsFile.close();
+	}
+	
+	/*
+	 * [#156] [iROD-Chat:6033] Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
+	 * this failed in the original bug, where 5000 succeeded
+	 */
+	@Test
+	public final void testCopyToGeneralFileUsing14000XByteFile()
+			throws Exception {
+		
+		String targetFileName = "testCopyToGeneralFileUsing14000ByteFile.txt";
+		int targetFileLength = 14000 * 1024;
+		
+		GeneralAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		GeneralFileSystem fileSystem = FileFactory.newFileSystem(account);
+		String targetCollection = testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		GeneralFile file = FileFactory.newFile(fileSystem, targetCollection);
+
+		String fullPathToLocalFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY),
+						targetFileName, targetFileLength);
+		GeneralFile localFile = new LocalFile(fullPathToLocalFile);
+
+		if (localFile.canRead()) {
+			GeneralFile remoteFile = FileFactory.newFile(file, localFile
+					.getName());
+			localFile.copyTo(remoteFile, true);
+		}
+		
+		IRODSFile irodsFile = (IRODSFile) FileFactory.newFile(fileSystem, targetCollection + "/" + targetFileName);
+		TestCase.assertNotNull("null irodsFile", irodsFile);
+		TestCase.assertTrue("file does not exist", irodsFile.exists());
+		TestCase.assertEquals("wrong file length", targetFileLength, irodsFile.length());
+		irodsFile.close();
+	}
+	
+	/*
+	 * [#156] [iROD-Chat:6033] Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
+	 * this failed in the original bug, where 5000 succeeded
+	 */
+	@Test
+	public final void testCopyToGeneralFileUsing36000XByteFile()
+			throws Exception {
+		
+		String targetFileName = "testCopyToGeneralFileUsing36000ByteFile.txt";
+		int targetFileLength = 36000 * 1024;
+		
+		GeneralAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		GeneralFileSystem fileSystem = FileFactory.newFileSystem(account);
+		String targetCollection = testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		GeneralFile file = FileFactory.newFile(fileSystem, targetCollection);
+
+		String fullPathToLocalFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY),
+						targetFileName, targetFileLength);
+		GeneralFile localFile = new LocalFile(fullPathToLocalFile);
+
+		if (localFile.canRead()) {
+			GeneralFile remoteFile = FileFactory.newFile(file, localFile
+					.getName());
+			localFile.copyTo(remoteFile, true);
+		}
+		
+		IRODSFile irodsFile = (IRODSFile) FileFactory.newFile(fileSystem, targetCollection + "/" + targetFileName);
+		TestCase.assertNotNull("null irodsFile", irodsFile);
+		TestCase.assertTrue("file does not exist", irodsFile.exists());
+		TestCase.assertEquals("wrong file length", targetFileLength, irodsFile.length());
+		irodsFile.close();
+	}
+
 
 	/**
 	 * Bug 47 - LocalFile toString issues

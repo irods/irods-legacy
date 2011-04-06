@@ -15,7 +15,7 @@ public final class IRODSConstants {
 	 * Approximate maximum number of bytes transfered by each thread during a
 	 * parallel transfer.
 	 */
-	public static final int TRANSFER_THREAD_SIZE = 6000000;
+	public static final long  MAX_SZ_FOR_SINGLE_BUF  =   (32*1024*1024);
 	
 	public static final int CONNECTION_TIMEOUT_VALUE = -1;
 	public static final int CONNECTION_TIMEOUT_NO_TIMEOUT = -1;

@@ -1249,11 +1249,11 @@ public class IRODSCommands {
 
 		long length = source.length();
 
-		if (length > TRANSFER_THREAD_SIZE) { // FIXME: set to constant value
+		if (length > MAX_SZ_FOR_SINGLE_BUF) { // FIXME: set to constant value
 			if (log.isInfoEnabled()) {
 				log.info("put operation will use parallel transfer, size:"
 						+ length
-						+ " is greater that the TRANSFER_THREAD_SIZE setting");
+						+ " is greater that the MAX_SZ_FOR_SINGLE_BUF setting");
 			}
 			String[][] keyword = {
 					{ IRODSMetaDataSet.DATA_TYPE_KW, destination.getDataType() },

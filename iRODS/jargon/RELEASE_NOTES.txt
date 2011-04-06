@@ -41,6 +41,8 @@ Switched to GForge bug numbering as of iRODS2.5
  
  [#147] SQL incorrect for gen query associated with '<=' or '>=' or '<' or '>' comparisons
  
+[#156] [iROD-Chat:6033] Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
+ 
 ================================================================================================
 Outstanding Issues
 

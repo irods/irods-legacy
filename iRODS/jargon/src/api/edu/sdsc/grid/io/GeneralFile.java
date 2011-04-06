@@ -632,7 +632,7 @@ public class GeneralFile extends Object implements Comparable {
 							"No permissions to access this file.");
 				}
 			}
-
+			
 			if (ilength > BUFFER_MAX_SIZE) {
 				buffer = new byte[BUFFER_MAX_SIZE];
 				do {
