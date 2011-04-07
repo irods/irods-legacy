@@ -502,7 +502,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 {
     int status;
   /* todo rule out rules with "|" that are not separators */
-  if (strstr(ruleDef,"|") == NULL) { /* not a rule */
+  if (strstr(ruleDef,"|") == NULL && strstr(ruleDef,"{") == NULL) { /* not a rule */
     status = applyRule(ruleDef, inMsParamArray, rei,1);
     return(status);
   }

@@ -107,28 +107,47 @@ main(int argc, char **argv) {
               myRodsArgs.fileString, errno);
 	    exit (1);
 	}
-
+	int rulegen = 0;
+	rstrcpy (execMyRuleInp.myRule, "", META_STR_LEN);
 	while ((len = getLine (fptr, buf, META_STR_LEN)) > 0) {
-	    if (buf[0] == '#') {
-		continue;
-	    }
-	  if (myRodsArgs.longOption == True)
-	    puts(buf);
+	    if (myRodsArgs.longOption == True)
+	    	puts(buf);
 
-	    if (gotRule == 0) {
-		/* the input is a rule */
-		rstrcpy (execMyRuleInp.myRule, buf, META_STR_LEN);
-	    } else if (gotRule == 1) {
-		parseMsInputParam (argc, argv, optind, &execMyRuleInp, buf);
-	    } else if (gotRule == 2) {
-                if (strcmp (buf, "null") != 0) {
-        	    rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
+	    if (buf[0] == '#') {
+	    	continue;
+	    }
+
+		if(strcmp(buf, "@rule") == 0) {
+			rulegen = 1;
+			continue;
+		} else if(strcmp(buf, "@input") == 0) {
+			gotRule = 1;
+			continue;
+		} else if(strcmp(buf, "@output") == 0) {
+			gotRule = 2;
+			continue;
 		}
+
+		if (gotRule == 0) {
+	    	if(!rulegen) {
+				/* the input is a rule */
+				rstrcpy (execMyRuleInp.myRule, buf, META_STR_LEN);
+	    	} else {
+	    		snprintf (execMyRuleInp.myRule + strlen(execMyRuleInp.myRule), META_STR_LEN - strlen(execMyRuleInp.myRule), "%s\n", buf);
+	    	}
+	    } else if (gotRule == 1) {
+	    	parseMsInputParam (argc, argv, optind, &execMyRuleInp, buf);
+	    } else if (gotRule == 2) {
+			if (strcmp (buf, "null") != 0) {
+				rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
+			}
 	        break;
 	    } else {
-		break;
+	    	break;
 	    }
-	    gotRule++;
+		if(!rulegen) {
+			gotRule++;
+		}
 	}
 	if (myRodsArgs.longOption == True)
 	    puts("-----------------------------------------------------------------");
