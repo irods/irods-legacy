@@ -686,6 +686,28 @@ sub setEnvironmentVariables
 	$ENV{'LD_LIBRARY_PATH'} = $libPath;
 
 
+# If the GLOBUS_LOCATION (in irods.config) is set, add it/lib to the
+# LD_LIBRARY_PATH if it is not there already.  This can be useful when
+# GSI is configured in but is not being used initially, so the user's
+# GSI environment might not be set up.
+	if ( defined($GLOBUS_LOCATION) && $GLOBUS_LOCATION ne "" )
+	{
+	    if ( $libPath =~ m/$GLOBUS_LOCATION/i ) {
+	    }
+	    else {
+		if ( $libPath eq "" )
+		{
+			$libPath = $GLOBUS_LOCATION . "/lib" ;
+		}
+		else
+		{
+			$libPath = $GLOBUS_LOCATION . "/lib:" . $libPath;
+		}
+	    }
+	    $ENV{'LD_LIBRARY_PATH'} = $libPath;
+	}
+
+
 	# Database variables
 	if ( $DATABASE_TYPE eq "postgres" )
 	{
