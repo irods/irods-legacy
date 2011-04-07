@@ -1645,7 +1645,7 @@ updateResc (rsComm_t *rsComm)
     return status;
 }
 
-/* matchSameHostRescByType - find a resource with on the same host
+/* matchSameHostRescByType - find a resource on the same host
  * as the input myRescInfo but with the input driverType.
  */
 
