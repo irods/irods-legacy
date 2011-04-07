@@ -1645,3 +1645,30 @@ updateResc (rsComm_t *rsComm)
     return status;
 }
 
+/* matchSameHostRescByType - find a resource with on the same host
+ * as the input myRescInfo but with the input driverType.
+ */
+
+rescInfo_t *
+matchSameHostRescByType (rescInfo_t *myRescInfo, int driverType)
+{
+    rescInfo_t *tmpRescInfo;
+    rescGrpInfo_t *tmpRescGrpInfo;
+
+    tmpRescGrpInfo = RescGrpInfo;
+
+    while (tmpRescGrpInfo != NULL) {
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        /* same location ? */
+        if (strcmp (myRescInfo->rescLoc, tmpRescInfo->rescLoc) == 0) {
+            /* match driverType ? */
+            int rescTypeInx = tmpRescInfo->rescTypeInx;
+            if (RescTypeDef[rescTypeInx].driverType == driverType) {
+                return tmpRescInfo;
+            }
+        }
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    return NULL;
+}
+
