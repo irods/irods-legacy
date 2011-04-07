@@ -178,6 +178,9 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
         convertMsParamArrayToEnv(msParamArray, env->global, errmsg, r);
     }
     int rescode = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
+    if(msParamArray!=NULL) {
+        convertEnvToMsParamArray(msParamArray, env, errmsg, r);
+    }
     deleteEnv(env, 3);
 
     return rescode;
