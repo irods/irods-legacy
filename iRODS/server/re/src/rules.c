@@ -129,6 +129,15 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
 	}*/
 	return(0);
 }
+void addCmdExecOutToEnv(Hashtable *global, Region *r) {
+    execCmdOut_t *ruleExecOut = (execCmdOut_t *)malloc (sizeof (execCmdOut_t));
+    memset (ruleExecOut, 0, sizeof (execCmdOut_t));
+    Res *execOutRes = newRes(r);
+	execOutRes->exprType  = newIRODSType(ExecCmdOut_MS_T, r);
+	execOutRes->value.uninterpreted.inOutStruct = ruleExecOut;
+    insertIntoHashTable(global, "ruleExecOut", execOutRes);
+
+}
 
 /* parse and compute a rule */
 int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r) {
@@ -174,6 +183,7 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
     Hashtable *global = newHashTable(100);
     getSystemFunctions(funcDesc, r);
     Env *env = newEnv(newHashTable(100), global, funcDesc);
+    addCmdExecOutToEnv(global, r);
     if(msParamArray!=NULL) {
         convertMsParamArrayToEnv(msParamArray, env->global, errmsg, r);
     }
@@ -525,6 +535,7 @@ Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamAr
     }
     rei->status = 0;
     Env *env = newEnv(newHashTable(100),newHashTable(100),newHashTable(100));
+    addCmdExecOutToEnv(env->global, r);
     getSystemFunctions(env->funcDesc, r);
 
     Res *res;
