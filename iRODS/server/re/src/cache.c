@@ -19,43 +19,36 @@ ExprType *copyExprType(unsigned char **buf, ExprType *type, Hashtable *objectMap
   unsigned char *p = *buf;
   ExprType *shared;
   char tvarNameBuf[128];
-  if((shared = (ExprType *)lookupFromHashTable(objectMap, typeName_TypeConstructor(type->t))) != NULL) {
+  if((shared = (ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(type->type))) != NULL) {
 /*
       printf("simp type %s is shared\n", typeName_TypeConstructor(type->t));
 */
       return shared;
-  } else if(type->t == T_VAR && (shared=(ExprType *)lookupFromHashTable(objectMap, typeName_TypeConstructor(type->t)))!=NULL) {
+  } else if(type->type == T_VAR && (shared=(ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(type->type)))!=NULL) {
 /*
       printf("tvar %s is shared\n", tvarNameBuf);
 */
       return shared;
   } else {
       allocate(p, ExprType, tcopy, *type);
-      if(tcopy->t == T_FUNC) {
-        tcopy->ext.func.retType = copyExprType(&p, tcopy->ext.func.retType, objectMap);
-        allocateArray(p, ExprTypePtr, tcopy->ext.func.arity, tcopy->ext.func.paramsType, type->ext.func.paramsType);
-        int i;
-        for (i=0;i<tcopy->ext.func.arity;i++) {
-            tcopy->ext.func.paramsType[i] = copyExprType(&p, type->ext.func.paramsType[i], objectMap);
-        }
-      } else if(tcopy->t == T_CONS) {
+      if(tcopy->type == T_CONS) {
 
-        allocateArray(p, ExprTypePtr, tcopy->ext.cons.arity, tcopy->ext.cons.typeArgs, type->ext.cons.typeArgs);
+        allocateArray(p, ExprTypePtr, T_CONS_ARITY(type), T_CONS_TYPE_ARGS(tcopy), T_CONS_TYPE_ARGS(type));
         int i;
-        for (i=0;i<tcopy->ext.cons.arity;i++) {
-            tcopy->ext.cons.typeArgs[i] = copyExprType(&p, type->ext.cons.typeArgs[i], objectMap);
+        for (i=0;i<T_CONS_ARITY(type);i++) {
+            T_CONS_TYPE_ARG(tcopy, i) = copyExprType(&p, T_CONS_TYPE_ARG(type, i), objectMap);
         }
-        allocateArray(p, char, strlen(type->ext.cons.typeConsName)+1, tcopy->ext.cons.typeConsName, type->ext.cons.typeConsName);
-      } else if(tcopy->t == T_VAR) {
+        allocateArray(p, char, strlen(T_CONS_TYPE_NAME(type))+1, T_CONS_TYPE_NAME(tcopy), T_CONS_TYPE_NAME(type));
+      } else if(tcopy->type == T_VAR) {
           if(tcopy->ext.tvar.numDisjuncts != 0) {
-              allocateArray(p, TypeConstructor, tcopy->ext.tvar.numDisjuncts, tcopy->ext.tvar.disjuncts, type->ext.tvar.disjuncts);
+              allocateArray(p, NodeType, tcopy->ext.tvar.numDisjuncts, tcopy->ext.tvar.disjuncts, type->ext.tvar.disjuncts);
           }
           insertIntoHashTable(objectMap, getTVarName(tcopy->ext.tvar.vid, tvarNameBuf), tcopy);
 /*
           printf("tvar %s is added to shared objects\n", tvarNameBuf);
 */
-      } else if(tcopy->t == T_IRODS) {
-        allocateArray(p, char, strlen(type->ext.irods.name)+1, tcopy->ext.irods.name, type->ext.irods.name);
+      } else if(tcopy->type == T_IRODS) {
+        allocateArray(p, char, strlen(type->text)+1, tcopy->text, type->text);
       }
       *buf = p;
       return tcopy;
@@ -174,12 +167,12 @@ Cache *copyCache(unsigned char **buf, Cache *c) {
     /*allocate(p, Cache, ccopy, *c); */
     /* shared objects */
     Region *r = make_region(0, NULL);
-    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_INT), copyExprType(&p, newSimpType(T_INT, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_BOOL), copyExprType(&p, newSimpType(T_BOOL, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_DOUBLE), copyExprType(&p, newSimpType(T_DOUBLE, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_DATETIME), copyExprType(&p, newSimpType(T_DATETIME, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_STRING), copyExprType(&p, newSimpType(T_STRING, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_TypeConstructor(T_DYNAMIC), copyExprType(&p, newSimpType(T_DYNAMIC, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_INT), copyExprType(&p, newSimpType(T_INT, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_BOOL), copyExprType(&p, newSimpType(T_BOOL, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_DOUBLE), copyExprType(&p, newSimpType(T_DOUBLE, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_DATETIME), copyExprType(&p, newSimpType(T_DATETIME, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_STRING), copyExprType(&p, newSimpType(T_STRING, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_DYNAMIC), copyExprType(&p, newSimpType(T_DYNAMIC, r), objectMap));
     region_free(r);
 
     ccopy->offset = *buf;
@@ -216,7 +209,7 @@ Cache *restoreCache(unsigned char *buf) {
         enum cacheRecordType type = ((CacheRecordDesc *)p)->type;
         int length = ((CacheRecordDesc *)p)->length;
         p+=sizeof(CacheRecordDesc);
-        int i;
+        int i, j;
         switch(type) {
             case Cache_T:
                 for(i=0;i<length;i++) {
@@ -246,8 +239,8 @@ Cache *restoreCache(unsigned char *buf) {
                     p+=sizeof(BucketPtr);
                 }
                 break;
-            case TypeConstructor_T:
-                p+= length * sizeof(TypeConstructor);
+            case NodeType_T:
+                p+= length * sizeof(NodeType);
                 break;
             case char_T:
                 p+= length * sizeof(char);
@@ -257,20 +250,18 @@ Cache *restoreCache(unsigned char *buf) {
                 break;
             case ExprType_T:
                 for(i=0;i<length;i++) {
-                    switch(((ExprType *)p)->t) {
-                        case T_FUNC:
-                            APPLY_DIFF(((ExprType *)p)->ext.func.retType, ExprType, diff);
-                            APPLY_DIFF(((ExprType *)p)->ext.func.paramsType, ExprType *, diff);
-                            break;
+                    switch(((ExprType *)p)->type) {
                         case T_CONS:
-                            APPLY_DIFF(((ExprType *)p)->ext.cons.typeArgs, ExprType *, diff);
-                            APPLY_DIFF(((ExprType *)p)->ext.cons.typeConsName, char, diff);
+                            for(j=0;j<T_CONS_ARITY((ExprType *)p);j++) {
+                                APPLY_DIFF(T_CONS_TYPE_ARG((ExprType *)p, j), ExprType, diff);
+                            }
+                            APPLY_DIFF(T_CONS_TYPE_NAME((ExprType *)p), char, diff);
                             break;
                         case T_VAR:
-                            APPLY_DIFF(((ExprType *)p)->ext.tvar.disjuncts, TypeConstructor, diff);
+                            APPLY_DIFF(((ExprType *)p)->ext.tvar.disjuncts, NodeType, diff);
                             break;
                         case T_IRODS:
-                            APPLY_DIFF(((ExprType *)p)->ext.irods.name, char, diff);
+                            APPLY_DIFF(((ExprType *)p)->text, char, diff);
                             break;
                         default:
                             break;

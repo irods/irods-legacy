@@ -8,8 +8,7 @@
 #include "region.h"
 #include "parser.h"
 
-typedef Res *(*SmsiFuncPtrType)(void **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
-#define MAX_FUNC_PARAMS 20
+typedef Res *(*SmsiFuncPtrType)(Node **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
 typedef struct function_desc {
     /*int arity; */
     char inOutValExp[10];

@@ -46,29 +46,29 @@ Res* evaluateExpression3(Node *expr, ruleExecInfo_t *rei, int reiSaveFlag, Env *
 	char *oper1;
         Res *res = newRes(r);
 	switch(expr->type) {
-		case INT:
-			res->type = newSimpType(T_INT,r);
+		case N_INT:
+			res->exprType = newSimpType(T_INT,r);
 			res->value.d=atof(expr->text);
                         break;
-		case DOUBLE:
-			res->type = newSimpType(T_DOUBLE,r);
+		case N_DOUBLE:
+			res->exprType = newSimpType(T_DOUBLE,r);
 			res->value.d=atof(expr->text);
                         break;
-		case STRING:
+		case N_STRING:
 			res = newStringRes(r, expr->text);
                         break;
-		case TEXT:
+		case N_TEXT:
 			if(expr->text[0]=='$' || expr->text[0]=='*') {
 				res = evaluateVar3(expr->text, expr, rei, reiSaveFlag,  env, errmsg,r);
                                 break;
 			} else if(strcmp(expr->text,"nop")==0) {
-				res->type = newSimpType(T_INT,r);
+				res->exprType = newSimpType(T_INT,r);
 				res->value.d = 0;
                                 break;
 			}
 
 			/* not a variable, evaluate as a function */
-		case APPLICATION:
+		case N_APPLICATION:
 			oper1 = expr->text;
                         /* try to evaluate as a function, */
 /*
@@ -82,7 +82,7 @@ Res* evaluateExpression3(Node *expr, ruleExecInfo_t *rei, int reiSaveFlag, Env *
                         printEnvToStdOut(env);
 */
                         break;
-		case ACTIONS:
+		case N_ACTIONS:
                         generateErrMsg("error: evaluate actions using function evaluateExpression3, use function evaluateActions instead.", expr->expr, expr->base, errbuf);
                         addRErrorMsg(errmsg, -1, errbuf);
                         res = newErrorRes(r, -1);
@@ -104,7 +104,7 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
         /* we can ignore non top level type constructors
          * therefore, we only need to call dereference rather than instantiate */
         ExprType *coercion = dereference(node->coercion, tvarEnv, r);
-        if(coercion->t == T_VAR) {
+        if(coercion->type == T_VAR) {
             if(T_VAR_NUM_DISJUNCTS(coercion) == 0) {
                 printf("error");
             }
@@ -114,10 +114,10 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
             updateInHashTable(tvarEnv, getTVarName(coercion->ext.tvar.vid, buf), defaultType);
             coercion = defaultType;
         }
-        if(typeEqSyntatic(coercion, res->type)) {
+        if(typeEqSyntatic(coercion, res->exprType)) {
             return res;
         } else {
-            switch(coercion->t) {
+            switch(coercion->type) {
                 case T_DYNAMIC:
                     return res;
                 case T_INT:
@@ -132,7 +132,7 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
                                 return newIntRes(r, (int)res->value.d);
                             }
                         case T_STRING:
-                            return newIntRes(r, atoi(res->value.s.pointer));
+                            return newIntRes(r, atoi(res->text));
                         default:
                             break;
                     }
@@ -143,7 +143,7 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
                         case T_BOOL:
                             return newDoubleRes(r, res->value.d);
                         case T_STRING:
-                            return newDoubleRes(r, atof(res->value.s.pointer));
+                            return newDoubleRes(r, atof(res->text));
                         default:
                             break;
                     }
@@ -168,9 +168,9 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
                         case T_DOUBLE:
                             return newBoolRes(r, res->value.d);
                         case T_STRING:
-                            if(strcmp(res->value.s.pointer, "true")==0) {
+                            if(strcmp(res->text, "true")==0) {
                                 return newBoolRes(r, 1);
-                            } else if(strcmp(res->value.s.pointer, "false")==0) {
+                            } else if(strcmp(res->text, "false")==0) {
                                 return newBoolRes(r, 0);
                             } else {
                                 generateErrMsg("error: dynamic type conversion  string -> bool: the string is not in {true, false}", node->expr, node->base, buf);
@@ -188,9 +188,9 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
                         case T_CONS:
                             return res;
                         case T_IRODS:
-                            if(strcmp(res->type->ext.irods.name, IntArray_MS_T) == 0 ||
-                               strcmp(res->type->ext.irods.name, StrArray_MS_T) == 0 ||
-                               strcmp(res->type->ext.irods.name, GenQueryOut_MS_T) == 0) {
+                            if(strcmp(res->exprType->text, IntArray_MS_T) == 0 ||
+                               strcmp(res->exprType->text, StrArray_MS_T) == 0 ||
+                               strcmp(res->exprType->text, GenQueryOut_MS_T) == 0) {
                                 return res;
                             }
                         default:
@@ -207,7 +207,7 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
                     break;
             }
             Res mock;
-            mock.type = coercion;
+            mock.exprType = coercion;
             snprintf(buf, ERR_MSG_LEN, "error: coerce from type %s to type %s", typeName_Res(res), typeName_Res(&mock));
             generateErrMsg(buf, node->expr, node->base, buf3);
             addRErrorMsg(errmsg, -1, buf3);
@@ -223,7 +223,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
 */
         int i;
 	switch(expr->type) {
-		case ACTIONS:
+		case N_ACTIONS:
                     for(i=0;i<expr->degree;i++) {
                             Node *nodei = expr->subtrees[i];
                             Res* res = evaluateExpression3(nodei, rei, reiSaveFlag, env, errmsg,r);
@@ -272,7 +272,7 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
     #endif
 
 	int i;
-	void* args[MAX_PARAMS_LEN];
+	Node* args[MAX_FUNC_PARAMS];
         Res* res;
         Region *newRegion = make_region(0, NULL);
         Env *nEnv = newEnv(newHashTable(100), env->global, env->funcDesc);
@@ -336,15 +336,15 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
                         res = (Res *)args[i];
                         RETURN;
                     }
-                    if(subtrees[i]->coercion!=NULL && subtrees[i]->coercion->t == TVAR) {
+                    if(subtrees[i]->coercion!=NULL && subtrees[i]->coercion->type == T_VAR) {
                         /* ExprType *bn; */
-                        TypingConstraint *tc = newTypingConstraint(((Res *)args[i])->type, subtrees[i]->coercion, LT, subtrees[i] ,r);
+                        TypingConstraint *tc = newTypingConstraint(args[i]->exprType, subtrees[i]->coercion, LT, subtrees[i] ,r);
                         char buf[ERR_MSG_LEN], buf2[1024], buf3[1024];
                         switch(simplifyLocally(tc, localTVarEnv, newRegion)) {
                             case ABSERDITY:
                                 sprintf(buf, "error: runtime type inference param type: %s, arg type: %s",
                                         typeToString(subtrees[i]->coercion, localTVarEnv, buf3, 1024),
-                                        typeToString(((Res *)args[i])->type, localTVarEnv, buf2, 1024));
+                                        typeToString(args[i]->exprType, localTVarEnv, buf2, 1024));
                                 generateErrMsg(buf, node->expr, node->base, buf2);
                                 addRErrorMsg(errmsg, -1, buf2);
                                 res = newErrorRes(r, -1);
@@ -514,7 +514,7 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
                     free(varValue);
                 } else {
                     ExprType *type = T_FUNC_RET_TYPE(getFuncDescFromChain(0, fd)->type); /* get var type from varMap */
-                    switch (type->t) {
+                    switch (type->type) {
                         case T_STRING:
                             res = newStringRes(r, (char *) varValue);
                             free(varValue);
@@ -531,7 +531,7 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
                             res = newRes(r);
                             res->value.uninterpreted.inOutStruct = varValue;
                             res->value.uninterpreted.inOutBuffer = NULL;
-                            res->type = type;
+                            res->exprType = type;
                             break;
                         default:
                             /* unsupported type error */
@@ -770,7 +770,7 @@ int execRuleFromCondIndex(char *ruleName, CondIndexVal *civ, Env *env, ruleExecI
                 return -1;
             }
 
-            int *index = (int *)lookupFromHashTable(civ->valIndex, res->value.s.pointer);
+            int *index = (int *)lookupFromHashTable(civ->valIndex, res->text);
             if(index == NULL) {
 #ifndef DEBUG
                 rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",ruleName, NO_MORE_RULES_ERR);

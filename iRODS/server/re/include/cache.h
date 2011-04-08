@@ -44,7 +44,7 @@ enum cacheRecordType {
         Hashtable_T,
         RuleSet_T,
         CondIndexVal_T,
-        TypeConstructor_T,
+        NodeType_T,
         char_T,
         int_T
     };

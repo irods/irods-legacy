@@ -5,7 +5,7 @@
 #include "parser.h"
 #include "rules.h"
 #define ERROR(x) if(x) { goto error; }
-int num_ops = 28;
+int num_ops = 29;
 Op new_ops[] = {
     {"-",1,10},
     {"++",2,6},
@@ -15,6 +15,7 @@ Op new_ops[] = {
     {"/",2,7},
     {"&&",2,3},
     {"%%",2,2},
+    {"||",2,2},
     {"%",2,7},
     {"<=",2,5},
     {">=",2,5},
@@ -36,37 +37,8 @@ Op new_ops[] = {
     {"abs",1,10},
     {"=",2,1}
 };
-int typeNameLen = 10;
-char* typeName[] = {"ERROR", "DOUBLE", "INT", "STRING", "DATETIME","BOOL","FUNC",NULL,NULL,"CONS"};
 
 /***** utility functions *****/
-/**
- * create a new node n, copy text[0..len-1] to the n.text
- */
-Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
-	Node *node = (Node *)region_alloc(r, sizeof(Node));
-	if(node == NULL)
-		return NULL;
-	node->type=type;
-        if(text!=NULL) {
-            node->text = (char *)region_alloc(r,(strlen(text) + 1) * sizeof(char));
-            strcpy(node->text, text);
-        } else {
-            node->text = NULL;
-        }
-	node->subtrees = NULL;
-	node->degree = 0;
-	node->expr = eloc == NULL? 0 : eloc->exprloc;
-        node->typed = 0;
-        node->exprType = NULL;
-        node->coercion = NULL;
-        if(eloc!=NULL) {
-            setBase(node, eloc->base, r);
-        } else {
-            setBase(node, "", r);
-        }
-	return node;
-}
 void setBase(Node *node, char *base, Region *r) {
 /*    if(strcmp(base, "test")!=0) { */
 /*        printf("error"); */
@@ -97,7 +69,7 @@ Node *dupNode(Node *node, Region* r) {
     return dup;
 }*/
 Node *createUnaryFunctionNode(char *fn, Node *a, Label * expr, Region *r) {
-	Node *node = newNode(APPLICATION, fn, expr, r);
+	Node *node = newNode(N_APPLICATION, fn, expr, r);
 	if(node == NULL) {
 		return NULL;
 	}
@@ -106,7 +78,7 @@ Node *createUnaryFunctionNode(char *fn, Node *a, Label * expr, Region *r) {
 	return node;
 }
 Node *createBinaryFunctionNode(char *fn, Node *a, Node *b, Label * expr, Region *r) {
-	Node *node = newNode(APPLICATION, fn, expr,r);
+	Node *node = newNode(N_APPLICATION, fn, expr,r);
 	if(node == NULL) {
 		return NULL;
 	}
@@ -116,7 +88,7 @@ Node *createBinaryFunctionNode(char *fn, Node *a, Node *b, Label * expr, Region 
 	return node;
 }
 Node *createFunctionNode(char *fn, Node **params, int paramsLen, Label * exprloc, Region *r) {
-	Node *node = newNode(APPLICATION, fn, exprloc, r);
+	Node *node = newNode(N_APPLICATION, fn, exprloc, r);
 	if(node == NULL) {
 		return NULL;
 	}
@@ -125,7 +97,7 @@ Node *createFunctionNode(char *fn, Node **params, int paramsLen, Label * exprloc
 	return node;
 }
 Node *createActionsNode(Node **params, int paramsLen, Label * exprloc, Region *r) {
-	Node *node = newNode(ACTIONS, "ACTIONS", exprloc, r);
+	Node *node = newNode(N_ACTIONS, "ACTIONS", exprloc, r);
 	if(node == NULL) {
 		return NULL;
 	}
@@ -134,35 +106,35 @@ Node *createActionsNode(Node **params, int paramsLen, Label * exprloc, Region *r
 	return node;
 }
 Node *createTextNode(char *t, Label * exprloc, Region *r) {
-	Node *node = newNode(TEXT, t, exprloc, r);
+	Node *node = newNode(N_TEXT, t, exprloc, r);
 	if(node == NULL) {
 		return NULL;
 	}
 	return node;
 }
 Node *createIntNode(char *t, Label * exprloc, Region *r) {
-	Node *node = newNode(INT, t, exprloc, r);
+	Node *node = newNode(N_INT, t, exprloc, r);
 	if(node == NULL) {
 		return NULL;
 	}
 	return node;
 }
 Node *createDoubleNode(char *t, Label * exprloc, Region *r) {
-	Node *node = newNode(DOUBLE, t, exprloc, r);
+	Node *node = newNode(N_DOUBLE, t, exprloc, r);
 	if(node == NULL) {
 		return NULL;
 	}
 	return node;
 }
 Node *createStringNode(char *t, Label * exprloc, Region *r) {
-	Node *node = newNode(STRING, t, exprloc, r);
+	Node *node = newNode(N_STRING, t, exprloc, r);
 	if(node == NULL) {
 		return NULL;
 	}
 	return node;
 }
 Node *createErrorNode(char *error, Label * exprloc, Region *r) {
-	Node *node = newNode(ERROR, error, exprloc, r);
+	Node *node = newNode(N_ERROR, error, exprloc, r);
 	if(node == NULL) {
 		return NULL;
 	}
@@ -170,12 +142,12 @@ Node *createErrorNode(char *error, Label * exprloc, Region *r) {
 }
 int isLocalVariableNode(Node *node) {
     return
-        node->type==TEXT &&
+        node->type==N_TEXT &&
         node->text[0] == '*';
 }
 int isSessionVariableNode(Node *node) {
     return
-        node->type==TEXT &&
+        node->type==N_TEXT &&
         node->text[0] == '$';
 }
 int isVariableNode(Node *node) {
@@ -213,8 +185,8 @@ char *findLineCont(char *expr) {
  */
 int skip(Pointer *e, char *text, Token *token, int rulegen /* = rulegen */) {
 	nextTokenRuleGen(e, token, rulegen);
-	if(token->type!=TEXT || strcmp(token->text,text)!=0) {
-		token->type = ERROR;
+	if(token->type!=N_TEXT || strcmp(token->text,text)!=0) {
+		token->type = N_ERROR;
 		return 0;
 	}
 	return 1;
@@ -229,15 +201,15 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
         token->exprloc = start.exprloc;
         char ch = lookAhead(e, 0);
         if (ch == -1) { /* reach the end of stream */
-            token->type = EOS;
+            token->type = N_EOS;
             strcpy(token->text, "EOS");
             break;
         } else {
             int i;
-            if (ch == '{' || ch == '}' || ch == '(' || ch == ')' || ch == ',' || ch == '|' || ch == ';') {
+            if (ch == '{' || ch == '}' || ch == '(' || ch == ')' || ch == ',' || (ch == '|' && (!rulegen || lookAhead(e, 1) != '|')) || ch == ';' || ch == '?') {
                 *(token->text) = ch;
                 (token->text)[1] = '\0';
-                token->type = TEXT;
+                token->type = N_TEXT;
                 nextChar(e);
                 break;
             } else if (ch == '#') {
@@ -245,13 +217,23 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
                     token->text[0] = ch;
                     token->text[1] = lookAhead(e, 1);
                     token->text[2] = '\0';
-                    token->type = TEXT;
+                    token->type = N_TEXT;
                     nextChar(e);
                     nextChar(e);
                     break;
                 } else {
                     skipComments(e);
                     continue;
+                }
+            } else if(ch == '-') {
+                if(lookAhead(e,1)=='>') {
+                    token->text[0] = '-';
+                    token->text[1] = '>';
+                    token->text[2] = '\0';
+                    token->type = N_TEXT;
+                    nextChar(e);
+                    nextChar(e);
+                    break;
                 }
             } else if (ch == ':') {
                 if (rulegen && lookAhead(e, 1) == ':'
@@ -260,13 +242,13 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
                     token->text[1] = lookAhead(e, 1);
                     token->text[2] = lookAhead(e, 2);
                     token->text[3] = '\0';
-                    token->type = TEXT;
+                    token->type = N_TEXT;
                     nextChar(e);
                     nextChar(e);
                 } else {
                     *(token->text) = ch;
                     (token->text)[1] = '\0';
-                    token->type = TEXT;
+                    token->type = N_TEXT;
                 }
                 nextChar(e);
                 break;
@@ -279,7 +261,7 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
                     }
                     getFPos(&pos, e);
                     dupString(e, &start, (int) (pos.exprloc - start.exprloc), token->text);
-                    token->type = TEXT;
+                    token->type = N_TEXT;
                     break;
                 } else {
                     seekInFile(e, start.exprloc);
@@ -294,7 +276,7 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
                         (!isalpha(new_ops[i].string[0])
                         || !isalnum(op[len]))) {
                     strcpy(token->text, new_ops[i].string);
-                    token->type = TEXT;
+                    token->type = N_TEXT;
                     nextChars(e, len);
                     found = 1;
                     break;
@@ -310,9 +292,9 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
                     getFPos(&pos, e);
                     dupString(e, &start, (int) (pos.exprloc - start.exprloc), token->text);
                 if (strchr(token->text, '.')) {
-                    token->type = DOUBLE;
+                    token->type = N_DOUBLE;
                 } else {
-                    token->type = INT;
+                    token->type = N_INT;
                 }
             } else if (ch == '_' || isalpha(ch)) {
                 ch = nextChar(e);
@@ -321,15 +303,18 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
                 }
                     getFPos(&pos, e);
                     dupString(e, &start, (int) (pos.exprloc - start.exprloc), token->text);
-                token->type = TEXT;
+                token->type = N_TEXT;
             } else if (ch == '\"') {
                 nextString(e, token->text, token->vars);
-                token->type = STRING;
+                token->type = N_STRING;
             } else if (ch == '\'') {
                 nextString2(e, token->text, token->vars);
-                token->type = STRING;
+                token->type = N_STRING;
+            } else if (ch == '`') {
+                nextStringBase(e, token->text, "`", 1, '\\', token->vars);
+                token->type = N_BACKQUOTED;
             } else {
-                token->type = ERROR;
+                token->type = N_ERROR;
             }
             break;
         }
@@ -352,7 +337,7 @@ void nextTokenRuleGen(Pointer* e, Token* token, int rulegen /* = rulegen */) {
 }
 
 void pushback(Pointer *e, Token *token) {
-    if(token->type == EOS) {
+    if(token->type == N_EOS) {
         return;
     }
 	seekInFile(e, token->exprloc);
@@ -371,7 +356,7 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
                     Label pos;
         getFPos(&start, e);
 	Token token;
-	Node *name=NULL, *cond=NULL, *acti[2], *reco[2], *rule = newNode(RULE,"RULE", &start,r);
+	Node *name=NULL, *cond=NULL, *acti[2], *reco[2], *rule = newNode(N_RULE,"RULE", &start,r);
     acti[0] = NULL;
     acti[1] = NULL;
     reco[0] = NULL;
@@ -382,9 +367,9 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
 	*nodeRef=rule;
 
 	parseRuleName(e, &name,r);
-	ERROR(name==NULL || name->type == ERROR);
-        nextTokenRuleGen(e, &token, 1);
-	ERROR(token.type != TEXT);
+	ERROR(name==NULL || name->type == N_ERROR);
+        nextTokenRuleGen(e, &token, 0);
+	ERROR(token.type != N_TEXT);
         int rulegen;
         if(strcmp(token.text, "{") == 0) {
             rulegen = 1;
@@ -398,8 +383,8 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
             *numberOfRules = 0;
             while(!done) {
                 nextTokenRuleGen(e, &token, rulegen);
-                ERROR(token.type==ERROR);
-                if(token.type == TEXT &&
+                ERROR(token.type==N_ERROR);
+                if(token.type == N_TEXT &&
                    (strcmp(token.text, "ON") == 0 ||
                     strcmp(token.text, "on") == 0 ||
                     strcmp(token.text, "ORON") == 0 ||
@@ -407,33 +392,33 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
                     nextTermRuleGen(e, &cond, MIN_PREC, rulegen,errmsg,r);
                     ERROR(skip(e, "{", &token, rulegen) == 0);
                     parseRuleActions(e, acti, rulegen, backwardCompatible, acti+1,errmsg,r);
-                    ERROR(acti[0]==NULL || acti[0]->type == ERROR);
+                    ERROR(acti[0]==NULL || acti[0]->type == N_ERROR);
                     ERROR(skip(e, "}", &token, rulegen) == 0);
-                } else if(token.type == TEXT && (strcmp(token.text, "OR") == 0 || strcmp(token.text, "or") == 0)) {
+                } else if(token.type == N_TEXT && (strcmp(token.text, "OR") == 0 || strcmp(token.text, "or") == 0)) {
                     cond = createTextNode("true", getFPos(&pos, e),r);
-                    setBase(cond, e->ruleBaseName, r);
+                    setBase(cond, e->base, r);
                     ERROR(skip(e, "{", &token, rulegen) == 0);
                     parseRuleActions(e, acti, rulegen, backwardCompatible, acti+1,errmsg,r);
-                    ERROR(acti[0]==NULL || acti[0]->type == ERROR);
+                    ERROR(acti[0]==NULL || acti[0]->type == N_ERROR);
                     ERROR(skip(e, "}", &token, rulegen) == 0);
-                } else if(token.type == TEXT && strcmp(token.text, "}") == 0) {
+                } else if(token.type == N_TEXT && strcmp(token.text, "}") == 0) {
                     pushback(e, &token);
                     done = 1;
                     if(*numberOfRules==0) {
                         cond = createTextNode("true", getFPos(&pos, e),r);
                         acti[0] = createActionsNode(NULL, 0, getFPos(&pos, e), r);
-                        setBase(acti[0], e->ruleBaseName, r);
+                        setBase(acti[0], e->base, r);
                         acti[1] = createActionsNode(NULL, 0, getFPos(&pos, e), r);
-                        setBase(acti[1], e->ruleBaseName, r);
+                        setBase(acti[1], e->base, r);
                     } else {
                         break;
                     }
                 } else {
                     pushback(e, &token);
                     cond = createTextNode("true", getFPos(&pos, e),r);
-                    setBase(cond, e->ruleBaseName, r);
+                    setBase(cond, e->base, r);
                     parseRuleActions(e, acti, rulegen, backwardCompatible, acti+1,errmsg,r);
-                    ERROR(acti[0]==NULL || acti[0]->type == ERROR);
+                    ERROR(acti[0]==NULL || acti[0]->type == N_ERROR);
                     done = 1;
                 }
                 Node** subtrees = setDegree(rule, 4,r);
@@ -444,11 +429,11 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
                 subtrees[3] = acti[1];
                 cond = acti[0] = acti[1] = NULL;
                 nodeRef[(*numberOfRules)++] = rule;
-                rule = newNode(RULE,"RULE", &start,r);
+                rule = newNode(N_RULE,"RULE", &start,r);
             }
 
             skip(e, "}", &token, rulegen);
-            ERROR(token.type==ERROR);
+            ERROR(token.type==N_ERROR);
             /*deleteTree(rule); */
         }
         else {
@@ -456,7 +441,7 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
             getFPos(&condstart, e);
             *numberOfRules = 1;
             nextTokenRuleGen(e, &token, rulegen);
-            if(token.type==TEXT && strcmp(token.text, "|") == 0)
+            if(token.type==N_TEXT && strcmp(token.text, "|") == 0)
             { /* empty condition */
                 cond = createTextNode("true", &condstart,r);
             }
@@ -465,17 +450,17 @@ void parseRuleRuleGen(Pointer *e, Node **nodeRef, int* numberOfRules, int backwa
                 pushback(e, &token);
                 nextTermRuleGen(e, &cond, MIN_PREC, rulegen, errmsg,r);
                 nextTokenRuleGen(e, &token, rulegen);
-                ERROR(token.type!=TEXT || (strcmp(token.text, "|") != 0 && strcmp(token.text, "{") != 0));
+                ERROR(token.type!=N_TEXT || (strcmp(token.text, "|") != 0 && strcmp(token.text, "{") != 0));
             }
 
             parseRuleActions(e, acti, rulegen, backwardCompatible, acti+1,errmsg, r);
-            ERROR(acti[0]==NULL || acti[0]->type == ERROR);
+            ERROR(acti[0]==NULL || acti[0]->type == N_ERROR);
             /*deleteTree(acti[1]); */
             acti[1] = NULL;
             skip(e, "|", &token, rulegen);
-            ERROR(token.type == ERROR);
+            ERROR(token.type == N_ERROR);
             parseRuleActions(e, reco, rulegen, backwardCompatible, reco+1,errmsg, r);
-            ERROR(reco[0]==NULL || reco[0]->type == ERROR);
+            ERROR(reco[0]==NULL || reco[0]->type == N_ERROR);
             /*deleteTree(reco[1]); */
             reco[1] = NULL;
             Node** subtrees = setDegree(rule, 4,r);
@@ -508,8 +493,8 @@ error:
 	if(reco[1]!=NULL) {
             rule = reco[1];
         }
-        if(rule->type!=ERROR) {
-            rule->type = ERROR;
+        if(rule->type!=N_ERROR) {
+            rule->type = N_ERROR;
         }
         *nodeRef=rule;
         *numberOfRules=1;
@@ -521,13 +506,13 @@ void parseRuleName(Pointer *e, Node **name, Region *r) {
 	Label start;
         getFPos(&start, e);
 	nextTokenRuleGen(e, &res, 1);
-	if(res.type!=TEXT) {
+	if(res.type!=N_TEXT) {
 		*name = createErrorNode("",&start,r);
 		return;
 	} else {
 		*name = createTextNode(res.text,&start,r);
 	}
-	nextTokenRuleGen(e, &res, 1);
+	nextTokenRuleGen(e, &res, 0);
 	int n = 0;
 	Node *params[MAX_COND_LEN];
 
@@ -538,12 +523,12 @@ void parseRuleName(Pointer *e, Node **name, Region *r) {
 			Label es;
                         getFPos(&es, e);
 			nextTokenRuleGen(e, &token, 1);
-			ERROR(token.type!= TEXT);
+			ERROR(token.type!= N_TEXT);
 			params[n] = createTextNode(token.text,&es,r);
 			n++;
-			ERROR(params[n-1] == NULL || params[n-1]->type != TEXT);
+			ERROR(params[n-1] == NULL || params[n-1]->type != N_TEXT);
 			nextTokenRuleGen(e, &token2, 1);
-			ERROR(token2.type!=TEXT);
+			ERROR(token2.type!=N_TEXT);
 			if(strcmp(token2.text,",")==0) {
 				continue;
 			} else if(strcmp(token2.text,")")==0) {
@@ -563,7 +548,7 @@ void parseRuleName(Pointer *e, Node **name, Region *r) {
 	return;
 error:
 	if(*name!=NULL) {
-		(*name)->type=ERROR;
+		(*name)->type=N_ERROR;
 	}
 }
 
@@ -581,7 +566,7 @@ void parseRuleActions(Pointer *e, Node **node, int rulegen, int backwardCompatib
             } else {
                 nextActionBackwardCompatible(e, &value, errmsg, r);
             }
-		if(value==NULL || value->type == ERROR) {
+		if(value==NULL || value->type == N_ERROR) {
 
                     *node = value;
                     goto error;
@@ -591,13 +576,13 @@ void parseRuleActions(Pointer *e, Node **node, int rulegen, int backwardCompatib
         recoveries[n-1] = createTextNode("nop", getFPos(&pos, e),r);
         value = NULL;
 		nextTokenRuleGen(e, &token2, rulegen);
-		if(token2.type==EOS) {
+		if(token2.type==N_EOS) {
 			break;
 		}
-        ERROR(token2.type!=TEXT);
+        ERROR(token2.type!=N_TEXT);
         if(strcmp(token2.text,":::")==0) {
             nextTermRuleGen(e, &value2, MIN_PREC, rulegen,errmsg,r);
-            ERROR(value2 == NULL || value2->type == ERROR);
+            ERROR(value2 == NULL || value2->type == N_ERROR);
             /*deleteTree(recoveries[n-1]); */
             recoveries[n-1] = value2;
             value2 = NULL;
@@ -608,7 +593,7 @@ void parseRuleActions(Pointer *e, Node **node, int rulegen, int backwardCompatib
         } else if(strcmp(token2.text,";")==0) {
             Token token3;
             nextTokenRuleGen(e, &token3, rulegen);
-            if(token3.type==TEXT &&
+            if(token3.type==N_TEXT &&
                     (strcmp(token3.text, ")") == 0
                     || strcmp(token3.text, "}") == 0
                     || strcmp(token3.text, "|") == 0
@@ -640,11 +625,11 @@ void parseRuleActions(Pointer *e, Node **node, int rulegen, int backwardCompatib
 	*node2 = createActionsNode(recoveries, n, getFPos(&pos, e),r);
 	return;
 error:
-        if(*node == NULL || (*node)->type!=ERROR) {
+        if(*node == NULL || (*node)->type!=N_ERROR) {
             *node = createErrorNode("see errmsg for error details",getFPos(&pos, e),r);
-            char errbuf[ERR_MSG_LEN];
+            /*char errbuf[ERR_MSG_LEN];
             snprintf(errbuf, ERR_MSG_LEN, "error at %ld", getFPos(&pos, e)->exprloc);
-            addRErrorMsg(errmsg, PARSER_ERROR, errbuf);
+            addRErrorMsg(errmsg, PARSER_ERROR, errbuf);*/
             *node2 = NULL;
         }
 	return;
@@ -658,91 +643,91 @@ void nextActionBackwardCompatible(Pointer *e, Node **node, rError_t *errmsg, Reg
         char *fn;
         
 	nextTokenRuleGen(e, &token, 0);
-	ERROR(token.type != TEXT);
+	ERROR(token.type != N_TEXT);
         Label estart;
         getFPos(&estart, e);
         fn = token.text;
         if(strcmp(fn, "ifExec") == 0) {
             nextTermRuleGen(e, &(params[0]), MIN_PREC, 0, errmsg, r);
-            ERROR(params[0]->type == ERROR);
+            ERROR(params[0]->type == N_ERROR);
             parseRuleActions(e, &(params[1]), 0 /*rulegen*/, 1, &reco,errmsg,r);
-            ERROR(params[1]->type == ERROR);
+            ERROR(params[1]->type == N_ERROR);
             parseRuleActions(e, &(params[2]), 0 /*rulegen*/, 1, &reco,errmsg,r);
-            ERROR(params[2]->type == ERROR);
+            ERROR(params[2]->type == N_ERROR);
             parseRuleActions(e, &(params[3]), 0 /*rulegen*/, 1, &reco,errmsg,r);
-            ERROR(params[3]->type == ERROR);
+            ERROR(params[3]->type == N_ERROR);
             parseRuleActions(e, &(params[4]), 0 /*rulegen*/, 1, &reco,errmsg,r);
-            ERROR(params[4]->type == ERROR);
+            ERROR(params[4]->type == N_ERROR);
             *node = createFunctionNode(fn, params, 5, &estart,r);
             return;
         } else if(strcmp(fn, "whileExec") == 0) {
             nextTermRuleGen(e, &(params[0]), MIN_PREC, 0, errmsg, r);
-            ERROR(params[0]->type == ERROR);
+            ERROR(params[0]->type == N_ERROR);
             parseRuleActions(e, &(params[1]), 0, 1, &reco,errmsg,r);
-            ERROR(params[1]->type == ERROR);
+            ERROR(params[1]->type == N_ERROR);
             parseRuleActions(e, &(params[2]), 0, 1, &reco,errmsg,r);
-            ERROR(params[2]->type == ERROR);
+            ERROR(params[2]->type == N_ERROR);
             *node = createFunctionNode(fn, params, 3, &estart,r);
             return;
         } else if(strcmp(fn, "forEachExec") == 0) {
             nextTermRuleGen(e, &(params[0]), MIN_PREC, 0, errmsg, r);
-            ERROR(params[0]->type == ERROR);
+            ERROR(params[0]->type == N_ERROR);
             Token collVar;
             nextTokenRuleGen(e, &collVar, 0);
-            ERROR(collVar.type == ERROR);
-            pos.base = e->ruleBaseName;
+            ERROR(collVar.type == N_ERROR);
+            pos.base = e->base;
             pos.exprloc = collVar.exprloc;
             params[1] = createTextNode(collVar.text, &pos, r);
             ERROR(params[1] == NULL);
             parseRuleActions(e, &(params[2]), 0, 1, &reco,errmsg,r);
-            ERROR(params[2]->type == ERROR);
+            ERROR(params[2]->type == N_ERROR);
             *node = createFunctionNode(fn, params, 3, &estart,r);
             return;
         } else if(strcmp(fn, "assign") == 0) {
             Token collVar;
             nextTokenRuleGen(e, &collVar, 0);
-            ERROR(collVar.type == ERROR);
-            pos.base = e->ruleBaseName;
+            ERROR(collVar.type == N_ERROR);
+            pos.base = e->base;
             pos.exprloc = collVar.exprloc;
             params[0] = createTextNode(collVar.text, &pos, r);
             ERROR(params[0] == NULL);
             nextTermRuleGen(e, &(params[1]), MIN_PREC, 0, errmsg, r);
-            ERROR(params[1]->type == ERROR);
+            ERROR(params[1]->type == N_ERROR);
             *node = createFunctionNode(fn, params, 3, &estart,r);
             return;
         } else if(strcmp(fn, "forExec")==0) {
             nextTermRuleGen(e, &(params[0]), MIN_PREC, 0, errmsg, r);
-            ERROR(params[0]->type == ERROR);
+            ERROR(params[0]->type == N_ERROR);
             parseRuleActions(e, &(params[1]), 0 /*rulegen*/, 1, &reco,errmsg,r);
-            ERROR(params[1]->type == ERROR);
+            ERROR(params[1]->type == N_ERROR);
             parseRuleActions(e, &(params[2]), 0 /*rulegen*/, 1, &reco,errmsg,r);
-            ERROR(params[2]->type == ERROR);
+            ERROR(params[2]->type == N_ERROR);
             parseRuleActions(e, &(params[3]), 0 /*rulegen*/, 1, &reco,errmsg,r);
-            ERROR(params[3]->type == ERROR);
+            ERROR(params[3]->type == N_ERROR);
             parseRuleActions(e, &(params[4]), 0 /*rulegen*/, 1, &reco,errmsg,r);
-            ERROR(params[4]->type == ERROR);
+            ERROR(params[4]->type == N_ERROR);
             *node = createFunctionNode(fn, params, 5, &estart,r);
             return;
         } else {
             Token token2;
             nextTokenRuleGen(e, &token2, 0);
-            ERROR(token2.type == ERROR);
-            if(!(token2.type == TEXT && strcmp(token2.text,"(") == 0)) {
+            ERROR(token2.type == N_ERROR);
+            if(!(token2.type == N_TEXT && strcmp(token2.text,"(") == 0)) {
                 pushback(e, &token2);
                 *node = createTextNode(token.text, &estart,r);
                 return;
             }
             nextTokenRuleGen(e, &token2, 0);
-            if(token2.type != TEXT || strcmp(token2.text, ")")!=0) {
+            if(token2.type != N_TEXT || strcmp(token2.text, ")")!=0) {
                 pushback(e, &token2);
                 while(1) {
                     parseActionArgumentBackwardCompatible(e, &value, errmsg, r);
                     *node = value;
 
-                    ERROR(value==NULL || value->type == ERROR);
+                    ERROR(value==NULL || value->type == N_ERROR);
                     params[n++]=value;
                     nextTokenRuleGen(e, &token2, 0);
-                    ERROR(token2.type!=TEXT);
+                    ERROR(token2.type!=N_TEXT);
                     if(strcmp(token2.text,",")==0) {
                         continue;
                     } else if(strcmp(token2.text,")")==0) {
@@ -754,15 +739,15 @@ void nextActionBackwardCompatible(Pointer *e, Node **node, rError_t *errmsg, Reg
             }
 
             *node = createFunctionNode(fn, params, n, &estart,r);
-            ERROR((*node)->type== ERROR);
+            ERROR((*node)->type== N_ERROR);
             return;
         }
         error:
-        if(*node == NULL || (*node)->type!=ERROR) {
+        if(*node == NULL || (*node)->type!=N_ERROR) {
             *node = createErrorNode("see errmsg for error details", getFPos(&pos, e),r);
-            char errbuf[ERR_MSG_LEN];
+            /*char errbuf[ERR_MSG_LEN];
             snprintf(errbuf, ERR_MSG_LEN, "error at %ld", getFPos(&pos, e)->exprloc);
-            addRErrorMsg(errmsg, PARSER_ERROR, errbuf);
+            addRErrorMsg(errmsg, PARSER_ERROR, errbuf);*/
         }
 	return;
 }
@@ -771,11 +756,11 @@ void parseActionArgumentBackwardCompatible(Pointer *e, Node **node, rError_t *er
     Token token;
     nextActionArgumentStringBackwardCompatible(e, &token);
     Label pos;
-    if(token.type != STRING) {
+    if(token.type != N_STRING) {
         *node = createErrorNode("reached the end of stream while parsing an action argument", getFPos(&pos, e),r);
         return;
     }
-    convertStringToExpression(&token, e->ruleBaseName, node, r);
+    convertStringToExpression(&token, e->base, node, r);
     
 
 }
@@ -787,14 +772,14 @@ void nextTermRuleGen(Pointer *e, Node **node, int prec, int rulegen /* = 0 */, r
 	Node *value2 = NULL;
         *node = NULL;
 	nextValueRuleGen(e, &value, rulegen, errmsg,r);
-	ERROR (value==NULL || value->type==ERROR);
+	ERROR (value==NULL || value->type==N_ERROR);
 	while (1) {
 		nextTokenRuleGen(e, &token, rulegen);
-		if (token.type==ERROR || token.type == EOS) {
+		if (token.type==N_ERROR || token.type == N_EOS) {
                     *node = value;
                     ERROR(value == NULL);
                     return;
-                } else if((token.type==TEXT &&
+                } else if((token.type==N_TEXT &&
                         (strcmp(token.text, ")")==0 ||
 			strcmp(token.text, "}")==0 ||
 			strcmp(token.text, ",")==0 ||
@@ -817,22 +802,22 @@ void nextTermRuleGen(Pointer *e, Node **node, int prec, int rulegen /* = 0 */, r
 		}
 		nextTermRuleGen(e, &value2, getPrecedence(&token), rulegen,errmsg,r);
                 *node = value2;
-		ERROR(value2==NULL || value2->type==ERROR);
+		ERROR(value2==NULL || value2->type==N_ERROR);
                 if(strcmp(token.text, "=") == 0) {
                     strcpy(token.text, "assign");
                 }
                 Label pos;
-                pos.base = e->ruleBaseName;
+                pos.base = e->base;
                 pos.exprloc = value->expr;
 		term = createBinaryFunctionNode(token.text,value, value2,&pos,r);
                 *node = term;
-		ERROR(term == NULL || term->type == ERROR);
+		ERROR(term == NULL || term->type == N_ERROR);
 		value = term;
 	}
 	*node = value;
 	return;
 error:
-        if(*node==NULL || (*node)->type != ERROR) {
+        if(*node==NULL || (*node)->type != N_ERROR) {
             Label pos;
             *node = createErrorNode("see errmsg for error details",getFPos(&pos, e),r);
         }
@@ -871,35 +856,35 @@ void convertStringToExpression(Token *token, char *base, Node **node, Region *r)
             strcpy(sbuf+end[0]-st[0], delim);
             pos.exprloc = start + st[0];
             *node = createStringNode(sbuf, &pos,r);
-            ERROR(*node == NULL || (*node)->type == ERROR);
+            ERROR(*node == NULL || (*node)->type == N_ERROR);
             for(k=1;k<noi;k++) {
                 strncpy(sbuf, str+end[k-1], st[k]-end[k-1]); /* var */
                 strcpy(sbuf+st[k]-end[k-1], delim);
                 Node *node0 = *node;
                 pos.exprloc = start + end[k-1];
                 *node = createTextNode(sbuf, &pos,r);
-                ERROR(*node == NULL || (*node)->type == ERROR);
+                ERROR(*node == NULL || (*node)->type == N_ERROR);
                 pos.exprloc = (*node)->expr;
                 *node = createUnaryFunctionNode("str", *node, &pos,r);
-                ERROR(*node == NULL || (*node)->type == ERROR);
+                ERROR(*node == NULL || (*node)->type == N_ERROR);
 
                 *node = createBinaryFunctionNode("++",  node0, *node, &pos, r);
-                ERROR(*node == NULL || (*node)->type == ERROR);
+                ERROR(*node == NULL || (*node)->type == N_ERROR);
                 strncpy(sbuf, str+st[k], end[k]-st[k]);
                 strcpy(sbuf+end[k]-st[k], delim);
                 node0 = *node;
                 pos.exprloc = start + st[k];
                 *node = createStringNode(sbuf, &pos,r);
-                ERROR(*node == NULL || (*node)->type == ERROR);
+                ERROR(*node == NULL || (*node)->type == N_ERROR);
                 pos.exprloc = (*node)->expr;
                 *node = createBinaryFunctionNode("++", node0, *node,
                         &pos,r);
-                ERROR(*node == NULL || (*node)->type == ERROR);
+                ERROR(*node == NULL || (*node)->type == N_ERROR);
 
             }
             return;
         error:
-        if(*node == NULL || (*node)->type!=ERROR) {
+        if(*node == NULL || (*node)->type!=N_ERROR) {
                 pos.exprloc = start;
             *node = createErrorNode("see errmsg for error details", &pos,r);
         }
@@ -915,8 +900,8 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
 	int n=0;
 
 	nextTokenRuleGen(e, &token, rulegen);
-	ERROR(token.type == ERROR || (token.type == TEXT && strcmp(token.text, "|")==0));
-	if(token.type == TEXT && ((token.text[0]=='*' && strlen(token.text)>1) ||
+	ERROR(token.type == N_ERROR || token.type == N_EOS || (token.type == N_TEXT && strcmp(token.text, "|")==0));
+	if(token.type == N_TEXT && ((token.text[0]=='*' && strlen(token.text)>1) ||
 	   (token.text[0]=='$' && strlen(token.text)>1) ||
 	   strcmp(token.text, "nop") == 0)) { /* variables or nop */
 		*node = createTextNode(token.text, &start,r);
@@ -926,7 +911,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
             char *etok;
             etok = ")";
             nextTermRuleGen(e, node, 0, rulegen,errmsg, r);
-            ERROR(*node ==NULL || (*node)->type==ERROR);
+            ERROR(*node ==NULL || (*node)->type==N_ERROR);
             ERROR(skip(e, etok, &token, rulegen)==0);
             return;
 
@@ -935,27 +920,27 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
             etok = "}";
             Node *reco;
             parseRuleActions(e, node, rulegen, 0, &reco,errmsg, r);
-            ERROR(*node ==NULL || (*node)->type==ERROR);
+            ERROR(*node ==NULL || (*node)->type==N_ERROR);
             /*deleteTree(reco); */
             ERROR(skip(e, etok, &token, rulegen)==0);
             return;
 	} else if (isUnaryOp(&token)) {
 		nextValueRuleGen(e, &value, rulegen,errmsg, r);
                 *node = value; /* copy value to node so because error handling works on node only */
-		ERROR (value == NULL || value->type==ERROR);
+		ERROR (value == NULL || value->type==N_ERROR);
 		*node = createUnaryFunctionNode(token.text, value, &start,r);
-		ERROR(*node == NULL || (*node)->type == ERROR);
+		ERROR(*node == NULL || (*node)->type == N_ERROR);
 		return;
-	} else if (token.type == INT) {
+	} else if (token.type == N_INT) {
 		*node = createIntNode(token.text, &start,r);
-                ERROR(*node == NULL || (*node)->type == ERROR);
+                ERROR(*node == NULL || (*node)->type == N_ERROR);
 		return;
-	} else if (token.type == DOUBLE) {
+	} else if (token.type == N_DOUBLE) {
 		*node = createDoubleNode(token.text, &start,r);
-                ERROR(*node == NULL || (*node)->type == ERROR);
+                ERROR(*node == NULL || (*node)->type == N_ERROR);
 		return;
-	} else if(token.type == STRING) {
-            convertStringToExpression(&token, e->ruleBaseName, node, r);
+	} else if(token.type == N_STRING) {
+            convertStringToExpression(&token, e->base, node, r);
             return;
 	} else { /* function */
             ERROR(! isalpha(token.text[0]));
@@ -976,7 +961,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     }
                     parseRuleActions(e, &value, rulegen, 0, &reco,errmsg,r);
                     *node = value;
-                    ERROR(value->type == ERROR);
+                    ERROR(value->type == N_ERROR);
                     if(value->degree==1) { /* single action sequences are converted back to expressions */
                         value = value->subtrees[0];
                     }
@@ -986,21 +971,21 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     Label expr;
                     getFPos(&expr, e);
                     nextTokenRuleGen(e, &tk, rulegen);
-                    if(tk.type!=TEXT || strcmp(tk.text, "else")!=0) {
+                    if(tk.type!=N_TEXT || strcmp(tk.text, "else")!=0) {
                         pushback(e, &tk);
                         Node *nop = createTextNode("nop", &expr,r);
                         params[2] = params[4] = createActionsNode(&(nop), 1, &expr,r);
                         *node = params[2];
-                        ERROR(params[2]->type == ERROR);
+                        ERROR(params[2]->type == N_ERROR);
                     } else {
                         nextTokenRuleGen(e, &tk, rulegen);
                         int brace;
-                        ERROR(tk.type != TEXT || (
+                        ERROR(tk.type != N_TEXT || (
                                 (brace = strcmp(tk.text, "{")!=0) && strcmp(tk.text, "if")!=0));
                         if(brace == 0) {
                             parseRuleActions(e, &value, rulegen, 0, &reco,errmsg,r);
                             *node = value;
-                            ERROR(value->type == ERROR);
+                            ERROR(value->type == N_ERROR);
                             if(value->degree==1) { /* single action sequences are converted back to expressions */
                                 value = value->subtrees[0];
                             }
@@ -1010,7 +995,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                         } else { /* if */
                             pushback(e, &tk);
                             nextValueRuleGen(e, &(params[2]), rulegen, errmsg, r);
-                            ERROR(params[2]==NULL || params[2]->type == ERROR);
+                            ERROR(params[2]==NULL || params[2]->type == N_ERROR);
                             Label pos;
                             params[4] = createActionsNode(NULL, 0, getFPos(&pos, e),r);
                         }
@@ -1028,7 +1013,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     ERROR(skip(e, "{", &tk, rulegen)==0);
                     parseRuleActions(e, &value, rulegen, 0, &reco,errmsg,r);
                     *node = value;
-                    ERROR(value==NULL || value->type == ERROR);
+                    ERROR(value==NULL || value->type == N_ERROR);
                     params[n++] = value;
                     params[n++] = reco;
                     /*deleteTree(reco); */
@@ -1046,7 +1031,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     ERROR(skip(e, "{", &tk, rulegen)==0);
                     parseRuleActions(e, &value, rulegen, 0, &reco,errmsg, r);
                     *node = value;
-                    ERROR(value->type == ERROR);
+                    ERROR(value->type == N_ERROR);
                     params[n++] = value;
                     params[n++] = reco;
                     /*deleteTree(reco); */
@@ -1067,7 +1052,7 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     ERROR(skip(e, "{", &tk, rulegen)==0);
                     parseRuleActions(e, &value, rulegen, 0, &reco,errmsg,r);
                     *node = value;
-                    ERROR(value->type == ERROR);
+                    ERROR(value->type == N_ERROR);
                     params[n++] = value;
                     params[n++] = reco;
                     ERROR(skip(e, "}", &tk, rulegen)==0);
@@ -1078,29 +1063,29 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                 } else {
                     Token token2;
                     nextTokenRuleGen(e, &token2, rulegen);
-                    ERROR(token2.type == ERROR);
-                    if(token2.type == TEXT && strcmp(token2.text,"(") == 0) {
+                    ERROR(token2.type == N_ERROR);
+                    if(token2.type == N_TEXT && strcmp(token2.text,"(") == 0) {
                     } else {
 			pushback(e, &token2);
 			*node = createTextNode(token.text, &estart,r);
 			return;
                     }
                     nextTokenRuleGen(e, &token2, rulegen);
-                    if(token2.type != TEXT || strcmp(token2.text, ")")!=0) {
+                    if(token2.type != N_TEXT || strcmp(token2.text, ")")!=0) {
                         pushback(e, &token2);
                             while(1) {
                                 Node *reco;
                                 parseRuleActions(e, &value, rulegen, 0, &reco, errmsg, r);
                                 *node = value;
 
-                                ERROR(value==NULL || value->type == ERROR);
+                                ERROR(value==NULL || value->type == N_ERROR);
                                 if(value->degree==1) { /* single action sequences are converted back to expressions */
                                     value = value->subtrees[0];
                                 }
     /*                            deleteTree(reco); */
                                 params[n++]=value;
                                 nextTokenRuleGen(e, &token2, rulegen);
-                                ERROR(token2.type!=TEXT);
+                                ERROR(token2.type!=N_TEXT);
                                 if(strcmp(token2.text,",")==0) {
                                     continue;
                                 } else if(strcmp(token2.text,")")==0) {
@@ -1112,19 +1097,19 @@ void nextValueRuleGen(Pointer* e, Node** node, int rulegen /* = rulegen */, rErr
                     }
 
                     *node = createFunctionNode(fn, params, n, &estart,r);
-                    ERROR((*node)->type== ERROR);
+                    ERROR((*node)->type== N_ERROR);
                     return;
                 }
 
 	}
         error:
-        if(*node == NULL || (*node)->type!=ERROR) {
+        if(*node == NULL || (*node)->type!=N_ERROR) {
             Label pos;
             getFPos(&pos, e);
             *node = createErrorNode("see errmsg for error details", &pos,r);
-            char errbuf[ERR_MSG_LEN];
+            /*char errbuf[ERR_MSG_LEN];
             snprintf(errbuf, ERR_MSG_LEN, "error at %ld", pos.exprloc);
-            addRErrorMsg(errmsg, PARSER_ERROR, errbuf);
+            addRErrorMsg(errmsg, PARSER_ERROR, errbuf);*/
         }
 	return;
 }
@@ -1284,7 +1269,7 @@ StringList *getVarNamesInExprNode(Node *expr, Region *r) {
 StringList *getVarNamesInExprNodeAux(Node *expr, StringList *vars, Region *r) {
     int i;
     switch(expr->type) {
-        case TEXT:
+        case N_TEXT:
             if(expr->text[0] == '*') {
                 StringList *nvars = (StringList*)region_alloc(r, sizeof(StringList));
                 nvars->next = vars;
@@ -1339,12 +1324,14 @@ Pointer *newPointer(FILE *fp, char *ruleBaseName) {
 Pointer *newPointer2(char* buf) {
         Pointer *e = (Pointer *)malloc(sizeof(Pointer));
         initPointer2(e, buf);
+        
         return e;
 }
 void deletePointer(Pointer* buf) {
     if(buf->isFile) {
         fclose(buf->fp);
     }
+    free(buf->base);
     free(buf);
 
 }
@@ -1356,14 +1343,18 @@ void initPointer(Pointer *p, FILE* fp, char* ruleBaseName /* = NULL */) {
     p->len = 0;
     p->p = 0;
     p->isFile = 1;
-    snprintf(p->ruleBaseName, MAX_NAME_LEN, "%s", ruleBaseName);
+    p->base = (char *)malloc(strlen(ruleBaseName)+2);
+    p->base[0] = 'f';
+    strcpy(p->base + 1, ruleBaseName);
 }
 
 void initPointer2(Pointer *p, char *buf) {
     p->strbuf = buf;
     p->strp = 0;
     p->isFile = 0;
-    p->ruleBaseName[0] = '\0';
+    p->base = (char *)malloc(strlen(buf)+2);
+    p->base[0] = 's';
+    strcpy(p->base + 1, buf);
 }
 
 void readToBuffer(Pointer *p) {
@@ -1373,7 +1364,7 @@ void readToBuffer(Pointer *p) {
 	int startpos = p->len - move;
 	int load = POINTER_BUF_SIZE - startpos;
 	/* move remaining to the top of the buffer */
-	memcpy(p->buf,p->buf+move,startpos*sizeof(char));
+	memmove(p->buf,p->buf+move,startpos*sizeof(char));
 	/* load from file */
 	int count = fread(p->buf+startpos, sizeof(char), load, p->fp);
 	p->len = startpos + count;
@@ -1480,7 +1471,7 @@ void getCoor(Pointer *p, Label * errloc, int coor[2]) {
 
 Label *getFPos(Label *l, Pointer *p) {
 	l->exprloc = p->isFile? p->fpos/sizeof(char) + p->p : p->strp;
-        l->base = p->ruleBaseName;
+        l->base = p->base;
         return l;
 }
 /* assume that n is less then POINTER_BUF_SIZE/2 */
@@ -1670,7 +1661,7 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
     skipWhitespace(e);
     char ch = lookAhead(e, 0);
     if (ch==-1) { /* reach the end of stream */
-        token->type = EOS;
+        token->type = N_EOS;
         strcpy(token->text,"EOS");
     } else {
         ch = lookAhead(e, 0);
@@ -1690,35 +1681,163 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
             }
             token->text[l0++]='\0';
         }
-        token->type = STRING;
+        token->type = N_STRING;
     }
 }
 
+ExprType *parseType(Pointer *e, Hashtable *vtable, Region *r) {
+    ExprType *restype = NULL;
+    ExprType **typeArgs;
+    int arity;
+    Token tk, tk2;
+    nextTokenRuleGen(e, &tk, 1);
+    char ch = tk.text[0];
+    int i;
+    if(tk.type == N_BACKQUOTED) { /* irods type */
+        nextTokenRuleGen(e, &tk2, 1);
+        restype = newIRODSType(tk2.text, r);
+    } else if (tk.type == N_INT || (tk.type == N_TEXT && isupper(ch))) { /* type variable */
+                    char *vname = tk.text;
+
+                    ExprType *tvar;
+                    if ((tvar = (ExprType *) lookupFromHashTable(vtable, vname)) == NULL) {
+                        nextTokenRuleGen(e, &tk2, 1);
+                        ch = tk2.text[0];
+                        if (ch == '{') {
+                            /* union */
+                            int n = 0;
+                            NodeType tc[100];
+                            nextTokenRuleGen(e, &tk2, 1);
+                            ch = tk2.text[0];
+                            while (ch != '}') {
+                                pushback(e, &tk2);
+                                tc[n++] = parseType(e, vtable, r)->type;
+                                nextTokenRuleGen(e, &tk2, 1);
+                                ch = tk2.text[0];
+                            }
+                            insertIntoHashTable(vtable, vname, tvar = newTVar2(n, tc, r));
+                        } else {
+                            pushback(e, &tk2);
+                            insertIntoHashTable(vtable, vname, tvar = newTVar(r));
+                        }
+                    }
+                    restype = tvar;
+                }
+    else {
+        switch (ch) {
+            case '?':
+                restype = newSimpType(T_DYNAMIC, r);
+                break;
+            case 'i':
+                restype = newSimpType(T_INT, r);
+                break;
+            case 'd':
+                restype = newSimpType(T_DOUBLE, r);
+                break;
+            case 'b':
+                restype = newSimpType(T_BOOL, r);
+                break;
+            case 't':
+                restype = newSimpType(T_DATETIME, r);
+                break;
+            case 's':
+                restype = newSimpType(T_STRING, r);
+                break;
+            case 'c':
+                restype = newCollType(parseType(e, vtable, r), r);
+                break;
+            case '(': /* product type */
+                nextTokenRuleGen(e, &tk2, 1);
+                arity = atoi(tk2.text);
+                typeArgs = (ExprType **) region_alloc(r, sizeof (ExprType *) * arity);
+                for (i = 0; i < arity; i++) {
+                    typeArgs[i] = parseType(e, vtable, r);
+                }
+                nextTokenRuleGen(e, &tk2, 1); // skip )
+                restype = newConsType(arity, cpString(TUPLE, r), typeArgs, r);
+                break;
+            case 'f': /* flexible type, non dynamic coercion allowed */
+                restype = parseType(e, vtable, r);
+                restype->coercionAllowed = 1; /* = 0; */
+                break;
+            default:
+                    /*error */
+                    pushback(e, &tk);
+                    return NULL;
+
+                break;
+        }
+    }
+    return restype;
+
+}
+/*
+ * parse the string for an ExprType
+ * supported arg and ret types:
+ * ? dynamic
+ * i int
+ * b boolean
+ * d double
+ * t datetime
+ * s string
+ * c collection
+ * p <arity> <type> ... <type> product
+ * f <type> flexible
+ * <var> tvar
+ * <var> { type ... type } union
+ * `irods PI` irods
+ *
+ * type...type(*|+)?>type
+ */
+ExprType *parseFuncTypeFromString(char *string, Region *r) {
+    enum vararg vararg;
+    int arity = 0;
+
+    ExprType **paramTypes = (ExprType **) region_alloc(r, sizeof(ExprType *)*MAX_FUNC_PARAMS); /* assume that there are MAX_FUNC_PARAMS params maximum */
+    int i;
+    Hashtable *vt = newHashTable(MAX_FUNC_PARAMS);
+    i=0;
+    Pointer *p = newPointer2(string);
+    do {
+        paramTypes[i]=parseType(p,vt, r);
+        i++;
+    } while(paramTypes[i-1] != NULL);
+
+    arity = i - 1;
+    Token tk;
+    nextTokenRuleGen(p, &tk, 1);
+    
+    if(strchr(tk.text,'*')) {
+        vararg = STAR;
+        nextTokenRuleGen(p, &tk, 1);
+    } else if(strchr(tk.text, '+')) {
+        vararg = PLUS;
+        nextTokenRuleGen(p, &tk, 1);
+    } else {
+        vararg = ONCE;
+    }
+    ExprType *retType = parseType(p,vt, r);
+    ExprType *exprType = newFuncTypeVarArg(arity, vararg, paramTypes, retType, r);
+    deleteHashTable(vt, nop);
+    deletePointer(p);
+    return exprType;
+}
+
+
 char* typeName_Res(Res *s) {
-    return typeName_ExprType(s->type);
+    return typeName_ExprType(s->exprType);
 }
 
 char* typeName_ExprType(ExprType *s) {
-    if(s->t<0 || typeNameLen <= s->t)
-    {
-        switch(s->t) {
+        switch(s->type) {
             case T_IRODS:
-                return s->ext.irods.name;
-            case T_VAR:
-                return "TVAR";
-            case T_DYNAMIC:
-                return "DYNAMIC";
+                return s->text;
             default:
-                return "OTHER";
+                return typeName_NodeType(s->type);
         }
-    }
-    else
-	return typeName[s->t];
 }
 
-char* typeName_TypeConstructor(TypeConstructor s) {
-    if(s<0 || typeNameLen <= s)
-    {
+char* typeName_NodeType(NodeType s) {
         switch(s) {
             case T_IRODS:
                 return "IRODS";
@@ -1726,35 +1845,74 @@ char* typeName_TypeConstructor(TypeConstructor s) {
                 return "VAR";
             case T_DYNAMIC:
                 return "DYNAMIC";
+            case T_CONS:
+                return "CONS";
+            case T_BOOL:
+                return "BOOL";
+            case T_INT:
+                return "INT";
+            case T_DOUBLE:
+                return "DOUBLE";
+            case T_STRING:
+                return "STRING";
+            case T_ERROR:
+                return "ERROR";
+            case T_DATETIME:
+                return "DATETIME";
+            case K_TYPE:
+                return "TYPE";
             default:
                 return "OTHER";
         }
-    }
-    else
-	return typeName[s];
 }
 
-/**
- * delete the node, retaining its subtrees
- */
-void deleteNode(Node *node) {
-	if(node->subtrees!=NULL) {
-/*
-            int i;
-            for(i=0;i<node->degree;i++)
-		deleteNode(node->subtrees[i]);
-*/
-            free(node->subtrees);
-	}
-	free(node);
+void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN]) {
+    FILE *fp = fopen(ruleBasePath, "r");
+    Pointer *e = newPointer(fp, ruleBaseName);
+    Label l;
+    l.base = NULL;
+    l.exprloc = errloc;
+    generateErrMsgFromPointer(msg, &l, e, errbuf);
+    deletePointer(e);
 }
-/**
- * delete the subtree at the node
- */
-void deleteTree(Node *node) {
-	int i;
-	for(i=0;i<node->degree;i++) {
-		deleteTree(node->subtrees[i]);
-	}
-	deleteNode(node);
+
+void generateErrMsgFromSource(char *msg, long errloc, char *src, char errbuf[ERR_MSG_LEN]) {
+    Pointer *e = newPointer2(src);
+    Label l;
+    l.base = NULL;
+    l.exprloc = errloc;
+    generateErrMsgFromPointer(msg, &l, e, errbuf);
+    deletePointer(e);
+}
+void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_MSG_LEN]) {
+    char buf[1024];
+    dupLine(e, l, 1024, buf);
+    strncat(buf, "\n", 1024);
+    int coor[2];
+    getCoor(e, l, coor);
+    int i;
+    for(i=0;i<coor[1];i++) {
+        strncat(buf, " ", 1024);
+    }
+    strncat(buf, "^", 1024);
+    /*printf("readRuleSetFromFile: error parsing rule: line %d, row %d\n%s\n", coor[0], coor[1], buf); */
+    snprintf(errbuf, ERR_MSG_LEN,
+            "%s\nline %d, row %d\n%s\n", msg, coor[0], coor[1], buf);
+    /*fclose(fp); */
+
+}
+char *generateErrMsg(char *msg, long errloc, char *ruleBaseName, char errmsg[ERR_MSG_LEN]) {
+    char ruleBasePath[MAX_NAME_LEN];
+    switch(ruleBaseName[0]) {
+        case 's': // source
+            generateErrMsgFromSource(msg, errloc, ruleBaseName + 1, errmsg);
+            return errmsg;
+        case 'f': // file
+            getRuleBasePath(ruleBaseName + 1, ruleBasePath);
+            generateErrMsgFromFile(msg, errloc, ruleBaseName + 1, ruleBasePath, errmsg);
+            return errmsg;
+        default:
+            snprintf(errmsg, ERR_MSG_LEN, "<unknown source type>");
+            return errmsg;
+    }
 }

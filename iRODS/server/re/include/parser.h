@@ -18,6 +18,8 @@
 #include "reHelpers1.h"
 #endif
 
+#define MAX_FUNC_PARAMS 20
+
 #define MAX_PREC 10
 #define MIN_PREC 0
 
@@ -40,7 +42,7 @@ typedef struct pointer {
         int strp; /* pointer to next char in strbuf */
         char *strbuf; /* string buffer */
         int isFile;
-        char ruleBaseName[MAX_NAME_LEN]; /* core, app, or empty string */
+        char *base; /* core, app, or empty string */
 } Pointer;
 
 
@@ -48,7 +50,6 @@ typedef struct pointer {
 /**
  * create a new node n, copy text[0..len-1] to the n.text
  */
-Node *newNode(NodeType type, char* text, Label * exprloc, Region *r);
 void setBase(Node *node, char *base, Region *r);
 Node **setDegree(Node *node, int d, Region *r);
 Node *createUnaryFunctionNode(char *fn, Node *a, Label * exprloc, Region *r);
@@ -127,17 +128,14 @@ void parseActionArgumentBackwardCompatible(Pointer *e, Node **node, rError_t *er
 
 char* typeName_Res(Res *s);
 char* typeName_ExprType(ExprType *s);
-char* typeName_TypeConstructor(TypeConstructor s);
+char* typeName_NodeType(NodeType s);
 void printTree(Node *n, int indent);
 void printIndent(int indent);
 
-/**
- * delete the node, retaining its subtrees
- */
-void deleteNode(Node * node);
-/**
- * delete the subtree at the node
- */
-void deleteTree(Node * node);
+char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]);
+void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN]);
+void generateErrMsgFromSource(char *msg, long errloc, char *src, char errbuf[ERR_MSG_LEN]);
+void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_MSG_LEN]);
+char *generateErrMsg(char *msg, long errloc, char* ruleBaseName, char errbuf[ERR_MSG_LEN]);
 
 #endif

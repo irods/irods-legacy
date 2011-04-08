@@ -45,108 +45,94 @@
 #define DATETIME_MS_T "DATETIME_MS_T"
 
 
-#define TYPE(x) ((x)->type->t)
+#define TYPE(x) ((x)->exprType->type)
 
-#define T_CONS_TYPE_ARG(x, n) ((x)->ext.cons.typeArgs[n])
-#define T_CONS_TYPE_NAME(x) ((x)->ext.cons.typeConsName)
-#define T_FUNC_PARAM_TYPE(x, n) ((x)->ext.func.paramsType[n])
-#define T_FUNC_RET_TYPE(x) ((x)->ext.func.retType)
+#define T_CONS_TYPE_ARGS(x) ((x)->subtrees)
+#define T_CONS_TYPE_ARG(x, n) ((x)->subtrees[n])
+#define T_CONS_TYPE_NAME(x) ((x)->text)
+#define T_CONS_ARITY(x) ((x)->degree)
+#define T_CONS_VARARG(x) ((x)->ext.cons.vararg)
+#define T_FUNC_PARAM_TYPE(x, n) ((x)->subtrees[0]->subtrees[n])
+#define T_FUNC_RET_TYPE(x) ((x)->subtrees[1])
+#define T_FUNC_ARITY(x) ((x)->subtrees[0]->degree)
+#define T_FUNC_VARARG(x) ((x)->subtrees[0]->ext.cons.vararg)
 #define T_VAR_ID(x) ((x)->ext.tvar.vid)
 #define T_VAR_DISJUNCT(x, n) ((x)->ext.tvar.disjuncts[n])
 #define T_VAR_DISJUNCTS(x) ((x)->ext.tvar.disjuncts)
 #define T_VAR_NUM_DISJUNCTS(x) ((x)->ext.tvar.numDisjuncts)
-#define T_FUNC_ARITY(x) ((x)->ext.func.arity)
-#define T_CONS_ARITY(x) ((x)->ext.cons.arity)
 
 #define LIST "[]"
+#define TUPLE "()"
+#define FUNC "->"
 
-extern int typeNameLen;
-extern char* typeName[];
-
-typedef enum type_constructor {
-        T_DYNAMIC = -1,
-	T_ERROR = 0,
-	T_DOUBLE = 1,
-        T_INT = 2,
-	T_STRING = 3,
-	T_DATETIME = 4,
-	T_BOOL = 5,
-	T_FUNC = 6,
-	T_CONS = 9,
-	T_BREAK = 30,
-	T_SUCCESS = 31,
-	T_VAR = 100,
-        T_IRODS = 200
-} TypeConstructor;
-typedef struct expr_type ExprType;
+typedef struct node Node;
+typedef struct node ExprType;
+typedef struct node Res;
 typedef ExprType *ExprTypePtr;
 typedef struct bucket Bucket;
 typedef Bucket *BucketPtr;
 
+typedef enum node_type {
+    N_EOS = -1,
+    N_ERROR = 0,
+    N_DOUBLE = 1,
+    N_TEXT = 2,
+    N_STRING = 3,
+    N_DATETIME = 4,
+    N_APPLICATION = 5,
+    N_ACTIONS = 6,
+    N_RULE = 7,
+    N_BOOL = 8,
+    N_BACKQUOTED = 9,
+    N_RULESET = 10,
+    N_INT = 11,
+    T_DYNAMIC = 100,
+    T_ERROR = 200,
+    T_DOUBLE = 201,
+    T_INT = 202,
+    T_STRING = 203,
+    T_DATETIME = 204,
+    T_BOOL = 205,
+    T_CONS = 209,
+    T_BREAK = 230,
+    T_SUCCESS = 231,
+    T_VAR = 300,
+    T_IRODS = 400,
+    K_TYPE = 500
+} NodeType;
+
 /* variable type */
 struct vtype {
-		int vid;
-		int numDisjuncts;
-		TypeConstructor *disjuncts;
-/*                TypeConstructor lowerBound; */
+    int vid;
+    int numDisjuncts;
+    NodeType *disjuncts;
 };
 /* constructed type */
-struct cons_type {
-		char *typeConsName; /* constructor */
-		int arity;
-		ExprType** typeArgs;
-};
-struct irods_type {
-        char *name;
-};
 enum vararg {
     ONCE = 0,
     STAR = 1,
     PLUS = 2
 };
-struct func_type {
-    int arity;
-    ExprType **paramsType;
-    ExprType *retType;
+struct cons_type {
     enum vararg vararg;
 };
 union expr_type_ext {
     struct vtype tvar;
     struct cons_type cons;
-    struct irods_type irods;
-    struct func_type func;
 };
 /* expression type */
-struct expr_type {
-    TypeConstructor t;
-    int coercionAllowed;
-    union expr_type_ext ext;
-};
 /* value */
-typedef struct res Res;
-struct coll {
-	int len;
-	Res** elems;
-};
-struct string {
-    int len;
-    char *pointer;
-};
 union res_value {
     int e;
     double d;
-    struct string s;
+    struct {
+        int len;
+    } s;
     time_t t;
-    struct coll c;
     struct {
         void *inOutStruct;
         bytesBuf_t *inOutBuffer;
     } uninterpreted;
-};
-
-struct res {
-	ExprType* type;
-	union res_value value;
 };
 
 typedef struct str_list StringList;
@@ -162,47 +148,34 @@ struct env {
     Hashtable *funcDesc;
 };
 
-typedef enum node_type {
-	EOS = -1,
-	ERROR = 0,
-	DOUBLE = 1,
-        INT = 11,
-	TEXT = 2,
-	STRING = 3,
-	DATETIME = 4,
-	APPLICATION = 5,
-	ACTIONS = 6,
-	RULE = 7,
-	BOOL = 8,
-	CONS = 9,
-	RULESET = 10,
-	TVAR = 100,
-} NodeType;
 
 /* todo change text of dynamically allocated array */
-#define MAX_NODE_TEXT_LEN 1023
+#define MAX_TOKEN_TEXT_LEN 1023
 
 typedef struct label {
     long exprloc;
     char *base;
 } Label;
 typedef struct token {
-	NodeType type;
-	char text[MAX_NODE_TEXT_LEN+1];
-        int vars[100];
-        long exprloc;
+    NodeType type;
+    char text[MAX_TOKEN_TEXT_LEN+1];
+    int vars[100];
+    long exprloc;
 } Token;
-typedef struct node {
-	NodeType type; /* syntax type */
-	ExprType *exprType; /* expression type */
-        ExprType *coercion; /* coersed type */
-	char *text;
-	long expr;
-	int degree;
-	struct node **subtrees;
-        int typed;
-        char *base;
-} Node;
+struct node {
+    NodeType type; /* node type */
+    ExprType *exprType; /* expression type */
+    ExprType *coercion; /* coersed type */
+    char *text;
+    long expr;
+    int degree;
+    struct node **subtrees;
+    int typed;
+    char *base;
+    int coercionAllowed;
+    union expr_type_ext ext;
+    union res_value value;
+};
 
 typedef Node *NodePtr;
 typedef char *charPtr;
@@ -242,13 +215,17 @@ char* getTVarNameRegionFromExprType(ExprType *tvar, Region *r);
 extern int tvarNumber;
 ExprType *dupType(ExprType *ty, Region *r);
 int typeEqSyntatic(ExprType *a, ExprType *b);
+
+Node *newNode(NodeType type, char* text, Label * exprloc, Region *r);
+Node *newExprType(NodeType t, int degree, Node **subtrees, Region *r);
 ExprType *newTVar(Region *r);
-ExprType *newTVar2(int numDisjuncts, TypeConstructor disjuncts[], Region *r);
+ExprType *newTVar2(int numDisjuncts, NodeType disjuncts[], Region *r);
 ExprType *newCollType(ExprType *elemType, Region *r);
 ExprType *newFuncType(int arity, ExprType **paramTypes, ExprType *elemType, Region *r);
 ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType *elemType, Region *r);
 ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r);
-ExprType *newSimpType(TypeConstructor t, Region *r);
+ExprType *newConsTypeVarArg(int arity, enum vararg vararg, char *cons, ExprType **paramTypes, Region *r);
+ExprType *newSimpType(NodeType t, Region *r);
 ExprType *newIRODSType(char *name, Region *r);
 ExprType *newStringPair();
 void setStringPair(ExprType *ty, Region *r);
@@ -304,10 +281,6 @@ void listAppendToNode(List *list, ListNode *node, void *value, Region *r);
 void listRemove(List *list, ListNode *node);
 
 TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, TypingConstraintType type, Node *node, Region *r);
-
-char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]);
-void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN]);
-char *generateErrMsg(char *msg, long errloc, char* ruleBaseName, char errbuf[ERR_MSG_LEN]);
 
 int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str);
 void logErrMsg(rError_t *errmsg);

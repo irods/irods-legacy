@@ -14,24 +14,24 @@ char * getAttrNameFromAttrId(int id);
  */
 void convertStrValue(Res *res, char *val, Region *r) {
     int len = (strlen(val)+1)*sizeof(char);
-    res->value.s.pointer = (char*)region_alloc(r, len);
-    memcpy(res->value.s.pointer, val, len);
+    res->text = (char*)region_alloc(r, len);
+    memcpy(res->text, val, len);
     res->value.s.len = strlen(val);
-    res->type = newSimpType(T_STRING, r);
+    res->exprType = newSimpType(T_STRING, r);
 }
 /**
  * convert int value to Res
  */
 void convertIntValue(Res *res, int inval, Region *r) {
     res->value.d = inval;
-    res->type = newSimpType(T_INT, r);
+    res->exprType = newSimpType(T_INT, r);
 }
 /**
  * convert double value to Res
  */
 void convertDoubleValue(Res *res, double inval, Region *r) {
     res->value.d = inval;
-    res->type = newSimpType(T_DOUBLE,r);
+    res->exprType = newSimpType(T_DOUBLE,r);
 }
 /**
  * adapted from reHelpers2.c
@@ -65,7 +65,7 @@ Res* getValueFromCollection(char *typ, void *inPtr, int inx, Region *r) {
   }
   else if (!strcmp(typ,IntArray_MS_T)) {
 	res = newRes(r);
-	res->type = newSimpType(T_INT, r);
+	res->exprType = newSimpType(T_INT, r);
     intArray_t *intA;
     intA = (intArray_t *) inPtr;
     if (inx >= intA->len) {
@@ -131,9 +131,9 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 		return 0;
 	} else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
             /* this could be int, bool, or datatime */
-            if(res->type == NULL) { /* output parameter */
+            if(res->exprType == NULL) { /* output parameter */
                 res->value.d = *(int *)mP->inOutStruct;
-                res->type = newSimpType(T_INT, r);
+                res->exprType = newSimpType(T_INT, r);
             } else
             switch(TYPE(res)) {
                 case T_INT:
@@ -168,7 +168,7 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 	} else {
             res->value.uninterpreted.inOutStruct = mP->inOutStruct;
             res->value.uninterpreted.inOutBuffer = mP->inpOutBuf;
-            res->type = newIRODSType(mP->type,r);
+            res->exprType = newIRODSType(mP->type,r);
             return 0;
         }
 	return -1;
@@ -241,7 +241,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
 					var->type = strdup(INT_MS_T);
 					break;
 				case T_STRING: /* string */
-					var->inOutStruct = strdup(res->value.s.pointer);
+					var->inOutStruct = strdup(res->text);
 					var->type = strdup(STR_MS_T);
 					break;
 				case T_DATETIME: /* date time */
@@ -254,31 +254,31 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
 					var->type = strdup(INT_MS_T);
 					break;
 				case T_CONS:
-                                    if(strcmp(T_CONS_TYPE_NAME(res->type), LIST) == 0) {
-					switch(res->type->ext.cons.typeArgs[0]->t) {
+                                    if(strcmp(T_CONS_TYPE_NAME(res->exprType), LIST) == 0) {
+					switch(T_CONS_TYPE_ARG(res->exprType, 0)->type) {
 						case T_STRING:
 							arr = (strArray_t *)malloc(sizeof(strArray_t));
-							arr->len = res->value.c.len;
+							arr->len = res->degree;
 							int i;
 							maxlen = 0;
-							for(i=0;i<res->value.c.len;i++) {
-								int slen = res->value.c.elems[i]->value.s.len;
+							for(i=0;i<res->degree;i++) {
+								int slen = res->subtrees[i]->value.s.len;
 								maxlen = maxlen < slen? slen: maxlen;
 							}
 							arr->size = maxlen;
 							arr->value = (char *)malloc(sizeof(char)*maxlen*(arr->len));
-							for(i=0;i<res->value.c.len;i++) {
-								strcpy(arr->value + maxlen*i, res->value.c.elems[i]->value.s.pointer);
+							for(i=0;i<res->degree;i++) {
+								strcpy(arr->value + maxlen*i, res->subtrees[i]->text);
 							}
                                                         var->inOutStruct = arr;
                                                         var->type = strdup(StrArray_MS_T);
 							break;
 						case T_INT:
 							arr2 = (intArray_t *)malloc(sizeof(intArray_t));
-							arr2->len = res->value.c.len;
+							arr2->len = res->degree;
 							arr2->value = (int *)malloc(sizeof(int)*(arr2->len));
-							for(i=0;i<res->value.c.len;i++) {
-								arr2->value[i] = (int)res->value.c.elems[i]->value.d;
+							for(i=0;i<res->degree;i++) {
+								arr2->value[i] = (int)res->subtrees[i]->value.d;
 							}
                                                         var->inOutStruct = arr2;
                                                         var->type = strdup(IntArray_MS_T);
@@ -302,7 +302,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
                             case T_IRODS:
                                 var->inOutStruct = res->value.uninterpreted.inOutStruct;
                                 var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
-                                var->type = strdup(res->type->ext.irods.name);
+                                var->type = strdup(res->exprType->text);
                                 break;
                             default:
                                 /*error */
@@ -398,15 +398,15 @@ char* convertResToString(Res *res0) {
 			}
 			return res;
             case T_STRING:
-                if(res0->value.s.pointer == NULL) {
+                if(res0->text == NULL) {
                     res = strdup("<null>");
                 } else {
-                    res = strdup(res0->value.s.pointer);
+                    res = strdup(res0->text);
                 }
 			return res;
             case T_IRODS:
                 res = (char *)malloc(sizeof(char)*1024);
-                    if(strcmp(res0->type->ext.irods.name, KeyValPair_MS_T)==0) {
+                    if(strcmp(res0->exprType->text, KeyValPair_MS_T)==0) {
                         keyValPair_t *kvp = (keyValPair_t *) res0->value.uninterpreted.inOutStruct;
                         snprintf(res, 1024, "KeyValue[%d]:", kvp->len);
                         int i;
@@ -425,8 +425,8 @@ char* convertResToString(Res *res0) {
                 res = (char *)malloc(sizeof(char)*1024);
                 sprintf(res, "[");
                 int i;
-                for(i=0;i<res0->value.c.len;i++) {
-                    char *resElem = convertResToString(res0->value.c.elems[i]);
+                for(i=0;i<res0->degree;i++) {
+                    char *resElem = convertResToString(res0->subtrees[i]);
                     if(resElem == NULL) {
                         free(res);
                         return NULL;
@@ -437,7 +437,7 @@ char* convertResToString(Res *res0) {
                 }
                 snprintf(res+strlen(res), 1024-strlen(res), "]");
                         return res;
-            case DATETIME:
+            case T_DATETIME:
                         res = (char *)malloc(sizeof(char)*1024);
 			ttimestr(res, 1024-1, "", &(res0->value.t));
                         return res;

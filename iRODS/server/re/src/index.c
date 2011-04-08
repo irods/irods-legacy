@@ -103,8 +103,8 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
             int currIndex = *(int *)curr->value;
             Node *ruleNode = inRuleSet->rules[currIndex];
             if(!(ruleNode->subtrees[0]->degree == 0 && /* no params */
-               ruleNode->subtrees[1]->type == APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && /* comparison */
-               ruleNode->subtrees[1]->degree == 2 && ruleNode->subtrees[1]->subtrees[1]->type == STRING /* with a string */
+               ruleNode->subtrees[1]->type == N_APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && /* comparison */
+               ruleNode->subtrees[1]->degree == 2 && ruleNode->subtrees[1]->subtrees[1]->type == N_STRING /* with a string */
                )) {
                 continue;
             }
@@ -158,8 +158,8 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex)
                     currIndex = *(int *)curr->value;
                     ruleNode = inRuleSet->rules[currIndex];
                     if(!(ruleNode->subtrees[0]->degree == 0 && /* no params */
-                       ruleNode->subtrees[1]->type == APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && /* comparison */
-                       ruleNode->subtrees[1]->degree == 2 && ruleNode->subtrees[1]->subtrees[1]->type == STRING && /* with a string */
+                       ruleNode->subtrees[1]->type == N_APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && /* comparison */
+                       ruleNode->subtrees[1]->degree == 2 && ruleNode->subtrees[1]->subtrees[1]->type == N_STRING && /* with a string */
                        lookupFromHashTable(processedStrs, ruleNode->subtrees[1]->subtrees[1]->text) == NULL && /* string is new */
                        eqExprNodeSyntactic(condNode->subtrees[0], ruleNode->subtrees[1]->subtrees[0]) /* exp is the same */
                        )) {
