@@ -16,32 +16,17 @@ ExprType *dupType(ExprType *ty, Region *r) {
 }
 
 int typeEqSyntatic(ExprType *a, ExprType *b) {
-    if(a->t!=b->t) {
+    if(a->type!=b->type) {
         return 0;
     }
-    switch(a->t) {
-        case T_FUNC:
-            if(a->ext.func.arity == b->ext.func.arity &&
-                    a->ext.func.vararg == b->ext.func.vararg) {
-                int i;
-                for(i=0;i<a->ext.func.arity;i++) {
-                    if(!typeEqSyntatic(a->ext.func.paramsType[i],b->ext.func.paramsType[i])) {
-                        return 0;
-                    }
-                }
-                if(typeEqSyntatic(a->ext.func.retType,b->ext.func.retType)) {
-                    return 1;
-                }else {
-                    return 0;
-                }
-            }
-            return 0;
+    switch(a->type) {
         case T_CONS:
-            if(a->ext.cons.arity == b->ext.cons.arity &&
-                    strcmp(a->ext.cons.typeConsName, b->ext.cons.typeConsName) == 0) {
+            if(T_CONS_ARITY(a) == T_CONS_ARITY(b) &&
+                    strcmp(T_CONS_TYPE_NAME(a), T_CONS_TYPE_NAME(b)) == 0 &&
+                    a->ext.cons.vararg == b->ext.cons.vararg) {
                 int i;
-                for(i=0;i<a->ext.cons.arity;i++) {
-                    if(!typeEqSyntatic(a->ext.cons.typeArgs[i],b->ext.cons.typeArgs[i])) {
+                for(i=0;i<T_CONS_ARITY(a);i++) {
+                    if(!typeEqSyntatic(T_CONS_TYPE_ARG(a, i),T_CONS_TYPE_ARG(b, i))) {
                         return 0;
                     }
                 }
@@ -51,7 +36,7 @@ int typeEqSyntatic(ExprType *a, ExprType *b) {
         case T_VAR:
             return a->ext.tvar.vid == b->ext.tvar.vid;
         case T_IRODS:
-            return strcmp(a->ext.irods.name, b->ext.irods.name) == 0;
+            return strcmp(a->text, b->text) == 0;
         default:
             return 1;
     }
@@ -62,28 +47,21 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable, Region *keyRe
     ExprType **paramTypes;
     int i;
     ExprType *newt;
+    ExprType *exist;
     char *name;
     char buf[128];
-    switch(ty->t) {
-        case T_FUNC:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*ty->ext.func.arity);
-            for(i=0;i<ty->ext.func.arity;i++) {
-                paramTypes[i] = dupTypeAux(ty->ext.func.paramsType[i],r,varTable,keyRegion);
-            }
-            newt = newFuncTypeVarArg(ty->ext.func.arity, ty->ext.func.vararg, paramTypes, dupTypeAux(ty->ext.func.retType,r, varTable, keyRegion), r);
-            newt->coercionAllowed = ty->coercionAllowed;
-            return newt;
+    switch(ty->type) {
         case T_CONS:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*ty->ext.cons.arity);
-            for(i=0;i<ty->ext.cons.arity;i++) {
-                paramTypes[i] = dupTypeAux(ty->ext.cons.typeArgs[i],r,varTable,keyRegion);
+            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*T_CONS_ARITY(ty));
+            for(i=0;i<T_CONS_ARITY(ty);i++) {
+                paramTypes[i] = dupTypeAux(T_CONS_TYPE_ARG(ty, i),r,varTable,keyRegion);
             }
-            newt = newConsType(ty->ext.cons.arity, ty->ext.cons.typeConsName, paramTypes, r);
+            newt = newConsTypeVarArg(T_CONS_ARITY(ty), ty->ext.cons.vararg, T_CONS_TYPE_NAME(ty), paramTypes, r);
             newt->coercionAllowed = ty->coercionAllowed;
             return newt;
         case T_VAR:
             name = getTVarName(ty->ext.tvar.vid, buf);
-            ExprType *exist = lookupFromHashTable(varTable, name);
+            exist = (ExprType *)lookupFromHashTable(varTable, name);
             if(exist != NULL)
                 return exist;
             else {
@@ -527,7 +505,7 @@ Res *cpRes(Res *res, Region *r) {
 }
 
 char *cpString(char *str, Region *r) {
-    char *strCp = region_alloc(r, (strlen(str)+1) * sizeof(char) );
+    char *strCp = (char *)region_alloc(r, (strlen(str)+1) * sizeof(char) );
     strcpy(strCp, str);
     return strCp;
 }
@@ -670,7 +648,7 @@ ExprType *dereference(ExprType *type, Hashtable *type_table, Region *r) {
         char name[128];
         getTVarName(type->ext.tvar.vid, name);
         /* printf("deref: %s\n", name); */
-        ExprType *deref = lookupFromHashTable(type_table, name);
+        ExprType *deref = (ExprType *)lookupFromHashTable(type_table, name);
         if(deref == NULL)
             return type;
         else

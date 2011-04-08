@@ -44,9 +44,7 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
             addRErrorMsg(errmsg, RULES_FILE_READ_ERROR, errbuf);
             return(RULES_FILE_READ_ERROR);
 	}
-        Pointer pointer;
-        Pointer *e = &pointer;
-        initPointer(e, file, ruleBaseName);
+        Pointer *e = newPointer(file, ruleBaseName);
 
 	Token token;
         int ret = 1;
@@ -56,13 +54,13 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
         while(ret == 1) {
             nextTokenRuleGen(e, &token, 1);
             switch(token.type) {
-                case ERROR:
+                case N_ERROR:
                     ret = -1;
                     continue;
-                case EOS:
+                case N_EOS:
                     ret = 0;
                     continue;
-                case TEXT:
+                case N_TEXT:
                     if(token.text[0] == '#') {
                         skipComments(e);
                         continue;
@@ -94,7 +92,7 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
             int k;
             for(k=0;k<n;k++) {
                 Node *node = nodes[k];
-                if(node->type == ERROR) {
+                if(node->type == N_ERROR) {
                     /*deleteTree(node); */
 
                     *errloc = node->expr;
@@ -103,6 +101,7 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
                     /* skip the current line and try to parse the rule from the next line */
                     skipComments(e);
                     i++;
+                    deletePointer(e);
                     return -1;
                 }
             ruleSet->rules[i] = node;
@@ -114,11 +113,11 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
 */
             }
 	}
-	fclose (file);
+        deletePointer(e);
 	ruleSet->len = i;
 	Node *errnode;
 	ExprType *restype = typeRuleSet(ruleSet, errmsg, &errnode, r);
-	if(restype->t == T_ERROR) {
+	if(restype->type == T_ERROR) {
 	    *errloc = errnode->expr;
 	    return -1;
 	}
@@ -133,7 +132,7 @@ void addCmdExecOutToEnv(Hashtable *global, Region *r) {
     execCmdOut_t *ruleExecOut = (execCmdOut_t *)malloc (sizeof (execCmdOut_t));
     memset (ruleExecOut, 0, sizeof (execCmdOut_t));
     Res *execOutRes = newRes(r);
-	execOutRes->type  = newIRODSType(ExecCmdOut_MS_T, r);
+	execOutRes->exprType  = newIRODSType(ExecCmdOut_MS_T, r);
 	execOutRes->value.uninterpreted.inOutStruct = ruleExecOut;
     insertIntoHashTable(global, "ruleExecOut", execOutRes);
 
@@ -157,7 +156,7 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
 	if(node==NULL) {
 		addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
 		return OUT_OF_MEMORY;
-	} else if (node->type == ERROR) {
+	} else if (node->type == N_ERROR) {
 		char buf2[ERR_MSG_LEN];
                 Label pos;
                 getFPos(&pos, e);
@@ -169,7 +168,7 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
             Token token;
             nextTokenRuleGen(e, &token, 0);
 
-            if(token.type!=EOS) {
+            if(token.type!=N_EOS) {
 		char buf2[ERR_MSG_LEN];
                 Label pos;
                 getFPos(&pos, e);
@@ -179,6 +178,7 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
                 return UNPARSED_SUFFIX;
             }
 	}
+
     Hashtable *varTypes = newHashTable(100);
     
 	Hashtable *funcDesc = newHashTable(100);
@@ -192,7 +192,7 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
 	deleteHashTable(varTypes, nop);
 
     int rescode;
-    if(type->t!=T_ERROR) {
+    if(type->type!=T_ERROR) {
         addCmdExecOutToEnv(global, r);
         if(msParamArray!=NULL) {
             convertMsParamArrayToEnv(msParamArray, env->global, errmsg, r);
@@ -242,11 +242,11 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
         }
 
         nextTerm3(e, &node, MIN_PREC, 0,errmsg, r);*/
-        node = newNode(STRING, params[i], 0, r);
+        node = newNode(N_STRING, params[i], 0, r);
 	if(node==NULL) {
 		addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
 		return newErrorRes(r, OUT_OF_MEMORY);
-	} else if (node->type == ERROR) {
+	} else if (node->type == N_ERROR) {
 		/*char buf[MAX_COND_LEN]; */
                 /*int pos = getFPos(e); */
 		/*memcpy(buf, actionName, pos*sizeof(char)); */
@@ -289,15 +289,15 @@ ExprType *typeRule(Node *node, Hashtable *funcDesc, Hashtable *varTypes, List *t
             freeRErrorContent(errmsg);
             ExprType *resType = typeExpression3(node->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             /*printf("Type %d\n",resType->t); */
-            if(resType->t == T_ERROR) {
+            if(resType->type == T_ERROR) {
                 goto error;
             }
             resType = typeExpression3(node->subtrees[2], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-            if(resType->t == T_ERROR) {
+            if(resType->type == T_ERROR) {
                 goto error;
             }
             resType = typeExpression3(node->subtrees[3], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-            if(resType->t == T_ERROR) {
+            if(resType->type == T_ERROR) {
                 goto error;
             }
             /* printVarTypeEnvToStdOut(varTypes); */
@@ -354,7 +354,7 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
         /*typingConstraintsToString(typingConstraints, NULL, buf, 1024); */
         /*printf("rule %s, typing constraints: %s\n", ruleset->rules[i]->subtrees[0]->text, buf); */
         deleteHashTable(varTypes, nop);
-        if(restype->t == T_ERROR) {
+        if(restype->type == T_ERROR) {
             res = restype;
             RETURN;
         }
@@ -379,7 +379,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
         List *typingConstraints = newList(r);
         resType = typeExpression3(node, env->funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
-        if(resType->t == T_ERROR) {
+        if(resType->type == T_ERROR) {
             addRErrorMsg(errmsg, -1, "type error: in rule");
             res = newErrorRes(r,-1);
             RETURN;
@@ -393,13 +393,13 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
     }
     res = evaluateExpression3(node, rei, reiSaveFlag, env, errmsg, rNew);
 
-    switch (TYPE(res)) {
+/*    switch (TYPE(res)) {
         case T_ERROR:
             addRErrorMsg(errmsg, -1, "error: in rule");
             break;
         default:
             break;
-    }
+    }*/
     ret:
     if(varTypes!=NULL) {
         deleteHashTable(varTypes, nop);
@@ -439,20 +439,19 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
             res = newErrorRes(r, OUT_OF_MEMORY);
             RETURN;
-    } else if (node->type == ERROR) {
+    } else if (node->type == N_ERROR) {
             char buf2[ERR_MSG_LEN];
             Label pos;
             getFPos(&pos, e);
             generateErrMsg("error: syntax error",pos.exprloc, pos.base, buf2);
-            addRErrorMsg(errmsg, PARSER_ERROR, buf);
-            deletePointer(e);
+            addRErrorMsg(errmsg, PARSER_ERROR, buf2);
             res = newErrorRes(r, PARSER_ERROR);
             RETURN;
     } else {
         Token token;
         nextTokenRuleGen(e, &token, 0);
 
-        if(token.type!=EOS) {
+        if(token.type!=N_EOS) {
             char buf2[ERR_MSG_LEN];
             Label pos;
             getFPos(&pos, e);
