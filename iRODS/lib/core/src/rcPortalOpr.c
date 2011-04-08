@@ -1,8 +1,11 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rcPortalOpr.h"
+#include "dataObjOpen.h"
 #include "dataObjWrite.h"
 #include "dataObjRead.h"
+#include "dataObjLseek.h"
+#include "fileLseek.h"
 #include "dataObjOpr.h"
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
@@ -1094,6 +1097,69 @@ writeLfRestartFile (fileRestart_t *fileRestart)
 }
 
 int
+readLfRestartFile (char *infoFile, fileRestart_t **fileRestart)
+{
+    int status, fd;
+    struct stat statbuf;
+    char *buf;
+
+    status = stat (infoFile, &statbuf);
+    if (status < 0) {
+        status = UNIX_FILE_STAT_ERR - errno;
+        rodsLog (LOG_ERROR,
+          "readLfRestartFile stat failed for %s, status = %d",
+          infoFile, status);
+        return (status);
+    }
+    if ( statbuf.st_size == 0) {
+        status = UNIX_FILE_STAT_ERR - errno;
+        rodsLog (LOG_ERROR,
+          "readLfRestartFile restart infoFile size is 0 for %s",
+          infoFile);
+        return (status);
+    }
+    /* read the restart infoFile */
+    fd = open (infoFile, O_RDONLY, 0640);
+    if (fd < 0) {
+        status = UNIX_FILE_OPEN_ERR - errno;
+        rodsLog (LOG_ERROR,
+          "readLfRestartFile open failed for %s, status = %d",
+          infoFile, status);
+        return (status);
+    }
+
+    buf = (char *) calloc (1, 2 * statbuf.st_size);
+    if (buf == NULL) {
+	close (fd);
+        return SYS_MALLOC_ERR;
+    }
+    status = read (fd, buf, statbuf.st_size);
+    if (status != statbuf.st_size) {
+        rodsLog (LOG_ERROR,
+          "readLfRestartFile error failed for %s, toread %d, read %d",
+          infoFile, statbuf.st_size, status);
+        status = UNIX_FILE_READ_ERR - errno;
+        close (fd);
+	free (buf);
+        return (status);
+    }
+    close (fd);
+
+    status =  unpackStruct (buf, (void **) fileRestart, "FileRestartInfo_PI", 
+      NULL, XML_PROT);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "readLfRestartFile: unpackStruct error for %s, status = %d",
+          infoFile, status);
+    }
+    close (fd);
+    free (buf);
+    return (status);
+}
+
+
+
+int
 clearLfRestartFile (fileRestart_t *fileRestart)
 {
     unlink (fileRestart->infoFile);
@@ -1102,17 +1168,21 @@ clearLfRestartFile (fileRestart_t *fileRestart)
     return 0;
 }
 
-#if 0	/* XXXXX not done */
 int
-lfRestartByInfo (fileRestart_t *fileRestart, char *targPath)
+lfRestartPutWithInfo (rcComm_t *conn, fileRestart_t *fileRestart, 
+char *targPath)
 {
-    rodsLong_t localOffset = 0;
-    rodsLong_t irodsOffset = 0;
+    rodsLong_t curOffset = 0;
     bytesBuf_t dataObjWriteInpBBuf;
     int status, i;
     int localFd, irodsFd;
     dataObjInp_t dataObjOpenInp;
+    openedDataObjInp_t dataObjWriteInp;
+    openedDataObjInp_t dataObjLseekInp;
+    openedDataObjInp_t dataObjCloseInp;
     fileRestartInfo_t *info = &fileRestart->info;
+    fileLseekOut_t *dataObjLseekOut = NULL;
+    rodsLong_t gap;
 
 #ifdef windows_platform
     localFd = iRODSNt_bopen(info->fileName, O_RDONLY,0);
@@ -1143,16 +1213,85 @@ lfRestartByInfo (fileRestart_t *fileRestart, char *targPath)
     dataObjWriteInpBBuf.buf = malloc (TRANS_BUF_SZ);
     dataObjWriteInpBBuf.len = 0;
 
+    memset (&dataObjLseekInp, 0, sizeof (dataObjLseekInp));
+    dataObjLseekInp.whence = SEEK_SET;
     for (i = 0; i < info->numSeg; i++) {
-	rodsLong_t gap = info->dataSeg[i].offset - localOffset;
+	gap = info->dataSeg[i].offset - curOffset;
 	if (gap < 0) {
 	    /* should not be here */
 	} else if (gap > 0) {
-	    /* need to upload data in gap */
-
+	    status = putSeg (conn, gap, localFd, irodsFd,
+              &dataObjWriteInp, &dataObjWriteInpBBuf, TRANS_BUF_SZ);
+	    if (status < 0) break;
 	}
-
+	if (info->dataSeg[i].len > 0) {
+	    curOffset += info->dataSeg[i].len;
+            if (lseek (localFd, curOffset, SEEK_SET) < 0) {
+                status = UNIX_FILE_LSEEK_ERR - errno;
+                rodsLogError (LOG_ERROR, status,
+                  "lfRestartWithInfo: lseek to %lld error for %s",
+                  curOffset, info->fileName);
+                break;
+            }
+            dataObjLseekInp.l1descInx = irodsFd;
+            dataObjLseekInp.offset = curOffset;
+            status = rcDataObjLseek (conn, &dataObjLseekInp, &dataObjLseekOut);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "lfRestartWithInfo: rcDataObjLseek to %lld error for %s",
+                  curOffset, targPath);
+                break;
+	    } else {
+		if (dataObjLseekOut != NULL) free (dataObjLseekOut);
+	    }
+	}
     }
-    rturn status;
+    if (status >= 0) {
+        gap = info->fileSize - curOffset;
+        if (gap > 0) {
+            status = putSeg (conn, gap, localFd, irodsFd,
+              &dataObjWriteInp, &dataObjWriteInpBBuf, TRANS_BUF_SZ);
+	}
+    }
+    free (dataObjWriteInpBBuf.buf);
+    close (localFd);
+    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+    dataObjCloseInp.l1descInx = irodsFd;
+    rcDataObjClose (conn, &dataObjCloseInp);
+    return status;
 }
-#endif
+
+int
+putSeg (rcComm_t *conn, rodsLong_t segSize, int localFd, int irodsFd,
+openedDataObjInp_t *dataObjWriteInp, bytesBuf_t *dataObjWriteInpBBuf, 
+int bufLen)
+{
+    rodsLong_t gap = segSize;
+    int bytesWritten;
+
+    while (gap > 0) {
+        int toRead;
+        if (gap > bufLen) {
+            toRead = bufLen;
+        } else {
+            toRead = (int) gap;
+        }
+
+        dataObjWriteInpBBuf->len = myRead (localFd,
+          dataObjWriteInpBBuf->buf, toRead, FILE_DESC_TYPE, NULL, NULL);
+        /* Write to the data object */
+        dataObjWriteInp->len = dataObjWriteInpBBuf->len;
+        bytesWritten = rcDataObjWrite (conn, dataObjWriteInp,
+          dataObjWriteInpBBuf);
+        if (bytesWritten < dataObjWriteInp->len) {
+           rodsLog (LOG_ERROR,
+            "putFile: Read %d bytes, Wrote %d bytes.\n ",
+            dataObjWriteInp->len, bytesWritten);
+            return (SYS_COPY_LEN_ERR);
+        } else {
+            gap -= toRead;
+	}
+    }
+    return 0;
+}
+

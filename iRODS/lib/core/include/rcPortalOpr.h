@@ -86,7 +86,16 @@ int numThr);
 int
 writeLfRestartFile (fileRestart_t *fileRestart);
 int
+readLfRestartFile (char *infoFile, fileRestart_t **fileRestart);
+int
 clearLfRestartFile (fileRestart_t *fileRestart);
+int
+lfRestartPutWithInfo (rcComm_t *conn, fileRestart_t *fileRestart, 
+char *targPath);
+int
+putSeg (rcComm_t *conn, rodsLong_t segSize, int localFd, int irodsFd,
+openedDataObjInp_t *dataObjWriteInp, bytesBuf_t *dataObjWriteInpBBuf,
+int bufLen);
 #ifdef  __cplusplus
 }
 #endif
