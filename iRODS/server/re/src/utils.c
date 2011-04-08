@@ -99,20 +99,20 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable, Region *keyRe
 
 }
 int coercible(ExprType *a, ExprType *b) {
-            return (a->t!=T_CONS && a->t == b->t) ||
-                   (b->t == T_DOUBLE && a->t == T_INT) ||
-                   (b->t == T_DOUBLE && a->t == T_STRING) ||
-                   (b->t == T_INT && a->t == T_DOUBLE) ||
-                   (b->t == T_INT && a->t == T_STRING) ||
-                   (b->t == T_STRING && a->t == T_INT) ||
-                   (b->t == T_STRING && a->t == T_DOUBLE) ||
-                   (b->t == T_STRING && a->t == T_BOOL) ||
-                   (b->t == T_BOOL && a->t == T_STRING) ||
-                   (b->t == T_DATETIME && a->t == T_INT) ||
-                   (b->t == T_DATETIME && a->t == T_DOUBLE) ||
-                   (b->t == T_DYNAMIC) ||
-                   (a->t == T_DYNAMIC) ||
-                   (a->t==T_CONS && b->t==T_CONS && coercible(T_CONS_TYPE_ARG(a, 0), T_CONS_TYPE_ARG(b, 0)));
+            return (a->type!=T_CONS && a->type == b->type) ||
+                   (b->type == T_DOUBLE && a->type == T_INT) ||
+                   (b->type == T_DOUBLE && a->type == T_STRING) ||
+                   (b->type == T_INT && a->type == T_DOUBLE) ||
+                   (b->type == T_INT && a->type == T_STRING) ||
+                   (b->type == T_STRING && a->type == T_INT) ||
+                   (b->type == T_STRING && a->type == T_DOUBLE) ||
+                   (b->type == T_STRING && a->type == T_BOOL) ||
+                   (b->type == T_BOOL && a->type == T_STRING) ||
+                   (b->type == T_DATETIME && a->type == T_INT) ||
+                   (b->type == T_DATETIME && a->type == T_DOUBLE) ||
+                   (b->type == T_DYNAMIC) ||
+                   (a->type == T_DYNAMIC) ||
+                   (a->type==T_CONS && b->type==T_CONS && coercible(T_CONS_TYPE_ARG(a, 0), T_CONS_TYPE_ARG(b, 0)));
 }
 /*
  * unify a free tvar or union type with some other type
@@ -126,7 +126,7 @@ ExprType* unifyTVarL(ExprType *type, ExprType* expected, Hashtable *varTypes, Re
         int i;
         ExprType *ty = NULL;
         for(i=0;i<type->ext.tvar.numDisjuncts;i++) {
-                if(T_VAR_DISJUNCT(type,i) == expected->t) { /* union types can only include primitive types */
+                if(T_VAR_DISJUNCT(type,i) == expected->type) { /* union types can only include primitive types */
                     ty = expected;
                     break;
                 }
@@ -147,7 +147,7 @@ ExprType* unifyTVarR(ExprType *type, ExprType* expected, Hashtable *varTypes, Re
         int i;
         ExprType *ty = NULL;
         for(i=0;i<expected->ext.tvar.numDisjuncts;i++) {
-            if(type->t == T_VAR_DISJUNCT(expected,i)) { /* union types can only include primitive types */
+            if(type->type == T_VAR_DISJUNCT(expected,i)) { /* union types can only include primitive types */
                 ty = type;
             }
         }
@@ -170,13 +170,13 @@ ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Reg
     /* when unification is needed for subexpressions of the types which can be performed by calling this function */
     type = dereference(type, varTypes, r);
     expected = dereference(expected, varTypes, r);
-    if(type->t == T_VAR && expected->t == T_VAR) {
+    if(type->type == T_VAR && expected->type == T_VAR) {
         if(type->ext.tvar.vid == expected->ext.tvar.vid) {
             /* if both dereference to the same tvar then do not modify var types table */
             return type;
         } else if(type->ext.tvar.numDisjuncts > 0 && expected->ext.tvar.numDisjuncts > 0) {
-            TypeConstructor c[10];
-            TypeConstructor* cp = c;
+            NodeType c[10];
+            NodeType* cp = c;
             int i,k;
             for(k=0;k<expected->ext.tvar.numDisjuncts;k++) {
                 for(i=0;i<type->ext.tvar.numDisjuncts;i++) {
@@ -212,9 +212,9 @@ ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Reg
             }
         }
     } else
-	if(type->t == T_VAR) {
+	if(type->type == T_VAR) {
             return unifyTVarL(type, expected, varTypes, r);
-	} else if(expected->t == T_VAR) {
+	} else if(expected->type == T_VAR) {
             return unifyTVarR(type, expected, varTypes, r);
 	} else {
             return unifyNonTvars(type, expected, varTypes, r);
@@ -226,58 +226,31 @@ ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Reg
  *        NULL if not
  */
 ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes, Region *r) {
-	if(type->t == T_CONS || expected->t == T_CONS) {
+	if(type->type == T_CONS || expected->type == T_CONS) {
 		if(
-			strcmp(type->ext.cons.typeConsName, expected->ext.cons.typeConsName) == 0
-			&& type->ext.cons.arity == expected->ext.cons.arity) {
+			strcmp(T_CONS_TYPE_NAME(type), T_CONS_TYPE_NAME(expected)) == 0
+			&& T_CONS_ARITY(type) == T_CONS_ARITY(expected)) {
 			int i;
-			for(i=0;i<type->ext.cons.arity;i++) {
+			for(i=0;i<T_CONS_ARITY(type);i++) {
 				ExprType *elemType = unifyWith(
-                                        type->ext.cons.typeArgs[i],
-                                        expected->ext.cons.typeArgs[i],
+                                        T_CONS_TYPE_ARG(type, i),
+                                        T_CONS_TYPE_ARG(expected, i),
                                         varTypes,r); /* unifyWithCoercion performs dereference */
 				if(elemType == NULL) {
 					return NULL;
 				}
-				expected->ext.cons.typeArgs[i] = elemType;
+				T_CONS_TYPE_ARG(expected, i) = elemType;
 			}
 			return dereference(expected, varTypes, r);
 		} else {
 			return NULL;
 		}
-        } else if(type->t == T_FUNC || expected->t == T_FUNC) {
-		if(type->ext.func.arity == expected->ext.func.arity) {
-			int i;
-			for(i=0;i<type->ext.func.arity;i++) {
-				ExprType *elemType = unifyWith(
-                                        type->ext.func.paramsType[i],
-                                        expected->ext.func.paramsType[i],
-                                        varTypes,r);
-				if(elemType == NULL) {
-					return NULL;
-				}
-				expected->ext.func.paramsType[i] = elemType;
-			}
-                        ExprType *elemType = unifyWith(
-                                type->ext.func.retType,
-                                expected->ext.func.retType,
-                                varTypes,r);
-                        if(elemType == NULL) {
-                                return NULL;
-                        }
-                        expected->ext.func.retType = elemType;
-			return dereference(expected, varTypes, r);
-		} else {
-			return NULL;
-		}
-        } else if(type->t == T_IRODS || expected->t == T_IRODS) {
-                if(strcmp(
-                        type->ext.irods.name,
-                        expected->ext.irods.name)!=0) {
+        } else if(type->type == T_IRODS || expected->type == T_IRODS) {
+                if(strcmp(type->text, expected->text)!=0) {
                         return NULL;
                 }
                 return expected;
-	} else if(expected->t == type->t) { /* primitive types */
+	} else if(expected->type == type->type) { /* primitive types */
                 return expected;
 	} else {
             return NULL;
@@ -313,73 +286,97 @@ char* getTVarNameRegionFromExprType(ExprType *tvar, Region *r) {
     return getTVarNameRegion(tvar->ext.tvar.vid, r);
 }
 
-ExprType *newTVar2(int numDisjuncts, TypeConstructor disjuncts[], Region *r) {
-	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
+/**
+ * create a new node n
+ */
+Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
+	Node *node = (Node *)region_alloc(r, sizeof(Node));
+	if(node == NULL)
+		return NULL;
+	node->type=type;
+        if(text!=NULL) {
+            node->text = (char *)region_alloc(r,(strlen(text) + 1) * sizeof(char));
+            strcpy(node->text, text);
+        } else {
+            node->text = NULL;
+        }
+	node->subtrees = NULL;
+	node->degree = 0;
+	node->expr = eloc == NULL? 0 : eloc->exprloc;
+        node->typed = 0;
+        node->exprType = NULL;
+        node->coercion = NULL;
+        if(eloc!=NULL) {
+            setBase(node, eloc->base, r);
+        } else {
+            setBase(node, "", r);
+        }
+	return node;
+}
+
+Node *newExprType(NodeType type, int degree, Node **subtrees, Region *r) {
+    ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
     t->coercionAllowed = 0;
-    t->t=T_VAR;
+    t->base = NULL;
+    t->coercion = NULL;
+    t->exprType = NULL;
+    t->subtrees = subtrees;
+    t->degree = degree;
+    t->type = type;
+    t->expr = 0;
+    t->text = NULL;
+    t->typed = 1;
+    return t;
+
+}
+
+
+ExprType *newTVar2(int numDisjuncts, NodeType disjuncts[], Region *r) {
+    ExprType *t = newExprType(T_VAR, 0, NULL, r);
     t->ext.tvar.vid = tvarNumber ++;
     t->ext.tvar.numDisjuncts = numDisjuncts;
-    t->ext.tvar.disjuncts = numDisjuncts == 0? NULL : (TypeConstructor *)region_alloc(r, sizeof(TypeConstructor) * numDisjuncts);
+    t->ext.tvar.disjuncts = numDisjuncts == 0? NULL : (NodeType *)region_alloc(r, sizeof(NodeType) * numDisjuncts);
     if(numDisjuncts!=0) {
-        memcpy(t->ext.tvar.disjuncts, disjuncts, numDisjuncts*sizeof(TypeConstructor));
+        memcpy(t->ext.tvar.disjuncts, disjuncts, numDisjuncts*sizeof(NodeType));
     }
     return t;
 }
 
 ExprType *newTVar(Region *r) {
-	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
-    t->coercionAllowed = 0;
-    t->t=T_VAR;
+    ExprType *t = newExprType(T_VAR, 0, NULL, r);
     t->ext.tvar.vid = tvarNumber ++;
     t->ext.tvar.numDisjuncts = 0;
     t->ext.tvar.disjuncts = NULL;
     return t;
 }
 
-ExprType *newSimpType(TypeConstructor type, Region *r) {
-	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
-        t->t=type;
-        t->coercionAllowed = 0;
-        return t;
+ExprType *newSimpType(NodeType type, Region *r) {
+    return newExprType(type, 0, NULL, r);
 }
 ExprType *newFuncType(int arity, ExprType **paramTypes, ExprType* retType, Region *r) {
-	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
-        t->coercionAllowed = 0;
-        t->t=T_FUNC;
-        t->ext.func.vararg = ONCE;
-        t->ext.func.arity = arity;
-        t->ext.func.paramsType = paramTypes;
-        t->ext.func.retType = retType;
-        return t;
+    return newFuncTypeVarArg(2, ONCE, paramTypes, retType, r);
 }
 ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType* retType, Region *r) {
-	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
-        t->coercionAllowed = 0;
-        t->t=T_FUNC;
-        t->ext.func.vararg = vararg;
-        t->ext.func.arity = arity;
-        t->ext.func.paramsType = paramTypes;
-        t->ext.func.retType = retType;
-        return t;
+    ExprType **typeArgs = (ExprType **)region_alloc(r, sizeof(ExprType *) * 2);
+    typeArgs[0] = newConsTypeVarArg(arity, vararg, TUPLE, paramTypes, r);
+    typeArgs[1] = retType;
+    return newConsType(2, FUNC, typeArgs, r);
 }
-/* precond: len(cons) should be smaller than the size of cons in t */
 ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r) {
-	ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
-        t->coercionAllowed = 0;
-        t->t=T_CONS;
-        t->ext.cons.arity = arity;
-        t->ext.cons.typeArgs = paramTypes;
-        t->ext.cons.typeConsName = (char *)region_alloc(r,(strlen(cons)+1) * sizeof(char));
-        strcpy(t->ext.cons.typeConsName, cons);
+        return newConsTypeVarArg(arity, ONCE, cons, paramTypes, r);
+}
+ExprType *newConsTypeVarArg(int arity, enum vararg vararg, char *cons, ExprType **paramTypes, Region *r) {
+	ExprType *t = newExprType(T_CONS, arity, paramTypes, r);
+        t->ext.cons.vararg = vararg;
+        T_CONS_TYPE_NAME(t) = (char *)region_alloc(r,(strlen(cons)+1) * sizeof(char));
+        strcpy(T_CONS_TYPE_NAME(t), cons);
         return t;
 }
-/* precond: len(name) should be smaller than the size of t->ext.irods.name */
+
 ExprType *newIRODSType(char *name, Region *r) {
-        ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
-        t->t = T_IRODS;
-        t->coercionAllowed = 0;
-        t->ext.irods.name = (char *)region_alloc(r,(strlen(name)+1) * sizeof(char));
-        strcpy(t->ext.irods.name, name);
+        ExprType *t = newExprType(T_IRODS, 0, NULL, r);
+        t->text = (char *)region_alloc(r,(strlen(name)+1) * sizeof(char));
+        strcpy(t->text, name);
         return t;
 }
 ExprType *newCollType(ExprType *elemType, Region *r) {
@@ -392,68 +389,68 @@ ExprType *newCollType(ExprType *elemType, Region *r) {
 
 Res* newCollRes(int size, ExprType *elemType, Region *r) {
 	Res *res1 = newRes(r);
-        res1->type = newCollType(elemType, r);
-        res1->value.c.len = size;
-        res1->value.c.elems = (Res **)region_alloc(r, sizeof(Res *)*size);
+        res1->exprType = newCollType(elemType, r);
+        res1->degree = size;
+        res1->subtrees = (Res **)region_alloc(r, sizeof(Res *)*size);
 	return res1;
 }
 /* used in cpRes only */
 Res* newCollRes2(int size, Region *r) {
 	Res *res1 = newRes(r);
-        res1->type = NULL;
-        res1->value.c.len = size;
-        res1->value.c.elems = (Res **)region_alloc(r, sizeof(Res *)*size);
+        res1->exprType = NULL;
+        res1->degree = size;
+        res1->subtrees = (Res **)region_alloc(r, sizeof(Res *)*size);
 	return res1;
 }
 Res* newRes(Region *r) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->type = NULL;
+        res1->exprType = NULL;
 	return res1;
 }
 Res* newUninterpretedRes(Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->type = newIRODSType(typeName, r);
+        res1->exprType = newIRODSType(typeName, r);
         res1->value.uninterpreted.inOutStruct = ioStruct;
         res1->value.uninterpreted.inOutBuffer = ioBuf;
 	return res1;
 }
 Res* newIntRes(Region *r, int n) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->type = newSimpType(T_INT,r);
+        res1->exprType = newSimpType(T_INT,r);
         res1->value.d = n;
 	return res1;
 }
 Res* newDoubleRes(Region *r, double a) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->type = newSimpType(T_DOUBLE,r);
+        res1->exprType = newSimpType(T_DOUBLE,r);
         res1->value.d = a;
 	return res1;
 }
 Res* newBoolRes(Region *r, int n) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->type = newSimpType(T_BOOL,r);
+        res1->exprType = newSimpType(T_BOOL,r);
         res1->value.d = n;
 	return res1;
 }
 /* precond: len(s) < size of res1->value.s */
 Res* newStringRes(Region *r, char *s) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->type = newSimpType(T_STRING,r);
+        res1->exprType = newSimpType(T_STRING,r);
         res1->value.s.len = strlen(s);
         int size = (res1->value.s.len+1)*sizeof(char);
-        res1->value.s.pointer = (char *)region_alloc(r, size);
-        memcpy(res1->value.s.pointer, s, size);
+        res1->text = (char *)region_alloc(r, size);
+        memcpy(res1->text, s, size);
 	return res1;
 }
 Res* newDatetimeRes(Region *r, long dt) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->type = newSimpType(T_DATETIME,r);
+        res1->exprType = newSimpType(T_DATETIME,r);
         res1->value.t = dt;
 	return res1;
 }
 Res* newErrorRes(Region *r, int errcode) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->type = newSimpType(T_ERROR,r);
+        res1->exprType = newSimpType(T_ERROR,r);
         res1->value.e = errcode;
 	return res1;
 }
@@ -464,24 +461,24 @@ Res* newErrorRes(Region *r, int errcode) {
 Res *cpRes(Res *res, Region *r) {
     if(TYPE(res) == T_STRING) {
         if(IN_REGION(res, r)) {
-            if(IN_REGION(res->value.s.pointer, r)) {
-                res->type = cpType(res->type, r);
+            if(IN_REGION(res->text, r)) {
+                res->exprType = cpType(res->exprType, r);
                 return res;
             } else {
-                res->value.s.pointer = cpString(res->value.s.pointer, r);
-                res->type = cpType(res->type, r);
+                res->text = cpString(res->text, r);
+                res->exprType = cpType(res->exprType, r);
                 return res;
             }
         } else {
-            if(IN_REGION(res->value.s.pointer, r)) {
+            if(IN_REGION(res->text, r)) {
                 Res *res0 = newRes(r);
                 res0->value.s = res->value.s;
-                res0->type = cpType(res->type, r);
+                res0->exprType = cpType(res->exprType, r);
                 return res0;
             }
                 Res *res0 = newRes(r);
-                convertStrValue(res0, res->value.s.pointer, r);
-                res0->type = cpType(res->type, r);
+                convertStrValue(res0, res->text, r);
+                res0->exprType = cpType(res->exprType, r);
                 return res0;
         }
 
@@ -489,43 +486,43 @@ Res *cpRes(Res *res, Region *r) {
         if(IN_REGION(res, r)) {
             /* the collection is in region r, we need to inspect every element to see if they need to be copied */
             int i;
-            for(i=0;i<res->value.c.len;i++) {
-                if(IN_REGION(res->value.c.elems[i], r)) {
+            for(i=0;i<res->degree;i++) {
+                if(IN_REGION(res->subtrees[i], r)) {
                     /* the element is in region r */
-                    res->value.c.elems[i] = cpRes(res->value.c.elems[i], r);
+                    res->subtrees[i] = cpRes(res->subtrees[i], r);
                     /* the assignment should not change the value */
                 } else {
-                    res->value.c.elems[i] = cpRes(res->value.c.elems[i], r);
+                    res->subtrees[i] = cpRes(res->subtrees[i], r);
                     /* the assignment should change the value */
                 }
             }
-            res->type = cpType(res->type, r);
+            res->exprType = cpType(res->exprType, r);
             return res;
 
         } else {
             /* the collection is not in region r */
-            Res *collRes = newCollRes2(res->value.c.len, r);
+            Res *collRes = newCollRes2(res->degree, r);
 
             int i;
-            for(i=0;i<res->value.c.len;i++) {
-                if(IN_REGION(res->value.c.elems[i], r)) {
+            for(i=0;i<res->degree;i++) {
+                if(IN_REGION(res->subtrees[i], r)) {
                     /* the element is in region r */
-                    collRes->value.c.elems[i] = cpRes(res->value.c.elems[i], r);
+                    collRes->subtrees[i] = cpRes(res->subtrees[i], r);
                 } else {
-                    collRes->value.c.elems[i] = cpRes(res->value.c.elems[i], r);
+                    collRes->subtrees[i] = cpRes(res->subtrees[i], r);
                 }
             }
-            collRes->type = cpType(res->type, r);
+            collRes->exprType = cpType(res->exprType, r);
             return collRes;
         }
     } else {
         if(IN_REGION(res, r)) {
-            res->type = cpType(res->type, r);
+            res->exprType = cpType(res->exprType, r);
             return res;
         }
         Res *resCp = newRes(r);
         *resCp = *res;
-        resCp->type = cpType(res->type, r);
+        resCp->exprType = cpType(res->exprType, r);
         return resCp;
     }
 }
@@ -539,39 +536,30 @@ ExprType *cpType(ExprType *ty, Region *r) {
     if(IN_REGION(ty, r)) {
         return ty;
     }
-    ExprType **paramTypes;
     int i;
     ExprType *newt;
-    switch(ty->t) {
-        case T_FUNC:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*ty->ext.func.arity);
-            for(i=0;i<ty->ext.func.arity;i++) {
-                paramTypes[i] = cpType(ty->ext.func.paramsType[i],r);
-            }
-            newt = newFuncTypeVarArg(ty->ext.func.arity, ty->ext.func.vararg, paramTypes, cpType(ty->ext.func.retType,r), r);
-            newt->coercionAllowed = ty->coercionAllowed;
-            return newt;
-        case T_CONS:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*ty->ext.cons.arity);
-            for(i=0;i<ty->ext.cons.arity;i++) {
-                paramTypes[i] = cpType(ty->ext.cons.typeArgs[i],r);
-            }
-            newt = newConsType(ty->ext.cons.arity, ty->ext.cons.typeConsName, paramTypes, r);
-            newt->coercionAllowed = ty->coercionAllowed;
-            return newt;
-        case T_VAR:
-            newt = newTVar2(T_VAR_NUM_DISJUNCTS(ty), T_VAR_DISJUNCTS(ty), r);
-            newt->coercionAllowed = ty->coercionAllowed;
-            return newt;
-        case T_IRODS:
-            newt = newIRODSType(ty->ext.irods.name, r);
-            return newt;
-        default:
-            newt = (ExprType *)region_alloc(r, sizeof(ExprType));
-            memcpy(newt, ty, sizeof(ExprType));
-            return newt;
-
+    newt = (ExprType *) region_alloc(r, sizeof(ExprType));
+    memcpy(newt, ty, sizeof(ExprType));
+    if(ty->subtrees != NULL) {
+        newt->subtrees = (ExprType **) region_alloc(r,sizeof(ExprType *)*ty->degree);
+        for(i=0;i<ty->degree;i++) {
+            newt->subtrees[i] = cpType(ty->subtrees[i],r);
+        }
     }
+    if(ty->text != NULL) {
+        newt->text = cpString(ty->text, r);
+    }
+
+    switch(ty->type) {
+        case T_VAR:
+            T_VAR_DISJUNCTS(newt) = (NodeType *) region_alloc(r, sizeof(NodeType)*T_VAR_NUM_DISJUNCTS(ty));
+            memcpy(T_VAR_DISJUNCTS(newt), T_VAR_DISJUNCTS(ty), sizeof(NodeType) * T_VAR_NUM_DISJUNCTS(ty));
+            break;
+        default:
+            break;
+    }
+    
+    return newt;
 }
 /* copy res values from other region to r */
 void cpHashtable(Hashtable *env, Region *r) {
@@ -608,7 +596,7 @@ Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rE
             addRErrorMsg(errmsg, UNSUPPORTED_SESSION_VAR, errbuf);
             return newErrorRes(r, UNSUPPORTED_SESSION_VAR);
         }
-        setVarValue(varMap, rei, strdup(val->value.s.pointer));
+        setVarValue(varMap, rei, strdup(val->text));
         return newIntRes(r, 0);
     }
     else if(varName[0] == '*') {
@@ -650,26 +638,26 @@ char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
     buf[0] = '\0';
     Region *r = make_region(0, NULL);
         ExprType *etype = type;
-        if(etype->t == T_VAR && var_types != NULL) {
+        if(etype->type == T_VAR && var_types != NULL) {
             /* dereference */
             etype = dereference(etype, var_types, r);
         }
         snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", etype == NULL?"?":typeName_ExprType(etype));
-        if(etype->t == T_VAR) {
+        if(etype->type == T_VAR) {
             snprintf(buf+strlen(buf), bufsize-strlen(buf), "%d", etype->ext.tvar.vid);
             if(T_VAR_NUM_DISJUNCTS(type)!=0) {
                 snprintf(buf+strlen(buf), bufsize-strlen(buf), "{");
                 int i;
                 for(i=0;i<T_VAR_NUM_DISJUNCTS(type);i++) {
-                    snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", typeName_TypeConstructor(T_VAR_DISJUNCT(type, i)));
+                    snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", typeName_NodeType(T_VAR_DISJUNCT(type, i)));
                 }
                 snprintf(buf+strlen(buf), bufsize-strlen(buf), "}");
             }
-        } else if(etype->t == T_CONS) {
+        } else if(etype->type == T_CONS) {
             snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", T_CONS_TYPE_NAME(etype));
             int i;
             for(i=0;i<T_CONS_ARITY(etype);i++) {
-                typeToString(etype->ext.cons.typeArgs[i], var_types, buf+strlen(buf), bufsize-strlen(buf));
+                typeToString(T_CONS_TYPE_ARG(etype, i), var_types, buf+strlen(buf), bufsize-strlen(buf));
             }
         }
 
@@ -679,7 +667,7 @@ char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
 
 }
 ExprType *dereference(ExprType *type, Hashtable *type_table, Region *r) {
-    if(type->t == T_VAR) {
+    if(type->type == T_VAR) {
         char name[128];
         getTVarName(type->ext.tvar.vid, name);
         /* printf("deref: %s\n", name); */
@@ -698,23 +686,17 @@ ExprType *instantiate(ExprType *type, Hashtable *type_table, Region *r) {
     ExprType *typeInst;
     int changed = 0;
 
-    switch(type->t) {
-        case T_FUNC:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*type->ext.func.arity);
-            for(i=0;i<type->ext.func.arity;i++) {
-                paramTypes[i] = instantiate(type->ext.func.paramsType[i], type_table,r);
-            }
-            return newFuncTypeVarArg(type->ext.func.arity, type->ext.func.vararg, paramTypes, cpType(type->ext.func.retType,r), r);
+    switch(type->type) {
         case T_CONS:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*type->ext.cons.arity);
+            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*T_CONS_ARITY(type));
             for(i=0;i<T_CONS_ARITY(type);i++) {
-                paramTypes[i] = instantiate(type->ext.cons.typeArgs[i], type_table, r);
+                paramTypes[i] = instantiate(T_CONS_TYPE_ARG(type, i), type_table, r);
                 if(paramTypes[i]!=T_CONS_TYPE_ARG(type, i)) {
                     changed = 1;
                 }
             }
             if(changed) {
-                return newConsType(T_CONS_ARITY(type), T_CONS_TYPE_NAME(type), paramTypes, r);
+                return newConsTypeVarArg(T_CONS_ARITY(type), T_CONS_VARARG(type), T_CONS_TYPE_NAME(type), paramTypes, r);
             } else {
                 return type;
             }
@@ -921,39 +903,6 @@ char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]) {
 
 }
 
-void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN]) {
-    FILE *fp = fopen(ruleBasePath, "r");
-    Pointer *e = newPointer(fp, ruleBaseName);
-    Label l;
-    l.base = ruleBaseName;
-    l.exprloc = errloc;
-    char buf[1024];
-    dupLine(e, &l, 1024, buf);
-    strncat(buf, "\n", 1024);
-    int coor[2];
-    getCoor(e, &l, coor);
-    int i;
-    for(i=0;i<coor[1];i++) {
-        strncat(buf, " ", 1024);
-    }
-    strncat(buf, "^", 1024);
-    /*printf("readRuleSetFromFile: error parsing rule: line %d, row %d\n%s\n", coor[0], coor[1], buf); */
-    snprintf(errbuf, ERR_MSG_LEN,
-            "%s\nline %d, row %d\n%s\n", msg, coor[0], coor[1], buf);
-    deletePointer(e);
-    /*fclose(fp); */
-
-}
-char *generateErrMsg(char *msg, long errloc, char *ruleBaseName, char errmsg[ERR_MSG_LEN]) {
-    if(*ruleBaseName==0) {
-        snprintf(errmsg, ERR_MSG_LEN, "<source>\n%s", msg); /* __source_is_unknown__ */
-        return errmsg;
-    }
-    char ruleBasePath[MAX_NAME_LEN];
-    getRuleBasePath(ruleBaseName, ruleBasePath);
-    generateErrMsgFromFile(msg, errloc, ruleBaseName, ruleBasePath, errmsg);
-    return errmsg;
-}
 
 int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str) {
   int i,j;
