@@ -133,7 +133,7 @@ void addCmdExecOutToEnv(Hashtable *global, Region *r) {
     execCmdOut_t *ruleExecOut = (execCmdOut_t *)malloc (sizeof (execCmdOut_t));
     memset (ruleExecOut, 0, sizeof (execCmdOut_t));
     Res *execOutRes = newRes(r);
-	execOutRes->exprType  = newIRODSType(ExecCmdOut_MS_T, r);
+	execOutRes->type  = newIRODSType(ExecCmdOut_MS_T, r);
 	execOutRes->value.uninterpreted.inOutStruct = ruleExecOut;
     insertIntoHashTable(global, "ruleExecOut", execOutRes);
 
@@ -192,7 +192,7 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
 	deleteHashTable(varTypes, nop);
 
     int rescode;
-    if(type->type!=T_ERROR) {
+    if(type->t!=T_ERROR) {
         addCmdExecOutToEnv(global, r);
         if(msParamArray!=NULL) {
             convertMsParamArrayToEnv(msParamArray, env->global, errmsg, r);
