@@ -179,17 +179,30 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
                 return UNPARSED_SUFFIX;
             }
 	}
-    Hashtable *funcDesc = newHashTable(100);
-    Hashtable *global = newHashTable(100);
+    Hashtable *varTypes = newHashTable(100);
+    
+	Hashtable *funcDesc = newHashTable(100);
     getSystemFunctions(funcDesc, r);
+    Hashtable *global = newHashTable(100);
     Env *env = newEnv(newHashTable(100), global, funcDesc);
-    addCmdExecOutToEnv(global, r);
-    if(msParamArray!=NULL) {
-        convertMsParamArrayToEnv(msParamArray, env->global, errmsg, r);
-    }
-    int rescode = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
-    if(msParamArray!=NULL) {
-        convertEnvToMsParamArray(msParamArray, env, errmsg, r);
+    List *typingConstraints = newList(r);
+    Node *errnode;
+    ExprType *type = typeRule(node, funcDesc, varTypes, typingConstraints, errmsg, &errnode, r);
+
+	deleteHashTable(varTypes, nop);
+
+    int rescode;
+    if(type->type!=T_ERROR) {
+        addCmdExecOutToEnv(global, r);
+        if(msParamArray!=NULL) {
+            convertMsParamArrayToEnv(msParamArray, env->global, errmsg, r);
+        }
+        rescode = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
+        if(msParamArray!=NULL) {
+            convertEnvToMsParamArray(msParamArray, env, errmsg, r);
+        }
+    } else {
+        rescode = TYPE_ERROR;
     }
     deleteEnv(env, 3);
 
