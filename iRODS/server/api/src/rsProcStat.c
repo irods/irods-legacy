@@ -223,6 +223,7 @@ genQueryOut_t **procStatOut)
             continue;
         }
     }
+    closedir (dirPtr);
     return 0;
 }
 

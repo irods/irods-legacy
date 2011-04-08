@@ -2074,6 +2074,7 @@ getNumFilesInDir (char *mydir)
             continue;
         }
     }
+    closedir (dirPtr);
     return count;
 }
 
