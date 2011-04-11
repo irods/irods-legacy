@@ -925,7 +925,7 @@ rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
         } else {
             sendRate = DEF_UDP_SEND_RATE;
         }
-        status = putFileToPortalRbudp (portalOprOut, NULL, 
+        status = putFileToPortalRbudp (portalOprOut, NULL, NULL,
 	  FileDesc[srcL3descInx].fd, dataSize, 
 	  veryVerbose, sendRate, packetSize);
     }

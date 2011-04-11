@@ -120,6 +120,8 @@ int
 getRescCnt (rescGrpInfo_t *myRescGrpInfo);
 int
 updateResc (rsComm_t *rsComm);
+rescInfo_t *
+matchSameHostRescByType (rescInfo_t *myRescInfo, int driverType);
 #ifdef  __cplusplus
 }
 #endif

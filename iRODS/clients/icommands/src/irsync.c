@@ -70,7 +70,7 @@ main(int argc, char **argv) {
     } else if (strncmp (argv[argc-1], "i:", 2) == 0) {
         destType = UNKNOWN_OBJ_T;
 	strcpy (buffer, argv[argc-1] + 2);
-	argv[argc-1] = buffer;
+	argv[argc-1] = strdup (argv[argc-1] + 2);
     } else {
         destType = UNKNOWN_FILE_T;
     }

@@ -66,7 +66,7 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 
     if (portalOprOut->numThreads <= 0) { 
 	status = putFile (conn, portalOprOut->l1descInx, 
-	  locFilePath, dataObjInp->dataSize);
+	  locFilePath, dataObjInp->objPath, dataObjInp->dataSize);
 #ifdef RBUDP_TRANSFER
     } else if (getUdpPortFromPortList (&portalOprOut->portList) != 0) {
 	int veryVerbose;
@@ -86,8 +86,8 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 	} else {
 	    veryVerbose = 0;
 	}
-        status = putFileToPortalRbudp (portalOprOut, locFilePath, -1,
-          dataObjInp->dataSize, veryVerbose, 0, 0);
+        status = putFileToPortalRbudp (portalOprOut, locFilePath, 
+          dataObjInp->objPath, -1, dataObjInp->dataSize, veryVerbose, 0, 0);
 #endif  /* RBUDP_TRANSFER */
     } else {
         if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
@@ -103,7 +103,7 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 	}
 	conn->transStat.numThreads = portalOprOut->numThreads;
         status = putFileToPortal (conn, portalOprOut, locFilePath, 
-	  dataObjInp->dataSize);
+	  dataObjInp->objPath, dataObjInp->dataSize);
     }
 
     /* just send a complete msg */

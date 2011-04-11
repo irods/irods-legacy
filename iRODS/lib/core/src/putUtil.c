@@ -8,6 +8,7 @@
 #include "rodsLog.h"
 #include "putUtil.h"
 #include "miscUtil.h"
+#include "rcPortalOpr.h"
 
 int
 putUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, 
@@ -56,6 +57,23 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
         }
     }
 
+    if (conn->fileRestart.flags == FILE_RESTART_ON) {
+	fileRestartInfo_t *info;
+        status = readLfRestartFile (conn->fileRestart.infoFile, &info);
+	if (status >= 0) {
+	    status = lfRestartPutWithInfo (conn, info); 
+	    if (status >= 0) {
+		/* save info so we know what got restarted */
+		rstrcpy (conn->fileRestart.info.objPath, info->objPath, 
+		  MAX_NAME_LEN);
+		conn->fileRestart.info.status = FILE_RESTARTED;
+		printf ("%s was restarted successfully\n", 
+                  conn->fileRestart.info.objPath);
+		unlink (conn->fileRestart.infoFile);
+	    }
+	    if (info != NULL) free (info);
+	}
+    }
     for (i = 0; i < rodsPathInp->numSrc; i++) {
 	targPath = &rodsPathInp->targPath[i];
 
@@ -122,6 +140,13 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
        rodsLog (LOG_ERROR,
           "putFileUtil: NULL srcPath or targPath input");
         return (USER__NULL_INPUT_ERR);
+    }
+
+    if (conn->fileRestart.info.status == FILE_RESTARTED &&
+      strcmp (conn->fileRestart.info.objPath, targPath) == 0) {
+        /* it was restarted */
+	conn->fileRestart.info.status = FILE_NOT_RESTART;
+        return 0;
     }
 
     if (rodsArgs->verbose == True) {

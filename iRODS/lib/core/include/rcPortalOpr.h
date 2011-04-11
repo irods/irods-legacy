@@ -43,7 +43,7 @@ fillRcPortalTransferInp (rcComm_t *conn, rcPortalTransferInp_t *myInput,
 int destFd, int srcFd, int threadNum);
 int
 putFileToPortal (rcComm_t *conn, portalOprOut_t *portalOprOut, 
-char *locFilePath, rodsLong_t dataSize);
+char *locFilePath, char *objPath, rodsLong_t dataSize);
 int
 getFileFromPortal (rcComm_t *conn, portalOprOut_t *portalOprOut, 
 char *locFilePath, rodsLong_t dataSize);
@@ -61,7 +61,7 @@ int
 fillBBufWithFile (rcComm_t *conn, bytesBuf_t *myBBuf, char *locFilePath, 
 rodsLong_t dataSize);
 int
-putFile (rcComm_t *conn, int l1descInx, char *locFilePath,
+putFile (rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
 rodsLong_t dataSize);
 int
 getIncludeFile (rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath);
@@ -71,8 +71,8 @@ rodsLong_t dataSize);
 #ifdef RBUDP_TRANSFER
 int
 putFileToPortalRbudp (portalOprOut_t *portalOprOut,                
-char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
-int sendRate, int packetSize);
+char *locFilePath, char *objPath, int locFd, rodsLong_t dataSize, 
+int veryVerbose, int sendRate, int packetSize);
 int
 getFileToPortalRbudp (portalOprOut_t *portalOprOut,                
 char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
@@ -81,21 +81,21 @@ int
 initRbudpClient (rbudpBase_t *rbudpBase, portList_t *myPortList);
 #endif  /* RBUDP_TRANSFER */
 int
-initFileRestart (rcComm_t *conn, char *fileName, rodsLong_t fileSize,
-int numThr);
+initFileRestart (rcComm_t *conn, char *fileName, char *objPath,
+rodsLong_t fileSize, int numThr);
 int
-writeLfRestartFile (fileRestart_t *fileRestart);
+writeLfRestartFile (char *infoFile, fileRestartInfo_t *info);
 int
-readLfRestartFile (char *infoFile, fileRestart_t **fileRestart);
+readLfRestartFile (char *infoFile, fileRestartInfo_t **info);
 int
 clearLfRestartFile (fileRestart_t *fileRestart);
 int
-lfRestartPutWithInfo (rcComm_t *conn, fileRestart_t *fileRestart, 
-char *targPath);
+lfRestartPutWithInfo (rcComm_t *conn, fileRestartInfo_t *info); 
 int
-putSeg (rcComm_t *conn, rodsLong_t segSize, int localFd, int irodsFd,
+putSeg (rcComm_t *conn, rodsLong_t segSize, int localFd,
 openedDataObjInp_t *dataObjWriteInp, bytesBuf_t *dataObjWriteInpBBuf,
-int bufLen);
+int bufLen, int *writtenSinceUpdated, fileRestartInfo_t *info, 
+rodsLong_t *dataSegLen);
 #ifdef  __cplusplus
 }
 #endif

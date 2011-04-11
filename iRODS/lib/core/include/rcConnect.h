@@ -50,18 +50,24 @@ typedef enum {
     FILE_RESTART_ON
 } fileRestartFlag_t;
 
+typedef enum {
+    FILE_NOT_RESTART,
+    FILE_RESTARTED
+} fileRestartStatus_t;
+
 typedef struct {
-    char fileName[MAX_NAME_LEN];	/* the file name to restart */
+    char fileName[MAX_NAME_LEN];        /* the local file name to restart */
+    char objPath[MAX_NAME_LEN];         /* the irodsPath */
     int numSeg;         /* number of segments. should equal to num threads */
-    int flags;		/* not used for now  */
+    fileRestartStatus_t status;         /* restart status  */
     rodsLong_t fileSize;
     dataSeg_t dataSeg[MAX_NUM_CONFIG_TRAN_THR];
 } fileRestartInfo_t;
 
 typedef struct {
     fileRestartFlag_t flags;
-    char infoFile[MAX_NAME_LEN];	/* file containing restart info */
-    fileRestartInfo_t info;	/* must be the last item because of PI */
+    char infoFile[MAX_NAME_LEN];        /* file containing restart info */
+    fileRestartInfo_t info;     /* must be the last item because of PI */
 } fileRestart_t;
 
 typedef enum {
