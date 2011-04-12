@@ -66,6 +66,7 @@ typedef struct {
 
 typedef struct {
     fileRestartFlag_t flags;
+    rodsLong_t writtenSinceUpdated;	/* bytes trans since last update */
     char infoFile[MAX_NAME_LEN];        /* file containing restart info */
     fileRestartInfo_t info;     /* must be the last item because of PI */
 } fileRestart_t;

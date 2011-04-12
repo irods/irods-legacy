@@ -92,9 +92,11 @@ usage ()
    char *msgs[]={
 "Usage : iput [-abfIkKPQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile] [--link]", 
+"             [--lfrestart lfRestartFile]",
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
 "Usage : iput [-abfIkKPQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] [--link]",
+"             [--lfrestart lfRestartFile]",
 "               localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -107,6 +109,9 @@ usage ()
 "Note that the restart operation only works for uploading directories and",
 "the path input must be identical to the one that generated the restart file", 
 " ",
+"The --lfrestart option specifies that the large file restart option is on",
+"and the lfRestartFile input specifies a local file that contains the restart",
+"info. Currently, only files larger than 32 Mbytes will be restarted.",
 "If the options -f is used to overwrite an existing data-object, the copy",
 "in the resource specified by the -R option will be picked if it exists.",
 "Otherwise, one of the copy in the other resources will be picked for the",
@@ -168,7 +173,9 @@ usage ()
 " -V  Very verbose",
 " -X  restartFile - specifies that the restart option is on and the",
 "     restartFile input specifies a local file that contains the restart info.",
-
+" --lfrestart lfRestartFile - specifies that the large file restart option is",
+"      on and the lfRestartFile input specifies a local file that contains",
+"      the restart info.",
 " -h  this help",
 ""};
    int i;
