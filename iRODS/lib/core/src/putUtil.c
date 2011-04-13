@@ -386,9 +386,17 @@ rodsRestart_t *rodsRestart)
     dataObjOprInp->openFlags = O_RDWR;
 
     if (rodsArgs->lfrestart == True) {
-        conn->fileRestart.flags = FILE_RESTART_ON;
-	rstrcpy (conn->fileRestart.infoFile, rodsArgs->lfrestartFileString, 
-	  MAX_NAME_LEN);
+        if (rodsArgs->bulk == True) {
+            rodsLog (LOG_NOTICE, 
+              "initCondForPut: --lfrestart cannot be used with -b option");
+        } else if (rodsArgs->rbudp == True) {
+            rodsLog (LOG_NOTICE, 
+              "initCondForPut: --lfrestart cannot be used with -Q option");
+        } else {
+            conn->fileRestart.flags = FILE_RESTART_ON;
+	    rstrcpy (conn->fileRestart.infoFile, rodsArgs->lfrestartFileString, 
+	      MAX_NAME_LEN);
+	}
     }
 
     return (0);
