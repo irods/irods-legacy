@@ -2540,8 +2540,10 @@ int deleteFlag)
 
     if (restartPath != NULL && deleteFlag > 0) {
         if (objType == DATA_OBJ_T) {
-	    if (condInput == NULL ||
-	      getValByKey (condInput, FORCE_FLAG_KW) == NULL) {
+	    if ((condInput == NULL ||
+	      getValByKey (condInput, FORCE_FLAG_KW) == NULL) &&
+	       (conn->fileRestart.info.status != FILE_RESTARTED ||
+                strcmp (conn->fileRestart.info.objPath, restartPath) != 0)) {
                 dataObjInp_t dataObjInp;
 	        /* need to remove any partially completed file */ 
 		/* XXXXX may not be enough for bulk put */
