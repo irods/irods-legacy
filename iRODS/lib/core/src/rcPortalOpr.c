@@ -1232,10 +1232,10 @@ lfRestartPutWithInfo (rcComm_t *conn, fileRestartInfo_t *info)
 
     irodsFd = rcDataObjOpen (conn, &dataObjOpenInp);
     if (irodsFd < 0) { /* error */
-        rodsLogError (LOG_ERROR, status,
-        "cannot open target file %s, status = %d", info->objPath, status);
+        rodsLogError (LOG_ERROR, irodsFd,
+        "cannot open target file %s, status = %d", info->objPath, irodsFd);
 	close (localFd);
-        return (status);
+        return (irodsFd);
     }
 
     bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
