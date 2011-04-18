@@ -29,7 +29,7 @@ main(int argc, char **argv) {
    char *myName;
    int didOne;
 
-   Comm = malloc (sizeof (rsComm_t));
+   Comm = (rsComm_t*)malloc (sizeof (rsComm_t));
    memset (Comm, 0, sizeof (rsComm_t));
 
    parseCmdLineOpt(argc, argv, "", 0, &myRodsArgs);

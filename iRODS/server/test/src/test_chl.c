@@ -140,7 +140,7 @@ int testTempPwConvert(char *s1, char *s2) {
    strncat(md5Buf, s1, sizeof md5Buf);
 
    MD5Init (&context);
-   MD5Update (&context, md5Buf, sizeof md5Buf);
+   MD5Update (&context, (unsigned char*)md5Buf, sizeof md5Buf);
    MD5Final (digest, &context);
 
    md5ToStr(digest, digestStr);
@@ -173,7 +173,7 @@ int testTempPwCombined(rsComm_t *rsComm, char *s1) {
    strncat(md5Buf, s1, sizeof md5Buf);
 
    MD5Init (&context);
-   MD5Update (&context, md5Buf, sizeof md5Buf);
+   MD5Update (&context, (unsigned char*)md5Buf, sizeof md5Buf);
    MD5Final (digest, &context);
 
    md5ToStr(digest, digestStr);
@@ -826,7 +826,7 @@ main(int argc, char **argv) {
    int didOne;
    rodsServerConfig_t serverConfig;
 
-   Comm = malloc (sizeof (rsComm_t));
+   Comm = (rsComm_t*)malloc (sizeof (rsComm_t));
    memset (Comm, 0, sizeof (rsComm_t));
 
    parseCmdLineOpt(argc, argv, "", 0, &myRodsArgs);
