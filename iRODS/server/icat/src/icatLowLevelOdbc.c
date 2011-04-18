@@ -766,7 +766,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
       }
       /*      printf("columnLength[%d]=%d\n",i,columnLength[i]); */
  
-      myStatement->resultValue[i] = malloc((int)columnLength[i]);
+      myStatement->resultValue[i] = (char*)malloc((int)columnLength[i]);
 
       strcpy((char *)myStatement->resultValue[i],"");
 
@@ -790,7 +790,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
       }
 
 
-      myStatement->resultColName[i] = malloc((int)columnLength[i]);
+      myStatement->resultColName[i] = (char*)malloc((int)columnLength[i]);
       strncpy(myStatement->resultColName[i], (char *)colName, columnLength[i]);
 
    }
@@ -1016,7 +1016,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       }
       /*      printf("columnLength[%d]=%d\n",i,columnLength[i]); */
  
-      myStatement->resultValue[i] = malloc((int)columnLength[i]);
+      myStatement->resultValue[i] = (char*)malloc((int)columnLength[i]);
 
       strcpy((char *)myStatement->resultValue[i],"");
 
@@ -1040,7 +1040,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       }
 
 
-      myStatement->resultColName[i] = malloc((int)columnLength[i]);
+      myStatement->resultColName[i] = (char*)malloc((int)columnLength[i]);
       strncpy(myStatement->resultColName[i], (char *)colName, columnLength[i]);
 
    }

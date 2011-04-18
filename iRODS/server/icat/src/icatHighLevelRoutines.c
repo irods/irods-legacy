@@ -3307,8 +3307,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
 
       MD5Init (&context);
-      MD5Update (&context, md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
-      MD5Final (digest, &context);
+      MD5Update (&context, (unsigned char*)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
+      MD5Final ((unsigned char*)digest, &context);
 
       for (i=0;i<RESPONSE_LEN;i++) {
 	 if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't end
@@ -3550,7 +3550,7 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    strncat(md5Buf, password, 100);
 
    MD5Init (&context);
-   MD5Update (&context, md5Buf, 100);
+   MD5Update (&context, (unsigned char*)md5Buf, 100);
    MD5Final (digest, &context);
 
    md5ToStr(digest, newPw);
@@ -8833,7 +8833,7 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
 	 if (debug) printf("attriTextLen=%d\n",attriTextLen);
 	 totalLen = attriTextLen * specificQueryInp.maxRows;
 	 for (j=0;j<numOfCols;j++) {
-	    tResult = malloc(totalLen);
+	    tResult = (char*)malloc(totalLen);
 	    if (tResult==NULL) return(SYS_MALLOC_ERR);
 	    memset(tResult, 0, totalLen);
 	    result->sqlResult[j].attriInx = 0; 
@@ -8861,7 +8861,7 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
 	 for (j=0;j<numOfCols;j++) {
 	    char *cp1, *cp2;
 	    int k;
-	    tResult = malloc(totalLen);
+	    tResult = (char*)malloc(totalLen);
 	    if (tResult==NULL) return(SYS_MALLOC_ERR);
 	    memset(tResult, 0, totalLen);
 	    cp1 = result->sqlResult[j].value;

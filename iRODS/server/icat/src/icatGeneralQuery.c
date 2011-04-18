@@ -1847,7 +1847,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 	 if (debug) printf("attriTextLen=%d\n",attriTextLen);
 	 totalLen = attriTextLen * genQueryInp.maxRows;
 	 for (j=0;j<numOfCols;j++) {
-	    tResult = malloc(totalLen);
+	    tResult = (char*)malloc(totalLen);
 	    if (tResult==NULL) return(SYS_MALLOC_ERR);
 	    memset(tResult, 0, totalLen);
 	    if (genQueryInp.options & QUOTA_QUERY) {
@@ -1878,7 +1878,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 	 for (j=0;j<numOfCols;j++) {
 	    char *cp1, *cp2;
 	    int k;
-	    tResult = malloc(totalLen);
+	    tResult = (char*)malloc(totalLen);
 	    if (tResult==NULL) return(SYS_MALLOC_ERR);
 	    memset(tResult, 0, totalLen);
 	    cp1 = result->sqlResult[j].value;
