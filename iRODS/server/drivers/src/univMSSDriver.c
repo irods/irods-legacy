@@ -199,7 +199,7 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	
 	if (status == 0) {
 		if ( execCmdOut->stdoutBuf.buf != NULL) {
-			outputStr = execCmdOut->stdoutBuf.buf;
+			outputStr = (char*)execCmdOut->stdoutBuf.buf;
 			memset(&splchain1, 0, sizeof(splchain1));
 			strSplit(outputStr, delim1, splchain1);
 			statbuf->st_dev = atoi(splchain1[0]);

@@ -448,7 +448,7 @@ unixFileReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
     struct dirent *tmpDirentPtr;
 
     errno = 0;
-    tmpDirentPtr = readdir (dirPtr);
+    tmpDirentPtr = readdir ((DIR*)dirPtr);
 
     if (tmpDirentPtr == NULL) {
 	if (errno == 0) {
