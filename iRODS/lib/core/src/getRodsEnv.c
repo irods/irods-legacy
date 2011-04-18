@@ -144,7 +144,9 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
    if (ProcessType == CLIENT_PT) {
 #ifdef windows_platform    
 	   /* windows only allow one session per user. This is because there is no ppid.*/
-	   sprintf(configFileName, "%s.cwd", configFileName);
+       char tmpCfg[LONG_NAME_LEN];
+	   sprintf(tmpCfg, "%s.cwd", configFileName);
+       strcpy( configFileName, tmpCfg );
 #else
       if (irodsEnvFile==0) {
 	 /* For normal case, use the ppid as part of the session file name */
