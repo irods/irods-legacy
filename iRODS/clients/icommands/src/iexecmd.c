@@ -136,14 +136,14 @@ main(int argc, char **argv) {
 	int bytesRead;
 
         if (execCmdOut->stdoutBuf.buf != NULL) {
-	    tmpPtr = execCmdOut->stdoutBuf.buf;
+	    tmpPtr = (char*)execCmdOut->stdoutBuf.buf;
 	    for (i = 0; i < execCmdOut->stdoutBuf.len; i++) {
 		fputc ((int)(*tmpPtr), stdout);
 		tmpPtr++;
 	    }
 	}
         if (execCmdOut->stderrBuf.buf != NULL) {
-            tmpPtr = execCmdOut->stderrBuf.buf;
+            tmpPtr = (char*)execCmdOut->stderrBuf.buf;
             for (i = 0; i < execCmdOut->stderrBuf.len; i++) {
                 fputc ((int)(*tmpPtr), stderr);
                 tmpPtr++;
@@ -163,7 +163,7 @@ main(int argc, char **argv) {
 	    streamReadInp.fileInx = execCmdOut->status;
             while ((bytesRead = rcStreamRead (conn, &streamReadInp,
               streamReadOutBBuf)) > 0) {
-                tmpPtr = streamReadOutBBuf->buf;
+                tmpPtr = (char*)streamReadOutBBuf->buf;
                 for (i = 0; i < bytesRead; i++) {
                     fputc ((int)(*tmpPtr), stdout);
                     tmpPtr++;

@@ -224,14 +224,14 @@ main(int argc, char **argv) {
       if ((mP = getMsParamByType (outParamArray, ExecCmdOut_MS_T)) != NULL) {
 	execCmdOut = (execCmdOut_t *) mP->inOutStruct;
 	if (execCmdOut->stdoutBuf.buf != NULL) {
-            tmpPtr = execCmdOut->stdoutBuf.buf;
+            tmpPtr = (char*)execCmdOut->stdoutBuf.buf;
             for (i = 0; i < execCmdOut->stdoutBuf.len; i++) {
                 fputc ((int)(*tmpPtr), stdout);
                 tmpPtr++;
             }
 	}
 	if (execCmdOut->stderrBuf.buf != NULL) {
-            tmpPtr = execCmdOut->stderrBuf.buf;
+            tmpPtr = (char*)execCmdOut->stderrBuf.buf;
             for (i = 0; i < execCmdOut->stderrBuf.len; i++) {
                 fputc ((int)(*tmpPtr), stderr);
                 tmpPtr++;
