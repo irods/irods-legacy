@@ -311,7 +311,11 @@ typedef int((*funcPtr)(...));
 typedef int((*funcPtr)());
 #endif
 #else
+#ifdef __cplusplus /* JMC */
+    typedef int((*funcPtr)(...));
+#else    
 typedef int((*funcPtr)());
+#endif
 #endif
 
 /* some platform does not support vfork */
