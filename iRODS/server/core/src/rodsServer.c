@@ -874,7 +874,7 @@ addConnReqToQue (rsComm_t *rsComm, int sock)
 #ifndef SINGLE_SVR_THR
     pthread_mutex_lock (&ReadReqCondMutex);
 #endif
-    myConnReq = calloc (1, sizeof (agentProc_t));
+    myConnReq = (agentProc_t*)calloc (1, sizeof (agentProc_t));
 
     myConnReq->sock = sock;
     myConnReq->remoteAddr = rsComm->remoteAddr;
