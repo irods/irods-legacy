@@ -400,7 +400,7 @@ Res* evaluateFunction3(char* fn, Node** subtrees, int n, Node *node, ruleExecInf
         deleteHashTable(localTVarEnv, nop);
         localTVarEnv = NULL;
         if(fd!=NULL) {
-            res = fd->func(args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
+            res = (Res*)fd->func( args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
         } else {
             res = execAction3(fn, (Res **)args, n, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
         }

@@ -392,7 +392,7 @@ msiGetIcatTime(msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t 
   char tStr0[TIME_LEN],tStr[TIME_LEN];
   int i;
 
-  type = typeInParam->inOutStruct;
+  type = (char*)typeInParam->inOutStruct;
 
   if (!strcmp(type,"icat") || !strcmp(type,"unix")) {
     getNowStr(tStr);

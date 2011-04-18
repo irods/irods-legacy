@@ -75,9 +75,9 @@ int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
   varName = (char *)var->label;
   varValue = (char *) var->inOutStruct;
   if ( varValue != NULL && varValue[0] == '$') {
-    i = getVarMap("", var->inOutStruct, &varMap, 0);
+    i = getVarMap("", (char*)var->inOutStruct, &varMap, 0);
     if (i < 0) return(i);
-    rstrcpy(aVal,value->inOutStruct,MAX_COND_LEN * 2);
+    rstrcpy(aVal,(char*)value->inOutStruct,MAX_COND_LEN * 2);
     i = evaluateExpression(aVal, eaVal,rei);
     if (i < 0 ) 
       return(i);
@@ -91,9 +91,9 @@ int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
 	strcmp (value->type, STR_MS_T) == 0 ||
 	strcmp (value->type, STR_PI) == 0 ) {
       if (value->inOutStruct != NULL)
-	rstrcpy(aVal,value->inOutStruct,MAX_COND_LEN * 2);
+	rstrcpy((char*)aVal,(char*)value->inOutStruct,MAX_COND_LEN * 2);
       else
-	rstrcpy(aVal,value->label,MAX_COND_LEN * 2);
+	rstrcpy((char*)aVal,(char*)value->label,MAX_COND_LEN * 2);
       i = evaluateExpression(aVal, eaVal,rei);
       if (i < 0)
 	fillMsParam (var, NULL, value->type, value->inOutStruct, value->inpOutBuf);
@@ -176,15 +176,15 @@ int whileExec(msParam_t* condition, msParam_t* whileBody,
   done = 0;
   inMsParamArray = rei->msParamArray;
   /*  cond = (char *) malloc(strlen(condition->label) + 10 + MAX_COND_LEN * 2); */
-  cond = (char *) malloc(strlen(condition->inOutStruct) + 10 + MAX_COND_LEN * 2);
-  ruleBody = (char *) malloc ( strlen(whileBody->inOutStruct) +
-			       strlen(recoverWhileBody->inOutStruct) + 10 + MAX_COND_LEN * 2);
+  cond = (char *) malloc(strlen((char*)condition->inOutStruct) + 10 + MAX_COND_LEN * 2);
+  ruleBody = (char *) malloc ( strlen((char*)whileBody->inOutStruct) +
+			       strlen((char*)recoverWhileBody->inOutStruct) + 10 + MAX_COND_LEN * 2);
   sprintf(ruleBody,"%s|%s",(char *) whileBody->inOutStruct,
 	    (char *) recoverWhileBody->inOutStruct + MAX_COND_LEN * 8);
     
    while (done == 0) {
     /* strcpy(cond , condition->label); */
-    strcpy(cond , condition->inOutStruct);
+    strcpy(cond , (char*)condition->inOutStruct);
     i = evaluateExpression(cond, eaVal, rei);
     if (i < 0)
       return(i);
@@ -259,19 +259,19 @@ int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step,
   char eaVal[MAX_COND_LEN * 2];
   done = 0;
   /*  i = execMyRuleWithSaveFlag(initial->label,rei->msParamArray, rei,0); */
-  i = execMyRuleWithSaveFlag(initial->inOutStruct,rei->msParamArray, rei,0); 
+  i = execMyRuleWithSaveFlag((char*)initial->inOutStruct,rei->msParamArray, rei,0); 
   if (i != 0)
     return(i);
   /*  cond = (char *) malloc(strlen(condition->label) + 10 + MAX_COND_LEN * 2); */
-  cond = (char *) malloc(strlen(condition->inOutStruct) + 10 + MAX_COND_LEN * 2);
+  cond = (char *) malloc(strlen((char*)condition->inOutStruct) + 10 + MAX_COND_LEN * 2);
   /* stepStr = (char *) malloc(strlen(step->label) + 10 + MAX_COND_LEN * 2); */
-  stepStr = (char *) malloc(strlen(step->inOutStruct) + 10 + MAX_COND_LEN * 2);
-  ruleBody = (char *) malloc ( strlen(forBody->inOutStruct) +
-                                 strlen(recoverForBody->inOutStruct) + 10 + MAX_COND_LEN * 8);
+  stepStr = (char *) malloc(strlen((char*)step->inOutStruct) + 10 + MAX_COND_LEN * 2);
+  ruleBody = (char *) malloc ( strlen((char*)forBody->inOutStruct) +
+                                 strlen((char*)recoverForBody->inOutStruct) + 10 + MAX_COND_LEN * 8);
   
   while (done == 0) {
     /* strcpy(cond , condition->label); */
-    strcpy(cond , condition->inOutStruct);
+    strcpy(cond , (char*)condition->inOutStruct);
     i = evaluateExpression(cond, eaVal, rei);
     if (i < 0)
       return(i);
@@ -287,7 +287,7 @@ int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step,
     if (i != 0)
       return(i);
     /* strcpy(cond , condition->label); */
-    strcpy(stepStr,step->inOutStruct);
+    strcpy(stepStr,(char*)step->inOutStruct);
     i = execMyRuleWithSaveFlag(stepStr,rei->msParamArray, rei,0);
     if (i != 0)
       return(i);
@@ -358,12 +358,12 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
   if (condition->inOutStruct == NULL) {
     /* cond = (char *) malloc(strlen(condition->label) + 10 + MAX_COND_LEN * 2);
        strcpy(cond , condition->label); */
-    cond = (char *) malloc(strlen(condition->inOutStruct) + 10 + MAX_COND_LEN * 2);
-    strcpy(cond , condition->inOutStruct);
+    cond = (char *) malloc(strlen((char*)condition->inOutStruct) + 10 + MAX_COND_LEN * 2);
+    strcpy(cond , (char*)condition->inOutStruct);
   }
   else {
-    cond = (char *) malloc(strlen(condition->inOutStruct) + 10 + MAX_COND_LEN * 2);
-    strcpy(cond , condition->inOutStruct);
+    cond = (char *) malloc(strlen((char*)condition->inOutStruct) + 10 + MAX_COND_LEN * 2);
+    strcpy(cond , (char*)condition->inOutStruct);
   }
 
   i = evaluateExpression(cond, eaVal, rei);
@@ -371,14 +371,14 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
   if (i < 0)
     return(i);
   if (i == 1) { /* TRUE */
-    thenStr = (char *) malloc(strlen(thenC->inOutStruct) + strlen(recoverThen->inOutStruct) + 10 + MAX_COND_LEN * 8);
+    thenStr = (char *) malloc(strlen((char*)thenC->inOutStruct) + strlen((char*)recoverThen->inOutStruct) + 10 + MAX_COND_LEN * 8);
     sprintf(thenStr,"%s|%s",(char *) thenC->inOutStruct,
             (char *) recoverThen->inOutStruct);
     i = execMyRuleWithSaveFlag(thenStr, rei->msParamArray, rei, 0);
     free(thenStr);
   }
   else {
-    elseStr = (char *) malloc(strlen(elseC->inOutStruct) + strlen(recoverElse->inOutStruct) + 10 + MAX_COND_LEN * 8);
+    elseStr = (char *) malloc(strlen((char*)elseC->inOutStruct) + strlen((char*)recoverElse->inOutStruct) + 10 + MAX_COND_LEN * 8);
     sprintf(elseStr,"%s|%s",(char *) elseC->inOutStruct,
             (char *) recoverElse->inOutStruct);
     i = execMyRuleWithSaveFlag(elseStr, rei->msParamArray, rei, 0);
@@ -538,8 +538,8 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
 
   i = 0;
 
-  bodyStr = (char *) malloc ( strlen(body->inOutStruct) +
-                               strlen(recoverBody->inOutStruct) + 10 + MAX_COND_LEN * 8);
+  bodyStr = (char *) malloc ( strlen((char*)body->inOutStruct) +
+                               strlen((char*)recoverBody->inOutStruct) + 10 + MAX_COND_LEN * 8);
   sprintf(bodyStr,"%s|%s",(char *) body->inOutStruct,
 	    (char *) recoverBody->inOutStruct);
     
@@ -551,13 +551,13 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
       break;
 
     if (first == 1 && msParam == NULL) {
-      addMsParam(inMsParamArray, label, outtyp ,value, buf);
+      addMsParam(inMsParamArray, label, outtyp ,value, (bytesBuf_t*)buf);
       msParam = getMsParamByLabel(inMsParamArray, label);
       first = 0;
     }
     else {
       msParam->inOutStruct = value;
-      msParam->inpOutBuf = buf;
+      msParam->inpOutBuf = (bytesBuf_t*)buf;
       msParam->type = outtyp;
     }
 
@@ -707,7 +707,7 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
     argc = 0;
   }
   else {
-    actionCall = malloc(strlen(inActionCall) + strlen(recoveryActionCall) + 3);
+    actionCall = (char*)malloc(strlen((char*)inActionCall) + strlen((char*)recoveryActionCall) + 3);
     sprintf(actionCall,"%s|%s",inActionCall,recoveryActionCall);
     args[0] = NULL;
     args[1] = NULL;
@@ -721,7 +721,7 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
     return(i);
   }
   /* fill Conditions into Submit Struct */
-  ruleSubmitInfo = mallocAndZero(sizeof(ruleExecSubmitInp_t));
+  ruleSubmitInfo = (ruleExecSubmitInp_t*)mallocAndZero(sizeof(ruleExecSubmitInp_t));
   i  = fillSubmitConditions (actionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei);
   if (actionCall != inActionCall) 
     free (actionCall);
@@ -847,7 +847,7 @@ int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, r
   parseHostAddrStr (tmpStr1, &execMyRuleInp.addr);
 #endif
   snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s",  (char*)mPB->inOutStruct,(char*)mPC->inOutStruct);
-  addKeyVal(&execMyRuleInp.condInput,"execCondition",mPA->inOutStruct);
+  addKeyVal(&execMyRuleInp.condInput,"execCondition",(char*)mPA->inOutStruct);
   
   tmpParamArray =  (msParamArray_t *) malloc (sizeof (msParamArray_t));
   memset (tmpParamArray, 0, sizeof (msParamArray_t));
@@ -1199,8 +1199,8 @@ msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
 
   int sec, microsec;
 
-  sec = atoi(secPtr->inOutStruct);
-  microsec = atoi(microsecPtr->inOutStruct);
+  sec = atoi((char*)secPtr->inOutStruct);
+  microsec = atoi((char*)microsecPtr->inOutStruct);
 
   rodsSleep (sec, microsec);
   return(0);
@@ -1266,9 +1266,9 @@ msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam,
   int reiSaveFlag;
   int allRuleExecFlag;
 
-  action = actionParam->inOutStruct;
-  reiSaveFlag = atoi(reiSaveFlagParam->inOutStruct);
-  allRuleExecFlag = atoi(allRuleExecFlagParam->inOutStruct);
+  action = (char*)actionParam->inOutStruct;
+  reiSaveFlag = atoi((char*)reiSaveFlagParam->inOutStruct);
+  allRuleExecFlag = atoi((char*)allRuleExecFlagParam->inOutStruct);
   i = applyAllRules(action, rei->msParamArray, rei, reiSaveFlag,allRuleExecFlag);
   return(i);
 
@@ -1352,10 +1352,10 @@ msiGetDiffTime(msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3,
 	
 	
 	/* get time values from strings */
-	seconds = atol(inpParam2->inOutStruct) - atol(inpParam1->inOutStruct);
+	seconds = atol((char*)inpParam2->inOutStruct) - atol((char*)inpParam1->inOutStruct);
 	
 	/* get desired output format */
-	format = inpParam3->inOutStruct;
+	format = (char*)inpParam3->inOutStruct;
 
 	
 	/* did they ask for human readable format? */
@@ -1439,7 +1439,7 @@ msiGetSystemTime(msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei)
 	}
 	
 
-	format = inpParam->inOutStruct;
+	format = (char*)inpParam->inOutStruct;
 	
 	if (!format || strcmp(format, "human")) {
 		getNowStr(tStr);

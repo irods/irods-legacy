@@ -81,7 +81,7 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
   i = writeString(where, inString,rei);
   if (i < 0)
     return(i);
-  ptr = inString->inOutStruct;
+  ptr = (char*)inString->inOutStruct;
   sprintf(tmp,"%s\n","");
   inString->inOutStruct =  tmp;
   i = writeString(where, inString,rei);
@@ -143,7 +143,7 @@ int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
   if (where->inOutStruct == NULL)
     writeId = where->label;
   else
-    writeId = where->inOutStruct;
+    writeId = (char*)where->inOutStruct;
 
   if (inString->inOutStruct == NULL) {
     writeStr = strdup((char *) inString->label);
@@ -172,16 +172,16 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
   if (((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL) &&
       (mP->inOutStruct != NULL)) {
     if (!strcmp(mP->type,STR_MS_T)) {
-      myExecCmdOut =  malloc (sizeof (execCmdOut_t));
+      myExecCmdOut =  (execCmdOut_t*)malloc (sizeof (execCmdOut_t));
       memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
       mP->inOutStruct = myExecCmdOut;
       mP->type = strdup(ExecCmdOut_MS_T);
     }
     else
-      myExecCmdOut = mP->inOutStruct;
+      myExecCmdOut = (execCmdOut_t*)mP->inOutStruct;
   }
   else {
-    myExecCmdOut =  malloc (sizeof (execCmdOut_t));
+    myExecCmdOut =  (execCmdOut_t*)malloc (sizeof (execCmdOut_t));
     memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
     if (mP == NULL)
       addMsParam(inMsParamArray,"ruleExecOut", ExecCmdOut_MS_T,myExecCmdOut,NULL);
@@ -259,7 +259,7 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
 	int status;
 
 	if (where->inOutStruct != NULL) {
-		writeId = where->inOutStruct;	
+		writeId = (char*)where->inOutStruct;	
 	}
 	else {
 		writeId = where->label;
@@ -329,15 +329,15 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
 	int status;
 	
 	if (where->inOutStruct != NULL) {
-		writeId = where->inOutStruct;	
+		writeId = (char*)where->inOutStruct;	
 	}
 	else {
 		writeId = where->label;
 	}
 	
 	if (inBuf->inpOutBuf != NULL) {
-		writeStr = (char *) malloc(strlen(inBuf->inpOutBuf->buf) + MAX_COND_LEN);
-		strcpy(writeStr , inBuf->inpOutBuf->buf);
+		writeStr = (char *) malloc(strlen((const char*)inBuf->inpOutBuf->buf) + MAX_COND_LEN);
+		strcpy(writeStr , (const char*)inBuf->inpOutBuf->buf);
 	}
 	else {
 		writeStr = (char *) malloc(strlen(inBuf->label) + MAX_COND_LEN);
@@ -438,7 +438,7 @@ int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator
 
 	/* where are we writing to? */
 	if (where->inOutStruct != NULL) {
-		writeId = where->inOutStruct;
+		writeId = (char*)where->inOutStruct;
 	}
 	else {
 		writeId = where->label;
@@ -541,12 +541,12 @@ writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInf
       streamId = (int) xmsgTicketInfo->rcvTicket;
     }
     else if (!strcmp(inStreamId->type,STR_MS_T)) {
-      streamId = (int) atoi(inStreamId->inOutStruct);
+      streamId = (int) atoi((char*)inStreamId->inOutStruct);
     }
     else
       streamId = (int) CAST_PTR_INT  inStreamId->inOutStruct;
 
-  i = _writeXMsg(streamId, inHdr->inOutStruct, inMsg->inOutStruct);
+  i = _writeXMsg(streamId, (char*)inHdr->inOutStruct, (char*)inMsg->inOutStruct);
   return(i);
 }
 
@@ -624,7 +624,7 @@ readXMsg(msParam_t* inStreamId, msParam_t *inCondRead,
     streamId = xmsgTicketInfo->rcvTicket;
   }
   else if (!strcmp(inStreamId->type,STR_MS_T)) {
-    streamId = (int) atoi(inStreamId->inOutStruct);
+    streamId = (int) atoi((char*)inStreamId->inOutStruct);
   }
   else
     streamId = (int) CAST_PTR_INT  inStreamId->inOutStruct;

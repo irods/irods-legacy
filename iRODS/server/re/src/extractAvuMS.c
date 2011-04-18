@@ -140,10 +140,10 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
     return(INVALID_REGEXP);
   }
 
-  t = malloc(tmplObjBuf->len + 1);
+  t = (char*)malloc(tmplObjBuf->len + 1);
   t[tmplObjBuf->len] = '\0';
   memcpy(t,tmplObjBuf->buf,tmplObjBuf->len);
-  tagValues = mallocAndZero(sizeof(tagStruct_t));
+  tagValues = (tagStruct_t*)mallocAndZero(sizeof(tagStruct_t));
   tagValues->len = 0;
   t1 = t;
 #ifdef BABABA
@@ -279,8 +279,8 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
   char c;
   
   t1 = (char *) inStrParam->inOutStruct;
-  pstr[0] = (char *) malloc(strlen(inTagParam->inOutStruct) + 6 );
-  pstr[1] = (char *) malloc(strlen(inTagParam->inOutStruct) + 6 );
+  pstr[0] = (char *) malloc(strlen((char*)inTagParam->inOutStruct) + 6 );
+  pstr[1] = (char *) malloc(strlen((char*)inTagParam->inOutStruct) + 6 );
   sprintf(pstr[0], "<%s>", (char *) inTagParam->inOutStruct);
     j = regcomp (&preg[0], pstr[0], REG_EXTENDED);
     if (j != 0) {
@@ -299,7 +299,7 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
     if (regexec(&preg[0], t1,1,&pm[0],0) == 0) {
       t2 = t1 + pm[0].rm_eo ;                     /* t2 starts value */
       if (regexec(&preg[1],t2,1,&pm[1],0) != 0)
-	fillMsParam( outValueParam, NULL, STR_MS_T, "", NULL );
+	fillMsParam( outValueParam, NULL, STR_MS_T, 0, NULL );
       else {
 	t4 = t2+ pm[1].rm_so;                       /* t4 ends value */
 	t3 = t2+ pm[1].rm_eo;
@@ -310,7 +310,7 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
       }
     }
     else
-      fillMsParam( outValueParam, NULL, STR_MS_T, "", NULL );
+      fillMsParam( outValueParam, NULL, STR_MS_T, 0, NULL );
     regfree(&preg[0]);
     regfree(&preg[1]);
     free(pstr[0]);
@@ -391,10 +391,10 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
     return(USER_PARAM_TYPE_ERR);
   tagValues = (tagStruct_t *) tagParam->inOutStruct;
   metaObjBuf = (bytesBuf_t *)  bufParam->inpOutBuf;
-  t = malloc(metaObjBuf->len + 1);
+  t = (char*)malloc(metaObjBuf->len + 1);
   t[metaObjBuf->len] = '\0';
   memcpy(t,metaObjBuf->buf,metaObjBuf->len);
-  metaDataPairs = mallocAndZero(sizeof(keyValPair_t));
+  metaDataPairs = (keyValPair_t*)mallocAndZero(sizeof(keyValPair_t));
   t1 = t;
   for (i = 0; i  < tagValues->len ; i++) {
     t1 = t;

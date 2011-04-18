@@ -363,7 +363,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 */
 
   if (inMsParamArray == NULL) {
-    inMsParamArray = mallocAndZero(sizeof(msParamArray_t));
+    inMsParamArray = (msParamArray_t*)mallocAndZero(sizeof(msParamArray_t));
     pFlag = 1;
   }
   Region *r = make_region(0, NULL);

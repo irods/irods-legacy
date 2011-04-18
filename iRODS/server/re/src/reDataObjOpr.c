@@ -328,7 +328,7 @@ msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if (strcmp (inpParam->type, DataObjCloseInp_MS_T) == 0) {
-      myDataObjCloseInp = inpParam->inOutStruct;
+      myDataObjCloseInp = (openedDataObjInp_t*)inpParam->inOutStruct;
     } else {
       int myInt;
 
@@ -433,14 +433,14 @@ ruleExecInfo_t *rei)
     if (strcmp (inpParam1->type, STR_MS_T) == 0) {
     /* str input */ 
       memset (&dataObjLseekInp, 0, sizeof (dataObjLseekInp));
-      dataObjLseekInp.l1descInx = atoi (inpParam1->inOutStruct);
+      dataObjLseekInp.l1descInx = atoi ((char*)inpParam1->inOutStruct);
       myDataObjLseekInp = &dataObjLseekInp;
     } else if (strcmp (inpParam1->type, INT_MS_T) == 0) {
         memset (&dataObjLseekInp, 0, sizeof (dataObjLseekInp));
         dataObjLseekInp.l1descInx = *(int *)inpParam1->inOutStruct;
         myDataObjLseekInp = &dataObjLseekInp;
     } else if (strcmp (inpParam1->type, DataObjLseekInp_MS_T) == 0) {
-      myDataObjLseekInp = inpParam1->inOutStruct;
+      myDataObjLseekInp =  (openedDataObjInp_t*)inpParam1->inOutStruct;
     } else {
         rei->status = USER_PARAM_TYPE_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -455,7 +455,7 @@ ruleExecInfo_t *rei)
         } else if (strcmp (inpParam2->type, STR_MS_T) == 0) {
             /* str input */
             if (strcmp ((char *) inpParam2->inOutStruct, "null") != 0) {
-                myDataObjLseekInp->offset = strtoll (inpParam2->inOutStruct, 
+                myDataObjLseekInp->offset = strtoll ((char*)inpParam2->inOutStruct, 
                   0, 0);
               }
         } else if (strcmp (inpParam2->type, DOUBLE_MS_T) == 0) {
@@ -481,7 +481,7 @@ ruleExecInfo_t *rei)
               "SEEK_END") == 0) {
                 myDataObjLseekInp->whence = SEEK_END;
             } else if (strcmp ((char *) inpParam3->inOutStruct, "null") != 0) {
-                myDataObjLseekInp->whence = atoi (inpParam3->inOutStruct);
+                myDataObjLseekInp->whence = atoi ((char*)inpParam3->inOutStruct);
               }
         } else if (strcmp (inpParam3->type, INT_MS_T) == 0) {
             myDataObjLseekInp->whence = *(int *)inpParam3->inOutStruct;
@@ -592,7 +592,7 @@ msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
     }
 
     if (strcmp (inpParam1->type, DataObjReadInp_MS_T) == 0) {
-        myDataObjReadInp = inpParam1->inOutStruct;
+        myDataObjReadInp =  (openedDataObjInp_t*)inpParam1->inOutStruct;
     } else {
         myInt = parseMspForPosInt (inpParam1);
         if (myInt >= 0) {
@@ -710,7 +710,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
       (strcmp((char *) inpParam2->inOutStruct,"stderr") == 0)) {
       if ((mP = getMsParamByLabel (rei->msParamArray, "ruleExecOut")) == NULL)
         return(NO_VALUES_FOUND);
-      myExecCmdOut = mP->inOutStruct;
+      myExecCmdOut = (execCmdOut_t*)mP->inOutStruct;
       if (strcmp((char *) inpParam2->inOutStruct,"stdout") == 0){
         free(inpParam2->inOutStruct);
         inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stdoutBuf.buf);
@@ -731,7 +731,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if (strcmp (inpParam1->type, DataObjWriteInp_MS_T) == 0) {
-        myDataObjWriteInp = inpParam1->inOutStruct;
+        myDataObjWriteInp =  (openedDataObjInp_t*)inpParam1->inOutStruct;
     } else {
        myInt = parseMspForPosInt (inpParam1);
         if (myInt >= 0) {
@@ -749,7 +749,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     if (inpParam2 != NULL) {
       if (strcmp (inpParam2->type, STR_MS_T) == 0) {
         tmpBBuf.len = myDataObjWriteInp->len = 
-          strlen (inpParam2->inOutStruct) + 1;
+          strlen ((char*)inpParam2->inOutStruct) + 1;
         tmpBBuf.buf = inpParam2->inOutStruct;
         myBBuf = &tmpBBuf;
       } else {
@@ -1294,7 +1294,7 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
 
     rsComm = rei->rsComm;
 
-    dataObjInp = malloc (sizeof (dataObjInp_t));
+    dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp (inpParam1, dataObjInp,
       &myDataObjInp, 1);
@@ -1339,7 +1339,7 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    myMsParamArray = malloc (sizeof (msParamArray_t));
+    myMsParamArray = (msParamArray_t*)malloc (sizeof (msParamArray_t));
     memset (myMsParamArray, 0, sizeof (msParamArray_t));
 
     rei->status = addMsParam (myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T, 
@@ -1445,7 +1445,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     rsComm = rei->rsComm;
 
-    dataObjInp = malloc (sizeof (dataObjInp_t));
+    dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp (inpParam1, dataObjInp,
       &myDataObjInp, 1);
@@ -1481,7 +1481,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    myMsParamArray = malloc (sizeof (msParamArray_t));
+    myMsParamArray = (msParamArray_t*)malloc (sizeof (msParamArray_t));
     memset (myMsParamArray, 0, sizeof (msParamArray_t));
 
     rei->status = addMsParam (myMsParamArray, CL_GET_ACTION, DataObjInp_MS_T,
@@ -1572,7 +1572,7 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
     rsComm = rei->rsComm;
 
-    dataObjInp = malloc (sizeof (dataObjInp_t));
+    dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp (inpParam1, dataObjInp,
       &myDataObjInp, 1);
@@ -1604,7 +1604,7 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    myMsParamArray = malloc (sizeof (msParamArray_t));
+    myMsParamArray = (msParamArray_t*)malloc (sizeof (msParamArray_t));
     memset (myMsParamArray, 0, sizeof (msParamArray_t));
 
     rei->status = addMsParam (myMsParamArray, CL_GET_ACTION, DataObjInp_MS_T,
@@ -2401,8 +2401,8 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
     
     /* parse inpParam3: options, and assign the then to conditional 
        keywords */
-    if ( (strlen(options->inOutStruct)>0) && 
-         (0!=strcmp(options->inOutStruct,"null")) )
+    if ( (strlen((char*)options->inOutStruct)>0) && 
+         (0!=strcmp((char*)options->inOutStruct,"null")) )
     { 
       memset (&optArray, 0, sizeof (optArray));
       status = parseMultiStr ((char *)options->inOutStruct, &optArray);
@@ -3418,7 +3418,7 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
     rsComm = rei->rsComm;
 
-    dataObjInp = malloc (sizeof (dataObjInp_t));
+    dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp (inpParam1, dataObjInp,
       &myDataObjInp, 1);
@@ -3449,16 +3449,16 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if (inpOverwriteParam != NULL && 
-        strcmp(inpOverwriteParam->inOutStruct, UPDATE_REPL_KW) == 0 )
+        strcmp((char*)inpOverwriteParam->inOutStruct, UPDATE_REPL_KW) == 0 )
       rei->status = parseMspForCondInp (inpOverwriteParam, 
                                         &dataObjInp->condInput,UPDATE_REPL_KW);
 
     if (inpAllCopiesParam !=NULL && 
-        strcmp(inpAllCopiesParam->inOutStruct, ALL_KW) == 0 )
+        strcmp((char*)inpAllCopiesParam->inOutStruct, ALL_KW) == 0 )
       rei->status = parseMspForCondInp (inpAllCopiesParam, 
                                         &dataObjInp->condInput,ALL_KW);
 
-    myMsParamArray = malloc (sizeof (msParamArray_t));
+    myMsParamArray = (msParamArray_t*)malloc (sizeof (msParamArray_t));
     memset (myMsParamArray, 0, sizeof (msParamArray_t));
 
     rei->status = addMsParam (myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T, 
@@ -3795,7 +3795,7 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
     if (strcmp (inpParam1->type, STR_MS_T) == 0) {
         bzero (&structFileExtAndRegInp, sizeof (structFileExtAndRegInp));
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
-        strncpy (myStructFileExtAndRegInp->objPath, inpParam1->inOutStruct, 
+        strncpy ((char*)myStructFileExtAndRegInp->objPath, (char*)inpParam1->inOutStruct, 
           MAX_NAME_LEN);
     } else if (strcmp (inpParam1->type, StructFileExtAndRegInp_MS_T) == 0) {
       myStructFileExtAndRegInp = 
@@ -3807,8 +3807,8 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
 
     if ( strcmp (inpParam2->type, STR_MS_T) == 0 ) {
         if (strcmp ((char *) inpParam2->inOutStruct, "null") != 0) {
-            strncpy (myStructFileExtAndRegInp->collection, 
-              inpParam2->inOutStruct, MAX_NAME_LEN);
+            strncpy ((char*)myStructFileExtAndRegInp->collection, 
+              (char*)inpParam2->inOutStruct, MAX_NAME_LEN);
           }
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -3929,7 +3929,7 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     if (strcmp (inpParam1->type, STR_MS_T) == 0) {
         bzero (&structFileExtAndRegInp, sizeof (structFileExtAndRegInp));
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
-        strncpy (myStructFileExtAndRegInp->objPath, inpParam1->inOutStruct,
+        strncpy ((char*)myStructFileExtAndRegInp->objPath, (char*)inpParam1->inOutStruct,
           MAX_NAME_LEN);
     } else if (strcmp (inpParam1->type, StructFileExtAndRegInp_MS_T) == 0) {
         myStructFileExtAndRegInp =
@@ -3941,8 +3941,8 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
 
     if ( strcmp (inpParam2->type, STR_MS_T) == 0 ) {
         if (strcmp ((char *) inpParam2->inOutStruct, "null") != 0) {
-            strncpy (myStructFileExtAndRegInp->collection,
-              inpParam2->inOutStruct, MAX_NAME_LEN);
+            strncpy ((char*)myStructFileExtAndRegInp->collection,
+              (char*)inpParam2->inOutStruct, MAX_NAME_LEN);
         }
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -4045,7 +4045,7 @@ msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     if (strcmp (inpParam1->type, STR_MS_T) == 0) {
         bzero (&structFileExtAndRegInp, sizeof (structFileExtAndRegInp));
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
-        strncpy (myStructFileExtAndRegInp->collection, inpParam1->inOutStruct,
+        strncpy ((char*)myStructFileExtAndRegInp->collection, (char*)inpParam1->inOutStruct,
           MAX_NAME_LEN);
     } else if (strcmp (inpParam1->type, StructFileExtAndRegInp_MS_T) == 0) {
         myStructFileExtAndRegInp =

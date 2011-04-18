@@ -14,7 +14,7 @@ convertArgWithVariableBinding(char *inS, char **outS, msParamArray_t *inMsParamA
  
 
 
-  tS =  malloc(strlen(inS)  + 4 * MAX_COND_LEN);
+  tS =  (char*)malloc(strlen(inS)  + 4 * MAX_COND_LEN);
   strcpy(tS,inS);
 
   i = replaceVariablesAndMsParams("", tS, inMsParamArray, rei);

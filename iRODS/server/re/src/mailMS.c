@@ -107,7 +107,7 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
 	t1 = NULL;
     }
     fclose(fd);
-    mailStr = malloc (strlen(toAddr)+100);
+    mailStr = (char*)malloc (strlen(toAddr)+100);
 
 #ifdef solaris_platform
     sprintf(mailStr,"cat %s| mail  %s",fName,toAddr);
@@ -178,7 +178,7 @@ int msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecIn
   execCmdOut_t *myExecCmdOut;
   if ((mP = getMsParamByLabel (rei->msParamArray, "ruleExecOut")) == NULL) 
     return(NO_VALUES_FOUND);
-  myExecCmdOut = mP->inOutStruct;
+  myExecCmdOut = (execCmdOut_t*)mP->inOutStruct;
   getNewVarName(tmpVarName,rei->msParamArray);
   addMsParam(rei->msParamArray, tmpVarName,  STR_MS_T,myExecCmdOut->stdoutBuf.buf , NULL);
   mP = getMsParamByLabel (rei->msParamArray, tmpVarName);

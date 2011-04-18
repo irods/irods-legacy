@@ -40,28 +40,28 @@ copyRuleExecInfo(ruleExecInfo_t *from, ruleExecInfo_t *to)
     to->doi = NULL;
 
   if (from->rgi != NULL) {
-    to->rgi = mallocAndZero(sizeof(rescGrpInfo_t));
+    to->rgi = (rescGrpInfo_t*)mallocAndZero(sizeof(rescGrpInfo_t));
     copyRescGrpInfo(from->rgi, to->rgi);
   }
   else 
     to->rgi = NULL;
 
   if (from->uoic != NULL) {
-    to->uoic = mallocAndZero(sizeof(userInfo_t));
+    to->uoic = (userInfo_t*)mallocAndZero(sizeof(userInfo_t));
     copyUserInfo(from->uoic, to->uoic);
   }
   else 
     to->uoic = NULL;
 
   if (from->uoip != NULL) {
-    to->uoip = mallocAndZero(sizeof(userInfo_t));
+    to->uoip = (userInfo_t*)mallocAndZero(sizeof(userInfo_t));
     copyUserInfo(from->uoip, to->uoip);
   }
   else 
     to->uoip = NULL;
 
   if (from->coi != NULL) {
-    to->coi = mallocAndZero(sizeof(collInfo_t));
+    to->coi = (collInfo_t*)mallocAndZero(sizeof(collInfo_t));
     copyCollInfo(from->coi, to->coi);
   }
   else 
@@ -77,21 +77,21 @@ copyRuleExecInfo(ruleExecInfo_t *from, ruleExecInfo_t *to)
 #endif
 
   if (from->uoio != NULL) {
-    to->uoio= mallocAndZero(sizeof(userInfo_t));
+    to->uoio= (userInfo_t*)mallocAndZero(sizeof(userInfo_t));
     copyUserInfo(from->uoio, to->uoio);
   }
   else 
     to->uoio = NULL;
 
   if (from->condInputData != NULL) {
-    to->condInputData = mallocAndZero(sizeof(keyValPair_t));
+    to->condInputData = (keyValPair_t*)mallocAndZero(sizeof(keyValPair_t));
     copyKeyValPairStruct(from->condInputData, to->condInputData);
   }
   else 
     to->condInputData = NULL;
 
   if (from->next != NULL) {
-    to->next = mallocAndZero(sizeof(ruleExecInfo_t));
+    to->next = (ruleExecInfo_t*)mallocAndZero(sizeof(ruleExecInfo_t));
     copyRuleExecInfo(from->next,to->next);
   }
   else
@@ -147,7 +147,7 @@ copyDataObjInfo(dataObjInfo_t *from, dataObjInfo_t *to)
 {
   *to = *from;
   if (from->next != NULL) {
-    to->next = mallocAndZero(sizeof(dataObjInfo_t));
+    to->next = (dataObjInfo_t*)mallocAndZero(sizeof(dataObjInfo_t));
     copyDataObjInfo(from->next,to->next);
   }
   else
@@ -161,7 +161,7 @@ copyCollInfo(collInfo_t *from, collInfo_t *to)
 {
   *to = *from;
   if (from->next != NULL) {
-    to->next = mallocAndZero(sizeof(collInfo_t));
+    to->next = (collInfo_t*)mallocAndZero(sizeof(collInfo_t));
     copyCollInfo(from->next,to->next);
   }
   else
@@ -175,7 +175,7 @@ copyRescGrpInfo(rescGrpInfo_t *from, rescGrpInfo_t *to)
 {
   *to = *from;
   if (from->next != NULL) {
-    to->next = mallocAndZero(sizeof(rescGrpInfo_t));
+    to->next = (rescGrpInfo_t*)mallocAndZero(sizeof(rescGrpInfo_t));
     copyRescGrpInfo(from->next,to->next);
   }
   else

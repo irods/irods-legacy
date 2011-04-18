@@ -1434,7 +1434,7 @@ ruleExecInfo_t *rei)
       VAULT_PATH_POLICY)) != NULL) {
 	vaultPathPolicy = (vaultPathPolicy_t *) msParam->inOutStruct;
 	if (vaultPathPolicy == NULL) {
-	    vaultPathPolicy = malloc (sizeof (vaultPathPolicy_t));
+	    vaultPathPolicy = (vaultPathPolicy_t*)malloc (sizeof (vaultPathPolicy_t));
 	    msParam->inOutStruct = (void *) vaultPathPolicy; 
 	}
         vaultPathPolicy->scheme = GRAFT_PATH_S;
@@ -1510,7 +1510,7 @@ msiSetRandomScheme (ruleExecInfo_t *rei)
       VAULT_PATH_POLICY)) != NULL) {
         vaultPathPolicy = (vaultPathPolicy_t *) msParam->inOutStruct;
         if (vaultPathPolicy == NULL) {
-            vaultPathPolicy = malloc (sizeof (vaultPathPolicy_t));
+            vaultPathPolicy = (vaultPathPolicy_t*)malloc (sizeof (vaultPathPolicy_t));
             msParam->inOutStruct = (void *) vaultPathPolicy;
         }
 	memset (vaultPathPolicy, 0, sizeof (vaultPathPolicy_t));
@@ -1574,7 +1574,7 @@ msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
     char *numProcStr;
     int numProc;
 
-    numProcStr = xnumProc->inOutStruct;
+    numProcStr = (char*)xnumProc->inOutStruct;
 
     if (strcmp (numProcStr, "default") == 0) {
 	numProc = DEF_NUM_RE_PROCS;

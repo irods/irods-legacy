@@ -319,17 +319,17 @@ int msiCreateXmsgInp(msParam_t* inMsgNumber,
   sendXmsgInp->ticket.expireTime =  xmsgTicketInfo->expireTime;
   sendXmsgInp->ticket.flag = xmsgTicketInfo->flag;
   if (!strcmp(inMsgNumber->type,STR_MS_T))
-    sendXmsgInp->sendXmsgInfo.msgNumber = (uint) atoi(inMsgNumber->inOutStruct);
+    sendXmsgInp->sendXmsgInfo.msgNumber = (uint) atoi( (char*)inMsgNumber->inOutStruct);
   else
     sendXmsgInp->sendXmsgInfo.msgNumber = (uint) CAST_PTR_INT inMsgNumber->inOutStruct;
-  strcpy(sendXmsgInp->sendXmsgInfo.msgType, inMsgType->inOutStruct);
+  strcpy(sendXmsgInp->sendXmsgInfo.msgType,  (char*)inMsgType->inOutStruct);
   if (!strcmp(inNumberOfReceivers->type,STR_MS_T))
-    sendXmsgInp->sendXmsgInfo.numRcv = (uint) atoi(inNumberOfReceivers->inOutStruct);
+    sendXmsgInp->sendXmsgInfo.numRcv = (uint) atoi( (char*)inNumberOfReceivers->inOutStruct);
   else
     sendXmsgInp->sendXmsgInfo.numRcv = (uint) CAST_PTR_INT inNumberOfReceivers->inOutStruct;
   sendXmsgInp->sendXmsgInfo.msg = (char *) inMsg->inOutStruct;
   if (!strcmp(inNumberOfDeliverySites->type,STR_MS_T))
-    sendXmsgInp->sendXmsgInfo.numDeli = (int) atoi(inNumberOfDeliverySites->inOutStruct);
+    sendXmsgInp->sendXmsgInfo.numDeli = (int) atoi( (char*)inNumberOfDeliverySites->inOutStruct);
   else
     sendXmsgInp->sendXmsgInfo.numDeli = (int) CAST_PTR_INT inNumberOfDeliverySites->inOutStruct;
   if (sendXmsgInp->sendXmsgInfo.numDeli == 0) {
@@ -337,8 +337,8 @@ int msiCreateXmsgInp(msParam_t* inMsgNumber,
     sendXmsgInp->sendXmsgInfo.deliPort = NULL;
   }
   else {
-    sendXmsgInp->sendXmsgInfo.deliAddress = inDeliveryAddressList->inOutStruct;
-    sendXmsgInp->sendXmsgInfo.deliPort = inDeliveryPortList->inOutStruct;
+    sendXmsgInp->sendXmsgInfo.deliAddress =  (char**)inDeliveryAddressList->inOutStruct;
+    sendXmsgInp->sendXmsgInfo.deliPort =  (uint*)inDeliveryPortList->inOutStruct;
   }
   sendXmsgInp->sendXmsgInfo.miscInfo = (char *) inMiscInfo->inOutStruct;
 
@@ -543,12 +543,12 @@ int msiRcvXmsg(msParam_t* inConnParam,
     rcvXmsgInp.rcvTicket = xmsgTicketInfo->rcvTicket;
   }
   else if (!strcmp(inTicketNumber->type,STR_MS_T)) {
-    rcvXmsgInp.rcvTicket = (uint) atoi(inTicketNumber->inOutStruct);
+    rcvXmsgInp.rcvTicket = (uint) atoi( (char*)inTicketNumber->inOutStruct);
   }
   else
     rcvXmsgInp.rcvTicket = (uint) CAST_PTR_INT inTicketNumber->inOutStruct;
   if (!strcmp(inMsgNumber->type,STR_MS_T)) 
-    rcvXmsgInp.msgNumber = (uint) atoi(inMsgNumber->inOutStruct);
+    rcvXmsgInp.msgNumber = (uint) atoi( (char*)inMsgNumber->inOutStruct);
   else
     rcvXmsgInp.msgNumber = (uint) CAST_PTR_INT inMsgNumber->inOutStruct;
   

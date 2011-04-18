@@ -910,16 +910,16 @@ getNextValueAndBufFromListOrStruct(char *typ, void *inPtr,
     while (*s != '\0' && (*s != ',' || (*(s-1) == '\\' && *(s-2) != '\\')) ) s++;
     if (*s != '\0') {
       *s = '\0';
-      *value = strdup(inPtr);
+      *value = strdup((char*)inPtr);
       *s = ',';
       *restPtr = s+1;
     }
     else {
-      *value = strdup(inPtr);
+      *value = strdup((char*)inPtr);
       *restPtr = NULL;
     }
     /** Raja Added July 22 2010 */
-    trimWS(*value);
+    trimWS((char*)(*value));
     return(0);
   }
   else if (!strcmp(typ,StrArray_MS_T)) {
@@ -943,7 +943,7 @@ getNextValueAndBufFromListOrStruct(char *typ, void *inPtr,
       *restPtr = NULL;
       return(NO_VALUES_FOUND);
     }
-    ii = malloc(sizeof(int));
+    ii = (int*)malloc(sizeof(int));
     *ii = intA->value[(*inx)];
     *value = ii;
     (*inx) = (*inx) + 1;
@@ -968,7 +968,7 @@ getNextValueAndBufFromListOrStruct(char *typ, void *inPtr,
     }
 
     if (*inx == 0) { /* first time  */
-      k =  malloc(sizeof(keyValPair_t));
+      k =  (keyValPair_t*)malloc(sizeof(keyValPair_t));
       memset (k, 0, sizeof (keyValPair_t));
       *outtyp = strdup(KeyValPair_MS_T);
       for (i = 0; i < g->attriCnt; i++) {
@@ -982,7 +982,7 @@ getNextValueAndBufFromListOrStruct(char *typ, void *inPtr,
       *value = k;
     }
     else {
-      k  = *value;
+      k  = (keyValPair_t*)*value;
       for (i = 0; i < g->attriCnt; i++) {
 	v = &g->sqlResult[i];
 	/* assumes same ordering :-) */
@@ -1018,7 +1018,7 @@ freeNextValueStruct(void **value,char *typ, char *flag)
   }
   else if (!strcmp(typ,GenQueryOut_MS_T)) {
     keyValPair_t *k;
-    k  = *value;
+    k  = (keyValPair_t*)*value;
     for ( i = 0; i < k->len; i++)
       free(k->value[i]);
     if (!strcmp(flag,"all")) {

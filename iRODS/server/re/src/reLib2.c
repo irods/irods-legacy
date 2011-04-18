@@ -541,7 +541,7 @@ makeActionFromMParam(char *outAction, char *action, msParam_t *mP[], int argc, i
     else if (!strcmp(mP[i]->type, STR_MS_T) ) {
       args = (char *) mP[i]->inOutStruct;
     } else if (!strcmp(mP[i]->type, INT_MS_T) || !strcmp(mP[i]->type, BUF_LEN_MS_T) ) {
-      sprintf(cv,"%d",(int) mP[i]->inOutStruct);
+      sprintf(cv,"%d",(int*)mP[i]->inOutStruct);
       args = cv;
     } else if (!strcmp(mP[i]->type, DOUBLE_MS_T) ) {
       sprintf(cv,"%lld",(rodsLong_t) mP[i]->inOutStruct);
@@ -1172,13 +1172,13 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
       tmparg = NULL;
       if (mP->type != NULL) {
 	if (mP->inOutStruct == NULL || (!strcmp(mP->type, STR_MS_T) 
-					&& !strcmp(mP->inOutStruct,mP->label) )) {
+					&& !strcmp((char*)mP->inOutStruct,(char*)mP->label) )) {
 	  convertArgWithVariableBinding(args[i],&tmparg,inMsParamArray,rei);
 	  if (tmparg != NULL) 
 	    mP->inOutStruct = tmparg;
 	}
 	else if (!strcmp(mP->type, STR_MS_T) ) {
-	  convertArgWithVariableBinding(mP->inOutStruct,&tmparg,inMsParamArray,rei);
+	  convertArgWithVariableBinding((char*)mP->inOutStruct,&tmparg,inMsParamArray,rei);
 	  if (tmparg != NULL) 
 	    mP->inOutStruct = tmparg;
 	}

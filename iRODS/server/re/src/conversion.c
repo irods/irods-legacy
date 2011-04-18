@@ -221,9 +221,10 @@ void convertCollectionToRes(msParam_t *mP, Res* res) {
 int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
 	strArray_t *arr;
 	intArray_t *arr2;
-        int maxlen;
         var->inpOutBuf = NULL;
         var->label = NULL;
+            int i;
+            int maxlen = 0;
 			switch(TYPE(res)) {
 				case T_ERROR: /* error message */
 					var->inOutStruct = (int *)malloc(sizeof(int));

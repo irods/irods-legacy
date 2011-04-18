@@ -70,8 +70,8 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
     char *maxReturnedRowsStr;
     int maxReturnedRows;
 
-    query = (char *) malloc(strlen(queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
-    strcpy(query, queryParam->inOutStruct);
+    query = (char *) malloc(strlen((const char*)queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
+    strcpy(query, (const char*) queryParam->inOutStruct);
 
     i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
     if (i < 0)
@@ -98,7 +98,7 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
 
     i = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
     if (zeroResultsIsOK !=NULL && 
-	strcmp(zeroResultsIsOK->inOutStruct, "zeroOK") == 0 )
+	strcmp((const char*)zeroResultsIsOK->inOutStruct, "zeroOK") == 0 )
     {
        if (i < 0 && i != CAT_NO_ROWS_FOUND)
 	  return(i);
@@ -171,9 +171,9 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
   genQueryOut_t *genQueryOut = NULL;
   char *query;
 
-  query = (char *) malloc(strlen(queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
+  query = (char *) malloc(strlen((const char*)queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
   
-  strcpy(query, queryParam->inOutStruct);
+  strcpy(query, (const char*)queryParam->inOutStruct);
 
   /**** Jun 27, 2007
   if (queryParam->inOutStruct == NULL) {
@@ -255,7 +255,7 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
   genQueryOut_t *genQueryOut = NULL;
 
 
-  genQueryInp = genQueryInParam->inOutStruct;
+  genQueryInp = (genQueryInp_t*)genQueryInParam->inOutStruct;
 
   i = rsGenQuery(rei->rsComm, genQueryInp, &genQueryOut);
   if (i < 0)
@@ -362,7 +362,7 @@ msiGetContInxFromGenQueryOut(msParam_t* genQueryOutParam, msParam_t* continueInx
       return (USER_PARAM_TYPE_ERR);
     }
   
-  genQueryOut = genQueryOutParam->inOutStruct;
+  genQueryOut = (genQueryOut_t*)genQueryOutParam->inOutStruct;
   fillIntInMsParam(continueInx, genQueryOut->continueInx);
   return(0);
 }
@@ -509,8 +509,8 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
 
 
 	/* retrieve genQueryXXX data structures */
-	genQueryOut = genQueryOut_msp->inOutStruct;
-	genQueryInp = genQueryInp_msp->inOutStruct;
+	genQueryOut = (genQueryOut_t*)genQueryOut_msp->inOutStruct;
+	genQueryInp = (genQueryInp_t*)genQueryInp_msp->inOutStruct;
 
 
 	/* match continuation indexes */
@@ -725,7 +725,7 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
   }
   /* where are we writing to? */
   if (where->inOutStruct != NULL) {
-    writeId = where->inOutStruct;
+    writeId = (char*)where->inOutStruct;
   }
   else {
     writeId = where->label;
@@ -931,7 +931,7 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
  * \bug  no known bugs
 **/
 int
-msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
+msiAddConditionToGenQuery(msParam_t *attribute, msParam_t * opr, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
 {
 	genQueryInp_t *genQueryInp;
 	char condStr[MAX_NAME_LEN];
@@ -961,7 +961,7 @@ msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *
 	}
 	
 	/* Parse operator */
-	if ((op_str = parseMspForStr(operator)) == NULL)
+	if ((op_str = parseMspForStr(opr)) == NULL)
 	{
 		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: input operator is NULL.");
 		return (USER__NULL_INPUT_ERR);

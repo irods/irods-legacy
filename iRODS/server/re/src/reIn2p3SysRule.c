@@ -604,10 +604,10 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
   
   strcpy(cmd, MON_PERF_SCRIPT);
 #ifndef windows_platform
-  pthread_t *threads = malloc(sizeof(pthread_t) * nresc);
+  pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t) * nresc);
   pthread_mutex_init(&my_mutex, NULL);
 #endif
-  thrInput = malloc(sizeof(thrInp_t) * nresc);
+  thrInput = (thrInp_t*)malloc(sizeof(thrInp_t) * nresc);
   thrCount = 0;
   
   for (i = 0; i < nresc; i++) {
@@ -904,7 +904,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   }
   
   if ( strcmp (cpu_wght->type, STR_MS_T) == 0 ) {
-    weight[0] = atoi(cpu_wght->inOutStruct);
+    weight[0] = atoi((const char*)cpu_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
       "msiDigestMonStat: Unsupported input cpu_wght type %s",
@@ -913,7 +913,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   }
   
   if ( strcmp (mem_wght->type, STR_MS_T) == 0 ) {
-    weight[1] = atoi(mem_wght->inOutStruct);
+    weight[1] = atoi((const char*)mem_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
       "msiDigestMonStat: Unsupported input mem_wght type %s",
@@ -922,7 +922,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   }
   
   if ( strcmp (swap_wght->type, STR_MS_T) == 0 ) {
-    weight[2] = atoi(swap_wght->inOutStruct);
+    weight[2] = atoi((const char*)swap_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
       "msiDigestMonStat: Unsupported input swap_wght type %s",
@@ -931,7 +931,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   }
   
   if ( strcmp (runq_wght->type, STR_MS_T) == 0 ) {
-    weight[3] = atoi(runq_wght->inOutStruct);
+    weight[3] = atoi((const char*)runq_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
       "msiDigestMonStat: Unsupported input runq_wght type %s",
@@ -940,7 +940,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   }
   
   if ( strcmp (disk_wght->type, STR_MS_T) == 0 ) {
-    weight[4] = atoi(disk_wght->inOutStruct);
+    weight[4] = atoi((const char*)disk_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
       "msiDigestMonStat: Unsupported input disk_wght type %s",
@@ -949,7 +949,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   }
   
   if ( strcmp (netin_wght->type, STR_MS_T) == 0 ) {
-    weight[5] = atoi(netin_wght->inOutStruct);
+    weight[5] = atoi((const char*)netin_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
       "msiDigestMonStat: Unsupported input netin_wght type %s",
@@ -958,7 +958,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   }
   
   if ( strcmp (netout_wght->type, STR_MS_T) == 0 ) {
-    weight[6] = atoi(netout_wght->inOutStruct);
+    weight[6] = atoi((const char*)netout_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
       "msiDigestMonStat: Unsupported input netout_wght type %s",

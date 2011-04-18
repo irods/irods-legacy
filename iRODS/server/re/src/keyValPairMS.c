@@ -66,8 +66,8 @@ int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, rul
    
    RE_TEST_MACRO ("msiGetValByKey");
 
-   kvp = inKVPair->inOutStruct;
-   k = inKey->inOutStruct;
+   kvp = (keyValPair_t*)inKVPair->inOutStruct;
+   k = (char*)inKey->inOutStruct;
    if (k == NULL)
      k = inKey->label;
    
@@ -135,14 +135,14 @@ int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *re
 
   m = 0;
   s = NULL;
-  k= inkvpair->inOutStruct;
+  k= (keyValPair_t*)inkvpair->inOutStruct;
 
   for (i = 0; i < k->len; i++) {
     l  =  strlen(k->keyWord[i]) + strlen(k->value[i]) + 10;
     if (l > m) {
       if (m > 0)
 	free(s);
-      s = malloc (l);
+      s = (char*)malloc (l);
       m = l;
     }
     sprintf(s,"%s = %s\n", k->keyWord[i],k->value[i]);
@@ -221,7 +221,7 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
      return(i);
    value = strArray.value;
 
-   kvp = mallocAndZero(sizeof(keyValPair_t));
+   kvp = (keyValPair_t*)mallocAndZero(sizeof(keyValPair_t));
    for (i = 0; i < strArray.len; i++) {
      valPtr = &value[i * strArray.size];
      if ((tmpPtr = strstr (valPtr, "=")) != NULL) {
@@ -405,7 +405,7 @@ int msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, rule
 	
 	/******************************* ADD NEW PAIR AND DONE ******************************/
 
-	rei->status = addKeyVal(inKeyValPair->inOutStruct, key_str, value_str);
+	rei->status = addKeyVal((keyValPair_t*)inKeyValPair->inOutStruct, key_str, value_str);
 
 	/* Done */
 	return (rei->status);

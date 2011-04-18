@@ -161,7 +161,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   char tmpStr[MAX_ACTION_SIZE];
 
   if (inMsParamArray == NULL) {
-    inMsParamArray = mallocAndZero(sizeof(msParamArray_t));
+    inMsParamArray = (msParamArray_t*)mallocAndZero(sizeof(msParamArray_t));
     pFlag = 1;
   }
   for (i = 0; i < argc ; i++) {
@@ -215,7 +215,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
   pushStack(&msParamStack,tmpStr);            /* pointer->integer->string stored in stack */
 
   /* make a new msParamArray in rei */
-  rei->msParamArray = malloc(sizeof(msParamArray_t));
+  rei->msParamArray = (msParamArray_t*)malloc(sizeof(msParamArray_t));
   rei->msParamArray->len = 0;
   rei->msParamArray->msParam = NULL;
   outMsParamArray = rei->msParamArray;
@@ -238,7 +238,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
     if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL) {
       tmparg = NULL;
       if (mP->inOutStruct == NULL || (!strcmp(mP->type, STR_MS_T) 
-				      && !strcmp(mP->inOutStruct,mP->label) )) {
+				      && !strcmp((char*)mP->inOutStruct,(char*)mP->label) )) {
 	convertArgWithVariableBinding(args[i],&tmparg,inMsParamArray,rei);
 	if (tmparg != NULL)
 	  addMsParam(outMsParamArray,args2[i],mP->type, tmparg, mP->inpOutBuf);
@@ -246,7 +246,7 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
 	  addMsParam(outMsParamArray,args2[i],mP->type, mP->inOutStruct, mP->inpOutBuf);
       }
       else if (!strcmp(mP->type, STR_MS_T) ) {
-	convertArgWithVariableBinding(mP->inOutStruct,&tmparg,inMsParamArray,rei);
+	convertArgWithVariableBinding((char*)mP->inOutStruct,&tmparg,inMsParamArray,rei);
 	if (tmparg != NULL) 
 	  addMsParam(outMsParamArray,args2[i],mP->type, tmparg, mP->inpOutBuf);
 	else
@@ -1423,7 +1423,7 @@ initializeMsParam(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int arg
   pushStack(&msParamStack,tmpStr);            /* pointer->integer->string stored in stack */
   
   /* make a new msParamArray in rei */
-  rei->msParamArray = malloc(sizeof(msParamArray_t));
+  rei->msParamArray = (msParamArray_t*)malloc(sizeof(msParamArray_t));
   rei->msParamArray->len = 0;
   rei->msParamArray->msParam = NULL;
 
