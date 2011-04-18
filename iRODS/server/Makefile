@@ -49,7 +49,9 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/objDesc.o	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
-		$(svrCoreObjDir)/physPath.o
+		$(svrCoreObjDir)/physPath.o \
+        $(svrCoreObjDir)/fileDriverNoOpFunctions.o
+
 INCLUDES +=	-I$(svrCoreIncDir)
 
 
