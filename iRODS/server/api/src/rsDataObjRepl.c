@@ -94,7 +94,7 @@ transferStat_t **transStat)
         return status;
     }
 
-    *transStat = malloc (sizeof (transferStat_t));
+    *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));
 
     status = _rsDataObjRepl (rsComm, dataObjInp, 
@@ -740,7 +740,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 	    }
 	} else if (getRescInGrp (rsComm, myDestRescInfo->rescName,
           inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
-            cacheDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
+            cacheDataObjInfo = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
 	    status = stageDataFromCompToCache (rsComm, inpSrcDataObjInfo,
 	      cacheDataObjInfo);
 	    if (status < 0) return status;
@@ -750,7 +750,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     }
 
     if (cacheDataObjInfo == NULL) {
-        srcDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
+        srcDataObjInfo = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
         *srcDataObjInfo = *inpSrcDataObjInfo;
     } else {
         srcDataObjInfo = cacheDataObjInfo;
@@ -768,7 +768,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 
     if (destL1descInx < 0) return destL1descInx;
 
-    myDestDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
+    myDestDataObjInfo = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
     if (updateFlag > 0) {
 	/* update an existing copy */
 	if(inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0) {
@@ -1123,9 +1123,9 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
         dataObjInp = L1desc[destL1descInx].dataObjInp;
 	fileSyncToArchInp.dataSize = srcDataObjInfo->dataSize;
-        fileSyncToArchInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileSyncToArchInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         fileSyncToArchInp.cacheFileType = 
-          RescTypeDef[cacheRescTypeInx].driverType;
+          (fileDriverType_t)RescTypeDef[cacheRescTypeInx].driverType;
         rstrcpy (fileSyncToArchInp.addr.hostAddr,  
 	  srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);
 	  /* use cache addr destDataObjInfo->rescInfo->rescLoc, NAME_LEN); */
@@ -1175,9 +1175,9 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
         dataObjInp = L1desc[destL1descInx].dataObjInp;
 	fileSyncToArchInp.dataSize = srcDataObjInfo->dataSize;
-        fileSyncToArchInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileSyncToArchInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         fileSyncToArchInp.cacheFileType = 
-	  RescTypeDef[cacheRescTypeInx].driverType;
+	  (fileDriverType_t)RescTypeDef[cacheRescTypeInx].driverType;
         rstrcpy (fileSyncToArchInp.addr.hostAddr,  
 	  destDataObjInfo->rescInfo->rescLoc, NAME_LEN);
 	  /* use the cache addr srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);*/
@@ -1217,7 +1217,7 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr)
     int status;
 
     dataObjInfoHead = *srcDataObjInfoHead;
-    myDataObjInfo = malloc (sizeof (dataObjInfo_t));
+    myDataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
     memset (&dataObjInp, 0, sizeof (dataObjInp_t));
     memset (&transStat, 0, sizeof (transStat));
@@ -1311,7 +1311,7 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
     int status;
     dataObjInfo_t *outCacheObjInfo;
 
-    outCacheObjInfo = malloc (sizeof (dataObjInfo_t));
+    outCacheObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     bzero (outCacheObjInfo, sizeof (dataObjInfo_t));
     status = stageDataFromCompToCache (rsComm, *compObjInfoHead,
       outCacheObjInfo);
@@ -1397,7 +1397,7 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
     if (outDestDataObjInfo == NULL) {
 	destDataObjInfo = tmpDestDataObjInfo;
     } else {
-        destDataObjInfo = malloc (sizeof (dataObjInfo_t));
+        destDataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
 	if (tmpDestDataObjInfo == NULL) {
 	    bzero (destDataObjInfo, sizeof (dataObjInfo_t));
 	} else {

@@ -14,12 +14,12 @@ rsAuthRequest (rsComm_t *rsComm, authRequestOut_t **authRequestOut)
     authRequestOut_t *result;
     char *bufp;
 
-    *authRequestOut = malloc(sizeof(authRequestOut_t));
+    *authRequestOut = (authRequestOut_t*)malloc(sizeof(authRequestOut_t));
     memset((char *)*authRequestOut, 0, sizeof(authRequestOut_t));
 
     memset(buf, 0, sizeof(buf));
     get64RandomBytes(buf);
-    bufp = malloc(CHALLENGE_LEN+2);
+    bufp = (char*)malloc(CHALLENGE_LEN+2);
     if (bufp == NULL) return(SYS_MALLOC_ERR);
     strncpy(bufp, buf, CHALLENGE_LEN+2);
     result = *authRequestOut;

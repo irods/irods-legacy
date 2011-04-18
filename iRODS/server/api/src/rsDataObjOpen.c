@@ -365,7 +365,7 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&fileOpenInp, 0, sizeof (fileOpenInp));
-        fileOpenInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileOpenInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileOpenInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
@@ -396,7 +396,7 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&fileOpenInp, 0, sizeof (fileOpenInp));
-        fileOpenInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileOpenInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileOpenInp.fileName, FileDesc[l3descInx].fileName, 
 	  MAX_NAME_LEN);
         fileOpenInp.mode = FileDesc[l3descInx].mode;
@@ -464,7 +464,7 @@ dataObjInfo_t **dataObjInfoHead)
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
 
-    myDataObjInfo = malloc (sizeof (dataObjInfo_t));
+    myDataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     *myDataObjInfo = *(*dataObjInfoHead);
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {

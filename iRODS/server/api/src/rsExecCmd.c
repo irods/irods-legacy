@@ -221,7 +221,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 	/* Indicate that the call came from internal rule */
 	if ((tmpStr = getValByKey (&execCmdInp->condInput, EXEC_CMD_RULE_KW))
 	  != NULL) {
-	    char *myStr = malloc (NAME_LEN + 20);
+	    char *myStr = (char*)malloc (NAME_LEN + 20);
 	    snprintf (myStr, NAME_LEN + 20, "%s=%s", EXEC_CMD_RULE_KW, tmpStr);
 	    putenv(myStr);
 	}
@@ -262,7 +262,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 #endif
 
 
-    myExecCmdOut = *execCmdOut = malloc (sizeof (execCmdOut_t));
+    myExecCmdOut = *execCmdOut = (execCmdOut_t*)malloc (sizeof (execCmdOut_t));
     memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
 
     readToByteBuf (stdoutFd[0], &myExecCmdOut->stdoutBuf);

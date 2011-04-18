@@ -251,7 +251,7 @@ rescInfo_t *rescInfo, char *rescGroupName)
     l1descInx = allocL1desc ();
     if (l1descInx < 0) return l1descInx;
 
-    dataObjInfo = malloc (sizeof (dataObjInfo_t));
+    dataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
 #if 0	/* not needed */
     dataObjInfo->replStatus = NEWLY_CREATED_COPY;
@@ -406,7 +406,7 @@ dataObjInfo_t *dataObjInfo)
 
 	fileCreateInp_t fileCreateInp;
 	memset (&fileCreateInp, 0, sizeof (fileCreateInp));
-	fileCreateInp.fileType = RescTypeDef[rescTypeInx].driverType;
+	fileCreateInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
 	rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
 	  NAME_LEN);
 	rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);

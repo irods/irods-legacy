@@ -88,7 +88,7 @@ fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut)
         return ((int) status);
     }
 
-    *fileGetFsFreeSpaceOut = malloc (sizeof (fileGetFsFreeSpaceOut_t));
+    *fileGetFsFreeSpaceOut = (fileGetFsFreeSpaceOut_t*)malloc (sizeof (fileGetFsFreeSpaceOut_t));
     (*fileGetFsFreeSpaceOut)->size = status;
 
     return (0);

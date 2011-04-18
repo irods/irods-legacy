@@ -70,7 +70,7 @@ char **chksumStr)
 {
     int status;
 
-    *chksumStr = malloc (NAME_LEN);
+    *chksumStr = (char*)malloc (NAME_LEN);
 
     status = fileChksum (fileChksumInp->fileType, rsComm, 
       fileChksumInp->fileName, *chksumStr);
@@ -99,7 +99,7 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     rodsLong_t bytesRead = 0;	/* XXXX debug */
 #endif
 
-    if ((fd = fileOpen (fileType, rsComm, fileName, O_RDONLY, 0)) < 0) {
+    if ((fd = fileOpen ((fileDriverType_t)fileType, rsComm, fileName, O_RDONLY, 0)) < 0) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLog (LOG_NOTICE,
         "fileChksum; fileOpen failed for %s. status = %d", fileName, status);
@@ -107,7 +107,7 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     }
 
     MD5Init (&context);
-    while ((len = fileRead (fileType, rsComm, fd, buffer, SVR_MD5_BUF_SZ)) > 0) {
+    while ((len = fileRead ((fileDriverType_t)fileType, rsComm, fd, buffer, SVR_MD5_BUF_SZ)) > 0) {
 #ifdef MD5_DEBUG
 	bytesRead += len;	/* XXXX debug */
 #endif
@@ -115,7 +115,7 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     }
     MD5Final (digest, &context);
 
-    fileClose (fileType, rsComm, fd);
+    fileClose ((fileDriverType_t)fileType, rsComm, fd);
 
     md5ToStr (digest, chksumStr);
 

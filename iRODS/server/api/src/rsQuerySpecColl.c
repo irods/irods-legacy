@@ -129,31 +129,31 @@ initOutForQuerySpecColl (genQueryOut_t **genQueryOut)
     myGenQueryOut->sqlResult[0].attriInx = COL_COLL_NAME;
     myGenQueryOut->sqlResult[0].len = MAX_NAME_LEN;    
     myGenQueryOut->sqlResult[0].value = 
-      malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
+      (char*)malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[0].value, 0, 
       MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     myGenQueryOut->sqlResult[1].attriInx = COL_DATA_NAME;
     myGenQueryOut->sqlResult[1].len = MAX_NAME_LEN; 
     myGenQueryOut->sqlResult[1].value = 
-      malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
+      (char*)malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[1].value, 0, 
       MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     myGenQueryOut->sqlResult[2].attriInx = COL_D_CREATE_TIME;
     myGenQueryOut->sqlResult[2].len = NAME_LEN;
     myGenQueryOut->sqlResult[2].value =
-      malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
+      (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[2].value, 0,
       NAME_LEN * MAX_SPEC_COLL_ROW); 
     myGenQueryOut->sqlResult[3].attriInx = COL_D_MODIFY_TIME;
     myGenQueryOut->sqlResult[3].len = NAME_LEN;
     myGenQueryOut->sqlResult[3].value =
-      malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
+      (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[3].value, 0,
       NAME_LEN * MAX_SPEC_COLL_ROW);     
     myGenQueryOut->sqlResult[4].attriInx = COL_DATA_SIZE;
     myGenQueryOut->sqlResult[4].len = NAME_LEN;
     myGenQueryOut->sqlResult[4].value =
-      malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
+      (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[4].value, 0,
       NAME_LEN * MAX_SPEC_COLL_ROW);
 
@@ -428,7 +428,7 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
             rstrcpy (fileOpendirInp.dirName, dataObjInfo->filePath, 
 	      MAX_NAME_LEN);
-            fileOpendirInp.fileType = RescTypeDef[rescTypeInx].driverType;
+            fileOpendirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileOpendirInp.addr.hostAddr,
               dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             status = rsFileOpendir (rsComm, &fileOpendirInp);

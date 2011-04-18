@@ -413,7 +413,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
 #endif
 	    filePutInp.otherFlags |= FORCE_FLAG;
 	}
-        filePutInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        filePutInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (filePutInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);

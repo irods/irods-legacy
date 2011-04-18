@@ -227,7 +227,7 @@ rodsObjStat_t **rodsObjStatOut)
 
             *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
             memset (*rodsObjStatOut, 0, sizeof (rodsObjStat_t));
-            (*rodsObjStatOut)->objType = status = DATA_OBJ_T;
+            (*rodsObjStatOut)->objType = DATA_OBJ_T; status = (int)DATA_OBJ_T;
             /* XXXXXX . dont have numCopies anymore. Replaced by dataMode 
 	     * (*rodsObjStatOut)->numCopies = genQueryOut->rowCnt; */
 

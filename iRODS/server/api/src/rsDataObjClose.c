@@ -704,7 +704,7 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
         switch (RescTypeDef[rescTypeInx].rescCat) {
           case FILE_CAT:
             memset (&fileStatInp, 0, sizeof (fileStatInp));
-            fileStatInp.fileType = RescTypeDef[rescTypeInx].driverType;
+            fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileStatInp.fileName, dataObjInfo->filePath, 
 	      MAX_NAME_LEN);
 	    rstrcpy (fileStatInp.addr.hostAddr,  

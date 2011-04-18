@@ -61,7 +61,7 @@ fileLseekOut_t **dataObjLseekOut)
           NAME_LEN);
         status = rsSubStructFileLseek (rsComm, &subStructFileLseekInp, dataObjLseekOut);
     } else {
-        *dataObjLseekOut = malloc (sizeof (fileLseekOut_t));
+        *dataObjLseekOut = (fileLseekOut_t*)malloc (sizeof (fileLseekOut_t));
         memset (*dataObjLseekOut, 0, sizeof (fileLseekOut_t));
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 

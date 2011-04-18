@@ -69,7 +69,7 @@ rodsHostAddr_t **rescAddr)
           remoteOprType, dataObjInp->objPath);
         return (USER_BAD_KEYWORD_ERR);
     }
-    *rescAddr = malloc (sizeof (rodsHostAddr_t));
+    *rescAddr = (rodsHostAddr_t*)malloc (sizeof (rodsHostAddr_t));
     bzero (*rescAddr, sizeof (rodsHostAddr_t));
     rstrcpy ((*rescAddr)->hostAddr, rescInfo->rescLoc, NAME_LEN);
     rstrcpy ((*rescAddr)->zoneName, ZoneInfoHead->zoneName, NAME_LEN);

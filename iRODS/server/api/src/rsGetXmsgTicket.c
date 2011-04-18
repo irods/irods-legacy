@@ -17,7 +17,7 @@ xmsgTicketInfo_t **outXmsgTicketInfo)
     time_t thisTime;
     time_t inpExpireTime;
 
-    *outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    *outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
 
     /**    (*outXmsgTicketInfo)->sendTicket = random(); **/
     thisTime = time (NULL);

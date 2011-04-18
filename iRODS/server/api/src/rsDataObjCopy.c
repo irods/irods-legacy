@@ -214,7 +214,7 @@ transferStat_t **transStat)
 
     dataObjCloseInp.l1descInx = destL1descInx;
     if (status >= 0) {
-        *transStat = malloc (sizeof (transferStat_t));
+        *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
         memset (*transStat, 0, sizeof (transferStat_t));
         (*transStat)->bytesWritten = srcDataObjInfo->dataSize;
         (*transStat)->numThreads = destDataObjInp->numThreads;

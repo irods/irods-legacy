@@ -87,7 +87,7 @@ rodsStat_t **fileFstatOut)
         return (status);
     }
 
-    *fileFstatOut = malloc (sizeof (rodsStat_t));
+    *fileFstatOut = (rodsStat_t*)malloc (sizeof (rodsStat_t));
 
     status = statToRodsStat (*fileFstatOut, &myFileStat);
 

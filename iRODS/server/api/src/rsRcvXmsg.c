@@ -27,7 +27,7 @@ rcvXmsgOut_t **rcvXmsgOut)
 
     /* get the msg */
  
-    *rcvXmsgOut = calloc (1, sizeof (rcvXmsgOut_t));
+    *rcvXmsgOut = (rcvXmsgOut_t*)calloc (1, sizeof (rcvXmsgOut_t));
 
     status = _rsRcvXmsg (irodsXmsg, *rcvXmsgOut);
 

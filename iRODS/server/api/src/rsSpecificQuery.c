@@ -51,7 +51,7 @@ _rsSpecificQuery (rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
 {
     int status;
 
-    *genQueryOut = malloc(sizeof(genQueryOut_t));
+    *genQueryOut = (genQueryOut_t*)malloc(sizeof(genQueryOut_t));
     memset((char *)*genQueryOut, 0, sizeof(genQueryOut_t));
 
     status = chlSpecificQuery(*specificQueryInp, *genQueryOut);

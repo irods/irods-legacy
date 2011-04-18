@@ -150,7 +150,7 @@ dataObjInfo_t *dataObjInfo)
         switch (RescTypeDef[rescTypeInx].rescCat) {
           case FILE_CAT:
             memset (&fileTruncateInp, 0, sizeof (fileTruncateInp));
-            fileTruncateInp.fileType = RescTypeDef[rescTypeInx].driverType;
+            fileTruncateInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileTruncateInp.fileName, dataObjInfo->filePath, 
 	      MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.addr.hostAddr, 

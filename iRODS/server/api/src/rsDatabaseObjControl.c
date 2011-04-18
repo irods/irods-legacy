@@ -23,7 +23,7 @@ remoteDatabaseObjControl(rsComm_t *rsComm,
     }
 
     if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
-	*databaseObjControlOut = malloc(sizeof(databaseObjControlOut_t));
+	*databaseObjControlOut = (databaseObjControlOut_t*)malloc(sizeof(databaseObjControlOut_t));
 	memset (*databaseObjControlOut, 0, sizeof (databaseObjControlOut_t));
         return status;
     }
@@ -50,10 +50,10 @@ rsDatabaseObjControl (rsComm_t *rsComm, databaseObjControlInp_t *databaseObjCont
 		  databaseObjControlInp->dbrName, status);
 	char *outBuf;
 	databaseObjControlOut_t *myObjControlOut;
-	outBuf = malloc(200);
+	outBuf = (char*)malloc(200);
 	*outBuf='\0';
 	strncpy(outBuf, "DBR not found",200);
-	myObjControlOut = malloc(sizeof(databaseObjControlOut_t));
+	myObjControlOut = (databaseObjControlOut_t*)malloc(sizeof(databaseObjControlOut_t));
 	memset (myObjControlOut, 0, sizeof (databaseObjControlOut_t));
 	myObjControlOut->outBuf = outBuf;
 	*databaseObjControlOut = myObjControlOut;
@@ -141,9 +141,9 @@ _rsDatabaseObjControl (rsComm_t *rsComm,
 
     return (status);
 #else
-    myObjControlOut = malloc(sizeof(databaseObjControlOut_t));
+    myObjControlOut = (databaseObjControlOut_t*)malloc(sizeof(databaseObjControlOut_t));
     memset (myObjControlOut, 0, sizeof (databaseObjControlOut_t));
-    outBuf = malloc(100);
+    outBuf = (char*)malloc(100);
     strcpy(outBuf, 
 	   "The iRODS system needs to be re-compiled with DBR support enabled");
     myObjControlOut->outBuf = outBuf;

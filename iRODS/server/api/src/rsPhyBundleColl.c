@@ -333,8 +333,8 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
     }
 
     bzero (&regReplicaInp, sizeof (regReplicaInp));
-    regReplicaInp.srcDataObjInfo = malloc (sizeof (dataObjInfo_t));
-    regReplicaInp.destDataObjInfo = malloc (sizeof (dataObjInfo_t));
+    regReplicaInp.srcDataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
+    regReplicaInp.destDataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     bzero (regReplicaInp.srcDataObjInfo, sizeof (dataObjInfo_t));
     bzero (regReplicaInp.destDataObjInfo, sizeof (dataObjInfo_t));
     addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
@@ -392,7 +392,7 @@ char *collection)
 
     bzero (&structFileOprInp, sizeof (structFileOprInp));
 
-    structFileOprInp.specColl = malloc (sizeof (specColl_t));
+    structFileOprInp.specColl = (specColl_t*)malloc (sizeof (specColl_t));
     memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
     structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
 
@@ -441,7 +441,7 @@ bunReplCacheHeader_t *bunReplCacheHeader)
 	  curSubFileCond->cachePhyPath, curSubFileCond->subPhyPath, errno);
 	return (UNIX_FILE_LINK_ERR - errno);
     }
-    bunReplCache = malloc (sizeof (bunReplCache_t));
+    bunReplCache = (bunReplCache_t*)malloc (sizeof (bunReplCache_t));
     bzero (bunReplCache, sizeof (bunReplCache_t));
     bunReplCache->dataId = curSubFileCond->dataId;
     snprintf (bunReplCache->objPath, MAX_NAME_LEN, "%s/%s", 

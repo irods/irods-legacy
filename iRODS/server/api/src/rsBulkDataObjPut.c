@@ -89,7 +89,7 @@ bytesBuf_t *bulkOprInpBBuf)
         /* just take the top one */
         rescInfo = myRescGrpInfo->rescInfo;
     }
-    fileType = getRescType (rescInfo);
+    fileType = (fileDriverType_t)getRescType (rescInfo);
     if (fileType != UNIX_FILE_TYPE && fileType != NT_FILE_TYPE) {
 	freeRodsObjStat (myRodsObjStat);
 	return SYS_INVALID_RESC_FOR_BULK_OPR;

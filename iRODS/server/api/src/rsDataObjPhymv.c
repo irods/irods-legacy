@@ -68,7 +68,7 @@ transferStat_t **transStat)
         return status;
     }
 
-    *transStat = malloc (sizeof (transferStat_t));
+    *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));
 
     if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {

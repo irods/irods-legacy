@@ -168,7 +168,7 @@ char *rescGroupName)
 	tmpRescName =  &rescName->value[rescName->len * i];
 	tmpQuotaRescId =  &quotaRescId->value[quotaRescId->len * i];
 	tmpQuotaUserId =  &quotaUserId->value[quotaUserId->len * i];
-	tmpRescQuota = malloc (sizeof (rescQuota_t));
+	tmpRescQuota = (rescQuota_t*)malloc (sizeof (rescQuota_t));
 	fillRescQuotaStruct (tmpRescQuota, tmpQuotaLimit, tmpQuotaOver,
 	  tmpRescName, tmpQuotaRescId, tmpQuotaUserId, rescGroupName);
 	tmpRescQuota->next = *rescQuotaHead;

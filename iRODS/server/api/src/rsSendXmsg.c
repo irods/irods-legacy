@@ -50,8 +50,8 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
 
     /* create a irodsXmsg_t */
 
-    irodsXmsg = calloc (1, sizeof (irodsXmsg_t));
-    irodsXmsg->sendXmsgInfo = calloc (1, sizeof (sendXmsgInfo_t));
+    irodsXmsg = (irodsXmsg_t*)calloc (1, sizeof (irodsXmsg_t));
+    irodsXmsg->sendXmsgInfo = (sendXmsgInfo_t*)calloc (1, sizeof (sendXmsgInfo_t));
     *irodsXmsg->sendXmsgInfo = sendXmsgInp->sendXmsgInfo;
     irodsXmsg->sendTime = time (0);
     /*    rstrcpy (irodsXmsg->sendUserName, rsComm->clientUser.userName, NAME_LEN);*/

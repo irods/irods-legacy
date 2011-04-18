@@ -209,7 +209,7 @@ bytesBuf_t *dataObjOutBBuf, portalOprOut_t **portalOprOut)
 
     /* just malloc an empty portalOprOut */
 
-    *portalOprOut = malloc (sizeof (portalOprOut_t));
+    *portalOprOut = (portalOprOut_t*)malloc (sizeof (portalOprOut_t));
     memset (*portalOprOut, 0, sizeof (portalOprOut_t));
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -286,7 +286,7 @@ bytesBuf_t *dataObjOutBBuf)
       case FILE_CAT:
         memset (&fileGetInp, 0, sizeof (fileGetInp));
         dataObjInp = L1desc[l1descInx].dataObjInp;
-        fileGetInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileGetInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileGetInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         rstrcpy (fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);

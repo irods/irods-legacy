@@ -113,7 +113,7 @@ collOprStat_t **collOprStat)
         }
     }
     if (status >= 0 && collOprStat != NULL) {
-        *collOprStat = malloc (sizeof (collOprStat_t));
+        *collOprStat = (collOprStat_t*)malloc (sizeof (collOprStat_t));
         memset (*collOprStat, 0, sizeof (collOprStat_t));
 	(*collOprStat)->filesCnt = 1; 
 	(*collOprStat)->totalFileCnt = 1; 
@@ -164,7 +164,7 @@ collOprStat_t **collOprStat)
                 status = rsMvCollToTrash (rsComm, rmCollInp);
                 if (status >= 0 && collOprStat != NULL) {
 		    if (*collOprStat == NULL) {
-                        *collOprStat = malloc (sizeof (collOprStat_t));
+                        *collOprStat = (collOprStat_t*)malloc (sizeof (collOprStat_t));
                         memset (*collOprStat, 0, sizeof (collOprStat_t));
 		    }
                     (*collOprStat)->filesCnt = 1;
@@ -211,7 +211,7 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
     }
 
     if (collOprStat != NULL && *collOprStat == NULL) {
-        *collOprStat = malloc (sizeof (collOprStat_t));
+        *collOprStat = (collOprStat_t*)malloc (sizeof (collOprStat_t));
         memset (*collOprStat, 0, sizeof (collOprStat_t));
     }
 
@@ -272,7 +272,7 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
                         savedStatus = status;
                         break;
                     }
-                     *collOprStat = malloc (sizeof (collOprStat_t));
+                     *collOprStat = (collOprStat_t*)malloc (sizeof (collOprStat_t));
                      memset (*collOprStat, 0, sizeof (collOprStat_t));
 		}
             }

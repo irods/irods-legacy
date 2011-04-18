@@ -27,7 +27,7 @@ applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, ch
       rei2.uoic = &rsComm->clientUser;
       rei2.uoip = &rsComm->proxyUser;
     }
-    rei2.doi = mallocAndZero(sizeof(dataObjInfo_t));
+    rei2.doi = (dataObjInfo_t*)mallocAndZero(sizeof(dataObjInfo_t));
     strcpy(rei2.doi->objPath,objPath);
 
 #if 0

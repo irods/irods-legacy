@@ -87,7 +87,7 @@ fileLseekOut_t **fileLseekOut)
           fileLseekInp->fileInx, status);
         return (status);
     } else {
-        *fileLseekOut = malloc (sizeof (fileLseekOut_t));
+        *fileLseekOut = (fileLseekOut_t*)malloc (sizeof (fileLseekOut_t));
         memset (*fileLseekOut, 0, sizeof (fileLseekOut_t));
 
 	(*fileLseekOut)->offset = lStatus;

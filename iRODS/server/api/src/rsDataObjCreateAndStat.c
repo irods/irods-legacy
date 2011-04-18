@@ -19,7 +19,7 @@ openStat_t **openStat)
     status = rsDataObjCreate (rsComm, dataObjInp);
 
     if (status >= 0) {
-	*openStat = malloc (sizeof (openStat_t));
+	*openStat = (openStat_t*)malloc (sizeof (openStat_t));
 	(*openStat)->dataSize = L1desc[status].dataObjInfo->dataSize;
 	rstrcpy ((*openStat)->dataMode, L1desc[status].dataObjInfo->dataMode,
 	  SHORT_STR_LEN);

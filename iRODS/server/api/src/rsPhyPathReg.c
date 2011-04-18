@@ -194,7 +194,7 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
 
         rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
         rstrcpy (chkNVPathPermInp.fileName, filePath, MAX_NAME_LEN);
-        chkNVPathPermInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        chkNVPathPermInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (chkNVPathPermInp.addr.hostAddr,  
 	  rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
 
@@ -367,7 +367,7 @@ rescInfo_t *rescInfo)
 
     rescTypeInx = rescInfo->rescTypeInx;
     rstrcpy (fileOpendirInp.dirName, filePath, MAX_NAME_LEN);
-    fileOpendirInp.fileType = RescTypeDef[rescTypeInx].driverType;
+    fileOpendirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileOpendirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
 
     dirFd = rsFileOpendir (rsComm, &fileOpendirInp);
@@ -483,7 +483,7 @@ rescInfo_t *rescInfo)
     rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
 
     rescTypeInx = rescInfo->rescTypeInx;
-    fileStatInp.fileType = RescTypeDef[rescTypeInx].driverType;
+    fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
@@ -495,7 +495,7 @@ rescInfo_t *rescInfo)
           fileStatInp.fileName, status);
 	memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
 	rstrcpy (fileMkdirInp.dirName, filePath, MAX_NAME_LEN);
-        fileMkdirInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileMkdirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
 	fileMkdirInp.mode = getDefDirMode ();
         rstrcpy (fileMkdirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
 	status = rsFileMkdir (rsComm, &fileMkdirInp);

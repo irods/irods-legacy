@@ -355,7 +355,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         switch (RescTypeDef[rescTypeInx].rescCat) {
           case FILE_CAT:
             memset (&fileUnlinkInp, 0, sizeof (fileUnlinkInp));
-            fileUnlinkInp.fileType = RescTypeDef[rescTypeInx].driverType;
+            fileUnlinkInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileUnlinkInp.fileName, dataObjInfo->filePath, 
 	      MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.addr.hostAddr, 

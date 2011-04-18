@@ -563,7 +563,7 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         switch (RescTypeDef[rescTypeInx].rescCat) {
           case FILE_CAT:
             memset (&fileRmdirInp, 0, sizeof (fileRmdirInp));
-            fileRmdirInp.fileType = RescTypeDef[rescTypeInx].driverType;
+            fileRmdirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileRmdirInp.dirName, dataObjInfo->filePath,
               MAX_NAME_LEN);
             rstrcpy (fileRmdirInp.addr.hostAddr,

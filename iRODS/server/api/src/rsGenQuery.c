@@ -79,7 +79,7 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     /*  printGenQI(genQueryInp);  for debug */
 
-    *genQueryOut = malloc(sizeof(genQueryOut_t));
+    *genQueryOut = (genQueryOut_t*)malloc(sizeof(genQueryOut_t));
     memset((char *)*genQueryOut, 0, sizeof(genQueryOut_t));
 
     if (ruleExecuted==0) {

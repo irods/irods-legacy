@@ -97,7 +97,7 @@ rodsDirent_t **fileReaddirOut)
         return (status);
     }
 
-    *fileReaddirOut = malloc (sizeof (rodsDirent_t));
+    *fileReaddirOut = (rodsDirent_t*)malloc (sizeof (rodsDirent_t));
 
     status = direntToRodsDirent (*fileReaddirOut, myFileDirent);
 

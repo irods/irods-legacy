@@ -27,7 +27,7 @@ rsGsiAuthRequest (rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut)
        return gsiAuthReqError;
     }
 
-    *gsiAuthRequestOut = malloc(sizeof(gsiAuthRequestOut_t));
+    *gsiAuthRequestOut = (gsiAuthRequestOut_t*)malloc(sizeof(gsiAuthRequestOut_t));
     memset((char *)*gsiAuthRequestOut, 0, sizeof(gsiAuthRequestOut_t));
 
     result = *gsiAuthRequestOut;

@@ -13,7 +13,7 @@ rsGetMiscSvrInfo (rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo)
     miscSvrInfo_t *myOutSvrInfo;
     char *tmpStr;
 
-    myOutSvrInfo = *outSvrInfo = malloc (sizeof (miscSvrInfo_t));
+    myOutSvrInfo = *outSvrInfo = (miscSvrInfo_t*)malloc (sizeof (miscSvrInfo_t));
 
     memset (myOutSvrInfo, 0, sizeof (miscSvrInfo_t));
 

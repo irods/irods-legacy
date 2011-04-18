@@ -22,7 +22,7 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
    MD5_CTX context;
    char ServerID[MAX_PASSWORD_LEN+2];
 
-   *authCheckOut = malloc(sizeof(authCheckOut_t));
+   *authCheckOut = (authCheckOut_t*)malloc(sizeof(authCheckOut_t));
    memset((char *)*authCheckOut, 0, sizeof(authCheckOut_t));
 
    rodsLog(LOG_NOTICE, "rsAuthCheck user %s", authCheckInp->username);
@@ -47,7 +47,7 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
 
       getZoneServerId("", ServerID); /* get our local zone SID */
       len = strlen(ServerID);
-      digest = malloc(RESPONSE_LEN+2);
+      digest = ( unsigned char* )malloc(RESPONSE_LEN+2);
       if (len <=0) {
 	 rodsLog (LOG_DEBUG, 
 	       "rsAuthCheck: Warning, cannot authenticate this server to remote server, no LocalZoneSID defined in server.config", status);

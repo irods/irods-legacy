@@ -289,7 +289,7 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
 
     /* untar the bunfile */
     memset (&structFileOprInp, 0, sizeof (structFileOprInp_t));
-    structFileOprInp.specColl = malloc (sizeof (specColl_t));
+    structFileOprInp.specColl = (specColl_t*)malloc (sizeof (specColl_t));
     memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
     structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
     snprintf (structFileOprInp.specColl->collection, MAX_NAME_LEN,

@@ -408,7 +408,7 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
         switch (RescTypeDef[rescTypeInx].rescCat) {
           case FILE_CAT:
             memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-            fileRenameInp.fileType = RescTypeDef[rescTypeInx].driverType;
+            fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath,
               MAX_NAME_LEN);
             rstrcpy (fileRenameInp.newFileName, newFileName,

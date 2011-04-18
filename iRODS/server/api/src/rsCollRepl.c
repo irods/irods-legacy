@@ -69,7 +69,7 @@ collOprStat_t **collOprStat)
     }
 
     if (collOprStat != NULL) {
-        *collOprStat = malloc (sizeof (collOprStat_t));
+        *collOprStat = (collOprStat_t*)malloc (sizeof (collOprStat_t));
         memset (*collOprStat, 0, sizeof (collOprStat_t));
     }
 
@@ -126,7 +126,7 @@ collOprStat_t **collOprStat)
 	            savedStatus = status;
 	            break;
 	        }
-                 *collOprStat = malloc (sizeof (collOprStat_t));
+                 *collOprStat = (collOprStat_t*)malloc (sizeof (collOprStat_t));
                  memset (*collOprStat, 0, sizeof (collOprStat_t));
 	    }
         }

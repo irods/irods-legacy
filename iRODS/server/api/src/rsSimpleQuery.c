@@ -55,7 +55,7 @@ simpleQueryOut_t **simpleQueryOut)
 
     maxBufSize = simpleQueryInp->maxBufSize;
 
-    outBuf = malloc(maxBufSize);
+    outBuf = (char*)malloc(maxBufSize);
 
     status = chlSimpleQuery(rsComm, simpleQueryInp->sql, 
 			    simpleQueryInp->arg1,
@@ -73,7 +73,7 @@ simpleQueryOut_t **simpleQueryOut)
        return (status);
     }
 
-    myQueryOut = malloc(sizeof(simpleQueryOut_t));
+    myQueryOut = (simpleQueryOut_t*)malloc(sizeof(simpleQueryOut_t));
     myQueryOut->control = control;
     myQueryOut->outBuf = outBuf;
 

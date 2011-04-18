@@ -48,7 +48,7 @@ _rsGetTempPassword (rsComm_t *rsComm,
     int status;
     getTempPasswordOut_t *myGetTempPasswordOut;
 
-    myGetTempPasswordOut = malloc(sizeof(getTempPasswordOut_t));
+    myGetTempPasswordOut = (getTempPasswordOut_t*)malloc(sizeof(getTempPasswordOut_t));
 
     status = chlMakeTempPw(rsComm, 
 			  myGetTempPasswordOut->stringToHashWith);

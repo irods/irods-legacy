@@ -27,7 +27,7 @@ rsKrbAuthRequest (rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut)
        return krbAuthReqError;
     }
 
-    *krbAuthRequestOut = malloc(sizeof(krbAuthRequestOut_t));
+    *krbAuthRequestOut = (krbAuthRequestOut_t*)malloc(sizeof(krbAuthRequestOut_t));
     memset((char *)*krbAuthRequestOut, 0, sizeof(krbAuthRequestOut_t));
 
     result = *krbAuthRequestOut;
