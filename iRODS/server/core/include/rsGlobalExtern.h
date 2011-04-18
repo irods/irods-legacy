@@ -74,6 +74,7 @@ extern int RescQuotaPolicy;
 extern struct allowedUser *AllowedUserHead;
 extern struct allowedUser *DisallowedUserHead;
 extern int MaxConnections;          /* no control */
+extern time_t LastRescUpdateTime;
 
 /* manage server process permissions */
 #ifdef RUN_SERVER_AS_ROOT
