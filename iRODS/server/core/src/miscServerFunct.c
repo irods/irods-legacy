@@ -506,7 +506,7 @@ partialDataPut (portalTransferInp_t *myInput)
             return;
         }
     }
-    buf = malloc (TRANS_BUF_SZ);
+    buf = (char*)malloc (TRANS_BUF_SZ);
 
 #ifdef PARA_TIMING
     afterSeek=time(0);
@@ -652,7 +652,7 @@ partialDataGet (portalTransferInp_t *myInput)
             return;
         }
     }
-    buf = malloc (TRANS_BUF_SZ);
+    buf = (char*)malloc (TRANS_BUF_SZ);
 
 #ifdef PARA_TIMING
     afterSeek=time(0);
@@ -1554,13 +1554,13 @@ char *regex (char *rec, char *text, ...)
 /* generic functions to return SYS_NOT_SUPPORTED */
 
 int
-intNoSupport()
+intNoSupport( ... )
 {
     return SYS_NOT_SUPPORTED;
 }
 
 rodsLong_t
-longNoSupport()
+longNoSupport( ... )
 {
     return (rodsLong_t) SYS_NOT_SUPPORTED;
 }

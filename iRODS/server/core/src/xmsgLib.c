@@ -16,7 +16,6 @@
 #ifndef windows_platform
 pthread_mutex_t ReqQueCondMutex;
 pthread_cond_t ReqQueCond;
-pthread_cond_t ReqQueCond;
 pthread_t ProcReqThread[NUM_XMSG_THR];
 pthread_mutex_t MessQueCondMutex;  /* RAJA Nov 29 2010 */
 #endif
@@ -398,7 +397,7 @@ addTicketToHQue (xmsgTicketInfo_t *ticket, ticketHashQue_t *ticketHQue)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    tmpTicketMsgStruct = calloc (1, sizeof (ticketMsgStruct_t));
+    tmpTicketMsgStruct = (ticketMsgStruct_t*)calloc (1, sizeof (ticketMsgStruct_t));
 
     /* copy the content of the ticket */
 
@@ -504,7 +503,7 @@ addReqToQue (int sock)
 {
   xmsgReq_t *myXmsgReq;
 
-    myXmsgReq = calloc (1, sizeof (xmsgReq_t));
+    myXmsgReq = (xmsgReq_t*)calloc (1, sizeof (xmsgReq_t));
 
     myXmsgReq->sock = sock;
 
@@ -680,7 +679,7 @@ initXmsgHashQue ()
 
     thisTime = time (NULL);
 
-    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
     outXmsgTicketInfo->rcvTicket = 1;
     outXmsgTicketInfo->sendTicket = 1;
@@ -688,7 +687,7 @@ initXmsgHashQue ()
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
     
-    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
     outXmsgTicketInfo->rcvTicket = 2;
     outXmsgTicketInfo->sendTicket = 2;
@@ -696,7 +695,7 @@ initXmsgHashQue ()
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
 
-    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
     outXmsgTicketInfo->rcvTicket = 3;
     outXmsgTicketInfo->sendTicket = 3;
@@ -704,7 +703,7 @@ initXmsgHashQue ()
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
 
-    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
     outXmsgTicketInfo->rcvTicket = 4;
     outXmsgTicketInfo->sendTicket = 4;
@@ -712,7 +711,7 @@ initXmsgHashQue ()
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
 
-    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
     outXmsgTicketInfo->rcvTicket = 5;
     outXmsgTicketInfo->sendTicket = 5;
@@ -779,7 +778,7 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
     }
 
     sendXmsgInfo = irodsXmsg->sendXmsgInfo;
-    ticketMsgStruct = irodsXmsg->ticketMsgStruct;
+    ticketMsgStruct = (ticketMsgStruct_t*)irodsXmsg->ticketMsgStruct;
 
     /*    rodsLog (LOG_ERROR,
 	     "_rsRcvXmsg: SEQNum=%d, numRcv=%d", irodsXmsg->seqNumber,

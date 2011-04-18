@@ -132,7 +132,7 @@ mkServerHost (char *myHostAddr, char *zoneName)
     rodsServerHost_t *tmpRodsServerHost;
     int status;
 
-    tmpRodsServerHost = malloc (sizeof (rodsServerHost_t));
+    tmpRodsServerHost = (rodsServerHost_t*)malloc (sizeof (rodsServerHost_t));
     memset (tmpRodsServerHost, 0, sizeof (rodsServerHost_t));
 
 #if 0
@@ -235,7 +235,7 @@ initLocalServerHost (rsComm_t *rsComm)
     int status;
     char myHostName[MAX_NAME_LEN];
 
-    LocalServerHost = ServerHostHead = malloc (sizeof (rodsServerHost_t));
+    LocalServerHost = ServerHostHead = (rodsServerHost_t*)malloc (sizeof (rodsServerHost_t));
     memset (ServerHostHead, 0, sizeof (rodsServerHost_t)); 
 
     LocalServerHost->localFlag = LOCAL_HOST;
@@ -710,7 +710,7 @@ queHostName (rodsServerHost_t *rodsServerHost, char *myName, int topFlag)
 	myHostName = myHostName->next;
     }
     
-    tmpHostName = malloc (sizeof (hostName_t));
+    tmpHostName = (hostName_t*)malloc (sizeof (hostName_t));
     tmpHostName->name = strdup (myName);
  
     if (topFlag > 0) {
@@ -1408,7 +1408,7 @@ cleanupAndExit (int status)
 }
 
 void
-signalExit ()
+signalExit (int)
 {
     rodsLog (LOG_NOTICE,
      "caught a signal and exiting\n");
@@ -1416,7 +1416,7 @@ signalExit ()
 }
 
 void
-rsPipSigalHandler ()
+rsPipSigalHandler (int)
 {
     time_t curTime;
 
@@ -1485,7 +1485,7 @@ initHostConfigByFile (rsComm_t *rsComm)
           &lineLen, LONG_NAME_LEN)) > 0) {
 	    if (cnt == 0) {
 		/* first host */
-		tmpRodsServerHost = malloc (sizeof (rodsServerHost_t));
+		tmpRodsServerHost = (rodsServerHost_t*)malloc (sizeof (rodsServerHost_t));
                 memset (tmpRodsServerHost, 0, sizeof (rodsServerHost_t));
 		/* assume it is remote */
 		tmpRodsServerHost->localFlag = REMOTE_HOST;
@@ -1757,7 +1757,7 @@ initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack)
 	      SP_PROTOCOL);
             return (SYS_GETSTARTUP_PACK_ERR);
         }
-        rsComm->irodsProt = atoi (tmpStr);
+        rsComm->irodsProt = (irodsProt_t)atoi (tmpStr);
 
         tmpStr = getenv (SP_RECONN_FLAG);
         if (tmpStr == NULL) {
@@ -2238,7 +2238,7 @@ initConnectControl ()
                         rstrcpy (myZone, tmpZoneInfo->zoneName, NAME_LEN);
                     }
                 }
-                tmpAllowedUser = malloc (sizeof (struct allowedUser));
+                tmpAllowedUser = (allowedUser*)malloc (sizeof (struct allowedUser));
                 memset (tmpAllowedUser, 0, sizeof (struct allowedUser));
 		rstrcpy (tmpAllowedUser->userName, myuser, NAME_LEN);
 		rstrcpy (tmpAllowedUser->rodsZone, myZone, NAME_LEN);

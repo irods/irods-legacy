@@ -217,7 +217,8 @@ rodsObjStat_t **rodsObjStatOut)
     if (status >= 0) {
         *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
         memset (*rodsObjStatOut, 0, sizeof (rodsObjStat_t));
-        (*rodsObjStatOut)->objType = status = COLL_OBJ_T;
+        (*rodsObjStatOut)->objType = COLL_OBJ_T;
+        status = (int)COLL_OBJ_T;
         if ((dataId = getSqlResultByInx (genQueryOut,
           COL_COLL_ID)) == NULL) {
             rodsLog (LOG_ERROR,

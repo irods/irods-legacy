@@ -187,7 +187,7 @@ dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize)
 	}
 #else
         /* always repl the .dataObjInp */
-        L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
+        L1desc[l1descInx].dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));
         replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
         L1desc[l1descInx].dataObjInpReplFlag = 1;
 #endif
@@ -614,12 +614,12 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
     L1desc[l1descInx].dataObjInp = dataObjInp;
 #else
     /* always repl the .dataObjInp */
-    L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
+    L1desc[l1descInx].dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));
     replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
     L1desc[l1descInx].dataObjInpReplFlag = 1;
 #endif
     dataObjInfo = L1desc[l1descInx].dataObjInfo =
-      malloc (sizeof (dataObjInfo_t));
+      (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     bzero (dataObjInfo, sizeof (dataObjInfo_t));
     rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
 
@@ -629,7 +629,7 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
 	rstrcpy (dataObjInfo->dataType, openStat->dataType, NAME_LEN);
 	L1desc[l1descInx].l3descInx = openStat->l3descInx;
 	L1desc[l1descInx].replStatus = openStat->replStatus;
-	dataObjInfo->rescInfo = malloc (sizeof (rescInfo_t));
+	dataObjInfo->rescInfo = (rescInfo_t*)malloc (sizeof (rescInfo_t));
 	bzero (dataObjInfo->rescInfo, sizeof (rescInfo_t));
 	dataObjInfo->rescInfo->rescTypeInx = openStat->rescTypeInx;
     }

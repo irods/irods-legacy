@@ -144,7 +144,7 @@ queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath)
         tmpPtr = objPath + len;
 
         if (*tmpPtr == '\0' || *tmpPtr == '/') {
-            tmpSpecCollCache = malloc (sizeof (specCollCache_t));
+            tmpSpecCollCache = (specCollCache_t*)malloc (sizeof (specCollCache_t));
             memset (tmpSpecCollCache, 0, sizeof (specCollCache_t));
 
             tmpDataId = &dataId->value[dataId->len * i];
@@ -180,7 +180,7 @@ queueSpecCollCacheWithObjStat (rodsObjStat_t *rodsObjStatOut)
 {
     specCollCache_t *tmpSpecCollCache;
 
-    tmpSpecCollCache = malloc (sizeof (specCollCache_t));
+    tmpSpecCollCache = (specCollCache_t*)malloc (sizeof (specCollCache_t));
     memset (tmpSpecCollCache, 0, sizeof (specCollCache_t));
 
     tmpSpecCollCache->specColl = *rodsObjStatOut->specColl;
@@ -348,7 +348,7 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
             rstrcpy ((*rodsObjStatOut)->specColl->objPath,
               dataObjInfo->objPath, MAX_NAME_LEN);
         }
-        (*rodsObjStatOut)->objType = status;
+        (*rodsObjStatOut)->objType = (objType_t)status;
         (*rodsObjStatOut)->objSize = dataObjInfo->dataSize;
         rstrcpy ((*rodsObjStatOut)->createTime, dataObjInfo->dataCreate,
           NAME_LEN);

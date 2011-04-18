@@ -137,7 +137,7 @@ char *destDir, int mode)
     tmpLen = pathLen;
 
     while (tmpLen > startLen) {
-        status = fileStat (fileType, rsComm, tmpPath, &statbuf);
+        status = fileStat ( (fileDriverType_t)fileType, rsComm, tmpPath, &statbuf);
         if (status >= 0) {
             if (statbuf.st_mode & S_IFDIR) {
                 break;
@@ -160,7 +160,7 @@ char *destDir, int mode)
     while (tmpLen < pathLen) {
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
-       status = fileMkdir (fileType, rsComm, tmpPath, mode);
+       status = fileMkdir ((fileDriverType_t)fileType, rsComm, tmpPath, mode);
         if (status < 0) {
 	    rodsLog (LOG_NOTICE,
              "mkFileDirR: mkdir failed for %s, status =%d",
@@ -191,13 +191,13 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
 
-    status = fileOpendir (fileType, rsComm, cacheDir, &dirPtr);
+    status = fileOpendir ((fileDriverType_t)fileType, rsComm, cacheDir, &dirPtr);
 
     if (status < 0) {
         return (0);
     }
 
-    while ((status = fileReaddir (fileType, rsComm, dirPtr, myFileDirent))
+    while ((status = fileReaddir ((fileDriverType_t)fileType, rsComm, dirPtr, myFileDirent))
       >= 0) {
         if (strcmp (myFileDirent->d_name, ".") == 0 ||
           strcmp (myFileDirent->d_name, "..") == 0) {
@@ -206,7 +206,7 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", cacheDir, 
 	  myFileDirent->d_name);
 
-        status = fileStat (fileType, rsComm, childPath, &myFileStat);
+        status = fileStat ((fileDriverType_t)fileType, rsComm, childPath, &myFileStat);
 
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -223,7 +223,7 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
         }
 
 	if (myFileStat.st_mode & S_IFDIR) {
-	    status = chkEmptyDir (fileType, rsComm, childPath);
+	    status = chkEmptyDir ((fileDriverType_t)fileType, rsComm, childPath);
 	    if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
                 rodsLog (LOG_ERROR,
                   "chkEmptyDir: dir %s is not empty", childPath);
@@ -231,9 +231,9 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
 	    }
 	}
     }
-    fileClosedir (fileType, rsComm, dirPtr);
+    fileClosedir ((fileDriverType_t)fileType, rsComm, dirPtr);
     if (status != SYS_DIR_IN_VAULT_NOT_EMPTY) {
-	fileRmdir (fileType, rsComm, cacheDir);
+	fileRmdir ((fileDriverType_t)fileType, rsComm, cacheDir);
 	status = 0;
     }
     return status;
@@ -384,7 +384,7 @@ filePathTypeInResc (rsComm_t *rsComm, char *fileName, rescInfo_t *rescInfo)
     rstrcpy (fileStatInp.fileName, fileName, MAX_NAME_LEN);
 
     rescTypeInx = rescInfo->rescTypeInx;
-    fileStatInp.fileType = RescTypeDef[rescTypeInx].driverType;
+    fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
 

@@ -324,7 +324,7 @@ sortRescRandom (rescGrpInfo_t **rescGrpInfo)
         return (0);
     }
     if ((status = getRandomArray (&randomArray, numResc)) < 0) return status;
-    rescInfoArray = malloc (numResc * sizeof (rescInfo_t *));
+    rescInfoArray = ( rescInfo_t** )malloc (numResc * sizeof (rescInfo_t *));
     for (i = 0; i < numResc; i++) {
         j = randomArray[i] - 1;
         rescInfoArray[j] = tmpRescGrpInfo->rescInfo;
@@ -1253,7 +1253,7 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
               addr.hostAddr);
         }
         /* queue the resource */
-        myRescInfo = malloc (sizeof (rescInfo_t));
+        myRescInfo = ( rescInfo_t* )malloc (sizeof (rescInfo_t));
         memset (myRescInfo, 0, sizeof (rescInfo_t));
         myRescInfo->rodsServerHost = tmpRodsServerHost;
         myRescInfo->rescId = strtoll (tmpRescId, 0, 0);
@@ -1289,10 +1289,10 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
                   "procAndQueResResult:splitPathByKey of wosHost error for %s",
 		  wosHost, wosPolicy);
 	    } else {
-		tmpStr = malloc (strlen (wosHost) + 40);
+		tmpStr = (char*)malloc (strlen (wosHost) + 40);
                 snprintf (tmpStr, MAX_NAME_LEN, "%s=%s", WOS_HOST_ENV, wosHost);
                 putenv (tmpStr);
-		tmpStr = malloc (strlen (wosPolicy) + 40);
+		tmpStr = (char*)malloc (strlen (wosPolicy) + 40);
                 snprintf (tmpStr, MAX_NAME_LEN, "%s=%s", 
 		  WOS_POLICY_ENV, wosPolicy);
                 putenv (tmpStr);
@@ -1376,7 +1376,7 @@ printLocalResc ()
 
     while (tmpRescGrpInfo != NULL) {
         myRescInfo = tmpRescGrpInfo->rescInfo;
-        tmpRodsServerHost = myRescInfo->rodsServerHost;
+        tmpRodsServerHost = (rodsServerHost_t*)myRescInfo->rodsServerHost;
         if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
 #ifndef windows_platform
 #ifdef IRODS_SYSLOG

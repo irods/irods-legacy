@@ -565,7 +565,7 @@ execRuleExec (reExecProc_t *reExecProc)
     avInx++;
     av[avInx] = strdup ("-t");
     avInx++;
-    av[avInx] = malloc (sizeof (int) * 2);
+    av[avInx] = (char*)malloc (sizeof (int) * 2);
     sprintf (av[avInx], "%d", reExecProc->jobType);
     avInx++;
     av[avInx] = NULL;

@@ -495,7 +495,7 @@ _dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&fileChksumInp, 0, sizeof (fileChksumInp));
-        fileChksumInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileChksumInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,
           NAME_LEN);
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
@@ -662,7 +662,7 @@ fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag)
     int rescTypeInx = rescInfo->rescTypeInx;
     char *filePath = fileRenameInp->oldFileName;
 
-    fileRenameInp->fileType = RescTypeDef[rescTypeInx].driverType;
+    fileRenameInp->fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
 
     rstrcpy (fileRenameInp->addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
 
@@ -799,7 +799,7 @@ dataObjInfo_t *dataObjInfo)
 
     /* rename it */
     rescTypeInx = rescInfo->rescTypeInx;
-    fileRenameInp.fileType = RescTypeDef[rescTypeInx].driverType;
+    fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileRenameInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
     rstrcpy (fileRenameInp.newFileName, dataObjInfo->filePath,
       MAX_NAME_LEN);
@@ -990,7 +990,7 @@ dataObjInfo_t *dataObjInfo)
     int addUserNameFlag;
 
     memset (structFileOprInp, 0, sizeof (structFileOprInp_t));
-    structFileOprInp->specColl = malloc (sizeof (specColl_t));
+    structFileOprInp->specColl = (specColl_t*)malloc (sizeof (specColl_t));
     memset (structFileOprInp->specColl, 0, sizeof (specColl_t));
     if (strcmp (dataObjInfo->dataType, TAR_DT_STR) == 0 ||
       strcmp (dataObjInfo->dataType, TAR_BUNDLE_TYPE) == 0) {
