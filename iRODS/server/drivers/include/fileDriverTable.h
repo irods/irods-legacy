@@ -28,6 +28,11 @@
 #include "wosFileDriver.h"
 #endif
 
+// =-=-=-=-=-=-=-
+// JMC - moving from intNoSupport to no-op fcns with matching signatures for g++
+#include "fileDriverNoOpFunctions.h"
+
+/*
 #define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport, intNoSupport, intNoSupport
 
 fileDriver_t FileDriverTable[] = {
@@ -90,6 +95,103 @@ fileDriver_t FileDriverTable[] = {
     unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
     unixFileGetFsFreeSpace, unixFileTruncate, intNoSupport, intNoSupport},
 };
+*/
+
+
+#define NO_FILE_DRIVER_FUNCTIONS \
+noSupportFsFileCreate, \
+noSupportFsFileOpen, \
+noSupportFsFileRead, \
+noSupportFsFileWrite, \
+noSupportFsFileClose, \
+noSupportFsFileUnlink, \
+noSupportFsFileStat, \
+noSupportFsFileFstat, \
+noSupportFsFileLseek, \
+noSupportFsFileFsync, \
+noSupportFsFileMkdir, \
+noSupportFsFileChmod, \
+noSupportFsFileRmdir, \
+noSupportFsFileOpendir, \
+noSupportFsFileClosedir, \
+noSupportFsFileReaddir, \
+noSupportFsFileStage, \
+noSupportFsFileRename, \
+noSupportFsFileGetFsFreeSpace, \
+noSupportFsFileTruncate, \
+noSupportFsFileStageToCache, \
+noSupportFsFileSyncToArch
+
+
+
+fileDriver_t FileDriverTable[] = {
+
+#ifndef windows_platform
+    { UNIX_FILE_TYPE, unixFileCreate, unixFileOpen, unixFileRead, unixFileWrite,
+      unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
+      unixFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
+      unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
+      unixFileGetFsFreeSpace, unixFileTruncate, noSupportFsFileStageToCache, 
+      noSupportFsFileSyncToArch},
+    #ifdef HPSS
+        {HPSS_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead, 
+         noSupportFsFileWrite, noSupportFsFileClose, hpssFileUnlink, hpssFileStat, 
+         noSupportFsFileFstat,noSupportFsFileLseek,noSupportFsFileFsync,hpssFileMkdir, 
+         hpssFileChmod, hpssFileRmdir, hpssFileOpendir, hpssFileClosedir, hpssFileReaddir, 
+         noSupportFsFileStage, hpssFileRename, hpssFileGetFsFreeSpace, noSupportFsFileTruncate,
+         hpssStageToCache, hpssSyncToArch },
+    #else
+        {HPSS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+    #endif
+#else
+	{NT_FILE_TYPE, ntFileCreate, ntFileOpen, ntFileRead, ntFileWrite,
+         ntFileClose, ntFileUnlink, ntFileStat, ntFileFstat, ntFileLseek,
+         noSupportFsFileFsync, ntFileMkdir, ntFileChmod, ntFileRmdir, ntFileOpendir,
+         ntFileClosedir, ntFileReaddir, noSupportFsFileStage, ntFileRename, 
+         noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, noSupportFsFileStageToCache, 
+         noSupportFsFileSyncToArch },
+#endif
+
+#ifndef windows_platform
+   #ifdef AMAZON_S3
+       {S3_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead, 
+        noSupportFsFileWrite, noSupportFsFileClose, s3FileUnlink, s3FileStat, noSupportFsFileFstat, 
+        noSupportFsFileLseek, noSupportFsFileFsync, s3FileMkdir, s3FileChmod, s3FileRmdir, 
+        noSupportFsFileOpendir, noSupportFsFileClosedir, noSupportFsFileReaddir, noSupportFsFileStage, 
+        s3FileRename, s3FileGetFsFreeSpace, noSupportFsFileTruncate, s3StageToCache, s3SyncToArch},
+    #else
+        {S3_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+    #endif
+    {TEST_STAGE_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead, 
+     noSupportFsFileWrite, noSupportFsFileClose, unixFileUnlink, unixFileStat, unixFileFstat, 
+     noSupportFsFileLseek, noSupportFsFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, 
+     unixFileOpendir, unixFileClosedir, unixFileReaddir, noSupportFsFileStage, unixFileRename, 
+     unixFileGetFsFreeSpace, noSupportFsFileTruncate, unixStageToCache, unixSyncToArch},
+
+    {UNIV_MSS_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead, 
+     noSupportFsFileWrite, noSupportFsFileClose, univMSSFileUnlink, univMSSFileStat, 
+     noSupportFsFileFstat, noSupportFsFileLseek, noSupportFsFileFsync, univMSSFileMkdir, 
+     univMSSFileChmod, noSupportFsFileRmdir, noSupportFsFileOpendir, noSupportFsFileClosedir, 
+     noSupportFsFileReaddir, noSupportFsFileStage, noSupportFsFileRename, 
+     noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, univMSSStageToCache, univMSSSyncToArch},
+#endif
+
+#ifdef DDN_WOS
+    {WOS_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead, 
+     noSupportFsFileWrite, noSupportFsFileClose, wosFileUnlink, wosFileStat, noSupportFsFileFstat, 
+     noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, 
+     noSupportFsFileRmdir, noSupportFsFileOpendir, noSupportFsFileClosedir, noSupportFsFileReaddir, 
+     noSupportFsFileStage, noSupportFsFileRename, wosFileGetFsFreeSpace, noSupportFsFileTruncate, 
+     wosStageToCache, wosSyncToArch},
+#else
+    {WOS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
+};
+
+
+
+
+
 
 int NumFileDriver = sizeof (FileDriverTable) / sizeof (fileDriver_t);
 

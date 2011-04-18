@@ -15,25 +15,25 @@
 #include "structFileSync.h"
 
 typedef struct {
-    structFileType_t		type; 
-    int         	(*subStructFileCreate)();
-    int         	(*subStructFileOpen)();
-    int         	(*subStructFileRead)();
-    int         	(*subStructFileWrite)();
-    int         	(*subStructFileClose)();
-    int         	(*subStructFileUnlink)();
-    int         	(*subStructFileStat)();
-    int         	(*subStructFileFstat)();
-    rodsLong_t  	(*subStructFileLseek)();
-    int         	(*subStructFileRename)();
-    int         	(*subStructFileMkdir)();
-    int         	(*subStructFileRmdir)();
-    int         	(*subStructFileOpendir)();
-    int         	(*subStructFileReaddir)();
-    int         	(*subStructFileClosedir)();
-    int         	(*subStructFileTruncate)();
-    int         	(*structFileSync)();
-    int         	(*structFileExtract)();
+    structFileType_t type;
+    int              (*subStructFileCreate)( rsComm_t*, subFile_t* ); /* JMC */
+    int              (*subStructFileOpen)( rsComm_t*, subFile_t* ); /* JMC */
+    int              (*subStructFileRead)( rsComm_t*, int, void*, int ); /* JMC */
+    int              (*subStructFileWrite)( rsComm_t*, int, void*, int ); /* JMC */
+    int              (*subStructFileClose)( rsComm_t*, int ); /* JMC */
+    int              (*subStructFileUnlink)( rsComm_t*, subFile_t* ); /* JMC */
+    int              (*subStructFileStat)( rsComm_t*, subFile_t*, rodsStat_t** ); /* JMC */
+    int              (*subStructFileFstat)( rsComm_t*, int, rodsStat_t** );/* JMC */
+    rodsLong_t       (*subStructFileLseek)( rsComm_t*, int, rodsLong_t, int ); /* JMC */
+    int              (*subStructFileRename)( rsComm_t*, subFile_t*, char* ); /* JMC */
+    int              (*subStructFileMkdir)( rsComm_t*, subFile_t* ); /* JMC */
+    int              (*subStructFileRmdir)( rsComm_t*, subFile_t* ); /* JMC */
+    int              (*subStructFileOpendir)( rsComm_t*, subFile_t* ); /* JMC */
+    int              (*subStructFileReaddir)( rsComm_t*, int, rodsDirent_t** ); /* JMC */
+    int              (*subStructFileClosedir)( rsComm_t*, int ); /* JMC */
+    int              (*subStructFileTruncate)( rsComm_t*, subFile_t* ); /* JMC */
+    int              (*structFileSync)( rsComm_t*, structFileOprInp_t*); /* JMC */
+    int              (*structFileExtract)( rsComm_t*, structFileOprInp_t* ); /* JMC */
 } structFileDriver_t;
 
 #define CACHE_DIR_STR "cacheDir"

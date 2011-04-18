@@ -15,7 +15,11 @@
 #include "tarSubStructFileDriver.h"
 #include "miscServerFunct.h"
 
-#define NO_SUB_STRUCT_FILE_FUNCTIONS  intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport 
+// =-=-=-=-=-=-=-
+// JMC - moving from intNoSupport to no-op fcns with matching signatures for g++
+#include "fileDriverNoOpFunctions.h"
+//#define NO_SUB_STRUCT_FILE_FUNCTIONS  intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport 
+#define NO_SUB_STRUCT_FILE_FUNCTIONS  noSupportStructFileCreate, noSupportStructFileOpen, noSupportStructFileRead, noSupportStructFileWrite, noSupportStructFileClose, noSupportStructFileUnlink, noSupportStructFileStat, noSupportStructFileFstat, noSupportStructFileLseek, noSupportStructFileRename, noSupportStructFileMkdir, noSupportStructFileRmdir, noSupportStructFileOpendir, noSupportStructFileReaddir, noSupportStructFileClosedir, noSupportStructFileTruncate, noSupportStructeSync, noSupportStructeExtract
 
 structFileDriver_t StructFileDriverTable[] = {
 #ifdef HAAW_STRUCT_FILE
