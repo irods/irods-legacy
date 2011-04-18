@@ -177,7 +177,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
                 return (UNIX_FILE_LINK_ERR - errno);
             }
         } else {        /* a collection */
-	    if (strlen (collEnt->collName) + 1 <= collLen) {
+	    if ((int) strlen (collEnt->collName) + 1 <= collLen) {
 		free (collEnt);
 		continue;
 	    }

@@ -248,7 +248,7 @@ rsPhyRmCollRecurOld (rsComm_t *rsComm, collInp_t *rmCollInp)
             char *tmpSubColl;
 
             tmpSubColl = &subColl->value[subColl->len * i];
-            if (strlen (tmpSubColl) < collLen)
+            if ((int) strlen (tmpSubColl) < collLen)
                 continue;
             /* recursively rm the collection */
 	    rstrcpy (tmpCollInp.collName, tmpSubColl, MAX_NAME_LEN);

@@ -157,7 +157,8 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 	return (SYS_NO_PATH_PERMISSION);
     }
 	    
-    if (sysUid != myFileStat.st_uid && (myFileStat.st_mode & S_IWOTH) == 0) {
+    if (sysUid != (int) myFileStat.st_uid && 
+      (myFileStat.st_mode & S_IWOTH) == 0) {
 	return (SYS_NO_PATH_PERMISSION);
     } else {
         return (0);
