@@ -3619,7 +3619,7 @@ initBulkDataObjRegOut (genQueryOut_t **bulkDataObjRegOut)
 
     if (bulkDataObjRegOut == NULL) return USER__NULL_INPUT_ERR;
 
-    myBulkDataObjRegOut = *bulkDataObjRegOut = malloc (sizeof (genQueryOut_t));
+    myBulkDataObjRegOut = *bulkDataObjRegOut = (genQueryOut_t*)malloc (sizeof (genQueryOut_t));
     if (myBulkDataObjRegOut == NULL) return SYS_MALLOC_ERR;
 
     memset (myBulkDataObjRegOut, 0, sizeof (genQueryOut_t));
@@ -4136,7 +4136,7 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
 		    buflen = MAX_SZ_FOR_EXECMD_BUF;
 		}
 		toRead = buflen - bytesBuf->len; 
-	        tmpPtr = bytesBuf->buf;
+	        tmpPtr = (char*)bytesBuf->buf;
                 bytesBuf->buf = malloc (buflen);
                 memcpy (bytesBuf->buf, tmpPtr, bytesBuf->len);
                 free (tmpPtr);
