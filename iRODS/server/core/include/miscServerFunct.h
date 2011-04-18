@@ -90,8 +90,8 @@ isUserPrivileged(rsComm_t *rsComm);
 char *regcmp (char *pat, char *end);
 char *regex (char *rec, char *text, ...);
 #endif
-int intNoSupport();
-rodsLong_t longNoSupport();
+int intNoSupport( ... );
+rodsLong_t longNoSupport( ... );
 void getZoneServerId(char *zoneName, char *zoneSID);
 #ifdef RBUDP_TRANSFER
 int

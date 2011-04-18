@@ -180,9 +180,9 @@ setExecArg (char *commandArgv, char *av[]);
 int
 initAgent (rsComm_t *rsComm);
 void cleanupAndExit (int status);
-void signalExit ();
+void signalExit ( int );
 void
-rsPipSigalHandler ();
+rsPipSigalHandler ( int );
 int
 initHostConfigByFile (rsComm_t *rsComm);
 int
@@ -247,7 +247,7 @@ initAndClearProcLog ();
 int
 initProcLog ();
 int
-logAgentProc ();
+logAgentProc ( rsComm_t* );
 int
 readProcLog (int pid, procLog_t *procLog);
 int

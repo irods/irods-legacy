@@ -43,7 +43,7 @@ typedef struct {
     reExecProc_t reExecProc[MAX_RE_PROCS];
 } reExec_t;
 
-time_t LastRescUpdateTime;
+static time_t LastRescUpdateTime; // JMC :: made static - was causing multiple definition on link
 
 int
 getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut);
