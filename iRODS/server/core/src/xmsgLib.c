@@ -372,7 +372,7 @@ irodsXmsg_t **outIrodsXmsg)
 
     if (msgNumber != ANY_MSG_NUMBER) {
         while (tmpIrodsXmsg != NULL) {
-	    if (tmpIrodsXmsg->sendXmsgInfo->msgNumber == msgNumber) break;
+	    if ((int) tmpIrodsXmsg->sendXmsgInfo->msgNumber == msgNumber) break;
 	    tmpIrodsXmsg = tmpIrodsXmsg->tnext;
 	}
     }
