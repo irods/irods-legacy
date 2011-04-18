@@ -1973,7 +1973,7 @@ packItem_t *myPackedItem)
 
     inLen = parseXmlValue (inPtr, myPackedItem, &endTagLen);
     if (inLen < 0) {
-            return (inLen);
+            return ((int) inLen);
     }
 
     if ( packTypeTable[myPackedItem->typeInx].number == PACK_BIN_TYPE) {
@@ -1984,17 +1984,17 @@ packItem_t *myPackedItem)
 	if (status < 0) {
 	    return status;
 	}
-	if (outLen != len) {
+	if ((int) outLen != len) {
 	    rodsLog (LOG_NOTICE, 
 	     "unpackXmlCharToOutPtr: required len %d != %d from base64_decode",
 	      len, outLen);
 	}
     } else {
-	if (inLen != len) {
+	if ((int) inLen != len) {
             rodsLog (LOG_NOTICE, 
              "unpackXmlCharToOutPtr: required len %d != %d from input",
               len, inLen);
-	    if (inLen > len) {
+	    if ((int) inLen > len) {
 		return (USER_PACKSTRUCT_INPUT_ERR);
 	    }
         }
