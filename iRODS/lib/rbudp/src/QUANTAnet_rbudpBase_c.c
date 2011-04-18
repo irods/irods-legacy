@@ -110,7 +110,7 @@ int passiveUDP(rbudpBase_t *rbudpBase, char *host)
         bzero(&cliaddr, sizeof(cliaddr));
  	if ((phe = gethostbyname(host)))
 		memcpy(&cliaddr.sin_addr, phe->h_addr, phe->h_length);
-	else if ((cliaddr.sin_addr.s_addr = inet_addr(host)) == -1)
+	else if ((int) (cliaddr.sin_addr.s_addr = inet_addr(host)) == -1)
 	{
 		perror("can't get host entry");
 		return (errno ? (-1 * errno) : -1);
@@ -142,7 +142,7 @@ int connectTCP(rbudpBase_t *rbudpBase, char * host)
 	tcpServerAddr.sin_family = AF_INET;
 	if ((phe = gethostbyname(host)))
 		memcpy(&tcpServerAddr.sin_addr, phe->h_addr, phe->h_length);
-	else if ((tcpServerAddr.sin_addr.s_addr = inet_addr(host)) == -1)
+	else if ((int) (tcpServerAddr.sin_addr.s_addr = inet_addr(host)) == -1)
 	{
 		perror("can't get host entry");
 		return (errno ? (-1 * errno) : -1);
@@ -176,7 +176,7 @@ int connectUDP(rbudpBase_t *rbudpBase, char *host)
 	rbudpBase->udpServerAddr.sin_family = AF_INET;
 	if ((phe = gethostbyname(host)))
 		memcpy(&rbudpBase->udpServerAddr.sin_addr, phe->h_addr, phe->h_length);
-	else if ((rbudpBase->udpServerAddr.sin_addr.s_addr = inet_addr(host)) == -1)
+	else if ((int) (rbudpBase->udpServerAddr.sin_addr.s_addr = inet_addr(host)) == -1)
 	{	
 		perror("can't get host entry");
 		return (errno ? (-1 * errno) : -1);
