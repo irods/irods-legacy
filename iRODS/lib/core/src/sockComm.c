@@ -457,7 +457,7 @@ readVersion (int sock, version_t **myVersion)
           myHeader.errorLen);
     }
 
-    if (myHeader.msgLen > sizeof (version_t) * 2 || myHeader.msgLen <= 0) {
+    if (myHeader.msgLen > (int) sizeof (version_t) * 2 || myHeader.msgLen <= 0) {
         if (inputStructBBuf.buf != NULL)
             free (inputStructBBuf.buf);
         rodsLog (LOG_NOTICE, 
