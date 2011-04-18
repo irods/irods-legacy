@@ -273,6 +273,9 @@ int
 getRandomArray (int **randomArray, int size);
 int
 isPathSymlink (rodsArguments_t *rodsArgs, char *path);
+int
+getAttriInAttriArray (char *objPath, genQueryOut_t *attriArray,
+int *outDataMode, char **outChksum);
 #ifdef  __cplusplus
 }
 #endif

@@ -17,9 +17,9 @@
 /* need to include a header for for each API */
 #include "apiHeaderAll.h"
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
+//#ifdef  __cplusplus
+//extern "C" {
+//#endif
 
 #if defined(RODS_SERVER)
 apidef_t RsApiTable[] = {
@@ -383,8 +383,8 @@ apidef_t RcApiTable[] = {
 int NumOfApi = sizeof(RcApiTable) / sizeof(apidef_t);
 #endif
 
-#ifdef  __cplusplus
-}
-#endif
+//#ifdef  __cplusplus
+//}
+//#endif
 
 #endif	/* API_TABLE_H */

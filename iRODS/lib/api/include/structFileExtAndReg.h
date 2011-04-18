@@ -15,10 +15,6 @@
 #include "apiNumber.h"
 #include "initServer.h"
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
 typedef struct StructFileExtAndRegInp {
     char objPath[MAX_NAME_LEN];		/* the obj path of the struct file */
     char collection[MAX_NAME_LEN];	/* the collection under which the
@@ -30,6 +26,10 @@ typedef struct StructFileExtAndRegInp {
 } structFileExtAndRegInp_t;
 
 #define StructFileExtAndRegInp_PI "str objPath[MAX_NAME_LEN]; str collection[MAX_NAME_LEN]; int oprType; int flags; struct KeyValPair_PI;"
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
 
 #if defined(RODS_SERVER)
 #define RS_STRUCT_FILE_EXT_AND_REG rsStructFileExtAndReg
@@ -57,9 +57,6 @@ int
 postProcRenamedPhyFiles (renamedPhyFiles_t *renamedPhyFiles, int regStatus);
 int
 cleanupBulkRegFiles (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
-int
-getAttriInAttriArray (char *objPath, genQueryOut_t *attriArray,
-int *outDataMode, char **outChksum);
 int
 postProcBulkPut (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
 genQueryOut_t *bulkDataObjRegOut);
