@@ -728,8 +728,9 @@ sub is64bit($$)
 	unlink( "$tmpFile.c" );
 
 	open FILE, ">$tmpFile.c";
-	print( FILE "extern void exit( int status );\n" );
-	print( FILE "int main( ) { char* foo; exit( sizeof(foo)==8 ); }\n" );
+#	JMC - print( FILE "extern void exit( int status );\n" );
+#	JMC - print( FILE "int main( ) { char* foo; exit( sizeof(foo)==8 ); }\n" );
+    print( FILE "int main( ) { char* foo; return( sizeof(foo)==8 ); }\n" );
 	close( FILE );
 
 	# Try to compile and run it.
