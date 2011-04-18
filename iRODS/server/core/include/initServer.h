@@ -180,9 +180,16 @@ setExecArg (char *commandArgv, char *av[]);
 int
 initAgent (rsComm_t *rsComm);
 void cleanupAndExit (int status);
+#ifdef  __cplusplus
 void signalExit ( int );
 void
 rsPipSigalHandler ( int );
+#else
+void signalExit ();
+void
+rsPipSigalHandler ();
+#endif
+
 int
 initHostConfigByFile (rsComm_t *rsComm);
 int

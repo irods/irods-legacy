@@ -1408,7 +1408,11 @@ cleanupAndExit (int status)
 }
 
 void
+#ifdef  __cplusplus
 signalExit (int)
+#else
+signalExit ()
+#endif
 {
     rodsLog (LOG_NOTICE,
      "caught a signal and exiting\n");
@@ -1416,7 +1420,11 @@ signalExit (int)
 }
 
 void
+#ifdef  __cplusplus
 rsPipSigalHandler (int)
+#else
+rsPipSigalHandler ()
+#endif
 {
     time_t curTime;
 
@@ -2238,7 +2246,8 @@ initConnectControl ()
                         rstrcpy (myZone, tmpZoneInfo->zoneName, NAME_LEN);
                     }
                 }
-                tmpAllowedUser = (allowedUser*)malloc (sizeof (struct allowedUser));
+                tmpAllowedUser = (struct allowedUser*)
+		  malloc (sizeof (struct allowedUser));
                 memset (tmpAllowedUser, 0, sizeof (struct allowedUser));
 		rstrcpy (tmpAllowedUser->userName, myuser, NAME_LEN);
 		rstrcpy (tmpAllowedUser->rodsZone, myZone, NAME_LEN);
