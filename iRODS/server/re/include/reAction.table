@@ -52,7 +52,7 @@ int msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
 int msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei);
 int msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei);
-int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
+int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *op, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
 int msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei);
 
 int msiVacuum(ruleExecInfo_t *rei);

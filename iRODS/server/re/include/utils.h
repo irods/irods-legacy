@@ -185,6 +185,8 @@ typedef enum typingConstraintType {
     LT
 } TypingConstraintType;
 
+typedef enum typingConstraintType TypingConstraintType;
+
 struct typingConstraint {
    ExprType *a;
    ExprType *b;
