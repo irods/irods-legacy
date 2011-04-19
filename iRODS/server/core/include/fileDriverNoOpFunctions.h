@@ -2,7 +2,7 @@
 // This file holds declarations for no-op functions used to satisfy the file driver tables
 // for both the structured file and file-system drivers.  this was necessary as the g++ 
 // compiler will not allow function pointer declarations with no parameters within its signature 
-// to be bound to functions with paramters within its signature. -JMC
+// to be bound to functions with parameters within its signature. -JMC
 
 #ifndef __FILE_DRIVER_NO_OP_FUNCTIONS_H__
 #define __FILE_DRIVER_NO_OP_FUNCTIONS_H__
