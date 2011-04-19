@@ -437,6 +437,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 #else
     if ((flags & READ_HEADER_TIMEOUT) != 0) {
 	int retryCnt = 0;
+#if 0
 	int retVal = 0;
 	while (1) {
 	    signal (SIGALRM, readTimeoutHandler);
@@ -457,6 +458,30 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 	        return USER_SOCK_CONNECT_TIMEDOUT;
 	    }
 	}
+#else 
+        struct timeval tv;
+        tv.tv_sec = READ_HEADER_TIMEOUT_IN_SEC;
+        tv.tv_usec = 0;
+        while (1) {
+            status = readMsgHeader (rsComm->sock, &myHeader, &tv);
+	    if (status < 0) {
+		if (isL1descInuse () && retryCnt < MAX_READ_HEADER_RETRY) {
+                    rodsLogError (LOG_ERROR, status,
+                      "readAndProcClientMsg:readMsgHeader error. status = %d", 
+		      status);
+                    retryCnt++;
+                    continue;
+                }
+		if (status == USER_SOCK_CONNECT_TIMEDOUT) {
+                    rodsLog (LOG_ERROR,
+                      "readAndProcClientMsg: readMsgHeader by pid %d timedout",
+                      getpid ());
+                    return status;
+		}
+            }
+	    break;
+        }
+#endif
     } else {
         status = readMsgHeader (rsComm->sock, &myHeader, NULL);
     }
