@@ -1371,13 +1371,16 @@ sub chooseCompiler()
 		if ( !defined( $CC ) || $CC eq "" )
 		{
 			# Look for gcc.
-			$CC = findCommand( "gcc" );
+#			$CC = findCommand( "gcc" );
+			$CC = findCommand( "g++" );
 			if ( !defined( $CC ) || $CC eq "" )
 			{
 				# Look for cc.  Could fail.  Could find gcc
 				# pretending to be cc (Mac OS X and Linux
 				# do this).
 				$CC = findCommand( "cc" );
+                printError( "\n", "Failed to locate g++ compiler.  checking out." );
+                exit( 1 );
 			}
 			else
 			{
