@@ -88,13 +88,15 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
             status = _rsRegColl (rsComm, collCreateInp);
 	}
         rei.status = status;
-        rei.status = applyRule ("acPostProcForCollCreate", NULL, &rei, 
-	  NO_SAVE_REI);
+        if (status >= 0) {
+            rei.status = applyRule ("acPostProcForCollCreate", NULL, &rei, 
+	      NO_SAVE_REI);
 
-        if (rei.status < 0) {
-            rodsLog (LOG_ERROR,
-             "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
-              collCreateInp->collName, status);
+            if (rei.status < 0) {
+                rodsLog (LOG_ERROR,
+                 "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
+                  collCreateInp->collName, status);
+            }
         }
 
 #else
