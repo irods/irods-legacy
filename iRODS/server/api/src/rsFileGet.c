@@ -97,10 +97,14 @@ bytesBuf_t *fileGetOutBBuf)
 
     if (status != len) {
        if (status >= 0) {
+#if 0	/* XXXXXXXX take this out for now so that on the fly convert works */
             rodsLog (LOG_NOTICE,
               "_rsFileGet: fileRead for %s, toread %d, read %d",
               fileGetInp->fileName, len, status);
             status = SYS_COPY_LEN_ERR;
+#else
+        fileGetOutBBuf->len = status;
+#endif
         } else {
             rodsLog (LOG_NOTICE,
               "_rsFileGet: fileRead for %s, status = %d",

@@ -616,7 +616,11 @@ rodsLong_t dataSize)
     if (out_fd != 1)
         close (out_fd);
 
+#if 0   /* XXXXXXX testing only for no len check */
     if (dataSize <= 0 || totalWritten == dataSize) {
+#else
+    if (bytesRead >= 0) {
+#endif
         if (gGuiProgressCB != NULL) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
 	    gGuiProgressCB (&conn->operProgress);
@@ -626,7 +630,12 @@ rodsLong_t dataSize)
         rodsLog (LOG_ERROR,
           "getFile: totalWritten %lld dataSize %lld mismatch",
           totalWritten, dataSize);
+#if 0   /* XXXXXXX testing only for no len check */
         return (SYS_COPY_LEN_ERR);
+#else
+	return bytesRead;
+#endif
+
     }
 }
 

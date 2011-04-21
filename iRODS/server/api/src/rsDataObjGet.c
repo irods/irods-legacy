@@ -221,6 +221,7 @@ bytesBuf_t *dataObjOutBBuf, portalOprOut_t **portalOprOut)
 	bytesRead = 0;
     }
 
+#if 0   /* tested in _rsFileGet. don't need to go it again */
     if (bytesRead != dataObjInfo->dataSize) {
 	free (dataObjOutBBuf->buf);
 	memset (dataObjOutBBuf, 0, sizeof (bytesBuf_t));
@@ -231,6 +232,7 @@ bytesBuf_t *dataObjOutBBuf, portalOprOut_t **portalOprOut)
             bytesRead = SYS_COPY_LEN_ERR - errno;
 	}
     }
+#endif
 
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
