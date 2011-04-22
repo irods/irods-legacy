@@ -1108,6 +1108,55 @@ addInClauseToWhereForIn(char *inArg) {
 }
 
 /*
+add a BETWEEN clause to the whereSQL string
+ */
+int
+addBetweenClauseToWhere(char *inArg) {
+   int i, len;
+   int startIx, endIx;
+   int nput=0;
+   int quoteState=0;
+   char tmpStr[MAX_SQL_SIZE];
+   static char inStrings[MAX_SQL_SIZE];
+   int inStrIx=0;
+   int ncopy;
+   rstrcat(whereSQL, " BETWEEN ", MAX_SQL_SIZE);
+   len = strlen(inArg);
+   for (i=0;i<len+1;i++) {
+      if (inArg[i]=='\'') {
+	 quoteState++;
+	 if (quoteState==1) {
+	    startIx=i+1;
+	 }
+	 if (quoteState==2) {
+	    quoteState=0;
+	    endIx = i-1;
+	    if (nput==0) {
+	       rstrcat(whereSQL, "?", MAX_SQL_SIZE);
+	    }
+	    else {
+	       rstrcat(whereSQL, " AND ? ", MAX_SQL_SIZE);
+	    }
+	    nput++;
+
+	    /* Add the quoted string as a bind variable so user can't
+	       execute arbitrary code */
+	    tmpStr[0]='\0';
+	    ncopy = endIx-startIx+1;
+	    rstrncat(tmpStr, (char *)&inArg[startIx], ncopy, MAX_SQL_SIZE);
+	    rstrcpy((char *)&inStrings[inStrIx], tmpStr,
+		    MAX_SQL_SIZE-inStrIx);
+	    inStrings[inStrIx+ncopy]='\0';
+	    cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
+	    inStrIx = inStrIx+ncopy+1;
+	 }
+      }
+   }
+   if (nput!=2) return(CAT_INVALID_ARGUMENT);
+   return(0);
+}
+
+/*
 insert a new where clause using bind-variables
  */
 int
@@ -1130,6 +1179,12 @@ insertWhere(char *condition, int option) {
    if (cp == NULL) cp = strstr(condition, "IN");
    if (cp != NULL) {
       return (addInClauseToWhereForIn(condition));
+   }
+
+   cp = strstr(condition, "between");
+   if (cp == NULL) cp = strstr(condition, "BETWEEN");
+   if (cp != NULL) {
+      return (addBetweenClauseToWhere(condition));
    }
 
    cpFirstQuote=0;
