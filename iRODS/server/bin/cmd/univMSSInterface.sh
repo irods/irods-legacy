@@ -46,6 +46,13 @@ rm () {
 	return
 }
 
+# function to rename a file $1 into $2 in the MSS
+mv () {
+       # <your command to rename a file in the MSS> $1 $2
+       # e.g: /usr/local/bin/rfrename rfioServerFoo:$1 rfioServerFoo:$2
+       return
+}
+
 # function to do a stat on a file $1 stored in the MSS
 stat () {
 	# <your command to retrieve stats on the file> $1
@@ -82,6 +89,7 @@ case "$1" in
 	mkdir ) $1 $2 ;;
 	chmod ) $1 $2 $3 ;;
 	rm ) $1 $2 ;;
+	mv ) $1 $2 $3 ;;
 	stat ) $1 $2 ;;
 esac
 

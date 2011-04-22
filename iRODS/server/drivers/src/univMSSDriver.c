@@ -247,3 +247,32 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	return (status);
 	
 }
+
+/* univMSSFileRename - This function is to rename a file stored in the MSS. 
+ */
+int univMSSFileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName) {
+    
+	int status;
+	execCmd_t execCmdInp;
+	char cmdArgv[HUGE_NAME_LEN] = "";
+	execCmdOut_t *execCmdOut = NULL;
+	
+    bzero (&execCmdInp, sizeof (execCmdInp));
+	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
+	strcat(cmdArgv, "mv");
+	strcat(cmdArgv, " ");
+	strcat(cmdArgv, oldFileName);
+	strcat(cmdArgv, " ");
+	strcat(cmdArgv, newFileName);
+	rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
+	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
+	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
+
+    if (status < 0) {
+        status = UNIV_MSS_RENAME_ERR - errno;
+		rodsLog (LOG_ERROR, "univMSSFileRename: rename of %s to error, status = %d",
+         oldFileName, newFileName, status);
+    }
+
+    return (status);
+}

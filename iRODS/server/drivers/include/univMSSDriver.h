@@ -34,5 +34,7 @@ univMSSSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 int mode, int flags, char *filename,
 char *cacheFilename,  rodsLong_t dataSize,
 keyValPair_t *condInput);
+int 
+univMSSFileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName);
 
 #endif	/* UNIV_MSS_DRIVER_H */

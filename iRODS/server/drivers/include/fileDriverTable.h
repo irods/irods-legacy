@@ -77,7 +77,7 @@ fileDriver_t FileDriverTable[] = {
     {UNIV_MSS_FILE_TYPE,intNoSupport, intNoSupport, intNoSupport, intNoSupport,
     intNoSupport, univMSSFileUnlink, univMSSFileStat, intNoSupport, longNoSupport,
     intNoSupport, univMSSFileMkdir, univMSSFileChmod, intNoSupport, intNoSupport,
-    intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, intNoSupport, intNoSupport, univMSSFileRename,
     longNoSupport, intNoSupport, univMSSStageToCache, univMSSSyncToArch},
 #endif
 #ifdef DDN_WOS
