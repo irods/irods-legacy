@@ -27,7 +27,6 @@
 #include "icatHighLevelRoutines.h"
 #include "icatMidLevelRoutines.h"
 #include "icatLowLevel.h"
-
 #define LIMIT_AUDIT_ACCESS 1  /* undefine this if you want to allow
                                  access to the audit tables by
                                  non-privileged users */
@@ -1021,10 +1020,10 @@ checkCondition(char *condition) {
 
 
 /*
-add an IN clause to the whereSQL string
+add an IN clause to the whereSQL string for the Parent_Of option
  */
 void
-addInClauseToWhere(char *inArg) {
+addInClauseToWhereForParentOf(char *inArg) {
    int i, len;
    int nput=0;
    char tmpStr[MAX_SQL_SIZE];
@@ -1057,6 +1056,57 @@ addInClauseToWhere(char *inArg) {
    rstrcat(whereSQL, ")", MAX_SQL_SIZE);
 }
 
+
+/*
+add an IN clause to the whereSQL string for a client IN request
+ */
+int
+addInClauseToWhereForIn(char *inArg) {
+   int i, len;
+   int startIx, endIx;
+   int nput=0;
+   int quoteState=0;
+   char tmpStr[MAX_SQL_SIZE];
+   static char inStrings[MAX_SQL_SIZE];
+   int inStrIx=0;
+   int ncopy;
+   rstrcat(whereSQL, " IN (", MAX_SQL_SIZE);
+   len = strlen(inArg);
+   for (i=0;i<len+1;i++) {
+      if (inArg[i]=='\'') {
+	 quoteState++;
+	 if (quoteState==1) {
+	    startIx=i+1;
+	 }
+	 if (quoteState==2) {
+	    quoteState=0;
+	    endIx = i-1;
+	    if (nput==0) {
+	       rstrcat(whereSQL, "?", MAX_SQL_SIZE);
+	    }
+	    else {
+	       rstrcat(whereSQL, ", ?", MAX_SQL_SIZE);
+	    }
+	    nput++;
+
+	    /* Add the quoted string as a bind variable so user can't
+	       execute arbitrary code */
+	    tmpStr[0]='\0';
+	    ncopy = endIx-startIx+1;
+	    rstrncat(tmpStr, (char *)&inArg[startIx], ncopy, MAX_SQL_SIZE);
+	    rstrcpy((char *)&inStrings[inStrIx], tmpStr,
+		    MAX_SQL_SIZE-inStrIx);
+	    inStrings[inStrIx+ncopy]='\0';
+	    cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
+	    inStrIx = inStrIx+ncopy+1;
+	 }
+      }
+   }
+   rstrcat(whereSQL, ")", MAX_SQL_SIZE);
+   if (nput==0) return(CAT_INVALID_ARGUMENT);
+   return(0);
+}
+
 /*
 insert a new where clause using bind-variables
  */
@@ -1071,16 +1121,17 @@ insertWhere(char *condition, int option) {
    char tmpStr[20];
    char myCondition[20];
 
-   /*  Old way 
-   rstrcat(whereSQL, " ", MAX_SQL_SIZE);
-   rstrcat(whereSQL, condition, MAX_SQL_SIZE);
-   rstrcat(whereSQL, " ", MAX_SQL_SIZE);
-   */
-   /* Now, with Bind variables */
    if (option==1) { /* reinitialize */
       bindIx=0;
       return(0);
    }
+
+   cp = strstr(condition, "in");
+   if (cp == NULL) cp = strstr(condition, "IN");
+   if (cp != NULL) {
+      return (addInClauseToWhereForIn(condition));
+   }
+
    cpFirstQuote=0;
    cpSecondQuote=0;
    for (cp1=condition;*cp1!='\0';cp1++) {
@@ -1160,7 +1211,7 @@ insertWhere(char *condition, int option) {
             clause with each of the possible parent collection names;
             this is faster, sometimes very much faster. */
 	 cllBindVarCount--; /* undo bind-var as it is not included now */
-	 addInClauseToWhere(thisBindVar);
+	 addInClauseToWhereForParentOf(thisBindVar);
       }
       else {
 	 tmpStr[i++]='?';
