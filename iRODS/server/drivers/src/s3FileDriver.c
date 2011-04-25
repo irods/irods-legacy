@@ -289,7 +289,11 @@ int
 putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 {
 
+#if 0
     S3Status status;
+#else
+    int status;
+#endif
     char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
     callback_data_t data;
 
@@ -417,7 +421,7 @@ myS3Error (int status, int irodsErrorCode)
     if (status < 0) return status;
      
      rodsLogError (LOG_ERROR, irodsErrorCode,
-         "myS3Error: error:%s", S3_get_status_name(status));
+         "myS3Error: error:%s", S3_get_status_name((S3Status) status));
     return (irodsErrorCode - status);
 }
 
@@ -519,8 +523,11 @@ const char **commonPrefixes, void *callbackData)
 int
 getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 {
-
+#if 0
     S3Status status;
+#else
+    int status;
+#endif
     char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
     callback_data_t data;
 
@@ -579,7 +586,11 @@ S3Status getObjectDataCallback(int bufferSize, const char *buffer,
 int
 copyS3Obj (char *srcObj, char *destObj)
 {
+#if 0
     S3Status status;
+#else
+    int status;
+#endif
     char srcKey[MAX_NAME_LEN], srcBucket[MAX_NAME_LEN];
     char destKey[MAX_NAME_LEN], destBucket[MAX_NAME_LEN];
     callback_data_t data;
