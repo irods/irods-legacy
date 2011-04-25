@@ -2181,7 +2181,8 @@ readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv)
         return (status);
     }
 
-    if (myHeader.msgLen > sizeof (startupPack_t) * 2 || myHeader.msgLen <= 0) {
+    if (myHeader.msgLen > (int) sizeof (startupPack_t) * 2 || 
+      myHeader.msgLen <= 0) {
         rodsLog (LOG_NOTICE,
           "readStartupPack: problem with myHeader.msgLen = %d",
           myHeader.msgLen);
