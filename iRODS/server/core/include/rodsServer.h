@@ -58,9 +58,10 @@ agentProc_t *
 getAgentProcByPid (int childPid, agentProc_t **agentProcHead);
 
 void
-#if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(linux_platform)
+#if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(linux_platform) || defined(osx_platform)
 serverExit (int sig);
 #else
+void
 serverExit ();
 #endif
 

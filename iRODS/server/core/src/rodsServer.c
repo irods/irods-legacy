@@ -127,9 +127,15 @@ int irodsWinMain(int argc, char **argv)
     signal(SIGCHLD, SIG_DFL);	/* SIG_IGN causes autoreap. wait get nothing */
     signal(SIGPIPE, SIG_IGN);
 #ifdef osx_platform
+#if 0
     signal(SIGINT, (void *) serverExit);
     signal(SIGHUP, (void *)serverExit);
     signal(SIGTERM, (void *)serverExit);
+#else
+    signal(SIGINT, (sig_t) serverExit);
+    signal(SIGHUP, (sig_t)serverExit);
+    signal(SIGTERM, (sig_t) serverExit);
+#endif
 #else
     signal(SIGINT, serverExit);
     signal(SIGHUP, serverExit);
