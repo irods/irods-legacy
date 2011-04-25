@@ -758,7 +758,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 	 return(-3);
       }
 
-      if (displaysize > (strlen((char *) colName))) {
+      if (displaysize > ((int)strlen((char *) colName))) {
 	 columnLength[i] = displaysize + 1;
       }
       else {
@@ -1008,7 +1008,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 	 return(-3);
       }
 
-      if (displaysize > (strlen((char *) colName))) {
+      if (displaysize > ((int)strlen((char *) colName))) {
 	 columnLength[i] = displaysize + 1;
       }
       else {

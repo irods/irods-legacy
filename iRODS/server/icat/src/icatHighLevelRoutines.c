@@ -2949,7 +2949,7 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
       }
       rstrcat(outBuf, "\n", maxOutBuf);
       if (rowSize==0) rowSize=strlen(outBuf);
-      if (strlen(outBuf)+rowSize+20 > maxOutBuf) {
+      if ((int)strlen(outBuf)+rowSize+20 > maxOutBuf) {
 	 return(0); /* success so far, but more rows available */
       }
    }
