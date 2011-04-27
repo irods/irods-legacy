@@ -90,5 +90,45 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject implement
 		log.debug("result of get host lookup:{}", hostResponse);
 		return hostResponse;
 	}
+	
+	//@Override
+	public String getHostForPutOperation(final String targetAbsolutePath,
+			final String resourceName) throws JargonException {
+
+		if (targetAbsolutePath == null || targetAbsolutePath.length() == 0) {
+			throw new IllegalArgumentException(
+					"Null or empty targetAbsolutePath");
+		}
+
+		if (resourceName == null) {
+			throw new IllegalArgumentException("null resourceName");
+		}
+
+		log.info("getHostForPutOperation with targetAbsolutePath: {}",
+				targetAbsolutePath);
+		log.info("resourceName:{}", resourceName);
+
+		DataObjInp dataObjInp = DataObjInp.instanceForGetHostForPut(
+				targetAbsolutePath, resourceName);
+		Tag result = this.getIrodsCommands().irodsFunction(dataObjInp);
+
+		// irods file doesn't exist
+		if (result == null) {
+			throw new JargonException(
+					"null response from lookup of resource for put operation");
+		}
+
+		// Need the total dataSize
+		Tag temp = result.getTag(MY_STR);
+		if (temp == null) {
+			throw new JargonException(
+					"no host name info in response to lookup of resource for put operation");
+		}
+
+		String hostResponse = temp.getStringValue();
+
+		log.debug("result of get host lookup:{}", hostResponse);
+		return hostResponse;
+	}
 
 }

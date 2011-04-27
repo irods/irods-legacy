@@ -3,6 +3,8 @@ package edu.sdsc.grid.io.irods;
 import java.net.URI;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.remoteexecute.RemoteExecuteServiceImpl;
 import org.junit.After;
@@ -324,5 +326,84 @@ public class IRODSCommandsGetTest {
 		irodsFileSystem.close();
 
 	}
+	
+	@Test
+	public void testGetCollectionWithConnectionRerouting() throws Exception {
 
+		String useDistribResources = testingProperties
+				.getProperty("test.option.distributed.resources");
+
+		if (useDistribResources != null && useDistribResources.equals("true")) {
+			// do the test
+		} else {
+			return;
+		}
+		
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			irodsFileSystem.close();
+			return;
+		}
+		
+		String testSubdir = "testGetCollectionWithConnectionReroutingSubdir";
+		String testFilePrefix = "testGetFile";
+		String testFileSuffix = ".doc";
+		
+		String localAbsPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH + "/" + testSubdir);
+		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH + "/" + testSubdir, testFilePrefix, testFileSuffix, 20, 10, 20);
+		
+		// put scratch file into irods in the right place on the first resource
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+	
+		iputCommand.setLocalFileName(localAbsPath.substring(0, localAbsPath.length() - 1));
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand
+				.setIrodsResource(testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		iputCommand.setRecursive(true);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		StringBuilder uriPath = new StringBuilder();
+		uriPath.append(IRODS_TEST_SUBDIR_PATH);
+		uriPath.append('/');
+		uriPath.append(testSubdir);
+
+		URI irodsUri = testingPropertiesHelper
+				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
+						uriPath.toString());
+		IRODSFile irodsFile = new IRODSFile(irodsUri);
+		
+		String testReturnSubdir = "testGetCollectionWithConnectionReroutingReturnedSubdir";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH + "/" + testReturnSubdir);
+
+		GeneralFile localFile = new LocalFile(absPath);
+		irodsFile
+				.copyTo(localFile,
+						true,
+						"",
+						true);
+
+		irodsFileSystem.close();
+		// unfortunately hard to test, just look for clean execution
+		TestCase.assertTrue(true);
+
+	}
 }

@@ -239,10 +239,10 @@ public class FileCatalogObjectAOImplTest {
 		
 		String testSubdir = "testGetHostSubdir";
 		String testFilePrefix = "testGetFile";
-		String tetsFileSuffix = ".doc";
+		String testFileSuffix = ".doc";
 		
 		String localAbsPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH + "/" + testSubdir);
-		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH + "/" + testSubdir, testFilePrefix, tetsFileSuffix, 20, 10, 20);
+		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH + "/" + testSubdir, testFilePrefix, testFileSuffix, 20, 10, 20);
 
 		IRODSAccount testAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
@@ -292,6 +292,62 @@ public class FileCatalogObjectAOImplTest {
 				hostInfo);
 		Assert.assertFalse("should have resolved this to the same host",
 				FileCatalogObjectAOImpl.USE_THIS_ADDRESS.equals(hostInfo));
+
+	}
+	
+	@Test
+	public void testGetHostForPutProvidingResourceNameWhenShouldBeSameHost()
+			throws Exception {
+
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			irodsFileSystem.close();
+			return;
+		}
+
+		// generate a local scratch file
+		String testFileName = "testGetHostForGetProvidingResourceName.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				1);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder uriPath = new StringBuilder();
+		uriPath.append(IRODS_TEST_SUBDIR_PATH);
+		uriPath.append('/');
+		uriPath.append(testFileName);
+
+		URI irodsUri = testingPropertiesHelper
+				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
+						uriPath.toString());
+		new IRODSFile(irodsUri);
+
+		IRODSAccessObjectFactory accessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(irodsFileSystem.getCommands());
+
+		FileCatalogObjectAO fileCatalogObjectAO = accessObjectFactory.getFileCatalogObjectAO();
+
+		String hostInfo = fileCatalogObjectAO
+				.getHostForPutOperation(
+						targetIrodsCollection + "/" + testFileName,
+						testingProperties
+								.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
+		irodsFileSystem.close();
+		Assert.assertNotNull("null info from lookup of host for get operation",
+				hostInfo);
+		Assert.assertEquals("should have resolved this to the same host",
+				FileCatalogObjectAOImpl.USE_THIS_ADDRESS, hostInfo);
 
 	}
 

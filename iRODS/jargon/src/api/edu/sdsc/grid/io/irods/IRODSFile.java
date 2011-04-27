@@ -646,14 +646,37 @@ public class IRODSFile extends RemoteFile {
 	 *            which the source file will be copied.
 	 * @throws IOException
 	 */
-	public void copyTo(GeneralFile destinationFile,
+	public void copyTo(final GeneralFile destinationFile,
 			final boolean forceOverwrite, final String resource)
 			throws IOException {
 
 		copyTo(destinationFile, forceOverwrite, resource, false);
-		
+
 	}
 
+	/**
+	 * Copy a file from IRODS (get) specifying a particular resource. This is
+	 * equivalent to an iget with a -R
+	 * <p/>
+	 * Copies this file to another file. This object is the source file. The
+	 * destination file is given as the argument. If the destination file, does
+	 * not exist a new one will be created. Otherwise the source file will be
+	 * appended to the destination file. Directories will be copied recursively.
+	 * <p/>
+	 * This variant of the method will check on the actual target resource, and re-route to that resource server if
+	 * required.
+	 *
+	 * 
+	 * @param destinationFile
+	 *            {@link GeneralFile GeneralFile} is the local file that will be
+	 *            copied to
+	 * @param forceOverwrite
+	 * @param resource
+	 *            <code>String</code> containing the name of the resource from
+	 *            which the source file will be copied.
+	 * @param resourceRerouting <code>boolean</code> with the 
+	 * @throws IOException
+	 */
 	public void copyTo(GeneralFile destinationFile,
 			final boolean forceOverwrite, final String resource,
 			final boolean resourceRerouting) throws IOException {
@@ -673,14 +696,22 @@ public class IRODSFile extends RemoteFile {
 			throw new IllegalArgumentException(
 					"resource cannot be null, set to blank if not used");
 		}
-		
+
+		// re-routing of resources not supported until rods2.5
 		if (resourceRerouting) {
-			IRODSServerProperties irodsServerProperties = iRODSFileSystem.commands.getIrodsServerProperties();
-			if (!irodsServerProperties.isTheIrodsServerAtLeastAtTheGivenReleaseVersion("rods2.5")) {
-				throw new UnsupportedOperationException("this version of iRODS does not support connection re-routing");
+			IRODSServerProperties irodsServerProperties = iRODSFileSystem.commands
+					.getIrodsServerProperties();
+			if (!irodsServerProperties
+					.isTheIrodsServerAtLeastAtTheGivenReleaseVersion("rods2.5")) {
+				throw new UnsupportedOperationException(
+						"this version of iRODS does not support connection re-routing");
 			}
 		}
 
+		/*
+		 * code to re-route gets/puts to the most appropriate resource host.
+		 * This is equivilant to the -I flag in iput/iget
+		 */
 		try {
 			if (resourceRerouting) {
 				log.info("doing resource re-routing check for irods path");
@@ -694,7 +725,8 @@ public class IRODSFile extends RemoteFile {
 				// is destination iRODS?
 				if (destinationFile instanceof IRODSFile) {
 					log.info("destination is iRODS, this is a put");
-					detectedHost = FileCatalogObjectAOImpl.USE_THIS_ADDRESS;
+					detectedHost = fileCatalogObjectAO.getHostForPutOperation(
+							destinationFile.getAbsolutePath(), resource);
 				} else {
 					log.info("destination is local, this is a get");
 					detectedHost = fileCatalogObjectAO.getHostForGetOperation(
@@ -735,6 +767,8 @@ public class IRODSFile extends RemoteFile {
 			throw new IOException(e1);
 		}
 
+		// a re-routed operation will have computed the new host, and called
+		// copyTo using the appropriate host, and returned
 		if (isDirectory()) {
 			log.info("    this is a directory, will recursively copy");
 			// recursive copy
@@ -807,13 +841,102 @@ public class IRODSFile extends RemoteFile {
 	 */
 	public void copyFrom(final GeneralFile sourceFile,
 			final boolean forceOverwrite) throws IOException {
+		copyFrom(sourceFile, forceOverwrite, false);
+	}
+
+	/**
+	 * Copy the given source file to this iRODS file. The copy will be done to
+	 * the resource (if any) specified in the iRODS file. This method allows
+	 * specification of the force option, and also has an option that, if true,
+	 * will attempt to reroute the connection to the actual host where the
+	 * resource server is located.
+	 * 
+	 * @param sourceFile
+	 *            {@link GeneralFile} that is the source for the copy
+	 * @param forceOverwrite
+	 *            <code>boolean</code> that, if true, will do with a force
+	 *            option
+	 * @param resourceRerouting
+	 *            <code>boolean</code> that, if true, will reroute the
+	 *            connections
+	 * @throws IOException
+	 */
+	public void copyFrom(final GeneralFile sourceFile,
+			final boolean forceOverwrite, final boolean resourceRerouting)
+			throws IOException {
+
 		if (log.isInfoEnabled()) {
 			log.info("copy of:" + sourceFile.getAbsolutePath() + " to:"
 					+ this.getAbsolutePath());
 		}
+
 		if (sourceFile == null) {
 			throw new NullPointerException();
 		}
+
+		// re-routing of resoruces not supported until rods2.5
+		if (resourceRerouting) {
+			IRODSServerProperties irodsServerProperties = iRODSFileSystem.commands
+					.getIrodsServerProperties();
+			if (!irodsServerProperties
+					.isTheIrodsServerAtLeastAtTheGivenReleaseVersion("rods2.5")) {
+				throw new UnsupportedOperationException(
+						"this version of iRODS does not support connection re-routing");
+			}
+		}
+
+		/*
+		 * code to re-route gets/puts to the most appropriate resource host.
+		 * This is equivilant to the -I flag in iput/iget
+		 */
+		try {
+			if (resourceRerouting) {
+				log.info("doing resource re-routing check for irods path");
+
+				IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+						.instance(iRODSFileSystem.commands);
+				FileCatalogObjectAO fileCatalogObjectAO = irodsAccessObjectFactory
+						.getFileCatalogObjectAO();
+				String detectedHost = fileCatalogObjectAO
+						.getHostForPutOperation(this.getAbsolutePath(),
+								resource);
+
+				if (detectedHost
+						.equals(FileCatalogObjectAOImpl.USE_THIS_ADDRESS)) {
+					log.info("using given resource connection");
+				} else {
+					log.info("rerouting to a new host:{}", detectedHost);
+					// FIXME: only working at first with iRODS security, how to
+					// handle GSI, etc
+					IRODSAccount currentAccount = (IRODSAccount) iRODSFileSystem
+							.getAccount();
+					IRODSAccount reroutedAccount = new IRODSAccount(
+							detectedHost, currentAccount.getPort(),
+							currentAccount.getUserName(),
+							currentAccount.getPassword(),
+							currentAccount.getHomeDirectory(),
+							currentAccount.getZone(),
+							currentAccount.getDefaultStorageResource());
+					IRODSFileSystem reroutedIRODSFileSystem = new IRODSFileSystem(
+							reroutedAccount);
+					IRODSFile reroutedFile = new IRODSFile(
+							reroutedIRODSFileSystem, this.getAbsolutePath());
+					reroutedFile.setResource(this.getResource());
+					log.info("delegating copyFrom to rerouted iRODS file");
+					// note that the rerouting is false to avoid going through
+					// rerouting logic again
+					reroutedFile.copyFrom(sourceFile, forceOverwrite, false);
+					reroutedIRODSFileSystem.close();
+					return;
+				}
+			}
+		} catch (Exception e1) {
+			log.error("rethrowing exception as IOException for method contracts");
+			throw new IOException(e1);
+		}
+
+		// a re-routed operation will have computed the new host, and called
+		// copyFrom using the appropriate host, and returned
 
 		if (sourceFile.isDirectory()) {
 			// recursive copy
