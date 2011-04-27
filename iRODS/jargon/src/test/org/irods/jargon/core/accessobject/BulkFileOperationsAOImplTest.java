@@ -114,13 +114,16 @@ public class BulkFileOperationsAOImplTest {
 
 		boolean didFail = false;
 		try {
-		bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
-				targetBunFileAbsPath, targetIrodsCollection, "");
+			bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
+					targetBunFileAbsPath, targetIrodsCollection, "");
+			bulkFileOperationsAO.createABundleFromIrodsFilesAndStoreInIrods(
+					targetBunFileAbsPath, targetIrodsCollection, "");
 		} catch (JargonException je) {
 			didFail = true;
 		}
-		
-		TestCase.assertTrue("expected this to fail with JargonException", didFail);
+
+		TestCase.assertTrue("expected this to fail with JargonException",
+				didFail);
 
 	}
 

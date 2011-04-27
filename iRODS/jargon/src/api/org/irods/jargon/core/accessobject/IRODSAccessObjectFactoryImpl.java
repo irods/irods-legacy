@@ -45,7 +45,6 @@ public class IRODSAccessObjectFactoryImpl implements IRODSAccessObjectFactory {
 		return irodsCommands;
 	}
 	
-	
 	/* (non-Javadoc)
 	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#getIRODSGenQueryExcecutor()
 	 */
@@ -53,7 +52,6 @@ public class IRODSAccessObjectFactoryImpl implements IRODSAccessObjectFactory {
 		return new IRODSGenQueryExecutorImpl(irodsCommands);
 	}
 
-	
 	/* (non-Javadoc)
 	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#getRemoteExecutionOfCommandsAO()
 	 */
@@ -70,6 +68,9 @@ public class IRODSAccessObjectFactoryImpl implements IRODSAccessObjectFactory {
 		return new BulkFileOperationsAOImpl(irodsCommands);
 	}
 	
-
-
+	
+	public FileCatalogObjectAO getFileCatalogObjectAO() throws JargonException {
+		return new FileCatalogObjectAOImpl(irodsCommands);
+	}
+	 
 }

@@ -26,6 +26,7 @@ public class TestingPropertiesHelper {
 	public static String IRODS_SECONDARY_USER_KEY = "test2.irods.user";
 	public static String IRODS_SECONDARY_PASSWORD_KEY = "test2.irods.password";
 	public static String IRODS_SECONDARY_RESOURCE_KEY = "test2.irods.resource";
+	public static String IRODS_TERTIARY_RESOURCE_KEY = "test3.irods.resource";
 	public static String IRODS_HOST_KEY = "test.irods.host";
 	public static String IRODS_PORT_KEY = "test.irods.port";
 	public static String IRODS_ZONE_KEY = "test.irods.zone";

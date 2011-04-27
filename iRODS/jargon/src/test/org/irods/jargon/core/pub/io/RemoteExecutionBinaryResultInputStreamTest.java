@@ -63,8 +63,6 @@ public class RemoteExecutionBinaryResultInputStreamTest {
 		IRODSServerProperties props = irodsFileSystem.getCommands()
 				.getIrodsServerProperties();
 
-		// test is only valid for post 2.4.1 FIXME: bump this up to the next
-		// released version
 		if (!props.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
 			irodsFileSystem.close();
 			return;

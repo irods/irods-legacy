@@ -41,7 +41,7 @@ public class AbstractIRODSPackingInstructionTest {
 	@Test
 	public final void testCreateKeyValueTag() throws Exception {
 		// use DataObjInp to wrap class
-		DataObjInp dataObjInp = DataObjInp.instance("/abspath", DataObjInp.DEFAULT_CREATE_MODE, DataObjInp.OpenFlags.READ, 0L, 0L, 0, "testResource");   
+		DataObjInp dataObjInp = DataObjInp.instance("/abspath", DataObjInp.DEFAULT_CREATE_MODE, DataObjInp.OpenFlags.READ, 0L, 0L, "testResource",null);   
 			
 		// create a 2x2 key value pair and inspect the tag
 		List<KeyValuePair> kvps = new ArrayList<KeyValuePair>();
@@ -57,7 +57,7 @@ public class AbstractIRODSPackingInstructionTest {
 	@Test
 	public final void testCreateKeyValueTag2Kvps() throws Exception {
 		// use DataObjInp to wrap class
-		DataObjInp dataObjInp = DataObjInp.instance("/abspath", DataObjInp.DEFAULT_CREATE_MODE, DataObjInp.OpenFlags.READ, 0L, 0L, 0, "testResource");   
+		DataObjInp dataObjInp = DataObjInp.instance("/abspath", DataObjInp.DEFAULT_CREATE_MODE, DataObjInp.OpenFlags.READ, 0L, 0L, "testResource",null);   
 		// create a 2x2 key value pair and inspect the tag
 		List<KeyValuePair> kvps = new ArrayList<KeyValuePair>();
 		kvps.add(KeyValuePair.instance("testkey", "testvalue"));
@@ -72,7 +72,7 @@ public class AbstractIRODSPackingInstructionTest {
 	@Test
 	public final void testCreateKeyValueTagNoKvps() throws Exception {
 		// use DataObjInp to wrap class
-		DataObjInp dataObjInp = DataObjInp.instance("/abspath", DataObjInp.DEFAULT_CREATE_MODE, DataObjInp.OpenFlags.READ, 0L, 0L, 0, "testResource");   
+		DataObjInp dataObjInp = DataObjInp.instance("/abspath", DataObjInp.DEFAULT_CREATE_MODE, DataObjInp.OpenFlags.READ, 0L, 0L, "testResource",null);   
 		// create a 2x2 key value pair and inspect the tag
 		List<KeyValuePair> kvps = new ArrayList<KeyValuePair>();
 		Tag tag = dataObjInp.createKeyValueTag(kvps);

@@ -43,6 +43,7 @@ package edu.sdsc.grid.io.irods;
 
 import static edu.sdsc.grid.io.irods.IRODSConstants.*;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1096,7 +1097,7 @@ public class IRODSCommands {
 		 * openFlags; double offset; double dataSize; int numThreads; int
 		 * oprType; struct *SpecColl_PI; struct KeyValPair_PI;"
 		 */
-
+		
 		if (log.isInfoEnabled()) {
 			log.info("get of source:" + source.getAbsolutePath()
 					+ " into dest:" + destination.getAbsolutePath()
@@ -1249,7 +1250,7 @@ public class IRODSCommands {
 
 		long length = source.length();
 
-		if (length > MAX_SZ_FOR_SINGLE_BUF) { // FIXME: set to constant value
+		if (length > MAX_SZ_FOR_SINGLE_BUF) { 
 			if (log.isInfoEnabled()) {
 				log.info("put operation will use parallel transfer, size:"
 						+ length
@@ -1289,7 +1290,7 @@ public class IRODSCommands {
 			if (threads > 0) {
 				InputStream[] inputs = new InputStream[threads];
 				for (int i = 0; i < threads; i++) {
-					inputs[i] = FileFactory.newFileInputStream(source);
+					inputs[i] = new BufferedInputStream(FileFactory.newFileInputStream(source));
 				}
 
 				synchronized (this) {
@@ -1386,7 +1387,7 @@ public class IRODSCommands {
 			// send the message, no result expected.
 			// exception thrown on error.
 			irodsFunction(RODS_API_REQ, message, 0, null, length,
-					FileFactory.newFileInputStream(source), DATA_OBJ_PUT_AN);
+					new BufferedInputStream(FileFactory.newFileInputStream(source)), DATA_OBJ_PUT_AN);
 			log.info("transfer complete");
 		}
 	}
@@ -2108,7 +2109,7 @@ public class IRODSCommands {
 			s = new Socket(host, port);
 			byte[] outputBuffer = new byte[4];
 			Host.copyInt(cookie, outputBuffer);
-			in = s.getInputStream();
+			in = new BufferedInputStream(s.getInputStream());
 			s.getOutputStream().write(outputBuffer);
 			which = incThread;
 			incThread++;

@@ -353,6 +353,8 @@ public class IRODSResourceQueryTest {
 
 	/*
 	 * per [iROD-Chat:5031] question on MetaDataCondition
+	 * Note that if this test fails with a -80600, it's due to nulls being in free space.  The icat table for 
+	 * resources needs to be initialized to 0 (not null) in the free space field.
 	 */
 	@Test
 	public final void testQueryResourceFreeSpace() throws Exception {

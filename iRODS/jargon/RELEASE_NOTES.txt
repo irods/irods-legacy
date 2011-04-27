@@ -37,13 +37,17 @@ Features and Changes
 Switched to GForge bug numbering as of iRODS2.5
 ********
 
- [#112] [iROD-Chat:5741] (Jargon) IRODSFile.setResource(...) is limited 300 resources
+*[#112] [iROD-Chat:5741] (Jargon) IRODSFile.setResource(...) is limited 300 resources
  
- [#147] SQL incorrect for gen query associated with '<=' or '>=' or '<' or '>' comparisons
+*[#147] SQL incorrect for gen query associated with '<=' or '>=' or '<' or '>' comparisons
  
-[#156] [iROD-Chat:6033] Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
+*[#156] [iROD-Chat:6033] Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
 
-[#157] adding Resource.modifyStatus()
+*[#157] adding Resource.modifyStatus()
+
+*[#176] put/get resource switching - work in progress...initial testing of get operations
+
+*Addition of buffering capability for input streams for better performance
  
 ================================================================================================
 Outstanding Issues
