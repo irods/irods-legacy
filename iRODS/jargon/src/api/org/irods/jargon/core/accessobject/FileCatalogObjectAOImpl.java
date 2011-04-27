@@ -51,7 +51,7 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject implement
 	 * org.irods.jargon.core.accessobject.FileCatalogObjectAO#getHostForGetOperation
 	 * (java.lang.String, java.lang.String)
 	 */
-	@Override
+	//@Override
 	public String getHostForGetOperation(final String sourceAbsolutePath,
 			final String resourceName) throws JargonException {
 
