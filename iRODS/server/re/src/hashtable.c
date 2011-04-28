@@ -95,6 +95,7 @@ void *deleteFromHashTable(Hashtable *h, char* key) {
             if(strcmp(b0->key, key) == 0) {
                     h->buckets[index] = b0->next;
                     temp = b0->value;
+                    free(b0->key);
                     free(b0);
                     h->len --;
             } else {
@@ -103,6 +104,7 @@ void *deleteFromHashTable(Hashtable *h, char* key) {
                         struct bucket *tempBucket = b0->next;
                         temp = b0->next->value;
                         b0->next = b0->next->next;
+                        free(tempBucket->key);
                         free(tempBucket);
                         h->len --;
                         break;

@@ -12,10 +12,27 @@
 typedef struct condIndexVal CondIndexVal;
 
 struct condIndexVal {
+    int startIndex, finishIndex;
+    Node *params;
     Node *condExp;
     Hashtable *valIndex; /* char * -> int * */
 };
 
+typedef struct ruleIndexListNode {
+    int ruleIndex;
+    struct ruleIndexListNode *next;
+} RuleIndexListNode;
+
+typedef struct ruleIndexList {
+    char *ruleName;
+    RuleType type;
+    RuleIndexListNode *head, *tail;
+} RuleIndexList;
+
+char *convertRuleNameArityToKey(char *ruleName, int arity);
+RuleIndexList *newRuleIndexList(char *ruleName, RuleType type, int ruleIndex, Region *r);
+RuleIndexListNode *newRuleIndexListNode(int ruleIndex, Region *r);
+CondIndexVal *newCondIndexVal(Node *condExp, Node *params, Hashtable *groupHashtable, Region *r);
 
 extern Hashtable *coreRuleIndex;
 extern Hashtable *appRuleIndex;
@@ -34,7 +51,7 @@ extern Hashtable *condIndex; /* char * -> CondIndexVal * */
 void clearIndex(Hashtable **ruleIndex);
 
 int createRuleIndex(ruleStruct_t *inRuleStrct, Hashtable **ruleIndex);
-int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex);
+int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex, Region *r);
 int createFuncMapDefIndex(rulefmapdef_t *inFuncStrct1, Hashtable **ruleIndex);
 
 int mapExternalFuncToInternalProc2(char *funcName);

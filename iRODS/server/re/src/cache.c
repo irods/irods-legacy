@@ -15,76 +15,92 @@ RuleEngineStatus getRuleEngineStatus() {
     return _ruleEngineStatus;
 }
 
-ExprType *copyExprType(unsigned char **buf, ExprType *type, Hashtable *objectMap) {
+Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap) {
   unsigned char *p = *buf;
+  allocate(p, Node, ncopy, *node);
   ExprType *shared;
   char tvarNameBuf[128];
-  if((shared = (ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(type->type))) != NULL) {
+  if((shared = (ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(node->nodeType))) != NULL) {
 /*
       printf("simp type %s is shared\n", typeName_TypeConstructor(type->t));
 */
       return shared;
-  } else if(type->type == T_VAR && (shared=(ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(type->type)))!=NULL) {
+  } else if(node->nodeType == T_VAR && (shared=(ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(node->nodeType)))!=NULL) {
 /*
       printf("tvar %s is shared\n", tvarNameBuf);
 */
       return shared;
   } else {
-      allocate(p, ExprType, tcopy, *type);
-      if(tcopy->type == T_CONS) {
-
-        allocateArray(p, ExprTypePtr, T_CONS_ARITY(type), T_CONS_TYPE_ARGS(tcopy), T_CONS_TYPE_ARGS(type));
-        int i;
-        for (i=0;i<T_CONS_ARITY(type);i++) {
-            T_CONS_TYPE_ARG(tcopy, i) = copyExprType(&p, T_CONS_TYPE_ARG(type, i), objectMap);
-        }
-        allocateArray(p, char, strlen(T_CONS_TYPE_NAME(type))+1, T_CONS_TYPE_NAME(tcopy), T_CONS_TYPE_NAME(type));
-      } else if(tcopy->type == T_VAR) {
-          if(tcopy->ext.tvar.numDisjuncts != 0) {
-              allocateArray(p, NodeType, tcopy->ext.tvar.numDisjuncts, tcopy->ext.tvar.disjuncts, type->ext.tvar.disjuncts);
+      allocate(p, ExprType, ncopy, *node);
+      if(ncopy->nodeType == T_VAR) {
+          if(T_VAR_NUM_DISJUNCTS(ncopy) != 0) {
+              allocateArray(p, ExprTypePtr, T_VAR_NUM_DISJUNCTS(ncopy), T_VAR_DISJUNCTS(ncopy), T_VAR_DISJUNCTS(node));
           }
-          insertIntoHashTable(objectMap, getTVarName(tcopy->ext.tvar.vid, tvarNameBuf), tcopy);
+          insertIntoHashTable(objectMap, getTVarName(T_VAR_ID(ncopy), tvarNameBuf), ncopy);
 /*
           printf("tvar %s is added to shared objects\n", tvarNameBuf);
 */
-      } else if(tcopy->type == T_IRODS) {
-        allocateArray(p, char, strlen(type->text)+1, tcopy->text, type->text);
+      }
+      if(ncopy->exprType != NULL) ncopy -> exprType = copyNode(&p, ncopy->exprType, objectMap);
+      if(ncopy->coercionType!=NULL) ncopy -> coercionType = copyNode(&p, ncopy->coercionType, objectMap);
+      if(ncopy->base!=NULL) {
+          allocateArray(p, char, strlen(node->base)+1, ncopy->base, node->base);
+      }
+      if(ncopy->text!=NULL) {
+          allocateArray(p, char, strlen(node->text)+1, ncopy->text, node->text);
+      }
+      allocateArray(p, NodePtr, ncopy->degree, ncopy->subtrees, node->subtrees);
+      int i;
+      for(i=0;i<ncopy->degree;i++) {
+        ncopy ->subtrees[i] = copyNode(&p, node->subtrees[i], objectMap);
       }
       *buf = p;
-      return tcopy;
+      return ncopy;
   }
 }
-
-Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap) {
+RuleDesc *copyRuleDesc(unsigned char **buf, RuleDesc *h, Hashtable *objectMap) {
   unsigned char *p = *buf;
-  allocate(p, Node, ncopy, *node);
-  if(ncopy->exprType != NULL) ncopy -> exprType = copyExprType(&p, ncopy->exprType, objectMap);
-  if(ncopy->coercion!=NULL) ncopy -> coercion = copyExprType(&p, ncopy->coercion, objectMap);
-  if(ncopy->base!=NULL) {
-      allocateArray(p, char, strlen(node->base)+1, ncopy->base, node->base);
-  }
-  if(ncopy->text!=NULL) {
-      allocateArray(p, char, strlen(node->text)+1, ncopy->text, node->text);
-  }
-  allocateArray(p, NodePtr, ncopy->degree, ncopy->subtrees, node->subtrees);
-  int i;
-  for(i=0;i<ncopy->degree;i++) {
-    ncopy ->subtrees[i] = copyNode(&p, node->subtrees[i], objectMap);
-  }
+  allocate(p, RuleDesc, rdcopy, *h);
+  rdcopy->node = h->node!=NULL?copyNode(&p, h->node, objectMap):NULL;
+  rdcopy->type = h->type!=NULL?copyNode(&p, h->type, objectMap):NULL;
   *buf = p;
-  return ncopy;
+  return rdcopy;
 }
 RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap) {
   unsigned char *p = *buf;
   allocate(p, RuleSet, rscopy, *h);
   int i =0;
   for(i=0;i<h->len;i++) {
-    rscopy->rules[i] = copyNode(&p, rscopy->rules[i], objectMap);
+    rscopy->rules[i] = copyRuleDesc(&p, rscopy->rules[i], objectMap);
   }
   *buf = p;
   return rscopy;
 }
-Hashtable* copyHashtableCharPtrToIntPtr(unsigned char **buf, Hashtable *h) {
+char *copyString(unsigned char **buf, char *string) {
+    char *ret;
+    unsigned char *p = *buf;
+    allocateArray(p, char, strlen(string)+1, ret, string);
+    *buf = p;
+    return ret;
+}
+
+RuleIndexListNode *copyRuleIndexListNode(unsigned char **buf, RuleIndexListNode *node) {
+    unsigned char *p = *buf;
+    allocate(p, RuleIndexListNode, ncopy, *node);
+    MAKE_COPY(p, RuleIndexListNode, node->next, ncopy->next);
+    *buf = p;
+    return ncopy;
+}
+RuleIndexList *copyRuleIndexList(unsigned char **buf, RuleIndexList *list) {
+    unsigned char *p = *buf;
+    allocate(p, RuleIndexList, lcopy, *list);
+    MAKE_COPY(p, RuleIndexListNode, list->head, lcopy->head);
+    MAKE_COPY(p, RuleIndexListNode, list->tail, lcopy->tail);
+    MAKE_COPY(p, String, list->ruleName, lcopy->ruleName);
+    *buf = p;
+    return lcopy;
+}
+Hashtable* copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap) {
   unsigned char *p = *buf;
   allocate(p, Hashtable, hcopy, *h);
   allocateArray(p, BucketPtr, h->size, hcopy->buckets, h->buckets);
@@ -103,7 +119,7 @@ Hashtable* copyHashtableCharPtrToIntPtr(unsigned char **buf, Hashtable *h) {
       /* copy key */
       allocateArray(p, char, strlen(b->key) + 1, bcopy->key, b->key);
       /* copy value */
-      allocateArray(p, int, 1, bcopy->value, b->value);
+      bcopy->value = cpfn(&p, b->value, objectMap);
 
       prev = bcopy;
       b = b->next;
@@ -118,39 +134,10 @@ CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable
     unsigned char *p = *buf;
     allocate(p, CondIndexVal, civcopy, *civ);
     civcopy->condExp = copyNode(&p, civcopy->condExp, objectMap);
-    civcopy->valIndex = copyHashtableCharPtrToIntPtr(&p, civcopy->valIndex);
+    civcopy->params = copyNode(&p, civcopy->params, objectMap);
+    civcopy->valIndex = copyHashtable(&p, civcopy->valIndex, (Copier)copyRuleIndexListNode, objectMap);
     *buf = p;
     return civcopy;
-}
-
-Hashtable* copyHashtableCharPtrToCondIndexValPtr(unsigned char **buf, Hashtable *h, Hashtable *objectMap) {
-  unsigned char *p = *buf;
-  allocate(p, Hashtable, hcopy, *h);
-  allocateArray(p, BucketPtr, h->size, hcopy->buckets, h->buckets);
-  int i;
-  for(i=0;i<hcopy->size;i++) {
-    struct bucket *b = hcopy->buckets[i];
-    struct bucket *prev = NULL;
-    while(b!=NULL) {
-      allocate(p, Bucket, bcopy, *b);
-      if(prev == NULL) {
-        hcopy->buckets[i] = bcopy;
-      } else {
-        prev->next = bcopy;
-      }
-
-      /* copy key */
-      allocateArray(p, char, strlen(b->key) + 1, bcopy->key, b->key);
-      /* copy value */
-      bcopy->value = copyCondIndexVal(&p, (CondIndexVal *)bcopy->value, objectMap);
-
-      prev = bcopy;
-      b = b->next;
-    }
-  }
-  *buf = p;
-  return hcopy;
-
 }
 
 Cache *copyCache(unsigned char **buf, Cache *c) {
@@ -167,18 +154,18 @@ Cache *copyCache(unsigned char **buf, Cache *c) {
     /*allocate(p, Cache, ccopy, *c); */
     /* shared objects */
     Region *r = make_region(0, NULL);
-    insertIntoHashTable(objectMap, typeName_NodeType(T_INT), copyExprType(&p, newSimpType(T_INT, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_BOOL), copyExprType(&p, newSimpType(T_BOOL, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_DOUBLE), copyExprType(&p, newSimpType(T_DOUBLE, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_DATETIME), copyExprType(&p, newSimpType(T_DATETIME, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_STRING), copyExprType(&p, newSimpType(T_STRING, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_DYNAMIC), copyExprType(&p, newSimpType(T_DYNAMIC, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_INT), copyNode(&p, newSimpType(T_INT, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_BOOL), copyNode(&p, newSimpType(T_BOOL, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_DOUBLE), copyNode(&p, newSimpType(T_DOUBLE, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_DATETIME), copyNode(&p, newSimpType(T_DATETIME, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_STRING), copyNode(&p, newSimpType(T_STRING, r), objectMap));
+    insertIntoHashTable(objectMap, typeName_NodeType(T_DYNAMIC), copyNode(&p, newSimpType(T_DYNAMIC, r), objectMap));
     region_free(r);
 
     ccopy->offset = *buf;
     ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet, objectMap);
-    ccopy->coreRuleIndex = ccopy->coreRuleIndex == NULL? NULL:copyHashtableCharPtrToIntPtr(&p, ccopy->coreRuleIndex);
-    ccopy->condIndex = ccopy->condIndex == NULL? NULL:copyHashtableCharPtrToCondIndexValPtr(&p, ccopy->condIndex, objectMap);
+    ccopy->coreRuleIndex = ccopy->coreRuleIndex == NULL? NULL:copyHashtable(&p, ccopy->coreRuleIndex, (Copier)copyRuleIndexList, objectMap);
+    ccopy->condIndex = ccopy->condIndex == NULL? NULL:copyHashtable(&p, ccopy->condIndex, (Copier)copyCondIndexVal, objectMap);
     ccopy->dataSize = (p - (*buf));
 
     *buf = p;
@@ -186,7 +173,6 @@ Cache *copyCache(unsigned char **buf, Cache *c) {
     deleteHashTable(objectMap, nop);
     return ccopy;
 }
-#define APPLY_DIFF(p, t, d) if((p)!=NULL){unsigned char *temp = (unsigned char *)p; temp+=(d); (p)=(t *)temp;}
 Cache *restoreCache(unsigned char *buf) {
     if(((CacheRecordDesc *)buf)->type != Cache_T) {
         /* error */
@@ -250,7 +236,7 @@ Cache *restoreCache(unsigned char *buf) {
                 break;
             case ExprType_T:
                 for(i=0;i<length;i++) {
-                    switch(((ExprType *)p)->type) {
+                    switch(((ExprType *)p)->nodeType) {
                         case T_CONS:
                             for(j=0;j<T_CONS_ARITY((ExprType *)p);j++) {
                                 APPLY_DIFF(T_CONS_TYPE_ARG((ExprType *)p, j), ExprType, diff);
@@ -258,7 +244,7 @@ Cache *restoreCache(unsigned char *buf) {
                             APPLY_DIFF(T_CONS_TYPE_NAME((ExprType *)p), char, diff);
                             break;
                         case T_VAR:
-                            APPLY_DIFF(((ExprType *)p)->ext.tvar.disjuncts, NodeType, diff);
+                            APPLY_DIFF(T_VAR_DISJUNCTS((ExprType *)p), ExprTypePtr, diff);
                             break;
                         case T_IRODS:
                             APPLY_DIFF(((ExprType *)p)->text, char, diff);
@@ -279,7 +265,7 @@ Cache *restoreCache(unsigned char *buf) {
                 break;
             case Node_T:
                 for(i=0;i<length;i++) {
-                    APPLY_DIFF(((Node *)p)->coercion, ExprType, diff);
+                    APPLY_DIFF(((Node *)p)->coercionType, ExprType, diff);
                     APPLY_DIFF(((Node *)p)-> exprType, ExprType, diff);
                     APPLY_DIFF(((Node *)p)->subtrees, NodePtr, diff);
                     p+=sizeof(Node);
@@ -291,11 +277,14 @@ Cache *restoreCache(unsigned char *buf) {
                     p+=sizeof(NodePtr);
                 }
                 break;
+            case RuleDesc_T:
+                APPLY_DIFF(((RuleDesc *)p)->node, Node, diff);
+                APPLY_DIFF(((RuleDesc *)p)->type, Node, diff);
             case RuleSet_T:
                 for(i=0;i<length;i++) {
                     int j;
                     for(j=0;j<((RuleSet *)p)->len;j++) {
-                        APPLY_DIFF(((RuleSet *)p)->rules[j], Node, diff);
+                        APPLY_DIFF(((RuleSet *)p)->rules[j], RuleDesc, diff);
                     }
 
 
@@ -306,11 +295,20 @@ Cache *restoreCache(unsigned char *buf) {
 
                 for(i=0;i<length;i++) {
                     APPLY_DIFF(((CondIndexVal *)p)->condExp, Node, diff);
+                    APPLY_DIFF(((CondIndexVal *)p)->params, Node, diff);
                     APPLY_DIFF(((CondIndexVal *)p)->valIndex, Hashtable, diff);
 
                     /*((Cache *)p)->offset += diff; */
                     p+=sizeof(CondIndexVal);
                 }
+                break;
+            case RuleIndexListNode_T:
+                APPLY_DIFF(((RuleIndexListNode *)p)->next, RuleIndexListNode, diff);
+                break;
+            case RuleIndexList_T:
+                APPLY_DIFF(((RuleIndexList *)p)->head, RuleIndexListNode, diff);
+                APPLY_DIFF(((RuleIndexList *)p)->tail, RuleIndexListNode, diff);
+                APPLY_DIFF(((RuleIndexList *)p)->ruleName, char, diff);
                 break;
         }
     }
@@ -430,7 +428,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 #ifdef DEBUG
         printf("Buffer usage: %fM\n", ((double)(buf-bufStart))/(1024*1024));
 #endif
-        deleteHashTable(coreRuleIndex, free);
+        deleteHashTable(coreRuleIndex, nop);
         deleteHashTable(condIndex, (void (*)(void *))deleteCondIndexVal);
         coreRuleIndex = cacheNew->coreRuleIndex;
         coreRules = *cacheNew->coreRuleSet;
@@ -517,7 +515,7 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
         int res = 0;
 	if(inRuleStrct == &coreRuleStrct) {
 		if(readRuleSetFromFile(ruleBaseName,&coreRules,&errloc,&errmsgBuf, r)==0) {
-                    createRuleNodeIndex(&coreRules, &coreRuleIndex);
+                    createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
                 } else {
                     errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
                     rodsLog(LOG_ERROR, "%s", buf);
@@ -525,7 +523,7 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
                 }
 	} else if(inRuleStrct == &appRuleStrct) {
 		if(readRuleSetFromFile(ruleBaseName,&appRules,&errloc,&errmsgBuf, r)==0) {
-                    createRuleNodeIndex(&appRules, &appRuleIndex);
+                    createRuleNodeIndex(&appRules, &appRuleIndex, r);
                 } else {
                     errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
                     rodsLog(LOG_ERROR, "%s", buf);

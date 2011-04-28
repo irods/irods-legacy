@@ -2,7 +2,7 @@
  */
 #ifndef DATETIME_H
 #define DATETIME_H
-#define __USE_XOPEN
+/*#define __USE_XOPEN*/
 #include <time.h>
 int strttime(char* timestr, char* timeformat, time_t* t);
 int ttimestr(char* buf, int n, char* timeformat, time_t* t);

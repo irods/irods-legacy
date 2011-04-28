@@ -401,10 +401,10 @@ int processReturnRes(Res *res) {
         int ret;
         switch(TYPE(res)) {
         case T_ERROR:
-            ret = res->value.e;
+            ret = res->value.errcode;
             break;
         case T_INT:
-            ret = (int)res->value.d;
+            ret = (int)res->value.dval;
             break;
         default:
             ret = -1; /* wrong type error */
@@ -422,13 +422,12 @@ int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char
 	Region *r = make_region(0, NULL);
 
 	Res *res0 = parseAndComputeExpressionNewEnv(inAction, NULL, rei, reiSaveFlag, r);
+	int ret;
 	char *res1 = convertResToString(res0);
 	snprintf(res, MAX_COND_LEN, "%s", res1);
 	free(res1);
 
-	int ret;
-    ret = processReturnRes(res0);
-
+	ret = processReturnRes(res0);
     region_free(r);
 
     return ret;
@@ -450,10 +449,20 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 
 	Region *r = make_region(0, NULL);
 
-	Res *res = parseAndComputeExpressionNewEnv(inAction, inMsParamArray, rei, reiSaveFlag, r);
     int ret;
-    ret = processReturnRes(res);
-
+    Res *res;
+    if(inAction[strlen(inAction)-1]=='|') {
+    	char *inActionCopy = strdup(inAction);
+    	inActionCopy[strlen(inAction) - 1] = '\0';
+    	char *action = (char *) malloc(sizeof(inAction) * strlen(inAction) + 2);
+    	sprintf(action, "{%s}", inActionCopy);
+    	res = parseAndComputeExpressionNewEnv(action, inMsParamArray, rei, reiSaveFlag, r);
+    	free(action);
+    	free(inActionCopy);
+    } else {
+    	res = parseAndComputeExpressionNewEnv(inAction, inMsParamArray, rei, reiSaveFlag, r);
+	}
+	ret = processReturnRes(res);
     region_free(r);
 
     return ret;
@@ -534,18 +543,10 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 	    rodsLog (LOG_NOTICE,"+Executing MyRule for Action:%s\n",action);
     }
 #endif
-    rError_t errmsgBuf;
-    errmsgBuf.errMsg = NULL;
-    errmsgBuf.len = 0;
-
     Region *r = make_region(0, NULL);
     status =
-	   computeRule(ruleDef, rei, reiSaveFlag, inMsParamArray, &errmsgBuf, r);
+	   parseAndComputeRule(ruleDef, inMsParamArray, rei, reiSaveFlag, r);
     region_free(r);
-    if(status!=0) {
-      logErrMsg(&errmsgBuf);
-    }
-    freeRErrorContent(&errmsgBuf);
     if (status < 0) {
       rodsLog (LOG_NOTICE,"execMyRule %s Failed with status %i",ruleDef, status);
     }

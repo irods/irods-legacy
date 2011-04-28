@@ -16,21 +16,21 @@ void convertStrValue(Res *res, char *val, Region *r) {
     int len = (strlen(val)+1)*sizeof(char);
     res->text = (char*)region_alloc(r, len);
     memcpy(res->text, val, len);
-    res->value.s.len = strlen(val);
+    res->value.strlen = strlen(val);
     res->exprType = newSimpType(T_STRING, r);
 }
 /**
  * convert int value to Res
  */
 void convertIntValue(Res *res, int inval, Region *r) {
-    res->value.d = inval;
+    res->value.dval = inval;
     res->exprType = newSimpType(T_INT, r);
 }
 /**
  * convert double value to Res
  */
 void convertDoubleValue(Res *res, double inval, Region *r) {
-    res->value.d = inval;
+    res->value.dval = inval;
     res->exprType = newSimpType(T_DOUBLE,r);
 }
 /**
@@ -71,7 +71,7 @@ Res* getValueFromCollection(char *typ, void *inPtr, int inx, Region *r) {
     if (inx >= intA->len) {
       return NULL;
     }
-    res->value.d = intA->value[inx];
+    res->value.dval = intA->value[inx];
     return res;
   }
   else if (!strcmp(typ,GenQueryOut_MS_T)) {
@@ -132,16 +132,16 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 	} else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
             /* this could be int, bool, or datatime */
             if(res->exprType == NULL) { /* output parameter */
-                res->value.d = *(int *)mP->inOutStruct;
+                res->value.dval = *(int *)mP->inOutStruct;
                 res->exprType = newSimpType(T_INT, r);
             } else
             switch(TYPE(res)) {
                 case T_INT:
                 case T_BOOL:
-                    res->value.d = *(int *)mP->inOutStruct;
+                    res->value.dval = *(int *)mP->inOutStruct;
                     break;
                 case T_DATETIME:
-                    res->value.t = (time_t)*(int *)mP->inOutStruct;
+                    res->value.tval = (time_t)*(int *)mP->inOutStruct;
                     break;
                 default:
                     convertIntValue(res, *(int *)mP->inOutStruct,r);
@@ -151,7 +151,7 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 		convertStrValue(res, (char *)mP->inOutStruct,r);
 		return 0;
 	} else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
-		res->value.t = *(time_t *)mP->inOutStruct;
+		res->value.tval = *(time_t *)mP->inOutStruct;
 		TYPE(res) = T_DATETIME;
 		return 0;
 /*
@@ -219,102 +219,105 @@ void convertCollectionToRes(msParam_t *mP, Res* res) {
 
 /************************ Res to Microservice parameter ***********************/
 int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
-	strArray_t *arr;
-	intArray_t *arr2;
-        var->inpOutBuf = NULL;
-        var->label = NULL;
-            int i;
-            int maxlen = 0;
-			switch(TYPE(res)) {
-				case T_ERROR: /* error message */
-					var->inOutStruct = (int *)malloc(sizeof(int));
-					*((int *)var->inOutStruct) = res->value.e;
-					var->type = strdup(INT_MS_T);
-					break;
-				case T_DOUBLE: /* number */
-					var->inOutStruct = (double *)malloc(sizeof(double));
-					*((double *)var->inOutStruct) = res->value.d;
-					var->type = strdup(DOUBLE_MS_T);
-					break;
-				case T_INT: /* number */
-					var->inOutStruct = (int *)malloc(sizeof(int));
-					*((int *)var->inOutStruct) = (int)res->value.d;
-					var->type = strdup(INT_MS_T);
-					break;
-				case T_STRING: /* string */
-					var->inOutStruct = strdup(res->text);
-					var->type = strdup(STR_MS_T);
-					break;
-				case T_DATETIME: /* date time */
-					/*var->inOutStruct = (time_t *)malloc(sizeof(time_t)); */
-					/**((time_t *)var->inOutStruct) = res->value.t; */
-					/*var->type = strdup(DATETIME_MS_T); */
-                                    /* Here we pass datatime as an integer to reuse exiting packing instructions. Need to change to long int. */
-					var->inOutStruct = (int *)malloc(sizeof(int));
-					*((int *)var->inOutStruct) = (int)res->value.t;
-					var->type = strdup(INT_MS_T);
-					break;
-				case T_CONS:
-                                    if(strcmp(T_CONS_TYPE_NAME(res->exprType), LIST) == 0) {
-					switch(T_CONS_TYPE_ARG(res->exprType, 0)->type) {
-						case T_STRING:
-							arr = (strArray_t *)malloc(sizeof(strArray_t));
-							arr->len = res->degree;
-							int i;
-							maxlen = 0;
-							for(i=0;i<res->degree;i++) {
-								int slen = res->subtrees[i]->value.s.len;
-								maxlen = maxlen < slen? slen: maxlen;
-							}
-							arr->size = maxlen;
-							arr->value = (char *)malloc(sizeof(char)*maxlen*(arr->len));
-							for(i=0;i<res->degree;i++) {
-								strcpy(arr->value + maxlen*i, res->subtrees[i]->text);
-							}
-                                                        var->inOutStruct = arr;
-                                                        var->type = strdup(StrArray_MS_T);
-							break;
-						case T_INT:
-							arr2 = (intArray_t *)malloc(sizeof(intArray_t));
-							arr2->len = res->degree;
-							arr2->value = (int *)malloc(sizeof(int)*(arr2->len));
-							for(i=0;i<res->degree;i++) {
-								arr2->value[i] = (int)res->subtrees[i]->value.d;
-							}
-                                                        var->inOutStruct = arr2;
-                                                        var->type = strdup(IntArray_MS_T);
-							break;
-						case T_IRODS:
-                					var->inOutStruct = res->value.uninterpreted.inOutStruct;
-                					var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
-                                			var->type = strdup(KeyValPair_MS_T);
-                                                	break;
-                                                default:
-                                                    /* current there is no existing packing instructions for arbitrary collection */
-                                                    /* report error */
-                                                    addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary collection type");
-                                                    return -1;
-					}
-                                    } else {
-                                        addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary constructed type");
-                                        return -1;
-                                    }
-                                    break;
-                            case T_IRODS:
-                                var->inOutStruct = res->value.uninterpreted.inOutStruct;
-                                var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
-                                var->type = strdup(res->exprType->text);
-                                break;
-                            default:
-                                /*error */
-                                addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary type");
-                                return -1;
-			}
-                        return 0;
+	strArray_t *arr = NULL;
+	intArray_t *arr2 = NULL;
+    int i = 0;
+    int maxlen = 0;
+    var->inpOutBuf = NULL;
+    var->label = NULL;
+    switch(TYPE(res)) {
+        case T_ERROR: /* error message */
+            var->inOutStruct = (int *)malloc(sizeof(int));
+            *((int *)var->inOutStruct) = res->value.errcode;
+            var->type = strdup(INT_MS_T);
+            break;
+        case T_DOUBLE: /* number */
+            var->inOutStruct = (double *)malloc(sizeof(double));
+            *((double *)var->inOutStruct) = res->value.dval;
+            var->type = strdup(DOUBLE_MS_T);
+            break;
+        case T_INT: /* number */
+            var->inOutStruct = (int *)malloc(sizeof(int));
+            *((int *)var->inOutStruct) = (int)res->value.dval;
+            var->type = strdup(INT_MS_T);
+            break;
+        case T_STRING: /* string */
+            var->inOutStruct = strdup(res->text);
+            var->type = strdup(STR_MS_T);
+            break;
+        case T_DATETIME: /* date time */
+            /*var->inOutStruct = (time_t *)malloc(sizeof(time_t)); */
+            /**((time_t *)var->inOutStruct) = res->value.t; */
+            /*var->type = strdup(DATETIME_MS_T); */
+            /* Here we pass datatime as an integer to reuse exiting packing instructions. Need to change to long int. */
+            var->inOutStruct = (int *)malloc(sizeof(int));
+            *((int *)var->inOutStruct) = (int)res->value.tval;
+            var->type = strdup(INT_MS_T);
+            break;
+        case T_CONS:
+            if(strcmp(T_CONS_TYPE_NAME(res->exprType), LIST) == 0) {
+                switch(T_CONS_TYPE_ARG(res->exprType, 0)->nodeType) {
+                    case T_STRING:
+                        arr = (strArray_t *)malloc(sizeof(strArray_t));
+                        arr->len = res->degree;
+                        maxlen = 0;
+                        for(i=0;i<res->degree;i++) {
+                            int slen = res->subtrees[i]->value.strlen;
+                            maxlen = maxlen < slen? slen: maxlen;
+                        }
+                        arr->size = maxlen;
+                        arr->value = (char *)malloc(sizeof(char)*maxlen*(arr->len));
+                        for(i=0;i<res->degree;i++) {
+                            strcpy(arr->value + maxlen*i, res->subtrees[i]->text);
+                        }
+                        var->inOutStruct = arr;
+                        var->type = strdup(StrArray_MS_T);
+                        break;
+                    case T_INT:
+                        arr2 = (intArray_t *)malloc(sizeof(intArray_t));
+                        arr2->len = res->degree;
+                        arr2->value = (int *)malloc(sizeof(int)*(arr2->len));
+                        for(i=0;i<res->degree;i++) {
+                            arr2->value[i] = (int)res->subtrees[i]->value.dval;
+                        }
+                        var->inOutStruct = arr2;
+                        var->type = strdup(IntArray_MS_T);
+                        break;
+                    case T_IRODS:
+                        var->inOutStruct = res->value.uninterpreted.inOutStruct;
+                        var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
+                        var->type = strdup(KeyValPair_MS_T);
+                        break;
+                    default:
+                        /* current there is no existing packing instructions for arbitrary collection */
+                        /* report error */
+                        addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary collection type");
+                        return -1;
+                }
+            } else {
+                addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary constructed type");
+                return -1;
+            }
+            break;
+        case T_IRODS:
+            var->inOutStruct = res->value.uninterpreted.inOutStruct;
+            var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
+            var->type = strdup(res->exprType->text);
+            break;
+        default:
+            /*error */
+            addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary type");
+            return -1;
+    }
+    return 0;
 }
 int convertEnvToMsParamArray(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
-    if(convertHashtableToMsParamArray(var, env->global, errmsg, r)==0 &&
-    convertHashtableToMsParamArray(var, env->current, errmsg, r)==0) {
+    if(env->previous!=NULL) {
+        if(convertEnvToMsParamArray(var, env->previous, errmsg, r)!=0) {
+            return -1;
+        }
+    }
+    if(convertHashtableToMsParamArray(var, env->current, errmsg, r)==0) {
         return 0;
     } else {
         return -1;
@@ -346,17 +349,8 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 	}
         return 0;
 }
-int convertMsParamArrayToEnv(msParamArray_t *var, Hashtable *env, rError_t *errmsg, Region *r) {
-	int i;
-	for(i=0;i<var->len;i++) {
-		Res *res = newRes(r);
-		int ret = convertMsParamToRes(var->msParam[i], res, errmsg, r);
-                if(ret != 0) {
-                    return ret;
-                }
-		insertIntoHashTable(env, var->msParam[i]->label, res);
-	}
-        return 0;
+int convertMsParamArrayToEnv(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
+    return updateMsParamArrayToEnv(var, env, errmsg, r);
 }
 
 int updateMsParamArrayToEnv(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
@@ -364,19 +358,13 @@ int updateMsParamArrayToEnv(msParamArray_t *var, Env *env, rError_t *errmsg, Reg
 	for(i=0;i<var->len;i++) {
 		Res *res = newRes(r);
 		int ret = convertMsParamToRes(var->msParam[i], res, errmsg, r);
-                if(ret != 0) {
-                    return ret;
-                }
+        if(ret != 0) {
+            return ret;
+        }
 		char *varName = var->msParam[i]->label;
-                if(varName!=NULL) {
-                    if(lookupFromHashTable(env->current, varName) != NULL) {
-                        updateInHashTable(env->current, varName, res);
-                    } else if(lookupFromHashTable(env->global, varName) != NULL){
-                        updateInHashTable(env->global, varName, res);
-                    } else {
-                        insertIntoHashTable(env->current, varName, res);
-                    }
-                }
+        if(varName!=NULL) {
+            updateInEnv(env, varName, res);
+        }
 	}
         return 0;
 }
@@ -387,15 +375,15 @@ char* convertResToString(Res *res0) {
 	switch (TYPE(res0)) {
             case T_ERROR:
                 res = (char *)malloc(sizeof(char)*1024);
-			snprintf(res, 1024, "error %d", res0->value.e);
+			snprintf(res, 1024, "error %d", res0->value.errcode);
 			return res;
             case T_INT:
             case T_DOUBLE:
                 res = (char *)malloc(sizeof(char)*1024);
-		    if(res0->value.d==(int)res0->value.d) {
-				snprintf(res, 1024, "%d", (int)res0->value.d);
+		    if(res0->value.dval==(int)res0->value.dval) {
+				snprintf(res, 1024, "%d", (int)res0->value.dval);
 			} else {
-				snprintf(res, 1024, "%f", res0->value.d);
+				snprintf(res, 1024, "%f", res0->value.dval);
 			}
 			return res;
             case T_STRING:
@@ -420,7 +408,7 @@ char* convertResToString(Res *res0) {
                     }
 			return res;
             case T_BOOL:
-                res = strdup(((int)res0->value.d)?"true":"false");
+                res = strdup(((int)res0->value.dval)?"true":"false");
                 return res;
             case T_CONS:
                 res = (char *)malloc(sizeof(char)*1024);
@@ -440,7 +428,7 @@ char* convertResToString(Res *res0) {
                         return res;
             case T_DATETIME:
                         res = (char *)malloc(sizeof(char)*1024);
-			ttimestr(res, 1024-1, "", &(res0->value.t));
+			ttimestr(res, 1024-1, "", &(res0->value.tval));
                         return res;
 
             default:
@@ -509,9 +497,9 @@ void printHashtable(Hashtable *env, char* buf2) {
 int convertResToIntReturnValue(Res *res) {
     int retVal;
     if(TYPE(res) == T_ERROR) {
-       retVal = res->value.e;
+       retVal = res->value.errcode;
     } else {
-       retVal = (int)res->value.d;
+       retVal = (int)res->value.dval;
     }
     return retVal;
 

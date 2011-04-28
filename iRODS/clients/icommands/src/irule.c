@@ -11,6 +11,29 @@ void usage ();
 int
 parseMsInputParam (int argc, char **argv, int optInd, 
 		   execMyRuleInp_t *execMyRuleInp, char *inBuf);
+int
+startsWith(char *str, char *prefix) {
+	int i = 0;
+	while(str[i]!='\0' && prefix[i]!='\0') {
+		if(str[i] != prefix[i]) {
+			return 0;
+		}
+		i++;
+	}
+	return prefix[i] == '\0';
+}
+
+void
+trimPrefix(char *str) {
+	int i = 0;
+	while(str[i]!=' ') {
+		i++;
+	}
+	while(str[i]==' ') {
+		i++;
+	}
+	memmove(str, str+i, strlen(str) + 1 - i);
+}
 
 int
 main(int argc, char **argv) {
@@ -107,7 +130,7 @@ main(int argc, char **argv) {
               myRodsArgs.fileString, errno);
 	    exit (1);
 	}
-	int rulegen = 0;
+	int rulegen = strcmp(myRodsArgs.fileString+strlen(myRodsArgs.fileString)-2, ".r") == 0;
 	rstrcpy (execMyRuleInp.myRule, "", META_STR_LEN);
 	while ((len = getLine (fptr, buf, META_STR_LEN)) > 0) {
 	    if (myRodsArgs.longOption == True)
@@ -117,16 +140,15 @@ main(int argc, char **argv) {
 	    	continue;
 	    }
 
-		if(strcmp(buf, "@rule") == 0) {
-			rulegen = 1;
-			continue;
-		} else if(strcmp(buf, "@input") == 0) {
-			gotRule = 1;
-			continue;
-		} else if(strcmp(buf, "@output") == 0) {
-			gotRule = 2;
-			continue;
-		}
+	    if(rulegen) {
+			if(startsWith(buf, "INPUT") || startsWith(buf, "input")) {
+				gotRule = 1;
+				trimPrefix(buf);
+			} else if(startsWith(buf, "OUTPUT") || startsWith(buf, "output")) {
+				gotRule = 2;
+				trimPrefix(buf);
+			}
+	    }
 
 		if (gotRule == 0) {
 	    	if(!rulegen) {
@@ -271,6 +293,7 @@ main(int argc, char **argv) {
     exit(0);	
 
 }
+
 
 int
 parseMsInputParam (int argc, char **argv, int optInd, 

@@ -600,10 +600,10 @@ replaceRescVar( char *start, int size,  rescInfo_t *roi)
 int
 isNumber(char *s)
 {
-  int i;
+  unsigned int i;
 
   for (i = 0; i < strlen(s); i++) {
-    if (isdigit(s[i]) == 0 && s[i] != '.' && s[i] != '-'  && s[i] != '+')
+    if (!isdigit(s[i]) && s[i] != '.' && s[i] != '-'  && s[i] != '+')
       return(0);
   }
   return(1);

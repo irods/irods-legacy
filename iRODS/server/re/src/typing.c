@@ -12,7 +12,7 @@ int typeParameters(ExprType** paramTypes, int len, Node** subtrees, Hashtable* f
 	int i;
 	for(i=0;i<len;i++) {
 		paramTypes[i] = dereference(typeExpression3(subtrees[i], funcDesc, symbol_type_table, typingConstraints, errmsg, errnode, r), symbol_type_table, r);
-		if(paramTypes[i]->type == T_ERROR) {
+		if(paramTypes[i]->nodeType == T_ERROR) {
 			return i;
 		}
 	}
@@ -25,10 +25,10 @@ int tautologyLt(ExprType *type, ExprType *expected) {
     }
         int i;
         ExprType a, b;
-        if (type->type == T_VAR) {
+        if (type->nodeType == T_VAR) {
             if(T_VAR_NUM_DISJUNCTS(type) > 0) {
                 for(i=0;i<T_VAR_NUM_DISJUNCTS(type);i++) {
-                    a.type = T_VAR_DISJUNCT(type,i);
+                    a.nodeType = T_VAR_DISJUNCT(type,i)->nodeType;
                     if(!tautologyLt(&a, expected)) {
                         return 0;
                     }
@@ -38,10 +38,10 @@ int tautologyLt(ExprType *type, ExprType *expected) {
                 return 0;
             }
 
-        } else if (expected->type == T_VAR) {
+        } else if (expected->nodeType == T_VAR) {
             if(T_VAR_NUM_DISJUNCTS(expected) > 0) {
                 for(i=0;i<T_VAR_NUM_DISJUNCTS(expected);i++) {
-                    b.type = T_VAR_DISJUNCT(expected,i);
+                    b.nodeType = T_VAR_DISJUNCT(expected,i)->nodeType;
                     if(!tautologyLt(type, &b)) {
                         return 0;
                     }
@@ -50,7 +50,7 @@ int tautologyLt(ExprType *type, ExprType *expected) {
             } else {
                 return 0;
             }
-        } else if (type->type == T_CONS && expected->type == T_CONS) {
+        } else if (type->nodeType == T_CONS && expected->nodeType == T_CONS) {
             if(strcmp(T_CONS_TYPE_NAME(type), T_CONS_TYPE_NAME(expected))!=0) {
                 return 0;
             }
@@ -72,14 +72,14 @@ int tautologyLtBase(ExprType *a, ExprType *b) {
             return 1;
         }
 */
-        switch(a->type) {
+        switch(a->nodeType) {
             case T_INT:
-                return b->type == T_INT ||
-                        b->type == T_DOUBLE;
+                return b->nodeType == T_INT ||
+                        b->nodeType == T_DOUBLE;
             case T_DOUBLE:
             case T_BOOL:
             case T_STRING:
-                return a->type==b->type;
+                return a->nodeType==b->nodeType;
             default:
                 return 0;
         }
@@ -93,12 +93,12 @@ int tautologyLtBase(ExprType *a, ExprType *b) {
  */
 Satisfiability simplifyR(ExprType *type, ExprType *expected, ExprType **bn, Region *r) {
     ExprType b;
-    if(expected->ext.tvar.numDisjuncts > 0) {
-        NodeType c[100];
-        NodeType* cp = c;
+    if(T_VAR_NUM_DISJUNCTS(expected) > 0) {
+        Node *c[100];
+        Node **cp = c;
         int i;
-        for(i=0;i<expected->ext.tvar.numDisjuncts;i++) {
-            b.type = T_VAR_DISJUNCT(expected, i);;
+        for(i=0;i<T_VAR_NUM_DISJUNCTS(expected);i++) {
+            b.nodeType = T_VAR_DISJUNCT(expected, i)->nodeType;
             if(tautologyLt(type, &b)) {
                 *(cp++)=T_VAR_DISJUNCT(expected, i);
             }
@@ -107,7 +107,7 @@ Satisfiability simplifyR(ExprType *type, ExprType *expected, ExprType **bn, Regi
             return ABSERDITY;
         } else {
             if(cp-c==1) {
-                *bn = newSimpType(*c, r);
+                *bn = *c;
             } else if (cp-c == T_VAR_NUM_DISJUNCTS(expected)) {
                 *bn = expected;
             } else {
@@ -123,12 +123,12 @@ Satisfiability simplifyR(ExprType *type, ExprType *expected, ExprType **bn, Regi
 
 Satisfiability simplifyL(ExprType *type, ExprType *expected, ExprType **an, Region *r) {
     ExprType a;
-    if(type->ext.tvar.numDisjuncts > 0) {
-        NodeType c[100];
-        NodeType* cp = c;
+    if(T_VAR_NUM_DISJUNCTS(type) > 0) {
+        Node* c[100];
+        Node** cp = c;
         int i;
-        for(i=0;i<type->ext.tvar.numDisjuncts;i++) {
-            a.type = T_VAR_DISJUNCT(type, i);
+        for(i=0;i<T_VAR_NUM_DISJUNCTS(type);i++) {
+            a.nodeType = T_VAR_DISJUNCT(type, i)->nodeType;
             if(tautologyLt(&a, expected)) {
                 *(cp++)=T_VAR_DISJUNCT(type, i);
             }
@@ -137,7 +137,7 @@ Satisfiability simplifyL(ExprType *type, ExprType *expected, ExprType **an, Regi
             return ABSERDITY;
         } else {
             if(cp-c==1) {
-                *an = newSimpType(*c, r);
+                *an = *c;
             } else if (cp-c == T_VAR_NUM_DISJUNCTS(type)) {
                 *an = type;
             } else {
@@ -152,18 +152,18 @@ Satisfiability simplifyL(ExprType *type, ExprType *expected, ExprType **an, Regi
 }
 Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprType **bn, Region *r) {
     ExprType a, b;
-        if(type->ext.tvar.vid == expected->ext.tvar.vid) {
+        if(T_VAR_ID(type) == T_VAR_ID(expected)) {
             *an = type;
             *bn = expected;
             return CONTIGENCY;
-        } else if(type->ext.tvar.numDisjuncts > 0 && expected->ext.tvar.numDisjuncts > 0) {
-            NodeType c[100];
-            NodeType* cp = c;
+        } else if(T_VAR_NUM_DISJUNCTS(type) > 0 && T_VAR_NUM_DISJUNCTS(expected) > 0) {
+            Node* c[100];
+            Node** cp = c;
             int i,k;
-            for(k=0;k<expected->ext.tvar.numDisjuncts;k++) {
-                for(i=0;i<type->ext.tvar.numDisjuncts;i++) {
-                    a.type = T_VAR_DISJUNCT(type,i);
-                    b.type = T_VAR_DISJUNCT(expected,k);
+            for(k=0;k<T_VAR_NUM_DISJUNCTS(expected);k++) {
+                for(i=0;i<T_VAR_NUM_DISJUNCTS(type);i++) {
+                    a.nodeType = T_VAR_DISJUNCT(type,i)->nodeType;
+                    b.nodeType = T_VAR_DISJUNCT(expected,k)->nodeType;
                     if(tautologyLt(&a, &b)) {
                         *(cp++)=T_VAR_DISJUNCT(expected,k);
                         break;
@@ -175,7 +175,7 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
                 return ABSERDITY;
             } else {
                 if(cp-c==1) {
-                    gcd = newSimpType(*c, r);
+                    gcd = *c;
                 } else if (cp-c == T_VAR_NUM_DISJUNCTS(expected)) {
                     gcd = expected;
                 } else {
@@ -184,10 +184,10 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
                 *bn = gcd;
             }
             cp = c;
-            for(i=0;i<type->ext.tvar.numDisjuncts;i++) {
-                for(k=0;k<expected->ext.tvar.numDisjuncts;k++) {
-                    a.type = T_VAR_DISJUNCT(type,i);
-                    b.type = T_VAR_DISJUNCT(expected,k);
+            for(i=0;i<T_VAR_NUM_DISJUNCTS(type);i++) {
+                for(k=0;k<T_VAR_NUM_DISJUNCTS(expected);k++) {
+                    a.nodeType = T_VAR_DISJUNCT(type,i)->nodeType;
+                    b.nodeType = T_VAR_DISJUNCT(expected,k)->nodeType;
                     if(tautologyLt(&a, &b)) {
                         *(cp++)=T_VAR_DISJUNCT(type,i);
                         break;
@@ -195,7 +195,7 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
                 }
             }
             if(cp-c==1) {
-                gcd = newSimpType(*c, r);
+                gcd = *c;
             } else if(cp-c == T_VAR_NUM_DISJUNCTS(type)) {
                 gcd = type;
             } else {
@@ -203,11 +203,11 @@ Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprTyp
             }
             *an = gcd;
             return CONTIGENCY;
-        } else if(type->ext.tvar.numDisjuncts==0) { /* free */
+        } else if(T_VAR_NUM_DISJUNCTS(type)==0) { /* free */
             *an = type;
             *bn = expected;
             return CONTIGENCY;
-        } else /*if(expected->ext.tvar.numDisjuncts==0)*/ { /* free */
+        } else /*if(T_VAR_NUM_DISJUNCTS(expected)==0)*/ { /* free */
             *an = type;
             *bn = expected;
             return CONTIGENCY;
@@ -229,7 +229,7 @@ Satisfiability simplifyLocally(TypingConstraint *tc, Hashtable *typingEnv, Regio
     }
     ExprType *an, *bn;
     char tvarname[128];
-    if(tc->a->type == T_VAR && tc->b->type == T_VAR) {
+    if(tc->a->nodeType == T_VAR && tc->b->nodeType == T_VAR) {
         Satisfiability sat = narrow(tc->a, tc->b, &an, &bn, r);
         if(tc->a!= an) {
             insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(tc->a), tvarname), an);
@@ -244,7 +244,7 @@ Satisfiability simplifyLocally(TypingConstraint *tc, Hashtable *typingEnv, Regio
         } else {
             return ABSERDITY;
         }
-    } else if(tc->a->type==T_VAR) {
+    } else if(tc->a->nodeType==T_VAR) {
         if(simplifyL(tc->a, tc->b, &an, r) != ABSERDITY) {
             if(tc->a!= an) {
                 insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(tc->a), tvarname), an);
@@ -255,7 +255,7 @@ Satisfiability simplifyLocally(TypingConstraint *tc, Hashtable *typingEnv, Regio
             return ABSERDITY;
         }
 
-    } else if(tc->b->type==T_VAR) {
+    } else if(tc->b->nodeType==T_VAR) {
         if(simplifyR(tc->a, tc->b, &bn, r) != ABSERDITY) {
             if(tc->b!= bn) {
                 insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(tc->b), tvarname), bn);
@@ -266,7 +266,7 @@ Satisfiability simplifyLocally(TypingConstraint *tc, Hashtable *typingEnv, Regio
             return ABSERDITY;
         }
 
-    } else if(tc->a->type == T_CONS && tc->b->type == T_CONS) {
+    } else if(tc->a->nodeType == T_CONS && tc->b->nodeType == T_CONS) {
         if(strcmp(T_CONS_TYPE_NAME(tc->a), T_CONS_TYPE_NAME(tc->b))!=0) {
             return ABSERDITY;
         } else {
@@ -339,20 +339,20 @@ int solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t *er
             printf("warning: collasping %s with %s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024));
 */
                         /*printVarTypeEnvToStdOut(typingEnv); */
-            if (a->type == T_VAR && b->type == T_VAR && T_VAR_ID(a) == T_VAR_ID(b)) {
-            } else if (a->type == T_VAR && T_VAR_NUM_DISJUNCTS(a) == 0) {
+            if (a->nodeType == T_VAR && b->nodeType == T_VAR && T_VAR_ID(a) == T_VAR_ID(b)) {
+            } else if (a->nodeType == T_VAR && T_VAR_NUM_DISJUNCTS(a) == 0) {
                 insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(a), buf), b);
-            } else if (b->type == T_VAR && T_VAR_NUM_DISJUNCTS(b) == 0) {
+            } else if (b->nodeType == T_VAR && T_VAR_NUM_DISJUNCTS(b) == 0) {
                 insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(b), buf), a);
-            } else if (a->type == T_VAR && b->type == T_VAR) {
+            } else if (a->nodeType == T_VAR && b->nodeType == T_VAR) {
                 if(T_VAR_NUM_DISJUNCTS(a) > T_VAR_NUM_DISJUNCTS(b)) {
                     insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(b), buf), a);
                 } else {
                     insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(a), buf), b);
                 }
-            } else if (a->type == T_VAR) {
+            } else if (a->nodeType == T_VAR) {
                 insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(a), buf), b);
-            } else if (b->type == T_VAR) {
+            } else if (b->nodeType == T_VAR) {
                 insertIntoHashTable(typingEnv, getTVarName(T_VAR_ID(b), buf), a);
             } else {
                 printf("error: simplified type does not have variable on either side.");
@@ -381,7 +381,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
             ListNode *next = ln->next;
 /*
             printf("simplifying %s<%s.\n", typeToString(a, typingEnv, buf2, 1024), typeToString(b, typingEnv, buf3, 1024));
-                    printVarTypeEnvToStdOut(typingEnv); 
+                    printVarTypeEnvToStdOut(typingEnv);
 */
             switch(simplifyLocally(tc, typingEnv, r)) {
                 case TAUTOLOGY:
@@ -436,15 +436,15 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
     /*printVarTypeEnvToStdOut(var_type_table); */
     if(strcmp(fn, "foreach") == 0) {
         ERROR2(node->degree != 3,"wrong number of arguments to microservice");
-        ERROR2(node->subtrees[0]->type!=N_TEXT,"argument form error");
+        ERROR2(node->subtrees[0]->nodeType!=TK_TEXT,"argument form error");
         char* varname = node->subtrees[0]->text;
         ExprType *varType = (ExprType *)lookupFromHashTable(var_type_table, varname);
         ExprType *collType = varType == NULL? NULL:dereference(varType, var_type_table, r);
         if(collType!=NULL) {
             /* error if res is not a collection type or a type variable (primitive union type excluded) */
-            ERROR2(collType->type != T_CONS && (collType->type != T_VAR || T_VAR_NUM_DISJUNCTS(collType)!=0 ), "foreach is applied to a non collection type");
+            ERROR2(collType->nodeType != T_CONS && (collType->nodeType != T_VAR || T_VAR_NUM_DISJUNCTS(collType)!=0 ), "foreach is applied to a non collection type");
             /* overwrite type of collection variable */
-            if(collType->type == T_VAR) {
+            if(collType->nodeType == T_VAR) {
                 unifyTVarL(collType, newCollType(newTVar(r), r), var_type_table,
                         r);
                 collType = dereference(collType, var_type_table, r);
@@ -457,17 +457,19 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
             collType = newCollType(elemType, r);
         }
         res3 = typeExpression3(node->subtrees[1],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
-        ERROR2(res3->type == T_ERROR, "foreach loop type error");
+        ERROR2(res3->nodeType == T_ERROR, "foreach loop type error");
         res3 = typeExpression3(node->subtrees[2],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
-        ERROR2(res3->type == T_ERROR, "foreach recovery type error");
+        ERROR2(res3->nodeType == T_ERROR, "foreach recovery type error");
 
         updateInHashTable(var_type_table, varname, collType); /* restore type of collection variable */
         return res3;
     } else {
         ERROR2(strcmp(fn, "assign") == 0 &&
-                node->degree != 2, "wrong number of arguments to microservice assign");
-        ERROR2(strcmp(fn, "assign") == 0 &&
-                node->subtrees[0]->type!=N_TEXT, "the first argument of microservice assign is a complex expression");
+                node->degree>0 &&
+                !isPattern(node->subtrees[0]), "the first argument of microservice assign is not a variable or a pattern");
+        ERROR2(strcmp(fn, "let") == 0 &&
+                node->degree>0 &&
+                !isPattern(node->subtrees[0]), "the first argument of microservice let is not a variable or a pattern");
 
         FunctionDesc *fDesc = (FunctionDesc*)lookupFromHashTable(funcDesc, fn);
         if(fDesc!=NULL && fDesc->type!=NULL) {
@@ -493,11 +495,11 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
                 printTreeDeref(node, 0, var_type_table, r);
 */
                 ExprType *paramType = typeExpression3(node->subtrees[i], funcDesc, var_type_table, typingConstraints, errmsg, errnode, r);
-                ERROR2(paramType->type == T_ERROR,"parameter type error");
+                ERROR2(paramType->nodeType == T_ERROR,"parameter type error");
                 ExprType *gcd;
-                if(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->type == T_DYNAMIC) {
+                if(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->nodeType == T_DYNAMIC) {
                     gcd = paramType;
-                } else if(paramType->type == T_DYNAMIC) {
+                } else if(paramType->nodeType == T_DYNAMIC) {
                     gcd = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i);
                 } else if(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->coercionAllowed) {
                     gcd = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i);
@@ -540,7 +542,7 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
                     }
                     ERROR2(gcd == NULL,buf);
                 }
-                node->subtrees[i]->coercion = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i); /* set coersion to parameter */
+                node->subtrees[i]->coercionType = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i); /* set coersion to parameter */
                 if(param_type_i != T_FUNC_ARITY(fTypeCopy) - 1 || T_FUNC_VARARG(fTypeCopy)==ONCE) {
                     param_type_i++;
                 }
@@ -575,14 +577,14 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
     ExprType *res;
 	int i;
 	expr->typed = 1;
-	switch(expr->type) {
-		case N_INT:
+	switch(expr->nodeType) {
+		case TK_INT:
 			return newSimpType(T_INT,r);
-                case N_DOUBLE:
+                case TK_DOUBLE:
                         return newSimpType(T_DOUBLE,r);
-		case N_STRING:
+		case TK_STRING:
 			return newSimpType(T_STRING,r);
-		case N_TEXT:
+		case TK_TEXT:
 			if(expr->text[0]=='$' || expr->text[0]=='*') {
 				ExprType* t = (ExprType *)lookupFromHashTable(varTypes, expr->text);
 				if(t==NULL) {
@@ -600,40 +602,47 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
                         /* try to type as a function */
                         return typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
 		case N_ACTIONS:
-                        if(expr->degree == 0) {
-                            /* type of empty action sequence == T_INT */
-                            return newSimpType(T_INT, r);
-                        }
-                        for(i=0;i<expr->degree;i++) {
-                                /*printf("typing action in actions"); */
+                if(expr->degree == 0) {
+                    /* type of empty action sequence == T_INT */
+                    return newSimpType(T_INT, r);
+                }
+                for(i=0;i<expr->degree;i++) {
+                    /*printf("typing action in actions"); */
     				res = typeExpression3(expr->subtrees[i], funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-                                /*printVarTypeEnvToStdOut(varTypes); */
-				if(res->type == T_ERROR) {
-					return res;
-				}
-			}
-			return res;
-            default:
+                    /*printVarTypeEnvToStdOut(varTypes); */
+                    if(res->nodeType == T_ERROR) {
+                        return res;
+                    }
+                }
+                return newSimpType(T_INT, r);
+		case N_ACTIONS_RECOVERY:
+                res = typeExpression3(expr->subtrees[0], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+                if(res->nodeType == T_ERROR) {
+                    return res;
+                }
+                res = typeExpression3(expr->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+                return res;
+        default:
                 break;
 	}
 	*errnode = expr;
         char errbuf[ERR_MSG_LEN];
-	snprintf(errbuf, ERR_MSG_LEN, "error: unsupported ast node %d", expr->type);
+	snprintf(errbuf, ERR_MSG_LEN, "error: unsupported ast node %d", expr->nodeType);
         addRErrorMsg(errmsg, -1, errbuf);
 	return newSimpType(T_ERROR,r);
 }
 /*
  * This process is based on a few assumptions:
- * If the type coerced to cannot be inferred, i.e., an expression is to be coerced to some tvar, bounded to a union type or free, 
+ * If the type coerced to cannot be inferred, i.e., an expression is to be coerced to some tvar, bounded to a union type or free,
  * then we leave further type checking to runtime, which can be done locally under the assumption of indistinguishable inclusion.
  *
  */
 void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node **errnode, Region *r) {
-    if(expr->coercion!=NULL) {
+    if(expr->coercionType!=NULL) {
         ExprType *deref;
-	switch(expr->coercion->type) {
+	switch(expr->coercionType->nodeType) {
             case T_VAR:
-                deref = instantiate(expr->coercion, varTypes, r);
+                deref = instantiate(expr->coercionType, varTypes, r);
 /*
                 char buf[128];
                 if(deref->t == T_VAR && T_VAR_NUM_DISJUNCTS(deref)>0) {
@@ -642,7 +651,7 @@ void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node
                     deref = simp;
                 }
 */
-                expr->coercion = deref;
+                expr->coercionType = deref;
                 break;
             default:
                 break;
@@ -664,7 +673,7 @@ void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node
 void postProcessActions(Node *expr, Hashtable *systemFunctionTables, rError_t *errmsg, Node **errnode, Region *r) {
     int i;
     FunctionDesc *fd;
-    switch(expr->type) {
+    switch(expr->nodeType) {
         case N_APPLICATION:
             fd = (FunctionDesc *)lookupFromHashTable(systemFunctionTables, expr->text);
             if(fd!=NULL) {
@@ -672,7 +681,7 @@ void postProcessActions(Node *expr, Hashtable *systemFunctionTables, rError_t *e
                 for(i=0;i<expr->degree;i++) {
                     switch(getParamIOType(fd->inOutValExp, i)) {
                         case 'a':
-                            if(expr->subtrees[i]->type != N_ACTIONS) {
+                            if(expr->subtrees[i]->nodeType != N_ACTIONS) {
                                 Node **params = (Node **)region_alloc(r, sizeof(Node *)*1);
                                 params[0] = expr->subtrees[i];
                                 Label pos;

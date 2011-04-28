@@ -38,14 +38,10 @@ typedef struct region_desc {
     int del;
 } RegionDesc;
 
-#if 0	/* XXXXXX fix compile error */
-#define IN_REGION(x,r) (((RegionDesc *)(((void*)(x))-sizeof(RegionDesc)))->r == (r))
-#else
-#define IN_REGION(x,r) (((RegionDesc *)(((addrInt_t)(x))-sizeof(RegionDesc)))->r == (r))
-#endif
-#define SET_DELETE(x) (((RegionDesc *)(((void*)(x))-sizeof(RegionDesc)))->del=1)
-#define DELETED(x) (((RegionDesc *)(((void*)(x))-sizeof(RegionDesc)))->del)
-#define SIZE(x) (((RegionDesc *)(((void*)(x))-sizeof(RegionDesc)))->size)
+#define IN_REGION(x,r) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->r == (r))
+#define SET_DELETE(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->del=1)
+#define DELETED(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->del)
+#define SIZE(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->size)
 
 /* create a region with initial size is */
 /* if s == 0 then the initial size is DEFAULT_BLOCK_SIZE */

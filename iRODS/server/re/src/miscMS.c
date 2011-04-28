@@ -155,7 +155,7 @@ recover_print_eol(ruleExecInfo_t *rei)
 int
 recover_print_hello_arg(msParam_t* xs, ruleExecInfo_t *rei)
 {
-  int i;
+  unsigned int i;
   char *s;
 
   s = (char *) xs->inOutStruct;

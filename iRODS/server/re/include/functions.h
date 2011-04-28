@@ -9,6 +9,9 @@
 #include "parser.h"
 
 typedef Res *(*SmsiFuncPtrType)(Node **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
+
+typedef enum { FD_FUNC, FD_CONS, FD_DECONS } FunctionDescType;
+
 typedef struct function_desc {
     /*int arity; */
     char inOutValExp[10];
@@ -22,10 +25,14 @@ typedef struct function_desc {
     /* * = repeat previous */
     SmsiFuncPtrType func;
     ExprType *type;
+    FunctionDescType fdtype;
+    int proj;
     struct function_desc *next;
 } FunctionDesc ;
 
-FunctionDesc *newFunctionDesc(/*int arity, */char *valueOrExpression, char* type, SmsiFuncPtrType func, Region *r);
+FunctionDesc *newFunctionDesc(char *valueOrExpression, char* type, SmsiFuncPtrType func, Region *r);
+FunctionDesc *newConstructorDesc(char* type, Region *r);
+FunctionDesc *newDeconstructorDesc(char *type, int proj, Region *r);
 /*Hashtable *getSystemFunctionTypes(Region *r); */
 void getSystemFunctions(Hashtable *ft, Region *r);
 
@@ -34,6 +41,7 @@ Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errm
 int getParamIOType(char *iotypes, int index);
 
 FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc);
-
+Node *construct(char *fn, Node **args, int argc, Node* constype, Region *r);
+Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Region *r);
 #endif	/* FUNCTIONS_H */
 

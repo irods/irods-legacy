@@ -1,5 +1,3 @@
-
-
 /**
  * @file systemMS.c
  *
@@ -695,7 +693,7 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   int i, argc;
   ruleExecSubmitInp_t *ruleSubmitInfo;
-  char action[MAX_ACTION_SIZE];  
+  char action[MAX_ACTION_SIZE];
   char tmpStr[NAME_LEN];  
   bytesBuf_t *packedReiAndArgBBuf = NULL;
   char *ruleExecId;
@@ -854,7 +852,11 @@ int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, r
     return(i);
   parseHostAddrStr (tmpStr1, &execMyRuleInp.addr);
 #endif
-  snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s",  (char*)mPB->inOutStruct,(char*)mPC->inOutStruct);
+  if(strlen((char*)mPC->inOutStruct)!=0) {
+	  snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s",  (char*)mPB->inOutStruct,(char*)mPC->inOutStruct);
+  } else {
+	  snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}",  (char*)mPB->inOutStruct);
+  }
   addKeyVal(&execMyRuleInp.condInput,"execCondition",(char *) mPA->inOutStruct);
   
   tmpParamArray =  (msParamArray_t *) malloc (sizeof (msParamArray_t));

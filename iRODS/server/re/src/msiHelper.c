@@ -739,7 +739,7 @@ msParam_t *stringOut, ruleExecInfo_t *rei)
       strPtr = origStr + origLen + intOffset;
     }
 
-    if (intLength >= 0 && strlen (strPtr) > intLength) {
+    if (intLength >= 0 && ((int) strlen (strPtr)) > intLength) {
     /* put a null at the end of the sub str */
       savedPtr = strPtr + intLength;
       savedChar = *savedPtr;
