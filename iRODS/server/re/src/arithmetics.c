@@ -227,6 +227,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
     printTree(expr, 0);
 */
     int i;
+    int cutFlag = 0;
     #ifndef DEBUG
     char tmpStr[1024];
     #endif
@@ -234,6 +235,9 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
 		case N_ACTIONS:
             for(i=0;i<expr->degree;i++) {
                 Node *nodei = expr->subtrees[i];
+                if(strcmp(nodei->text, "cut") == 0) {
+                    cutFlag = 1;
+                }
                 Res* res = evaluateExpression3(nodei, 0, rei, reiSaveFlag, env, errmsg,r);
                 if(TYPE(res) == T_INT && res->value.dval < 0) {
                     res = newErrorRes(r, (int)res->value.dval);
@@ -269,7 +273,11 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
                             }
                         }
                     }
-                    return res;
+                    if(cutFlag) {
+                        return newErrorRes(r, CUT_ACTION_PROCESSED_ERR);
+                    } else {
+                        return res;
+                    }
                 }
                 if(TYPE(res) == T_BREAK) {
                     return res;
@@ -982,6 +990,8 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
             }
         } else if(statusRes->value.errcode== RETRY_WITHOUT_RECOVERY_ERR) {
             reTryWithoutRecovery = 1;
+        } else if(statusRes->value.errcode== CUT_ACTION_PROCESSED_ERR) {
+            ret = 1;
         }
 
         if (ret) {

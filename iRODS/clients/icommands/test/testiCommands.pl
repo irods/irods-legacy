@@ -504,7 +504,7 @@ sub makeRuleFile {
 #	print( FILE2 "##delayExec(msiDataObjRepl(*C,$irodsdefresource,*junk5),<A></A>)" );
 	print( FILE2 "##msiDataObjUnlink(*B,*junk6)|null" );
 	print( FILE2 "\n" );
-	print( FILE2 "*A=$irodshome/test/foo1\%*B=$irodshome/test/foo4\%*C=$irodshome/test/foo3" );
+	print( FILE2 "*A=\"$irodshome/test/foo1\"\%*B=\"$irodshome/test/foo4\"\%*C=\"$irodshome/test/foo3\"" );
 	print( FILE2 "\n" );
 	print( FILE2 "*R_BUF\%*W_LEN" );
 	print( FILE2 "\n" );
