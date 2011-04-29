@@ -545,7 +545,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 #endif
     Region *r = make_region(0, NULL);
     status =
-	   parseAndComputeRule(ruleDef, inMsParamArray, rei, reiSaveFlag, r);
+	   parseAndComputeRuleAdapter(ruleDef, inMsParamArray, rei, reiSaveFlag, r);
     region_free(r);
     if (status < 0) {
       rodsLog (LOG_NOTICE,"execMyRule %s Failed with status %i",ruleDef, status);

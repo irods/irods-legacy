@@ -71,6 +71,107 @@ void addCmdExecOutToEnv(Env *global, Region *r) {
 
 }
 
+int parseAndComputeMsParamArrayToEnv(msParamArray_t *var, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
+    int i;
+	for(i=0;i<var->len;i++) {
+		Res *res = newRes(r);
+		int ret = convertMsParamToRes(var->msParam[i], res, errmsg, r);
+        if(ret != 0) {
+            return ret;
+        }
+        if(TYPE(res) != T_STRING) {
+            return -1;
+        }
+
+		char *varName = var->msParam[i]->label;
+		char *expr = res->text;
+		res = parseAndComputeExpressionNewEnv(expr, NULL, rei, reiSaveFlag, r);
+		if(TYPE(res) == T_ERROR) {
+		    return res->value.errcode;
+		}
+        if(varName!=NULL) {
+            updateInEnv(env, varName, res);
+        }
+	}
+    return 0;
+
+}
+int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
+    rError_t errmsgBuf;
+    errmsgBuf.errMsg = NULL;
+    errmsgBuf.len = 0;
+	if(overflow(rule, MAX_COND_LEN)) {
+		addRErrorMsg(&errmsgBuf, BUFFER_OVERFLOW, "error: potential buffer overflow");
+		logErrMsg(&errmsgBuf);
+		return BUFFER_OVERFLOW;
+	}
+	Node *node;
+    Pointer *e = newPointer2(rule);
+    if(e == NULL) {
+        addRErrorMsg(&errmsgBuf, POINTER_ERROR, "error: can not create a Pointer.");
+        logErrMsg(&errmsgBuf);
+        return POINTER_ERROR;
+    }
+
+    int tempLen=coreRules.len;
+
+    int errloc;
+    /* add rules into rule index */
+    int ret = parseRuleSet(e, &coreRules, &errloc, &errmsgBuf, r);
+    if(ret == -1) {
+        deletePointer(e);
+        return PARSER_ERROR;
+    }
+
+    Hashtable *tempIndex = coreRuleIndex;
+    coreRuleIndex = NULL;
+    createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
+
+    /* exec the first rule */
+    RuleDesc *rd = coreRules.rules[tempLen];
+	node = rd->node;
+
+    Hashtable *varTypes = newHashTable(100);
+
+	Hashtable *funcDesc = newHashTable(100);
+    getSystemFunctions(funcDesc, r);
+    Env *global = newEnv(newHashTable(100), NULL, funcDesc);
+    Env *env = newEnv(newHashTable(100), global, funcDesc);
+    List *typingConstraints = newList(r);
+    Node *errnode;
+    ExprType *type = typeRule(rd, funcDesc, varTypes, typingConstraints, &errmsgBuf, &errnode, r);
+
+	deleteHashTable(varTypes, nop);
+
+    int rescode;
+    if(type->nodeType!=T_ERROR) {
+        addCmdExecOutToEnv(global, r);
+        if(msParamArray!=NULL) {
+            parseAndComputeMsParamArrayToEnv(msParamArray, global, rei, reiSaveFlag, &errmsgBuf, r);
+        }
+        Res *res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, &errmsgBuf,r);
+        rescode = TYPE(res) == T_ERROR? res->value.errcode:0;
+        if(rei->msParamArray==NULL) {
+            rei->msParamArray = newMsParamArray();
+        }
+        convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
+
+    } else {
+        rescode = TYPE_ERROR;
+    }
+    deleteEnv(env, 3);
+    /* remove rules from core rules */
+    coreRules.len = tempLen;
+    deleteHashTable(coreRuleIndex, nop);
+    coreRuleIndex = tempIndex;
+
+    if(rescode < 0) {
+        logErrMsg(&errmsgBuf);
+    }
+    freeRErrorContent(&errmsgBuf);
+    return rescode;
+
+}
 /* parse and compute a rule */
 int parseAndComputeRule(char *rule, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
     rError_t errmsgBuf;
@@ -174,42 +275,24 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     int i;
     for(i=0;i<paramsCount;i++) {
 
-	Node *node;
+        Node *node;
 
-        /*Pointer *e = makePointer(params[i]);
+        /*Pointer *e = newPointer2(params[i]);
 
         if(e == NULL) {
-            strncpy(errmsg, "error: can not create temp file.", MAX_ERRMSG_LEN);
+            addRErrorMsg(errmsg, -1, "error: can not create Pointer.");
             return newErrorRes(r, -1);
         }
 
-        nextTerm3(e, &node, MIN_PREC, 0,errmsg, r);*/
+        node = parseTermRuleGen(e, 1, errmsg, r);*/
         node = newNode(TK_STRING, params[i], 0, r);
-	if(node==NULL) {
-		addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
-		return newErrorRes(r, OUT_OF_MEMORY);
-	} else if (node->nodeType == N_ERROR) {
-		/*char buf[MAX_COND_LEN]; */
-                /*int pos = getFPos(e); */
-		/*memcpy(buf, actionName, pos*sizeof(char)); */
-		/*buf[pos] = '\0'; */
-		/*snprintf(errmsg, MAX_ERRMSG_LEN, "error: syntax error at %s%s%s", buf, ERROR_INDICATOR, actionName+pos); */
-                /*freePointer(e); */
-		return newErrorRes(r, PARSER_ERROR);
-	} else {
-/*            Token token; */
-/*            nextToken3(e, &token, 0); */
+        /*if(node==NULL) {
+            addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
+            return newErrorRes(r, OUT_OF_MEMORY);
+        } else if (node->nodeType == N_ERROR) {
+            return newErrorRes(r, node->value.errcode);
 
-/*            if(token.type!=EOS) { */
-/*                char buf[MAX_COND_LEN]; */
-/*                int pos = getFPos(e); */
-/*		memcpy(buf, actionName, pos*sizeof(char)); */
-/*		buf[pos] = '\0'; */
-/*                snprintf(errmsg, MAX_ERRMSG_LEN, "error: unparsed suffix at %s%s%s",buf, ERROR_INDICATOR, actionName+pos); */
-/*                freePointer(e); */
-/*                return newErrorRes(r, UNPARSED_SUFFIX); */
-/*            } */
-	}
+        }*/
 
         paramNodes[i] = node;
     }

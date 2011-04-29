@@ -22,6 +22,30 @@ startsWith(char *str, char *prefix) {
 	}
 	return prefix[i] == '\0';
 }
+void
+convertInputParamListToMultiString (char *strInput)
+{
+	char *p = strInput;
+	int inString = 0;
+	char delim = '\0';
+	while(*p!='\0') {
+		if(inString) {
+			if(*p == delim) {
+				inString = 0;
+			} else if(*p == '\\' && *(p+1)!='\0') {
+				p++;
+			}
+		} else {
+			if(*p == ',') {
+				*p = '%';
+			} else if (*p == '\'' || *p == '\"') {
+				inString = 1;
+				delim = *p;
+			}
+		}
+		p++;
+	}
+}
 
 void
 trimPrefix(char *str) {
@@ -158,8 +182,14 @@ main(int argc, char **argv) {
 	    		snprintf (execMyRuleInp.myRule + strlen(execMyRuleInp.myRule), META_STR_LEN - strlen(execMyRuleInp.myRule), "%s\n", buf);
 	    	}
 	    } else if (gotRule == 1) {
+	    	if(rulegen) {
+	    		convertInputParamListToMultiString(buf);
+	    	}
 	    	parseMsInputParam (argc, argv, optind, &execMyRuleInp, buf);
 	    } else if (gotRule == 2) {
+	    	if(rulegen) {
+	    		convertInputParamListToMultiString(buf);
+	    	}
 			if (strcmp (buf, "null") != 0) {
 				rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
 			}
