@@ -932,7 +932,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
         }
     }
 
-    if (optionStr != NULL && strcmp (optionStr, "preferred") == 0) {
+    if (strcmp (optionStr, "preferred") == 0) {
         /* checkinput first, then default */
         status = getRescInfoAndStatus (rsComm, NULL, condInput,
           &myRescGrpInfo);
@@ -974,7 +974,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
                 status = 0;
             }
         }
-    } else if (optionStr != NULL && strcmp (optionStr, "forced") == 0) {
+    } else if (strcmp (optionStr, "forced") == 0) {
         if (defRescGrpInfo != NULL) {
             myRescGrpInfo = defRescGrpInfo;
         }
