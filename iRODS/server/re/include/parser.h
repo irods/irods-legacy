@@ -286,8 +286,6 @@ CONCAT(done, l) = 1; \
 goto CONCAT(exit, l);
 
 /** utility functions */
-ParserContext *newParserContext(rError_t *errmsg, Region *r);
-void deleteParserContext(ParserContext *t);
 void setBase(Node *node, char *base, Region *r);
 Node **setDegree(Node *node, int d, Region *r);
 Node *createUnaryFunctionNode(char *fn, Node *a, Label * exprloc, Region *r);
@@ -298,6 +296,10 @@ Node *createTextNode(char *t, Label * exprloc, Region *r);
 Node *createNumberNode(char *t, Label * exprloc, Region *r);
 Node *createStringNode(char *t, Label * exprloc, Region *r);
 Node *createErrorNode(char *error, Label * exprloc, Region *r);
+ParserContext *newParserContext(rError_t *errmsg, Region *r);
+void deleteParserContext(ParserContext *t);
+RuleSet *newRuleSet(Region *r);
+RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r);
 
 Token *nextTokenRuleGen(Pointer* expr, Token* token, int rulegen);
 int nextString(Pointer *e, char *value, int vars[]);
@@ -313,7 +315,7 @@ void getCoor(Pointer *p, Label * errloc, int coor[2]);
 /**
  * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will has type N_ERROR if the token does not match
  */
-int skip(Pointer *expr, char *text, Token *token, int rulegen /* = rulegen */);
+int skip(Pointer *expr, char *text, Token *token, int rulegen);
 void skipWhitespace(Pointer *expr);
 char *findLineCont(char *expr);
 
@@ -325,7 +327,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Re
 Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, rError_t *errmsg, Region *r);
 Node *parseTermRuleGen(Pointer *expr, int rulegn, rError_t *errmsg, Region *r);
 void pushback(Pointer *e, Token *token);
-void initPointer(Pointer *p, FILE* fp, char* ruleBaseName /* = NULL */);
+void initPointer(Pointer *p, FILE* fp, char* ruleBaseName);
 void initPointer2(Pointer *p, char* buf);
 Pointer *newPointer(FILE* buf, char *ruleBaseName);
 Pointer *newPointer2(char* buf);
@@ -345,7 +347,7 @@ char *nextRuleSection(char *expr, char* section);
 char *parseFunctionParameters(char *e, char *args[], int *argc);
 char *functionParameters(char *expr, char* param);
 ExprType *parseFuncTypeFromString(char *string, Region *r);
-ExprType *parseType(Pointer *e, int prec /* = 0 */, Env *vtable, int lift /* = 0 */, Region *r);
+ExprType *parseType(Pointer *e, int prec, Env *vtable, int lifted, Region *r);
 
 Label *getFPos(Label *label, Pointer *p);
 void clearBuffer(Pointer *p);

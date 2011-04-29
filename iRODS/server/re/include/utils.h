@@ -209,19 +209,19 @@ struct listNode {
     void *value;
 };
 
+extern int tvarNumber;
+
+int newTVarId();
+
 char* getTVarName(int vid, char name[128]);
 char* getTVarNameRegion(int vid, Region *r);
 char* getTVarNameRegionFromExprType(ExprType *tvar, Region *r);
 
-/** type functions
- */
-extern int tvarNumber;
 ExprType *dupType(ExprType *ty, Region *r);
 int typeEqSyntatic(ExprType *a, ExprType *b);
 
 Node *newNode(NodeType type, char* text, Label * exprloc, Region *r);
 Node *newExprType(NodeType t, int degree, Node **subtrees, Region *r);
-int newTVarId();
 ExprType *newTVar(Region *r);
 ExprType *newTVar2(int numDisjuncts, Node **disjuncts, Region *r);
 ExprType *newCollType(ExprType *elemType, Region *r);
@@ -246,7 +246,6 @@ Res* newIntRes(Region *r, int n);
 Res* newDoubleRes(Region *r, double a);
 Res* newBoolRes(Region *r, int n);
 Res* newErrorRes(Region *r, int errcode);
-/* precond: len(s) < size of res1->value.s */
 Res* newStringRes(Region *r, char *s);
 Res* newDatetimeRes(Region *r, long dt);
 Res* newCollRes(int size, ExprType *elemType, Region *r);
@@ -271,13 +270,6 @@ char *typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
 msParamArray_t *newMsParamArray();
 void deleteMsParamArray(msParamArray_t *msParamArray);
 
-/** debugging functions */
-/*void errorInsert(char *errmsg, char *insert); */
-int writeToTmp(char *fileName, char *text);
-void printMsParamArray(msParamArray_t *msParamArray, char *buf2);
-void printHashtable(Hashtable *env, char* buf2);
-void printVarTypeEnvToStdOut(Hashtable *env);
-
 Env *newEnv(Hashtable *current, Env *previous, Hashtable *funcDes);
 void deleteEnv(Env *env, int deleteCurrent);
 void *lookupFromEnv(Env *env, char *key);
@@ -300,9 +292,14 @@ int isPattern(Node *pattern);
 int isRecursive(Node *rule);
 int invokedIn(char *fn, Node *expr);
 
-
 #define CONCAT2(a,b) a##b
 #define CONCAT(a,b) CONCAT2(a,b)
+
+/** debugging functions */
+int writeToTmp(char *fileName, char *text);
+void printMsParamArray(msParamArray_t *msParamArray, char *buf2);
+void printHashtable(Hashtable *env, char* buf2);
+void printVarTypeEnvToStdOut(Hashtable *env);
 
 
 #endif

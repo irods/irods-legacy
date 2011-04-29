@@ -385,7 +385,7 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
                     TypingConstraint *tc = newTypingConstraint(args[i]->exprType, subtrees[i]->coercionType, LT, subtrees[i] ,r);
                     char buf[ERR_MSG_LEN], buf2[1024], buf3[1024];
                     switch(simplifyLocally(tc, localTVarEnv, newRegion)) {
-                        case ABSERDITY:
+                        case ABSURDITY:
                             sprintf(buf, "error: runtime type inference param type: %s, arg type: %s",
                                     typeToString(subtrees[i]->coercionType, localTVarEnv, buf3, 1024),
                                     typeToString(args[i]->exprType, localTVarEnv, buf2, 1024));
@@ -393,7 +393,7 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
                             addRErrorMsg(errmsg, -1, buf2);
                             res = newErrorRes(r, -1);
                             RETURN;
-                        case CONTIGENCY:
+                        case CONTINGENCY:
                             while(tc!=NULL) {
                                 listAppend(localTypingConstraints, tc, r);
                                 tc = tc->next;

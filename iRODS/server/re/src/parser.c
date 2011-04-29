@@ -74,6 +74,21 @@ void deleteParserContext(ParserContext *t) {
     deleteHashTable(t->symtable, nop);
     free(t);
 }
+RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r) {
+    RuleDesc *rd = (RuleDesc *) region_alloc(r, sizeof(RuleDesc));
+    rd->id = -1;
+    rd->node = n;
+    rd->type = NULL;
+    rd->ruleType = rk;
+    return rd;
+}
+
+RuleSet *newRuleSet(Region *r) {
+    RuleSet *rs = (RuleSet *) region_alloc(r, sizeof(RuleSet));
+    rs->len = 0;
+    return rs;
+}
+
 void setBase(Node *node, char *base, Region *r) {
         node->base= (char *)region_alloc(r, sizeof(char)*(strlen(base)+1));
         strcpy(node->base, base);

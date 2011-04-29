@@ -594,17 +594,3 @@ Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamAr
 
 }
 /* utilities */
-RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r) {
-    RuleDesc *rd = (RuleDesc *) region_alloc(r, sizeof(RuleDesc));
-    rd->id = -1;
-    rd->node = n;
-    rd->type = NULL;
-    rd->ruleType = rk;
-    return rd;
-}
-
-RuleSet *newRuleSet(Region *r) {
-    RuleSet *rs = (RuleSet *) region_alloc(r, sizeof(RuleSet));
-    rs->len = 0;
-    return rs;
-}

@@ -8,9 +8,11 @@
 #include "hashtable.h"
 #include "region.h"
 #include "parser.h"
+
 typedef enum satisfiability {
-    TAUTOLOGY = 1, CONTIGENCY = 2, ABSERDITY = 4
+    TAUTOLOGY = 1, CONTINGENCY = 2, ABSURDITY = 4
 } Satisfiability;
+
 ExprType * typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t* errmsg, Node **errnode, Region *r);
 void postProcessActions(Node *expr, Hashtable *systemFunctionTables, rError_t *errmsg, Node **errnode, Region *r);
 void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t* errmsg, Node **errnode, Region *r);

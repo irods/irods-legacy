@@ -22,7 +22,7 @@ struct region_node {
 	size_t size; /* size of the memory block in bytes */
 	size_t used; /* used bytes of the memory block */
 	struct region_node *next; /* pointer to the next region */
-        
+
 };
 
 
