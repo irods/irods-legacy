@@ -96,109 +96,71 @@ int parseAndComputeMsParamArrayToEnv(msParamArray_t *var, Env *env, ruleExecInfo
     return 0;
 
 }
-int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
-    rError_t errmsgBuf;
-    errmsgBuf.errMsg = NULL;
-    errmsgBuf.len = 0;
-	if(overflow(rule, MAX_COND_LEN)) {
-		addRErrorMsg(&errmsgBuf, BUFFER_OVERFLOW, "error: potential buffer overflow");
-		logErrMsg(&errmsgBuf);
-		return BUFFER_OVERFLOW;
-	}
-	Node *node;
-    Pointer *e = newPointer2(rule);
-    if(e == NULL) {
-        addRErrorMsg(&errmsgBuf, POINTER_ERROR, "error: can not create a Pointer.");
-        logErrMsg(&errmsgBuf);
-        return POINTER_ERROR;
-    }
-
-    int tempLen=coreRules.len;
-    Hashtable *tempIndex = NULL;
-
-    int errloc;
-    /* add rules into rule index */
-    int ret = parseRuleSet(e, &coreRules, &errloc, &errmsgBuf, r);
-    if(ret == -1) {
-        deletePointer(e);
-        return PARSER_ERROR;
-    }
-
-    /* exec the first rule */
-    RuleDesc *rd = coreRules.rules[tempLen];
-	node = rd->node;
-
-    int updateIndex = coreRules.len - tempLen > 1 || isRecursive(node);
-
-    if(updateIndex) {
-        tempIndex = coreRuleIndex;
-        coreRuleIndex = NULL;
-        createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
-    }
-
-    Hashtable *varTypes = newHashTable(100);
-
+Env *defaultEnv(Region *r) {
 	Hashtable *funcDesc = newHashTable(100);
     getSystemFunctions(funcDesc, r);
     Env *global = newEnv(newHashTable(100), NULL, funcDesc);
     Env *env = newEnv(newHashTable(100), global, funcDesc);
-    List *typingConstraints = newList(r);
-    Node *errnode;
-    ExprType *type = typeRule(rd, funcDesc, varTypes, typingConstraints, &errmsgBuf, &errnode, r);
 
-	deleteHashTable(varTypes, nop);
+    addCmdExecOutToEnv(global, r);
+    return env;
+}
 
-    int rescode;
-    if(type->nodeType!=T_ERROR) {
-        addCmdExecOutToEnv(global, r);
-        if(msParamArray!=NULL) {
-            parseAndComputeMsParamArrayToEnv(msParamArray, global, rei, reiSaveFlag, &errmsgBuf, r);
-        }
-        Res *res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, &errmsgBuf,r);
-        rescode = TYPE(res) == T_ERROR? res->value.errcode:0;
-        if(rei->msParamArray==NULL) {
-            rei->msParamArray = newMsParamArray();
-        }
-        convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
+int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
 
-    } else {
-        rescode = TYPE_ERROR;
+    rError_t errmsgBuf;
+    errmsgBuf.errMsg = NULL;
+    errmsgBuf.len = 0;
+
+    Env *env = defaultEnv(r);
+    if(msParamArray!=NULL) {
+        parseAndComputeMsParamArrayToEnv(msParamArray, env->previous, rei, reiSaveFlag, &errmsgBuf, r);
     }
-    deleteEnv(env, 3);
-    /* remove rules from core rules */
-    coreRules.len = tempLen;
-    if(updateIndex) {
-        deleteHashTable(coreRuleIndex, nop);
-        coreRuleIndex = tempIndex;
+
+    int rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, &errmsgBuf, r);
+
+    if(rei->msParamArray==NULL) {
+        rei->msParamArray = newMsParamArray();
     }
+    convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
 
     if(rescode < 0) {
         logErrMsg(&errmsgBuf);
     }
     freeRErrorContent(&errmsgBuf);
+    deleteEnv(env, 3);
+
     return rescode;
 
 }
-/* parse and compute a rule */
-int parseAndComputeRule(char *rule, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
-    rError_t errmsgBuf;
-    errmsgBuf.errMsg = NULL;
-    errmsgBuf.len = 0;
-    int ret = computeRule(rule, rei, reiSaveFlag, msParamArray, &errmsgBuf, r);
-    if(ret < 0) {
-        logErrMsg(&errmsgBuf);
+
+int computeRule( char *rule, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r) {
+    Env *env = defaultEnv(r);
+
+    if(msParamArray!=NULL) {
+        convertMsParamArrayToEnv(msParamArray, env->previous, errmsg, r);
     }
-    freeRErrorContent(&errmsgBuf);
-    return ret;
+
+    int rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, errmsg, r);
+
+    if(rei->msParamArray==NULL) {
+        rei->msParamArray = newMsParamArray();
+    }
+    convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
+
+    deleteEnv(env, 3);
+
+    return rescode;
 }
 
-int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r) {
-	if(overflow(expr, MAX_COND_LEN)) {
+/* parse and compute a rule */
+int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
+	if(overflow(rule, MAX_COND_LEN)) {
 		addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
 		return BUFFER_OVERFLOW;
 	}
 	Node *node;
-    Pointer *e = newPointer2(expr);
+    Pointer *e = newPointer2(rule);
     if(e == NULL) {
         addRErrorMsg(errmsg, POINTER_ERROR, "error: can not create a Pointer.");
         return POINTER_ERROR;
@@ -232,8 +194,6 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
 
 	Hashtable *funcDesc = newHashTable(100);
     getSystemFunctions(funcDesc, r);
-    Env *global = newEnv(newHashTable(100), NULL, funcDesc);
-    Env *env = newEnv(newHashTable(100), global, funcDesc);
     List *typingConstraints = newList(r);
     Node *errnode;
     ExprType *type = typeRule(rd, funcDesc, varTypes, typingConstraints, errmsg, &errnode, r);
@@ -242,21 +202,11 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
 
     int rescode;
     if(type->nodeType!=T_ERROR) {
-        addCmdExecOutToEnv(global, r);
-        if(msParamArray!=NULL) {
-            convertMsParamArrayToEnv(msParamArray, global, errmsg, r);
-        }
         Res *res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
         rescode = TYPE(res) == T_ERROR? res->value.errcode:0;
-        if(rei->msParamArray==NULL) {
-            rei->msParamArray = newMsParamArray();
-        }
-        convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
-
     } else {
         rescode = TYPE_ERROR;
     }
-    deleteEnv(env, 3);
 
     /* remove rules from core rules */
     coreRules.len = tempLen;
@@ -265,8 +215,9 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
         coreRuleIndex = tempIndex;
     }
 
-    return rescode;
+    return ret;
 }
+
 /* call an action with actionName and string parameters */
 Res *computeExpressionWithParams( char *actionName, char **params, int paramsCount, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r) {
 #ifdef DEBUG

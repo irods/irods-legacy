@@ -30,7 +30,7 @@ void copyFromEnv(Res**params, char **paramNames, int paramsCount, Hashtable *env
 int actionTableLookUp (char *action);
 rError_t *newRError();
 Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r);
-int parseAndComputeRule(char * expr, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r);
+int parseAndComputeRule(char *expr, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
 
 RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r);
 RuleSet *newRuleSet(Region *r);
