@@ -144,6 +144,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     if (status < 0) {
         memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
         dataObjCloseInp.l1descInx = l1descInx;
+	L1desc[l1descInx].oprStatus = status;
         rsDataObjClose (rsComm, &dataObjCloseInp);
 	return (status);
     } 
@@ -164,6 +165,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     if (retval < 0) {
         memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
         dataObjCloseInp.l1descInx = l1descInx;
+	L1desc[l1descInx].oprStatus = retval;
         rsDataObjClose (rsComm, &dataObjCloseInp);
 	if (allFlag == 1) clearKeyVal (&replDataObjInp.condInput);
     } else if (allFlag == 1) {
@@ -267,6 +269,7 @@ bytesBuf_t *dataObjInpBBuf)
     }
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
+    L1desc[l1descInx].oprStatus = bytesWritten;
     status = rsDataObjClose (rsComm, &dataObjCloseInp);
     if (status < 0) {
         rodsLog (LOG_NOTICE,
@@ -304,6 +307,7 @@ bytesBuf_t *dataObjInpBBuf)
             bytesWritten = _l3DataPutSingleBuf (rsComm, l1descInx, dataObjInp,
               dataObjInpBBuf);
             dataObjCloseInp.l1descInx = l1descInx;
+	    L1desc[l1descInx].oprStatus = bytesWritten;
             status = rsDataObjClose (rsComm, &dataObjCloseInp);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,

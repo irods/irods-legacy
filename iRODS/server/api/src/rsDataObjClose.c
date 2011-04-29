@@ -77,7 +77,7 @@ dataObjInfo_t **outDataObjInfo)
     } else {
         status = _rsDataObjClose (rsComm, dataObjCloseInp);
 
-        if (status >= 0) {
+        if (status >= 0 && L1desc[l1descInx].oprStatus >= 0) {
 	    /* note : this may overlap with acPostProcForPut or 
 	     * acPostProcForCopy */
 	    if (L1desc[l1descInx].openType == CREATE_TYPE) {
