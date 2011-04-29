@@ -949,3 +949,33 @@ int isPattern(Node *pattern) {
 
     }
 }
+
+int isRecursive(Node *rule) {
+    return invokedIn(rule->subtrees[0]->text, rule->subtrees[1]) ||
+        invokedIn(rule->subtrees[0]->text, rule->subtrees[2]) ||
+        invokedIn(rule->subtrees[0]->text, rule->subtrees[3]);
+
+}
+
+int invokedIn(char *fn, Node *expr) {
+    int i;
+    switch(expr->nodeType) {
+        case N_APPLICATION:
+            if(strcmp(expr->text, fn) == 0) {
+                return 1;
+            }
+
+        case N_ACTIONS:
+        case N_ACTIONS_RECOVERY:
+            for(i=0;i<expr->degree;i++) {
+                if(invokedIn(fn, expr->subtrees[i])) {
+                    return 1;
+                }
+            }
+            break;
+        default:
+            break;
+    }
+
+    return 0;
+}

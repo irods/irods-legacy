@@ -297,6 +297,9 @@ void logErrMsg(rError_t *errmsg);
 char *errMsgToString(rError_t *errmsg, char *buf, int buflen);
 
 int isPattern(Node *pattern);
+int isRecursive(Node *rule);
+int invokedIn(char *fn, Node *expr);
+
 
 #define CONCAT2(a,b) a##b
 #define CONCAT(a,b) CONCAT2(a,b)

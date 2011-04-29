@@ -114,6 +114,7 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     }
 
     int tempLen=coreRules.len;
+    Hashtable *tempIndex = NULL;
 
     int errloc;
     /* add rules into rule index */
@@ -123,13 +124,17 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
         return PARSER_ERROR;
     }
 
-    Hashtable *tempIndex = coreRuleIndex;
-    coreRuleIndex = NULL;
-    createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
-
     /* exec the first rule */
     RuleDesc *rd = coreRules.rules[tempLen];
 	node = rd->node;
+
+    int updateIndex = coreRules.len - tempLen > 1 || isRecursive(node);
+
+    if(updateIndex) {
+        tempIndex = coreRuleIndex;
+        coreRuleIndex = NULL;
+        createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
+    }
 
     Hashtable *varTypes = newHashTable(100);
 
@@ -162,8 +167,10 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     deleteEnv(env, 3);
     /* remove rules from core rules */
     coreRules.len = tempLen;
-    deleteHashTable(coreRuleIndex, nop);
-    coreRuleIndex = tempIndex;
+    if(updateIndex) {
+        deleteHashTable(coreRuleIndex, nop);
+        coreRuleIndex = tempIndex;
+    }
 
     if(rescode < 0) {
         logErrMsg(&errmsgBuf);
@@ -198,6 +205,7 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
     }
 
     int tempLen=coreRules.len;
+    Hashtable *tempIndex = NULL;
 
     int errloc;
     /* add rules into rule index */
@@ -207,13 +215,18 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
         return PARSER_ERROR;
     }
 
-    Hashtable *tempIndex = coreRuleIndex;
-    coreRuleIndex = NULL;
-    createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
-
     /* exec the first rule */
     RuleDesc *rd = coreRules.rules[tempLen];
 	node = rd->node;
+
+    int updateIndex = coreRules.len - tempLen > 1 || isRecursive(node);
+
+    if(updateIndex) {
+        tempIndex = coreRuleIndex;
+        coreRuleIndex = NULL;
+        createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
+    }
+
 
     Hashtable *varTypes = newHashTable(100);
 
@@ -244,10 +257,13 @@ int computeRule( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_
         rescode = TYPE_ERROR;
     }
     deleteEnv(env, 3);
+
     /* remove rules from core rules */
     coreRules.len = tempLen;
-    deleteHashTable(coreRuleIndex, nop);
-    coreRuleIndex = tempIndex;
+    if(updateIndex) {
+        deleteHashTable(coreRuleIndex, nop);
+        coreRuleIndex = tempIndex;
+    }
 
     return rescode;
 }
