@@ -465,6 +465,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         clearKeyVal (&regParam);
 
 	if (status < 0) {
+	    L1desc[l1descInx].oprStatus = status;
 	    l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
             rodsLog (LOG_NOTICE,
               "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
@@ -481,6 +482,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	     * registered yet */
             status = svrRegDataObj (rsComm, L1desc[l1descInx].dataObjInfo);
             if (status < 0) {
+		L1desc[l1descInx].oprStatus = status;
                 rodsLog (LOG_NOTICE,
                   "_rsDataObjClose: svrRegDataObj for %s failed, status = %d",
                   L1desc[l1descInx].dataObjInfo->objPath, status);
