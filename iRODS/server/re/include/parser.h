@@ -26,6 +26,8 @@
 #define MAX_PREC 10
 #define MIN_PREC 0
 
+#define POINTER_BUF_SIZE 128
+
 typedef struct op {
     char* string;
     int arity;
@@ -35,7 +37,6 @@ typedef struct op {
 extern int num_ops;
 extern Op new_ops[];
 
-#define POINTER_BUF_SIZE 128
 typedef struct pointer {
 	FILE *fp; /* file */
 	char buf[POINTER_BUF_SIZE]; /* buffer */
@@ -80,10 +81,12 @@ typedef struct {
     rError_t *errmsg;
     Region *region;
 } ParserContext;
+
 #define PUSH(n) (context->nodeStack[(context->nodeStackTop)++] = n)
 #define POP (context->nodeStack[--(context->nodeStackTop)])
 
 #define UPDATE_ERR_LOC if(FPOS->exprloc > context->errloc.exprloc) {context->errloc = *FPOS;}
+
 #define CASCADE(x) \
 {\
         Node *_ncascade = (x); \
@@ -116,11 +119,9 @@ void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context, p, q)
 #define PARSER_FUNC_LOCAL(l) \
     Label start; \
     Label pos; \
-    if(e!=NULL) { \
-        skipWhitespace(e); \
-        getFPos(&start, (e)); \
-    } \
     Token token; (void)token; \
+    skipWhitespace(e); \
+    getFPos(&start, (e)); \
     do {
 
 #define PARSER_FUNC_BEGIN(l) \
@@ -137,7 +138,6 @@ PARSER_FUNC_PROTO2(l, p, q) { \
     } while(0); \
 }
 
-#define NO_ERROR (context->error == 0)
 #define SWAP \
 {\
     Node *node = POP;\
@@ -183,9 +183,6 @@ PARSER_FUNC_PROTO2(l, p, q) { \
 #define TTEXT_LOOKAHEAD(x) \
     TTEXT(x); \
     PUSHBACK;
-#define TTYPE_LOOKAHEAD(x) \
-    TTYPE(x); \
-    PUSHBACK;
 #define TTYPE(x) \
     NEXT_TOKEN; \
     if(!TOKEN_TYPE(x)) { \
@@ -193,6 +190,11 @@ PARSER_FUNC_PROTO2(l, p, q) { \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
         break; \
     }
+#define TTYPE_LOOKAHEAD(x) \
+    TTYPE(x); \
+    PUSHBACK;
+
+#define NO_ERROR (context->error == 0)
 #define CHECK_ERROR \
 if(context->error!=0) { \
     break; \
@@ -255,7 +257,6 @@ BRANCH_END(l) \
 #define END_TRY(l) \
 BRANCH_END(l) \
 CHOICE_END(l)
-
 
 #define ABORT(x) \
 if(x) { \
