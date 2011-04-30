@@ -171,8 +171,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 
     int errloc;
     /* add rules into rule index */
-    int ret = parseRuleSet(e, &coreRules, &errloc, errmsg, r);
-    if(ret == -1) {
+    if(parseRuleSet(e, &coreRules, &errloc, errmsg, r) == -1) {
         deletePointer(e);
         return PARSER_ERROR;
     }
@@ -215,7 +214,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
         coreRuleIndex = tempIndex;
     }
 
-    return ret;
+    return rescode;
 }
 
 /* call an action with actionName and string parameters */

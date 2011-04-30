@@ -809,6 +809,10 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
             free(myArgv[i]->type);
             free(myArgv[i]);
         }
+        if(TYPE(res)==T_ERROR) {
+            generateErrMsg("execMicroService3: error when executing microservice", node->expr, node->base, errbuf);
+            addRErrorMsg(errmsg, res->value.errcode, errbuf);
+        }
         return res;
 }
 
