@@ -353,8 +353,12 @@ public class IRODSResourceQueryTest {
 
 	/*
 	 * per [iROD-Chat:5031] question on MetaDataCondition
+<<<<<<< .mine
+	 * NOTE: might fail for nulls in free space, init to 0 using sql update r_resc_main set free_space=0;
+=======
 	 * Note that if this test fails with a -80600, it's due to nulls being in free space.  The icat table for 
 	 * resources needs to be initialized to 0 (not null) in the free space field.
+>>>>>>> .r3961
 	 */
 	@Test
 	public final void testQueryResourceFreeSpace() throws Exception {
@@ -381,7 +385,7 @@ public class IRODSResourceQueryTest {
 				MetaDataSet.newCondition(ResourceMetaData.RESOURCE_FREE_SPACE,
 						MetaDataCondition.NUM_GREATER_OR_EQUAL, minFreeSpace),
 
-				MetaDataSet.newCondition(ResourceMetaData.RESOURCE_STATUS,
+			MetaDataSet.newCondition(ResourceMetaData.RESOURCE_STATUS,
 						MetaDataCondition.NOT_EQUAL, Resource.RESC_DOWN) 
 						};
 

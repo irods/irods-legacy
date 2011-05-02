@@ -179,9 +179,6 @@ public class IRODSFileOutputStreamTest {
 		File fileToWrite = new File(sourceFileName);
 		FileInputStream fin;
 		byte[] buff = new byte[1024];
-		// Get the size of the file
-		long length = fileToWrite.length();
-
 		// Open an input stream
 		fin = new FileInputStream(fileToWrite);
 

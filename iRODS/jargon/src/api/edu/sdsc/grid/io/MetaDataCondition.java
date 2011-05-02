@@ -706,6 +706,25 @@ public final class MetaDataCondition {
 	public String getStringValue() {
 		return getStringValue(0);
 	}
+	
+	public String getMultipleStringValues() {
+		int ctr = 0;
+		StringBuilder sb = new StringBuilder();
+		for (Object val : values) {
+			
+			if (ctr > 0) {
+				sb.append(",");
+			}
+			sb.append('\'');
+			sb.append(val);
+			sb.append("\'");
+			ctr++;
+		}
+		
+		return sb.toString().trim();
+		
+		//return getStringValue(0);
+	}
 
 	/**
 	 * Returns the table stored in this conditional. A 'table' conditional is
@@ -769,7 +788,7 @@ public final class MetaDataCondition {
 	}
 
 	private static String[] operatorStrings = { "=", "<>", "<", ">", "<=",
-			">=", "in", "not in", "between", "not between", "like", "not like",
+			">=", "IN", "NOT IN", "between", "not between", "like", "not like",
 			"sounds like", "sounds not like", "TABLE", "n<", "n>", "n<=",
 			"n>=", };
 
@@ -789,5 +808,9 @@ public final class MetaDataCondition {
 			throw new IllegalArgumentException();
 
 		return operatorStrings[operator];
+	}
+
+	public Object[] getValues() {
+		return values;
 	}
 }

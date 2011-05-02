@@ -347,6 +347,55 @@ public class IRODSCommandsQueryTest {
 				.toString().indexOf(testFileName) > -1);
 
 	}
+	
+	@Test //FIXME: need to complete testing...
+	public void queryForFileNameUsingIn() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "queryForFileNameUsingIn.txt";
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		MetaDataCondition[] condition = new MetaDataCondition[1];
+		String fileNames[] = new String[2];
+		fileNames[0] = "someFileName.txt";
+		fileNames[1] = testFileName;
+		condition[0] = MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
+				MetaDataCondition.IN, fileNames);
+		
+		MetaDataSelect select[] = MetaDataSet.newSelection(new String[] {
+				StandardMetaData.DIRECTORY_NAME,
+				StandardMetaData.FILE_NAME });
+		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
+				condition, select, 100, Namespace.FILE, false);
+
+		irodsFileSystem.close();
+
+		Assert.assertNotNull("no query results returned", fileList);
+		Assert.assertEquals("did not find my file and metadata", 1,
+				fileList.length);
+		Assert.assertTrue("did not find my file name in results", fileList[0]
+				.toString().indexOf(testFileName) > -1);
+
+	}
 
 	/*
 	 * Bug 110 - error when asking IRODSFile.exists with & in file name #2 case
@@ -458,7 +507,6 @@ public class IRODSCommandsQueryTest {
 		  String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
 	                IRODS_TEST_SUBDIR_PATH);
 
-
 		MetaDataCondition conditions[] = {
 				
 				};
@@ -472,7 +520,6 @@ public class IRODSCommandsQueryTest {
 		Assert.assertNotNull("no query results returned", fileDetails);
 
 	}
-	
 	
 	/*
 	 * Bug 114 - performance of specific queries in Jargon 2.4
@@ -516,7 +563,6 @@ public class IRODSCommandsQueryTest {
 				+ testFileName);
 		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
 
-	
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[2];
 		condition[0] = MetaDataSet.newCondition(meta1Attrib,
@@ -524,7 +570,6 @@ public class IRODSCommandsQueryTest {
 		condition[1] = MetaDataSet.newCondition(meta1Attrib,
 				MetaDataCondition.LESS_OR_EQUAL, meta1Value);
 		
-
 		String[] fileds = { StandardMetaData.FILE_NAME,
 				StandardMetaData.DIRECTORY_NAME };
 		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
@@ -541,5 +586,4 @@ public class IRODSCommandsQueryTest {
 
 	}
 
-	
 }

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.irods.jargon.core.accessobject;
 
 import org.irods.jargon.core.exception.JargonException;

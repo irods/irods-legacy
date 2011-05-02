@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * includes documentation and introspection methods that describe the group as a
  * whole, the list of fields in the group, a description for those fields, the
  * data types for those fields, and the expected field values.
- *<P>
+ * <P>
  * Each subclass has a constructor. None of the constructors are ever public.
  * Leaf classes in the class tree have private constructors, while the rest are
  * protected. The constructors are called by a static initializer method for
@@ -61,27 +61,27 @@ import org.slf4j.LoggerFactory;
  * That object also should be saved by the child class and will be passed to
  * constructors for condition and select objects (so that generic handlers of
  * those objects can get back to the metadata group).
- *<P>
+ * <P>
  * Each of the subclasses group together meta data for a specific purpose. All
  * of the SRB meta data groups are subclassed off of SRBMetaData. The subclasses
  * may add methods, but most will only implement the required methods.
- *<P>
+ * <P>
  * Some meta groups are standard regardless of implementation. To handle
  * standard metadata, we defined interfaces that are implemented by
  * protocol-specific metadata groups. The GeneralMetaData interface contract is
  * that the implementor supports meta data we might find for any file system,
  * such as:
- *<ul>
+ * <ul>
  * <li>File name
  * <li>File size
  * <li>Creation date
  * <li>Modification date
  * <li>Owner name
- *</ul>
- *<P>
+ * </ul>
+ * <P>
  * An implementation specific class, such as SRBGeneralMetaData must support
  * these fields, but also may support further general metadata fields, such as:
- *<ul>
+ * <ul>
  * <li>Collection name
  * <li>Replication number
  * <li>File type
@@ -93,7 +93,7 @@ import org.slf4j.LoggerFactory;
  * <li>Deleted flag
  * <li>Owner domain
  * <li>Owner email address
- *</ul>
+ * </ul>
  * <br>
  * <BR>
  * <br>
@@ -110,7 +110,7 @@ import org.slf4j.LoggerFactory;
  *   +-->DublinCoreMetaData
  *   |
  *   +-->UserMetaData
- *</pre>
+ * </pre>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
@@ -255,11 +255,11 @@ public abstract class MetaDataSet implements GeneralMetaData {
 		new ProtocolCatalog();
 	}
 
-	protected static void add(MetaDataGroup group) {
+	protected static void add(final MetaDataGroup group) {
 		metaDataGroups.put(group.getName(), group);
 		MetaDataField[] fields = group.getFields();
-		for (int i = 0; i < fields.length; i++) {
-			metaDataFields.put(fields[i].getName(), fields[i]);
+		for (MetaDataField field : fields) {
+			metaDataFields.put(field.getName(), field);
 		}
 	}
 
@@ -277,9 +277,10 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * @see edu.sdsc.grid.io.MetaDataGroup#compareTo(Object )
 	 * @return all the various metadata groups.
 	 */
-	public static MetaDataGroup[] getMetaDataGroups(boolean sort) {
-		if (!sort)
+	public static MetaDataGroup[] getMetaDataGroups(final boolean sort) {
+		if (!sort) {
 			return getMetaDataGroups();
+		}
 
 		MetaDataGroup[] groups = getMetaDataGroups();
 		Arrays.sort(groups);
@@ -292,9 +293,10 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * Returns the MetaDataField object associated with this fieldName string.
 	 * If there is no match a null value is returned.
 	 */
-	public static MetaDataField getField(String fieldName) {
-		if (fieldName == null)
+	public static MetaDataField getField(final String fieldName) {
+		if (fieldName == null) {
 			throw new NullPointerException("The fieldName cannot be null.");
+		}
 
 		if (log.isDebugEnabled()) {
 			log.debug("looking up metadata field for:" + fieldName);
@@ -303,8 +305,9 @@ public abstract class MetaDataSet implements GeneralMetaData {
 		MetaDataField field = (MetaDataField) metaDataFields.get(fieldName);
 
 		if (log.isDebugEnabled()) {
-			if (field == null)
+			if (field == null) {
 				log.debug("lookup was null, will treat as definable metadata");
+			}
 		} else {
 			log.debug("resulting field from lookup:" + field);
 		}
@@ -323,8 +326,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * >, <, like, not like, sounds like. If supported by the filesystem being
 	 * queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, String value) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final String value) {
 		return new MetaDataCondition(getField(fieldName), operator, value);
 	}
 
@@ -334,8 +337,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * >, <, like, not like, sounds like. If supported by the filesystem being
 	 * queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, float value) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final float value) {
 		return new MetaDataCondition(getField(fieldName), operator, value);
 	}
 
@@ -345,8 +348,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * >, <, like, not like, sounds like. If supported by the filesystem being
 	 * queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, int value) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final int value) {
 		return new MetaDataCondition(getField(fieldName), operator, value);
 	}
 
@@ -356,8 +359,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * MetaDataCondition.BETWEEN and MetaDataCondition.NOT_BETWEEN If supported
 	 * by the filesystem being queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, int value1, int value2) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final int value1, final int value2) {
 		return new MetaDataCondition(getField(fieldName), operator, value1,
 				value2);
 	}
@@ -368,8 +371,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * MetaDataCondition.BETWEEN and MetaDataCondition.NOT_BETWEEN If supported
 	 * by the filesystem being queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, float value1, float value2) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final float value1, final float value2) {
 		return new MetaDataCondition(getField(fieldName), operator, value1,
 				value2);
 	}
@@ -380,8 +383,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * MetaDataCondition.BETWEEN and MetaDataCondition.NOT_BETWEEN If supported
 	 * by the filesystem being queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, String value1, String value2) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final String value1, final String value2) {
 		return new MetaDataCondition(getField(fieldName), operator, value1,
 				value2);
 	}
@@ -392,8 +395,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * and MetaDataCondition.NOT_IN If supported by the filesystem being
 	 * queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, int[] valueList) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final int[] valueList) {
 		return new MetaDataCondition(getField(fieldName), operator, valueList);
 	}
 
@@ -403,8 +406,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * and MetaDataCondition.NOT_IN If supported by the filesystem being
 	 * queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, float[] valueList) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final float[] valueList) {
 		return new MetaDataCondition(getField(fieldName), operator, valueList);
 	}
 
@@ -414,8 +417,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * and MetaDataCondition.NOT_IN If supported by the filesystem being
 	 * queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, String[] valueList) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final String[] valueList) {
 		return new MetaDataCondition(getField(fieldName), operator, valueList);
 	}
 
@@ -424,8 +427,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * given values as described by the MetaDataTable. If supported by the
 	 * filesystem being queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			MetaDataTable table) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final MetaDataTable table) {
 		return new MetaDataCondition(getField(fieldName), table);
 	}
 
@@ -434,8 +437,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * given values as described by the MetaDataTable. If supported by the
 	 * filesystem being queried.
 	 */
-	public static MetaDataCondition newCondition(String fieldName,
-			int operator, MetaDataTable table) {
+	public static MetaDataCondition newCondition(final String fieldName,
+			final int operator, final MetaDataTable table) {
 		return new MetaDataCondition(getField(fieldName), operator, table);
 	}
 
@@ -444,7 +447,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * MetaDataCondition array from two (or more) conditions.
 	 */
 	public static MetaDataCondition[] mergeConditions(
-			MetaDataCondition condition1, MetaDataCondition condition2) {
+			final MetaDataCondition condition1,
+			final MetaDataCondition condition2) {
 		if (condition1 == null) {
 			MetaDataCondition[] condition = { condition2 };
 			return condition;
@@ -462,10 +466,11 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * MetaDataCondition array from two (or more) conditions.
 	 */
 	public static MetaDataCondition[] mergeConditions(
-			MetaDataCondition condition1, MetaDataCondition[] condition2) {
-		if (condition1 == null)
+			final MetaDataCondition condition1,
+			final MetaDataCondition[] condition2) {
+		if (condition1 == null) {
 			return condition2;
-		else if (condition2 == null) {
+		} else if (condition2 == null) {
 			MetaDataCondition[] condition = { condition1 };
 			return condition;
 		}
@@ -481,11 +486,13 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * MetaDataCondition array from two (or more) conditions.
 	 */
 	public static MetaDataCondition[] mergeConditions(
-			MetaDataCondition[] condition1, MetaDataCondition[] condition2) {
-		if (condition1 == null)
+			final MetaDataCondition[] condition1,
+			final MetaDataCondition[] condition2) {
+		if (condition1 == null) {
 			return condition2;
-		else if (condition2 == null)
+		} else if (condition2 == null) {
 			return condition1;
+		}
 
 		MetaDataCondition[] condition = new MetaDataCondition[condition1.length
 				+ condition2.length + 1];
@@ -499,7 +506,7 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * Returns a new selection object that requests that records returned by a
 	 * query include this field.
 	 */
-	public static MetaDataSelect newSelection(String fieldName) {
+	public static MetaDataSelect newSelection(final String fieldName) {
 		return new MetaDataSelect(getField(fieldName));
 	}
 
@@ -507,15 +514,12 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * Returns a new array of selection objects that request that all fields in
 	 * this group be included in returned records from a query.
 	 */
-	public static MetaDataSelect[] newSelection(String[] fieldNames) {
+	public static MetaDataSelect[] newSelection(final String[] fieldNames) {
 		log.debug("building array of selects");
 		MetaDataSelect[] selects = new MetaDataSelect[fieldNames.length];
 		for (int i = 0; i < selects.length; i++) {
 			if (fieldNames[i] != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("creating new MetaDataSelect for:"
-							+ fieldNames[i]);
-				}
+				log.debug("creating new MetaDataSelect for:{}", fieldNames[i]);
 				selects[i] = new MetaDataSelect(getField(fieldNames[i]));
 			}
 		}
@@ -525,14 +529,15 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	/**
 	 * Returns a new selection object that requests a specific operation be
 	 * performed on query results involving this field. Operations include:
-	 *<UL>
+	 * <UL>
 	 * <LI>count or count-distinct
 	 * <LI>max or min
 	 * <LI>avg or sum
 	 * <LI>variance or stddev
-	 *</UL>
+	 * </UL>
 	 */
-	public static MetaDataSelect newSelection(String fieldName, int operation) {
+	public static MetaDataSelect newSelection(final String fieldName,
+			final int operation) {
 		return new MetaDataSelect(getField(fieldName), operation);
 	}
 
@@ -540,7 +545,7 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * Returns a new array of selection objects that request that all fields in
 	 * this group be included in returned records from a query.
 	 */
-	public static MetaDataSelect[] newSelection(MetaDataGroup group) {
+	public static MetaDataSelect[] newSelection(final MetaDataGroup group) {
 		MetaDataSelect[] selects = new MetaDataSelect[group.getFieldCount()];
 		MetaDataField[] fieldList = group.getFields();
 		for (int i = 0; i < selects.length; i++) {
@@ -553,8 +558,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * The mergeSelects( ... ) methods are conveniences to creates a single
 	 * MetaDataSelect array from two (or more) selects.
 	 */
-	public static MetaDataSelect[] mergeSelects(MetaDataSelect select1,
-			MetaDataSelect select2) {
+	public static MetaDataSelect[] mergeSelects(final MetaDataSelect select1,
+			final MetaDataSelect select2) {
 		if (select1 == null) {
 			MetaDataSelect[] select = { select2 };
 			return select;
@@ -573,11 +578,11 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * The mergeSelects( ... ) methods are conveniences to creates a single
 	 * MetaDataSelect array from two (or more) selects.
 	 */
-	public static MetaDataSelect[] mergeSelects(MetaDataSelect select1,
-			MetaDataSelect[] select2) {
-		if (select1 == null)
+	public static MetaDataSelect[] mergeSelects(final MetaDataSelect select1,
+			final MetaDataSelect[] select2) {
+		if (select1 == null) {
 			return select2;
-		else if (select2 == null) {
+		} else if (select2 == null) {
 			MetaDataSelect[] select = { select1 };
 			return select;
 		}
@@ -592,12 +597,13 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * The mergeSelects( ... ) methods are conveniences to creates a single
 	 * MetaDataSelect array from two (or more) selects.
 	 */
-	public static MetaDataSelect[] mergeSelects(MetaDataSelect[] select1,
-			MetaDataSelect[] select2) {
-		if (select1 == null)
+	public static MetaDataSelect[] mergeSelects(final MetaDataSelect[] select1,
+			final MetaDataSelect[] select2) {
+		if (select1 == null) {
 			return select2;
-		else if (select2 == null)
+		} else if (select2 == null) {
 			return select1;
+		}
 
 		MetaDataSelect[] select = new MetaDataSelect[select1.length
 				+ select2.length + 1];

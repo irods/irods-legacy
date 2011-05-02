@@ -126,8 +126,8 @@ public class ResourceTest {
 	@Test
 	public void testModifyResourceStatus() throws Exception {
 
-		String testval1 = "a";
-		String testval2 = "b";
+		String testval1 = "1";
+		String testval2 = "2";
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);

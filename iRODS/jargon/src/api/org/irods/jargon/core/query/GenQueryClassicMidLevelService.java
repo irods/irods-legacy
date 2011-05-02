@@ -515,14 +515,35 @@ public class GenQueryClassicMidLevelService {
 				j++;
 			}
 
+			StringBuilder sb;
 			for (IRODSMetaDataConditionWrapper tagCondition : amendedConditions) {
+				 sb = new StringBuilder();
+				
+				if (tagCondition.getMetaDataCondition().getOperator() == MetaDataCondition.IN || tagCondition.getMetaDataCondition().getOperator() == MetaDataCondition.NOT_IN) {
+					sb.append(" ");
+					sb.append(tagCondition.getMetaDataCondition().getOperatorString());
+					sb.append(" '");
+					sb.append("(");
+					sb.append(tagCondition.getMetaDataCondition().getMultipleStringValues());
+					sb.append(")'");
+				} else  if (tagCondition.getMetaDataCondition().getValues().length > 1) {
+					sb.append(" ");
+					sb.append(tagCondition.getMetaDataCondition().getOperatorString());
+					sb.append(" ");
+					sb.append(tagCondition.getMetaDataCondition().getMultipleStringValues());
+				} else {
+					sb.append(" ");
+					sb.append(tagCondition.getMetaDataCondition().getOperatorString());
+					sb.append(" ");
+					sb.append("'");
+					sb.append(tagCondition.getMetaDataCondition().getStringValue());
+					sb.append("'");
+				}
+				
 				// New for loop because they have to be in a certain order...
-				subTags[j] = new Tag(svalue, " "
-						+ tagCondition.getMetaDataCondition()
-								.getOperatorString() + " '"
-						+ tagCondition.getMetaDataCondition().getStringValue()
-						+ "'");
+				subTags[j] = new Tag(svalue,sb.toString());
 				j++;
+				
 			}
 			message.addTag(new Tag(InxValPair_PI, subTags));
 		} else {
