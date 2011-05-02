@@ -3,6 +3,7 @@ package org.irods.jargon.core.functionaltest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Date;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.After;
@@ -70,7 +71,7 @@ public class CreateModAVUReplicateRenameFunctionalTest {
 	 * delay exec
 	 */
 	@Test
-	public final void testCollectionLooseACLScenario() throws Exception {
+	public final void testCollectionLoseACLScenario() throws Exception {
 		// generate a local scratch file
 		String testFileNamePrefix = "testCollectionLooseACLScenario";
 		String testAvuNamePrefix = "testCollectionLooseACLScenarioAVUName";
@@ -78,7 +79,7 @@ public class CreateModAVUReplicateRenameFunctionalTest {
 		String testAvuValuePrefixNew = "newTestCollectionLooseACLScenarioAVUValue";
 
 		String tempPrefix = "temp";
-		int numberIterations = 10;
+		int numberIterations = 1000;
 		int fileLength = 20 * 1024;
 
 		// + new Date().getTime() +
@@ -169,8 +170,8 @@ public class CreateModAVUReplicateRenameFunctionalTest {
 			 */
 
 			StringBuilder ruleBuilder = new StringBuilder();
-			ruleBuilder
-					.append("testdelay||delayExec(<PLUSET>1m</PLUSET> ,msiDataObjRepl(*filename, *resource,*status),nop)|nop\n");
+			ruleBuilder.append("testdelay||msiDataObjRepl(*filename, *resource,*status)|nop\n");
+					//.append("testdelay||delayExec(<PLUSET>1m</PLUSET>,msiDataObjRepl(*filename, *resource,*status),nop)|nop\n");
 			ruleBuilder.append("*filename=");
 			ruleBuilder.append(permIrodsFile.getAbsolutePath());
 			ruleBuilder.append("%*resource=");
@@ -182,8 +183,8 @@ public class CreateModAVUReplicateRenameFunctionalTest {
 			ruleBuilder.append("*ruleExecOut");
 			ruleBuilder.toString();
 
-			// Map<String,String> ruleResult =
-			// irodsFileSystem.executeRule(ruleString);
+			Map<String,String> ruleResult =
+			 irodsFileSystem.executeRule(ruleBuilder.toString());
 
 			// 7. update an AVU (file_status from 'not_ready' to 'ready') for
 			// perm1
