@@ -131,7 +131,7 @@ main(int argc, char **argv)
              exit (1);
         }
     } else {
-        status = reServerMain (&rsComm);
+        reServerMain (&rsComm);
     }
     cleanupAndExit (status);
 
@@ -148,7 +148,7 @@ int usage (char *prog)
     return 0;
 }
 
-int
+void
 reServerMain (rsComm_t *rsComm)
 {
     int status = 0;
