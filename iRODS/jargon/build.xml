@@ -177,7 +177,6 @@
 	<target name="specific_unit_test" depends="init, compile">
 			<echo message="running single specified test..." />
 			<junit fork="${junit.fork}" haltonfailure="${fail.on.junit.error}">
-				<classpath location="${instrumented.code.dir}" />
 				<classpath refid="class.path.test" />
 				<formatter type="brief" usefile="false" />
 				<test name="org.irods.jargon.core.functionaltest.CreateModAVUReplicateRenameFunctionalTest" />

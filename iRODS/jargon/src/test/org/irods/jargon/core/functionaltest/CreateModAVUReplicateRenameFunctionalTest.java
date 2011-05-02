@@ -78,7 +78,7 @@ public class CreateModAVUReplicateRenameFunctionalTest {
 		String testAvuValuePrefixNew = "newTestCollectionLooseACLScenarioAVUValue";
 
 		String tempPrefix = "temp";
-		int numberIterations = 1000;
+		int numberIterations = 10;
 		int fileLength = 20 * 1024;
 
 		// + new Date().getTime() +
