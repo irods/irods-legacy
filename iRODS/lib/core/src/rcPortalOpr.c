@@ -1359,3 +1359,8 @@ rodsLong_t *dataSegLen)
     return 0;
 }
 
+int
+lfRestartGetWithInfo (rcComm_t *conn, fileRestartInfo_t *info)
+{
+    return 0;
+}

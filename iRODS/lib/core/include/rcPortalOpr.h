@@ -92,6 +92,8 @@ clearLfRestartFile (fileRestart_t *fileRestart);
 int
 lfRestartPutWithInfo (rcComm_t *conn, fileRestartInfo_t *info); 
 int
+lfRestartGetWithInfo (rcComm_t *conn, fileRestartInfo_t *info); 
+int
 putSeg (rcComm_t *conn, rodsLong_t segSize, int localFd,
 openedDataObjInp_t *dataObjWriteInp, bytesBuf_t *dataObjWriteInpBBuf,
 int bufLen, int *writtenSinceUpdated, fileRestartInfo_t *info, 

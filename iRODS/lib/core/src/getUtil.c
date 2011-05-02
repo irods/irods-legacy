@@ -9,6 +9,7 @@
 #include "lsUtil.h"
 #include "getUtil.h"
 #include "miscUtil.h"
+#include "rcPortalOpr.h"
 
 int
 getUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -26,7 +27,7 @@ rodsPathInp_t *rodsPathInp)
 	return (USER__NULL_INPUT_ERR);
     }
 
-    initCondForGet (myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
+    initCondForGet (conn, myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
 
     status = resolveRodsTarget (conn, myRodsEnv, rodsPathInp, 1);
     if (status < 0) {
@@ -51,6 +52,24 @@ rodsPathInp_t *rodsPathInp)
 		  &conn->operProgress);
 	    }
 	}
+    }
+
+    if (conn->fileRestart.flags == FILE_RESTART_ON) {
+        fileRestartInfo_t *info;
+        status = readLfRestartFile (conn->fileRestart.infoFile, &info);
+        if (status >= 0) {
+            status = lfRestartGetWithInfo (conn, info);
+            if (status >= 0) {
+                /* save info so we know what got restarted */
+                rstrcpy (conn->fileRestart.info.objPath, info->objPath,
+                  MAX_NAME_LEN);
+                conn->fileRestart.info.status = FILE_RESTARTED;
+                printf ("%s was restarted successfully\n",
+                  conn->fileRestart.info.objPath);
+                unlink (conn->fileRestart.infoFile);
+            }
+            if (info != NULL) free (info);
+        }
     }
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
@@ -165,7 +184,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
 }
 
 int
-initCondForGet (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+initCondForGet (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 {
 #ifdef RBUDP_TRANSFER
@@ -256,6 +275,17 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
               "initCondForPut: openRestartFile of %s errno",
             rodsArgs->restartFileString);
             return (status);
+        }
+    }
+
+    if (rodsArgs->lfrestart == True) {
+        if (rodsArgs->rbudp == True) {
+            rodsLog (LOG_NOTICE,
+              "initCondForPut: --lfrestart cannot be used with -Q option");
+        } else {
+            conn->fileRestart.flags = FILE_RESTART_ON;
+            rstrcpy (conn->fileRestart.infoFile, rodsArgs->lfrestartFileString,
+              MAX_NAME_LEN);
         }
     }
 

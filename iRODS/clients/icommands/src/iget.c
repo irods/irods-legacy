@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "hfIKN:n:PQrvVX:R:T";
+    optStr = "hfIKN:n:PQrvVX:R:TZ";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -92,17 +92,23 @@ void
 usage () {
    char *msgs[]={
 "Usage: iget [-fIKPQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
-"[-R resource] srcDataObj|srcCollection ... destLocalFile|destLocalDir",
+"[-R resource] [--lfrestart lfRestartFile]",
+"srcDataObj|srcCollection ... destLocalFile|destLocalDir",
 "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
-"[-R resource] srcDataObj|srcCollection",
+"[-R resource] [--lfrestart lfRestartFile]",
+"srcDataObj|srcCollection",
 "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
-"[-R resource] srcDataObj ... -",
+"[-R resource] [--lfrestart lfRestartFile] srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
 " ",
 "If the destLocalFile is '-', the files read from the server will be ",
 "written to the standard output (stdout). Similar to the UNIX 'cat'",
 "command, multiple source files can be specified.",
+" ",
+"The --lfrestart option specifies that the large file restart option is on",
+"and the lfRestartFile input specifies a local file that contains the restart",
+"info. Currently, only files larger than 32 Mbytes will be restarted.",
 " ",
 "The -X option specifies that the restart option is on and the restartFile",
 "input specifies a local file that contains the restart info. If the ",
@@ -147,6 +153,9 @@ usage () {
 "     restartFile input specifies a local file that contains the restart info.",
 " -X  restartFile - specifies that the restart option is on and the",
 "     restartFile input specifies a local file that contains the restart info.",
+" --lfrestart lfRestartFile - specifies that the large file restart option is",
+"      on and the lfRestartFile input specifies a local file that contains",
+"      the restart info.",
 " -h  this help",
 ""};
    int i;
