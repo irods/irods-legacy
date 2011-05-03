@@ -6,6 +6,7 @@
 
 
 #include "openCollection.h"
+#include "closeCollection.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
@@ -35,7 +36,16 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
     status = rsObjStat (rsComm, &collHandle->dataObjInp, &rodsObjStatOut);
 
 
-    if (status < 0) return status;
+    if (status < 0) {
+	rsCloseCollection (rsComm, &handleInx);
+	return status;
+    }
+
+    if (rodsObjStatOut->objType != COLL_OBJ_T) {
+	freeRodsObjStat (rodsObjStatOut);
+	rsCloseCollection (rsComm, &handleInx);
+	return CAT_NAME_EXISTS_AS_DATAOBJ;
+    }
 
 #if 0
     collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
