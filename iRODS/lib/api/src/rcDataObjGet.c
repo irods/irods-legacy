@@ -87,8 +87,8 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
     } else {
 
         if (portalOprOut->numThreads <= 0) {
-            status = getFile (conn, portalOprOut->l1descInx,
-              locFilePath, dataObjInp->dataSize);
+            status = getFile (conn, portalOprOut->l1descInx, 
+              locFilePath, dataObjInp->objPath, dataObjInp->dataSize);
         } else {
         if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
             printf ("From server: NumThreads=%d, addr:%s, port:%d, cookie=%d\n",
