@@ -540,7 +540,7 @@ getIncludeFile (rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath)
 }
 
 int
-getFile (rcComm_t *conn, int l1descInx, char *locFilePath,
+getFile (rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
 rodsLong_t dataSize)
 {
     int out_fd, status;
@@ -549,6 +549,8 @@ rodsLong_t dataSize)
     int bytesWritten, bytesRead;
     rodsLong_t totalWritten = 0;
     int progressCnt = 0;
+    fileRestartInfo_t *info = &conn->fileRestart.info;
+    rodsLong_t lastUpdateSize = 0;
 
     if (strcmp (locFilePath, STDOUT_FILE_NAME) == 0) {
 	/* streaming to stdout */
@@ -572,6 +574,7 @@ rodsLong_t dataSize)
     dataObjReadInpBBuf.buf = malloc (TRANS_BUF_SZ);
     dataObjReadInpBBuf.len = dataObjReadInp.len = TRANS_BUF_SZ;
     dataObjReadInp.l1descInx = l1descInx;
+    initFileRestart (conn, locFilePath, objPath, dataSize, 1);
 
     if (gGuiProgressCB != NULL) conn->operProgress.flag = 1;
 
@@ -599,6 +602,23 @@ rodsLong_t dataSize)
         } else {
             totalWritten += bytesWritten;
 	    conn->transStat.bytesWritten = totalWritten;
+            if (info->numSeg > 0) {     /* file restart */
+                info->dataSeg[0].len += bytesWritten;
+                if (totalWritten - lastUpdateSize >= RESTART_FILE_UPDATE_SIZE) {
+                    /* time to write to the restart file */
+                    status = writeLfRestartFile (conn->fileRestart.infoFile,
+                      &conn->fileRestart.info);
+                    if (status < 0) {
+                         rodsLog (LOG_ERROR,
+                          "getFile: writeLfRestartFile for %s, status = %d",
+                          locFilePath, status);
+                        free (dataObjReadInpBBuf.buf);
+                        if (out_fd != 1) close (out_fd);
+                        return status;
+                    }
+                    lastUpdateSize = totalWritten;
+                }
+            }
 	    if (gGuiProgressCB != NULL) {
 		if (progressCnt >= (MAX_PROGRESS_CNT - 1)) {
 		    conn->operProgress.curFileSizeDone += 
@@ -621,6 +641,9 @@ rodsLong_t dataSize)
 #else
     if (bytesRead >= 0) {
 #endif
+        if (info->numSeg > 0) {     /* file restart */
+            clearLfRestartFile (&conn->fileRestart);
+        }
         if (gGuiProgressCB != NULL) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
 	    gGuiProgressCB (&conn->operProgress);
@@ -1362,5 +1385,161 @@ rodsLong_t *dataSegLen)
 int
 lfRestartGetWithInfo (rcComm_t *conn, fileRestartInfo_t *info)
 {
+    rodsLong_t curOffset = 0;
+    bytesBuf_t dataObjReadInpBBuf;
+    int status, i;
+    int localFd, irodsFd;
+    dataObjInp_t dataObjOpenInp;
+    openedDataObjInp_t dataObjReadInp;
+    openedDataObjInp_t dataObjLseekInp;
+    openedDataObjInp_t dataObjCloseInp;
+    fileLseekOut_t *dataObjLseekOut = NULL;
+    int writtenSinceUpdated = 0;
+    rodsLong_t gap;
+
+#ifdef windows_platform
+    localFd = iRODSNt_bopen(info->fileName, O_RDONLY,0);
+#else
+    localFd = open (info->fileName, O_RDWR, 0);
+#endif
+    if (localFd < 0) { /* error */
+        status = USER_FILE_DOES_NOT_EXIST - errno;
+        rodsLogError (LOG_ERROR, status,
+        "cannot open local file %s, status = %d", info->fileName, status);
+        return (status);
+    }
+
+    bzero (&dataObjOpenInp, sizeof (dataObjOpenInp));
+    rstrcpy (dataObjOpenInp.objPath, info->objPath, MAX_NAME_LEN);
+    dataObjOpenInp.openFlags = O_RDONLY;
+    irodsFd = rcDataObjOpen (conn, &dataObjOpenInp);
+    if (irodsFd < 0) { /* error */
+        rodsLogError (LOG_ERROR, irodsFd,
+        "cannot open iRODS src file %s, status = %d", info->objPath, irodsFd);
+        close (localFd);
+        return (irodsFd);
+    }
+
+    bzero (&dataObjReadInp, sizeof (dataObjReadInp));
+    dataObjReadInpBBuf.buf = malloc (TRANS_BUF_SZ);
+    dataObjReadInpBBuf.len = 0;
+    dataObjReadInp.l1descInx = irodsFd;
+
+    memset (&dataObjLseekInp, 0, sizeof (dataObjLseekInp));
+    dataObjLseekInp.whence = SEEK_SET;
+    dataObjLseekInp.l1descInx = irodsFd;
+
+    for (i = 0; i < info->numSeg; i++) {
+        gap = info->dataSeg[i].offset - curOffset;
+        if (gap < 0) {
+            /* should not be here */
+        } else if (gap > 0) {
+            rodsLong_t tmpLen, *lenToUpdate;
+            if (i == 0) {
+                /* should not be here */
+                tmpLen = 0;
+                lenToUpdate = &tmpLen;
+            } else {
+                lenToUpdate = &info->dataSeg[i - 1].len;
+            }
+            status = getSeg (conn, gap, localFd, &dataObjReadInp,
+             &dataObjReadInpBBuf, TRANS_BUF_SZ, &writtenSinceUpdated,
+             info, lenToUpdate);
+            if (status < 0) break;
+            curOffset += gap;
+        }
+        if (info->dataSeg[i].len > 0) {
+            curOffset += info->dataSeg[i].len;
+            if (lseek (localFd, curOffset, SEEK_SET) < 0) {
+                status = UNIX_FILE_LSEEK_ERR - errno;
+                rodsLogError (LOG_ERROR, status,
+                  "lfRestartWithInfo: lseek to %lld error for %s",
+                  curOffset, info->fileName);
+                break;
+            }
+            dataObjLseekInp.offset = curOffset;
+            status = rcDataObjLseek (conn, &dataObjLseekInp, &dataObjLseekOut);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "lfRestartWithInfo: rcDataObjLseek to %lld error for %s",
+                  curOffset, info->objPath);
+                break;
+            } else {
+                if (dataObjLseekOut != NULL) free (dataObjLseekOut);
+            }
+        }
+    }
+    if (status >= 0) {
+        gap = info->fileSize - curOffset;
+        if (gap > 0) {
+            status = getSeg (conn, gap, localFd, &dataObjReadInp,
+              &dataObjReadInpBBuf, TRANS_BUF_SZ,  &writtenSinceUpdated,
+             info, &info->dataSeg[i - 1].len);
+        }
+    }
+    free (dataObjReadInpBBuf.buf);
+    close (localFd);
+    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+    dataObjCloseInp.l1descInx = irodsFd;
+    rcDataObjClose (conn, &dataObjCloseInp);
+    return status;
+}
+
+int
+getSeg (rcComm_t *conn, rodsLong_t segSize, int localFd,
+openedDataObjInp_t *dataObjReadInp, bytesBuf_t *dataObjReadInpBBuf,
+int bufLen, int *writtenSinceUpdated, fileRestartInfo_t *info,
+rodsLong_t *dataSegLen)
+{
+    rodsLong_t gap = segSize;
+    int bytesWritten,  bytesRead;
+    int status;
+
+    while (gap > 0) {
+        int toRead;
+        if (gap > bufLen) {
+            toRead = bufLen;
+        } else {
+            toRead = (int) gap;
+        }
+	dataObjReadInp->len = dataObjReadInpBBuf->len = toRead;
+	bytesRead = rcDataObjRead (conn, dataObjReadInp,
+          dataObjReadInpBBuf);
+
+	if (bytesRead < 0) {
+           rodsLog (LOG_ERROR,
+            "getSeg: rcDataObjRead error. status = %d", bytesRead);
+            return bytesRead;
+	} else if (bytesRead == 0) {
+	    /* EOF */
+           rodsLog (LOG_ERROR,
+            "getSeg: rcDataObjRead error. EOF reached. toRead = %d", toRead);
+            return SYS_COPY_LEN_ERR;
+	}
+        bytesWritten = myWrite (localFd, dataObjReadInpBBuf->buf,
+          bytesRead, FILE_DESC_TYPE, NULL);
+
+        if (bytesWritten != bytesRead) {
+           rodsLog (LOG_ERROR,
+            "getSeg: Read %d bytes, Wrote %d bytes.\n ",
+            bytesRead, bytesWritten);
+            return (SYS_COPY_LEN_ERR);
+        } else {
+            gap -= bytesWritten;
+            *writtenSinceUpdated += bytesWritten;
+            *dataSegLen += bytesWritten;
+            if (*writtenSinceUpdated >= RESTART_FILE_UPDATE_SIZE) {
+                status = writeLfRestartFile (conn->fileRestart.infoFile, info);
+                if (status < 0) {
+                    rodsLog (LOG_ERROR,
+                     "getSeg: writeLfRestartFile for %s, status = %d",
+                     info->fileName, status);
+                     return status;
+                }
+                *writtenSinceUpdated = 0;
+            }
+        }
+    }
     return 0;
 }
+

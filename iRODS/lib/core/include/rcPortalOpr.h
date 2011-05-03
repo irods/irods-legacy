@@ -66,7 +66,7 @@ rodsLong_t dataSize);
 int
 getIncludeFile (rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath);
 int
-getFile (rcComm_t *conn, int l1descInx, char *locFilePath,
+getFile (rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
 rodsLong_t dataSize);
 #ifdef RBUDP_TRANSFER
 int
@@ -97,6 +97,11 @@ int
 putSeg (rcComm_t *conn, rodsLong_t segSize, int localFd,
 openedDataObjInp_t *dataObjWriteInp, bytesBuf_t *dataObjWriteInpBBuf,
 int bufLen, int *writtenSinceUpdated, fileRestartInfo_t *info, 
+rodsLong_t *dataSegLen);
+int
+getSeg (rcComm_t *conn, rodsLong_t segSize, int localFd,
+openedDataObjInp_t *dataObjReadInp, bytesBuf_t *dataObjReadInpBBuf,
+int bufLen, int *writtenSinceUpdated, fileRestartInfo_t *info,
 rodsLong_t *dataSegLen);
 #ifdef  __cplusplus
 }
