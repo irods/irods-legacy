@@ -348,7 +348,7 @@ public class IRODSCommandsQueryTest {
 
 	}
 	
-	@Test //FIXME: need to complete testing...
+	@Ignore //FIXME: need to complete testing with iRODS fixes
 	public void queryForFileNameUsingIn() throws Exception {
 		// add a file and set two metadata values
 		IRODSAccount account = testingPropertiesHelper
