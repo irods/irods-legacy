@@ -28,6 +28,7 @@ openStat_t **openStat)
 	  NAME_LEN);
 	(*openStat)->l3descInx = L1desc[status].l3descInx;
 	(*openStat)->replStatus = L1desc[status].replStatus;
+	(*openStat)->replNum = L1desc[status].dataObjInfo->replNum;
     } else {
 	*openStat = NULL;
     }
