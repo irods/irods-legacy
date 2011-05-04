@@ -1,11 +1,15 @@
 package org.irods.jargon.core.accessobject;
 
+import org.irods.jargon.core.connection.ConnectionConstants;
+import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.packinstr.DataObjInp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.sdsc.grid.io.irods.IRODSAccount;
 import edu.sdsc.grid.io.irods.IRODSCommands;
+import edu.sdsc.grid.io.irods.IRODSFileSystem;
 import edu.sdsc.grid.io.irods.Tag;
 
 /**
@@ -126,6 +130,141 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject implement
 
 		log.debug("result of get host lookup:{}", hostResponse);
 		return hostResponse;
+	}
+	
+	
+	//@Override
+	/* (non-Javadoc)
+	 * @see org.irods.jargon.core.accessobject.FileCatalogObjectAO#rerouteIrodsFileWhenIRODSIsSource(java.lang.String, java.lang.String)
+	 */
+	public IRODSFileSystem rerouteIrodsFileWhenIRODSIsSource(
+			final String irodsFileAbsolutePath, final String resourceName)
+			throws JargonException {
+
+		if (irodsFileAbsolutePath == null
+				|| irodsFileAbsolutePath.length() == 0) {
+			throw new IllegalArgumentException(
+					"irodsFileAbsolutePath is null or empty");
+		}
+
+		if (resourceName == null) {
+			throw new IllegalArgumentException(
+					"resource name is null, set to blank if not used");
+		}
+
+		log.info("rerouteIrodsFile check for abs path: {}",
+				irodsFileAbsolutePath);
+		if (!ConnectionConstants.REROUTE_CONNECTIONS) {
+			log.debug("connection not rerouted");
+			return null;
+		}
+		
+		IRODSFileSystem reroutedIRODSFileSystem = null;
+
+		// I am wanting to do resource rerouting, does this server support it?
+		IRODSServerProperties irodsServerProperties = getIrodsCommands()
+				.getIrodsServerProperties();
+		if (!irodsServerProperties
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(ConnectionConstants.REROUTE_CONNECTIONS_MIN_RODS_VERSION)) {
+			log.debug("no rerouting available in this iRODS version");
+			return null;
+		}
+
+		// server does re-routing, continue with check
+
+		IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(getIrodsCommands());
+		FileCatalogObjectAO fileCatalogObjectAO = irodsAccessObjectFactory
+				.getFileCatalogObjectAO();
+		String detectedHost = fileCatalogObjectAO.getHostForGetOperation(
+				irodsFileAbsolutePath, resourceName);
+
+		return createIRODSFileSystemForRerouting(
+				reroutedIRODSFileSystem, detectedHost);
+
+	}
+	
+	public IRODSFileSystem rerouteIrodsFileWhenIRODSIsTarget(
+			final String irodsFileAbsolutePath, final String resourceName)
+			throws JargonException {
+
+		if (irodsFileAbsolutePath == null
+				|| irodsFileAbsolutePath.length() == 0) {
+			throw new IllegalArgumentException(
+					"irodsFileAbsolutePath is null or empty");
+		}
+
+		if (resourceName == null) {
+			throw new IllegalArgumentException(
+					"resource name is null, set to blank if not used");
+		}
+
+		log.info("rerouteIrodsFile check for abs path: {}",
+				irodsFileAbsolutePath);
+		if (!ConnectionConstants.REROUTE_CONNECTIONS) {
+			log.debug("connection not rerouted");
+			return null;
+		}
+		
+		IRODSFileSystem reroutedIRODSFileSystem = null;
+
+		// I am wanting to do resource rerouting, does this server support it?
+		IRODSServerProperties irodsServerProperties = getIrodsCommands()
+				.getIrodsServerProperties();
+		if (!irodsServerProperties
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(ConnectionConstants.REROUTE_CONNECTIONS_MIN_RODS_VERSION)) {
+			log.debug("no rerouting available in this iRODS version");
+			return null;
+		}
+
+		// server does re-routing, continue with check
+
+		IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(getIrodsCommands());
+		FileCatalogObjectAO fileCatalogObjectAO = irodsAccessObjectFactory
+				.getFileCatalogObjectAO();
+		String detectedHost = fileCatalogObjectAO.getHostForPutOperation(
+				irodsFileAbsolutePath, resourceName);
+
+		return createIRODSFileSystemForRerouting(
+				reroutedIRODSFileSystem, detectedHost);
+
+
+	}
+
+	/**
+	 * @param reroutedIRODSFileSystem
+	 * @param detectedHost
+	 * @return
+	 * @throws IllegalArgumentException
+	 * @throws NullPointerException
+	 * @throws JargonException
+	 */
+	public IRODSFileSystem createIRODSFileSystemForRerouting(
+			IRODSFileSystem reroutedIRODSFileSystem, String detectedHost)
+			throws IllegalArgumentException, NullPointerException,
+			JargonException {
+		IRODSAccount thisAccount = getIrodsCommands().getIrodsAccount();
+		if (detectedHost.equals(USE_THIS_ADDRESS)) {
+			log.debug("host is equal, do not reroute resource");
+		} else {
+			log.info("connection will be rerouted to target host: {}", detectedHost);
+			IRODSAccount reroutedAccount = new IRODSAccount(
+					detectedHost, thisAccount.getPort(),
+					thisAccount.getUserName(),
+					thisAccount.getPassword(),
+					thisAccount.getHomeDirectory(),
+					thisAccount.getZone(),
+					thisAccount.getDefaultStorageResource());
+			try {
+				reroutedIRODSFileSystem = new IRODSFileSystem(
+						reroutedAccount);
+			} catch (Exception e) {
+				log.error("error created rerouting iRODS file system", e);
+				throw new JargonException("exception creating rerouted irodsFileSystem", e);
+			}
+		}
+		return reroutedIRODSFileSystem;
 	}
 
 }

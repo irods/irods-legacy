@@ -4,11 +4,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.irods.jargon.core.connection.ConnectionConstants;
+import org.irods.jargon.core.connection.IRODSServerProperties;
+import org.irods.jargon.core.remoteexecute.RemoteExecuteServiceImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -75,8 +79,7 @@ public class IRODSFileOutputStreamTest {
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
 
 		irodsFileOutputStream.open(irodsFile);
-		Assert
-				.assertTrue("file I created does not exist", irodsFile.exists());
+		Assert.assertTrue("file I created does not exist", irodsFile.exists());
 		// get a simple byte array
 		String myBytes = "ajjjjjjjjjjjjjjjjjjjjjjjjfeiiiiiiiiiiiiiii54454545";
 		byte[] myBytesArray = myBytes.getBytes();
@@ -106,8 +109,7 @@ public class IRODSFileOutputStreamTest {
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
 
 		irodsFileOutputStream.open(irodsFile);
-		Assert
-				.assertTrue("file I created does not exist", irodsFile.exists());
+		Assert.assertTrue("file I created does not exist", irodsFile.exists());
 		irodsFileOutputStream.close();
 		irodsFileSystem.close();
 	}
@@ -200,6 +202,168 @@ public class IRODSFileOutputStreamTest {
 		irodsFileSystem.close();
 	}
 
+	@Test
+	public final void testWriteToIRODSFileOutputStreamCreatedByIRODSFileResourceSwitchingSpecifyTarget()
+			throws Exception {
+
+		String useDistribResources = testingProperties
+				.getProperty("test.option.distributed.resources");
+
+		if (useDistribResources != null && useDistribResources.equals("true")) {
+			// do the test
+		} else {
+			return;
+		}
+		
+		if (ConnectionConstants.REROUTE_CONNECTIONS != true) {
+			TestCase.fail("attempt to test connection re-routing, but reroute connections not set in ConnectionConstants");
+		}
+
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			irodsFileSystem.close();
+			return;
+		}
+
+		String testFileName = "testWriteToIRODSFileOutputStreamCreatedByIRODSFileResourceSwitchingSpecifyTarget.csv";
+		String testIRODSFileName = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
+		
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
+		irodsFile.setResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		
+		
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
+		
+		IRODSAccount reroutingAccount = (IRODSAccount) irodsFileOutputStream.fileSystem.getAccount();
+		TestCase.assertFalse("did not reroute resource", reroutingAccount.getHost().equals(testAccount.getHost()));
+		
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String sourceFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName, 8);
+
+		File fileToWrite = new File(sourceFileName);
+		FileInputStream fin;
+		byte[] buff = new byte[1024];
+		// Open an input stream
+		fin = new FileInputStream(fileToWrite);
+
+		// Read in the bytes
+		int offset = 0;
+		int writeOffset = 0;
+		int numRead = 0;
+		while ((offset < buff.length)
+				&& ((numRead = fin.read(buff, offset, buff.length - offset)) >= 0)) {
+
+			offset += numRead;
+			irodsFileOutputStream.write(buff, writeOffset, numRead);
+			writeOffset += numRead;
+		}
+		// Close our input stream
+		fin.close();
+
+		irodsFileOutputStream.close();
+		
+		TestCase.assertTrue("file system should not have been closed", irodsFileSystem.isConnected());
+		
+		List<String> fileResc = irodsFile.getAllResourcesForFile();
+		TestCase.assertTrue("did not get file resc", fileResc.size() == 1);
+		TestCase.assertEquals("should have put file in tertiary resource", testingProperties.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY), fileResc.get(0));
+		irodsFileSystem.close();
+	}
+	
+	@Test
+	public final void testWriteToIRODSFileOutputStreamCreatedByIRODSFileResourceSwitchingSpecifyTargetNoSwitch()
+			throws Exception {
+
+		String useDistribResources = testingProperties
+				.getProperty("test.option.distributed.resources");
+
+		if (useDistribResources != null && useDistribResources.equals("true")) {
+			// do the test
+		} else {
+			return;
+		}
+		
+		if (ConnectionConstants.REROUTE_CONNECTIONS != true) {
+			TestCase.fail("attempt to test connection re-routing, but reroute connections not set in ConnectionConstants");
+		}
+
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			irodsFileSystem.close();
+			return;
+		}
+
+		String testFileName = "testWriteToIRODSFileOutputStreamCreatedByIRODSFileResourceSwitchingSpecifyTarget.csv";
+		String testIRODSFileName = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
+		
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
+		irodsFile.setResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		
+		
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
+		
+		IRODSAccount reroutingAccount = (IRODSAccount) irodsFileOutputStream.fileSystem.getAccount();
+		TestCase.assertFalse("did not reroute resource", reroutingAccount.getHost().equals(testAccount.getHost()));
+		
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String sourceFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName, 8);
+
+		File fileToWrite = new File(sourceFileName);
+		FileInputStream fin;
+		byte[] buff = new byte[1024];
+		// Open an input stream
+		fin = new FileInputStream(fileToWrite);
+
+		// Read in the bytes
+		int offset = 0;
+		int writeOffset = 0;
+		int numRead = 0;
+		while ((offset < buff.length)
+				&& ((numRead = fin.read(buff, offset, buff.length - offset)) >= 0)) {
+
+			offset += numRead;
+			irodsFileOutputStream.write(buff, writeOffset, numRead);
+			writeOffset += numRead;
+		}
+		// Close our input stream
+		fin.close();
+
+		irodsFileOutputStream.close();
+		
+		TestCase.assertTrue("file system should not have been closed", irodsFileSystem.isConnected());
+		
+		List<String> fileResc = irodsFile.getAllResourcesForFile();
+		TestCase.assertTrue("did not get file resc", fileResc.size() == 1);
+		TestCase.assertEquals("should have put file in tertiary resource", testingProperties.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY), fileResc.get(0));
+		irodsFileSystem.close();
+	}
+
 	/**
 	 * Test for Bug 60 - overwrite for file output stream Test is successful if
 	 * no errors happen, bug resulted in an NPE
@@ -253,8 +417,8 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
 
-		Assert.assertTrue("i cannot write an output stream", irodsFile
-				.canWrite());
+		Assert.assertTrue("i cannot write an output stream",
+				irodsFile.canWrite());
 
 		File fileToWrite = new File(sourceFileName);
 		FileInputStream fin;
@@ -336,8 +500,8 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
 
-		Assert.assertTrue("i cannot write an output stream", irodsFile
-				.canWrite());
+		Assert.assertTrue("i cannot write an output stream",
+				irodsFile.canWrite());
 
 		String myBytes = "ajjjjjjjjjjjjjjjjjjjf94949fjg94fj9jfasdofalkdfjfkdfjksdfjsiejfesifslas;efias;efiadfkadfdffjjjjjfeiiiiiiiiiiiiiii54454545";
 		byte[] myBytesArray = myBytes.getBytes();
@@ -356,8 +520,7 @@ public class IRODSFileOutputStreamTest {
 		irodsFileInputStream.read(readBackBytes);
 		boolean areEqual = Arrays.equals(myBytesArray, readBackBytes);
 		irodsFileSystem.close();
-		Assert.assertTrue("did not overwrite and read back my bytes",
-				areEqual);
+		Assert.assertTrue("did not overwrite and read back my bytes", areEqual);
 
 	}
 
@@ -408,10 +571,9 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
 
-		Assert
-				.assertFalse(
-						"i should not be able to write an output stream to a file I do not own",
-						irodsFile.canWrite());
+		Assert.assertFalse(
+				"i should not be able to write an output stream to a file I do not own",
+				irodsFile.canWrite());
 
 		File fileToWrite = new File(sourceFileName);
 		FileInputStream fin;
@@ -486,8 +648,8 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
 
-		Assert.assertTrue("i cannot write an output stream", irodsFile
-				.canWrite());
+		Assert.assertTrue("i cannot write an output stream",
+				irodsFile.canWrite());
 
 		String myBytes = "ajjjjjjjjjjjjjjjjjjjf94949fjg94fj9jfasdofalkdfjfkdfjksdfjsiejfesifslas;efias;efiadfkadfdffjjjjjfeiiiiiiiiiiiiiii54454545";
 		byte[] myBytesArray = myBytes.getBytes();
@@ -517,11 +679,10 @@ public class IRODSFileOutputStreamTest {
 				targetIrodsCollection + '/' + testFileName);
 
 		irodsFile.createNewFile();
-		Assert.assertTrue("i cannot write an output stream", irodsFile
-				.canWrite());
+		Assert.assertTrue("i cannot write an output stream",
+				irodsFile.canWrite());
 
-		Assert
-				.assertTrue("file I created does not exist", irodsFile.exists());
+		Assert.assertTrue("file I created does not exist", irodsFile.exists());
 
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFile);
@@ -530,9 +691,10 @@ public class IRODSFileOutputStreamTest {
 		byte[] myBytesArray = myBytes.getBytes();
 		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
 
-		irodsFile.close();		
+		irodsFile.close();
 		irodsFileSystem.close();
-		assertionHelper.assertIrodsFileOrCollectionExists(irodsFile.getAbsolutePath());
+		assertionHelper.assertIrodsFileOrCollectionExists(irodsFile
+				.getAbsolutePath());
 	}
 
 	/**
@@ -586,17 +748,15 @@ public class IRODSFileOutputStreamTest {
 		fin.close();
 
 		boolean canRead = destination.canRead();
-		Assert
-				.assertTrue(
-						"The newly copied file should be readable by the person who just put it.",
-						canRead);
+		Assert.assertTrue(
+				"The newly copied file should be readable by the person who just put it.",
+				canRead);
 
 		IRODSFile destination2 = new IRODSFile(irodsFileSystem, targetIrodsFile);
 		boolean canRead2 = destination2.canRead();
-		Assert
-				.assertTrue(
-						"A new file object should be readable by the person who just put the underlying file.",
-						canRead2);
+		Assert.assertTrue(
+				"A new file object should be readable by the person who just put the underlying file.",
+				canRead2);
 		irodsFileSystem.close();
 
 	}

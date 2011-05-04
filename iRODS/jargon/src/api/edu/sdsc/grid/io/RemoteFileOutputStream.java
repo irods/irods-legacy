@@ -60,17 +60,7 @@ import java.io.*;
  * @since JARGON1.4
  */
 public abstract class RemoteFileOutputStream extends GeneralFileOutputStream {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Creates a <code>FileOuputStream</code> by opening a connection to an
 	 * actual file, the file named by the path name <code>name</code> in the
@@ -117,9 +107,5 @@ public abstract class RemoteFileOutputStream extends GeneralFileOutputStream {
 	public RemoteFileOutputStream(GeneralFile file) throws IOException {
 		super(file);
 	}
-
-	// ----------------------------------------------------------------------
-	// Methods
-	// ----------------------------------------------------------------------
 
 }

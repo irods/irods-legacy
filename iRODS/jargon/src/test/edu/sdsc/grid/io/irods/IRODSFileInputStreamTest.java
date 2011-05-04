@@ -1,13 +1,17 @@
 package edu.sdsc.grid.io.irods;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URI;
 import java.util.Properties;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.irods.jargon.core.connection.ConnectionConstants;
+import org.irods.jargon.core.connection.IRODSServerProperties;
+import org.irods.jargon.core.remoteexecute.RemoteExecuteServiceImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -15,6 +19,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -110,9 +116,7 @@ public class IRODSFileInputStreamTest {
 
 		// may have skipped a different value?
 
-		long leftToRead = (fileLengthInBytes - skipped);
 		long numberBytesReadAfterSkip = 0L;
-	
 
 		// read the rest
 
@@ -126,21 +130,16 @@ public class IRODSFileInputStreamTest {
 
 		irodsFileSystem.close();
 		long skippedPlusRead = skipped + numberBytesReadAfterSkip;
-		
-		
-		Assert
-				.assertEquals(
-						"I did not skip and then read the remainder of the specified file",
-						fileLengthInBytes, skippedPlusRead);
+
+		Assert.assertEquals(
+				"I did not skip and then read the remainder of the specified file",
+				fileLengthInBytes, skippedPlusRead);
 	}
-	
-	
 
 	@Test
 	public final void testRead() throws Exception {
 		// generate a local scratch file
 		String testFileName = "testread.txt";
-		int fileLengthInKb = 4;
 		long fileLengthInBytes = 1024;
 
 		String absPath = scratchFileUtils
@@ -240,18 +239,15 @@ public class IRODSFileInputStreamTest {
 
 		// read the rest
 
-		int readBytes;
 		byte[] readBytesBuffer = new byte[512];
-		while ((readBytes = (fis.read(readBytesBuffer, 0,
-				readBytesBuffer.length))) > -1) {
+		while (((fis.read(readBytesBuffer, 0, readBytesBuffer.length))) > -1) {
 			actualFileContents.write(readBytesBuffer);
 		}
 
 		irodsFileSystem.close();
-		Assert
-				.assertEquals(
-						"I did not skip and then read the remainder of the specified file",
-						fileLengthInBytes, actualFileContents.size());
+		Assert.assertEquals(
+				"I did not skip and then read the remainder of the specified file",
+				fileLengthInBytes, actualFileContents.size());
 	}
 
 	@Test
@@ -274,14 +270,12 @@ public class IRODSFileInputStreamTest {
 
 		String testString = "jfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseij;ida8ehgasjfai'sjf;iadvajkdfgjasdl;jfasfjfaeiiiiiiiiiiiitsetseflyiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiispooniiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiisomewhereinthestringiiiiiiiiiconeiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiblarkiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiidangleiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskthisisthemiddleofthestringfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijjfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseijthisistheendofthestrring";
 		byte[] myBytesArray = testString.getBytes();
-		int byteArraySize = myBytesArray.length;
-
 		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
-		
+
 		irodsFileOutputStream.close();
 
 		irodsFile.close();
-		
+
 		irodsFileSystem = new IRODSFileSystem(account);
 
 		// now read back
@@ -294,16 +288,13 @@ public class IRODSFileInputStreamTest {
 
 		// read the rest
 
-		int readBytes;
 		byte[] readBytesBuffer = new byte[512];
-		while ((readBytes = (fis.read(readBytesBuffer, 0,
-				readBytesBuffer.length))) > -1) {
+		while (((fis.read(readBytesBuffer, 0, readBytesBuffer.length))) > -1) {
 			actualFileContents.write(readBytesBuffer);
 		}
 
 		irodsFileSystem.close();
-		Assert
-		.assertEquals(
+		Assert.assertEquals(
 				"file length from irods does not match string length",
 				testString.length(), length);
 
@@ -311,7 +302,7 @@ public class IRODSFileInputStreamTest {
 		irodsFileSystem.close();
 
 	}
-	
+
 	@Test
 	public final void testJustReadSomeBigChunk() throws Exception {
 		String testFileName = "testJustReadSomeBigChunk.csv";
@@ -332,15 +323,12 @@ public class IRODSFileInputStreamTest {
 
 		String testString = "jfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iadvajkdfgjasdl;jfasfjfaeiiiiiiiiiii";
 		byte[] myBytesArray = testString.getBytes();
-		int byteArraySize = myBytesArray.length;
-
-
 		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
-		
+
 		irodsFileOutputStream.close();
 
 		irodsFile.close();
-		
+
 		irodsFileSystem = new IRODSFileSystem(account);
 
 		// now read back
@@ -353,16 +341,13 @@ public class IRODSFileInputStreamTest {
 
 		// read the rest
 
-		int readBytes;
 		byte[] readBytesBuffer = new byte[2048];
-		while ((readBytes = (fis.read(readBytesBuffer, 0,
-				readBytesBuffer.length))) > -1) {
+		while (((fis.read(readBytesBuffer, 0, readBytesBuffer.length))) > -1) {
 			actualFileContents.write(readBytesBuffer);
 		}
 
 		irodsFileSystem.close();
-		Assert
-		.assertEquals(
+		Assert.assertEquals(
 				"file length from irods does not match string length",
 				testString.length(), length);
 
@@ -370,9 +355,10 @@ public class IRODSFileInputStreamTest {
 		irodsFileSystem.close();
 
 	}
-	
+
 	@Test
-	public final void testJustReadSomeBigChunkInTwoPiecesThatSumToASizeGreaterThenTheChunk() throws Exception {
+	public final void testJustReadSomeBigChunkInTwoPiecesThatSumToASizeGreaterThenTheChunk()
+			throws Exception {
 		String testFileName = "testJustReadSomeBigChunkInTwoPiecesThatSumToASizeGreaterThenTheChunk.csv";
 
 		IRODSAccount account = testingPropertiesHelper
@@ -391,15 +377,12 @@ public class IRODSFileInputStreamTest {
 
 		String testString = "jfaeiiiiiiiiiiiiiiiiiiiiii838ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iad38ejfiafjaskfjaisdfjaseij;idajjjjjjjjjjjjjjjjjjjjjjjjjj8ehgasjfai'sjf;iadvajkdfgjasdl;jfasfjfaeiiiiiiiiiiitheend******";
 		byte[] myBytesArray = testString.getBytes();
-		int byteArraySize = myBytesArray.length;
-
-
 		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
-		
+
 		irodsFileOutputStream.close();
 
 		irodsFile.close();
-		
+
 		irodsFileSystem = new IRODSFileSystem(account);
 
 		// now read back
@@ -410,8 +393,6 @@ public class IRODSFileInputStreamTest {
 
 		ByteArrayOutputStream actualFileContents = new ByteArrayOutputStream();
 
-		// read the rest (3072?)
-   
 		int readBytes;
 		byte[] readBytesBuffer = new byte[512];
 		while ((readBytes = (fis.read(readBytesBuffer, 0,
@@ -421,13 +402,97 @@ public class IRODSFileInputStreamTest {
 
 		irodsFileSystem.close();
 		String actualString = actualFileContents.toString();
-		
-		Assert
-		.assertEquals(
+
+		Assert.assertEquals(
 				"file length from irods does not match string length",
 				testString.length(), length);
+
+		Assert.assertEquals("string written does not match string read",
+				testString, actualString);
+
+	}
+	
+	@Test
+	public void testGetInputStreamWithConnectionReroutingBySpecifiedResource() throws Exception {
+
+		String useDistribResources = testingProperties
+				.getProperty("test.option.distributed.resources");
+
+		if (useDistribResources != null && useDistribResources.equals("true")) {
+			// do the test
+		} else {
+			return;
+		}
+
+		if (ConnectionConstants.REROUTE_CONNECTIONS != true) {
+			TestCase.fail("attempt to test connection re-routing, but reroute connections not set in ConnectionConstants");
+		}
 		
-		Assert.assertEquals("string written does not match string read", testString, actualString);
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			irodsFileSystem.close();
+			return;
+		}
+
+		// generate a local scratch file
+		String testFileName = "testGetInputStreamWithConnectionReroutingBySpecifiedResource.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				1);
+
+		// put scratch file into irods in the right place on the first resource
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand
+				.setIrodsResource(testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		StringBuilder uriPath = new StringBuilder();
+		uriPath.append(IRODS_TEST_SUBDIR_PATH);
+		uriPath.append('/');
+		uriPath.append(testFileName);
+
+		URI irodsUri = testingPropertiesHelper
+				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
+						uriPath.toString());
+		IRODSFile irodsFile = new IRODSFile(irodsUri);
+		irodsFile.setResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		IRODSFileInputStream irodsFileInputStream = new IRODSFileInputStream(irodsFile);
+		IRODSAccount streamAccount = (IRODSAccount) irodsFileInputStream.getFileSystem().getAccount();
+		TestCase.assertFalse("did not reroute connection", streamAccount.getHost().equals(testAccount.getHost()));
+		
+		// close the stream
+		irodsFileInputStream.close();
+		
+		TestCase.assertTrue("did not close the rerouted file system", irodsFileInputStream.getFileSystem() == null);
+		TestCase.assertTrue("original file system was closed",irodsFileSystem.isConnected() == true);
+
+		irodsFileSystem.close();
 
 	}
 

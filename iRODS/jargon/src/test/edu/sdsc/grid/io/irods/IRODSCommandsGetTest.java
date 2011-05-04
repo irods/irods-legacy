@@ -327,6 +327,83 @@ public class IRODSCommandsGetTest {
 
 	}
 	
+	@Test // FIXME:  will currently fail, might need custom gethostforget for data objects note sent to wayne and mike w
+	public void testGetDataObjectWithConnectionReroutingNoRescPassedIn() throws Exception {
+
+		String useDistribResources = testingProperties
+				.getProperty("test.option.distributed.resources");
+
+		if (useDistribResources != null && useDistribResources.equals("true")) {
+			// do the test
+		} else {
+			return;
+		}
+
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		IRODSServerProperties props = irodsFileSystem.getCommands()
+				.getIrodsServerProperties();
+
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion(RemoteExecuteServiceImpl.STREAMING_API_CUTOFF)) {
+			irodsFileSystem.close();
+			return;
+		}
+
+		// generate a local scratch file
+		String testFileName = "testGetDataObjectWithConnectionReroutingNoRescPassedIn.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				1);
+
+		// put scratch file into irods in the right place on the first resource
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand
+				.setIrodsResource(testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		StringBuilder uriPath = new StringBuilder();
+		uriPath.append(IRODS_TEST_SUBDIR_PATH);
+		uriPath.append('/');
+		uriPath.append(testFileName);
+
+		URI irodsUri = testingPropertiesHelper
+				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
+						uriPath.toString());
+		IRODSFile irodsFile = new IRODSFile(irodsUri);
+
+		String getTargetFilePath = absPath + "GetResult" + testFileName;
+		GeneralFile localFile = new LocalFile(getTargetFilePath);
+		irodsFile
+				.copyTo(localFile,
+						true,"",
+						true);
+
+		irodsFileSystem.close();
+
+	}
+	
 	@Test
 	public void testGetCollectionWithConnectionRerouting() throws Exception {
 

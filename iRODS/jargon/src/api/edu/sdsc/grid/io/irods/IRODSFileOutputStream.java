@@ -52,6 +52,13 @@ import edu.sdsc.grid.io.*;
 
 import java.io.*;
 
+import org.irods.jargon.core.accessobject.FileCatalogObjectAO;
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactoryImpl;
+import org.irods.jargon.core.exception.JargonException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A IRODSFileOutputStream writes bytes to a file in a file system. What files
  * are available depends on the host environment.
@@ -63,12 +70,20 @@ import java.io.*;
  * @since JARGON2.0
  */
 public final class IRODSFileOutputStream extends RemoteFileOutputStream {
+	
+	public static final Logger log = LoggerFactory
+	.getLogger(IRODSFileOutputStream.class);
 	/**
 	 * Holds the server connection used by this stream.
 	 */
 	protected IRODSFileSystem fileSystem;
 
-	
+	/**
+	 * Holds an irodsFileSystem object when the input stream has been rerouted
+	 * to a new irods server
+	 */
+	private IRODSFileSystem reroutedFileSystem = null;
+			
 	/**
 	 * Creates a <code>FileOuputStream</code> by opening a connection to an
 	 * actual file, the file named by the path name <code>name</code> in the
@@ -89,10 +104,42 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 */
 	public IRODSFileOutputStream(IRODSFileSystem fileSystem, String name)
 			throws IOException {
+		this(fileSystem, name, "");
+	}
+	
+	/**
+	 * Creates a <code>FileOuputStream</code> by opening a connection to an
+	 * actual file, the file named by the path name <code>name</code> in the
+	 * file system.
+	 * <p>
+	 * First, the security is checked to verify the file can be written.
+	 * <p>
+	 * If the named file does not exist, is a directory rather than a regular
+	 * file, or for some other reason cannot be opened for reading then a
+	 * <code>IOException</code> is thrown.
+	 * 
+	 * @param name
+	 *            the system-dependent file name.
+	 * @param resourceName
+	 * 			 the target resource to 
+	 * @exception IOException
+	 *                if the file does not exist, is a directory rather than a
+	 *                regular file, or for some other reason cannot be opened
+	 *                for reading.
+	 */
+	public IRODSFileOutputStream(IRODSFileSystem fileSystem, String name, String resourceName)
+			throws IOException {
 		super(fileSystem, name);
 
 		this.fileSystem = fileSystem;
+		
+		try {
+			this.lookForReroutingOfConnection(name, "");
+		} catch (JargonException e) {
+			throw new IOException(e);
+		}
 	}
+
 
 	/**
 	 * Creates a <code>FileInputStream</code> by opening a connection to an
@@ -117,6 +164,11 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	public IRODSFileOutputStream(IRODSFile file) throws IOException {
 		super(file);
 		fileSystem = (IRODSFileSystem) file.getFileSystem();
+		try {
+			this.lookForReroutingOfConnection(file.getAbsolutePath(), file.getResource());
+		} catch (JargonException e) {
+			throw new IOException(e);
+		}
 	}
 
 	/**
@@ -184,6 +236,59 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 			fileSystem.commands.fileClose(fd);
 			fileSystem = null;
 		}
+		
+		// if there was a rerouted connection, shut down that IRODSFileSystem
+		// entirely
+		if (reroutedFileSystem != null) {
+			log.info("shutting down rerouted file system");
+			reroutedFileSystem.close();
+		}
+	}
+	
+	/**
+	 * Method takes the iRODS absolute path for the stream file, and evaluates
+	 * whether the connection should be rerouted to another server. This will
+	 * switch out the connection used for the stream and open a new one.
+	 * 
+	 * @param irodsAbsolutePath
+	 * @param resourceName
+	 * @throws JargonException
+	 */
+	private void lookForReroutingOfConnection(final String irodsAbsolutePath,
+			final String resourceName) throws JargonException {
+		IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(fileSystem.commands);
+		FileCatalogObjectAO fileCatalogObjectAO = irodsAccessObjectFactory
+				.getFileCatalogObjectAO();
+		IRODSFileSystem tempReroutedFileSystem = fileCatalogObjectAO.rerouteIrodsFileWhenIRODSIsSource(
+				irodsAbsolutePath, resourceName);
+		if (tempReroutedFileSystem == null) {
+			log.info("no override of stream connection");
+			return;
+		}
+
+		log.debug("connection will be rerouted, switch to the new connection and close the file that was opened, close old file...");
+		try {
+			/* note that close will look at reroutedFileSystem and close it, this is done so that when close is called by a client
+			 * it will disconnect from the rerouted connection.  The client will be unaware that the additional connection exists, and otherwise,
+			 * an agent connection will be retained and then closed without disconnecting.  There is a bit of a shuffle of the file system object
+			 * in this class, it keeps references to the original, as well as the rerouted.  For this reason, the close of the file descriptor needs to happen
+			 * before the rerouted connection is assigned, or the close connection will just close the newly opened rerouted connection.
+			 * 
+			 * The timing is a bit clunky in this version of Jargon, but could not be avoided.
+			 */
+			close();
+			fileSystem = tempReroutedFileSystem;
+			reroutedFileSystem = tempReroutedFileSystem;
+			log.debug("open file at resource server...");
+			IRODSFile irodsFile = new IRODSFile(reroutedFileSystem, irodsAbsolutePath);
+			irodsFile.setResource(resourceName);
+			open(irodsFile);
+		} catch (Exception e) {
+			log.error("error rerouting stream connection", e);
+			throw new JargonException(e);
+		}
+		log.info("rerouting setup complete for stream");
 	}
 
 }

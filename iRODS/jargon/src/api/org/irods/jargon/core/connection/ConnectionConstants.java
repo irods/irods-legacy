@@ -12,6 +12,14 @@ import edu.sdsc.grid.io.GeneralFileSystem;
  * 
  */
 public final class ConnectionConstants {
+	
+	/**
+	 * Indicates whether to reroute connections for files and collections when they 
+	 * are on another resource server.
+	 */
+	public static final boolean REROUTE_CONNECTIONS = true;
+	
+	public static final String REROUTE_CONNECTIONS_MIN_RODS_VERSION = "rods2.5";
 
 	public static final String JARGON_CONNECTION_ENCODING = "utf-8";
 	/**

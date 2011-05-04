@@ -45,7 +45,10 @@ Switched to GForge bug numbering as of iRODS2.5
 
 *[#157] adding Resource.modifyStatus()
 
-*[#176] put/get resource switching - work in progress...initial testing of get operations
+*[#176] put/get resource switching 
+  *reroute for get/put
+  *reroute for streams
+  still needs some updates for data objects when no resource specified
 
 *Addition of buffering capability for input streams for better performance
 

@@ -61,21 +61,12 @@ import java.io.*;
  * @since JARGON1.4
  */
 public abstract class GeneralFileOutputStream extends OutputStream {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
 	/**
 	 * Holds the file descriptor information used by this stream.
 	 */
 	protected int fd = -1;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
 	/**
 	 * Creates a <code>FileOuputStream</code> by opening a connection to an
 	 * actual file, the file named by the path name <code>name</code> in the
@@ -141,9 +132,6 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 		close();
 	}
 
-	// ----------------------------------------------------------------------
-	// Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Opens the given file for use by this stream.
 	 * 

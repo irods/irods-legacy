@@ -2379,7 +2379,7 @@ public class IRODSCommands {
 		return irodsServerProperties;
 	}
 
-	protected IRODSAccount getIrodsAccount() {
+	public IRODSAccount getIrodsAccount() {
 		return irodsAccount;
 	}
 
