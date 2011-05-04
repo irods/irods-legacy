@@ -263,23 +263,23 @@ void *startMonScript(void *arg) {
 #endif
   }
   
-  if (&msout != NULL) {
-    /* write into the irodsMonPerf log file */
-    if ( (char *) (*((execCmdOut_t *) msout.inOutStruct)).stdoutBuf.buf != NULL) {
-      output = (char *) (*((execCmdOut_t *) msout.inOutStruct)).stdoutBuf.buf;
-      rodsMonPerfLog(tinput->execAddr, tinput->rescName, output, &(tinput->rei)); 
-    }
-    else { 
-	  char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
-      rodsLog(LOG_ERROR, "Server monitoring: no output for the server %s, status = %i \n", tinput->execAddr, status);
-      rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, &(tinput->rei));
-      threadIsAlive[thrid] = 1;
-      retval = -1;
-#ifndef windows_platform
-      pthread_exit((void *)&retval);
-#endif
-    }
+  /* if (&msout != NULL) { */
+  /* write into the irodsMonPerf log file */
+  if ( (char *) (*((execCmdOut_t *) msout.inOutStruct)).stdoutBuf.buf != NULL) {
+    output = (char *) (*((execCmdOut_t *) msout.inOutStruct)).stdoutBuf.buf;
+    rodsMonPerfLog(tinput->execAddr, tinput->rescName, output, &(tinput->rei)); 
   }
+  else { 
+	char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
+    rodsLog(LOG_ERROR, "Server monitoring: no output for the server %s, status = %i \n", tinput->execAddr, status);
+    rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, &(tinput->rei));
+    threadIsAlive[thrid] = 1;
+    retval = -1;
+#ifndef windows_platform
+    pthread_exit((void *)&retval);
+#endif
+  }
+  /*}
   else {
 	char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
     rodsLog(LOG_ERROR, "Server monitoring: problem with the server %s, status = %i \n", tinput->execAddr, status);
@@ -290,7 +290,7 @@ void *startMonScript(void *arg) {
 #ifndef windows_platform
     pthread_exit((void *)&retval);
 #endif
-  }
+  } */
   
   threadIsAlive[thrid] = 1;
   
