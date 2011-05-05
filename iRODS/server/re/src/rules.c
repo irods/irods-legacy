@@ -39,7 +39,7 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
     char errbuf[ERR_MSG_LEN];
     file = fopen(rulesFileName, "r");
 	if (file == NULL) {
-            snprintf(errbuf, MAX_ERRMSG_LEN,
+            snprintf(errbuf, ERR_MSG_LEN,
                     "readRuleSetFromFile() could not open rules file %s\n",
                     rulesFileName);
             addRErrorMsg(errmsg, RULES_FILE_READ_ERROR, errbuf);
@@ -365,7 +365,7 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
         RuleDesc *rd = (RuleDesc *)lookupFromHashTable(ruleType, ruleName);
         if(rd!=NULL) {
             if(rule->ruleType == RK_FUNC || rd ->ruleType == RK_FUNC) {
-                char errbuf[MAX_ERRMSG_LEN];
+                char errbuf[ERR_MSG_LEN];
                 generateErrMsg("redefinition of function", rule->node->expr, rule->node->base, errbuf);
                 addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
                 res = newErrorType(FUNCTION_REDEFINITION, r);

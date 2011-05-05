@@ -834,8 +834,8 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
 
 
         if(civ->params->degree != argc) {
-            char buf[MAX_ERRMSG_LEN];
-            snprintf(buf, MAX_ERRMSG_LEN, "error: cannot apply rule %s from rule conditional index because of wrong number of arguments, declared %d, supplied %d.", ruleName, civ->params->degree, argc);
+            char buf[ERR_MSG_LEN];
+            snprintf(buf, ERR_MSG_LEN, "error: cannot apply rule %s from rule conditional index because of wrong number of arguments, declared %d, supplied %d.", ruleName, civ->params->degree, argc);
             addRErrorMsg(errmsg, ACTION_ARG_COUNT_MISMATCH, buf);
             return newErrorRes(r, ACTION_ARG_COUNT_MISMATCH);
         }
@@ -1090,7 +1090,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
 }
 
 Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
-    char errbuf[MAX_ERRMSG_LEN];
+    char errbuf[ERR_MSG_LEN];
     char *localErrorMsg = NULL;
     Node *p = pattern, *v = val;
     if(pattern->nodeType == N_APPLICATION) {

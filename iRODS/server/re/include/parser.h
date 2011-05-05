@@ -76,7 +76,7 @@ typedef struct {
     int backwardCompatible;
     Node *errnode;
     Label errloc;
-    char errmsgbuf[MAX_ERRMSG_LEN];
+    char errmsgbuf[ERR_MSG_LEN];
     Hashtable *symtable;
     rError_t *errmsg;
     Region *region;
@@ -84,9 +84,21 @@ typedef struct {
 
 #define PUSH(n) (context->nodeStack[(context->nodeStackTop)++] = n)
 #define POP (context->nodeStack[--(context->nodeStackTop)])
-
+#define NEXT_TOKEN \
+{ \
+    FPOS; \
+    nextTokenRuleGen(e, &token, rulegen); \
+    if(token.type==N_ERROR) { \
+        context->error=1; \
+        if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
+        break;\
+    } \
+}
+#define TOKEN_TYPE(t) (token.type == (t))
+#define TOKEN_TEXT(str) (strcmp(token.text, (str))==0)
+#define PUSHBACK pushback(e, &token)
+#define FPOS getFPos(&pos, e)
 #define UPDATE_ERR_LOC if(FPOS->exprloc > context->errloc.exprloc) {context->errloc = *FPOS;}
-
 #define CASCADE(x) \
 {\
         Node *_ncascade = (x); \
@@ -157,21 +169,6 @@ PARSER_FUNC_PROTO2(l, p, q) { \
         context->nodeStack[context->nodeStackTop-n+i] = node[i]; \
     } \
 }
-
-#define NEXT_TOKEN \
-{ \
-    FPOS; \
-    nextTokenRuleGen(e, &token, rulegen); \
-    if(token.type==N_ERROR) { \
-        context->error=1; \
-        if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
-        break;\
-    } \
-}
-#define TOKEN_TYPE(t) (token.type == (t))
-#define TOKEN_TEXT(str) (strcmp(token.text, (str))==0)
-#define PUSHBACK pushback(e, &token)
-#define FPOS getFPos(&pos, e)
 
 #define TTEXT(x) \
     NEXT_TOKEN; \

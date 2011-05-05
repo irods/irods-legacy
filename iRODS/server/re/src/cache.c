@@ -379,7 +379,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
             RETURN;
         }
         unlock_mutex = 1;
-        
+
         int shmid = - 1;
         int key = 1200;
         void *addr = SHM_BASE_ADDR;
@@ -452,7 +452,7 @@ ret:
 }
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct, Region *r)
 {
-  int i = 0;
+  int i;
 /*  char l0[MAX_RULE_LENGTH]; */
 /*  char l1[MAX_RULE_LENGTH]; */
 /*  char l2[MAX_RULE_LENGTH]; */

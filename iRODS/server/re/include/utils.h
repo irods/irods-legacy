@@ -18,7 +18,6 @@
 #endif
 
 #define MAX_PARAMS_LEN 100
-#define MAX_ERRMSG_LEN (2*1024)
 
 /* parser error -1203000 */
 #define PARSER_ERROR -1203000

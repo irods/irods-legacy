@@ -559,14 +559,6 @@ Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rE
     return newIntRes(r, 0);
 }
 
-void errorInsert(char *errmsg, char *insert) {
-    			char buffer[MAX_ERRMSG_LEN+1];
-			strncpy(buffer, insert, MAX_ERRMSG_LEN);
-			strncat(buffer, errmsg, MAX_ERRMSG_LEN);
-			strncpy(errmsg, buffer, MAX_ERRMSG_LEN);
-
-}
-
 void printType(ExprType *type, Hashtable *var_types) {
     char buf[1024];
     typeToString(type, var_types, buf, 1024);

@@ -341,6 +341,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
                         if(ret != 0) {
                             /* error */
                             /* todo free msParamArray */
+                            free(v);
                             return ret;
                         }
 			var->msParam[var->len++] = v;

@@ -2067,16 +2067,22 @@ void generateErrMsgFromSource(char *msg, long errloc, char *src, char errbuf[ERR
     deletePointer(e);
 }
 void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_MSG_LEN]) {
-    char buf[1024];
-    dupLine(e, l, 1024, buf);
-    strncat(buf, "\n", 1024);
+    char buf[ERR_MSG_LEN];
+    dupLine(e, l, ERR_MSG_LEN, buf);
+    int len = strlen(buf);
     int coor[2];
     getCoor(e, l, coor);
     int i;
     for(i=0;i<coor[1];i++) {
-        strncat(buf, buf[i] == '\t'?"\t":" ", 1024);
+        if(len >= ERR_MSG_LEN - 1) {
+            break;
+        }
+        buf[len++] = buf[i] == '\t'?'\t':' ';
     }
-    strncat(buf, "^", 1024);
+    if(len < ERR_MSG_LEN - 2) {
+        buf[len++] = '^';
+    }
+    buf[len++] = '\0';
     snprintf(errbuf, ERR_MSG_LEN,
             "%s\nline %d, row %d\n%s\n", msg, coor[0], coor[1], buf);
 
