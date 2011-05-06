@@ -1,8 +1,8 @@
+#!/bin/sh
+
 ## Copyright (c) 2009 Data Intensive Cyberinfrastructure Foundation. All rights reserved.
 ## For full copyright notice please refer to files in the COPYRIGHT directory
 ## Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation
-
-#!/bin/sh
 
 # This script is a template which must be updated if one wants to use the universal MSS driver.
 # Your working version should be in this directory server/bin/cmd/univMSSInterface.sh.
