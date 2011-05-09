@@ -40,10 +40,12 @@ import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.query.IRODSQuery;
+import org.irods.jargon.core.query.IRODSQueryResultRow;
 import org.irods.jargon.core.query.IRODSQueryResultSet;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.RodsGenQueryEnum;
 import org.irods.jargon.core.utils.AccessObjectQueryProcessingUtils;
+import org.irods.jargon.core.utils.IRODSDataConversionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,11 +74,13 @@ public class Resource extends Domain {
 	public static final String RESC_AUTO_UP = "auto-up";
 	public static final String RESC_AUTO_DOWN = "auto-down";
 
-	private static final Object COMMA = ", ";
+	private static final String COMMA = ", ";
 
-	private static final Object WHERE = " WHERE ";
+	private static final String WHERE = " WHERE ";
 
-	private static final Object EQUALS_AND_QUOTE = " = '";
+	private static final String EQUALS_AND_QUOTE = " = '";
+
+	private static final String QUOTE = "'";
 
 	public Resource(final IRODSFileSystem irodsFileSystem) {
 		super(irodsFileSystem, "resource", "resc_type", "r_resc_main");
@@ -569,6 +573,68 @@ public class Resource extends Domain {
 		return AccessObjectQueryProcessingUtils
 				.buildAvuDataListFromResultSet(resultSet);
 
+	}
+	
+	/**
+	 * Retrieve a list of host names for resource servers that have a copy of the data object.  This is used in resource re-routing for transfers and streaming.
+	 * @param irodsCollectionAbsolutePath <code>String</code> with the absolute path to the data object parent collection
+	 * @param dataName <code>String</code> with the name of the iRODS data object
+	 * @return <code>List<String></code> with available host names
+	 * @throws JargonException
+	 */
+	public List<String> listHostsForDataObject(final String irodsCollectionAbsolutePath, final String dataName) throws JargonException {
+		
+		if (irodsCollectionAbsolutePath == null || irodsCollectionAbsolutePath.isEmpty()) {
+			throw new IllegalArgumentException("null or empty irodsCollectionAbsolutePath");
+		}
+		
+		if (dataName == null || dataName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty dataName");
+		}
+		
+		List<String> hosts = new ArrayList<String>();
+		
+		log.info("listHostsForDataObject for collection: {}", irodsCollectionAbsolutePath);
+		log.info(" dataName:{}", dataName);
+
+		final StringBuilder sb = new StringBuilder();
+		sb.append("SELECT ");
+		sb.append(RodsGenQueryEnum.COL_R_LOC.getName());
+	
+		sb.append(RodsGenQueryEnum.COL_COLL_NAME.getName());
+		sb.append(EQUALS_AND_QUOTE);
+		sb.append(IRODSDataConversionUtil.escapeSingleQuotes(irodsCollectionAbsolutePath));
+		sb.append("' AND ");
+		sb.append(RodsGenQueryEnum.COL_DATA_NAME.getName());
+		sb.append(EQUALS_AND_QUOTE);
+		sb.append(IRODSDataConversionUtil.escapeSingleQuotes(irodsCollectionAbsolutePath));
+		sb.append(QUOTE);
+
+		final IRODSQuery irodsQuery = IRODSQuery.instance(sb.toString(), 5000);
+
+		IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(irodsFileSystem.getCommands());
+
+		final IRODSGenQueryExecutor irodsGenQueryExecutor = irodsAccessObjectFactory
+				.getIRODSGenQueryExcecutor();
+
+		IRODSQueryResultSet resultSet;
+
+		try {
+			resultSet = irodsGenQueryExecutor.executeIRODSQuery(irodsQuery, 0);
+		} catch (JargonQueryException e) {
+			log.error("query exception for resource query: " + sb.toString(), e);
+			throw new JargonException("error in resource query", e);
+		}
+		
+		for (IRODSQueryResultRow resultRow : resultSet.getResults()) {
+			hosts.add(resultRow.getColumn(0));
+		}
+		
+		log.info("hosts for data object: {}", hosts);
+		
+		return hosts;
+		
 	}
 
 }

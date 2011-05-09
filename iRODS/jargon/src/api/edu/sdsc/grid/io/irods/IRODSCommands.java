@@ -491,7 +491,7 @@ public class IRODSCommands {
 	 */
 	public synchronized Tag irodsFunction(final String type,
 			final String message, final int errorLength,
-			final InputStream errorStream, final long byteStringLength,
+			final InputStream errorStream, final long byteStreamLength,
 			final InputStream byteStream, final int intInfo)
 			throws JargonException {
 
@@ -521,13 +521,15 @@ public class IRODSCommands {
 					.send(irodsConnection.createHeader(
 							RODS_API_REQ,
 							message.getBytes(ConnectionConstants.JARGON_CONNECTION_ENCODING).length,
-							errorLength, byteStringLength, intInfo));
+							errorLength, byteStreamLength, intInfo));
 			irodsConnection.send(message);
 			if (errorLength > 0) {
-				irodsConnection.send(errorStream, errorLength);
+				irodsConnection.send(new BufferedInputStream(errorStream), errorLength);
+				errorStream.close();
 			}
-			if (byteStringLength > 0) {
-				irodsConnection.send(byteStream, byteStringLength);
+			if (byteStreamLength > 0) {
+				irodsConnection.send(new BufferedInputStream(byteStream), byteStreamLength);
+				byteStream.close();
 			}
 			irodsConnection.flush();
 		} catch (UnsupportedEncodingException e) {
@@ -1966,7 +1968,7 @@ public class IRODSCommands {
 	 *         containing the results, and the ability to requery.
 	 * @throws IOException
 	 */
-	synchronized MetaDataRecordList[] query(
+	public synchronized MetaDataRecordList[] query(
 			final MetaDataCondition[] conditions,
 			final MetaDataSelect[] selects, final int numberOfRecordsWanted,
 			final Namespace namespace) throws IOException {
@@ -1999,7 +2001,7 @@ public class IRODSCommands {
 	 *         containing the results, and the ability to requery.
 	 * @throws IOException
 	 */
-	synchronized MetaDataRecordList[] query(
+	public synchronized MetaDataRecordList[] query(
 			final MetaDataCondition[] conditions,
 			final MetaDataSelect[] selects, final int numberOfRecordsWanted,
 			final Namespace namespace, final boolean distinctQuery)

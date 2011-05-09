@@ -48,11 +48,12 @@ Switched to GForge bug numbering as of iRODS2.5
 *[#176] put/get resource switching 
   *reroute for get/put
   *reroute for streams
-  still needs some updates for data objects when no resource specified
 
 *Addition of buffering capability for input streams for better performance
 
 *[#166] gen query 'in' support - work in progress, waiting on testing with accompanying iRODS server patches
+
+*Added close and buffering of streams in IRODSCommands.irodsFunction() method.
 
  
 ================================================================================================

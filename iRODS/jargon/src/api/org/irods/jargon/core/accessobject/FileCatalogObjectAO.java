@@ -11,6 +11,8 @@ import edu.sdsc.grid.io.irods.IRODSFileSystem;
  *
  */
 public interface FileCatalogObjectAO {
+	
+	public static final String USE_THIS_ADDRESS = "thisAddress";
 
 	/**
 	 * For a get operation, determine the resource server host that actually contains the data.  This is used to determine connection re-routing.

@@ -134,7 +134,7 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 		this.fileSystem = fileSystem;
 		
 		try {
-			this.lookForReroutingOfConnection(name, "");
+			this.lookForReroutingOfConnection(name, resourceName);
 		} catch (JargonException e) {
 			throw new IOException(e);
 		}

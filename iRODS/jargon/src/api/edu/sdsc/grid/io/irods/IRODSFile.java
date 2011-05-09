@@ -1311,6 +1311,11 @@ public class IRODSFile extends RemoteFile {
 			throw new IllegalArgumentException("resourceName is null");
 		}
 
+		if (resourceName.length() == 0) {
+			resource = resourceName;
+			return;
+		}
+		
 		MetaDataSelect[] select = { MetaDataSet
 				.newSelection(ResourceMetaData.COLL_RESOURCE_NAME) };
 
