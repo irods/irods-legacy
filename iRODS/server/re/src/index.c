@@ -106,7 +106,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex, Region *r)
             while(createIndex && currIndexNode != NULL) {
                 Node *ruleNode = inRuleSet->rules[currIndexNode->ruleIndex]->node;
                 if(ruleNode->subtrees[1]->nodeType == N_APPLICATION && strcmp(ruleNode->subtrees[1]->text, "==") == 0 && /* comparison */
-                   ruleNode->subtrees[1]->degree == 2 && 
+                   ruleNode->subtrees[1]->degree == 2 &&
                    ruleNode->subtrees[1]->subtrees[1]->nodeType == TK_STRING && /* with a string */
                    lookupFromHashTable(processedStrs, ruleNode->subtrees[1]->subtrees[1]->text)==NULL /* no repeated string */
                         ) {
@@ -119,7 +119,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable **ruleIndex, Region *r)
                         for(i=0;i<params->degree;i++) {
                             insertIntoHashTable(varMapping, params->subtrees[i]->text, params->subtrees[i]->text);
                         }
-                        
+
                     } else if(RULE_NODE_NUM_PARAMS(ruleNode) == params->degree) {
                         for(i=0;i<params->degree;i++) {
                             updateInHashTable(varMapping, params->subtrees[i]->text, ruleNode->subtrees[0]->subtrees[0]->subtrees[i]->text);

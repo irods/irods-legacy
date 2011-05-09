@@ -140,6 +140,15 @@ CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable
     return civcopy;
 }
 
+FunctionDesc *copyFunctionDesc(unsigned char **buf, FunctionDesc *fd, Hashtable *objectMap) {
+    unsigned char *p = *buf;
+    allocate(p, FunctionDesc, fdcopy, *fd);
+    fdcopy->type = copyNode(&p, fd->type, objectMap);
+    fdcopy->next = fdcopy->next==NULL?NULL : copyFunctionDesc(&p, fd->next, objectMap);
+    *buf = p;
+    return fdcopy;
+}
+
 Cache *copyCache(unsigned char **buf, Cache *c) {
     Hashtable *objectMap = newHashTable(100);
 
@@ -166,6 +175,7 @@ Cache *copyCache(unsigned char **buf, Cache *c) {
     ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet, objectMap);
     ccopy->coreRuleIndex = ccopy->coreRuleIndex == NULL? NULL:copyHashtable(&p, ccopy->coreRuleIndex, (Copier)copyRuleIndexList, objectMap);
     ccopy->condIndex = ccopy->condIndex == NULL? NULL:copyHashtable(&p, ccopy->condIndex, (Copier)copyCondIndexVal, objectMap);
+    ccopy->funcDescIndex = copyHashtable(&p, ccopy->funcDescIndex, (Copier)copyFunctionDesc, objectMap);
     ccopy->dataSize = (p - (*buf));
 
     *buf = p;
@@ -309,6 +319,9 @@ Cache *restoreCache(unsigned char *buf) {
                 APPLY_DIFF(((RuleIndexList *)p)->head, RuleIndexListNode, diff);
                 APPLY_DIFF(((RuleIndexList *)p)->tail, RuleIndexListNode, diff);
                 APPLY_DIFF(((RuleIndexList *)p)->ruleName, char, diff);
+            case FunctionDesc_T:
+                APPLY_DIFF(((FunctionDesc *)p)->type, ExprType, diff);
+                APPLY_DIFF(((FunctionDesc *)p)->next, FunctionDesc, diff);
                 break;
         }
     }
@@ -407,6 +420,8 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
         buf = (unsigned char *)malloc(SHMMAX);
     }
     if(loadToBuf) {
+        funcDescIndex = newHashTable(100);
+        getSystemFunctions(funcDescIndex, r);
         while (strlen(r2) > 0) {
                 int i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
                 if (i == 0)
@@ -421,6 +436,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
         cacheBuf.coreRuleIndex = coreRuleIndex;
         cacheBuf.coreRuleSet = &coreRules;
         cacheBuf.condIndex = condIndex;
+        cacheBuf.funcDescIndex = funcDescIndex;
 #ifdef DEBUG
         unsigned char *bufStart = buf;
 #endif
@@ -430,14 +446,17 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 #endif
         deleteHashTable(coreRuleIndex, nop);
         deleteHashTable(condIndex, (void (*)(void *))deleteCondIndexVal);
+        deleteHashTable(funcDescIndex, nop);
         coreRuleIndex = cacheNew->coreRuleIndex;
         coreRules = *cacheNew->coreRuleSet;
         condIndex = cacheNew->condIndex;
+        funcDescIndex = cacheNew->funcDescIndex;
     } else {
         Cache *cache = restoreCache(buf);
         coreRuleIndex = cache->coreRuleIndex;
         coreRules = *(cache->coreRuleSet);
         condIndex = cache->condIndex;
+        funcDescIndex = cache->funcDescIndex;
     }
 
 ret:

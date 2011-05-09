@@ -318,14 +318,14 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
     while(global->previous!=NULL) {
         global = global->previous;
     }
-    Env *nEnv = newEnv(newHashTable(100), global, env->funcDesc);
+    Env *nEnv = newEnv(newHashTable(100), global);
     Hashtable *localTVarEnv = NULL;
 
     List *localTypingConstraints = NULL;
     FunctionDesc *fd = NULL;
     char *vOrE, desc[MAX_PARAMS_LEN];
     /* look up function descriptor */
-    fd = (FunctionDesc *)lookupFromHashTable(env->funcDesc, fn);
+    fd = (FunctionDesc *)lookupFromHashTable(funcDescIndex, fn);
     vOrE = desc;
     if(fd!=NULL) {
         /* find matching arity */
@@ -558,7 +558,7 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
       if (i >= 0) {
             if (varValue != NULL) {
                 Res *res = NULL;
-                FunctionDesc *fd = (FunctionDesc *) lookupBucketFromHashTable(env->funcDesc, varMap);
+                FunctionDesc *fd = (FunctionDesc *) lookupBucketFromHashTable(funcDescIndex, varMap);
                 if (fd == NULL) {
                     /* default to string */
                     res = newStringRes(r, (char *) varValue);
@@ -827,7 +827,7 @@ Env* globalEnv(Env *env) {
 Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *civ, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
             /*printTree(civ->condExp, 0); */
         Res *status;
-        Env *envNew = newEnv(newHashTable(100), globalEnv(env), env->funcDesc);
+        Env *envNew = newEnv(newHashTable(100), globalEnv(env));
         Node* rule = NULL;
         RuleIndexListNode *indexNode = NULL;
         Res* res = NULL;
@@ -1040,7 +1040,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
         }
 
         Env *global = globalEnv(env);
-        Env *envNew = newEnv(newHashTable(100), global, env->funcDesc);
+        Env *envNew = newEnv(newHashTable(100), global);
         Region *rNew = make_region(0, NULL);
 
 	int statusInitEnv;

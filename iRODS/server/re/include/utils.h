@@ -144,7 +144,6 @@ struct str_list {
 
 struct env {
     Hashtable *current;
-    Hashtable *funcDesc;
     Env *previous;
 };
 
@@ -269,7 +268,7 @@ char *typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
 msParamArray_t *newMsParamArray();
 void deleteMsParamArray(msParamArray_t *msParamArray);
 
-Env *newEnv(Hashtable *current, Env *previous, Hashtable *funcDes);
+Env *newEnv(Hashtable *current, Env *previous);
 void deleteEnv(Env *env, int deleteCurrent);
 void *lookupFromEnv(Env *env, char *key);
 void updateInEnv(Env *env, char *varname, Res *res);

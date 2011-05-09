@@ -20,6 +20,7 @@ extern microsdef_t MicrosTable[];
 #endif
 
 RuleSet coreRules, appRules;
+Hashtable *funcDescIndex = NULL;
 
 /**
  * Read a set of rules from files.
@@ -97,10 +98,8 @@ int parseAndComputeMsParamArrayToEnv(msParamArray_t *var, Env *env, ruleExecInfo
 
 }
 Env *defaultEnv(Region *r) {
-	Hashtable *funcDesc = newHashTable(100);
-    getSystemFunctions(funcDesc, r);
-    Env *global = newEnv(newHashTable(100), NULL, funcDesc);
-    Env *env = newEnv(newHashTable(100), global, funcDesc);
+    Env *global = newEnv(newHashTable(100), NULL);
+    Env *env = newEnv(newHashTable(100), global);
 
     addCmdExecOutToEnv(global, r);
     return env;
@@ -264,10 +263,8 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     }
 
     Node *node = createFunctionNode(actionName, paramNodes, paramsCount, NULL, r);
-    Hashtable *funcDesc = newHashTable(100);
-    Env *global = newEnv(newHashTable(100), NULL, funcDesc);
-    getSystemFunctions(funcDesc, r);
-    Env *env = newEnv(newHashTable(100), global, funcDesc);
+    Env *global = newEnv(newHashTable(100), NULL);
+    Env *env = newEnv(newHashTable(100), global);
     if(msParamArray!=NULL) {
         convertMsParamArrayToEnv(msParamArray, global, errmsg, r);
     }
@@ -342,9 +339,8 @@ void typingConstraintsToString(List *typingConstraints, Hashtable *var_types, ch
     }
 }
 ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r) {
-    Hashtable *funcDesc = newHashTable(100);
+    Hashtable *funcDesc = funcDescIndex;
     Hashtable *ruleType = newHashTable(MAX_NUM_RULES * 2);
-    getSystemFunctions(funcDesc, r);
     ExprType *res;
     int i;
     for(i=0;i<ruleset->len;i++) {
@@ -380,7 +376,6 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
 
 ret:
     deleteHashTable(ruleType, nop);
-    deleteHashTable(funcDesc, nop);
     return res;
 }
 
@@ -395,7 +390,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
     if(!node->typed) {
         /*printTree(node, 0); */
         List *typingConstraints = newList(r);
-        resType = typeExpression3(node, env->funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+        resType = typeExpression3(node, funcDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
         if(resType->nodeType == T_ERROR) {
             addRErrorMsg(errmsg, -1, "type error: in rule");
@@ -403,7 +398,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
             RETURN;
         }
         postProcessCoercion(node, varTypes, errmsg, errnode, r);
-        postProcessActions(node, env->funcDesc, errmsg, errnode, r);
+        postProcessActions(node, funcDescIndex, errmsg, errnode, r);
         /*    printTree(node, 0); */
         deleteHashTable(varTypes, nop);
         varTypes = NULL;
@@ -559,10 +554,9 @@ Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamAr
         freeRei = 1;
     }
     rei->status = 0;
-    Env *global = newEnv(newHashTable(100), NULL, newHashTable(100));
-    Env *env = newEnv(newHashTable(100),global,global->funcDesc);
+    Env *global = newEnv(newHashTable(100), NULL);
+    Env *env = newEnv(newHashTable(100),global);
     addCmdExecOutToEnv(global, r);
-    getSystemFunctions(global->funcDesc, r);
 
     Res *res;
     rError_t errmsgBuf;

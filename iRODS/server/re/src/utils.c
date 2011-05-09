@@ -727,11 +727,10 @@ void deleteMsParamArray(msParamArray_t *msParamArray) {
 
 }
 
-Env *newEnv(Hashtable *current, Env *previous, Hashtable *funcDesc) {
+Env *newEnv(Hashtable *current, Env *previous) {
     Env *env = (Env *)malloc(sizeof(Env));
     env->current = current;
     env->previous = previous;
-    env->funcDesc = funcDesc;
     return env;
 }
 
@@ -745,9 +744,7 @@ void deleteEnv(Env *env, int deleteCurrent) {
         }
     }
     if(deleteCurrent>=3) {
-        if(env->previous==NULL) {
-            deleteHashTable(env->funcDesc, nop);
-        } else {
+        if(env->previous!=NULL) {
             deleteEnv(env->previous, deleteCurrent);
 
         }

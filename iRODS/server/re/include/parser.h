@@ -51,7 +51,8 @@ typedef struct pointer {
 
 typedef enum ruleType {
     RK_REL,
-    RK_FUNC
+    RK_FUNC,
+    RK_INDUCT
 } RuleType;
 
 typedef struct {

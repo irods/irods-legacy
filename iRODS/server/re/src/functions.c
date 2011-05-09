@@ -25,10 +25,14 @@ FunctionDesc *newFunctionDesc(char *valueOrExpression, char *type, SmsiFuncPtrTy
     return desc;
 }
 FunctionDesc *newConstructorDesc(char *type, Region *r) {
+    return newConstructorDesc2(parseFuncTypeFromString(type, r), r);
+}
+
+FunctionDesc *newConstructorDesc2(Node *type, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
     /*desc->arity = arity; */
     desc->next = NULL;
-    desc->type = parseFuncTypeFromString(type, r);
+    desc->type = type;
     desc->fdtype = FD_CONS;
     int i;
     for(i=0;i<T_FUNC_ARITY(desc->type);i++) {
@@ -110,7 +114,7 @@ Res *smsi_letExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     if(TYPE(res) == T_ERROR) {
             return res;
     }
-    Env *nEnv = newEnv(newHashTable(100), env, env->funcDesc);
+    Env *nEnv = newEnv(newHashTable(100), env);
     Res *pres = matchPattern(params[0], res, nEnv, rei, reiSaveFlag, errmsg, r);
     if(TYPE(pres)==T_ERROR) {
         deleteEnv(nEnv, 1);
@@ -1450,7 +1454,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "trimr", newFunctionDesc("ii","s * s->s", smsi_trimr, r));
     insertIntoHashTable(ft, "strlen", newFunctionDesc("i","s->i", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionDesc("iii","s * i * i->s", smsi_substr, r));
-    insertIntoHashTable(ft, "pair", newConstructorDesc("forall X, forall Y, X * Y-> <X * Y>", r));
+/*    insertIntoHashTable(ft, "pair", newConstructorDesc("forall X, forall Y, X * Y-> <X * Y>", r)); */
     insertIntoHashTable(ft, "fst", newDeconstructorDesc("forall X, forall Y, <X * Y>->X", 0, r));
     insertIntoHashTable(ft, "snd", newDeconstructorDesc("forall X, forall Y, <X * Y>->Y", 1, r));
 

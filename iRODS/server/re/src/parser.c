@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "parser.h"
 #include "rules.h"
+#include "functions.h"
 
 
 int num_ops = 29;
@@ -389,8 +390,36 @@ int eol(char ch) {
 PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
         char *rk;
         int rulegen = 0;
-
-	NT(RuleName);
+    TRY(defType)
+        TTEXT("Inductive");
+        TTYPE(TK_TEXT);
+        BUILD_NODE(TK_TEXT, token.text, &pos, 0, 0);
+        TTEXT(":");
+        NT(FuncType);
+        TTEXT("=");
+        int n = 0;
+        OPTIONAL_BEGIN(semicolon)
+            TTEXT("|");
+        OPTIONAL_END(semicolon)
+        LOOP_BEGIN(cons)
+            TTYPE(TK_TEXT);
+            BUILD_NODE(TK_TEXT, token.text, &pos, 0, 0);
+            TTEXT(":");
+            NT(FuncType);
+            n++;
+            TRY(delim)
+                TTEXT("|");
+            OR(delim)
+                DONE(cons);
+            END_TRY(delim)
+        LOOP_END(cons)
+        OPTIONAL_BEGIN(semicolon)
+            TTEXT(";");
+        OPTIONAL_END(semicolon)
+        n = n*2+2;
+        BUILD_NODE(N_RULE_PACK, "INDUCT", &start, n, n);
+    OR(defType)
+        NT(RuleName);
         TRY(ruleType)
             TTEXT("{");
             rulegen = 1;
@@ -478,6 +507,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             BUILD_NODE(N_RULE,"RULE", &start,4, 4);
             BUILD_NODE(N_RULE_PACK, rk, &start, 1, 1);
         }
+    END_TRY(defType)
 PARSER_FUNC_END(Rule)
 
 PARSER_FUNC_BEGIN(RuleName)
@@ -1721,7 +1751,7 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                         TTYPE(TK_INT);
                     OR(typeVar)
                         TTYPE(TK_TEXT);
-                        ABORT(!isupper(token.text[0]))
+                        ABORT(!isupper(token.text[0]));
                     END_TRY(typeVar) /* type variable */
                     char *vname = cpStringExt(token.text, context->region);
 
@@ -1794,23 +1824,34 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     Node *t = POP;
                     t->coercionAllowed = 1;
                     PUSH(t);
+            OR(type)
+                    TTEXT("type");
+                    CASCADE(newSimpType(T_TYPE, context->region));
+                    /* type */
+            OR(type)
+                    TTYPE(TK_TEXT);
+                    char *cons = cpStringExt(token.text, context->region);
+                    /* user type */
+                    int n = 0;
+                    OPTIONAL_BEGIN(argList)
+                        TTEXT("(");
+                        LOOP_BEGIN(args)
+                            NT2(_Type, 1, 0);
+                            n++;
+                            TRY(delim)
+                                TTEXT(",");
+                            OR(delim)
+                                DONE(args);
+                            END_TRY(delim)
+                        LOOP_END(args)
+                        TTEXT(")")
+                    OPTIONAL_END(argList)
+                    BUILD_NODE(T_CONS, cons, &start, n, n);
             END_TRY(type)
             if(!cont) {
                 arity ++;
                 TRY(typeEnd)
                     ABORT(prec!=1);
-                    DONE(type);
-                OR(typeEnd);
-                    TTEXT_LOOKAHEAD("->");
-                    DONE(type);
-                OR(typeEnd)
-                    TTEXT_LOOKAHEAD(")");
-                    DONE(type);
-                OR(typeEnd)
-                    TTEXT_LOOKAHEAD(">");
-                    DONE(type);
-                OR(typeEnd)
-                    TTEXT_LOOKAHEAD("+");
                     DONE(type);
                 OR(typeEnd)
                     TTYPE_LOOKAHEAD(TK_EOS);
@@ -1823,6 +1864,8 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     DONE(type);
                 OR(typeEnd)
                     TTEXT("*");
+                OR(typeEnd);
+                    DONE(type);
                 END_TRY(typeEnd)
             }
         LOOP_END(type)
@@ -1929,19 +1972,31 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Re
                 int n = node->degree;
                 Node **nodes = node->subtrees;
                 RuleType rk;
-                if(strcmp(node->text, "REL")==0) {
-                    rk = RK_REL;
-                } else if(strcmp(node->text, "FUNC")==0) {
-                    rk = RK_FUNC;
-                }
-                int k;
-                for(k=0;k<n;k++) {
-                    Node *node = nodes[k];
+                if(strcmp(node->text, "INDUCT") == 0) {
+                    int k;
+                    for(k=2;k<n;k+=2) {
+                        if(lookupBucketFromHashTable(funcDescIndex, nodes[k]->text)!=NULL) {
+                            generateErrMsg("readRuleSetFromFile: redefinition of constructor.", nodes[k]->expr, nodes[k]->base, errbuf);
+                            addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
+                            return -1;
+                        }
+                        insertIntoHashTable(funcDescIndex, nodes[k]->text, newConstructorDesc2(nodes[k+1], r));
+                    }
+                } else {
+                    if(strcmp(node->text, "REL")==0) {
+                        rk = RK_REL;
+                    } else if(strcmp(node->text, "FUNC")==0) {
+                        rk = RK_FUNC;
+                    }
+                    int k;
+                    for(k=0;k<n;k++) {
+                        Node *node = nodes[k];
 
-                    ruleSet->rules[i] = newRuleDesc(rk, node, r);
-                    i++;
-        /*        printf("%s\n", node->subtrees[0]->text);
-                printTree(node, 0); */
+                        ruleSet->rules[i] = newRuleDesc(rk, node, r);
+                        i++;
+            /*        printf("%s\n", node->subtrees[0]->text);
+                    printTree(node, 0); */
+                    }
                 }
             }
 	}
@@ -2073,6 +2128,9 @@ void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_
     int coor[2];
     getCoor(e, l, coor);
     int i;
+    if(len < ERR_MSG_LEN - 1) {
+        buf[len++] = '\n';
+    }
     for(i=0;i<coor[1];i++) {
         if(len >= ERR_MSG_LEN - 1) {
             break;

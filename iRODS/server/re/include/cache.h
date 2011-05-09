@@ -27,6 +27,7 @@ typedef struct {
     unsigned char *offset;
     long dataSize;
     RuleSet *coreRuleSet;
+    Hashtable *funcDescIndex;
     Hashtable *coreRuleIndex;
     Hashtable *condIndex;
 } Cache;
@@ -47,7 +48,8 @@ enum cacheRecordType {
         RuleIndexListNode_T,
         NodeType_T,
         char_T,
-        int_T
+        int_T,
+        FunctionDesc_T
     };
 
 typedef struct {
