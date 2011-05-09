@@ -104,7 +104,7 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 
             conn->transStat.numThreads = portalOprOut->numThreads;
             status = getFileFromPortal (conn, portalOprOut, locFilePath,
-              dataObjInp->dataSize);
+               dataObjInp->objPath, dataObjInp->dataSize);
 	}
         /* just send a complete msg */
         if (status < 0) {

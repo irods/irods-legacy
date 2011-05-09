@@ -24,7 +24,7 @@ main(int argc, char **argv) {
 
     optStr = "hfIKN:n:PQrvVX:R:TZ";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
         printf("Use -h for help.\n");

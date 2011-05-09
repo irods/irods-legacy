@@ -46,7 +46,7 @@ putFileToPortal (rcComm_t *conn, portalOprOut_t *portalOprOut,
 char *locFilePath, char *objPath, rodsLong_t dataSize);
 int
 getFileFromPortal (rcComm_t *conn, portalOprOut_t *portalOprOut, 
-char *locFilePath, rodsLong_t dataSize);
+char *locFilePath, char *objPath, rodsLong_t dataSize);
 void
 rcPartialDataPut (rcPortalTransferInp_t *myInput);
 void

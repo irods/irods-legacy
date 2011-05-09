@@ -664,7 +664,7 @@ rodsLong_t dataSize)
 
 int
 getFileFromPortal (rcComm_t *conn, portalOprOut_t *portalOprOut, 
-char *locFilePath, rodsLong_t dataSize)
+char *locFilePath, char *objPath, rodsLong_t dataSize)
 {
     portList_t *myPortList;
     int i, sock, out_fd;
@@ -704,6 +704,9 @@ char *locFilePath, rodsLong_t dataSize)
 #endif
     memset (myInput, 0, sizeof (myInput));
 
+    initFileRestart (conn, locFilePath, objPath, dataSize,
+      portalOprOut->numThreads);
+
    if (numThreads == 1) {
         sock = connectToRhostPortal (myPortList->hostAddr,
           myPortList->portNum, myPortList->cookie, myPortList->windowSize);
@@ -727,6 +730,9 @@ char *locFilePath, rodsLong_t dataSize)
             return (myInput[0].status);
         } else {
             if (dataSize <= 0 || myInput[0].bytesWritten == dataSize) {
+                if (conn->fileRestart.info.numSeg > 0) {     /* file restart */
+                    clearLfRestartFile (&conn->fileRestart);
+                }
                 return (0);
             } else {
                 rodsLog (LOG_ERROR,
@@ -779,6 +785,9 @@ char *locFilePath, rodsLong_t dataSize)
             return (retVal);
         } else {
             if (dataSize <= 0 || totalWritten == dataSize) {
+                if (conn->fileRestart.info.numSeg > 0) {     /* file restart */
+                    clearLfRestartFile (&conn->fileRestart);
+                }
                 if (gGuiProgressCB != NULL)
                     gGuiProgressCB (&conn->operProgress);
                 return (0);
@@ -805,6 +814,8 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     transferStat_t *myTransStat;
     rodsLong_t curOffset = 0;
     rcComm_t *conn;
+    fileRestartInfo_t *info;
+    int threadNum;
 
 #ifdef PARA_DEBUG
     printf ("rcPartialDataGet: thread %d at start\n", myInput->threadNum);
@@ -814,6 +825,9 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
          "rcPartialDataGet: NULL input");
         return;
     }
+    conn = myInput->conn;
+    info = &conn->fileRestart.info;
+    threadNum = myInput->threadNum;
 
     myTransStat = &myInput->conn->transStat;
 
@@ -855,6 +869,8 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
                   curOffset, myInput->status);
                 break;
             }
+            if (info->numSeg > 0)       /* file restart */
+                info->dataSeg[threadNum].offset = curOffset;
         }
 
         toGet = myHeader.length;
@@ -887,6 +903,23 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
                 break;
             }
             toGet -= bytesWritten;
+            if (info->numSeg > 0) {     /* file restart */
+                info->dataSeg[threadNum].len += bytesWritten;
+                conn->fileRestart.writtenSinceUpdated += bytesWritten;
+                if (threadNum == 0 && conn->fileRestart.writtenSinceUpdated >=
+                  RESTART_FILE_UPDATE_SIZE) {
+                    int status;
+                    /* time to write to the restart file */
+                    status = writeLfRestartFile (conn->fileRestart.infoFile,
+                      &conn->fileRestart.info);
+                    if (status < 0) {
+                        rodsLog (LOG_ERROR,
+                         "putFile: writeLfRestartFile for %s, status = %d",
+                         conn->fileRestart.info.fileName, status);
+                    }
+                    conn->fileRestart.writtenSinceUpdated = 0;
+                }
+            }
         }
         curOffset += myHeader.length;
         myInput->bytesWritten += myHeader.length;

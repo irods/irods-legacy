@@ -141,6 +141,13 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
         return (USER__NULL_INPUT_ERR);
     }
 
+    if (conn->fileRestart.info.status == FILE_RESTARTED &&
+      strcmp (conn->fileRestart.info.objPath, srcPath) == 0) {
+        /* it was restarted */
+        conn->fileRestart.info.status = FILE_NOT_RESTART;
+        return 0;
+    }
+
     if (rodsArgs->verbose == True) {
         (void) gettimeofday(&startTime, (struct timezone *)0);
     }
