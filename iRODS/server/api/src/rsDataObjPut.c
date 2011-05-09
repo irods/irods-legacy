@@ -54,12 +54,14 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
-	/** since the object is written here, we apply pre procesing RAJA Dec 2 2010 **/
-      status2 = applyRuleForPostProcForWrite(rsComm, dataObjInpBBuf, dataObjInp->objPath);
+	/** since the object is written here, we apply pre procesing RAJA 
+         * Dec 2 2010 **/
+      status2 = applyRuleForPostProcForWrite(rsComm, dataObjInpBBuf, 
+       dataObjInp->objPath);
 	 if (status2 < 0) 
 	   return(status2); /* need to dealloc anything??? */
-	 dataObjInp->dataSize = dataObjInpBBuf->len;
-	/** since the object is written here, we apply pre procesing RAJA Dec 2 2010 **/
+	/** since the object is written here, we apply pre procesing RAJA 
+         * Dec 2 2010 **/
 
 	dataObjInp->openFlags = O_RDWR;
         status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
