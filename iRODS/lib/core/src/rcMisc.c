@@ -1611,6 +1611,14 @@ getLocalTimeFromRodsTime(char *timeStrIn, char *timeStr) {
 
    mytm = localtime (&myTime);
 
+   getLocalTimeStr (mytm, timeStr);
+
+   return 0;
+}
+
+int
+getLocalTimeStr (struct tm *mytm, char *timeStr)
+{
    snprintf (timeStr, TIME_LEN, "%4d-%2d-%2d.%2d:%2d:%2d", 
 	     mytm->tm_year + 1900, mytm->tm_mon + 1, mytm->tm_mday, 
 	     mytm->tm_hour, mytm->tm_min, mytm->tm_sec);

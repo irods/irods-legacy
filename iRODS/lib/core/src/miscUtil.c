@@ -9,7 +9,7 @@
 #include "miscUtil.h"
 
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
-#define VERIFY_DIV(_v1_,_v2_) ((_v2_)?(_v1_)/(_v2_):0.0)
+#define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)
 
 static uint Myumask = INIT_UMASK_VAL;
 
@@ -1848,6 +1848,9 @@ iCommandProgStat (operProgress_t *operProgress)
 {
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     int status;
+    time_t myTime;
+    struct tm *mytm;
+    char timeStr[TIME_LEN];
 
     if (strchr (operProgress->curFileName, '/') == NULL) {
 	/* relative path */
@@ -1860,6 +1863,9 @@ iCommandProgStat (operProgress_t *operProgress)
         return NULL;
     }
 
+    myTime = time (0);
+    mytm = localtime (&myTime);
+    getLocalTimeStr (mytm, timeStr);
     if (operProgress->flag == 0) {
 	printf (
           "%-lld/%-lld - %5.2f%% of files done   ", 
@@ -1867,7 +1873,7 @@ iCommandProgStat (operProgress_t *operProgress)
 #if 0
 	  (float) operProgress->totalNumFilesDone/operProgress->totalNumFiles *
 #else
-          (float) VERIFY_DIV
+          VERIFY_DIV
             (operProgress->totalNumFilesDone,operProgress->totalNumFiles) *
 #endif
 	  100.0);
@@ -1877,23 +1883,23 @@ iCommandProgStat (operProgress_t *operProgress)
 #if 0
 	  (float) operProgress->totalFileSizeDone/operProgress->totalFileSize *
 #else
-          (float) VERIFY_DIV
+          VERIFY_DIV
 	    (operProgress->totalFileSizeDone,operProgress->totalFileSize) *
 #endif
 	  100.0);
-        printf ("Processing %s - %-.3f MB\n", myFile,
-         (float) operProgress->curFileSize / 1048600.0);
+        printf ("Processing %s - %-.3f MB   %s\n", myFile,
+         (float) operProgress->curFileSize / 1048600.0, timeStr);
     } else if (operProgress->flag == 1) {
-        printf ("%s - %-.3f/%-.3f MB - %5.2f%% done\n", myFile,
+        printf ("%s - %-.3f/%-.3f MB - %5.2f%% done   %s\n", myFile,
          (float) operProgress->curFileSizeDone / 1048600.0,
          (float) operProgress->curFileSize / 1048600.0,
 #if 0
          (float) operProgress->curFileSizeDone/operProgress->curFileSize *
 #else
-	 (float) VERIFY_DIV
+	 VERIFY_DIV
 	   (operProgress->curFileSizeDone,operProgress->curFileSize) *
 #endif
-         100.0);
+         100.0, timeStr);
 	/* done. don't print again */
 	if (operProgress->curFileSizeDone == operProgress->curFileSize) {
 	    operProgress->flag = 2;

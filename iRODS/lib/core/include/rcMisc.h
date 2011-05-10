@@ -120,6 +120,8 @@ void
 getNowStr(char *timeStr);
 int
 getLocalTimeFromRodsTime(char *timeStrIn, char *timeStrOut);
+int
+getLocalTimeStr (struct tm *mytm, char *timeStr);
 void
 getOffsetTimeStr(char *timeStr, char *offSet);
 void
