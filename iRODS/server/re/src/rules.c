@@ -210,11 +210,9 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 
     Hashtable *varTypes = newHashTable(100);
 
-	Hashtable *funcDesc = newHashTable(100);
-    getSystemFunctions(funcDesc, r);
     List *typingConstraints = newList(r);
     Node *errnode;
-    ExprType *type = typeRule(rd, funcDesc, varTypes, typingConstraints, errmsg, &errnode, r);
+    ExprType *type = typeRule(rd, funcDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
 
 	deleteHashTable(varTypes, nop);
 

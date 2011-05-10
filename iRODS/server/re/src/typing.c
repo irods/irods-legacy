@@ -497,12 +497,13 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
                 ExprType *paramType = typeExpression3(node->subtrees[i], funcDesc, var_type_table, typingConstraints, errmsg, errnode, r);
                 ERROR2(paramType->nodeType == T_ERROR,"parameter type error");
                 ExprType *gcd;
-                if(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->nodeType == T_DYNAMIC) {
+                ExprType *formalParamType = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i);
+                if(formalParamType->nodeType == T_DYNAMIC) {
                     gcd = paramType;
                 } else if(paramType->nodeType == T_DYNAMIC) {
-                    gcd = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i);
-                } else if(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->nodeType == T_FLEX) {
-                    gcd = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->subtrees[0];
+                    gcd = formalParamType;
+                } else if(formalParamType->nodeType == T_FLEX) {
+                    gcd = formalParamType->subtrees[0];
                     TypingConstraint *tc = newTypingConstraint(paramType, gcd, LT, node -> subtrees[i], r);
                     Satisfiability tcons = simplifyLocally(tc, var_type_table, r);
                     switch(tcons) {
