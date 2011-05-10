@@ -6,6 +6,8 @@
 #include "functions.h"
 #include "arithmetics.h"
 
+#define ERROR(cond) if(cond) { goto error; }
+
 extern int GlobalAllRuleExecFlag;
 #ifndef DEBUG
 #include "reGlobalsExtern.h"
@@ -86,7 +88,7 @@ int parseAndComputeMsParamArrayToEnv(msParamArray_t *var, Env *env, ruleExecInfo
 
 		char *varName = var->msParam[i]->label;
 		char *expr = res->text;
-		res = parseAndComputeExpressionNewEnv(expr, NULL, rei, reiSaveFlag, r);
+		res = parseAndComputeExpression(expr, env, rei, reiSaveFlag, errmsg, r);
 		if(TYPE(res) == T_ERROR) {
 		    return res->value.errcode;
 		}
@@ -112,43 +114,61 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     errmsgBuf.len = 0;
 
     Env *env = defaultEnv(r);
+    rei->status = 0;
+
+    int rescode = 0;
     if(msParamArray!=NULL) {
-        parseAndComputeMsParamArrayToEnv(msParamArray, env->previous, rei, reiSaveFlag, &errmsgBuf, r);
+        rescode = parseAndComputeMsParamArrayToEnv(msParamArray, env->previous, rei, reiSaveFlag, &errmsgBuf, r);
+        ERROR(rescode < 0);
     }
 
-    int rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, &errmsgBuf, r);
+    rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, &errmsgBuf, r);
+    ERROR(rescode < 0);
 
     if(rei->msParamArray==NULL) {
         rei->msParamArray = newMsParamArray();
     }
     convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
 
-    if(rescode < 0) {
-        logErrMsg(&errmsgBuf);
-    }
+    freeRErrorContent(&errmsgBuf);
+    deleteEnv(env, 3);
+
+    return rescode;
+error:
+    logErrMsg(&errmsgBuf);
+    rei->status = rescode;
     freeRErrorContent(&errmsgBuf);
     deleteEnv(env, 3);
 
     return rescode;
 
+
 }
 
-int computeRule( char *rule, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r) {
+int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r) {
     Env *env = defaultEnv(r);
 
+    int rescode = 0;
+
     if(msParamArray!=NULL) {
-        convertMsParamArrayToEnv(msParamArray, env->previous, errmsg, r);
+        rescode = convertMsParamArrayToEnv(msParamArray, env->previous, errmsg, r);
+        ERROR(rescode < 0);
     }
 
-    int rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, errmsg, r);
+    rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, errmsg, r);
+    ERROR(rescode < 0);
 
     if(rei->msParamArray==NULL) {
         rei->msParamArray = newMsParamArray();
     }
-    convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
+    rescode = convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
+    ERROR(rescode < 0);
+    deleteEnv(env, 3);
+    return rescode;
+
+error:
 
     deleteEnv(env, 3);
-
     return rescode;
 }
 
@@ -283,32 +303,21 @@ ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, Lis
             freeRErrorContent(errmsg);
             ExprType *resType = typeExpression3(node->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             /*printf("Type %d\n",resType->t); */
-            if(resType->nodeType == T_ERROR) {
-                goto error;
-            }
+            ERROR(resType->nodeType == T_ERROR);
             resType = typeExpression3(node->subtrees[2], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-            if(resType->nodeType == T_ERROR) {
-                goto error;
-            }
+            ERROR(resType->nodeType == T_ERROR);
             resType = typeExpression3(node->subtrees[3], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-            if(resType->nodeType == T_ERROR) {
-                goto error;
-            }
+            ERROR(resType->nodeType == T_ERROR);
             /* printVarTypeEnvToStdOut(varTypes); */
-            switch(solveConstraints(typingConstraints, varTypes, errmsg, errnode, r)) {
-                case 0:
-                    goto error;
-                default:
-                    break;
-            }
+            ERROR(solveConstraints(typingConstraints, varTypes, errmsg, errnode, r) == 0);
             int i;
             for(i =1;i<=3;i++) { // 1 = cond, 2 = actions, 3 = recovery
                 postProcessCoercion(node->subtrees[i], varTypes, errmsg, errnode, r);
                 postProcessActions(node->subtrees[i], funcDesc, errmsg, errnode, r);
             }
             freeRErrorContent(errmsg);
-            return newSimpType(T_INT, r);
             /*printTree(node, 0); */
+            return newSimpType(T_INT, r);
             char buf[ERR_MSG_LEN];
         error:
             snprintf(buf, ERR_MSG_LEN, "type error: in rule %s", node->subtrees[0]->text);
@@ -545,8 +554,7 @@ int actionTableLookUp (char *action)
 
 	return (UNMATCHED_ACTION_ERR);
 }
-Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamArray,
-		  ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
+Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
     int freeRei = 0;
     if(rei == NULL) {
         rei = (ruleExecInfo_t *) malloc(sizeof(ruleExecInfo_t));
@@ -578,6 +586,7 @@ Res *parseAndComputeExpressionNewEnv(char *inAction, msParamArray_t *inMsParamAr
     deleteEnv(env, 3);
     if(TYPE(res)==T_ERROR) {
         logErrMsg(&errmsgBuf);
+        rei->status = res->value.errcode;
     }
     freeRErrorContent(&errmsgBuf);
     if(freeRei) {

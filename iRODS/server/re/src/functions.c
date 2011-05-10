@@ -13,6 +13,15 @@
 #include "stringOpr.h"
 #endif
 
+#define GC_BEGIN Region *_rnew = make_region(0, NULL), *_rnew2 = NULL;
+#define GC_REGION _rnew
+#define GC_ON(env) \
+_rnew2 = make_region(0, NULL); \
+cpEnv2((env), _rnew, _rnew2); \
+region_free(_rnew); \
+_rnew = _rnew2;
+#define GC_END region_free(_rnew);
+
 /* precond: len(valueOrExpression) < size(desc->valueOrExpression) */
 FunctionDesc *newFunctionDesc(char *valueOrExpression, char *type, SmsiFuncPtrType func, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
@@ -126,42 +135,40 @@ Res *smsi_letExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     return res;
 }
 
+
 Res *smsi_whileExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
     Res *cond, *res;
-                    Region *rnew = make_region(0, r->label);
-		while(1) {
+    GC_BEGIN
+    while(1) {
 
-			cond = evaluateExpression3((Node *)params[0], 0,rei,reiSaveFlag, env,errmsg,rnew);
-			if(TYPE(cond) == T_ERROR) {
-				res = cond;
-                                break;
-			}
-			if(cond->value.dval == 0) {
-                                res = newIntRes(r, 0);
-                                break;
-			}
-			res = evaluateActions((Node *)params[1],(Node *)params[2], rei,reiSaveFlag, env,errmsg,rnew);
-			if(TYPE(res) == T_ERROR) {
-                            break;
-			} else
-			if(TYPE(res) == T_BREAK) {
-                            res =
-				newIntRes(r, 0);
-                            break;
-			} else
-			if(TYPE(res) == T_SUCCESS) {
-                            break;
-			}
-                    cpEnv(env, r);
-                    region_free(rnew);
+        cond = evaluateExpression3((Node *)params[0], 0,rei,reiSaveFlag, env,errmsg,GC_REGION);
+        if(TYPE(cond) == T_ERROR) {
+            res = cond;
+            break;
+        }
+        if(cond->value.dval == 0) {
+            res = newIntRes(r, 0);
+            break;
+        }
+        res = evaluateActions((Node *)params[1],(Node *)params[2], rei,reiSaveFlag, env,errmsg,GC_REGION);
+        if(TYPE(res) == T_ERROR) {
+            break;
+        } else
+        if(TYPE(res) == T_BREAK) {
+            res = newIntRes(r, 0);
+            break;
+        } else
+        if(TYPE(res) == T_SUCCESS) {
+            break;
+        }
+        GC_ON(env);
 
-                    rnew = make_region(0, r->label);
-                }
-                    cpEnv(env, r);
-                    res = cpRes(res, r);
-                    region_free(rnew);
-		return res;
+    }
+    cpEnv(env, r);
+    res = cpRes(res, r);
+    GC_END
+    return res;
 
 }
 
@@ -1368,14 +1375,14 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
             newFunctionDesc("eo", "0 * s->i", smsi_errormsg, r)));
     insertIntoHashTable(ft, "let", newFunctionDesc("eee", "0 * f 0 * 1->1", smsi_letExec, r));
     insertIntoHashTable(ft, "if2", newFunctionDesc("eeeee", "b * 0 * 0 * i * i->0", smsi_if2Exec, r));
-    insertIntoHashTable(ft, "if", newFunctionDesc("eeeee", "b * 0 * 1 * i * i->i", smsi_ifExec, r));
-    insertIntoHashTable(ft, "ifExec", newFunctionDesc("eeeee", "b * 0 * 1 * i * i->i", smsi_ifExec, r));
+    insertIntoHashTable(ft, "if", newFunctionDesc("eeeee", "b * 0 * 1 * 2 * 3->4", smsi_ifExec, r));
+    insertIntoHashTable(ft, "ifExec", newFunctionDesc("eeeee", "b * 0 * 1 * 2 * 3->4", smsi_ifExec, r));
     insertIntoHashTable(ft, "for", newFunctionDesc("eeeaa", "0 * b * 1 * 2 * i->i",smsi_forExec, r));
-    insertIntoHashTable(ft, "forExec", newFunctionDesc("eeeaa", "0 * b * 1 * 2 * i->i", smsi_forExec, r));
-    insertIntoHashTable(ft, "while", newFunctionDesc("eaa", "b * 0 * i->i",smsi_whileExec, r));
-    insertIntoHashTable(ft, "whileExec", newFunctionDesc("eaa", "b * 0 * i->i", smsi_whileExec, r));
-    insertIntoHashTable(ft, "foreach", newFunctionDesc("eaa", "c 0 * 1 * i->i", smsi_forEachExec, r));
-    insertIntoHashTable(ft, "forEachExec", newFunctionDesc("eaa", "c 0 * 1 * i->i", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "forExec", newFunctionDesc("eeeaa", "0 * b * 1 * 2 * 3->4", smsi_forExec, r));
+    insertIntoHashTable(ft, "while", newFunctionDesc("eaa", "b * 0 * 1->2",smsi_whileExec, r));
+    insertIntoHashTable(ft, "whileExec", newFunctionDesc("eaa", "b * 0 * 1->2", smsi_whileExec, r));
+    insertIntoHashTable(ft, "foreach", newFunctionDesc("eaa", "c 0 * 1 * 2->3", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "forEachExec", newFunctionDesc("eaa", "c 0 * 1 * 2->3", smsi_forEachExec, r));
     insertIntoHashTable(ft, "break", newFunctionDesc("", "->i", smsi_break, r));
     insertIntoHashTable(ft, "succeed", newFunctionDesc("", "->i", smsi_succeed, r));
     insertIntoHashTable(ft, "fail", newFunctionDescChain(
@@ -1455,8 +1462,8 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "strlen", newFunctionDesc("i","s->i", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionDesc("iii","s * i * i->s", smsi_substr, r));
 /*    insertIntoHashTable(ft, "pair", newConstructorDesc("forall X, forall Y, X * Y-> <X * Y>", r)); */
-    insertIntoHashTable(ft, "fst", newDeconstructorDesc("forall X, forall Y, <X * Y>->X", 0, r));
-    insertIntoHashTable(ft, "snd", newDeconstructorDesc("forall X, forall Y, <X * Y>->Y", 1, r));
+/*    insertIntoHashTable(ft, "fst", newDeconstructorDesc("forall X, forall Y, <X * Y>->X", 0, r));
+    insertIntoHashTable(ft, "snd", newDeconstructorDesc("forall X, forall Y, <X * Y>->Y", 1, r)); */
 
 
 }

@@ -33,12 +33,12 @@ typedef struct region {
 } Region;
 
 typedef struct region_desc {
-    Region *r;
+    Region *region;
     size_t size;
     int del;
 } RegionDesc;
 
-#define IN_REGION(x,r) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->r == (r))
+#define IN_REGION(x,r) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->region == (r))
 #define SET_DELETE(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->del=1)
 #define DELETED(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->del)
 #define SIZE(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->size)

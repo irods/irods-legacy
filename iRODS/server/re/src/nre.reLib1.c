@@ -407,10 +407,10 @@ int processReturnRes(Res *res) {
             ret = (int)res->value.dval;
             break;
         default:
-            ret = -1; /* wrong type error */
+            ret = 0; /* other types */
             break;
     }
-        return ret;
+	return ret;
 }
 int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char *res) {
 	#ifdef DEBUG
@@ -421,7 +421,7 @@ int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char
 
 	Region *r = make_region(0, NULL);
 
-	Res *res0 = parseAndComputeExpressionNewEnv(inAction, NULL, rei, reiSaveFlag, r);
+	Res *res0 = parseAndComputeExpressionAdapter(inAction, NULL, rei, reiSaveFlag, r);
 	int ret;
 	char *res1 = convertResToString(res0);
 	snprintf(res, MAX_COND_LEN, "%s", res1);
@@ -456,11 +456,11 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     	inActionCopy[strlen(inAction) - 1] = '\0';
     	char *action = (char *) malloc(sizeof(inAction) * strlen(inAction) + 2);
     	sprintf(action, "{%s}", inActionCopy);
-    	res = parseAndComputeExpressionNewEnv(action, inMsParamArray, rei, reiSaveFlag, r);
+    	res = parseAndComputeExpressionAdapter(action, inMsParamArray, rei, reiSaveFlag, r);
     	free(action);
     	free(inActionCopy);
     } else {
-    	res = parseAndComputeExpressionNewEnv(inAction, inMsParamArray, rei, reiSaveFlag, r);
+    	res = parseAndComputeExpressionAdapter(inAction, inMsParamArray, rei, reiSaveFlag, r);
 	}
 	ret = processReturnRes(res);
     region_free(r);

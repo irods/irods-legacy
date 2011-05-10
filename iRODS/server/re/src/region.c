@@ -9,25 +9,25 @@ struct region_node *make_region_node(size_t is) {
 	if(node == NULL) {
 		return NULL;
 	}
-	
+
 	node->block = (unsigned char *)malloc(is);
         memset(node->block, 0, is);
 	if(node->block == NULL) {
 		free(node);
 		return NULL;
 	}
-	
+
 	node->size = is;
 	node->used = 0;
 	node->next = NULL;
-	
+
 	return node;
 }
 Region *make_region(size_t is, jmp_buf *label) {
 	Region *r = (Region *)malloc(sizeof(Region));
 	if(r == NULL)
 		return NULL;
-		
+
 	if(is == 0)
 		is = DEFAULT_BLOCK_SIZE;
 	struct region_node *node = make_region_node(is);
@@ -35,7 +35,7 @@ Region *make_region(size_t is, jmp_buf *label) {
 		free(r);
 		return NULL;
 	}
-	
+
 	r->head = r->active = node;
         r->label = label;
         r->error.code = 0; /* set no error */
@@ -60,7 +60,7 @@ unsigned char *region_alloc_nodesc(Region *r, size_t s) {
             }
             r->active->next = next;
             r->active = next;
-		
+
 	}
 
 	size_t alloc_size =
@@ -70,11 +70,11 @@ unsigned char *region_alloc_nodesc(Region *r, size_t s) {
 	unsigned char *pointer = r->active->block + r->active->used;
 	r->active->used+=alloc_size;
 	return pointer;
-		
+
 }
 void *region_alloc(Region *r, size_t size) {
     unsigned char *mem = region_alloc_nodesc(r, size + sizeof(RegionDesc));
-    ((RegionDesc *)mem)->r = r;
+    ((RegionDesc *)mem)->region = r;
     ((RegionDesc *)mem)->size = size;
     ((RegionDesc *)mem)->del = 0;
     return mem + sizeof(RegionDesc);

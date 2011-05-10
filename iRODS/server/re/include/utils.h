@@ -99,14 +99,15 @@ typedef enum node_type {
     N_RULESET = 34,
     N_RULE_PACK = 35,
     N_VAL = 28,
-    T_DYNAMIC = 100,
-    T_UNSPECED = 101,
-    T_ERROR = 200,
+    T_UNSPECED = 100,
+    T_ERROR = 101,
+    T_DYNAMIC = 200,
     T_DOUBLE = 201,
     T_INT = 202,
     T_STRING = 203,
     T_DATETIME = 204,
     T_BOOL = 205,
+    T_FLEX = 206,
     T_CONS = 209,
     T_BREAK = 230,
     T_SUCCESS = 231,
@@ -172,7 +173,6 @@ struct node {
     struct node **subtrees;
     int typed;
     char *base;
-    int coercionAllowed;
     union node_ext value;
 };
 
@@ -256,6 +256,11 @@ char *cpStringExt(char* str, Region* r);
 ExprType *cpType(ExprType *type, Region *r);
 void cpHashtable(Hashtable *env, Region *r);
 void cpEnv(Env *env, Region *r);
+Res *cpRes2(Res *res, Region *oldr, Region *newr);
+char *cpString2(char *res, Region *oldr, Region *newr);
+ExprType *cpType2(ExprType *type, Region *oldr, Region *newr);
+void cpHashtable2(Hashtable *env, Region *oldr, Region *newr);
+void cpEnv2(Env *env, Region *oldr, Region *newr);
 Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r);
 ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r);
 ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes, Region *r);

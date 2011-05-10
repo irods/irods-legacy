@@ -106,9 +106,13 @@ Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg,
         char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
         char *buf2;
         char buf3[ERR_MSG_LEN];
+        ExprType *coercion = node->coercionType;
+        if(coercion->nodeType == T_FLEX) {
+            coercion = coercion->subtrees[0];
+        }
         /* we can ignore non top level type constructors
          * therefore, we only need to call dereference rather than instantiate */
-        ExprType *coercion = dereference(node->coercionType, tvarEnv, r);
+        coercion = dereference(coercion, tvarEnv, r);
         if(coercion->nodeType == T_VAR) {
             if(T_VAR_NUM_DISJUNCTS(coercion) == 0) {
                 printf("error");
@@ -228,6 +232,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
 */
     int i;
     int cutFlag = 0;
+    Res* res = NULL;
     #ifndef DEBUG
     char tmpStr[1024];
     #endif
@@ -238,10 +243,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
                 if(strcmp(nodei->text, "cut") == 0) {
                     cutFlag = 1;
                 }
-                Res* res = evaluateExpression3(nodei, 0, rei, reiSaveFlag, env, errmsg,r);
-                if(TYPE(res) == T_INT && res->value.dval < 0) {
-                    res = newErrorRes(r, (int)res->value.dval);
-                }
+                res = evaluateExpression3(nodei, 0, rei, reiSaveFlag, env, errmsg,r);
                 if(TYPE(res) == T_ERROR) {
                     #ifndef DEBUG
                         sprintf(tmpStr,"executeRuleAction Failed for %s",nodei->text);
@@ -279,15 +281,15 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
                         return res;
                     }
                 }
-                if(TYPE(res) == T_BREAK) {
+                else if(TYPE(res) == T_BREAK) {
                     return res;
-                } else
-                if(TYPE(res) == T_SUCCESS) {
+                }
+                else if(TYPE(res) == T_SUCCESS) {
                     return res;
                 }
 
             }
-            return newIntRes(r, 0);
+            return res==NULL?newIntRes(r, 0):res;
         default:
             break;
 	}
@@ -305,6 +307,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
 Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, Node *node, ruleExecInfo_t* rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
     char buf2[ERR_MSG_LEN];
+    ExprType *coercion = NULL;
     #ifdef DEBUG
     sprintf(buf, "Action: %s\n", fn);
     writeToTmp("eval.log", buf);
@@ -380,14 +383,21 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
                     res = (Res *)args[i];
                     RETURN;
                 }
-                if(subtrees[i]->coercionType!=NULL && subtrees[i]->coercionType->nodeType == T_VAR) {
+                coercion = subtrees[i]->coercionType;
+
+                if(coercion!=NULL && (coercion->nodeType == T_VAR ||
+                                   (coercion->nodeType == T_FLEX &&
+                                    coercion->subtrees[0]->nodeType == T_VAR))) {
+                    if(coercion->nodeType == T_FLEX) {
+                        coercion = coercion->subtrees[0];
+                    }
                     /* ExprType *bn; */
-                    TypingConstraint *tc = newTypingConstraint(args[i]->exprType, subtrees[i]->coercionType, LT, subtrees[i] ,r);
+                    TypingConstraint *tc = newTypingConstraint(args[i]->exprType, coercion, LT, subtrees[i] ,r);
                     char buf[ERR_MSG_LEN], buf2[1024], buf3[1024];
                     switch(simplifyLocally(tc, localTVarEnv, newRegion)) {
                         case ABSURDITY:
                             sprintf(buf, "error: runtime type inference param type: %s, arg type: %s",
-                                    typeToString(subtrees[i]->coercionType, localTVarEnv, buf3, 1024),
+                                    typeToString(coercion, localTVarEnv, buf3, 1024),
                                     typeToString(args[i]->exprType, localTVarEnv, buf2, 1024));
                             generateErrMsg(buf, node->expr, node->base, buf2);
                             addRErrorMsg(errmsg, -1, buf2);
@@ -674,7 +684,6 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
             int ret = NO_MICROSERVICE_FOUND_ERR;
             generateErrMsg("execMicroService3: no micro service found", node->expr, node->base, errbuf);
             addRErrorMsg(errmsg, ret, errbuf);
-            rei->status = ret;
             return newErrorRes(r, ret);
 
         }
@@ -684,7 +693,6 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
             int ret = ACTION_ARG_COUNT_MISMATCH;
             generateErrMsg("execMicroService3: wrong number of arguments", node->expr, node->base, errbuf);
             addRErrorMsg(errmsg, ret, errbuf);
-            rei->status = ret;
             return newErrorRes(r, ret);
         }
 
@@ -699,7 +707,6 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
                 if(ret!=0) {
                     generateErrMsg("execMicroService3: error converting arguments to MsParam", node->subtrees[i]->expr, node->subtrees[i]->base, errbuf);
                     addRErrorMsg(errmsg, ret, errbuf);
-                    rei->status = ret;
                     int j = i;
                     for(;j>=0;j--) {
                         if(TYPE(args[j])!=T_IRODS) {
@@ -725,7 +732,6 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
         if(ret!=0) {
             generateErrMsg("execMicroService3: error converting env to MsParamArray", node->expr, node->base, errbuf);
             addRErrorMsg(errmsg, ret, errbuf);
-            rei->status = ret;
             res = newErrorRes(r,ret);
             RETURN;
         }
@@ -754,37 +760,32 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 	else if (numOfStrArgs == 10)
 		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],
 		                myArgv[8],myArgv [9],rei);
-        if(ii<0) {
-            rei->status = ii;
-
-            res = newErrorRes(r, ii);
-            RETURN;
-        }
-        /* converts back env */
+    if(ii<0) {
+        res = newErrorRes(r, ii);
+        RETURN;
+    }
+    /* converts back env */
 	ret = updateMsParamArrayToEnv(rei->msParamArray, env, errmsg, r);
-        if(ret!=0) {
-            generateErrMsg("execMicroService3: error env from MsParamArray", node->expr, node->base, errbuf);
-            addRErrorMsg(errmsg, ret, errbuf);
-            rei->status = ret;
-
-            res = newErrorRes(r, ret);
-            RETURN;
-        }
-        /* params */
+    if(ret!=0) {
+        generateErrMsg("execMicroService3: error env from MsParamArray", node->expr, node->base, errbuf);
+        addRErrorMsg(errmsg, ret, errbuf);
+        res = newErrorRes(r, ret);
+        RETURN;
+    }
+    /* params */
 	for (i = 0; i < numOfStrArgs; i++) {
-            if(myArgv[i] != NULL) {
-                int ret =
-                    convertMsParamToRes(myArgv[i], args[i], errmsg, r);
-                if(ret!=0) {
-                    generateErrMsg("execMicroService3: error converting arguments from MsParam", node->expr, node->base, errbuf);
-                    addRErrorMsg(errmsg, ret, errbuf);
-                    rei->status = ret;
-                    res= newErrorRes(r, ret);
-                    RETURN;
-                }
-            } else {
-                args[i] = NULL;
+        if(myArgv[i] != NULL) {
+            int ret =
+                convertMsParamToRes(myArgv[i], args[i], errmsg, r);
+            if(ret!=0) {
+                generateErrMsg("execMicroService3: error converting arguments from MsParam", node->expr, node->base, errbuf);
+                addRErrorMsg(errmsg, ret, errbuf);
+                res= newErrorRes(r, ret);
+                RETURN;
             }
+        } else {
+            args[i] = NULL;
+        }
 	}
 
 /*
@@ -794,26 +795,25 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
             largs[i] = lookupFromHashTable(env, vn);
 	}
 */
-	rei->status = ii;
-        res = newIntRes(r, ii);
-    ret:
-        if(rei->msParamArray!=NULL && rei->msParamArray != origMsParamArray) {
-            deleteMsParamArray(rei->msParamArray);
-            rei->msParamArray = origMsParamArray;
+	res = newIntRes(r, ii);
+ret:
+    if(rei->msParamArray!=NULL && rei->msParamArray != origMsParamArray) {
+        deleteMsParamArray(rei->msParamArray);
+        rei->msParamArray = origMsParamArray;
+    }
+    for(i=0;i<numOfStrArgs;i++) {
+        if(TYPE(args[i])!=T_IRODS) {
+            free(myArgv[i]->inOutStruct);
         }
-        for(i=0;i<numOfStrArgs;i++) {
-            if(TYPE(args[i])!=T_IRODS) {
-                free(myArgv[i]->inOutStruct);
-            }
-            free(myArgv[i]->label);
-            free(myArgv[i]->type);
-            free(myArgv[i]);
-        }
-        if(TYPE(res)==T_ERROR) {
-            generateErrMsg("execMicroService3: error when executing microservice", node->expr, node->base, errbuf);
-            addRErrorMsg(errmsg, res->value.errcode, errbuf);
-        }
-        return res;
+        free(myArgv[i]->label);
+        free(myArgv[i]->type);
+        free(myArgv[i]);
+    }
+    if(TYPE(res)==T_ERROR) {
+        generateErrMsg("execMicroService3: error when executing microservice", node->expr, node->base, errbuf);
+        addRErrorMsg(errmsg, res->value.errcode, errbuf);
+    }
+    return res;
 }
 
 
@@ -873,9 +873,6 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
 
         if (TYPE(status) == T_ERROR) {
             rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",ruleName, status->value.errcode);
-            rei->status = status->value.errcode;
-        } else {
-            rei->status = 0;
         }
 
     ret:
@@ -1009,13 +1006,16 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
     }
 
     if(success) {
-        rei->status = 0;
-        return statusRes;
+        if(applyAllRule) {
+            /* if we apply all rules, then it succeeds even if some of the rules fail */
+            return newIntRes(r, 0);
+        } else {
+            return statusRes;
+        }
     } else {
 #ifndef DEBUG
             rodsLog (LOG_NOTICE,"applyRule Failed for action 2: %s with status %i",ruleName, statusRes->value.errcode);
 #endif
-        rei->status = statusRes->value.errcode;
         return statusRes;
     }
 }
@@ -1029,7 +1029,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
 	Node* ruleAction = rule->subtrees[2];
 	Node* ruleRecovery = rule->subtrees[3];
 	Node* ruleHead = rule->subtrees[0];
-        Node** paramsNodes = ruleHead->subtrees[0]->subtrees;
+    Node** paramsNodes = ruleHead->subtrees[0]->subtrees;
 	char* paramsNames[MAX_NUM_OF_ARGS_IN_ACTION];
         int inParamsCount = RULE_NODE_NUM_PARAMS(rule);
         Res *statusRes;

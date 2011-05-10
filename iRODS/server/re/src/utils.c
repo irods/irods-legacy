@@ -55,7 +55,6 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable) {
                 paramTypes[i] = dupTypeAux(T_CONS_TYPE_ARG(ty, i),r,varTable);
             }
             newt = newConsTypeVarArg(T_CONS_ARITY(ty), T_CONS_VARARG(ty), T_CONS_TYPE_NAME(ty), paramTypes, r);
-            newt->coercionAllowed = ty->coercionAllowed;
             return newt;
         case T_VAR:
             name = getTVarName(T_VAR_ID(ty), buf);
@@ -64,10 +63,16 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable) {
                 return exist;
             else {
                 newt = newTVar2(T_VAR_NUM_DISJUNCTS(ty), T_VAR_DISJUNCTS(ty), r);
-                newt->coercionAllowed = ty->coercionAllowed;
                 insertIntoHashTable(varTable, name, newt);
                 return newt;
             }
+        case T_FLEX:
+            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*1);
+            paramTypes[0] = dupTypeAux(ty->subtrees[0],r,varTable);
+            newt = newExprType(T_FLEX, 1, paramTypes, r);
+            return newt;
+
+
         default:
             return ty;
     }
@@ -291,9 +296,7 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
 
 Node *newExprType(NodeType type, int degree, Node **subtrees, Region *r) {
     ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
-    t->coercionAllowed = 0;
     t->base = NULL;
-    t->coercionType = NULL;
     t->exprType = NULL;
     t->subtrees = subtrees;
     t->degree = degree;
@@ -523,6 +526,83 @@ void cpEnv(Env *env, Region *r) {
     }
 }
 
+/* copy from old region to new region
+ * If the new region is the same as the old region then do not copy.
+ */
+Res *cpRes2(Res *res0, Region *oldr, Region *r) {
+    Res *res;
+    if(IN_REGION(res0, oldr)) {
+        res = newRes(r);
+        *res = *res0;
+    } else {
+        res = res0;
+    }
+    if(res->exprType!=NULL) {
+        res->exprType = cpType2(res->exprType, oldr, r);
+    }
+    if(res->text != NULL) {
+        res->text = cpString2(res->text, oldr, r);
+    }
+    int i;
+    if(res->subtrees!=NULL) {
+        if(IN_REGION(res->subtrees, oldr)) {
+            Node **temp = (Node **)region_alloc(r, sizeof(Node *) * res->degree);
+            memcpy(temp, res->subtrees, sizeof(Node *) * res->degree);
+            res->subtrees = temp;
+        }
+        for(i=0;i<res->degree;i++) {
+            res->subtrees[i] = cpRes2(res->subtrees[i], oldr, r);
+        }
+    }
+    return res;
+}
+
+char *cpString2(char *str, Region *oldr, Region *r) {
+    if(!IN_REGION(str, oldr)) {
+        return str;
+    } else
+    return cpStringExt(str, r);
+}
+ExprType *cpType2(ExprType *ty, Region *oldr, Region *r) {
+    if(!IN_REGION(ty, oldr)) {
+        return ty;
+    }
+    int i;
+    ExprType *newt;
+    newt = (ExprType *) region_alloc(r, sizeof(ExprType));
+    memcpy(newt, ty, sizeof(ExprType));
+    if(ty->subtrees != NULL) {
+        newt->subtrees = (ExprType **) region_alloc(r,sizeof(ExprType *)*ty->degree);
+        for(i=0;i<ty->degree;i++) {
+            newt->subtrees[i] = cpType2(ty->subtrees[i],oldr, r);
+        }
+    }
+    if(ty->text != NULL) {
+        newt->text = cpString2(ty->text, oldr, r);
+    }
+
+    return newt;
+}
+/* copy res values from region oldr to r */
+void cpHashtable2(Hashtable *env, Region *oldr, Region *r) {
+	int i;
+
+	for(i=0;i<env->size;i++) {
+            struct bucket *b = env->buckets[i];
+            while(b!=NULL) {
+                b->value = cpRes2((Res *)b->value, oldr, r);
+                b= b->next;
+            }
+	}
+}
+
+void cpEnv2(Env *env, Region *oldr, Region *r) {
+    cpHashtable2(env->current, oldr, r);
+    if(env->previous!=NULL) {
+        cpEnv2(env->previous, oldr, r);
+    }
+}
+
 Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r) {
     int i;
     char *varMap;
@@ -590,6 +670,8 @@ char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
             for(i=0;i<T_CONS_ARITY(etype);i++) {
                 typeToString(T_CONS_TYPE_ARG(etype, i), var_types, buf+strlen(buf), bufsize-strlen(buf));
             }
+        } else if(etype->nodeType == T_FLEX) {
+            typeToString(etype->subtrees[0], var_types, buf+strlen(buf), bufsize-strlen(buf));
         }
 
 
@@ -637,6 +719,14 @@ ExprType *instantiate(ExprType *type, Hashtable *type_table, Region *r) {
                 return type;
             } else {
                 return instantiate(typeInst, type_table, r);
+            }
+        case T_FLEX:
+            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*1);
+            paramTypes[0] = instantiate(type->subtrees[0], type_table, r);
+            if(paramTypes[0]!=type->subtrees[0]) {
+                return newExprType(T_FLEX, 1, paramTypes, r);
+            } else {
+                return type;
             }
         default:
             return type;

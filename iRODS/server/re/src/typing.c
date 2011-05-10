@@ -501,28 +501,28 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
                     gcd = paramType;
                 } else if(paramType->nodeType == T_DYNAMIC) {
                     gcd = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i);
-                } else if(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->coercionAllowed) {
-                    gcd = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i);
-                        TypingConstraint *tc = newTypingConstraint(paramType, gcd, LT, node -> subtrees[i], r);
-                        Satisfiability tcons = simplifyLocally(tc, var_type_table, r);
-                        switch(tcons) {
-                            case TAUTOLOGY:
-                                break;
-                            case CONTINGENCY:
-                                while(tc!=NULL) {
-                                    listAppend(typingConstraints, tc, r);
-                                    tc = tc->next;
-                                }
-                                break;
-                            case ABSURDITY:
-                                *errnode = node->subtrees[i];
-                                snprintf(buf, 1024, "unsolvable typing constraint %s < %s",
-                                    typeToString(tc->a, var_type_table, buf2, 1024),
-                                    typeToString(tc->b, var_type_table, buf3, 1024));
-                                char buf4[ERR_MSG_LEN];
-                                generateErrMsg(buf, (*errnode)->expr, (*errnode)->base, buf4);
-                                ERROR2(1, buf4);
-                        }
+                } else if(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->nodeType == T_FLEX) {
+                    gcd = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i)->subtrees[0];
+                    TypingConstraint *tc = newTypingConstraint(paramType, gcd, LT, node -> subtrees[i], r);
+                    Satisfiability tcons = simplifyLocally(tc, var_type_table, r);
+                    switch(tcons) {
+                        case TAUTOLOGY:
+                            break;
+                        case CONTINGENCY:
+                            while(tc!=NULL) {
+                                listAppend(typingConstraints, tc, r);
+                                tc = tc->next;
+                            }
+                            break;
+                        case ABSURDITY:
+                            *errnode = node->subtrees[i];
+                            snprintf(buf, 1024, "unsolvable typing constraint %s < %s",
+                                typeToString(tc->a, var_type_table, buf2, 1024),
+                                typeToString(tc->b, var_type_table, buf3, 1024));
+                            char buf4[ERR_MSG_LEN];
+                            generateErrMsg(buf, (*errnode)->expr, (*errnode)->base, buf4);
+                            ERROR2(1, buf4);
+                    }
 /*                        printType(paramType, NULL); */
 /*                        printType(gcd, NULL); */
                 } else {
@@ -639,12 +639,15 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
  */
 void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node **errnode, Region *r) {
     if(expr->coercionType!=NULL) {
+                /*char buf[128];*/
         ExprType *deref;
-	switch(expr->coercionType->nodeType) {
-            case T_VAR:
+                /*typeToString(expr->coercionType, NULL, buf, 128);
+                printf("%s", buf);*/
                 deref = instantiate(expr->coercionType, varTypes, r);
+                /*typeToString(deref, NULL, buf, 128);
+                printf("->%s\n", buf);*/
+
 /*
-                char buf[128];
                 if(deref->t == T_VAR && T_VAR_NUM_DISJUNCTS(deref)>0) {
                     ExprType *simp = newSimpType(T_VAR_DISJUNCT(deref, 0), r);
                     insertIntoHashTable(varTypes, getTVarName(T_VAR_ID(deref), buf), simp);
@@ -652,10 +655,6 @@ void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node
                 }
 */
                 expr->coercionType = deref;
-                break;
-            default:
-                break;
-	}
     }
     int i;
     for(i=0;i<expr->degree;i++) {

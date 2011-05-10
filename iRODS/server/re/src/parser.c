@@ -1214,7 +1214,13 @@ void trimquotes(char *string) {
 
 void printTree(Node *n, int indent) {
 	printIndent(indent);
-	printf("%s:%d->%s\n",n->text, n->nodeType, n->coercionType == NULL?"?":typeName_ExprType(n->coercionType));
+	char buf[128];
+	if(n->coercionType!=NULL) {
+	    typeToString(n->coercionType, NULL, buf, 128);
+	} else {
+	    buf[0] = '\0';
+	}
+	printf("%s:%d->%s\n",n->text, n->nodeType, buf);
 	int i;
 	for(i=0;i<n->degree;i++) {
 		printTree(n->subtrees[i],indent+1);
@@ -1821,9 +1827,7 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     TTEXT("f");
                     /* flexible type, non dynamic coercion allowed */
                     NT2(_Type, 1, 0);
-                    Node *t = POP;
-                    t->coercionAllowed = 1;
-                    PUSH(t);
+                    BUILD_NODE(T_FLEX, NULL, &start, 1, 1);
             OR(type)
                     TTEXT("type");
                     CASCADE(newSimpType(T_TYPE, context->region));
@@ -2084,6 +2088,8 @@ char* typeName_NodeType(NodeType s) {
                 return "DYNAMIC";
             case T_CONS:
                 return "CONS";
+            case T_FLEX:
+                return "FLEX";
             case T_BOOL:
                 return "BOOL";
             case T_INT:
