@@ -60,8 +60,11 @@ rodsPathInp_t *rodsPathInp)
         if (status >= 0) {
             status = lfRestartGetWithInfo (conn, info);
             if (status >= 0) {
-                /* save info so we know what got restarted */
+                /* save info so we know what got restarted and what not to
+                 * delete in setStateForResume */
                 rstrcpy (conn->fileRestart.info.objPath, info->objPath,
+                  MAX_NAME_LEN);
+                rstrcpy (conn->fileRestart.info.fileName, info->fileName,
                   MAX_NAME_LEN);
                 conn->fileRestart.info.status = FILE_RESTARTED;
                 printf ("%s was restarted successfully\n",

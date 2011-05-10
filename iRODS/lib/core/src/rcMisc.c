@@ -2554,7 +2554,10 @@ int deleteFlag)
 	        clearKeyVal (&dataObjInp.condInput);
 	    }
 	} else if (objType == LOCAL_FILE_T) {
-	    status = unlink (restartPath);
+	    if (conn->fileRestart.info.status != FILE_RESTARTED ||
+                strcmp (conn->fileRestart.info.fileName, restartPath) != 0) {
+	        status = unlink (restartPath);
+	    }
 	} else {
             rodsLog (LOG_ERROR,
 	      "setStateForResume: illegal objType %d for %s",
