@@ -37,15 +37,16 @@ Res* execRule(char *ruleName, Res** args, unsigned int narg, int applyAll, Env *
 Res* execRuleNodeRes(Node *rule, Res** args, unsigned int narg,Env *outEnv, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
 Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
 Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
-/*int executeRuleActionNode(Node *inAction, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
-int executeRuleRecoveryNode(Node *ruleRecovery, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);*/
 
 Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r);
 Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg, Region *r);
 
 /** utilities */
 char* getVariableName(Node *node);
-int overflow(char*expr,int len);
 char* matchWholeString(char *buf);
+void copyFromEnv(Res**params, char **paramNames, int paramsCount, Hashtable *env, Region *r);
+int initializeEnv(Node *ruleHead, Res **args, int argc, Hashtable *env, Region *r);
+
+
 
 #endif

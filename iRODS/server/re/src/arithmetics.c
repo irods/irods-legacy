@@ -28,15 +28,41 @@ extern microsdef_t MicrosTable[];
 extern int GlobalAllRuleExecFlag;
 extern int GlobalREDebugFlag;
 
-
-int overflow(char* expr, int len) {
-	int i;
-	for(i = 0;i<len+1;i++) {
-		if(expr[i]==0)
-			return 0;
-	}
-	return 1;
+/* utilities */
+Env* globalEnv(Env *env) {
+        Env *global = env;
+        while(global->previous!=NULL) {
+            global = global->previous;
+        }
+        return global;
 }
+
+int initializeEnv(Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, Hashtable *env, Region *r) {
+
+
+	Node** args2 = params->subtrees;
+/*	int argc2 = ruleHead->degree; */
+	int i;
+        /*getSystemFunctions(env, r); */
+	for (i = 0; i < argc ; i++) {
+		insertIntoHashTable(env, args2[i]->text, args[i]);
+	}
+	return (0);
+}
+
+char *matchWholeString(char *buf) {
+    char *buf2 = (char *)malloc(sizeof(char)*strlen(buf)+2+1);
+    buf2[0]='^';
+    strcpy(buf2+1, buf);
+    buf2[strlen(buf)+1]='$';
+    buf2[strlen(buf)+2]='\0';
+    return buf2;
+}
+
+char* getVariableName(Node *node) {
+    return node->subtrees[0]->text;
+}
+
 
 Res* evaluateExpression3(Node *expr, int applyAll, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
 /*
@@ -619,18 +645,6 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
   return NULL;
 }
 
-char *matchWholeString(char *buf) {
-    char *buf2 = (char *)malloc(sizeof(char)*strlen(buf)+2+1);
-    buf2[0]='^';
-    strcpy(buf2+1, buf);
-    buf2[strlen(buf)+1]='$';
-    buf2[strlen(buf)+2]='\0';
-    return buf2;
-}
-
-char* getVariableName(Node *node) {
-    return node->subtrees[0]->text;
-}
 /*
  * execute an external microserive or a rule
  */
@@ -816,14 +830,6 @@ ret:
     return res;
 }
 
-
-Env* globalEnv(Env *env) {
-        Env *global = env;
-        while(global->previous!=NULL) {
-            global = global->previous;
-        }
-        return global;
-}
 Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *civ, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
             /*printTree(civ->condExp, 0); */
         Res *status;
@@ -1018,6 +1024,12 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 #endif
         return statusRes;
     }
+}
+void copyFromEnv(Res **args, char **inParams, int inParamsCount, Hashtable *env, Region *r) {
+	int i;
+	for(i=0;i<inParamsCount;i++) {
+		args[i]= cpRes((Res *)lookupFromHashTable(env, inParams[i]),r);
+	}
 }
 /*
  * execute a rule given by an AST node

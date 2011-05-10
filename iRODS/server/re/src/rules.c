@@ -511,26 +511,6 @@ int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *
 	return 1;
 }
 
-int initializeEnv(Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, Hashtable *env, Region *r) {
-
-
-	Node** args2 = params->subtrees;
-/*	int argc2 = ruleHead->degree; */
-	int i;
-        /*getSystemFunctions(env, r); */
-	for (i = 0; i < argc ; i++) {
-		insertIntoHashTable(env, args2[i]->text, args[i]);
-	}
-	return (0);
-}
-
-
-void copyFromEnv(Res **args, char **inParams, int inParamsCount, Hashtable *env, Region *r) {
-	int i;
-	for(i=0;i<inParamsCount;i++) {
-		args[i]= cpRes((Res *)lookupFromHashTable(env, inParams[i]),r);
-	}
-}
 Node* getRuleNode(int ri)
 {
 
@@ -595,4 +575,12 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     return res;
 
 }
-/* utilities */
+int overflow(char* expr, int len) {
+	int i;
+	for(i = 0;i<len+1;i++) {
+		if(expr[i]==0)
+			return 0;
+	}
+	return 1;
+}
+
