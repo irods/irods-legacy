@@ -11,8 +11,8 @@ void usage ();
 int
 parseMsInputParam (int argc, char **argv, int optInd, 
 		   execMyRuleInp_t *execMyRuleInp, char *inBuf);
-int
-startsWith(char *str, char *prefix) {
+
+int startsWith(char *str, char *prefix) {
 	int i = 0;
 	while(str[i]!='\0' && prefix[i]!='\0') {
 		if(str[i] != prefix[i]) {
@@ -22,11 +22,11 @@ startsWith(char *str, char *prefix) {
 	}
 	return prefix[i] == '\0';
 }
-int
-convertInputParamListToMultiString (char *strInput)
-{
-	char *p = strInput;
+
+int convertInputParamListToMultiString(char *strInput) {
 	char *src = strdup(strInput);
+
+	char *p = strInput;
 	char *psrc = src;
 
 	/* replace % with %% */
@@ -40,8 +40,10 @@ convertInputParamListToMultiString (char *strInput)
 		}
 	}
 	*p = '\0';
+
 	free(src);
-	/* replace , with % and remove while spaces */
+
+	/* replace , with % and remove extra spaces */
 	p = strInput;
 	psrc = strInput;
 	while(*psrc!='\0') {
@@ -81,7 +83,7 @@ convertInputParamListToMultiString (char *strInput)
 					psrc++;
 					break;
 				} else {
-					if (*psrc == '\'' || *psrc == '\"') {
+					if(*psrc == '\'' || *psrc == '\"') {
 						inString = 1;
 						delim = *psrc;
 					}
@@ -93,16 +95,12 @@ convertInputParamListToMultiString (char *strInput)
 		while(isspace(*psrc)) {
 			psrc++;
 		}
-
 	}
 	*p = '\0';
 	return 0;
-
-
 }
 
-void
-trimPrefix(char *str) {
+void trimPrefix(char *str) {
 	int i = 0;
 	while(str[i]!=' ') {
 		i++;
