@@ -22,29 +22,83 @@ startsWith(char *str, char *prefix) {
 	}
 	return prefix[i] == '\0';
 }
-void
+int
 convertInputParamListToMultiString (char *strInput)
 {
 	char *p = strInput;
-	int inString = 0;
-	char delim = '\0';
-	while(*p!='\0') {
-		if(inString) {
-			if(*p == delim) {
-				inString = 0;
-			} else if(*p == '\\' && *(p+1)!='\0') {
-				p++;
-			}
+	char *src = strdup(strInput);
+	char *psrc = src;
+
+	/* replace % with %% */
+	while(*psrc!='\0') {
+		if(*psrc == '%') {
+			*(p++) = '%';
+			*(p++) = '%';
+			psrc++;
 		} else {
-			if(*p == ',') {
-				*p = '%';
-			} else if (*p == '\'' || *p == '\"') {
-				inString = 1;
-				delim = *p;
+			*(p++) = *(psrc++);
+		}
+	}
+	*p = '\0';
+	free(src);
+	/* replace , with % and remove while spaces */
+	p = strInput;
+	psrc = strInput;
+	while(*psrc!='\0') {
+		/* variable name */
+		while(!isspace(*psrc) && *psrc != '=' && *psrc != '\0') {
+			*(p++) = *(psrc++);
+		}
+		if(*psrc == '\0') {
+			return -1;
+		}
+		/* skip spaces */
+		while(isspace(*psrc)) {
+			psrc++;
+		}
+		if(*psrc == '\0') {
+			return -1;
+		}
+		/* assignment */
+		*(p++) = *(psrc++);
+
+		int inString = 0;
+		char delim = '\0';
+		while(*psrc!='\0') {
+			if(inString) {
+				if(*psrc == delim) {
+					inString = 0;
+				} else if(*psrc == '\\') {
+					*(p++) = *(psrc++);
+					if(*psrc=='\0') {
+						return -1;
+					}
+				}
+				*(p++) = *(psrc++);
+			} else {
+				if(*psrc == ',') {
+					*(p++) = '%';
+					psrc++;
+					break;
+				} else {
+					if (*psrc == '\'' || *psrc == '\"') {
+						inString = 1;
+						delim = *psrc;
+					}
+					*(p++) = *(psrc++);
+				}
 			}
 		}
-		p++;
+		/* skip spaces */
+		while(isspace(*psrc)) {
+			psrc++;
+		}
+
 	}
+	*p = '\0';
+	return 0;
+
+
 }
 
 void
