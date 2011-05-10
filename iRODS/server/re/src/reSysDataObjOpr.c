@@ -911,26 +911,33 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
 	sizePerThr = atoi (sizePerThrInMbStr) * (1024*1024);
         if (sizePerThr <= 0) {
 	    rodsLog (LOG_ERROR,
-	     "msiSysReplDataObj: Bad input sizePerThrInMb %s", sizePerThrInMbStr);
+	     "msiSetNumThreads: Bad input sizePerThrInMb %s", sizePerThrInMbStr);
 	    sizePerThr = SZ_PER_TRAN_THR;
 	}
     }
 
     doinp = rei->doinp;
+    if (doinp == NULL) {
+        rodsLog (LOG_ERROR,
+         "msiSetNumThreads: doinp is NULL");
+	rei->status = DEF_NUM_TRAN_THR;
+        return DEF_NUM_TRAN_THR;
+    }
+
     if (strcmp (maxNumThrStr, "default") == 0) {
         maxNumThr = DEF_NUM_TRAN_THR;
     } else {
         maxNumThr = atoi (maxNumThrStr);
         if (maxNumThr < 0) {
             rodsLog (LOG_ERROR,
-             "msiSysReplDataObj: Bad input maxNumThr %s", maxNumThrStr);
+             "msiSetNumThreads: Bad input maxNumThr %s", maxNumThrStr);
             maxNumThr = DEF_NUM_TRAN_THR;
 	} else if (maxNumThr == 0) {
             rei->status = 0;
             return rei->status;
         } else if (maxNumThr > MAX_NUM_CONFIG_TRAN_THR) {
 	    rodsLog (LOG_ERROR,
-             "msiSysReplDataObj: input maxNumThr %s too large", maxNumThrStr);
+             "msiSetNumThreads: input maxNumThr %s too large", maxNumThrStr);
 	    maxNumThr = MAX_NUM_CONFIG_TRAN_THR;
 	}
     }
