@@ -102,11 +102,12 @@ int
 qdelUtil (rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv)
 {
     genQueryInp_t genQueryInp;
-    int status, savedStatus, i, continueInx;
+    int status, i, continueInx;
     char tmpStr[MAX_NAME_LEN];
     sqlResult_t *execId;
     char *execIdStr;
     genQueryOut_t *genQueryOut = NULL;
+    int savedStatus = 0;
 
     if (allFlag == 1 && userName != NULL) {
         rodsLog (LOG_ERROR, 
