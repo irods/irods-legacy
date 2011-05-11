@@ -161,7 +161,7 @@ void usage()
    printf(" iqdel removes delayed rules from the queue.\n");
    printf(" multiple ruleIds may be included on the command line.\n");
    printf(" The -a option specifies the removal of all delayed rules\n");
-   printf(" The -u option specifies the removal of all delayed rules of the fiven user\n");
+   printf(" The -u option specifies the removal of all delayed rules of the given user\n");
    printf(" The -a and -u options cannot be used together\n");
    printf("\n");
    printf("Also see iqstat and iqmod.\n");
