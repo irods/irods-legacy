@@ -12,7 +12,9 @@
 #define BIG_STR 200
 
 void usage();
-int qdelUtil (rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv);
+int
+qdelUtil (rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv,
+rodsArguments_t *myRodsArgs);
 
 int debug=0;
 
@@ -41,7 +43,6 @@ int
 main(int argc, char **argv) {
    int status;
    rErrMsg_t errMsg;
-
    rodsArguments_t myRodsArgs;
    int argOffset;
    int i;
@@ -66,7 +67,13 @@ main(int argc, char **argv) {
       exit (1);
    }
 
-   if (argc <= argOffset) {
+   if (myRodsArgs.all || myRodsArgs.user) {
+      if (argc > argOffset) {
+         /* should not have any input */
+         usage();
+         exit(-1);
+      }
+   } else if (argc <= argOffset) {
       usage();
       exit(-1);
    }
@@ -83,9 +90,10 @@ main(int argc, char **argv) {
    }
 
    if (myRodsArgs.all) {
-      status = qdelUtil (Conn, NULL, myRodsArgs.all, &myEnv);
+      status = qdelUtil (Conn, NULL, myRodsArgs.all, &myEnv, &myRodsArgs);
    } else if (myRodsArgs.user) {
-      status = qdelUtil (Conn, myRodsArgs.userString, myRodsArgs.all, &myEnv);
+      status = qdelUtil (Conn, myRodsArgs.userString, myRodsArgs.all, &myEnv, 
+       &myRodsArgs);
    } else {
       for (i=argOffset;i<argc;i++) {
          status = rmDelayedRule(argv[i]);
@@ -99,7 +107,8 @@ main(int argc, char **argv) {
 }
 
 int 
-qdelUtil (rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv)
+qdelUtil (rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv,
+rodsArguments_t *myRodsArgs)
 {
     genQueryInp_t genQueryInp;
     int status, i, continueInx;
@@ -138,6 +147,7 @@ qdelUtil (rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv)
         }
         for (i = 0;i < genQueryOut->rowCnt; i++) {
             execIdStr = &execId->value[execId->len * i];
+            if (myRodsArgs->verbose) printf ("Deleting %s\n", execIdStr);
 	    status = rmDelayedRule (execIdStr);
 	    if (status < 0) {
                 rodsLog (LOG_ERROR,
