@@ -43,7 +43,7 @@ INCLUDE_FLAGS =	-I$(MSIncDir)
 # on your system and edit the following two lines accordingly.
 #
 # INCLUDE_FLAGS += 
-LIBS = -L/usr/lib -lcurl -lssl -lcrypto -lz
+LIBS = -L/usr/lib -lcurl
 
 
 

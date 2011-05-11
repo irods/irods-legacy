@@ -398,3 +398,87 @@ int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *me
 }
 
 
+
+
+/**
+ * \fn msiPostThis(msParam_t *url, msParam_t *data, msParam_t *status, ruleExecInfo_t *rei)
+ *
+**/
+int msiPostThis(msParam_t *url, msParam_t *data, msParam_t *status, ruleExecInfo_t *rei)
+{
+	CURL *curl;								/* curl handler */
+	CURLcode res;
+
+	char *myurl, *mydata;					/* input for POST request */
+
+
+	/*************************************  INIT **********************************/
+
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiPostThis")
+
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiPostThis: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/********************************** PARAM PARSING  *********************************/
+
+	/* Parse url */
+	if ((myurl = parseMspForStr(url)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiPostThis: input url is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+	/* Parse data, which can be NULL */
+	mydata = parseMspForStr(data);
+
+
+	/************************** SET UP AND INVOKE CURL HANDLER **************************/
+
+	/* cURL easy handler init */
+	curl_global_init(CURL_GLOBAL_DEFAULT);
+	curl = curl_easy_init();
+
+	if(curl)
+	{
+		/* Set up curl easy handler */
+		curl_easy_setopt(curl, CURLOPT_URL, myurl);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, mydata);
+
+		/* For debugging */
+// 		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+		/* Let curl do its thing */
+		res = curl_easy_perform(curl);
+
+		/* Cleanup curl handler */
+		curl_easy_cleanup(curl);
+
+		/* How did it go? */
+		if(res != CURLE_OK)
+		{
+			rodsLog (LOG_ERROR, "msiPostThis: cURL error: %s", curl_easy_strerror(res));
+			rei->status = SYS_HANDLER_DONE_WITH_ERROR; /* For lack of anything better */
+		}
+		else
+		{
+			rei->status = 0;
+		}
+	}
+
+
+	/*********************************** DONE ********************************/
+
+	/* Cleanup and return CURLcode */
+	curl_global_cleanup();
+
+	fillIntInMsParam (status, rei->status);
+	return (rei->status);
+}
+
+
