@@ -148,7 +148,7 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xsltBuf);
 	
 	/* Make sure that the result is null terminated */
-	if (strlen(xsltBuf.buf) > openedDataObjInp.len)
+	if (strlen((char*)xsltBuf.buf) > (size_t)openedDataObjInp.len)
 	{
 		((char*)xsltBuf.buf)[openedDataObjInp.len-1]='\0';
 	}	
@@ -182,7 +182,7 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
 
 	/* Make sure that the result is null terminated */
-	if (strlen(xmlBuf.buf) > openedDataObjInp.len)
+	if (strlen((char*)xmlBuf.buf) > (size_t)openedDataObjInp.len)
 	{
 		((char*)xmlBuf.buf)[openedDataObjInp.len-1]='\0';
 	}

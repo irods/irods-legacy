@@ -186,7 +186,7 @@ msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPar
 
 
 	/* Call copyAVUMetadata() */
-	rei->status = copyAVUMetadata(inpParam1->inOutStruct, inpParam2->inOutStruct, rsComm);
+	rei->status = copyAVUMetadata((char*)inpParam1->inOutStruct, (char*)inpParam2->inOutStruct, rsComm);
 
 	return (rei->status);
 }
@@ -383,12 +383,12 @@ msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
 
 
 	/* did we get any results? */
-	if (!mybuf->buf || !strlen(mybuf->buf)) {
+	if (!mybuf->buf || !strlen((char*)mybuf->buf)) {
 		appendStrToBBuf(mybuf, "");
 	}
 
 	/* send results out to outParam */
-	fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
 
 	return 0;
 }
@@ -532,7 +532,7 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
     	  /* Closing tag */
     	  appendStrToBBuf(mybuf, "</metadata>\n");
-    	  fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+    	  fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
     	  return (0);
 
       }
@@ -558,7 +558,7 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
   appendStrToBBuf(mybuf, "</metadata>\n");
 
 
-  fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+  fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
 
   /* rei->status may be CAT_NO_ROWS_FOUND, so don't return it */
   return (0);
@@ -644,7 +644,7 @@ msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *re
 	
 
 	/* send results out to outParam */
-	fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
 	
 	return (rei->status);
 
@@ -728,7 +728,7 @@ msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t 
 
 
 	/* send results out to outParam */
-	fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
 
 	return (rei->status);
 
@@ -1166,7 +1166,7 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
   appendStrToBBuf(mybuf, "</AIP>\n");
 
 
-  fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+  fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
 
   return (rei->status);
 
@@ -1249,7 +1249,7 @@ msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 	
 
 	/* send results out to outParam */
-	fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
 	
 	return (rei->status);
 
@@ -1332,11 +1332,11 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
 
 	
 	/* call getCollectionACL() */
-	rei->status = getCollectionACL(outCollInp, inpParam2->inOutStruct, mybuf, rsComm);
+	rei->status = getCollectionACL(outCollInp, (char*)inpParam2->inOutStruct, mybuf, rsComm);
 	
 
 	/* send results out to outParam */
-	fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
 	
 	return (rei->status);
 
@@ -1431,7 +1431,7 @@ msiGetUserInfo(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 	fillIntInMsParam (outParam, rei->status);
 
 	/* send result buffer, even if length is 0, to inParam2 */
-	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (inpParam2, strlen((char*)mybuf->buf), mybuf);
 	
 	return (rei->status);
 
@@ -1873,7 +1873,7 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
 	fillIntInMsParam (outParam, rei->status);
 
 	/* send result buffer, even if length is 0, to inpParam2 */
-	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (inpParam2, strlen((char*)mybuf->buf), mybuf);
 	
 	return (rei->status);
 
@@ -2700,7 +2700,7 @@ msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *statu
 	appendStrToBBuf(readBuf, "");
 
 	/* init loop */
-	lineStart = readBuf->buf;
+	lineStart = (char*)readBuf->buf;
 
 	while ( (lineEnd=strstr(lineStart, "\n")) )
 	{

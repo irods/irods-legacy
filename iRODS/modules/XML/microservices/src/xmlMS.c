@@ -203,7 +203,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
 	
 	/* Make sure that the result is null terminated */
-	if (strlen(xmlBuf.buf) > openedDataObjInp.len)
+	if (strlen((char*)xmlBuf.buf) > (size_t)openedDataObjInp.len)
 	{
 		((char*)xmlBuf.buf)[openedDataObjInp.len-1]='\0';
 	}
@@ -426,7 +426,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	/* allocate memory for output error buffer */
 	errBuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
 	errBuf->buf = strdup("");
-	errBuf->len = strlen(errBuf->buf);
+	errBuf->len = strlen((char*)errBuf->buf);
 
 	/* Default status is failure, overwrite if success */
 	fillBufLenInMsParam (status, -1, NULL);
@@ -474,7 +474,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
 
 	/* add terminating null character */
-	tail = xmlBuf.buf;
+	tail = (char*)xmlBuf.buf;
 	tail[openedDataObjInp.len - 1] = '\0';
 
 
@@ -529,7 +529,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
 
 	/* add terminating null character */
-	tail = xmlBuf.buf;
+	tail = (char*)xmlBuf.buf;
 	tail[openedDataObjInp.len - 1] = '\0';
 
 

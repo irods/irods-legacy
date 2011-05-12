@@ -103,7 +103,7 @@ msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam
 	if (!mybuf->buf) {
 		mybuf->buf = strdup("");
 	}
-	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (inpParam2, strlen((char*)mybuf->buf), mybuf);
 
 	
 	return (rei->status);
@@ -205,7 +205,7 @@ msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	if (!mybuf->buf) {
 		mybuf->buf = strdup("");
 	}
-	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (inpParam2, strlen((char*)mybuf->buf), mybuf);
 
 	
 	return (rei->status);
@@ -307,7 +307,7 @@ msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	if (!mybuf->buf) {
 		mybuf->buf = strdup("");
 	}
-	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (inpParam2, strlen((char*)mybuf->buf), mybuf);
 
 	
 	return (rei->status);
@@ -409,7 +409,7 @@ msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	if (!mybuf->buf) {
 		mybuf->buf = strdup("");
 	}
-	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (inpParam2, strlen((char*)mybuf->buf), mybuf);
 
 	
 	return (rei->status);
@@ -516,7 +516,7 @@ msiGetAuditTrailInfoByTimeStamp(msParam_t *inpParam1, msParam_t *inpParam2, msPa
 	if (!mybuf->buf) {
 		mybuf->buf = strdup("");
 	}
-	fillBufLenInMsParam (inpParam3, strlen(mybuf->buf), mybuf);
+	fillBufLenInMsParam (inpParam3, strlen((char*)mybuf->buf), mybuf);
 	
 	return (rei->status);
 

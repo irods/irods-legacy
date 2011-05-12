@@ -58,11 +58,11 @@ appendFormattedStrToBBuf(bytesBuf_t *dest, size_t size, const char *format, ...)
 	index = strlen((char *)dest->buf);
 	
 	/* Increase buffer size if needed */
-	if (index+size >= dest->len) {
+	if (index+size >= (size_t)dest->len) {
 		dest->len=2*(index+size);
 		tmpPtr=(char *)malloc(dest->len);
 		memset(tmpPtr, '\0', dest->len);
-		strcpy(tmpPtr, dest->buf);
+		strcpy(tmpPtr, (char*)dest->buf);
 		free(dest->buf);
 		dest->buf=tmpPtr;
 	}
@@ -153,7 +153,7 @@ recursiveCollCopy(collInp_t *destCollInp, collInp_t *srcCollInp, rsComm_t *rsCom
 
 	dataObjCopyInp_t dataObjCopyInp;		/* for rsDataObjCopy() */
 	dataObjInp_t srcDataObjInp, destDataObjInp;	/* for rsDataObjCopy() */
-	transStat_t *transStat = NULL;			/* for rsDataObjCopy() */
+	transferStat_t *transStat = NULL;			/* for rsDataObjCopy() */
 
 	char *subCollName, *fileName;	/* for rsCollCreate() and rsDataObjCopy() */
 
@@ -861,7 +861,7 @@ loadMetadataFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm)
 		appendStrToBBuf(readBuf, "");
 
 		
-		lineStart = readBuf->buf;
+		lineStart = (char*)readBuf->buf;
 
 		while ( (lineEnd=strstr(lineStart, "\n")) ) {
 			lineEnd[0]='\0';
@@ -877,7 +877,7 @@ loadMetadataFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm)
 		
 		
 		/* make sure not to get stuck, for example if the file doesn't end with a new line */
-		if (strlen(lineStart) >= bytesRead) {
+		if (strlen(lineStart) >= (size_t)bytesRead) {
 			parseMetadataModLine(lineStart, rsComm);
 			break;
 		}
@@ -1471,7 +1471,7 @@ genAdminOpFromDataObj(dataObjInp_t *dataObjInp, generalAdminInp_t *generalAdminI
 		appendStrToBBuf(readBuf, "");
 
 		
-		lineStart = readBuf->buf;
+		lineStart = (char*)readBuf->buf;
 
 		while ( (lineEnd=strstr(lineStart, "\n")) ) {
 			lineEnd[0]='\0';
@@ -1487,7 +1487,7 @@ genAdminOpFromDataObj(dataObjInp_t *dataObjInp, generalAdminInp_t *generalAdminI
 		
 		
 		/* make sure not to get stuck, for example if the file doesn't end with a new line */
-		if (strlen(lineStart) >= bytesRead) {
+		if (strlen(lineStart) >= (size_t)bytesRead) {
 			parseGenAdminLine(lineStart, generalAdminInp, rsComm);
 			break;
 		}
@@ -1761,7 +1761,7 @@ loadACLFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm)
 		appendStrToBBuf(readBuf, "");
 
 		
-		lineStart = readBuf->buf;
+		lineStart = (char*)readBuf->buf;
 
 		while ( (lineEnd=strstr(lineStart, "\n")) ) {
 			lineEnd[0]='\0';
@@ -1777,7 +1777,7 @@ loadACLFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm)
 		
 		
 		/* make sure not to get stuck, for example if the file doesn't end with a new line */
-		if (strlen(lineStart) >= bytesRead) {
+		if (strlen(lineStart) >= (size_t)bytesRead) {
 			parseACLModLine(lineStart, rsComm);
 			break;
 		}
