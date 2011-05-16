@@ -122,7 +122,8 @@ Res* evaluateExpression3(Node *expr, int applyAll, ruleExecInfo_t *rei, int reiS
                         generateErrMsg("error: unsupported ast node type.", expr->expr, expr->base, errbuf);
                         addRErrorMsg(errmsg, -1, errbuf);
                         res = newErrorRes(r, -1);
-           printTree(expr, 0); */
+                        break;
+	}
         /* coercions are applied at application locations only */
         return res;
 }
