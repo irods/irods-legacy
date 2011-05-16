@@ -40,7 +40,9 @@ applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, ch
     addMsParamToArray (&msParamArray, "*ReadBuf", BUF_LEN_MS_T, myInOutStruct,
       dataObjReadOutBBuf, 0);
 #endif
-    i =  applyRule("acPostProcForDataObjRead(*ReadBuf)",&msParamArray, &rei2, NO_SAVE_REI);
+    i =  applyRule("acPostProcForDataObjRead(*ReadBuf)",&msParamArray, &rei2, 
+      NO_SAVE_REI);
+    free (rei2.doi);
     if (i < 0) {
       if (rei2.status < 0) {
         i = rei2.status;
@@ -61,7 +63,6 @@ rsDataObjRead (rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
 bytesBuf_t *dataObjReadOutBBuf)
 {
     int bytesRead;
-    int i;
     int l1descInx = dataObjReadInp->l1descInx;
 
     if (l1descInx < 2 || l1descInx >= NUM_L1_DESC) {
@@ -78,10 +79,12 @@ bytesBuf_t *dataObjReadOutBBuf)
           dataObjReadInp, dataObjReadOutBBuf);
 	dataObjReadInp->l1descInx = l1descInx;
     } else {
+        int i;
         bytesRead = l3Read (rsComm, l1descInx, dataObjReadInp->len,
           dataObjReadOutBBuf);
 	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
-	i = applyRuleForPostProcForRead(rsComm, dataObjReadOutBBuf, L1desc[l1descInx].dataObjInfo->objPath);
+	i = applyRuleForPostProcForRead(rsComm, dataObjReadOutBBuf, 
+          L1desc[l1descInx].dataObjInfo->objPath);
 	if (i < 0)
 	  return(i);  
 	bytesRead = dataObjReadOutBBuf->len;

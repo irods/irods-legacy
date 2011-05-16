@@ -42,6 +42,7 @@ applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf, 
       dataObjWriteInpBBuf, 0);
 #endif
     i =  applyRule("acPostProcForDataObjWrite(*WriteBuf)",&msParamArray, &rei2, NO_SAVE_REI);
+    free (rei2.doi);
     if (i < 0) {
       if (rei2.status < 0) {
         i = rei2.status;
@@ -61,7 +62,7 @@ int
 rsDataObjWrite (rsComm_t *rsComm, openedDataObjInp_t *dataObjWriteInp, 
 bytesBuf_t *dataObjWriteInpBBuf)
 {
-    int i, bytesWritten;
+    int bytesWritten;
 
     int l1descInx = dataObjWriteInp->l1descInx;
 
@@ -80,7 +81,9 @@ bytesBuf_t *dataObjWriteInpBBuf)
         dataObjWriteInp->l1descInx = l1descInx;
     } else {
 	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
-      i = applyRuleForPostProcForWrite(rsComm, dataObjWriteInpBBuf, L1desc[l1descInx].dataObjInfo->objPath);
+        int i;
+        i = applyRuleForPostProcForWrite(rsComm, dataObjWriteInpBBuf, 
+           L1desc[l1descInx].dataObjInfo->objPath);
 	if (i < 0)   
 	  return(i);  
 	dataObjWriteInp->len = dataObjWriteInpBBuf->len;
