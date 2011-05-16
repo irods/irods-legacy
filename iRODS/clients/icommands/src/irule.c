@@ -23,7 +23,7 @@ int startsWith(char *str, char *prefix) {
 	return prefix[i] == '\0';
 }
 
-int convertInputParamListToMultiString(char *strInput) {
+int convertListToMultiString(char *strInput) {
 	char *src = strdup(strInput);
 
 	char *p = strInput;
@@ -48,7 +48,7 @@ int convertInputParamListToMultiString(char *strInput) {
 	psrc = strInput;
 	while(*psrc!='\0') {
 		/* variable name */
-		while(!isspace(*psrc) && *psrc != '=' && *psrc != '\0') {
+		while(!isspace(*psrc) && *psrc != '=' && *psrc != ',' && *psrc != '\0') {
 			*(p++) = *(psrc++);
 		}
 		if(*psrc == '\0') {
@@ -61,35 +61,44 @@ int convertInputParamListToMultiString(char *strInput) {
 		if(*psrc == '\0') {
 			return -1;
 		}
-		/* assignment */
-		*(p++) = *(psrc++);
 
-		int inString = 0;
-		char delim = '\0';
-		while(*psrc!='\0') {
-			if(inString) {
-				if(*psrc == delim) {
-					inString = 0;
-				} else if(*psrc == '\\') {
-					*(p++) = *(psrc++);
-					if(*psrc=='\0') {
-						return -1;
+
+		if(*psrc == '=') {
+			/* assignment */
+			*(p++) = *(psrc++);
+
+			int inString = 0;
+			char delim = '\0';
+			while(*psrc!='\0') {
+				if(inString) {
+					if(*psrc == delim) {
+						inString = 0;
+					} else if(*psrc == '\\') {
+						*(p++) = *(psrc++);
+						if(*psrc=='\0') {
+							return -1;
+						}
 					}
-				}
-				*(p++) = *(psrc++);
-			} else {
-				if(*psrc == ',') {
-					*(p++) = '%';
-					psrc++;
-					break;
+					*(p++) = *(psrc++);
 				} else {
-					if(*psrc == '\'' || *psrc == '\"') {
-						inString = 1;
-						delim = *psrc;
+					if(*psrc == ',') {
+						*(p++) = '%';
+						psrc++;
+						break;
+					} else {
+						if(*psrc == '\'' || *psrc == '\"') {
+							inString = 1;
+							delim = *psrc;
+						}
+						*(p++) = *(psrc++);
 					}
-					*(p++) = *(psrc++);
 				}
 			}
+		} else if (*psrc == ','){
+			*(p++) = '%';
+		    psrc++;
+		} else {
+			return -1;
 		}
 		/* skip spaces */
 		while(isspace(*psrc)) {
@@ -100,7 +109,7 @@ int convertInputParamListToMultiString(char *strInput) {
 	return 0;
 }
 
-void trimPrefix(char *str) {
+char *trimPrefix(char *str) {
 	int i = 0;
 	while(str[i]!=' ') {
 		i++;
@@ -109,6 +118,31 @@ void trimPrefix(char *str) {
 		i++;
 	}
 	memmove(str, str+i, strlen(str) + 1 - i);
+	return str;
+}
+
+char *trimSpaces(char *str) {
+	char *p = str;
+	char *psrc = str;
+
+	while(*psrc != '\0' && isspace(*psrc)) {
+		psrc++;
+	}
+
+	while(*psrc != '\0') {
+		*(p++) = *(psrc++);
+	}
+
+	p--;
+	while(isspace(*p) && p - str >= 0) {
+		p--;
+	}
+
+	p++;
+	*p = '\0';
+
+	return str;
+
 }
 
 int
@@ -219,10 +253,10 @@ main(int argc, char **argv) {
 	    if(rulegen) {
 			if(startsWith(buf, "INPUT") || startsWith(buf, "input")) {
 				gotRule = 1;
-				trimPrefix(buf);
+				trimSpaces(trimPrefix(buf));
 			} else if(startsWith(buf, "OUTPUT") || startsWith(buf, "output")) {
 				gotRule = 2;
-				trimPrefix(buf);
+				trimSpaces(trimPrefix(buf));
 			}
 	    }
 
@@ -235,12 +269,12 @@ main(int argc, char **argv) {
 	    	}
 	    } else if (gotRule == 1) {
 	    	if(rulegen) {
-	    		convertInputParamListToMultiString(buf);
+	    		convertListToMultiString(buf);
 	    	}
 	    	parseMsInputParam (argc, argv, optind, &execMyRuleInp, buf);
 	    } else if (gotRule == 2) {
 	    	if(rulegen) {
-	    		convertInputParamListToMultiString(buf);
+	    		convertListToMultiString(buf);
 	    	}
 			if (strcmp (buf, "null") != 0) {
 				rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);

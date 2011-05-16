@@ -615,7 +615,7 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
                         return res;
                     }
                 }
-                return newSimpType(T_INT, r);
+                return res;
 		case N_ACTIONS_RECOVERY:
                 res = typeExpression3(expr->subtrees[0], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
                 if(res->nodeType == T_ERROR) {

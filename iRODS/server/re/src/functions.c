@@ -414,7 +414,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(params[0]->degree > 0) {
                 return params[0]->subtrees[0];
             } else {
-                addRErrorMsg(errmsg, -1, "error: hd: empty collection");
+                addRErrorMsg(errmsg, -1, "error: hd: empty list");
                 return newErrorRes(r, -1);
             }
 	}
@@ -432,7 +432,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		}
                 return res;
             } else {
-                addRErrorMsg(errmsg, -1, "error: tl: empty collection\n");
+                addRErrorMsg(errmsg, -1, "error: tl: empty list\n");
                 return newErrorRes(r, -1);
             }
 	}

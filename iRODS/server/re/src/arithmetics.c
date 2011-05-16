@@ -343,10 +343,7 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
 	Node* args[MAX_FUNC_PARAMS];
     Res* res;
     Region *newRegion = make_region(0, NULL);
-    Env *global = env->previous;
-    while(global->previous!=NULL) {
-        global = global->previous;
-    }
+    Env *global = globalEnv(env);
     Env *nEnv = newEnv(newHashTable(100), global);
     Hashtable *localTVarEnv = NULL;
 
