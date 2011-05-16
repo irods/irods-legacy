@@ -2095,9 +2095,9 @@ char* typeName_NodeType(NodeType s) {
             case T_FLEX:
                 return "FLEX";
             case T_BOOL:
-                return "BOOL";
+                return "BOOLEAN";
             case T_INT:
-                return "INT";
+                return "INTEGER";
             case T_DOUBLE:
                 return "DOUBLE";
             case T_STRING:

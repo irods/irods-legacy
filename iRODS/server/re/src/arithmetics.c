@@ -122,8 +122,7 @@ Res* evaluateExpression3(Node *expr, int applyAll, ruleExecInfo_t *rei, int reiS
                         generateErrMsg("error: unsupported ast node type.", expr->expr, expr->base, errbuf);
                         addRErrorMsg(errmsg, -1, errbuf);
                         res = newErrorRes(r, -1);
-                        break;
-	}
+           printTree(expr, 0); */
         /* coercions are applied at application locations only */
         return res;
 }
@@ -408,34 +407,22 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
                 }
                 coercion = subtrees[i]->coercionType;
 
-                if(coercion!=NULL && (coercion->nodeType == T_VAR ||
-                                   (coercion->nodeType == T_FLEX &&
-                                    coercion->subtrees[0]->nodeType == T_VAR))) {
-                    if(coercion->nodeType == T_FLEX) {
-                        coercion = coercion->subtrees[0];
-                    }
-                    /* ExprType *bn; */
-                    TypingConstraint *tc = newTypingConstraint(args[i]->exprType, coercion, LT, subtrees[i] ,r);
-                    char buf[ERR_MSG_LEN], buf2[1024], buf3[1024];
-                    switch(simplifyLocally(tc, localTVarEnv, newRegion)) {
-                        case ABSURDITY:
-                            sprintf(buf, "error: runtime type inference param type: %s, arg type: %s",
-                                    typeToString(coercion, localTVarEnv, buf3, 1024),
-                                    typeToString(args[i]->exprType, localTVarEnv, buf2, 1024));
-                            generateErrMsg(buf, node->expr, node->base, buf2);
-                            addRErrorMsg(errmsg, -1, buf2);
-                            res = newErrorRes(r, -1);
-                            RETURN;
-                        case CONTINGENCY:
-                            while(tc!=NULL) {
-                                listAppend(localTypingConstraints, tc, r);
-                                tc = tc->next;
-                            }
-                            break;
-                        case TAUTOLOGY:
-                            break;
-                    }
+                if(coercion!=NULL) {
+                Node *errnode;
+                int ret = typeFuncParam(subtrees[i], args[i]->exprType, coercion, localTVarEnv, localTypingConstraints, errmsg, newRegion);
+                if(ret!=0) {
+                    char buf2[ERR_MSG_LEN];
+                    char buf3[ERR_MSG_LEN];
+                    sprintf(buf, "error: runtime type inference parameter type: %s, argument type: %s",
+                            typeToString(coercion, localTVarEnv, buf3, 1024),
+                            typeToString(args[i]->exprType, localTVarEnv, buf2, 1024));
+                    generateErrMsg(buf, node->expr, node->base, buf2);
+                    addRErrorMsg(errmsg, -1, buf2);
+                    res = newErrorRes(r, -1);
+                    RETURN;
                 }
+                }
+
                 break;
             case 'o': /* output */
             case 'e': /* expression */
@@ -474,15 +461,13 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
                 break;
         }
     }
-    deleteHashTable(localTVarEnv, nop);
-    localTVarEnv = NULL;
     if(fd!=NULL) {
         switch(fd->fdtype) {
             case FD_DECONS:
                 res = deconstruct(fn, args, n, fd->proj, errmsg, r);
                 break;
             case FD_CONS:
-                res = construct(fn, args, n, dupType(fd->type, r), r);
+                res = construct(fn, args, n, instantiate(node->exprType, localTVarEnv, 1, r), r);
                 break;
             case FD_FUNC:
                 res = (Res *) fd->func(args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
@@ -492,6 +477,8 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
         res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
     }
 
+    deleteHashTable(localTVarEnv, nop);
+    localTVarEnv = NULL;
     if(TYPE(res)==T_ERROR) {
         RETURN;
     }
@@ -963,7 +950,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
                 rodsLog(LOG_NOTICE, "+Testing Rule Number:%i for Action:%s\n", ruleInx, ruleName);
         }
 #endif
-        /*printTree(rule, 0); */
+        /* printTree(rule, 0); */
         if (reiSaveFlag == SAVE_REI) {
             int statusCopy = 0;
             if (inited == 0) {

@@ -150,6 +150,12 @@ ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Reg
     /* when unification is needed for subexpressions of the types which can be performed by calling this function */
     type = dereference(type, varTypes, r);
     expected = dereference(expected, varTypes, r);
+    if(type->nodeType == T_UNSPECED) {
+        return expected;
+    }
+    if(expected->nodeType == T_UNSPECED) {
+        return type;
+    }
     if(type->nodeType == T_VAR && expected->nodeType == T_VAR) {
         if(T_VAR_ID(type) == T_VAR_ID(expected)) {
             /* if both dereference to the same tvar then do not modify var types table */
@@ -207,9 +213,10 @@ ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Reg
  */
 ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes, Region *r) {
 	if(type->nodeType == T_CONS && expected->nodeType == T_CONS) {
-		if(
-			strcmp(T_CONS_TYPE_NAME(type), T_CONS_TYPE_NAME(expected)) == 0
+		if(strcmp(T_CONS_TYPE_NAME(type), T_CONS_TYPE_NAME(expected)) == 0
 			&& T_CONS_ARITY(type) == T_CONS_ARITY(expected)) {
+            ExprType **subtrees = (ExprType **) region_alloc(r, sizeof(ExprType *) * T_CONS_ARITY(expected));
+
 			int i;
 			for(i=0;i<T_CONS_ARITY(type);i++) {
 				ExprType *elemType = unifyWith(
@@ -219,9 +226,9 @@ ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes,
 				if(elemType == NULL) {
 					return NULL;
 				}
-				T_CONS_TYPE_ARG(expected, i) = elemType;
+				subtrees[i] = elemType;
 			}
-			return dereference(expected, varTypes, r);
+			return dereference(newConsType(T_CONS_ARITY(expected), T_CONS_TYPE_NAME(expected), subtrees, r), varTypes, r);
 		} else {
 			return NULL;
 		}
@@ -693,43 +700,38 @@ ExprType *dereference(ExprType *type, Hashtable *type_table, Region *r) {
     return type;
 }
 
-ExprType *instantiate(ExprType *type, Hashtable *type_table, Region *r) {
+ExprType *instantiate(ExprType *type, Hashtable *type_table, int replaceFreeVars, Region *r) {
     ExprType **paramTypes;
     int i;
     ExprType *typeInst;
     int changed = 0;
 
     switch(type->nodeType) {
-        case T_CONS:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*T_CONS_ARITY(type));
-            for(i=0;i<T_CONS_ARITY(type);i++) {
-                paramTypes[i] = instantiate(T_CONS_TYPE_ARG(type, i), type_table, r);
-                if(paramTypes[i]!=T_CONS_TYPE_ARG(type, i)) {
-                    changed = 1;
-                }
-            }
-            if(changed) {
-                return newConsTypeVarArg(T_CONS_ARITY(type), T_CONS_VARARG(type), T_CONS_TYPE_NAME(type), paramTypes, r);
-            } else {
-                return type;
-            }
         case T_VAR:
             typeInst = dereference(type, type_table, r);
             if(typeInst == type) {
-                return type;
+                return replaceFreeVars?newSimpType(T_UNSPECED, r): type;
             } else {
-                return instantiate(typeInst, type_table, r);
-            }
-        case T_FLEX:
-            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*1);
-            paramTypes[0] = instantiate(type->subtrees[0], type_table, r);
-            if(paramTypes[0]!=type->subtrees[0]) {
-                return newExprType(T_FLEX, 1, paramTypes, r);
-            } else {
-                return type;
+                return instantiate(typeInst, type_table, replaceFreeVars, r);
             }
         default:
-            return type;
+            if(type->degree != 0) {
+                paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*type->degree);
+                for(i=0;i<type->degree;i++) {
+                    paramTypes[i] = instantiate(type->subtrees[i], type_table, replaceFreeVars, r);
+                    if(paramTypes[i]!=type->subtrees[i]) {
+                        changed = 1;
+                    }
+                }
+            }
+            if(changed) {
+                ExprType *inst = (ExprType *) region_alloc(r, sizeof(ExprType));
+                *inst = *type;
+                inst->subtrees = paramTypes;
+                return inst;
+            } else {
+                return type;
+            }
 
     }
 }

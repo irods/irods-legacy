@@ -16,10 +16,11 @@
 #define GC_BEGIN Region *_rnew = make_region(0, NULL), *_rnew2 = NULL;
 #define GC_REGION _rnew
 #define GC_ON(env) \
+if(_rnew->head != _rnew->active) {\
 _rnew2 = make_region(0, NULL); \
 cpEnv2((env), _rnew, _rnew2); \
 region_free(_rnew); \
-_rnew = _rnew2;
+_rnew = _rnew2;}
 #define GC_END region_free(_rnew);
 
 /* precond: len(valueOrExpression) < size(desc->valueOrExpression) */
@@ -180,10 +181,11 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     if(TYPE(init) == T_ERROR) {
         res = init;
         cpEnv(env, r);
-        res =        cpRes(res, r);
+        res = cpRes(res, r);
         region_free(rnew);
         return res;
-        }
+    }
+    GC_BEGIN
     while(1) {
 
         cond = evaluateExpression3((Node *)params[1], 0,rei,reiSaveFlag, env,errmsg,rnew);
@@ -212,13 +214,11 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
             res = step;
             break;
         }
-        cpEnv(env, r);
-        region_free(rnew);
-
-        rnew = make_region(0, r->label);
+        GC_ON(env);
     }
     cpEnv(env, r);
     res = cpRes(res, r);
+    GC_END
     region_free(rnew);
     return res;
 
@@ -314,7 +314,7 @@ Res *smsi_assign(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
         return val;
     }
     char *varName;
-    int ret = matchPattern(subtrees[0], val, env, rei, reiSaveFlag, errmsg, r);
+    Res *ret = matchPattern(subtrees[0], val, env, rei, reiSaveFlag, errmsg, r);
 
     return ret;
 }
@@ -455,7 +455,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             Res *coll = params[0];
             Res *indexRes = params[1];
             Res *val = params[2];
-            ExprType *elemType = coll->exprType;
+            ExprType *elemType = coll->exprType->subtrees[0];
             int index = (int)indexRes->value.dval;
             if(0>index || index >= coll->degree) {
                 char buf[ERR_MSG_LEN];
@@ -475,7 +475,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
         Res *smsi_list(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
             Res *res = newRes(r);
             ExprType *elemType =
-                n == 0?newSimpType(T_DYNAMIC, r):params[0]->exprType;
+                n == 0?newSimpType(T_UNSPECED, r):params[0]->exprType;
             /* allocate memory for elements */
             res->exprType = newCollType(elemType, r);
             res->degree = n;
@@ -1337,7 +1337,7 @@ Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errm
 int getParamIOType(char *iotypes, int index) {
     int l = strlen(iotypes);
     int repeat = 0;
-    if(iotypes[l-1] == '*') {
+    if(iotypes[l-1] == '*' || iotypes[l-1] == '+') {
         l--;
         repeat = 1;
     }
@@ -1358,7 +1358,7 @@ Node *construct(char *fn, Node **args, int argc, Node *constype, Region *r) {
     res->degree = argc;
     res->subtrees = (Node **)region_alloc(r, sizeof(Node *)*argc);
     memcpy(res->subtrees, args, sizeof(Node *)*argc);
-    res->exprType = constype->subtrees[1];
+    res->exprType = constype;
     return res;
 }
 

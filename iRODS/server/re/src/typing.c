@@ -3,6 +3,7 @@
 
 #include "typing.h"
 #include "functions.h"
+#define ERROR(x) if(x) {goto error;}
 #define ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
 /**
  * return 0 to len-1 index of the parameter with type error
@@ -222,8 +223,8 @@ Satisfiability simplifyLocally(TypingConstraint *tc, Hashtable *typingEnv, Regio
                 typeToString(((TypingConstraint *)tc)->b, NULL, buf3, 1024));
     printf("%s", buf);
 */
-    tc->a = instantiate(tc->a, typingEnv, r);
-    tc->b = instantiate(tc->b, typingEnv, r);
+    tc->a = instantiate(tc->a, typingEnv, 0, r);
+    tc->b = instantiate(tc->b, typingEnv, 0, r);
     if(tautologyLt(tc->a, tc->b)) {
         return TAUTOLOGY;
     }
@@ -430,8 +431,6 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
     ExprType *res3 = NULL;
     char *fn = node->text;
     char buf[1024];
-    char buf2[1024];
-    char buf3[1024];
     /*printf("typeing %s\n",fn); */
     /*printVarTypeEnvToStdOut(var_type_table); */
     if(strcmp(fn, "foreach") == 0) {
@@ -496,58 +495,13 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
 */
                 ExprType *paramType = typeExpression3(node->subtrees[i], funcDesc, var_type_table, typingConstraints, errmsg, errnode, r);
                 ERROR2(paramType->nodeType == T_ERROR,"parameter type error");
-                ExprType *gcd;
                 ExprType *formalParamType = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i);
-                if(formalParamType->nodeType == T_DYNAMIC) {
-                    gcd = paramType;
-                } else if(paramType->nodeType == T_DYNAMIC) {
-                    gcd = formalParamType;
-                } else if(formalParamType->nodeType == T_FLEX) {
-                    gcd = formalParamType->subtrees[0];
-                    TypingConstraint *tc = newTypingConstraint(paramType, gcd, LT, node -> subtrees[i], r);
-                    Satisfiability tcons = simplifyLocally(tc, var_type_table, r);
-                    switch(tcons) {
-                        case TAUTOLOGY:
-                            break;
-                        case CONTINGENCY:
-                            while(tc!=NULL) {
-                                listAppend(typingConstraints, tc, r);
-                                tc = tc->next;
-                            }
-                            break;
-                        case ABSURDITY:
-                            *errnode = node->subtrees[i];
-                            snprintf(buf, 1024, "unsolvable typing constraint %s < %s",
-                                typeToString(tc->a, var_type_table, buf2, 1024),
-                                typeToString(tc->b, var_type_table, buf3, 1024));
-                            char buf4[ERR_MSG_LEN];
-                            generateErrMsg(buf, (*errnode)->expr, (*errnode)->base, buf4);
-                            ERROR2(1, buf4);
-                    }
-/*                        printType(paramType, NULL); */
-/*                        printType(gcd, NULL); */
-                } else {
-                    gcd = unifyWith(
-                        paramType,
-                        T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i),
-                        var_type_table,
-                        r);
-                    char buf[ERR_MSG_LEN];
-                    char buf4[ERR_MSG_LEN];
-                    char typebuf[ERR_MSG_LEN];
-                    char typebuf2[ERR_MSG_LEN];
-                    if(gcd == NULL) {
-                        *errnode = node->subtrees[i];
-                        snprintf(buf, ERR_MSG_LEN, "parameter %d type mismatch parameter type %s, argument type %s", i,
-                                typeToString(instantiate(paramType, var_type_table, r), NULL, typebuf, ERR_MSG_LEN),
-                                typeToString(instantiate(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i), var_type_table, r), NULL, typebuf2, ERR_MSG_LEN));
-                        generateErrMsg(buf, (*errnode)->expr, (*errnode)->base, buf4);
-                    } else {
-                        buf4[0] = '\0';
-                    }
-                    ERROR2(gcd == NULL,buf4);
+                int ret = typeFuncParam(node->subtrees[i], paramType, formalParamType, var_type_table, typingConstraints, errmsg, r);
+                if(ret!=0) {
+                    *errnode = node->subtrees[i];
                 }
-                node->subtrees[i]->coercionType = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i); /* set coersion to parameter */
+                ERROR2(ret != 0, "parameter type error");
+                node->subtrees[i]->coercionType = formalParamType; /* set coersion to parameter type */
                 if(param_type_i != T_FUNC_ARITY(fTypeCopy) - 1 || T_FUNC_VARARG(fTypeCopy)==ONCE) {
                     param_type_i++;
                 }
@@ -576,7 +530,58 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
     addRErrorMsg(errmsg, -1, errbuf);
     return newSimpType(T_ERROR,r);
 }
-
+int typeFuncParam(Node *param, Node *paramType, Node *formalParamType, Hashtable *var_type_table, List *typingConstraints, rError_t *errmsg, Region *r) {
+            char buf[ERR_MSG_LEN];
+            char errbuf[ERR_MSG_LEN];
+            char typebuf[ERR_MSG_LEN];
+            char typebuf2[ERR_MSG_LEN];
+            /* printf("typing param %s < %s\n",
+                                typeToString(paramType, var_type_table, typebuf, ERR_MSG_LEN),
+                                typeToString(formalParamType, var_type_table, typebuf2, ERR_MSG_LEN)); */
+            if(formalParamType->nodeType == T_DYNAMIC) {
+            } else if(paramType->nodeType == T_DYNAMIC) {
+            } else if(formalParamType->nodeType == T_FLEX) {
+                ExprType *t = formalParamType->subtrees[0];
+                TypingConstraint *tc = newTypingConstraint(paramType, t, LT, param, r);
+                Satisfiability tcons = simplifyLocally(tc, var_type_table, r);
+                switch(tcons) {
+                    case TAUTOLOGY:
+                        break;
+                    case CONTINGENCY:
+                        while(tc!=NULL) {
+                            listAppend(typingConstraints, tc, r);
+                            tc = tc->next;
+                        }
+                        break;
+                    case ABSURDITY:
+                        snprintf(buf, 1024, "unsolvable typing constraint %s < %s",
+                            typeToString(tc->a, var_type_table, typebuf, ERR_MSG_LEN),
+                            typeToString(tc->b, var_type_table, typebuf2, ERR_MSG_LEN));
+                        generateErrMsg(buf, param->expr, param->base, errbuf);
+                        ERROR(1);
+                }
+            } else {
+                ExprType *gcd;
+                gcd = unifyWith(
+                    paramType,
+                    formalParamType,
+                    var_type_table,
+                    r);
+                if(gcd == NULL) {
+                    snprintf(buf, ERR_MSG_LEN, "parameter type mismatch parameter type %s, argument type %s",
+                            typeToString(instantiate(formalParamType, var_type_table, 0, r), NULL, typebuf, ERR_MSG_LEN),
+                            typeToString(instantiate(paramType, var_type_table, 0, r), NULL, typebuf2, ERR_MSG_LEN));
+                    generateErrMsg(buf, param->expr, param->base, errbuf);
+                } else {
+                    errbuf[0] = '\0';
+                }
+                ERROR(gcd == NULL);
+            }
+            return 0;
+    error:
+    addRErrorMsg(errmsg, -1, errbuf);
+    return -1;
+}
 
 ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
     ExprType *res;
@@ -605,7 +610,9 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
 			/* not a variable, evaluate as a function */
 		case N_APPLICATION:
                         /* try to type as a function */
-                        return typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+                        /* the exprType is used to store the type of the return value */
+                        expr->exprType = typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+                        return expr->exprType;
 		case N_ACTIONS:
                 if(expr->degree == 0) {
                     /* type of empty action sequence == T_INT */
@@ -648,7 +655,7 @@ void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node
         ExprType *deref;
                 /*typeToString(expr->coercionType, NULL, buf, 128);
                 printf("%s", buf);*/
-                deref = instantiate(expr->coercionType, varTypes, r);
+        deref = instantiate(expr->coercionType, varTypes, 0, r);
                 /*typeToString(deref, NULL, buf, 128);
                 printf("->%s\n", buf);*/
 
@@ -659,7 +666,7 @@ void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node
                     deref = simp;
                 }
 */
-                expr->coercionType = deref;
+        expr->coercionType = deref;
     }
     int i;
     for(i=0;i<expr->degree;i++) {

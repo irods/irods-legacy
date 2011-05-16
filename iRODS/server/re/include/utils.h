@@ -54,7 +54,7 @@
 #define T_CONS_TYPE_NAME(x) ((x)->text)
 #define T_CONS_ARITY(x) ((x)->degree)
 #define T_CONS_VARARG(x) ((x)->vararg)
-#define T_FUNC_PARAM_TYPE(x, n) ((x)->subtrees[0]->subtrees[n])
+#define T_FUNC_PARAM_TYPE(x, n) (T_CONS_TYPE_ARG((x)->subtrees[0], n))
 #define T_FUNC_RET_TYPE(x) ((x)->subtrees[1])
 #define T_FUNC_ARITY(x) ((x)->subtrees[0]->degree)
 #define T_FUNC_VARARG(x) ((x)->subtrees[0]->vararg)
@@ -236,7 +236,7 @@ void setStringPair(ExprType *ty, Region *r);
 void replace(Hashtable *varTypes, int a, ExprType *b);
 void replaceCons(ExprType *consType, int a, ExprType *b);
 ExprType* dereference(ExprType *type, Hashtable *tt, Region *r);
-ExprType *instantiate(ExprType *type, Hashtable *type_table, Region *r);
+ExprType *instantiate(ExprType *type, Hashtable *type_table, int replaceFreeVars, Region *r);
 
 /** Res functions */
 Res* newRes(Region *r);
