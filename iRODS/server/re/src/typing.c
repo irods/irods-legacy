@@ -532,16 +532,20 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
                         T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i),
                         var_type_table,
                         r);
-                    char buf[1024];
+                    char buf[ERR_MSG_LEN];
+                    char buf4[ERR_MSG_LEN];
+                    char typebuf[ERR_MSG_LEN];
+                    char typebuf2[ERR_MSG_LEN];
                     if(gcd == NULL) {
                         *errnode = node->subtrees[i];
-                        snprintf(buf, 1024, "parameter %d type mismatch parameter type %s, argument type %s", i,
-                                typeName_ExprType(instantiate(paramType, var_type_table, r)),
-                                typeName_ExprType(instantiate(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i), var_type_table, r)));
+                        snprintf(buf, ERR_MSG_LEN, "parameter %d type mismatch parameter type %s, argument type %s", i,
+                                typeToString(instantiate(paramType, var_type_table, r), NULL, typebuf, ERR_MSG_LEN),
+                                typeToString(instantiate(T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i), var_type_table, r), NULL, typebuf2, ERR_MSG_LEN));
+                        generateErrMsg(buf, (*errnode)->expr, (*errnode)->base, buf4);
                     } else {
-                        buf[0] = '\0';
+                        buf4[0] = '\0';
                     }
-                    ERROR2(gcd == NULL,buf);
+                    ERROR2(gcd == NULL,buf4);
                 }
                 node->subtrees[i]->coercionType = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i); /* set coersion to parameter */
                 if(param_type_i != T_FUNC_ARITY(fTypeCopy) - 1 || T_FUNC_VARARG(fTypeCopy)==ONCE) {

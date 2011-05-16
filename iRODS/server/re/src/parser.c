@@ -1725,6 +1725,10 @@ PARSER_FUNC_BEGIN(FuncType)
     context->symtable = newHashTable(10);
     TRY(exec)
         NT(_FuncType);
+    OR(exec)
+        NT2(_Type, 0, 0);
+        BUILD_NODE(T_CONS, TUPLE, &start, 0, 0);
+        BUILD_NODE(T_CONS, FUNC, &start, 2, 2);
     FINALLY(exec)
         deleteHashTable(context->symtable, nop);
         context->symtable = temp;
@@ -1778,22 +1782,22 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     TTEXT("?");
                     CASCADE(newSimpType(T_DYNAMIC, context->region));
             OR(type)
-                    TTEXT("i");
+                    TTEXT("integer");
                     CASCADE(newSimpType(T_INT, context->region));
             OR(type)
-                    TTEXT("d");
+                    TTEXT("double");
                     CASCADE(newSimpType(T_DOUBLE, context->region));
             OR(type)
-                    TTEXT("b");
+                    TTEXT("boolean");
                     CASCADE(newSimpType(T_BOOL, context->region));
             OR(type)
-                    TTEXT("t");
+                    TTEXT("time");
                     CASCADE(newSimpType(T_DATETIME, context->region));
             OR(type)
-                    TTEXT("s");
+                    TTEXT("string");
                     CASCADE(newSimpType(T_STRING, context->region));
             OR(type)
-                    TTEXT("c");
+                    TTEXT("list");
                     NT2(_Type, 1, 0);
                     BUILD_NODE(T_CONS, LIST, &vpos, 1, 1);
                     Node *node = POP;
