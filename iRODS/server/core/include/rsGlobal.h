@@ -82,6 +82,9 @@ time_t LastRescUpdateTime;
 uid_t ServiceUid = 0;
 #endif
 
+/* Flag for whether the read/write rule should be executed */
+irodsStateFlag_t ReadWriteRuleState = UNINIT_STATE;
+
 #endif	/* RS_GLOBAL_H */
 
 

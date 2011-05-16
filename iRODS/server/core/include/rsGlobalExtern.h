@@ -81,5 +81,7 @@ extern time_t LastRescUpdateTime;
 extern uid_t ServiceUid;
 #endif
 
+extern irodsStateFlag_t ReadWriteRuleState;
+
 #endif  /* RS_GLOBAL_EXTERN_H */
 

@@ -125,7 +125,20 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
 	    status = rsDataObjRepl (rsComm, dataObjInp, &transStat);
 	    if (transStat!= NULL) free (transStat);
 	}
-	if (status > 0) status = 0;
+	if (status >= 0) {
+            int status2;
+            /** since the object is written here, we apply pre procesing RAJA
+             * Dec 2 2010 **/
+            status2 = applyRuleForPostProcForWrite(rsComm, dataObjInpBBuf,
+             dataObjInp->objPath);
+            if (status2 >= 0) {
+                status = 0;
+            } else {
+                status = status2;
+            }
+            /** since the object is written here, we apply pre procesing RAJA
+             * Dec 2 2010 **/
+        }
         return (status);
     }
 

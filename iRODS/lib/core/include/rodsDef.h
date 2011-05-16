@@ -181,6 +181,12 @@ typedef enum {
     TOP_POS
 } irodsPosition_t;
 
+typedef enum {
+    UNINIT_STATE,
+    OFF_STATE,
+    ON_STATE
+} irodsStateFlag_t;
+
 #define DEF_IRODS_PROT	NATIVE_PROT
 
 /* general struct for a buffer of bytes */
