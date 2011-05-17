@@ -166,7 +166,7 @@ off_t offset, struct fuse_file_info *fi)
 	}
 	if (status < 0) {
             rodsLog (LOG_ERROR,
-              "getCollUtil: rclOpenCollection of %s error. status = %d",
+              "irodsReaddir: rclOpenCollection of %s error. status = %d",
               collPath, status);
                 relIFuseConn (iFuseConn);
         	return -ENOENT;

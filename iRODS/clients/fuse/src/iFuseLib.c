@@ -271,7 +271,7 @@ struct stat *stbuf, pathCache_t **outPathCache)
           "addToCacheSlot: input pathCacheQue or inPath is NULL");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
-    tmpPathCache = malloc (sizeof (pathCache_t));
+    tmpPathCache = (pathCache_t *) malloc (sizeof (pathCache_t));
     if (outPathCache != NULL) *outPathCache = tmpPathCache;
     bzero (tmpPathCache, sizeof (pathCache_t));
     tmpPathCache->filePath = strdup (inPath);
@@ -636,7 +636,7 @@ off_t offset)
                 } else {
                     return -ENOENT;
                 }
-            } else if (status != size) {
+            } else if (status != (int) size) {
                 rodsLog (LOG_ERROR,
 		  "ifuseWrite: IFuseDesc[descInx].conn for %s is NULL", path);
                 return -ENOENT;
@@ -689,7 +689,7 @@ off_t offset)
 		rmPathFromCache ((char *) path, PathArray);
 		return (errno ? (-1 * errno) : -1);
 	    }
-	    mybuf = malloc (stbuf.st_size);
+	    mybuf = (char *) malloc (stbuf.st_size);
 	    lseek (IFuseDesc[descInx].iFd, 0, SEEK_SET);
 	    status1 = read (IFuseDesc[descInx].iFd, mybuf, stbuf.st_size);
             if (status1 < 0) {
@@ -927,7 +927,7 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 
     pthread_mutex_unlock (&ConnLock);
     /* nothing free. make one */
-    tmpIFuseConn = malloc (sizeof (iFuseConn_t));
+    tmpIFuseConn = (iFuseConn_t *) malloc (sizeof (iFuseConn_t));
     if (tmpIFuseConn < 0) {
         return SYS_MALLOC_ERR;
     }
@@ -1623,7 +1623,7 @@ renmeOpenedIFuseDesc (pathCache_t *fromPathCache, char *to)
 	fromPathCache->locCacheState = NO_FILE_CACHE;
 	if (IFuseDesc[descInx].objPath != NULL) 
 	    free (IFuseDesc[descInx].objPath);
-	IFuseDesc[descInx].objPath = malloc (MAX_NAME_LEN);
+	IFuseDesc[descInx].objPath = (char *) malloc (MAX_NAME_LEN);
         status = parseRodsPathStr ((char *) (to + 1) , &MyRodsEnv,
           IFuseDesc[descInx].objPath);
         if (status < 0) {
