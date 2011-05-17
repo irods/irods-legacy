@@ -1416,8 +1416,11 @@ getTcpSockFromPortList (portList_t *thisPortList)
 int
 isReadMsgError (int status)
 {
-    if (status + (status % 1000) == SYS_READ_MSG_BODY_LEN_ERR ||
-      status + (status % 1000) == SYS_HEADER_READ_LEN_ERR) {
+    int irodsErr = getIrodsErrno (status);
+
+    if (irodsErr == SYS_READ_MSG_BODY_LEN_ERR ||
+      irodsErr == SYS_HEADER_READ_LEN_ERR ||
+      irodsErr == SYS_HEADER_WRITE_LEN_ERR) {
 	return 1;
     } else {
 	return 0;
