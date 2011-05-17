@@ -2839,21 +2839,35 @@ goodStrExpr(char *expr)
 char *getCondFromString(char *t) 
 {
    char *u;
+   char *u1, *u2;
    char *s;
    
    s = t;
-
-   while ((u = strstr(s," and ")) != NULL ||
-         (u = strstr(s," AND ")) != NULL ){
-     *u = '\0';
-     if (goodStrExpr(t) == 0) {
-	*u = ' ';
- 	return(u);
+   for (;;) {
+     /* Search for an 'and' string, either case, and use the one
+        that appears first. */
+     u1 = strstr(s," and ");
+     u2 = strstr(s," AND ");
+     u = u1;
+     if (u1==NULL) u=u2;
+     if (u1 != NULL && u2 != NULL) {
+       if (strlen(u2)>strlen(u1)) u=u2; /* both are present, use the first */
      }
-     *u = ' ';
-     s = u+1;
-  }
-  return(NULL);
+
+     if (u!=NULL) {
+       *u = '\0';
+       if (goodStrExpr(t) == 0) {
+	 *u = ' ';
+	 return(u);
+       }
+       *u = ' ';
+       s = u+1;
+     }
+     else {
+       break;
+     }
+   }
+   return(NULL);
 }
 
 int
