@@ -829,7 +829,7 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL, char *dboFormat) {
    bytesRead = rsDataObjRead (rsComm, &dataObjReadInp, readBuf);
    if (bytesRead < 0) return(bytesRead);
    
-   cp1 = readBuf->buf;
+   cp1 = (char*)readBuf->buf;
    while (*cp1 == '!' || *cp1 == '#') {
       cp1++;
       while (*cp1 != '\n') cp1++;
@@ -996,12 +996,12 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName,
 
       bytesBuf_t *writeBuf;
       writeBuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+      outBufStrLen = strlen(myOutBuf);
       writeBuf->len = outBufStrLen;
       writeBuf->buf = myOutBuf;
 
       memset (&dataObjWriteInp, 0, sizeof (dataObjWriteInp));
       dataObjWriteInp.l1descInx = outDesc;
-      outBufStrLen = strlen(myOutBuf);
       dataObjWriteInp.len = outBufStrLen;
 
       bytesWritten = rsDataObjWrite(rsComm, &dataObjWriteInp, writeBuf);
