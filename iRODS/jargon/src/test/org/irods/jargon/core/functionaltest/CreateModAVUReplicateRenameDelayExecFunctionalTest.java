@@ -22,7 +22,7 @@ import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 
-public class CreateModAVUReplicateRenameFunctionalTest {
+public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 	private static Properties testingProperties = new Properties();
 	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	private static ScratchFileUtils scratchFileUtils = null;
@@ -65,18 +65,18 @@ public class CreateModAVUReplicateRenameFunctionalTest {
 	@After
 	public void tearDown() throws Exception {
 	}
-
+	
 	/*
 	 * [#160] Files with no ACL in complex create new, stream, set metadata,
 	 * delay exec
 	 */
 	@Test
-	public final void testCollectionLoseACLScenario() throws Exception {
+	public final void testCollectionLoseACLScenarioWithDelayExec() throws Exception {
 		// generate a local scratch file
-		String testFileNamePrefix = "testCollectionLooseACLScenario";
-		String testAvuNamePrefix = "testCollectionLooseACLScenarioAVUName";
-		String testAvuValuePrefix = "testCollectionLooseACLScenarioAVUValue";
-		String testAvuValuePrefixNew = "newTestCollectionLooseACLScenarioAVUValue";
+		String testFileNamePrefix = "testCollectionLoseACLScenarioWithDelayExec";
+		String testAvuNamePrefix = "testCollectionLoseACLScenarioWithDelayExecName";
+		String testAvuValuePrefix = "testCollectionLoseACLScenarioWithDelayExecValue";
+		String testAvuValuePrefixNew = "newTestCollectionLoseACLScenarioWithDelayExec";
 
 		String tempPrefix = "temp";
 		int numberIterations = 1000;
@@ -170,8 +170,8 @@ public class CreateModAVUReplicateRenameFunctionalTest {
 			 */
 
 			StringBuilder ruleBuilder = new StringBuilder();
-			ruleBuilder.append("testdelay||msiDataObjRepl(*filename, *resource,*status)|nop\n");
-					//.append("testdelay||delayExec(<PLUSET>1m</PLUSET>,msiDataObjRepl(*filename, *resource,*status),nop)|nop\n");
+			//ruleBuilder.append("testdelay||msiDataObjRepl(*filename, *resource,*status)|nop\n");
+			ruleBuilder.append("testdelay||delayExec(<PLUSET>10s</PLUSET><EF>30s</EF>,msiDataObjRepl(*filename, *resource,*status),nop)|nop\n");
 			ruleBuilder.append("*filename=");
 			ruleBuilder.append(permIrodsFile.getAbsolutePath());
 			ruleBuilder.append("%*resource=");
@@ -194,8 +194,6 @@ public class CreateModAVUReplicateRenameFunctionalTest {
 
 		irodsFileSystem.close();
 	}
-
-	
 	
 	
 }
