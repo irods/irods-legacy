@@ -460,6 +460,10 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
         res3 = typeExpression3(node->subtrees[2],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
         ERROR2(res3->nodeType == T_ERROR, "foreach recovery type error");
 
+        node->subtrees[0]->ioType = 'e';
+        node->subtrees[1]->ioType = 'a';
+        node->subtrees[2]->ioType = 'a';
+
         updateInHashTable(var_type_table, varname, collType); /* restore type of collection variable */
         return res3;
     } else {
@@ -471,58 +475,68 @@ ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_tab
                 !isPattern(node->subtrees[0]), "the first argument of microservice let is not a variable or a pattern");
 
         FunctionDesc *fDesc = (FunctionDesc*)lookupFromHashTable(funcDesc, fn);
+        char vOrE[MAX_FUNC_PARAMS];
+
+        ExprType *fTypeCopy = NULL;
         if(fDesc!=NULL && fDesc->type!=NULL) {
             fDesc = getFuncDescFromChain(node->degree,fDesc);
             if(fDesc == NULL) {
                 sprintf(buf, "wrong number of arguments to microservice %s %d", fn, node->degree);
                 *errnode = node;
+                ERROR2(
+                        fDesc == NULL,
+                        buf
+                );
             }
-            ERROR2(
-                    fDesc == NULL,
-                    buf
-            );
-            ExprType *fTypeCopy;
+            memcpy(vOrE, fDesc->inOutValExp, MAX_FUNC_PARAMS * sizeof(char));
+
 
             fTypeCopy = dupType(fDesc->type, r);
+        } else { /* generate descriptor based on the subtrees */
+            for(i=0;i<node->degree;i++) {
+                if(isLocalVariableNode(node->subtrees[i])||isSessionVariableNode(node->subtrees[i])) {
+                    /* if a parameter is a variable then assume that its i/o is decided dynamically */
+                    vOrE[i] = 'd';
+                } else {
+                    vOrE[i] = 'i';
+                }
+            }
+            vOrE[node->degree] = '\0';
+            ExprType **formalParamTypes = NULL;
+            if(node->degree > 0) {
+                formalParamTypes = (ExprType **) region_alloc(r, sizeof(ExprType *) * node->degree);
+                ExprType *dynamicType = newSimpType(T_DYNAMIC, r);
+                for(i=0;i<node->degree;i++) {
+                    formalParamTypes[i] = dynamicType;
+                }
+            }
+            fTypeCopy = newFuncType(node->degree, formalParamTypes, newSimpType(T_DYNAMIC, r), r);
+        }
 
 /*
             printf("start typing %s\n", fn);
 */
-            int param_type_i;
-            for(i=0, param_type_i = 0;i<node->degree;i++) {
-/*
-                printTreeDeref(node, 0, var_type_table, r);
-*/
-                ExprType *paramType = typeExpression3(node->subtrees[i], funcDesc, var_type_table, typingConstraints, errmsg, errnode, r);
-                ERROR2(paramType->nodeType == T_ERROR,"parameter type error");
-                ExprType *formalParamType = T_FUNC_PARAM_TYPE(fTypeCopy,param_type_i);
-                int ret = typeFuncParam(node->subtrees[i], paramType, formalParamType, var_type_table, typingConstraints, errmsg, r);
-                if(ret!=0) {
-                    *errnode = node->subtrees[i];
-                }
-                ERROR2(ret != 0, "parameter type error");
-                node->subtrees[i]->coercionType = formalParamType; /* set coersion to parameter type */
-                if(param_type_i != T_FUNC_ARITY(fTypeCopy) - 1 || T_FUNC_VARARG(fTypeCopy)==ONCE) {
-                    param_type_i++;
-                }
-            }
+        for(i=0;i<node->degree;i++) {
 /*
             printTreeDeref(node, 0, var_type_table, r);
-            printf("finish typing %s\n", fn);
 */
-            return dereference(T_FUNC_RET_TYPE(fTypeCopy), var_type_table, r);
+            ExprType *paramType = typeExpression3(node->subtrees[i], funcDesc, var_type_table, typingConstraints, errmsg, errnode, r);
+            ERROR2(paramType->nodeType == T_ERROR,"parameter type error");
+            ExprType *formalParamType = T_FUNC_PARAM_TYPE_VARARG(fTypeCopy,i);
+            int ret = typeFuncParam(node->subtrees[i], paramType, formalParamType, var_type_table, typingConstraints, errmsg, r);
+            if(ret!=0) {
+                *errnode = node->subtrees[i];
+            }
+            ERROR2(ret != 0, "parameter type error");
+            node->subtrees[i]->coercionType = formalParamType; /* set coersion to parameter type */
+            node->subtrees[i]->ioType = getParamIOType(vOrE, i);
 
-        } else {
-
-            int i;
-            Node* expr = node;
-            ExprType *params[MAX_PARAMS_LEN];
-            if((i=typeParameters(params, expr->degree, expr->subtrees, funcDesc, var_type_table, typingConstraints, errmsg, errnode,r)) >= 0) {
-                return params[i];
         }
-		/* unknown action */
-            return newSimpType(T_DYNAMIC, r);
-        }
+/*
+        printTreeDeref(node, 0, var_type_table, r);
+        printf("finish typing %s\n", fn);
+*/
+        return instantiate(T_FUNC_RET_TYPE(fTypeCopy), var_type_table, 0, r);
     }
     char errbuf[ERR_MSG_LEN];
     error:
@@ -589,11 +603,11 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
 	expr->typed = 1;
 	switch(expr->nodeType) {
 		case TK_INT:
-			return newSimpType(T_INT,r);
-                case TK_DOUBLE:
-                        return newSimpType(T_DOUBLE,r);
+            return expr->exprType = newSimpType(T_INT,r);
+        case TK_DOUBLE:
+            return expr->exprType = newSimpType(T_DOUBLE,r);
 		case TK_STRING:
-			return newSimpType(T_STRING,r);
+			return expr->exprType = newSimpType(T_STRING,r);
 		case TK_TEXT:
 			if(expr->text[0]=='$' || expr->text[0]=='*') {
 				ExprType* t = (ExprType *)lookupFromHashTable(varTypes, expr->text);
@@ -603,37 +617,36 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
 					insertIntoHashTable(varTypes, expr->text, t);
 				}
                                 t = dereference(t, varTypes, r);
-				return t;
+				return expr->exprType = t;
 			} else if(strcmp(expr->text,"nop")==0) {
-				return newSimpType(T_INT, r);
+				return expr->exprType = newSimpType(T_INT, r);
 			}
 			/* not a variable, evaluate as a function */
 		case N_APPLICATION:
                         /* try to type as a function */
                         /* the exprType is used to store the type of the return value */
-                        expr->exprType = typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-                        return expr->exprType;
+                        return expr->exprType = typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
 		case N_ACTIONS:
                 if(expr->degree == 0) {
                     /* type of empty action sequence == T_INT */
-                    return newSimpType(T_INT, r);
+                    return expr->exprType = newSimpType(T_INT, r);
                 }
                 for(i=0;i<expr->degree;i++) {
                     /*printf("typing action in actions"); */
     				res = typeExpression3(expr->subtrees[i], funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
                     /*printVarTypeEnvToStdOut(varTypes); */
                     if(res->nodeType == T_ERROR) {
-                        return res;
+                        return expr->exprType = res;
                     }
                 }
-                return res;
+                return expr->exprType = res;
 		case N_ACTIONS_RECOVERY:
                 res = typeExpression3(expr->subtrees[0], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
                 if(res->nodeType == T_ERROR) {
-                    return res;
+                    return expr->exprType = res;
                 }
                 res = typeExpression3(expr->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-                return res;
+                return expr->exprType = res;
         default:
                 break;
 	}
@@ -641,7 +654,7 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
         char errbuf[ERR_MSG_LEN];
 	snprintf(errbuf, ERR_MSG_LEN, "error: unsupported ast node %d", expr->nodeType);
         addRErrorMsg(errmsg, -1, errbuf);
-	return newSimpType(T_ERROR,r);
+	return expr->exprType = newSimpType(T_ERROR,r);
 }
 /*
  * This process is based on a few assumptions:
@@ -650,23 +663,17 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
  *
  */
 void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node **errnode, Region *r) {
-    if(expr->coercionType!=NULL) {
+    if(expr->coercionType!=NULL && expr->exprType!=NULL) {
                 /*char buf[128];*/
-        ExprType *deref;
                 /*typeToString(expr->coercionType, NULL, buf, 128);
                 printf("%s", buf);*/
-        deref = instantiate(expr->coercionType, varTypes, 0, r);
-                /*typeToString(deref, NULL, buf, 128);
-                printf("->%s\n", buf);*/
-
-/*
-                if(deref->t == T_VAR && T_VAR_NUM_DISJUNCTS(deref)>0) {
-                    ExprType *simp = newSimpType(T_VAR_DISJUNCT(deref, 0), r);
-                    insertIntoHashTable(varTypes, getTVarName(T_VAR_ID(deref), buf), simp);
-                    deref = simp;
-                }
-*/
-        expr->coercionType = deref;
+        expr->coercionType = instantiate(expr->coercionType, varTypes, 0, r);
+        expr->exprType = instantiate(expr->exprType, varTypes, 0, r);
+        if(typeEqSyntatic(expr->coercionType, expr->exprType)) {
+            expr->coerce = 0;
+        } else {
+            expr->coerce = 1;
+        }
     }
     int i;
     for(i=0;i<expr->degree;i++) {

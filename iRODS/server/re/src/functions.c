@@ -313,7 +313,6 @@ Res *smsi_assign(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
     if(TYPE(val)==T_ERROR) {
         return val;
     }
-    char *varName;
     Res *ret = matchPattern(subtrees[0], val, env, rei, reiSaveFlag, errmsg, r);
 
     return ret;
@@ -1432,7 +1431,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
             newFunctionDesc("ii", "forall X in {integer double}, f X * f X->X",smsi_subtract, r),
             newFunctionDesc("i", "forall X in {integer double}, X-> X", smsi_negate, r)));
     insertIntoHashTable(ft, "*", newFunctionDesc("ii", "forall X in {integer double}, f X * f X->X",smsi_multiply, r));
-    insertIntoHashTable(ft, "/", newFunctionDesc("ii", "forall X in {integer double}, f X * f X->X",smsi_divide, r));
+    insertIntoHashTable(ft, "/", newFunctionDesc("ii", "forall X in {integer double}, f X * f X->?",smsi_divide, r));
     insertIntoHashTable(ft, "%", newFunctionDesc("ii", "forall X in {integer double}, f X * f X->X",smsi_modulo, r));
     insertIntoHashTable(ft, "^", newFunctionDesc("ii", "f double * f double->double",smsi_power, r));
     insertIntoHashTable(ft, "@", newFunctionDesc("ii", "f double * f double->double",smsi_root, r));

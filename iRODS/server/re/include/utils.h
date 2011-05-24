@@ -55,6 +55,7 @@
 #define T_CONS_ARITY(x) ((x)->degree)
 #define T_CONS_VARARG(x) ((x)->vararg)
 #define T_FUNC_PARAM_TYPE(x, n) (T_CONS_TYPE_ARG((x)->subtrees[0], n))
+#define T_FUNC_PARAM_TYPE_VARARG(x, n) (n<T_FUNC_ARITY(x)?T_FUNC_PARAM_TYPE(x,n):T_FUNC_PARAM_TYPE(x,T_FUNC_ARITY(x)-1))
 #define T_FUNC_RET_TYPE(x) ((x)->subtrees[1])
 #define T_FUNC_ARITY(x) ((x)->subtrees[0]->degree)
 #define T_FUNC_VARARG(x) ((x)->subtrees[0]->vararg)
@@ -166,6 +167,8 @@ struct node {
     NodeType nodeType; /* node type */
     ExprType *exprType; /* expression type */
     ExprType *coercionType; /* coercion type */
+    int coerce; /* weather runtime coercion is needed */
+    char ioType; /* i input o output p input/output d dynamic a actions e expression */
     char *text;
     long expr;
     int degree;

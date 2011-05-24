@@ -281,23 +281,25 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
 	if(node == NULL)
 		return NULL;
 	node->nodeType=type;
-        if(text!=NULL) {
-            node->text = (char *)region_alloc(r,(strlen(text) + 1) * sizeof(char));
-            strcpy(node->text, text);
-        } else {
-            node->text = NULL;
-        }
+    if(text!=NULL) {
+        node->text = (char *)region_alloc(r,(strlen(text) + 1) * sizeof(char));
+        strcpy(node->text, text);
+    } else {
+        node->text = NULL;
+    }
 	node->subtrees = NULL;
 	node->degree = 0;
 	node->expr = eloc == NULL? 0 : eloc->exprloc;
-        node->typed = 0;
-        node->exprType = NULL;
-        node->coercionType = NULL;
-        if(eloc!=NULL) {
-            setBase(node, eloc->base, r);
-        } else {
-            setBase(node, "", r);
-        }
+    node->typed = 0;
+    node->exprType = NULL;
+    node->coercionType = NULL;
+    node->coerce = 0;
+    node->ioType = 'i';
+    if(eloc!=NULL) {
+        setBase(node, eloc->base, r);
+    } else {
+        setBase(node, "", r);
+    }
 	return node;
 }
 
@@ -347,7 +349,7 @@ ExprType *newErrorType(int errcode, Region *r) {
 
 }
 ExprType *newFuncType(int arity, ExprType **paramTypes, ExprType* retType, Region *r) {
-    return newFuncTypeVarArg(2, ONCE, paramTypes, retType, r);
+    return newFuncTypeVarArg(arity, ONCE, paramTypes, retType, r);
 }
 ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType* retType, Region *r) {
     ExprType **typeArgs = (ExprType **)region_alloc(r, sizeof(ExprType *) * 2);

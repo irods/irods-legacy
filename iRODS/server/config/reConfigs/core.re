@@ -8,12 +8,6 @@
 #Test Rules
 printHello||print_hello|nop
 
-#copy file
-copy {
-	*junk = "";
-	msiDataObjCopy("/tempZone/home/rods/collection00001/testfile00001.txt",
-		"/tempZone/home/rods/collection00001/testfile00001.txt.copy","null",*junk);
-}
 # 
 #
 # These are sys admin rules for creating and deleting users and renaming
@@ -39,7 +33,7 @@ acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection("/*oldZone",*newZone)#
 #
 # The acGetUserByDN by default is a no-op but can be configured to do some
 # special handling of GSI DNs.  See rsGsiAuthRequest.c.
-#acGetUserByDN(*arg,*OUT)||msiExecCmd(t,"*arg",null,null,null,*OUT)|nop
+#acGetUserByDN(*arg,*OUT)||msiExecCmd(t,"*arg","null","null","null",*OUT)|nop
 acGetUserByDN(*arg,*OUT)||nop|nop
 #
 # --------------------------------------------------------------------------
@@ -62,13 +56,13 @@ acGetUserByDN(*arg,*OUT)||nop|nop
 # Post irods 2.5, $userNameClient is available altho this
 # is only secure in a irods-password environment (not GSI), but you can
 # then have rules for specific users:
-#   acAclPolicy|$userNameClient == quickshare|nop|nop
-#   acAclPolicy||msiAclPolicy(STRICT)|nop 
+#   acAclPolicy|$userNameClient == "quickshare"|nop|nop
+#   acAclPolicy||msiAclPolicy("STRICT")|nop 
 # which was requested by ARCS (Sean Fleming).  See rsGenQuery.c for more
 # information on $userNameClient.  But the typical use is to just set it
 # strict or not for all users:
 acAclPolicy||nop|nop
-#acAclPolicy||msiAclPolicy(STRICT)|nop
+#acAclPolicy||msiAclPolicy("STRICT")|nop
 #
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
@@ -106,13 +100,13 @@ acAclPolicy||nop|nop
 #        msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)
 #        will select randomly a cache class resource and put it on the
 #        top of the list.
-# acSetRescSchemeForCreate||msiSetNoDirectRescInp(xyz%demoResc8%abc)##msiSetDefaultResc(demoResc8,noForce)##msiSetRescSortScheme(default)|nop##nop##nop
-# acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)|nop##nop##nop
-# acSetRescSchemeForCreate||msiSetDefaultResc(demoResc7%demoResc8,preferred)|nop
-# acSetRescSchemeForCreate|$objPath like /oneZone/home/rods/protected/*|msiOprDisallowed|nop##nop
+# acSetRescSchemeForCreate||msiSetNoDirectRescInp("xyz%demoResc8%abc")##msiSetDefaultResc("demoResc8","noForce")##msiSetRescSortScheme("default")|nop##nop##nop
+# acSetRescSchemeForCreate||msiSetDefaultResc("demoResc","null")##msiSetRescSortScheme("random")##msiSetRescSortScheme("byRescClass")|nop##nop##nop
+# acSetRescSchemeForCreate||msiSetDefaultResc("demoResc7%demoResc8","preferred")|nop
+# acSetRescSchemeForCreate|$objPath like "/oneZone/home/rods/protected/.*"|msiOprDisallowed|nop##nop
 acSetRescSchemeForCreate||msiSetDefaultResc("demoResc","null")|nop
-# acSetRescSchemeForCreate||msiGetSessionVarValue(all,all)##msiSetDefaultResc(demoResc,null)|nop
-#acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,noForce)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)|nop##nop##nop
+# acSetRescSchemeForCreate||msiGetSessionVarValue("all","all")##msiSetDefaultResc("demoResc","null")|nop
+#acSetRescSchemeForCreate||msiSetDefaultResc("demoResc","noForce")##msiSetRescSortScheme("random")##msiSetRescSortScheme("byRescClass")|nop##nop##nop
 #
 # 2) acPreprocForDataObjOpen - Preprocess rule for opening an existing
 # data object which is used by the get, copy and replicate operations. 
@@ -139,13 +133,13 @@ acSetRescSchemeForCreate||msiSetDefaultResc("demoResc","null")|nop
 #    The $writeFlag session variable has been created to be used as a condition
 #    for differentiating between open for read ($writeFlag == 0) and 
 #    write ($writeFlag == 1). e.g. :
-# acPreprocForDataObjOpen|$writeFlag == 0|msiStageDataObj(demoResc8)|nop
-# acPreprocForDataObjOpen|$writeFlag == 1|nop|nop
-# acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
-# acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
+# acPreprocForDataObjOpen|$writeFlag == "0"|msiStageDataObj("demoResc8")|nop
+# acPreprocForDataObjOpen|$writeFlag == "1"|nop|nop
+# acPreprocForDataObjOpen||msiSortDataObj("random")##msiSetDataObjPreferredResc("xyz%demoResc8%abc")##msiStageDataObj("demoResc8")|nop##nop##nop
+# acPreprocForDataObjOpen||msiSetDataObjPreferredResc("demoResc7%demoResc8")|nop
 acPreprocForDataObjOpen||nop|nop
-# acPreprocForDataObjOpen||msiGetSessionVarValue(all,all)|nop
-# acPreprocForDataObjOpen|$writeFlag == 0|writeLine(serverLog,$objPath)|nop
+# acPreprocForDataObjOpen||msiGetSessionVarValue("all","all")|nop
+# acPreprocForDataObjOpen|$writeFlag == "0"|writeLine("serverLog",$objPath)|nop
 # 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
 # data object. Currently, one preprocessing function can be used 
 # by this rule. 
@@ -153,7 +147,7 @@ acPreprocForDataObjOpen||nop|nop
 #       resource. This micro-service sets the number of copies per resource
 #       to unlimited.   
 acSetMultiReplPerResc||nop|nop
-# acSetMultiReplPerResc||msiGetSessionVarValue(all,all)|nop
+# acSetMultiReplPerResc||msiGetSessionVarValue("all","all")|nop
 #
 # 4) acPostProcForPut - Rule for post processing the put operation.
 # 5) acPostProcForCopy - Rule for post processing the copy operation.
@@ -180,26 +174,26 @@ acSetMultiReplPerResc||nop|nop
 #    in the resource group.  
 #    It may be desirable to do replication only if the dataObject is stored
 #    in a resource group. For example, the following rule can be used:
-# acPostProcForPut|$rescGroupName != |msiSysReplDataObj($rescGroupName,all)|nop
+# acPostProcForPut|$rescGroupName != ""|msiSysReplDataObj($rescGroupName,"all")|nop
 #
 #    msiSysChksumDataObj - checksum the just uploaded or copied data object.
-# acPostProcForPut||msiSysChksumDataObj##msiSysReplDataObj(demoResc8,all)|nop##nop
-# acPostProcForPut||msiSysReplDataObj(demoResc8,all)|nop
+# acPostProcForPut||msiSysChksumDataObj##msiSysReplDataObj("demoResc8","all")|nop##nop
+# acPostProcForPut||msiSysReplDataObj("demoResc8","all")|nop
 # acPostProcForPut||msiSysChksumDataObj|nop
-# acPostProcForPut||delayExec(<A></A>,msiSysReplDataObj(demoResc8,all),nop)|nop
+# acPostProcForPut||delayExec("<A></A>","msiSysReplDataObj('demoResc8','all')","nop")|nop
 # acWriteLine(*A,*B)||writeLine(*A,*B)|nop
-# acPostProcForPut||delayExec(<PLUSET>1m</PLUSET>,acWriteLine(serverLog,"delayed by a minute message1")##acWriteLine(serverLog,"delayed by a minute message2"),nop)|nop
-# acPostProcForPut|$objPath like /tempZone/home/rods/nvo/*|delayExec(<PLUSET>1m</PLUSET>,msiSysReplDataObj(nvoReplResc,null),nop)|nop
-# acPostProcForPut||msiSysReplDataObj(demoResc8,all)|nop
+# acPostProcForPut||delayExec("<PLUSET>1m</PLUSET>","acWriteLine('serverLog','delayed by a minute message1')##acWriteLine('serverLog','delayed by a minute message2')","nop")|nop
+# acPostProcForPut|$objPath like "/tempZone/home/rods/nvo/.*"|delayExec("<PLUSET>1m</PLUSET>","msiSysReplDataObj('nvoReplResc','null')","nop")|nop
+# acPostProcForPut||msiSysReplDataObj("demoResc8","all")|nop
 #acPostProcForPut||msiSetDataTypeFromExt|nop
-#acPostProcForPut|$objPath like /tempZone/home/rods/tg/*|msiSysReplDataObj(nvoReplResc,null)|nop
-#acPostProcForPut|$objPath like /tempZone/home/rods/mytest/*|writeLine(serverLog,"File Path is $filePath")|nop
-#acPostProcForPut|$objPath like /tempZone/home/rods/mytest/*|writeLine(serverLog,"File Path is $filePath")##msiSplitPath($filePath,*fileDir, *fileName)##msiExecCmd(send.sh, "*fileDir *fileName", null, null,null,*Junk)##writeLine(serverLog,"After File Path is *fileDir *fileName")|nop
+#acPostProcForPut|$objPath like "/tempZone/home/rods/tg/.*"|msiSysReplDataObj("nvoReplResc","null")|nop
+#acPostProcForPut|$objPath like "/tempZone/home/rods/mytest/.*"|writeLine("serverLog","File Path is "++$filePath)|nop
+#acPostProcForPut|$objPath like "/tempZone/home/rods/mytest/.*"|writeLine("serverLog","File Path is "++$filePath)##msiSplitPath($filePath,*fileDir, *fileName)##msiExecCmd("send.sh", "*fileDir *fileName", "null", "null","null",*Junk)##writeLine("serverLog","After File Path is *fileDir *fileName")|nop
 acPostProcForPut||nop|nop
 acPostProcForCopy||nop|nop
 acPostProcForFilePathReg||nop|nop
 acPostProcForCreate||nop|nop
-# acPostProcForOpen||writeLine(serverLog,$objPath|nop
+# acPostProcForOpen||writeLine("serverLog",$objPath)|nop
 acPostProcForOpen||nop|nop
 acPostProcForPhymv||nop|nop
 
@@ -222,22 +216,22 @@ acPostProcForPhymv||nop|nop
 #      A value of 0 or "dafault" means a default size of 1,048,576 Bytes.
 # The msiSetNumThreads function must be present or no thread will be used
 # for all transfer 
-# acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
-# acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
-# acSetNumThreads|$rescName == macResc|msiSetNumThreads(default,0,default)|nop  
-acSetNumThreads||msiSetNumThreads("default",16,"default")|nop  
+# acSetNumThreads||msiSetNumThreads("16","4","default")|nop  
+# acSetNumThreads||msiSetNumThreads("default","16","default")|nop  
+# acSetNumThreads|$rescName == "macResc"|msiSetNumThreads("default","0","default")|nop  
+acSetNumThreads||msiSetNumThreads("default","16","default")|nop  
 # 10) acDataDeletePolicy - This rule set the policy for deleting data objects.
 #     This is the PreProcessing rule for delete.
 # Only one function can be called:
 #    msiDeleteDisallowed() - Disallow the deletion of the data object. 
 # Examples:
-#    acDataDeletePolicy|$objPath like /foo/bar/*|msiDeleteDisallowed|nop 
+#    acDataDeletePolicy|$objPath like "/foo/bar/.*"|msiDeleteDisallowed|nop 
 #      this rule prevents the deletion of any data objects or collections
 #      beneath the collection /foo/bar/
-#    acDataDeletePolicy|$rescName == demoResc8|msiDeleteDisallowed|nop
+#    acDataDeletePolicy|$rescName == "demoResc8"|msiDeleteDisallowed|nop
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
-# acDataDeletePolicy|$objPath like /tempZone/home/rods/*|msiDeleteDisallowed|nop
+# acDataDeletePolicy|$objPath like "/tempZone/home/rods/.*"|msiDeleteDisallowed|nop
 acDataDeletePolicy||nop|nop
 #
 # 11) acPostProcForDelete - This rule set the post-processing policy for 
@@ -272,7 +266,7 @@ acTrashPolicy||nop|nop
 #      "read" - read files; "query" - browse some system level metadata. More 
 #      than one operation can be input using the character "%" as seperator. 
 #      e.g., read%query.
-# acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
+# acSetPublicUserPolicy||msiSetPublicUserOpr("read%query")|nop
 acSetPublicUserPolicy||nop|nop
 # 15) acChkHostAccessControl - This rule checks the access control by host
 # and user based on the the policy given in the HostAccessControl file.
@@ -318,7 +312,7 @@ acSetReServerNumProc||msiSetReServerNumProc("default")|nop
 # 18) acPreprocForCollCreate - This is the PreProcessing rule for creating
 # a collection. Currently there is no function written specifically
 # for this rule.
-# acPreprocForCollCreate||writeLine(serverLog,"TEST:acPreProcForCollCreate:$collName")|nop
+# acPreprocForCollCreate||writeLine("serverLog","TEST:acPreProcForCollCreate:"++$collName)|nop
 acPreprocForCollCreate||nop|nop
 #
 # 19) acPostProcForCollCreate - This rule set the post-processing policy for
@@ -333,14 +327,14 @@ acPreprocForRmColl||nop|nop
 # 21) acPostProcForRmColl - This rule set the post-processing policy for
 # removing a collection. Currently there is no function written specifically
 # for this rule.
-# acPostProcForRmColl||msiGetSessionVarValue(all,all)|nop
+# acPostProcForRmColl||msiGetSessionVarValue("all","all")|nop
 acPostProcForRmColl||nop|nop
 #
 # 22) acPreProcForModifyUser - This rule set the pre-processing policy for
 # modifying the properties of a user. 
 # Option specifies the modifying-action being performed by the administraor
 #
-#acPreProcForModifyUser(*UserName,*Option,*NewValue)||writeLine(serverLog,"TEST:acPreProcForModifyUser: *UserName,*Option,*NewValue")|nop
+#acPreProcForModifyUser(*UserName,*Option,*NewValue)||writeLine("serverLog","TEST:acPreProcForModifyUser: *UserName,*Option,*NewValue")|nop
 #
 acPreProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 #
@@ -348,7 +342,7 @@ acPreProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 # modifying the properties of a user.
 # Option specifies the modifying-action being performed by the administraor
 #
-#acPostProcForModifyUser(*UserName,*Option,*NewValue)||writeLine(serverLog,"TEST:acPostProcForModifyUser: *UserName,*Option,*NewValue")|nop
+#acPostProcForModifyUser(*UserName,*Option,*NewValue)||writeLine("serverLog","TEST:acPostProcForModifyUser: *UserName,*Option,*NewValue")|nop
 #
 acPostProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 #
@@ -357,7 +351,7 @@ acPostProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 # option= add, adda, rm, rmw, rmi, cp
 # item type= -d,-d,-c,-C,-r,-R,-u,-U 
 #
-#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||writeLine(serverLog,"TEST:acPreProcForModifyAVUMetadata:*Option,*ItemType,*ItemName")|nop
+#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||writeLine("serverLog","TEST:acPreProcForModifyAVUMetadata:*Option,*ItemType,*ItemName")|nop
 #
 acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
 #
@@ -366,33 +360,33 @@ acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)
 # option= add, adda, rm, rmw, rmi, cp
 # item type= -d,-d,-c,-C,-r,-R,-u,-U
 #
-#acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||writeLine(serverLog,"TEST:acPostProcForModifyAVUMetadata:*Option,*ItemType,*ItemName")|nop
+#acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||writeLine("serverLog","TEST:acPostProcForModifyAVUMetadata:*Option,*ItemType,*ItemName")|nop
 #
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
 #
 # 26) acPreProcForCreateUser - This rule set the pre-processing policy for
 # creating a new user.
 #
-#acPreProcForCreateUser||writeLine(serverLog,"TEST:acPreProcForCreateUser")|nop
+#acPreProcForCreateUser||writeLine("serverLog","TEST:acPreProcForCreateUser")|nop
 #
 acPreProcForCreateUser||nop|nop
 # 27) acPostProcForCreateUser - This rule set the post-processing policy for
 # creating a new user.
 #
-#acPostProcForCreateUser||writeLine(serverLog,"TEST:acPostProcForCreateUser")|nop
+#acPostProcForCreateUser||writeLine("serverLog","TEST:acPostProcForCreateUser")|nop
 #
 acPostProcForCreateUser||nop|nop
 #
 # 28) acPreProcForDeleteUser - This rule set the pre-processing policy for
 # deleting an old user.
 #
-#acPreProcForDeleteUser||writeLine(serverLog,"TEST:acPreProcForDeleteUser")|nop
+#acPreProcForDeleteUser||writeLine("serverLog","TEST:acPreProcForDeleteUser")|nop
 acPreProcForDeleteUser||nop|nop
 #
 # 29) acPostProcForDeleteUser - This rule set the post-processing policy for
 # deleting an old user.
 #
-#acPostProcForDeleteUser||writeLine(serverLog,"TEST:acPostProcForDeleteUser")|nop
+#acPostProcForDeleteUser||writeLine("serverLog","TEST:acPostProcForDeleteUser")|nop
 acPostProcForDeleteUser||nop|nop
 #
 # 28) acPreProcForCreateResource - This rule set the pre-processing policy for
@@ -483,45 +477,45 @@ acPostProcForModifyCollMeta||nop|nop
 # 44) acPreProcForModifyDataObjMeta - This rule set the pre-processing policy for
 # modifying system metadata of a data object.
 #
-#acPreProcForModifyDataObjMeta||writeLine(serverLog,"TEST:acPreProcForModifyDataObjMeta")|nop
+#acPreProcForModifyDataObjMeta||writeLine("serverLog","TEST:acPreProcForModifyDataObjMeta")|nop
 #
 acPreProcForModifyDataObjMeta||nop|nop
 #
 # 43) acPostProcForModifyDataObjMeta - This rule set the post-processing policy for
 # modifying system metadata of a data object.
 #
-#acPostProcForModifyDataObjMeta||writeLine(serverLog,"TEST:acPostProcForModifyDataObjMeta")|nop
+#acPostProcForModifyDataObjMeta||writeLine("serverLog","TEST:acPostProcForModifyDataObjMeta")|nop
 #
 acPostProcForModifyDataObjMeta||nop|nop
 #
 # 44) acPreProcForModifyAccessControl - This rule set the pre-processing policy for
 # access control 
 #
-#acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||writeLine(serverLog,"TEST:acPreProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path")|nop
+#acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||writeLine("serverLog","TEST:acPreProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path")|nop
 #
 acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||nop|nop
 #
 # 45) acPostProcForModifyAccessControl - This rule set the post-processing policy for
 # access control
 #
-#acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||writeLine(serverLog,"TEST:acPostProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path")|nop
+#acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||writeLine("serverLog","TEST:acPostProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path")|nop
 #
 acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||nop|nop
 #
 # 46) acPreProcForObjRename - This rule set the pre-processing policy for
 # renaming (logicaly moving) data and collections
 #
-#acPreProcForObjRename(*sourceObject,*destObject)||writeLine(serverLog,"TEST:acPreProcForObjRename from *sourceObject to *destObject")|nop
+#acPreProcForObjRename(*sourceObject,*destObject)||writeLine("serverLog","TEST:acPreProcForObjRename from *sourceObject to *destObject")|nop
 acPreProcForObjRename(*sourceObject,*destObject)||nop|nop
 #
 # 47) acPostProcForObjRename - This rule set the post-processing policy for
 # renaming (logicaly moving) data and collections
 #
-#acPostProcForObjRename(*sourceObject,*destObject)||writeLine(serverLog,"TEST:acPostProcForObjRename from *sourceObject to *destObject")|nop
+#acPostProcForObjRename(*sourceObject,*destObject)||writeLine("serverLog","TEST:acPostProcForObjRename from *sourceObject to *destObject")|nop
 # Testing to see if the allrules call gets the *variables.
-#acPostProcForObjRename(*sourceObject,*destObject)||applyAllRules(acPostProcForObjRenameALL(*sourceObject,*destObject),0,0)|nop
-#acPostProcForObjRenameALL(*AA,*BB)||writeLine(serverLog,I was called! *AA *BB )|nop 
-#acPostProcForObjRenameALL(*AA,*BB)||writeLine(serverLog,DestObject: *AA)|nop 
+#acPostProcForObjRename(*sourceObject,*destObject)||applyAllRules("acPostProcForObjRenameALL(*sourceObject,*destObject)","0","0")|nop
+#acPostProcForObjRenameALL(*AA,*BB)||writeLine("serverLog","I was called! *AA *BB")|nop 
+#acPostProcForObjRenameALL(*AA,*BB)||writeLine("serverLog","DestObject: *AA")|nop 
 acPostProcForObjRename(*sourceObject,*destObject)||nop|nop
 #
 # 48) acPreProcForGenQuery - This rule set the pre-processing policy for
@@ -530,8 +524,8 @@ acPostProcForObjRename(*sourceObject,*destObject)||nop|nop
 # You need to convert as follows:
 # genQueryInp = (genQueryInp_t *)  strtol((char *)genQueryInpStr->inOutStruct,
 #                                       (char **) NULL,0);
-#acPreProcForGenQuery(*genQueryInpStr)||writeLine(serverLog,"TEST:acPreProcForGenQuery from")|nop
-#acPreProcForGenQuery(*genQueryInpStr)||msiPrintGenQueryInp(serverLog,*genQueryInpStr)|nop
+#acPreProcForGenQuery(*genQueryInpStr)||writeLine("serverLog","TEST:acPreProcForGenQuery from")|nop
+#acPreProcForGenQuery(*genQueryInpStr)||msiPrintGenQueryInp("serverLog",*genQueryInpStr)|nop
 acPreProcForGenQuery(*genQueryInpStr)||nop|nop
 #
 # 49) acPostProcForGenQuery - This rule set the post-processing policy for
@@ -556,7 +550,7 @@ acPreProcForGenQuery(*genQueryInpStr)||nop|nop
 #
 # genQueryStatus = atoi((char *)genQueryStatusStr->inOutStruct);
 #
-#acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||writeLine(serverLog,"TEST:acPostProcForGenQuery and Status = *genQueryStatusStr")|nop
+#acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||writeLine("serverLog","TEST:acPostProcForGenQuery and Status = *genQueryStatusStr")|nop
 acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||nop|nop
 # 50) acRescQuotaPolicy - This rule sets the policy for resource quota.
 # Only one function can be called:
@@ -564,7 +558,7 @@ acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||nop|n
 #      Quota should be enforced. Valid values for the flag are:
 #      "on"  - enable Resource Quota enforcement,
 #      "off" - disable Resource Quota enforcement (default). 
-# acRescQuotaPolicy||msiSetRescQuotaPolicy(off)|nop
+# acRescQuotaPolicy||msiSetRescQuotaPolicy("off")|nop
 acRescQuotaPolicy||msiSetRescQuotaPolicy("off")|nop
 #
 #
@@ -580,21 +574,21 @@ acRescQuotaPolicy||msiSetRescQuotaPolicy("off")|nop
 #      "on"  - enable execution of acPostProcForPut.
 #      "off" - disable execution of acPostProcForPut (default).
 # Examples:
-# acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(on)|nop
-acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(off)|nop
+# acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy("on")|nop
+acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy("off")|nop
 # 52) acPostProcForTarFileReg - Rule for post processing the registration
 # of the extracted tar file (from ibun -x). There is not micro-service
 # associated with this rule.
 acPostProcForTarFileReg||nop|nop
 # 53) acPostProcForDataObjWrite - Rule for pre processing the write buffer
 # the argument passed is of type BUF_LEN_MS_T 
-#acPostProcForDataObjWrite(*WriteBuffer)||writeLine(serverLog,"TEST:acPostProcForDataObjWrite")|nop
+#acPostProcForDataObjWrite(*WriteBuffer)||writeLine("serverLog","TEST:acPostProcForDataObjWrite")|nop
 # rule below used for testing. dont uncomment this....
 # acPostProcForDataObjWrite(*WriteBuffer)||msiCutBufferInHalf(*WriteBuffer)|nop
 acPostProcForDataObjWrite(*WriteBuffer)||nop|nop
 # 54) acPostProcForDataObjRead - Rule for post processing the read buffer
 # the argument passed is of type BUF_LEN_MS_T 
-#acPostProcForDataObjRead(*ReadBuffer)||writeLine(serverLog,"TEST:acPostProcForDataObjRead")|nop
+#acPostProcForDataObjRead(*ReadBuffer)||writeLine("serverLog","TEST:acPostProcForDataObjRead")|nop
 # rule below used for testing. dont uncomment this....
 # acPostProcForDataObjRead(*ReadBuffer)||msiCutBufferInHalf(*ReadBuffer)|nop
 acPostProcForDataObjRead(*ReadBuffer)||nop|nop

@@ -1214,13 +1214,18 @@ void trimquotes(char *string) {
 
 void printTree(Node *n, int indent) {
 	printIndent(indent);
-	char buf[128];
+	char buf[128], buf2[128];
 	if(n->coercionType!=NULL) {
 	    typeToString(n->coercionType, NULL, buf, 128);
 	} else {
 	    buf[0] = '\0';
 	}
-	printf("%s:%d->%s\n",n->text, n->nodeType, buf);
+	if(n->exprType!=NULL) {
+	    typeToString(n->exprType, NULL, buf2, 128);
+	} else {
+	    buf2[0] = '\0';
+	}
+	printf("%s:%d %s->%s(coerce=%d)\n",n->text, n->nodeType, buf, buf2, n->coerce);
 	int i;
 	for(i=0;i<n->degree;i++) {
 		printTree(n->subtrees[i],indent+1);

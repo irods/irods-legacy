@@ -292,6 +292,7 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
 }
 ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
             /* printf("%s\n", node->subtrees[0]->text); */
+            char buf[ERR_MSG_LEN];
             Node *node = rule->node;
 #if 0
             int arity = RULE_NODE_NUM_PARAMS(node); /* subtrees[0] = param list */
@@ -302,6 +303,11 @@ ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, Lis
             ExprType *resType = typeExpression3(node->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             /*printf("Type %d\n",resType->t); */
             ERROR(resType->nodeType == T_ERROR);
+            if(resType->nodeType != T_BOOL && resType->nodeType != T_VAR && resType->nodeType != T_DYNAMIC) {
+                generateErrMsg("error: the type of the rule condition is not supported", node->subtrees[1]->expr, node->subtrees[1]->base, buf);
+                addRErrorMsg(errmsg, TYPE_ERROR, buf);
+                ERROR(1);
+            }
             resType = typeExpression3(node->subtrees[2], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             ERROR(resType->nodeType == T_ERROR);
             resType = typeExpression3(node->subtrees[3], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
@@ -316,7 +322,7 @@ ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, Lis
             freeRErrorContent(errmsg);
             /*printTree(node, 0); */
             return newSimpType(T_INT, r);
-            char buf[ERR_MSG_LEN];
+
         error:
             snprintf(buf, ERR_MSG_LEN, "type error: in rule %s", node->subtrees[0]->text);
             addRErrorMsg(errmsg, -1, buf);

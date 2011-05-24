@@ -128,20 +128,21 @@ Res* evaluateExpression3(Node *expr, int applyAll, ruleExecInfo_t *rei, int reiS
         return res;
 }
 
-Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg, Region *r) {
+Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, rError_t *errmsg, Region *r) {
         char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
         char *buf2;
         char buf3[ERR_MSG_LEN];
-        ExprType *coercion = node->coercionType;
+        ExprType *coercion = type;
         if(coercion->nodeType == T_FLEX) {
             coercion = coercion->subtrees[0];
         }
-        /* we can ignore non top level type constructors
-         * therefore, we only need to call dereference rather than instantiate */
-        coercion = dereference(coercion, tvarEnv, r);
+        coercion = instantiate(coercion, tvarEnv, 0, r);
         if(coercion->nodeType == T_VAR) {
             if(T_VAR_NUM_DISJUNCTS(coercion) == 0) {
-                printf("error");
+                /* generateErrMsg("error: cannot instantiate coercion type for node.", node->expr, node->base, buf);
+                addRErrorMsg(errmsg, -1, buf);
+                return newErrorRes(r, -1); */
+                return res;
             }
             /* here T_VAR must be a set of bounds
              * we fix the set of bounds to the default bound */
@@ -333,7 +334,6 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
 Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, Node *node, ruleExecInfo_t* rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
     char buf2[ERR_MSG_LEN];
-    ExprType *coercion = NULL;
     #ifdef DEBUG
     sprintf(buf, "Action: %s\n", fn);
     writeToTmp("eval.log", buf);
@@ -349,10 +349,8 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
 
     List *localTypingConstraints = NULL;
     FunctionDesc *fd = NULL;
-    char *vOrE, desc[MAX_PARAMS_LEN];
     /* look up function descriptor */
     fd = (FunctionDesc *)lookupFromHashTable(funcDescIndex, fn);
-    vOrE = desc;
     if(fd!=NULL) {
         /* find matching arity */
         int found = 0;
@@ -375,91 +373,82 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
         }
     }
 
-    if(fd!=NULL) {
-        strncpy(vOrE, fd->inOutValExp, MAX_PARAMS_LEN);
-    } else { /* dynamically generate descriptor string based on the subtrees */
-        for(i=0;i<n;i++) {
-            if(isLocalVariableNode(subtrees[i])) {
-                if(lookupFromEnv(env, subtrees[i]->text)!=NULL) {
-                    vOrE[i] = 'p';
-                } else {
-                    vOrE[i] = 'o';
-                }
-            } else if(isSessionVariableNode(subtrees[i])) {
-                vOrE[i] = 'p';
-            } else {
-                vOrE[i] = 'i';
-            }
-        }
-        vOrE[n] = '\0';
-    }
-
     localTVarEnv = newHashTable(100);
     localTypingConstraints = newList(r);
+    char ioParam[MAX_FUNC_PARAMS];
     /* evaluation parameters and try to resolve remaining tvars with unification */
     for(i=0;i<n;i++) {
-        switch(getParamIOType(vOrE,i)) {
-            case 'i': /* input */
+        switch(subtrees[i]->ioType) {
             case 'p': /* input/output */
+                ioParam[i] = 'p';
                 args[i] = evaluateExpression3(subtrees[i], applyAll, rei, reiSaveFlag,  env, errmsg, newRegion);
                 if(TYPE((Res *)args[i])==T_ERROR) {
                     res = (Res *)args[i];
                     RETURN;
                 }
-                coercion = subtrees[i]->coercionType;
-
-                if(coercion!=NULL) {
-                Node *errnode;
-                int ret = typeFuncParam(subtrees[i], args[i]->exprType, coercion, localTVarEnv, localTypingConstraints, errmsg, newRegion);
-                if(ret!=0) {
-                    char buf2[ERR_MSG_LEN];
-                    char buf3[ERR_MSG_LEN];
-                    sprintf(buf, "error: runtime type inference parameter type: %s, argument type: %s",
-                            typeToString(coercion, localTVarEnv, buf3, 1024),
-                            typeToString(args[i]->exprType, localTVarEnv, buf2, 1024));
-                    generateErrMsg(buf, node->expr, node->base, buf2);
-                    addRErrorMsg(errmsg, -1, buf2);
-                    res = newErrorRes(r, -1);
+                break;
+            case 'i': /* input */
+                ioParam[i] = 'i';
+                args[i] = evaluateExpression3(subtrees[i], applyAll, rei, reiSaveFlag,  env, errmsg, newRegion);
+                if(TYPE((Res *)args[i])==T_ERROR) {
+                    res = (Res *)args[i];
                     RETURN;
                 }
+                break;
+            case 'd': /* dynamic, must be variable */
+                args[i] = attemptToEvaluateVar3(subtrees[i]->text, subtrees[i], rei, reiSaveFlag, env, errmsg, newRegion);
+                if(args[i] == NULL) { // output only
+                    ioParam[i] = 'o';
+                    args[i] = newStringRes(r, "");
+                } else {
+                    ioParam[i] = 'p';
+                    if(TYPE((Res *)args[i])==T_ERROR) {
+                        res = (Res *)args[i];
+                        RETURN;
+                    }
                 }
-
                 break;
             case 'o': /* output */
+                ioParam[i] = 'o';
+                args[i] = newStringRes(r, "");
+                break;
             case 'e': /* expression */
+                ioParam[i] = 'e';
+                args[i] = subtrees[i];
+                break;
             case 'a': /* actions */
+                ioParam[i] = 'a';
+                args[i] = subtrees[i];
                 break;
         }
     }
+    /* try to type all input parameters */
+    for(i=0;i<n;i++) {
+        if(ioParam[i] == 'i' || ioParam[i] == 'p') {
+            typeFuncParam(subtrees[i], args[i]->exprType, subtrees[i]->coercionType, localTVarEnv, localTypingConstraints, errmsg, newRegion);
+            if(TYPE((Res *)args[i])==T_ERROR) {
+                res = (Res *)args[i];
+                RETURN;
+            }
+        }
+    }
     /* solve local typing constraints */
-    /*typingConstraintsToString(localTypingConstraints, localTVarEnv, buf, 1024); */
-    /*printf("%s\n", buf); */
+    /* typingConstraintsToString(localTypingConstraints, localTVarEnv, buf, 1024);
+    printf("%s\n", buf); */
     Node *errnode;
     if(!solveConstraints(localTypingConstraints, localTVarEnv, errmsg, &errnode, r)) {
         res = newErrorRes(r, -1);
         RETURN;
     }
     /*printVarTypeEnvToStdOut(localTVarEnv); */
-    /* do the conversion */
+    /* do the input value conversion */
     for(i=0;i<n;i++) {
-        switch(getParamIOType(vOrE,i)) {
-            case 'i': /* input */
-            case 'p': /* input/output */
-                if(subtrees[i]->coercionType!=NULL) {
-                    args[i] = processCoercion(subtrees[i], (Res *)args[i], localTVarEnv, errmsg, newRegion);
-                }
-                if(TYPE((Res *)args[i])==T_ERROR) {
-                    res = (Res *)args[i];
-                    RETURN;
-                }
-                break;
-            case 'o': /* output */
-                args[i] = newStringRes(newRegion, "");
-                break;
-            case 'e': /* expression */
-            case 'a': /* actions */
-                args[i] = subtrees[i];
-                break;
+        if((ioParam[i] == 'i' || ioParam[i] == 'p') && node->subtrees[i]->coerce) {
+            args[i] = processCoercion(subtrees[i], (Res *)args[i], subtrees[i]->coercionType, localTVarEnv, errmsg, newRegion);
+            if(TYPE((Res *)args[i])==T_ERROR) {
+                res = (Res *)args[i];
+                RETURN;
+            }
         }
     }
     if(fd!=NULL) {
@@ -478,42 +467,31 @@ Res* evaluateFunction3(char* fn, Node** subtrees, unsigned int n, int applyAll, 
         res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
     }
 
-    deleteHashTable(localTVarEnv, nop);
-    localTVarEnv = NULL;
     if(TYPE(res)==T_ERROR) {
         RETURN;
     }
 
     for(i=0;i<n;i++) {
         Res *resp = NULL;
-        switch(getParamIOType(vOrE,i)) {
-            case 'i': /* input */
-                break;
-            case 'o': /* output */
-                /* we don't do coercion here because we only apply coersion at application position */
-                if(TYPE((Res *)args[i])==T_ERROR) {
-                    res = (Res *)args[i];
-                    RETURN ;
-                }
-                resp = setVariableValue(subtrees[i]->text,(Res *)args[i],rei,env,errmsg,r);
-                break;
-            case 'p': /* input/output */
-                /* we don't do coercion here because we only apply coersion at application position */
-                if(TYPE((Res *)args[i])==T_ERROR) {
-                    res = (Res *)args[i];
-                    RETURN;
-                }
-                resp = setVariableValue(subtrees[i]->text,(Res *)args[i],rei,env,errmsg,r);
-                break;
-            case 'e': /* expression */
-            case 'a': /* actions */
-                break;
+
+        if(ioParam[i] == 'o' || ioParam[i] == 'p') {
+            if(subtrees[i]->coerce) {
+                args[i] = processCoercion(subtrees[i], args[i], subtrees[i]->exprType, localTVarEnv, errmsg, newRegion);
+            }
+            if(TYPE((Res *)args[i])==T_ERROR) {
+                res = (Res *)args[i];
+                RETURN ;
+            }
+            resp = setVariableValue(subtrees[i]->text, args[i],rei,env,errmsg,r);
         }
         if(resp!=NULL && TYPE(resp)==T_ERROR) {
             res = resp;
             RETURN;
         }
     }
+    deleteHashTable(localTVarEnv, nop);
+    localTVarEnv = NULL;
+    return res;
 ret:
     if(localTVarEnv!=NULL) {
         deleteHashTable(localTVarEnv, nop);
@@ -526,36 +504,42 @@ ret:
 
 }
 
-Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
-    char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
-    char buf2[ERR_MSG_LEN];
+Res* attemptToEvaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	if(vn[0]=='*') { /* local variable */
 		/* try to get local var from env */
 		Res* res0 = (Res *)lookupFromEnv(env, vn);
-		if(res0==NULL) {
+        return res0;
+	} else if(vn[0]=='$') { /* session variable */
+        Res *res = getSessionVar("",vn,rei, env, errmsg,r);
+        return res;
+	} else {
+        return NULL;
+	}
+}
+
+Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
+    char buf2[ERR_MSG_LEN];
+    Res *res = attemptToEvaluateVar3(vn, node, rei, reiSaveFlag, env, errmsg, r);
+    if(res == NULL) {
+        if(vn[0]=='*') { /* local variable */
 		    snprintf(buf, ERR_MSG_LEN, "error: unable to read local variable %s.", vn);
                     generateErrMsg(buf, node->expr, node->base, buf2);
                     addRErrorMsg(errmsg, UNABLE_TO_READ_LOCAL_VAR, buf2);
                     return newErrorRes(r, UNABLE_TO_READ_LOCAL_VAR);
-		} else {
-                    return res0;
-		}
-	} else if(vn[0]=='$') { /* session variable */
-        Res *res = getSessionVar("",vn,rei, env, errmsg,r);
-		if(res==NULL) {
-		    snprintf(buf, ERR_MSG_LEN, "error: unable to read session variable %s.", vn);
+        } else if(vn[0]=='$') { /* session variable */
+    	    snprintf(buf, ERR_MSG_LEN, "error: unable to read session variable %s.", vn);
             generateErrMsg(buf, node->expr, node->base, buf2);
             addRErrorMsg(errmsg, UNABLE_TO_READ_SESSION_VAR, buf2);
             return newErrorRes(r, UNABLE_TO_READ_SESSION_VAR);
-		} else {
-            return res;
+        } else {
+            snprintf(buf, ERR_MSG_LEN, "error: unable to read variable %s.", vn);
+            generateErrMsg(buf, node->expr, node->base, buf2);
+            addRErrorMsg(errmsg, UNABLE_TO_READ_VAR, buf2);
+            return newErrorRes(r, UNABLE_TO_READ_VAR);
         }
-	} else {
-		snprintf(buf, ERR_MSG_LEN, "error: unable to read variable %s.", vn);
-        generateErrMsg(buf, node->expr, node->base, buf2);
-        addRErrorMsg(errmsg, UNABLE_TO_READ_VAR, buf2);
-        return newErrorRes(r, UNABLE_TO_READ_VAR);
 	}
+	return res;
 }
 
 /**
@@ -868,6 +852,10 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
 
     ret:
         deleteEnv(envNew, 2);
+        if(TYPE(status) == T_SUCCESS) {
+            status = newIntRes(r, 0);
+        }
+
         return status;
 
 
@@ -1000,6 +988,8 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         if(applyAllRule) {
             /* if we apply all rules, then it succeeds even if some of the rules fail */
             return newIntRes(r, 0);
+        } else if(TYPE(statusRes) == T_SUCCESS) {
+            return newIntRes(r, 0);
         } else {
             return statusRes;
         }
@@ -1047,7 +1037,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
 
         Res *res = evaluateExpression3(ruleCondition, 0, rei, reiSaveFlag,  envNew, errmsg, rNew);
         /* todo consolidate every error into T_ERROR except OOM */
-        if (TYPE(res)!=T_ERROR && res->value.dval!=0) {
+        if (TYPE(res)==T_BOOL && res->value.dval!=0) {
 #ifndef DEBUG
 #if 0
             if (reTestFlag > 0) {
@@ -1076,6 +1066,11 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
                     #endif
             }
         } else {
+            if(TYPE(res)!=T_ERROR) {
+                char buf[ERR_MSG_LEN];
+                generateErrMsg("error: the rule condition does not evaluate to a boolean value", ruleCondition->expr, ruleCondition->base, buf);
+                addRErrorMsg(errmsg, TYPE_ERROR, buf);
+            }
             statusRes = newErrorRes(r, RULE_FAILED_ERR);
         }
         /* copy global variables */

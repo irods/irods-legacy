@@ -29,6 +29,7 @@ Res* evaluateActions(Node *ruleAction, Node *ruleRecovery,
                    ruleExecInfo_t *rei, int reiSaveFlag , Env *env,
                    rError_t *errmsg, Region *r);
 Res* evaluateExpression3(Node *node, int applyAll, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r);
+Res* attemptToEvaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 Res* evaluateFunction3(char* fn, Node** args, unsigned int nargs, int applyAll, Node *node, ruleExecInfo_t* rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 Res* execAction3(char *fn, Res** args, unsigned int nargs, int applyAll, Node *node, Env *env, ruleExecInfo_t* rei, int reiSaveFlag, rError_t *errmsg, Region *r);
@@ -39,7 +40,7 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
 
 Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r);
-Res* processCoercion(Node *node, Res *res, Hashtable *tvarEnv, rError_t *errmsg, Region *r);
+Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, rError_t *errmsg, Region *r);
 
 /** utilities */
 char* getVariableName(Node *node);
