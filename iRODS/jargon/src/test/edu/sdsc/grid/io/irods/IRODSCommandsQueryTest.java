@@ -19,6 +19,8 @@ import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaCommand.MetaObjectType;
 
+import org.irods.jargon.core.connection.IRODSServerProperties;
+import org.irods.jargon.core.remoteexecute.RemoteExecuteServiceImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -348,12 +350,22 @@ public class IRODSCommandsQueryTest {
 
 	}
 	
-	@Ignore //FIXME: need to complete testing with iRODS fixes
+	@Test 
 	public void queryForFileNameUsingIn() throws Exception {
 		// add a file and set two metadata values
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		
+		IRODSCommands irodsCommands = irodsFileSystem.getCommands();
+		IRODSServerProperties props = irodsCommands.getIrodsServerProperties();
+		//FIXME: increase to 2.5x before release
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion("rods2.4.1")) {
+			irodsFileSystem.close();
+			return;
+		}
+		
 		String testFileName = "queryForFileNameUsingIn.txt";
 
 		// generate a file and put into irods
@@ -395,6 +407,73 @@ public class IRODSCommandsQueryTest {
 		Assert.assertTrue("did not find my file name in results", fileList[0]
 				.toString().indexOf(testFileName) > -1);
 
+	}
+	
+	@Test
+	public void queryAVUWithBetween() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		IRODSCommands irodsCommands = irodsFileSystem.getCommands();
+		IRODSServerProperties props = irodsCommands.getIrodsServerProperties();
+		//FIXME: increase to 2.5x before release
+		if (!props
+				.isTheIrodsServerAtLeastAtTheGivenReleaseVersion("rods2.4.1")) {
+			irodsFileSystem.close();
+			return;
+		}
+		
+		String testFileName = "queryAVUWithBetween.txt";
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// add metadata for this file
+
+		String meta1Attrib = "queryAVUWithBetween";
+		String meta1Value = "3";
+
+		ImetaAddCommand metaAddCommand = new ImetaAddCommand();
+		metaAddCommand.setAttribName(meta1Attrib);
+		metaAddCommand.setAttribValue(meta1Value);
+		metaAddCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
+		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
+				+ testFileName);
+		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
+		
+		MetaDataCondition[] condition = new MetaDataCondition[1];
+		condition[0] = MetaDataSet.newCondition(meta1Attrib,
+				MetaDataCondition.BETWEEN, "1", "5");
+	
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
+		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
+				select, 100);
+
+		irodsFileSystem.close();
+
+		Assert.assertNotNull("no query results returned", fileList);
+		Assert.assertEquals("did not find my file and metadata", 1,
+				fileList.length);
+		Assert.assertTrue("did not find my file name in results", fileList[0]
+				.toString().indexOf(testFileName) > -1);
 	}
 
 	/*

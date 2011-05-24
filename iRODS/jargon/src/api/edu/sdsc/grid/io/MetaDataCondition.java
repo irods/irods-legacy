@@ -41,21 +41,22 @@
 //
 package edu.sdsc.grid.io;
 
+
 /**
  * A "meta data condition" describes a conditional expression to be used to
  * guide a metadata query. That expression contains three components:
- *<ul>
+ * <ul>
  * <li>A field name
  * <li>An operator (such as "=")
  * <li>A value
- *</ul>
- *<P>
+ * </ul>
+ * <P>
  * Legal field names depend upon the meta data group and the file server being
  * talked to.
- *<P>
+ * <P>
  * Operators are in the set: <br>
  * (Not all operators are supported by every database/filesystem)
- *<ul>
+ * <ul>
  * <li>=<>
  * <li>< >
  * <li><= >=
@@ -63,23 +64,23 @@ package edu.sdsc.grid.io;
  * <li>between not between
  * <li>like not like
  * <li>sounds like sounds not like
- *</ul>
- *<P>
+ * </ul>
+ * <P>
  * Each operator is designated by an "operator code", which is a static final
  * integer defined in this class.
- *<P>
+ * <P>
  * A value has a "style" in the set:
- *<ul>
+ * <ul>
  * <li>A scalar value (such as "42" or "Thursday")
  * <li>A scalar range (such as "42-118")
  * <li>A value list (such as "42,38,52")
- *</UL>
+ * </UL>
  * There are no 'set' methods - once constructed, the object cannot be changed.
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public final class MetaDataCondition {
-	
+
 	/**
 	 * "=" where the metadata value exactly equals the conditional value.
 	 */
@@ -172,7 +173,7 @@ public final class MetaDataCondition {
 	 * The query "OWNER LIKE testuse%" will return testuser, and testuser2.<br>
 	 * Conditionals without any wildcard characters will search as a string
 	 * fragment, ie. will be treated as though a % was at the beginning and end.
-	 *<P>
+	 * <P>
 	 * is the same as %, and ? equals _<br>
 	 * note: The characters *,?,%,_ are reserved and may not be used in the
 	 * conditional value with the LIKE operator.
@@ -189,7 +190,7 @@ public final class MetaDataCondition {
 	 * The query "OWNER LIKE testuse*" will return testuser, and testuser2.<br>
 	 * Conditionals without any wildcard characters will search as a string
 	 * fragment, ie. will be treated as though a * was at the beginning and end.
-	 *<P>
+	 * <P>
 	 * is the same as %, and ? equals _<br>
 	 * note: The characters *,?,%,_ are reserved and may not be used in the
 	 * conditional value with the LIKE operator.
@@ -239,7 +240,7 @@ public final class MetaDataCondition {
 
 	/**
 	 * Operators are in the set:
-	 *<ul>
+	 * <ul>
 	 * <li>=<>
 	 * <li>< >
 	 * <li><= >=
@@ -249,8 +250,8 @@ public final class MetaDataCondition {
 	 * <li>between not between
 	 * <li>like not like
 	 * <li>sounds like sounds not like
-	 *</ul>
-	 *<P>
+	 * </ul>
+	 * <P>
 	 * Each operator is designated by an "operator code", which is a static
 	 * final integer defined in this class.
 	 */
@@ -275,7 +276,6 @@ public final class MetaDataCondition {
 	 */
 	int type;
 
-	
 	// SCALAR
 	/**
 	 * The constructor is package private and is only called by the
@@ -284,15 +284,17 @@ public final class MetaDataCondition {
 	 * the data type of the value is appropriate, and that the operator is valid
 	 * for this field. Only if all the arguments are right is the object
 	 * constructed and returned.
-	 *<P>
+	 * <P>
 	 * Construct a scalar conditional with the given field name, operator, and
 	 * value. Infer the type from the given value. The operator must be one of
 	 * the simple operators (=, <>, <, <=, >, >=) or one of the 'like' operators
 	 * (like, not like, sounds like, sounds not like).
 	 */
-	MetaDataCondition(MetaDataField field, int operator, int value) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final int value) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		values = new Object[1];
@@ -309,15 +311,17 @@ public final class MetaDataCondition {
 	 * the data type of the value is appropriate, and that the operator is valid
 	 * for this field. Only if all the arguments are right is the object
 	 * constructed and returned.
-	 *<P>
+	 * <P>
 	 * Construct a scalar conditional with the given field name, operator, and
 	 * value. Infer the type from the given value. The operator must be one of
 	 * the simple operators (=, <>, <, <=, >, >=) or one of the 'like' operators
 	 * (like, not like, sounds like, sounds not like).
 	 */
-	MetaDataCondition(MetaDataField field, int operator, float value) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final float value) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		values = new Object[1];
@@ -334,15 +338,17 @@ public final class MetaDataCondition {
 	 * the data type of the value is appropriate, and that the operator is valid
 	 * for this field. Only if all the arguments are right is the object
 	 * constructed and returned.
-	 *<P>
+	 * <P>
 	 * Construct a scalar conditional with the given field name, operator, and
 	 * value. Infer the type from the given value. The operator must be one of
 	 * the simple operators (=, <>, <, <=, >, >=) or one of the 'like' operators
 	 * (like, not like, sounds like, sounds not like).
 	 */
-	MetaDataCondition(MetaDataField field, int operator, String value) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final String value) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		values = new Object[1];
@@ -358,9 +364,11 @@ public final class MetaDataCondition {
 	 * and pair of values. Infer the type from the given values. The operator
 	 * must be 'between' or 'not between' or an exception is thrown.
 	 */
-	MetaDataCondition(MetaDataField field, int operator, int value1, int value2) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final int value1, final int value2) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		values = new Object[2];
@@ -380,10 +388,11 @@ public final class MetaDataCondition {
 	 * and pair of values. Infer the type from the given values. The operator
 	 * must be 'between' or 'not between' or an exception is thrown.
 	 */
-	MetaDataCondition(MetaDataField field, int operator, float value1,
-			float value2) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final float value1, final float value2) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		values = new Object[2];
@@ -403,10 +412,11 @@ public final class MetaDataCondition {
 	 * and pair of values. Infer the type from the given values. The operator
 	 * must be 'between' or 'not between' or an exception is thrown.
 	 */
-	MetaDataCondition(MetaDataField field, int operator, String value1,
-			String value2) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final String value1, final String value2) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		values = new Object[2];
@@ -427,9 +437,11 @@ public final class MetaDataCondition {
 	 * enum of values. The type is inferred from the given values. The operator
 	 * must be 'in' or 'not in' or an exception is thrown.
 	 */
-	MetaDataCondition(MetaDataField field, int operator, int[] values) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final int[] values) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		this.values = new Object[values.length];
@@ -450,9 +462,11 @@ public final class MetaDataCondition {
 	 * enum of values. The type is inferred from the given values. The operator
 	 * must be 'in' or 'not in' or an exception is thrown.
 	 */
-	MetaDataCondition(MetaDataField field, int operator, float[] values) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final float[] values) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		this.values = new Object[values.length];
@@ -473,9 +487,11 @@ public final class MetaDataCondition {
 	 * enum of values. The type is inferred from the given values. The operator
 	 * must be 'in' or 'not in' or an exception is thrown.
 	 */
-	MetaDataCondition(MetaDataField field, int operator, String[] values) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final String[] values) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		this.values = new Object[values.length];
@@ -488,14 +504,33 @@ public final class MetaDataCondition {
 			throw new IllegalArgumentException("Wrong operator.");
 		}
 	}
+	
+	/**
+	 * Construct a enum conditional with the given field name, operator, and
+	 * enum of values. The type is inferred from the given values. 
+	 */
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final Object[] values) {
+		if (field == null) {
+			throw new NullPointerException("field cannot be null.");
+		}
+
+		this.field = field;
+		this.values = new Object[values.length];
+		this.values = values;
+		this.operator = operator;
+		type = MetaDataField.STRING;
+		style = ENUM;
+	}
 
 	/**
 	 * Construct a table conditional with the given field names and
 	 * MetaDataTable.
 	 */
-	MetaDataCondition(MetaDataField field, MetaDataTable table) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final MetaDataTable table) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		values = new Object[1];
@@ -510,9 +545,11 @@ public final class MetaDataCondition {
 	 * Construct a table conditional with the given field names and
 	 * MetaDataTable.
 	 */
-	MetaDataCondition(MetaDataField field, int operator, MetaDataTable table) {
-		if (field == null)
+	MetaDataCondition(final MetaDataField field, final int operator,
+			final MetaDataTable table) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 		values = new Object[1];
@@ -588,17 +625,17 @@ public final class MetaDataCondition {
 	 * For a 'rangepair' style conditional, there are two values at indexes 0,0
 	 * and 0,1. These methods return those values, or throw an
 	 * IllegalArgumentException if the index is out of range.
-	 *<P>
+	 * <P>
 	 * For a 'list' style conditional, there is a list of values at indexes 0,0
 	 * to 0,n-1, where n is returned by getCount(). These methods return those
 	 * values, or throw an IllegalArgumentException when the index is out of
 	 * range.
-	 *<P>
+	 * <P>
 	 * For a 'scalar' style conditional, there is only one value at index 0,0.
 	 * These methods return this value, or throw an IllegalArgumentException if
 	 * the index is not 0,0.
 	 */
-	public int getIntValue(int index) {
+	public int getIntValue(final int index) {
 		if ((index < values.length) && (index >= 0)) {
 			if (style == TABLE) {
 				throw new UnsupportedOperationException();
@@ -620,16 +657,16 @@ public final class MetaDataCondition {
 	 * For a 'rangepair' style conditional, there are two values at indexes 0,0
 	 * and 0,1. These methods return those values, or throw an exception if the
 	 * index is out of range.
-	 *<P>
+	 * <P>
 	 * For a 'list' style conditional, there is a list of values at indexes 0,0
 	 * to 0,n-1, where n is returned by getCount(). These methods return those
 	 * values, or throw an exception when the index is out of range.
-	 *<P>
+	 * <P>
 	 * For a 'scalar' style conditional, there is only one value at index 0,0.
 	 * These methods return this value, or throw an exception if the index is
 	 * not 0,0.
 	 */
-	public float getFloatValue(int index) {
+	public float getFloatValue(final int index) {
 		if ((index < values.length) && (index >= 0)) {
 			if (style == TABLE) {
 				throw new UnsupportedOperationException();
@@ -651,16 +688,16 @@ public final class MetaDataCondition {
 	 * For a 'rangepair' style conditional, there are two values at indexes 0
 	 * and 1. These methods return those values, or throw an exception if the
 	 * index is out of range.
-	 *<P>
+	 * <P>
 	 * For a 'list' style conditional, there is a list of values at indexes 0 to
 	 * n-1, where n is returned by getCount(). These methods return those
 	 * values, or throw an exception when the index is out of range.
-	 *<P>
+	 * <P>
 	 * For a 'scalar' style conditional, there is only one value at index 0.
 	 * These methods return this value, or throw an exception if the index is
 	 * not 0.
 	 */
-	public String getStringValue(int index) {
+	public String getStringValue(final int index) {
 		if ((index < values.length) && (index >= 0)) {
 			if (style == TABLE) {
 				return "TABLE";
@@ -672,8 +709,9 @@ public final class MetaDataCondition {
 				} else if (type == MetaDataField.STRING) {
 					if (values[index] == null) {
 						return "";
-					} else
+					} else {
 						return values[index].toString();
+					}
 				}
 			}
 		}
@@ -706,12 +744,12 @@ public final class MetaDataCondition {
 	public String getStringValue() {
 		return getStringValue(0);
 	}
-	
+
 	public String getMultipleStringValues() {
 		int ctr = 0;
 		StringBuilder sb = new StringBuilder();
 		for (Object val : values) {
-			
+
 			if (ctr > 0) {
 				sb.append(",");
 			}
@@ -720,10 +758,29 @@ public final class MetaDataCondition {
 			sb.append("\'");
 			ctr++;
 		}
-		
+
 		return sb.toString().trim();
-		
-		//return getStringValue(0);
+
+		// return getStringValue(0);
+	}
+
+	public String getMultipleStringValuesNoComma() {
+		int ctr = 0;
+		StringBuilder sb = new StringBuilder();
+		for (Object val : values) {
+
+			if (ctr > 0) {
+				sb.append(" ");
+			}
+			sb.append('\'');
+			sb.append(val);
+			sb.append("\'");
+			ctr++;
+		}
+
+		return sb.toString().trim();
+
+		// return getStringValue(0);
 	}
 
 	/**
@@ -734,8 +791,9 @@ public final class MetaDataCondition {
 		if (style != TABLE) {
 			return null;
 			// throw new UnsupportedOperationException();
-		} else
+		} else {
 			return (MetaDataTable) values[0];
+		}
 	}
 
 	/**
@@ -745,8 +803,8 @@ public final class MetaDataCondition {
 	public String toString() {
 		String toString = new String(field.getName());
 		toString += " " + getOperatorString(operator);
-		for (int i = 0; i < values.length; i++) {
-			toString += " " + values[i];
+		for (Object value : values) {
+			toString += " " + value;
 		}
 		return toString;
 	}
@@ -764,10 +822,11 @@ public final class MetaDataCondition {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			MetaDataCondition temp = (MetaDataCondition) obj;
 
@@ -792,9 +851,10 @@ public final class MetaDataCondition {
 			"sounds like", "sounds not like", "TABLE", "n<", "n>", "n<=",
 			"n>=", };
 
-	public static String getOperatorString(int operator) {
-		if ((operator < 0) || (operator >= operatorStrings.length))
+	public static String getOperatorString(final int operator) {
+		if ((operator < 0) || (operator >= operatorStrings.length)) {
 			throw new IllegalArgumentException();
+		}
 
 		return operatorStrings[operator];
 	}
@@ -804,8 +864,9 @@ public final class MetaDataCondition {
 	}
 
 	public String getOperatorString() {
-		if ((operator < 0) || (operator >= operatorStrings.length))
+		if ((operator < 0) || (operator >= operatorStrings.length)) {
 			throw new IllegalArgumentException();
+		}
 
 		return operatorStrings[operator];
 	}

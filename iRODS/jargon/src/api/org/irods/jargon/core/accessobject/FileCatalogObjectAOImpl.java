@@ -17,7 +17,6 @@ import org.irods.jargon.core.utils.IRODSDataConversionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.sdsc.grid.io.GeneralMetaData;
 import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
@@ -26,9 +25,7 @@ import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.grid.io.StandardMetaData;
 import edu.sdsc.grid.io.irods.IRODSAccount;
 import edu.sdsc.grid.io.irods.IRODSCommands;
-import edu.sdsc.grid.io.irods.IRODSFile;
 import edu.sdsc.grid.io.irods.IRODSFileSystem;
-import edu.sdsc.grid.io.irods.Resource;
 import edu.sdsc.grid.io.irods.Tag;
 
 /**
@@ -48,7 +45,7 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject
 	 * value returned from 'get host for get operation' indicating that the
 	 * given host address should be used
 	 */
-	
+
 	public static final String STR_PI = "STR_PI";
 	public static final String MY_STR = "myStr";
 
@@ -89,7 +86,7 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject
 		log.info("getHostForGetOperation with sourceAbsolutePath: {}",
 				sourceAbsolutePath);
 		log.info("resourceName:{}", resourceName);
-		
+
 		/*
 		 * If resource is specified, then the call for getHostForGet() will
 		 * return the correct resource server, otherwise, I need to see if this
@@ -102,12 +99,19 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject
 			if (!isDirectory(sourceAbsolutePath)) {
 				log.debug("this is a file, look for resource it is stored on to retrieve host");
 				int lastSlash = sourceAbsolutePath.lastIndexOf('/');
-				String parentCollection = sourceAbsolutePath.substring(0, lastSlash);
+				String parentCollection = sourceAbsolutePath.substring(0,
+						lastSlash);
 				String dataName = sourceAbsolutePath.substring(lastSlash + 1);
-				List<String> hosts = listHostsForDataObject(parentCollection, dataName);
-				
+				List<String> hosts = listHostsForDataObject(parentCollection,
+						dataName);
+
 				if (hosts.size() > 0) {
-					return hosts.get(0);
+
+					if (hosts.get(0).equals("localhost")) {
+						return FileCatalogObjectAO.USE_THIS_ADDRESS;
+					} else {
+						return hosts.get(0);
+					}
 				} else {
 					return FileCatalogObjectAO.USE_THIS_ADDRESS;
 				}
@@ -115,9 +119,10 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject
 		}
 
 		/*
-		 * Will have returned if a data object already and no resource specified, otherwise, ask iRODS for a host
+		 * Will have returned if a data object already and no resource
+		 * specified, otherwise, ask iRODS for a host
 		 */
-		
+
 		DataObjInp dataObjInp = DataObjInp.instanceForGetHostForGet(
 				sourceAbsolutePath, resourceName);
 		Tag result = this.getIrodsCommands().irodsFunction(dataObjInp);
@@ -342,27 +347,34 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject
 
 		return isDirectory;
 	}
-	
+
 	/**
-	 * FIXME: this needs to be refactored, such that the access objects have a ref to IRODSFileSystem, so that the Resource object can be used.
+	 * FIXME: this needs to be refactored, such that the access objects have a
+	 * ref to IRODSFileSystem, so that the Resource object can be used.
+	 * 
 	 * @param irodsCollectionAbsolutePath
 	 * @param dataName
 	 * @return
 	 * @throws JargonException
 	 */
-private List<String> listHostsForDataObject(final String irodsCollectionAbsolutePath, final String dataName) throws JargonException {
-		
-		if (irodsCollectionAbsolutePath == null || irodsCollectionAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsCollectionAbsolutePath");
+	private List<String> listHostsForDataObject(
+			final String irodsCollectionAbsolutePath, final String dataName)
+			throws JargonException {
+
+		if (irodsCollectionAbsolutePath == null
+				|| irodsCollectionAbsolutePath.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty irodsCollectionAbsolutePath");
 		}
-		
+
 		if (dataName == null || dataName.isEmpty()) {
 			throw new IllegalArgumentException("null or empty dataName");
 		}
-		
+
 		List<String> hosts = new ArrayList<String>();
-		
-		log.info("listHostsForDataObject for collection: {}", irodsCollectionAbsolutePath);
+
+		log.info("listHostsForDataObject for collection: {}",
+				irodsCollectionAbsolutePath);
 		log.info(" dataName:{}", dataName);
 
 		final StringBuilder sb = new StringBuilder();
@@ -371,7 +383,8 @@ private List<String> listHostsForDataObject(final String irodsCollectionAbsolute
 		sb.append(" WHERE ");
 		sb.append(RodsGenQueryEnum.COL_COLL_NAME.getName());
 		sb.append(EQUALS_AND_QUOTE);
-		sb.append(IRODSDataConversionUtil.escapeSingleQuotes(irodsCollectionAbsolutePath));
+		sb.append(IRODSDataConversionUtil
+				.escapeSingleQuotes(irodsCollectionAbsolutePath));
 		sb.append("' AND ");
 		sb.append(RodsGenQueryEnum.COL_DATA_NAME.getName());
 		sb.append(EQUALS_AND_QUOTE);
@@ -394,15 +407,15 @@ private List<String> listHostsForDataObject(final String irodsCollectionAbsolute
 			log.error("query exception for resource query: " + sb.toString(), e);
 			throw new JargonException("error in resource query", e);
 		}
-		
+
 		for (IRODSQueryResultRow resultRow : resultSet.getResults()) {
 			hosts.add(resultRow.getColumn(0));
 		}
-		
+
 		log.info("hosts for data object: {}", hosts);
-		
+
 		return hosts;
-		
+
 	}
 
 }

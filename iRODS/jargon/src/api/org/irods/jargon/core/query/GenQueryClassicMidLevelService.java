@@ -167,10 +167,8 @@ public class GenQueryClassicMidLevelService {
 
 			translatedField = IRODSMetaDataSet.getID(originalField);
 
-			
-				log.debug("tried translating as irods meta data and got:{}"
-						, translatedField);
-			
+			log.debug("tried translating as irods meta data and got:{}",
+					translatedField);
 
 			if (!translatedField.equals(originalField)) {
 				log.debug("hit on irods gen query type");
@@ -293,9 +291,7 @@ public class GenQueryClassicMidLevelService {
 				MetaDataCondition avuMetaDataCondition = MetaDataSet
 						.newCondition(IRODSAvu.getAttributeValue(namespace),
 								currentCondition.getMetaDataCondition()
-										.getOperator(), currentCondition
-										.getMetaDataCondition()
-										.getStringValue());
+										.getOperator(), currentCondition.getMetaDataCondition().getValues());
 				IRODSMetaDataConditionWrapper newConditionWrapper;
 				try {
 					newConditionWrapper = new IRODSMetaDataConditionWrapper(
@@ -410,7 +406,8 @@ public class GenQueryClassicMidLevelService {
 			if (previousMetaDataConditionWrapper != null) {
 				if (wrapper.getMetaDataCondition()
 						.equals(previousMetaDataConditionWrapper
-								.getMetaDataCondition()) && wrapper.getAvuComponent() != IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_NAME_COMPONENT) {
+								.getMetaDataCondition())
+						&& wrapper.getAvuComponent() != IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_NAME_COMPONENT) {
 					log.debug("duplicate metaDataCondition ignored:{}", wrapper);
 					continue;
 				}
@@ -517,33 +514,50 @@ public class GenQueryClassicMidLevelService {
 
 			StringBuilder sb;
 			for (IRODSMetaDataConditionWrapper tagCondition : amendedConditions) {
-				 sb = new StringBuilder();
-				
-				if (tagCondition.getMetaDataCondition().getOperator() == MetaDataCondition.IN || tagCondition.getMetaDataCondition().getOperator() == MetaDataCondition.NOT_IN) {
+				sb = new StringBuilder();
+
+				if (tagCondition.getMetaDataCondition().getOperator() == MetaDataCondition.IN
+						|| tagCondition.getMetaDataCondition().getOperator() == MetaDataCondition.NOT_IN) {
 					sb.append(" ");
-					sb.append(tagCondition.getMetaDataCondition().getOperatorString());
-					sb.append(" '");
-					sb.append("(");
-					sb.append(tagCondition.getMetaDataCondition().getMultipleStringValues());
-					sb.append(")'");
-				} else  if (tagCondition.getMetaDataCondition().getValues().length > 1) {
+					sb.append(tagCondition.getMetaDataCondition()
+							.getOperatorString());
+					sb.append("");
 					sb.append(" ");
-					sb.append(tagCondition.getMetaDataCondition().getOperatorString());
+					sb.append(tagCondition.getMetaDataCondition()
+							.getMultipleStringValues());
 					sb.append(" ");
-					sb.append(tagCondition.getMetaDataCondition().getMultipleStringValues());
+				} else if (tagCondition.getMetaDataCondition().getOperator() == MetaDataCondition.BETWEEN
+						|| tagCondition.getMetaDataCondition().getOperator() == MetaDataCondition.NOT_BETWEEN) {
+					sb.append(" ");
+					sb.append(tagCondition.getMetaDataCondition()
+							.getOperatorString());
+					sb.append("");
+					sb.append(" ");
+					sb.append(tagCondition.getMetaDataCondition()
+							.getMultipleStringValuesNoComma());
+					sb.append(" ");
+				} else if (tagCondition.getMetaDataCondition().getValues().length > 1) {
+					sb.append(" ");
+					sb.append(tagCondition.getMetaDataCondition()
+							.getOperatorString());
+					sb.append(" ");
+					sb.append(tagCondition.getMetaDataCondition()
+							.getMultipleStringValues());
 				} else {
 					sb.append(" ");
-					sb.append(tagCondition.getMetaDataCondition().getOperatorString());
+					sb.append(tagCondition.getMetaDataCondition()
+							.getOperatorString());
 					sb.append(" ");
 					sb.append("'");
-					sb.append(tagCondition.getMetaDataCondition().getStringValue());
+					sb.append(tagCondition.getMetaDataCondition()
+							.getStringValue());
 					sb.append("'");
 				}
-				
+
 				// New for loop because they have to be in a certain order...
 				subTags[j] = new Tag(svalue,sb.toString());
 				j++;
-				
+
 			}
 			message.addTag(new Tag(InxValPair_PI, subTags));
 		} else {
@@ -730,20 +744,20 @@ public class GenQueryClassicMidLevelService {
 		MetaDataField[] fields = new MetaDataField[attributes];
 		MetaDataRecordList[] rl = new MetaDataRecordList[rows];
 		int j = 0;
-		
+
 		for (int i = 0; i < attributes; i++) {
 
 			fields[i] = IRODSMetaDataSet.getField(message.getTags()[4 + i]
 					.getTag(attriInx).getStringValue());
 		}
-		
+
 		for (int i = 0; i < rows; i++) {
 			for (j = 0; j < attributes; j++) {
 
 				results[j] = message.getTags()[4 + j].getTags()[2 + i]
 						.getStringValue();
 			}
-			
+
 			if (continuation > 0) {
 				rl[i] = new IRODSMetaDataRecordList(irodsCommands, fields,
 						results, continuation);
