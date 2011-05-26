@@ -3449,9 +3449,9 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if (inpOverwriteParam != NULL && 
-        strcmp((char*)inpOverwriteParam->inOutStruct, UPDATE_REPL_KW) == 0 )
+        strcmp((char*)inpOverwriteParam->inOutStruct, FORCE_FLAG_KW) == 0 )
       rei->status = parseMspForCondInp (inpOverwriteParam, 
-                                        &dataObjInp->condInput,UPDATE_REPL_KW);
+                                        &dataObjInp->condInput,FORCE_FLAG_KW);
 
     if (inpAllCopiesParam !=NULL && 
         strcmp((char*)inpAllCopiesParam->inOutStruct, ALL_KW) == 0 )

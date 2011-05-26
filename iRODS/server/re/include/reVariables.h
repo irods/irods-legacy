@@ -53,6 +53,7 @@ rulevardef_t RuleVarTable[] = {
   {RODS_ZONE_CLIENT_KW, "", (char *) "rei->uoic->rodsZone"},
   {USER_TYPE_CLIENT_KW, "", (char *) "rei->uoic->userType"},
   {HOST_CLIENT_KW, "", (char *) "rei->uoic->authInfo->host"},
+  {CLIENT_ADDR_KW, "", (char *) "rei->rsComm->clientAddr"},
   {AUTH_STR_CLIENT_KW, "", (char *) "rei->uoic->authInfo->authStr"},
   {USER_AUTH_SCHEME_CLIENT_KW, "", (char *) "rei->uoic->authInfo->authScheme"},
   {USER_INFO_CLIENT_KW, "", (char *) "rei->uoic->userOtherInfo->userInfo"},
