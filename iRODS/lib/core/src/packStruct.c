@@ -1541,27 +1541,27 @@ xmlStrToStr (char *inStr, int myLen)
 	    inPtr = tmpPtr;
 	    *inPtr = '&';
 	    inPtr ++;
-	    strcpy (inPtr, tmpPtr + 5);
+	    ovStrcpy (inPtr, tmpPtr + 5);
         } else if (strncmp (tmpPtr, "&lt;", 4) == 0) {
             inPtr = tmpPtr;
             *inPtr = '<';
             inPtr ++;
-            strcpy (inPtr, tmpPtr + 4);
+            ovStrcpy (inPtr, tmpPtr + 4);
         } else if (strncmp (tmpPtr, "&gt;", 4) == 0) {
             inPtr = tmpPtr;
             *inPtr = '>';
             inPtr ++;
-            strcpy (inPtr, tmpPtr + 4);
+            ovStrcpy (inPtr, tmpPtr + 4);
         } else if (strncmp (tmpPtr, "&quot;", 6) == 0) {
             inPtr = tmpPtr;
             *inPtr = '"';
             inPtr ++;
-            strcpy (inPtr, tmpPtr + 6);
+            ovStrcpy (inPtr, tmpPtr + 6);
         } else if (strncmp (tmpPtr, "&apos;", 6) == 0) {
             inPtr = tmpPtr;
             *inPtr = '`';
             inPtr ++;
-            strcpy (inPtr, tmpPtr + 6);
+            ovStrcpy (inPtr, tmpPtr + 6);
         } else {
             break;
         }
@@ -3168,4 +3168,27 @@ packItem_t *myPackedItem, irodsProt_t irodsProt)
     }
 
     return (0);
+}
+
+/* ovStrcpy - overwrite outStr with inStr. inStr can be
+ * part of outStr.
+ */
+
+int
+ovStrcpy (char *outStr, char *inStr)
+{
+    int i;
+    int len = strlen (inStr);
+    
+    if (len <= 0) return len;
+
+    for (i = 0; i < len; i++) {
+	*outStr = *inStr;
+	inStr++;
+	outStr++;
+    }
+    outStr++;
+    *outStr = '\n';
+
+    return 0;
 }

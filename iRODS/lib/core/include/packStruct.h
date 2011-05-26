@@ -284,6 +284,8 @@ alignPackedOutput64 (packedOutput_t *packedOutput);
 int
 packNopackPointer (void **inPtr, packedOutput_t *packedOutput, int len,
 packItem_t *myPackedItem, irodsProt_t irodsProt);
+int
+ovStrcpy (char *outStr, char *inStr);
 #ifdef  __cplusplus
 }
 #endif
