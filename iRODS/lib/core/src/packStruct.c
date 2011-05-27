@@ -3182,13 +3182,11 @@ ovStrcpy (char *outStr, char *inStr)
     
     if (len <= 0) return len;
 
-    for (i = 0; i < len; i++) {
+    for (i = 0; i < len + 1; i++) {
 	*outStr = *inStr;
 	inStr++;
 	outStr++;
     }
-    outStr++;
-    *outStr = '\n';
 
     return 0;
 }
