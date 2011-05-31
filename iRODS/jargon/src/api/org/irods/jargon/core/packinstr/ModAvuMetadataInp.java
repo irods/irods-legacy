@@ -164,7 +164,7 @@ public class ModAvuMetadataInp extends AbstractIRODSPackingInstruction {
 			throws JargonException {
 		super();
 
-		if (targetIdentifier == null || targetIdentifier.isEmpty()) {
+		if (targetIdentifier == null || targetIdentifier.length() == 0) {
 			throw new JargonException("null or empty target identifier");
 		}
 		

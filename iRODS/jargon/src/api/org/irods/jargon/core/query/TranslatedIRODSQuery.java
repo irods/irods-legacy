@@ -115,7 +115,7 @@ public class TranslatedIRODSQuery {
 			throw new JargonException("null groupByFields");
 		}
 
-		if (selectFields.isEmpty()) {
+		if (selectFields.size() == 0) {
 			throw new JargonException("no select column names");
 		}
 

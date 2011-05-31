@@ -63,15 +63,15 @@ public final class MetaDataAndDomainData extends IRODSDomainObject {
 			throw new JargonException("metadataDomain is null");
 		}
 		
-		if (domainObjectId == null || domainObjectId.isEmpty()) {
+		if (domainObjectId == null || domainObjectId.length() == 0) {
 			throw new JargonException("domain object id is null or empty");
 		}
 		
-		if (domainObjectUniqueName == null || domainObjectUniqueName.isEmpty()) {
+		if (domainObjectUniqueName == null || domainObjectUniqueName.length() == 0) {
 			throw new JargonException("domain object unique name is null or empty");
 		}
 		
-		if (avuAttribute == null || avuAttribute.isEmpty()) {
+		if (avuAttribute == null || avuAttribute.length() == 0) {
 			throw new JargonException("avu attribute is null or empty");
 		}
 		

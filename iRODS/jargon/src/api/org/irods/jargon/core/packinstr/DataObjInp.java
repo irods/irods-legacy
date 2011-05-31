@@ -286,7 +286,7 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 	public static final DataObjInp instanceForDataObjectChecksum(
 			final String dataObjectAbsolutePath) throws JargonException {
 
-		if (dataObjectAbsolutePath == null || dataObjectAbsolutePath.isEmpty()) {
+		if (dataObjectAbsolutePath == null || dataObjectAbsolutePath.length() == 0) {
 			throw new JargonException("dataObjectAbsolutePath is empty");
 		}
 
@@ -348,7 +348,7 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 			final TransferOptions transferOptions) throws JargonException {
 
 		if (destinationAbsolutePath == null
-				|| destinationAbsolutePath.isEmpty()) {
+				|| destinationAbsolutePath.length() == 0) {
 			throw new JargonException("null or empty destinationAbsolutePath");
 		}
 
@@ -406,7 +406,7 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 			final TransferOptions transferOptions) throws JargonException {
 
 		if (destinationAbsolutePath == null
-				|| destinationAbsolutePath.isEmpty()) {
+				|| destinationAbsolutePath.length() == 0) {
 			throw new JargonException("null or empty destinationAbsolutePath");
 		}
 
@@ -464,7 +464,7 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 	public static final DataObjInp instanceForGet(
 			final String sourceAbsolutePath, final long dataObjectSize,
 			final TransferOptions transferOptions) throws JargonException {
-		if (sourceAbsolutePath == null || sourceAbsolutePath.isEmpty()) {
+		if (sourceAbsolutePath == null || sourceAbsolutePath.length() == 0) {
 			throw new JargonException("null or empty sourceAbsolutePath");
 		}
 
@@ -497,7 +497,7 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 			final String sourceAbsolutePath, final String resource,
 			final TransferOptions transferOptions) throws JargonException {
 
-		if (sourceAbsolutePath == null || sourceAbsolutePath.isEmpty()) {
+		if (sourceAbsolutePath == null || sourceAbsolutePath.length() == 0) {
 			throw new JargonException("null or empty sourceAbsolutePath");
 		}
 
@@ -530,7 +530,7 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 			final String sourceAbsolutePath, final String resource)
 			throws JargonException {
 
-		if (sourceAbsolutePath == null || sourceAbsolutePath.isEmpty()) {
+		if (sourceAbsolutePath == null || sourceAbsolutePath.length() == 0) {
 			throw new JargonException("null or empty sourceAbsolutePath");
 		}
 
@@ -563,7 +563,7 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 			final String sourceAbsolutePath, final String resource)
 			throws JargonException {
 
-		if (sourceAbsolutePath == null || sourceAbsolutePath.isEmpty()) {
+		if (sourceAbsolutePath == null || sourceAbsolutePath.length() == 0) {
 			throw new JargonException("null or empty sourceAbsolutePath");
 		}
 

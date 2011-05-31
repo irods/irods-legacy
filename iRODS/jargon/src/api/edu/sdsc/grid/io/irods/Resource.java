@@ -535,7 +535,7 @@ public class Resource extends Domain {
 	 */
 	public List<AvuData> listResourceMetadata(final String resourceName)
 			throws JargonException {
-		if (resourceName == null || resourceName.isEmpty()) {
+		if (resourceName == null || resourceName.length() == 0) {
 			throw new JargonException("null or empty resourceName");
 		}
 		log.info("list resource metadata for {}", resourceName);
@@ -584,11 +584,11 @@ public class Resource extends Domain {
 	 */
 	public List<String> listHostsForDataObject(final String irodsCollectionAbsolutePath, final String dataName) throws JargonException {
 		
-		if (irodsCollectionAbsolutePath == null || irodsCollectionAbsolutePath.isEmpty()) {
+		if (irodsCollectionAbsolutePath == null || irodsCollectionAbsolutePath.length() == 0) {
 			throw new IllegalArgumentException("null or empty irodsCollectionAbsolutePath");
 		}
 		
-		if (dataName == null || dataName.isEmpty()) {
+		if (dataName == null || dataName.length() == 0) {
 			throw new IllegalArgumentException("null or empty dataName");
 		}
 		

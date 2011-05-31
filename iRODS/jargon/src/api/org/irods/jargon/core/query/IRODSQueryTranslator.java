@@ -120,7 +120,7 @@ public class IRODSQueryTranslator {
 			final List<TranslatedQueryCondition> translatedConditions)
 			throws JargonQueryException {
 		int i;
-		if (translatedSelects.isEmpty()) {
+		if (translatedSelects.size() == 0) {
 			throw new JargonQueryException("no selects found in query");
 		}
 
@@ -601,8 +601,8 @@ public class IRODSQueryTranslator {
 				parsedValue = token.getValue().trim();
 				// TODO: add multiple values for BETWEEN, etc
 
-				if (parsedField.isEmpty() || parsedOperator.isEmpty()
-						|| parsedValue.isEmpty()) {
+				if (parsedField.length() == 0 || parsedOperator.length() == 0
+						|| parsedValue.length() == 0) {
 					throw new JargonQueryException(
 							"query attribute/value/condition malformed around element:"
 									+ tokenCtr);

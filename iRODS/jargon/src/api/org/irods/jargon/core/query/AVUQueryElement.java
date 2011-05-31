@@ -35,7 +35,7 @@ public class AVUQueryElement {
 			throw new JargonQueryException("avuQueryOperator is null");
 		}
 		
-		if (value == null || value.isEmpty()) {
+		if (value == null || value.length() == 0) {
 			throw new JargonQueryException("null or empty value");
 		}
 		

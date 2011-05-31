@@ -95,7 +95,7 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject
 		 * first one
 		 */
 
-		if (resourceName.isEmpty()) {
+		if (resourceName.length() == 0) {
 			if (!isDirectory(sourceAbsolutePath)) {
 				log.debug("this is a file, look for resource it is stored on to retrieve host");
 				int lastSlash = sourceAbsolutePath.lastIndexOf('/');
@@ -362,12 +362,12 @@ public class FileCatalogObjectAOImpl extends AbstractIRODSAccessObject
 			throws JargonException {
 
 		if (irodsCollectionAbsolutePath == null
-				|| irodsCollectionAbsolutePath.isEmpty()) {
+				|| irodsCollectionAbsolutePath.length() == 0) {
 			throw new IllegalArgumentException(
 					"null or empty irodsCollectionAbsolutePath");
 		}
 
-		if (dataName == null || dataName.isEmpty()) {
+		if (dataName == null || dataName.length() == 0) {
 			throw new IllegalArgumentException("null or empty dataName");
 		}
 

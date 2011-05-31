@@ -34,7 +34,7 @@ public class IRODSDataConversionUtil {
 			throw new IllegalArgumentException("null irodsValue");
 		}
 
-		if (irodsValue.isEmpty()) {
+		if (irodsValue.length() == 0) {
 			// nothing
 		} else {
 			try {
@@ -64,7 +64,7 @@ public class IRODSDataConversionUtil {
 			throw new IllegalArgumentException("null irodsValue");
 		}
 
-		if (irodsValue.isEmpty()) {
+		if (irodsValue.length() == 0) {
 			// nothing
 		} else {
 			try {
@@ -93,7 +93,7 @@ public class IRODSDataConversionUtil {
 			throw new IllegalArgumentException("null date value");
 		}
 
-		if (irodsValue.isEmpty()) {
+		if (irodsValue.length() == 0) {
 			return new Date();
 		}
 

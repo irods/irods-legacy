@@ -2034,7 +2034,7 @@ public class IRODSFile extends RemoteFile {
 	 *             queries
 	 */
 	public String getCanonicalPath() throws IOException {
-		if ((directory != null) && (!directory.isEmpty())) {
+		if ((directory != null) && (!(directory.size() == 0))) {
 			int size = directory.size();
 			String path = (String) directory.firstElement();
 			int i = 1;

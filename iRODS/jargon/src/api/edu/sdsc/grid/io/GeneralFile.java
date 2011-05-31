@@ -1143,7 +1143,7 @@ public class GeneralFile extends Object implements Comparable {
 	 *         abstract pathname
 	 */
 	public String getAbsolutePath() {
-		if ((directory != null) && (!directory.isEmpty())) {
+		if ((directory != null) && (!(directory.size() == 0))) {
 			int size = directory.size();
 			String path = (String) directory.firstElement();
 			int i = 1;
@@ -1208,7 +1208,7 @@ public class GeneralFile extends Object implements Comparable {
 	 *         if this pathname does not name a parent directory.
 	 */
 	public String getParent() {
-		if ((directory != null) && (!directory.isEmpty())) {
+		if ((directory != null) && (!(directory.size() == 0))) {
 			int size = directory.size();
 			String path = (String) directory.firstElement();
 			int i = 1;

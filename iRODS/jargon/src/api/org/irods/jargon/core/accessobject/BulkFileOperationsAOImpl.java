@@ -46,13 +46,13 @@ public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject impleme
 			throws JargonException {
 
 		if (absolutePathToBundleFileToBeCreatedOnIrods == null
-				|| absolutePathToBundleFileToBeCreatedOnIrods.isEmpty()) {
+				|| absolutePathToBundleFileToBeCreatedOnIrods.length() == 0) {
 			throw new IllegalArgumentException(
 					"null or empty absolutePathToBundleFileToBeCreatedOnIrods");
 		}
 
 		if (absolutePathToIrodsCollectionToBeBundled == null
-				|| absolutePathToIrodsCollectionToBeBundled.isEmpty()) {
+				|| absolutePathToIrodsCollectionToBeBundled.length() == 0) {
 			throw new IllegalArgumentException(
 					"null or empty absolutePathToIrodsCollectionToBeBundled");
 		}
@@ -89,13 +89,13 @@ public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject impleme
 			throws JargonException {
 
 		if (absolutePathToBundleFileToBeCreatedOnIrods == null
-				|| absolutePathToBundleFileToBeCreatedOnIrods.isEmpty()) {
+				|| absolutePathToBundleFileToBeCreatedOnIrods.length() == 0) {
 			throw new IllegalArgumentException(
 					"null or empty absolutePathToBundleFileToBeCreatedOnIrods");
 		}
 
 		if (absolutePathToIrodsCollectionToBeBundled == null
-				|| absolutePathToIrodsCollectionToBeBundled.isEmpty()) {
+				|| absolutePathToIrodsCollectionToBeBundled.length() == 0) {
 			throw new IllegalArgumentException(
 					"null or empty absolutePathToIrodsCollectionToBeBundled");
 		}
@@ -190,13 +190,13 @@ public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject impleme
 			throws JargonException {
 
 		if (absolutePathToBundleFileInIrodsToBeExtracted == null
-				|| absolutePathToIrodsCollectionToHoldExtractedFiles.isEmpty()) {
+				|| absolutePathToIrodsCollectionToHoldExtractedFiles.length() == 0) {
 			throw new IllegalArgumentException(
 					"null or empty absolutePathToIrodsCollectionToHoldExtractedFiles");
 		}
 
 		if (absolutePathToIrodsCollectionToHoldExtractedFiles == null
-				|| absolutePathToIrodsCollectionToHoldExtractedFiles.isEmpty()) {
+				|| absolutePathToIrodsCollectionToHoldExtractedFiles.length() == 0) {
 			throw new IllegalArgumentException(
 					"null or empty absolutePathToIrodsCollectionToHoldExtractedFiles");
 		}

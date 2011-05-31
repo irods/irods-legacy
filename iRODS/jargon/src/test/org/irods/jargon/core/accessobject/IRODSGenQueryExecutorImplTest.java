@@ -181,7 +181,7 @@ public class IRODSGenQueryExecutorImplTest {
 		irodsFileSystem.close();
 
 		Assert.assertNotNull("null result set",resultSet);
-		Assert.assertFalse("empty result set", resultSet.getResults().isEmpty());
+		Assert.assertFalse("empty result set", resultSet.getResults().size() == 0);
 		String returnedResourceName = resultSet.getFirstResult().getColumn(0);
 		Assert.assertEquals("did not get expected result", testingProperties
 						.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), returnedResourceName);

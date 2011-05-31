@@ -444,7 +444,7 @@ public class ResourceTest {
 
 		List<AvuData> avuData = resource.listResourceMetadata(testResource);
 		irodsFileSystem.close();
-		Assert.assertFalse("no query result returned", avuData.isEmpty());
+		Assert.assertFalse("no query result returned", avuData.size() == 0);
 		AvuData avuDataItem = null;
 
 		for (AvuData foundItem : avuData) {
