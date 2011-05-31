@@ -304,7 +304,7 @@ public class IRODSCommands {
 			log.error(
 					"JargonException is turned into IOException to fit current method signature",
 					e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 
 		return responseMessage;
@@ -1049,7 +1049,7 @@ public class IRODSCommands {
 			log.error(
 					"JargonException in file seek, will be rethrown to current contract IOException",
 					e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 		return message.getTag(offset).getLongValue();
 	}
@@ -1241,7 +1241,7 @@ public class IRODSCommands {
 			}
 		} catch (JargonException e) {
 			log.error("Jargon exception in mkdir operation", e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 
@@ -1616,7 +1616,7 @@ public class IRODSCommands {
 			log.error(
 					"JargonException in replication, rethrown as IOException",
 					e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 
@@ -1703,7 +1703,7 @@ public class IRODSCommands {
 					resource);
 		} catch (JargonException e) {
 			log.error("error extractingBundle", e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 
 	}
@@ -1732,7 +1732,7 @@ public class IRODSCommands {
 							directory.getAbsolutePath(), "");
 		} catch (JargonException e) {
 			log.error("error extractingBundle", e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 
@@ -1767,7 +1767,7 @@ public class IRODSCommands {
 			log.error(
 					"Jargon exception executing remote command, will rethrow as IOException for present contracts",
 					e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 
 	}

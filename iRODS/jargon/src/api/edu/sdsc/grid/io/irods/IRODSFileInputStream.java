@@ -116,7 +116,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 		try {
 			this.lookForReroutingOfConnection(name, "");
 		} catch (JargonException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 
@@ -148,7 +148,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 		try {
 			this.lookForReroutingOfConnection(file.getAbsolutePath(), file.getResource());
 		} catch (JargonException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 

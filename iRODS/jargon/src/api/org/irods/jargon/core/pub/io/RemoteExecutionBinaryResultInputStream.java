@@ -72,7 +72,7 @@ public class RemoteExecutionBinaryResultInputStream extends InputStream {
 			log.error(
 					"Jargon exception will be rethrown as an IOException for the method contracts",
 					e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 
@@ -145,7 +145,7 @@ public class RemoteExecutionBinaryResultInputStream extends InputStream {
 			log.error(
 					"JargonException in read is converted to IOException for method contract",
 					e);
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 	}
 

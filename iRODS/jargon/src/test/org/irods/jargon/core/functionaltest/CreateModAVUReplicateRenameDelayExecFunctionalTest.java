@@ -79,7 +79,7 @@ public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 		String testAvuValuePrefixNew = "newTestCollectionLoseACLScenarioWithDelayExec";
 
 		String tempPrefix = "temp";
-		int numberIterations = 1000;
+		int numberIterations = 1;
 		int fileLength = 20 * 1024;
 
 		// + new Date().getTime() +
