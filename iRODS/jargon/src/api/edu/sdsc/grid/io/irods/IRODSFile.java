@@ -764,7 +764,7 @@ public class IRODSFile extends RemoteFile {
 			}
 		} catch (Exception e1) {
 			log.error("rethrowing exception as IOException for method contracts");
-			throw new IOException(e1);
+			throw new IOException(e1.getMessage());
 		}
 
 		// a re-routed operation will have computed the new host, and called
@@ -932,7 +932,7 @@ public class IRODSFile extends RemoteFile {
 			}
 		} catch (Exception e1) {
 			log.error("rethrowing exception as IOException for method contracts");
-			throw new IOException(e1);
+			throw new IOException(e1.getMessage());
 		}
 
 		// a re-routed operation will have computed the new host, and called
