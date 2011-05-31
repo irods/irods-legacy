@@ -68,7 +68,7 @@ public class TranslatedQueryCondition {
 			final String operator, final String value,
 			final String columnNumericTranslation) throws JargonQueryException {
 
-		if (fieldName == null || fieldName.isEmpty()) {
+		if (fieldName == null || fieldName.length() == 0) {
 			throw new JargonQueryException(
 					"field name in condition is null or blank");
 		}
@@ -82,7 +82,7 @@ public class TranslatedQueryCondition {
 		}
 
 		if (columnNumericTranslation == null
-				|| columnNumericTranslation.isEmpty()) {
+				|| columnNumericTranslation.length() == 0) {
 			throw new JargonQueryException(
 					"columnNumericTranslation is null or blank");
 		}
