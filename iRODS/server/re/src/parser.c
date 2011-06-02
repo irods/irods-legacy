@@ -1095,7 +1095,7 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             dupString(e, &actionsStart, actionsFinish.exprloc - actionsStart.exprloc, buf);
             BUILD_NODE(TK_STRING, buf, &actionsStart, 0, 0);
             BUILD_NODE(TK_STRING, "", &actionsFinish, 0, 0);
-            BUILD_APP_NODE("delayExec", &start, 4);
+            BUILD_APP_NODE("delayExec", &start, 3);
         OR(func)
             ABORT(!rulegen);
             TTEXT("let");
