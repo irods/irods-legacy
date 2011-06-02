@@ -8,29 +8,10 @@
 #include "region.h"
 #include "parser.h"
 
-typedef Res *(*SmsiFuncPtrType)(Node **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
 
-typedef enum { FD_FUNC, FD_CONS, FD_DECONS } FunctionDescType;
 
-typedef struct function_desc {
-    /*int arity; */
-    char inOutValExp[10];
-    /* a string indicating whether a value or an expression should be passed in or out */
-    /* each char represents one param, */
-    /* a = actions, */
-    /* e = expresion, */
-    /* i = input value */
-    /* o = output variable */
-    /* p = i/o variable */
-    /* * = repeat previous */
-    SmsiFuncPtrType func;
-    ExprType *type;
-    FunctionDescType fdtype;
-    int proj;
-    struct function_desc *next;
-} FunctionDesc ;
 
-FunctionDesc *newFunctionDesc(char *valueOrExpression, char* type, SmsiFuncPtrType func, Region *r);
+FunctionDesc *newFunctionDesc(char* type, SmsiFuncPtrType func, Region *r);
 FunctionDesc *newConstructorDesc(char* type, Region *r);
 FunctionDesc *newConstructorDesc2(Node* type, Region *r);
 FunctionDesc *newDeconstructorDesc(char *type, int proj, Region *r);

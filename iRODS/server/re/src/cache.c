@@ -14,33 +14,78 @@ RuleEngineStatus _ruleEngineStatus = UNINITIALIZED;
 RuleEngineStatus getRuleEngineStatus() {
     return _ruleEngineStatus;
 }
-
+#define NODE_KEY_SIZE 1024
+void nodeKey(Node *node, char *keyBuf) {
+	memset(keyBuf, 0, NODE_KEY_SIZE);
+	if(node->degree>0) {
+		snprintf(keyBuf, NODE_KEY_SIZE, "%p", node);
+	} else {
+	char *p = keyBuf;
+	snprintf(p, NODE_KEY_SIZE, "%s::%d::%p::%ld::%p::%d::%d::%s::%d",
+			node->base, node->coerce, node->coercionType, node->expr, node->exprType,
+			(int)node->iotype, (int)node->nodeType, node->text, (int)node->vararg
+			);
+	int len = strlen(keyBuf);
+	p += len;
+	switch(node->nodeType) {
+	case N_C_FUNC:
+		snprintf(p, NODE_KEY_SIZE - len, "::%p", node->value.func);
+		break;
+	case N_DECONSTRUCTOR:
+		snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.proj);
+		break;
+	case N_ERROR:
+		snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.errcode);
+		break;
+	case N_FUNC_SYM_LINK:
+		snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.nArgs);
+		break;
+	case N_PARTIAL_APPLICATION:
+		snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.nArgs);
+		break;
+	case T_VAR:
+		snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.vid);
+		break;
+	case N_VAL:
+		switch(TYPE(node)) {
+		case T_BOOL:
+		case T_INT:
+		case T_DOUBLE:
+			snprintf(p, NODE_KEY_SIZE - len, "::%f", node->value.dval);
+			break;
+		case T_DATETIME:
+			snprintf(p, NODE_KEY_SIZE - len, "::%ld", (long) node->value.tval);
+			break;
+		case T_ERROR:
+			snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.errcode);
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+	}
+}
 Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap) {
   unsigned char *p = *buf;
   allocate(p, Node, ncopy, *node);
   ExprType *shared;
-  char tvarNameBuf[128];
-  if((shared = (ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(node->nodeType))) != NULL) {
+  char key[NODE_KEY_SIZE];
+  nodeKey(node, key);
+  if((shared = (Node *)lookupFromHashTable(objectMap, key)) != NULL) {
 /*
       printf("simp type %s is shared\n", typeName_TypeConstructor(type->t));
 */
       return shared;
-  } else if(node->nodeType == T_VAR && (shared=(ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(node->nodeType)))!=NULL) {
-/*
+/*  } else if(node->nodeType == T_VAR && (shared=(ExprType *)lookupFromHashTable(objectMap, typeName_NodeType(node->nodeType)))!=NULL) {
+
       printf("tvar %s is shared\n", tvarNameBuf);
-*/
+
       return shared;
-  } else {
+*/  } else {
       allocate(p, ExprType, ncopy, *node);
-      if(ncopy->nodeType == T_VAR) {
-          if(T_VAR_NUM_DISJUNCTS(ncopy) != 0) {
-              allocateArray(p, ExprTypePtr, T_VAR_NUM_DISJUNCTS(ncopy), T_VAR_DISJUNCTS(ncopy), T_VAR_DISJUNCTS(node));
-          }
-          insertIntoHashTable(objectMap, getTVarName(T_VAR_ID(ncopy), tvarNameBuf), ncopy);
-/*
-          printf("tvar %s is added to shared objects\n", tvarNameBuf);
-*/
-      }
       if(ncopy->exprType != NULL) ncopy -> exprType = copyNode(&p, ncopy->exprType, objectMap);
       if(ncopy->coercionType!=NULL) ncopy -> coercionType = copyNode(&p, ncopy->coercionType, objectMap);
       if(ncopy->base!=NULL) {
@@ -55,6 +100,11 @@ Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap) {
         ncopy ->subtrees[i] = copyNode(&p, node->subtrees[i], objectMap);
       }
       *buf = p;
+/*      printf("inserting %s\n", key); */
+	  insertIntoHashTable(objectMap, key, ncopy);
+/*
+          printf("tvar %s is added to shared objects\n", tvarNameBuf);
+*/
       return ncopy;
   }
 }
@@ -140,15 +190,6 @@ CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable
     return civcopy;
 }
 
-FunctionDesc *copyFunctionDesc(unsigned char **buf, FunctionDesc *fd, Hashtable *objectMap) {
-    unsigned char *p = *buf;
-    allocate(p, FunctionDesc, fdcopy, *fd);
-    fdcopy->type = copyNode(&p, fd->type, objectMap);
-    fdcopy->next = fdcopy->next==NULL?NULL : copyFunctionDesc(&p, fd->next, objectMap);
-    *buf = p;
-    return fdcopy;
-}
-
 Cache *copyCache(unsigned char **buf, Cache *c) {
     Hashtable *objectMap = newHashTable(100);
 
@@ -175,7 +216,7 @@ Cache *copyCache(unsigned char **buf, Cache *c) {
     ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet, objectMap);
     ccopy->coreRuleIndex = ccopy->coreRuleIndex == NULL? NULL:copyHashtable(&p, ccopy->coreRuleIndex, (Copier)copyRuleIndexList, objectMap);
     ccopy->condIndex = ccopy->condIndex == NULL? NULL:copyHashtable(&p, ccopy->condIndex, (Copier)copyCondIndexVal, objectMap);
-    ccopy->funcDescIndex = copyHashtable(&p, ccopy->funcDescIndex, (Copier)copyFunctionDesc, objectMap);
+    ccopy->funcDescIndex = copyHashtable(&p, ccopy->funcDescIndex, (Copier)copyNode, objectMap);
     ccopy->dataSize = (p - (*buf));
 
     *buf = p;
@@ -319,9 +360,6 @@ Cache *restoreCache(unsigned char *buf) {
                 APPLY_DIFF(((RuleIndexList *)p)->head, RuleIndexListNode, diff);
                 APPLY_DIFF(((RuleIndexList *)p)->tail, RuleIndexListNode, diff);
                 APPLY_DIFF(((RuleIndexList *)p)->ruleName, char, diff);
-            case FunctionDesc_T:
-                APPLY_DIFF(((FunctionDesc *)p)->type, ExprType, diff);
-                APPLY_DIFF(((FunctionDesc *)p)->next, FunctionDesc, diff);
                 break;
         }
     }

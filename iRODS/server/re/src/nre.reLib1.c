@@ -389,7 +389,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   if (pFlag == 1)
     free(inMsParamArray);
   if(i!=0) {
-    logErrMsg(&errmsgBuf);
+    logErrMsg(&errmsgBuf, &rei->rsComm->rError);
   }
   freeRErrorContent(&errmsgBuf);
   return(i);
@@ -398,18 +398,20 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 
 /* utility function */
 int processReturnRes(Res *res) {
-        int ret;
-        switch(TYPE(res)) {
-        case T_ERROR:
-            ret = res->value.errcode;
-            break;
+	int ret;
+	if(res->nodeType == N_ERROR) {
+		ret = res->value.errcode;
+	} else {
+		switch(TYPE(res)) {
         case T_INT:
             ret = (int)res->value.dval;
             break;
         default:
             ret = 0; /* other types */
             break;
-    }
+		}
+	}
+
 	return ret;
 }
 int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char *res) {

@@ -7,8 +7,7 @@
 #include "rules.h"
 #include "functions.h"
 
-
-int num_ops = 29;
+int num_ops = 30;
 Op new_ops[] = {
     {"-",1,10},
     {"++",2,6},
@@ -38,7 +37,8 @@ Op new_ops[] = {
     {"log",1,10},
     {"exp",1,10},
     {"abs",1,10},
-    {"=",2,1}
+    {"=",2,1},
+    {"@@",2,20}
 };
 PARSER_FUNC_PROTO2(Term, int rulegen, int prec);
 PARSER_FUNC_PROTO2(Actions, int rulegen, int backwardCompatible);
@@ -55,6 +55,8 @@ PARSER_FUNC_PROTO2(_Type, int prec, int lifted);
 PARSER_FUNC_PROTO(TypeSet);
 PARSER_FUNC_PROTO(FuncType);
 PARSER_FUNC_PROTO(_FuncType);
+PARSER_FUNC_PROTO(TypingConstraints);
+PARSER_FUNC_PROTO(_TypingConstraints);
 
 /***** utility functions *****/
 ParserContext *newParserContext(rError_t *errmsg, Region *r) {
@@ -140,8 +142,13 @@ Node *createFunctionNode(char *fn, Node **params, int paramsLen, Label * exprloc
 	if(node == NULL) {
 		return NULL;
 	}
-	setDegree(node, paramsLen, r);
-	memcpy(node->subtrees, params, paramsLen*sizeof(Node *));
+	Node *func = newNode(TK_TEXT, fn, exprloc, r);
+	Node *param = newNode(N_TUPLE, APPLICATION, exprloc, r);
+	setDegree(param, paramsLen, r);
+	memcpy(param->subtrees, params, paramsLen*sizeof(Node *));
+	setDegree(node, 2, r);
+	node->subtrees[0] = func;
+	node->subtrees[1] = param;
 	return node;
 }
 Node *createActionsNode(Node **params, int paramsLen, Label * exprloc, Region *r) {
@@ -190,12 +197,12 @@ Node *createErrorNode(char *error, Label * exprloc, Region *r) {
 }
 int isLocalVariableNode(Node *node) {
     return
-        node->nodeType==TK_TEXT &&
+        node->nodeType==TK_VAR &&
         node->text[0] == '*';
 }
 int isSessionVariableNode(Node *node) {
     return
-        node->nodeType==TK_TEXT &&
+        node->nodeType==TK_VAR &&
         node->text[0] == '$';
 }
 int isVariableNode(Node *node) {
@@ -203,6 +210,18 @@ int isVariableNode(Node *node) {
         isLocalVariableNode(node) ||
         isSessionVariableNode(node);
 }
+int nKeywords = 12;
+char *keywords[] = { "in", "let", "for", "while", "foreach", "if", "then", "else", "Inductive", "on", "or", "oron"};
+int isKeyword(char *text) {
+	int i;
+	for(i=0;i<nKeywords;i++) {
+		if(strcmp(keywords[i], text) == 0) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 void skipWhitespace(Pointer *expr) {
 	char ch;
 	ch = lookAhead(expr, 0);
@@ -434,10 +453,10 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             rk = "FUNC";
         END_TRY(ruleType);
         if(strcmp(rk, "FUNC")==0) {
-            BUILD_NODE(N_APPLICATION, "true", FPOS, 0, 0);
+            BUILD_APP_NODE("true", FPOS, 0);
             NT(FuncExpr);
             OPTIONAL_BEGIN(semicolon)
-                TTEXT(";");
+				TTEXT(";");
             OPTIONAL_END(semicolon)
             BUILD_NODE(N_RULE,"RULE", &start,4, 4);
             BUILD_NODE(N_RULE_PACK,rk, &start,1, 1);
@@ -467,7 +486,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
                     OR(rulePackUncond)
                         TTEXT("or");
                     END_TRY(rulePackUncond)
-                    BUILD_NODE(N_APPLICATION, "true", FPOS, 0, 0);
+                    BUILD_APP_NODE("true", FPOS, 0);
                     TTEXT("{");
                     NT2(Actions, 1, 0);
                     TTEXT("}");
@@ -480,7 +499,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
                     DONE(rule);
                 OR(rulePack)
                     ABORT(numberOfRules != 0);
-                    BUILD_NODE(N_APPLICATION, "true", FPOS, 0, 0);
+                	BUILD_APP_NODE("true", FPOS, 0);
                     NT2(Actions, 1, 0);
                     numberOfRules = 1;
                     BUILD_NODE(N_RULE, "RULE", &start, 4, 3);
@@ -495,7 +514,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             TRY(ruleCond)
                 /* empty condition */
                 TTEXT("|");
-                BUILD_NODE(N_APPLICATION, "true", &pos,0,0);
+            	BUILD_APP_NODE("true", FPOS, 0);
             OR(ruleCond)
                 NT2(Term, 0, MIN_PREC);
                 TTEXT("|");
@@ -568,7 +587,7 @@ PARSER_FUNC_BEGIN(FuncExpr)
             NT2(Term, 1, MIN_PREC);
         BRANCH_END(reco)
         BRANCH_BEGIN(reco)
-            BUILD_NODE(N_APPLICATION, "nop", FPOS, 0, 0);
+            BUILD_APP_NODE("nop", FPOS, 0);
         BRANCH_END(reco)
     CHOICE_END(reco)
 PARSER_FUNC_END(FuncExpr)
@@ -592,7 +611,7 @@ PARSER_FUNC_BEGIN2(Actions, int rulegen, int backwardCompatible)
                         NT2(Term, rulegen, MIN_PREC);
                     BRANCH_END(reco)
                     BRANCH_BEGIN(reco)
-                        BUILD_NODE(N_APPLICATION, "nop", NULL, 0, 0);
+                        BUILD_APP_NODE("nop", NULL, 0);
                     BRANCH_END(reco)
                 CHOICE_END(reco)
             }
@@ -707,7 +726,7 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
         TTEXT(",");
         NT2(Actions, 0, level);
         TTEXT(")");
-        BUILD_NODE(N_APPLICATION, "if", &start, 5, 5);
+        BUILD_APP_NODE("if", &start, 5);
 
     OR(func)
         TTEXT("whileExec");
@@ -718,19 +737,18 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
         TTEXT(",");
         NT2(Actions, 0, level);
         TTEXT(")");
-        BUILD_NODE(N_APPLICATION, "while", &start, 3, 3);
-
+        BUILD_APP_NODE("while", &start, 3);
     OR(func)
         TTEXT("forEachExec");
         TTEXT("(");
         TTYPE(TK_LOCAL_VAR);
-        BUILD_NODE(TK_TEXT, token.text, &start, 0, 0);
+        BUILD_NODE(TK_VAR, token.text, &start, 0, 0);
         TTEXT(",");
         NT2(Actions, 0, level);
         TTEXT(",");
         NT2(Actions, 0, level);
         TTEXT(")");
-        BUILD_NODE(N_APPLICATION, "foreach", &start, 3, 3);
+        BUILD_APP_NODE("foreach", &start, 3);
 
     OR(func)
         TTEXT("assign");
@@ -739,8 +757,7 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
         TTEXT(",");
         NT2(Term, 0, MIN_PREC);
         TTEXT(")");
-        BUILD_NODE(N_APPLICATION, "assign", &start, 2, 2);
-
+        BUILD_APP_NODE("assign", &start, 2);
     OR(func)
         TTEXT("forExec");
         TTEXT("(");
@@ -754,12 +771,12 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
         TTEXT(",");
         NT2(Actions, 0, level);
         TTEXT(")");
-        BUILD_NODE(N_APPLICATION, "for", &start, 5, 5);
+        BUILD_APP_NODE("for", &start, 5);
     OR(func)
         TTEXT("breakExec");
-        BUILD_NODE(N_APPLICATION, "break", &start, 0, 0);
+        BUILD_APP_NODE("break", &start, 0);
     END_TRY(func)
-PARSER_FUNC_END(TermSystemBackwarcCompatible)
+PARSER_FUNC_END(TermSystemBackwardCompatible)
 
 PARSER_FUNC_BEGIN(TermBackwardCompatible)
     int rulegen =0;
@@ -767,12 +784,14 @@ PARSER_FUNC_BEGIN(TermBackwardCompatible)
         NT1(TermSystemBackwardCompatible, 1);
 
     OR(func)
+    	TTYPE(TK_TEXT);
         char *fn = cpStringExt(token.text, context->region);
         TTEXT("(");
         TTEXT(")");
-        BUILD_NODE(N_APPLICATION, fn, &start, 0, 0);
+        BUILD_APP_NODE(fn, &start, 0);
 
     OR(func)
+        TTYPE(TK_TEXT);
         char *fn = cpStringExt(token.text, context->region);
         TTEXT("(");
         int n = 0;
@@ -789,10 +808,11 @@ PARSER_FUNC_BEGIN(TermBackwardCompatible)
                 BRANCH_END(paramDelim)
             CHOICE_END(paramDelim)
         LOOP_END(func)
-        BUILD_NODE(N_APPLICATION, fn, &start, n, n);
-
+        BUILD_APP_NODE(fn, &start, n);
     OR(func)
-        BUILD_NODE(N_APPLICATION, token.text, &start, 0, 0);
+		TTYPE(TK_TEXT);
+        char *fn = cpStringExt(token.text, context->region);
+        BUILD_APP_NODE(fn, &start, 0);
 
     END_TRY(func)
 PARSER_FUNC_END(ValueBackwardCompatible)
@@ -815,10 +835,10 @@ PARSER_FUNC_BEGIN2(Term, int rulegen, int prec)
             BRANCH_BEGIN(term)
                 TTYPE(TK_OP);
                 ABORT(!isBinaryOp(&token));
-		if(prec>=getBinaryPrecedence(&token)) {
+                if(prec>=getBinaryPrecedence(&token)) {
                     PUSHBACK;
                     done = 1;
-		} else {
+                } else {
                     char *fn;
                     if(TOKEN_TEXT("=")) {
                         fn = "assign";
@@ -826,8 +846,21 @@ PARSER_FUNC_BEGIN2(Term, int rulegen, int prec)
                         fn = token.text;
                     }
                     NT2(Term, rulegen, getBinaryPrecedence(&token));
-                    BUILD_NODE(N_APPLICATION, fn, &start, 2, 2);
+                    BUILD_APP_NODE(fn, &start, 2);
                 }
+
+            BRANCH_END(term)
+            BRANCH_BEGIN(term)
+            	TRY(syntacticalArg)
+            		TTEXT_LOOKAHEAD("(");
+            	OR(syntacticalArg)
+            		TTEXT_LOOKAHEAD("[");
+            	END_TRY(syntacticalArg)
+
+                Token appToken;
+                strcpy(appToken.text, "@@");
+                NT2(Term, rulegen, getBinaryPrecedence(&appToken));
+                BUILD_NODE(N_APPLICATION, APPLICATION, &start, 2, 2);
             BRANCH_END(term)
             BRANCH_BEGIN(term)
                 done = 1;
@@ -879,12 +912,12 @@ PARSER_FUNC_BEGIN(StringExpression)
         strncpy(sbuf, str+end[k-1], st[k]-end[k-1]); /* var */
         strcpy(sbuf+st[k]-end[k-1], delim);
         pos.exprloc = startLoc + end[k-1];
-        BUILD_NODE(TK_TEXT, sbuf, &pos, 0, 0);
+        BUILD_NODE(TK_VAR, sbuf, &pos, 0, 0);
 
-        BUILD_NODE(N_APPLICATION, "str", &pos, 1, 1);
+        BUILD_APP_NODE("str", &pos, 1);
 
         pos.exprloc = startloc;
-        BUILD_NODE(N_APPLICATION, "++", &pos, 2, 2);
+        BUILD_APP_NODE("++", &pos, 2);
 
         strncpy(sbuf, str+st[k], end[k]-st[k]);
         strcpy(sbuf+end[k]-st[k], delim);
@@ -892,21 +925,39 @@ PARSER_FUNC_BEGIN(StringExpression)
         BUILD_NODE(TK_STRING, sbuf, &pos, 0, 0);
 
         pos.exprloc = startloc;
-        BUILD_NODE(N_APPLICATION, "++", &pos, 2, 2);
+        BUILD_APP_NODE("++", &pos, 2);
     }
 PARSER_FUNC_END(StringExpression)
 
 PARSER_FUNC_BEGIN1(Value, int rulegen)
     TRY(value)
         TTYPE(TK_LOCAL_VAR);
-        BUILD_NODE(TK_TEXT, token.text, &pos,0,0);
+        BUILD_NODE(TK_VAR, token.text, &pos,0,0);
     OR(value)
         TTYPE(TK_SESSION_VAR);
-        BUILD_NODE(TK_TEXT, token.text, &pos,0,0);
+        BUILD_NODE(TK_VAR, token.text, &pos,0,0);
     OR(value)
         TTEXT("(");
-        NT2(Term, rulegen, MIN_PREC);
-        TTEXT(")");
+        TRY(tuple)
+            TTEXT(")");
+            BUILD_NODE(N_TUPLE, TUPLE, &start, 0, 0);
+        OR(tuple)
+			NT2(Term, rulegen, MIN_PREC);
+        	int n = 1;
+			LOOP_BEGIN(tupleLoop)
+				TRY(tupleComp)
+					TTEXT(",");
+					NT2(Term, rulegen, MIN_PREC);
+					n++;
+				OR(tupleComp)
+					TTEXT(")");
+					DONE(tupleLoop);
+				END_TRY(tupleComp)
+			LOOP_END(tupleLoop)
+			BUILD_NODE(N_TUPLE, TUPLE, &start, n, n);
+
+
+        END_TRY(tuple)
 
     OR(value)
         TTEXT("{");
@@ -919,68 +970,80 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         TTYPE(TK_OP);
         ABORT(!isUnaryOp(&token));
         NT2(Term, rulegen, getUnaryPrecedence(&token));
-        BUILD_NODE(N_APPLICATION, token.text, &start,1,1);
+        char *fn;
+        if(strcmp(token.text, "-")==0) {
+            fn = "neg";
+        } else {
+            fn = token.text;
+        }
+        BUILD_APP_NODE(fn, &start,1);
 
     OR(value)
         TRY(func)
             ABORT(!rulegen);
-            TTEXT("if");
-            NT2(Term, rulegen, MIN_PREC);
             TRY(funcIf)
-                OPTIONAL_BEGIN(funcIfThen)
+				TTEXT("if");
+				TTEXT("(");
+				NT2(Term, 1, MIN_PREC);
+				TTEXT(")");
+                OPTIONAL_BEGIN(ifThen)
                     TTEXT("then");
-                OPTIONAL_END(funcIfThen)
+                OPTIONAL_END(ifThen)
                 TTEXT("{");
                 NT2(Actions, 1, 0);
                 TTEXT("}");
-                TRY(funcIfElse)
+                TRY(ifElse)
                     TTEXT("else");
                     TTEXT_LOOKAHEAD("if");
                     NT2(Term, 1, MIN_PREC);
                     BUILD_NODE(N_ACTIONS, "ACTIONS", &pos, 1, 1);
-                    BUILD_NODE(N_APPLICATION, "nop", FPOS, 0, 0);
+                    BUILD_APP_NODE("nop", FPOS, 0);
                     BUILD_NODE(N_ACTIONS, "ACTIONS", FPOS, 1, 1);
-                OR(funcIfElse)
+                OR(ifElse)
                     TTEXT("else");
                     TTEXT("{");
                     NT2(Actions, 1, 0);
                     TTEXT("}");
-                OR(funcIfElse)
-                    BUILD_NODE(N_APPLICATION, "nop", FPOS, 0, 0);
+                OR(ifElse)
+                    BUILD_APP_NODE("nop", FPOS, 0);
                     BUILD_NODE(N_ACTIONS, "ACTIONS", FPOS, 1, 1);
-                    BUILD_NODE(N_APPLICATION, "nop", FPOS, 0, 0);
+                    BUILD_APP_NODE("nop", FPOS, 0);
                     BUILD_NODE(N_ACTIONS, "ACTIONS", FPOS, 1, 1);
-                END_TRY(funcIfElse)
+                END_TRY(ifElse)
                 UNZIP(2);
-                BUILD_NODE(N_APPLICATION, "if", FPOS, 5, 5);
+                BUILD_APP_NODE("if", &start, 5);
             OR(funcIf)
+                TTEXT("if");
+                NT2(Term, rulegen, MIN_PREC);
                 TTEXT("then");
                 NT2(Term, 1, MIN_PREC);
-                BUILD_NODE(N_APPLICATION, "nop", FPOS, 0, 0);
+                BUILD_APP_NODE("nop", FPOS, 0);
                 TTEXT("else")
                 NT2(Term, 1, MIN_PREC);
-                BUILD_NODE(N_APPLICATION, "nop", FPOS, 0, 0);
+                BUILD_APP_NODE("nop", FPOS, 0);
                 UNZIP(2);
-                BUILD_NODE(N_APPLICATION, "if2",&start, 5, 5);
+                BUILD_APP_NODE("if2", &start, 5);
             END_TRY(funcIf)
         OR(func)
             ABORT(!rulegen);
             TTEXT("while");
+            TTEXT("(");
             NT2(Term, 1, MIN_PREC);
+            TTEXT(")");
             TTEXT("{");
             NT2(Actions, 1, 0);
             TTEXT("}");
-            BUILD_NODE(N_APPLICATION, "while", &start, 3, 3);
-
+            BUILD_APP_NODE("while", &start, 3);
         OR(func)
             ABORT(!rulegen);
             TTEXT("foreach");
+            TTEXT("(");
             NT2(Term, 1, MIN_PREC);
+            TTEXT(")");
             TTEXT("{");
             NT2(Actions, 1, 0);
             TTEXT("}");
-            BUILD_NODE(N_APPLICATION, "foreach", &start, 3, 3);
-
+            BUILD_APP_NODE("foreach", &start, 3);
         OR(func)
             ABORT(!rulegen);
             TTEXT("for");
@@ -994,8 +1057,7 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             TTEXT("{");
             NT2(Actions, 1, 0);
             TTEXT("}");
-            BUILD_NODE(N_APPLICATION, "for", &start, 5, 5);
-
+            BUILD_APP_NODE("for", &start, 5);
         OR(func)
             ABORT(!rulegen);
             TTEXT("remote");
@@ -1015,8 +1077,7 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             dupString(e, &actionsStart, actionsFinish.exprloc - actionsStart.exprloc, buf);
             BUILD_NODE(TK_STRING, buf, &actionsStart, 0, 0);
             BUILD_NODE(TK_STRING, "", &actionsFinish, 0, 0);
-            BUILD_NODE(N_APPLICATION, "remoteExec", &actionsStart, 4, 4);
-
+            BUILD_APP_NODE("remoteExec", &start, 4);
         OR(func)
             ABORT(!rulegen);
             TTEXT("delay");
@@ -1034,49 +1095,32 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             dupString(e, &actionsStart, actionsFinish.exprloc - actionsStart.exprloc, buf);
             BUILD_NODE(TK_STRING, buf, &actionsStart, 0, 0);
             BUILD_NODE(TK_STRING, "", &actionsFinish, 0, 0);
-            BUILD_NODE(N_APPLICATION, "delayExec", &actionsStart, 3, 3);
-
+            BUILD_APP_NODE("delayExec", &start, 4);
         OR(func)
             ABORT(!rulegen);
             TTEXT("let");
-            NT1(Value, 1);
+            NT2(Term, 1, 2);
             TTEXT("=");
             NT2(Term, 1, MIN_PREC);
             TTEXT("in");
             NT2(Term, 1, MIN_PREC);
-            BUILD_NODE(N_APPLICATION, "let", &start, 3, 3);
-
+            BUILD_APP_NODE("let", &start, 3);
         OR(func)
             ABORT(rulegen);
             NT1(TermSystemBackwardCompatible, 0);
         OR(func)
             TTYPE(TK_TEXT);
+        	ABORT(isKeyword(token.text));
             char *fn = cpStringExt(token.text, context->region);
-            TRY(funcParam)
-                TTEXT("(");
-                TRY(funcParamList)
-                    TTEXT(")");
-                    BUILD_NODE(N_APPLICATION, fn, &start, 0, 0);
-                OR(funcParamList)
-                    int n = 0;
-                    LOOP_BEGIN(funcParamList)
-                        NT2(Term, rulegen, MIN_PREC);
-                        n++;
-                        TRY(funcParamListDelim)
-                            TTEXT(")");
-                            DONE(funcParamList);
-                        OR(funcParamListDelim)
-                            TTEXT(",");
-                        END_TRY(funcParamListDelim)
-                    LOOP_END(funcParamList)
-                    BUILD_NODE(N_APPLICATION, fn, &start, n, n);
-                END_TRY(funcParamList)
-            OR(funcParam)
-                NEXT_TOKEN;
-                ABORT(TOKEN_TYPE(TK_MISC_OP) && TOKEN_TEXT("("));
-                PUSHBACK;
-                BUILD_NODE(N_APPLICATION, fn, &start, 0, 0);
-            END_TRY(funcParam)
+            BUILD_NODE(TK_TEXT, fn, &start, 0, 0);
+            TRY(nullary)
+            	TTEXT_LOOKAHEAD("(");
+            OR(nullary)
+            	TTEXT_LOOKAHEAD("[");
+            OR(nullary)
+            	Node *n = POP;
+				BUILD_APP_NODE(n->text, &start, 0);
+        	END_TRY(nullary)
         END_TRY(func)
     OR(value)
         TTYPE(TK_INT);
@@ -1215,6 +1259,13 @@ void trimquotes(char *string) {
 void printTree(Node *n, int indent) {
 	printIndent(indent);
 	char buf[128], buf2[128];
+	if(n->nodeType >= T_UNSPECED && n->nodeType <= T_TYPE ) {
+		typeToString(n, NULL, buf, 128);
+		printf("%s:%d\n", buf, n->nodeType);
+		return;
+	} else if(n->nodeType >= TC_LT && n->nodeType <= TC_SET) {
+		printf("%s:%d\n",n->text, n->nodeType);
+	} else {
 	if(n->coercionType!=NULL) {
 	    typeToString(n->coercionType, NULL, buf, 128);
 	} else {
@@ -1225,7 +1276,25 @@ void printTree(Node *n, int indent) {
 	} else {
 	    buf2[0] = '\0';
 	}
-	printf("%s:%d %s->%s(coerce=%d)\n",n->text, n->nodeType, buf, buf2, n->coerce);
+	char iotype[128];
+	strcpy(iotype, "");
+	if(n->iotype & IO_TYPE_INPUT) {
+		strcat(iotype, "i");
+	}
+	if(n->iotype & IO_TYPE_OUTPUT) {
+		strcat(iotype, "o");
+	}
+	if(n->iotype & IO_TYPE_DYNAMIC) {
+		strcat(iotype, "d");
+	}
+	if(n->iotype & IO_TYPE_EXPRESSION) {
+		strcat(iotype, "e");
+	}
+	if(n->iotype & IO_TYPE_ACTIONS) {
+		strcat(iotype, "a");
+	}
+	printf("%s:%d %s => %s(coerce=%d)[%s]\n",n->text, n->nodeType, buf2, buf, n->coerce, iotype);
+}
 	int i;
 	for(i=0;i<n->degree;i++) {
 		printTree(n->subtrees[i],indent+1);
@@ -1266,7 +1335,7 @@ int eqExprNodeSyntactic(Node *a, Node *b) {
 }
 int eqExprNodeSyntacticVarMapping(Node *a, Node *b, Hashtable *varMapping /* from a to b */) {
     char *val;
-    if(a->nodeType == TK_TEXT && b->nodeType == TK_TEXT &&
+    if(a->nodeType == TK_VAR && b->nodeType == TK_VAR &&
             (val = (char *)lookupFromHashTable(varMapping, a->text))!=NULL &&
             strcmp(val, b->text) == 0) {
         return 1;
@@ -1291,7 +1360,7 @@ StringList *getVarNamesInExprNode(Node *expr, Region *r) {
 StringList *getVarNamesInExprNodeAux(Node *expr, StringList *vars, Region *r) {
     int i;
     switch(expr->nodeType) {
-        case TK_TEXT:
+        case TK_VAR:
             if(expr->text[0] == '*') {
                 StringList *nvars = (StringList*)region_alloc(r, sizeof(StringList));
                 nvars->next = vars;
@@ -1714,6 +1783,17 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
     }
 }
 
+PARSER_FUNC_BEGIN(TypingConstraints)
+    Hashtable *temp = context->symtable;
+    context->symtable = newHashTable(10);
+    TRY(exec)
+        NT(_TypingConstraints);
+    FINALLY(exec)
+        deleteHashTable(context->symtable, nop);
+        context->symtable = temp;
+    END_TRY(exec)
+
+PARSER_FUNC_END(TypingConstraints)
 PARSER_FUNC_BEGIN(Type)
     Hashtable *temp = context->symtable;
     context->symtable = newHashTable(10);
@@ -1732,7 +1812,8 @@ PARSER_FUNC_BEGIN(FuncType)
         NT(_FuncType);
     OR(exec)
         NT2(_Type, 0, 0);
-        BUILD_NODE(T_CONS, TUPLE, &start, 0, 0);
+        BUILD_NODE(T_TUPLE, TUPLE, &start, 0, 0);
+        SWAP;
         BUILD_NODE(T_CONS, FUNC, &start, 2, 2);
     FINALLY(exec)
         deleteHashTable(context->symtable, nop);
@@ -1743,6 +1824,7 @@ PARSER_FUNC_END(FuncType)
 PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
     int rulegen = 1;
     int arity = 0;
+    Node *node = NULL;
     TRY(type)
         ABORT(prec == 1);
         TRY(typeEnd)
@@ -1808,6 +1890,9 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     Node *node = POP;
                     node->vararg = ONCE;
                     PUSH(node);
+			OR(type)
+                    TTEXT("unit");
+					BUILD_NODE(T_TUPLE, TUPLE, &vpos, 0, 0);
             OR(type)
                     TTEXT("(");
                     NT2(_Type, 0, 0);
@@ -1837,6 +1922,30 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     /* flexible type, non dynamic coercion allowed */
                     NT2(_Type, 1, 0);
                     BUILD_NODE(T_FLEX, NULL, &start, 1, 1);
+            OR(type)
+                    TTEXT("o");
+                    NT2(_Type, 1, 0);
+                    node = POP;
+                    node->iotype = IO_TYPE_OUTPUT;
+                    PUSH(node);
+            OR(type)
+                    TTEXT("io");
+                    NT2(_Type, 1, 0);
+                    node = POP;
+                    node->iotype = IO_TYPE_OUTPUT | IO_TYPE_INPUT;
+                    PUSH(node);
+            OR(type)
+                    TTEXT("e");
+                    NT2(_Type, 1, 0);
+                    node = POP;
+                    node->iotype = IO_TYPE_EXPRESSION;
+                    PUSH(node);
+            OR(type)
+                    TTEXT("a");
+                    NT2(_Type, 1, 0);
+                    node = POP;
+                    node->iotype = IO_TYPE_ACTIONS;
+                    PUSH(node);
             OR(type)
                     TTEXT("type");
                     CASCADE(newSimpType(T_TYPE, context->region));
@@ -1884,7 +1993,7 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
         LOOP_END(type)
     END_TRY(type)
     if(arity != 1 || lifted) {
-        BUILD_NODE(T_CONS, TUPLE, &start, arity, arity);
+        BUILD_NODE(T_TUPLE, TUPLE, &start, arity, arity);
     }
 PARSER_FUNC_END(_Type)
 
@@ -1908,23 +2017,50 @@ PARSER_FUNC_BEGIN(TypeSet)
     }
 PARSER_FUNC_END(TypeSet)
 
+PARSER_FUNC_BEGIN(_TypingConstraints)
+    int rulegen = 1;
+    TTEXT("{");
+    int n = 0;
+    LOOP_BEGIN(tc)
+    	Label pos2 = *FPOS;
+        NT2(_Type, 0, 0);
+        TTEXT("<=");
+    	NT2(_Type, 0, 0);
+    	BUILD_NODE(TC_LT, "", &pos2, 0, 0); /* node for generating error messages */
+    	BUILD_NODE(TC_LT, "<=", &pos2, 3, 3);
+        n++;
+        TRY(tce)
+        	TTEXT(",");
+        OR(tce)
+            TTEXT("}");
+            DONE(tc);
+        END_TRY(tce)
+    LOOP_END(tc)
+    BUILD_NODE(TC_SET, "{}", &start, n, n);
+PARSER_FUNC_END(TypingConstraints)
+
 PARSER_FUNC_BEGIN(_FuncType)
     int rulegen = 1;
+	enum vararg vararg = ONCE;
     NT2(_Type, 0, 1);
-    Node *node = POP;
     TRY(vararg)
         TTEXT("*");
-        node->vararg = STAR;
+        vararg = STAR;
     OR(vararg)
         TTEXT("+");
-        node->vararg = PLUS;
+        vararg = PLUS;
+	OR(vararg)
+		TTEXT("?");
+		vararg = OPTIONAL;
     OR(vararg)
-        node->vararg = ONCE;
+        vararg = ONCE;
     END_TRY(vararg)
-    PUSH(node);
     TTEXT("->");
     NT2(_Type, 0, 0);
     BUILD_NODE(T_CONS, FUNC, &start, 2, 2);
+    Node *node = POP;
+    node->vararg = vararg;
+    PUSH(node);
 PARSER_FUNC_END(_FuncType)
 
 int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Region *r) {
@@ -2045,6 +2181,18 @@ Node* parseFuncTypeFromString(char *string, Region *r) {
     deletePointer(p);
     return exprType;
 }
+Node* parseTypingConstraintsFromString(char *string, Region *r) {
+    Pointer *p = newPointer2(string);
+    ParserContext *pc = newParserContext(NULL, r);
+    nextRuleGenTypingConstraints(p, pc);
+    Node *exprType = pc->nodeStack[0];
+    /*char buf[ERR_MSG_LEN];
+    errMsgToString(pc->errmsg, buf, ERR_MSG_LEN);
+    printf("%s", buf);*/
+    deleteParserContext(pc);
+    deletePointer(p);
+    return exprType;
+}
 Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, rError_t *errmsg, Region *r) {
     ParserContext *pc = newParserContext(errmsg, r);
     nextRuleGenRule(expr, pc, backwardCompatible);
@@ -2113,6 +2261,8 @@ char* typeName_NodeType(NodeType s) {
                 return "DATETIME";
             case T_TYPE:
                 return "TYPE";
+            case T_TUPLE:
+            	return "TUPLE";
             default:
                 return "OTHER";
         }
@@ -2157,7 +2307,7 @@ void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_
     }
     buf[len++] = '\0';
     snprintf(errbuf, ERR_MSG_LEN,
-            "%s\nline %d, row %d\n%s\n", msg, coor[0], coor[1], buf);
+            "%s\nline %d, col %d\n%s\n", msg, coor[0], coor[1], buf);
 
 }
 char *generateErrMsg(char *msg, long errloc, char *ruleBaseName, char errmsg[ERR_MSG_LEN]) {

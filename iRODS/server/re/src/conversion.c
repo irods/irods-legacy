@@ -304,6 +304,10 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
             var->type = strdup(res->exprType->text);
             break;
+        case T_UNSPECED:
+            var->inOutStruct = strdup("");
+            var->type = strdup(STR_MS_T);
+            break;
         default:
             /*error */
             addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary type");
@@ -373,11 +377,14 @@ int updateMsParamArrayToEnv(msParamArray_t *var, Env *env, rError_t *errmsg, Reg
 /************* Res to String *********************/
 char* convertResToString(Res *res0) {
     char *res;
-	switch (TYPE(res0)) {
-            case T_ERROR:
-                res = (char *)malloc(sizeof(char)*1024);
-			snprintf(res, 1024, "error %d", res0->value.errcode);
-			return res;
+	switch (res0->nodeType) {
+
+	case N_ERROR:
+		res = (char *)malloc(sizeof(char)*1024);
+		snprintf(res, 1024, "error %d", res0->value.errcode);
+		return res;
+	case N_VAL:
+		switch(TYPE(res0)) {
             case T_INT:
             case T_DOUBLE:
                 res = (char *)malloc(sizeof(char)*1024);
@@ -431,10 +438,16 @@ char* convertResToString(Res *res0) {
                         res = (char *)malloc(sizeof(char)*1024);
 			ttimestr(res, 1024-1, "", &(res0->value.tval));
                         return res;
-
+            case T_UNSPECED:
+                res = strdup("<undefined>");
+                return res;
             default:
                 /*sprintf(res, "error: unsupported type %d", TYPE(res0)); */
                 return NULL;
+		}
+		default:
+			res = (char *)malloc(sizeof(char)*128);
+			return typeToString(res0, NULL, res, 128);
 	}
 }
 
@@ -471,13 +484,14 @@ void printMsParamArray(msParamArray_t *msParamArray, char *buf2) {
 
 void printHashtable(Hashtable *env, char* buf2) {
     int i;
+    char typeNameBuf[128];
     sprintf(buf2, "len: %d\n", env->len);
     int k = 0;
     for (i = 0; i < env->size; i++) {
         struct bucket *b = env->buckets[i];
         while (b != NULL) {
             Res *res = (Res *) b->value;
-            if (k != 0)strncat(buf2, ",", MAX_COND_LEN);
+            if (k != 0)strncat(buf2, "\n", MAX_COND_LEN);
             strncat(buf2, b->key, MAX_COND_LEN);
             strncat(buf2, "=", MAX_COND_LEN);
             if (res == NULL) {
@@ -486,7 +500,7 @@ void printHashtable(Hashtable *env, char* buf2) {
                 char *buf4 = convertResToString(res);
                 strncat(buf2, buf4, MAX_COND_LEN);
                 strncat(buf2, ":", MAX_COND_LEN);
-                strncat(buf2, typeName_Res(res), MAX_COND_LEN);
+                strncat(buf2, res->exprType == NULL? "<null>" : typeToString(res->exprType, NULL, typeNameBuf, 128), MAX_COND_LEN);
                 free(buf4);
             }
             k++;
@@ -497,7 +511,7 @@ void printHashtable(Hashtable *env, char* buf2) {
 
 int convertResToIntReturnValue(Res *res) {
     int retVal;
-    if(TYPE(res) == T_ERROR) {
+    if(res->nodeType == N_ERROR) {
        retVal = res->value.errcode;
     } else {
        retVal = (int)res->value.dval;

@@ -17,12 +17,20 @@ ExprType * typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes,
 int typeFuncParam(Node *param, Node *paramType, Node *formalParamType, Hashtable *var_type_table, List *typingConstraints, rError_t *errmsg, Region *r);
 void postProcessActions(Node *expr, Hashtable *systemFunctionTables, rError_t *errmsg, Node **errnode, Region *r);
 void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t* errmsg, Node **errnode, Region *r);
+int isBaseType(ExprType *t);
 int tautologyLtBase(ExprType *a, ExprType *b);
 int tautologyLt(ExprType *type, ExprType *expected);
-Satisfiability simplifyR(ExprType *type, ExprType *expected, ExprType **bn, Region *r);
-Satisfiability simplifyL(ExprType *type, ExprType *expected, ExprType **an, Region *r);
-Satisfiability narrow(ExprType *type, ExprType *expected, ExprType **an, ExprType **bn, Region *r);
+int consistent(List *typingConstraints, Hashtable *typingEnv, Region *r);
+Satisfiability splitBaseType(ExprType *tca, ExprType *tcb, int flex);
+Satisfiability splitVarL(ExprType *var, ExprType *consTuple, int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r);
+Satisfiability splitVarR(ExprType *consTuple, ExprType *var, int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r);
+Satisfiability splitConsOrTuple(ExprType *a, ExprType *b,int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r);
+Satisfiability simplifyR(ExprType *a, ExprType *b,int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r);
+Satisfiability simplifyL(ExprType *a, ExprType *b,int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r);
+Satisfiability narrow(ExprType *a, ExprType *b,int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r);
+Satisfiability simplifyLocally(ExprType *a, ExprType *b, int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r);
+
 Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t* errmsg, Node **errnode, Region *r);
-Satisfiability simplifyLocally(TypingConstraint *typingConstraints, Hashtable *typingEnv, Region *r);
-int solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t* errmsg, Node **errnode, Region *r);
+Satisfiability solveConstraints(List *typingConstraints, Hashtable *typingEnv, rError_t* errmsg, Node **errnode, Region *r);
+ExprType *replaceDynamicWithNewTVar(ExprType *type, Region *r);
 #endif /* TYPING_H */

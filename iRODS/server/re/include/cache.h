@@ -49,7 +49,6 @@ enum cacheRecordType {
         NodeType_T,
         char_T,
         int_T,
-        FunctionDesc_T
     };
 
 typedef struct {

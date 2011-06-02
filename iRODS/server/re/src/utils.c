@@ -14,14 +14,14 @@ ExprType *dupType(ExprType *ty, Region *r) {
 }
 
 int typeEqSyntatic(ExprType *a, ExprType *b) {
-    if(a->nodeType!=b->nodeType) {
+    if(a->nodeType!=b->nodeType || a->vararg != b->vararg) {
         return 0;
     }
     switch(a->nodeType) {
         case T_CONS:
+        case T_TUPLE:
             if(T_CONS_ARITY(a) == T_CONS_ARITY(b) &&
-                    strcmp(T_CONS_TYPE_NAME(a), T_CONS_TYPE_NAME(b)) == 0 &&
-                    T_CONS_VARARG(a) == T_CONS_VARARG(b)) {
+                    (a->nodeType == T_TUPLE || strcmp(T_CONS_TYPE_NAME(a), T_CONS_TYPE_NAME(b)) == 0)) {
                 int i;
                 for(i=0;i<T_CONS_ARITY(a);i++) {
                     if(!typeEqSyntatic(T_CONS_TYPE_ARG(a, i),T_CONS_TYPE_ARG(b, i))) {
@@ -54,29 +54,38 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable) {
             for(i=0;i<T_CONS_ARITY(ty);i++) {
                 paramTypes[i] = dupTypeAux(T_CONS_TYPE_ARG(ty, i),r,varTable);
             }
-            newt = newConsTypeVarArg(T_CONS_ARITY(ty), T_CONS_VARARG(ty), T_CONS_TYPE_NAME(ty), paramTypes, r);
-            return newt;
+            newt = newConsType(T_CONS_ARITY(ty), T_CONS_TYPE_NAME(ty), paramTypes, r);
+            break;
+        case T_TUPLE:
+            paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*T_CONS_ARITY(ty));
+            for(i=0;i<T_CONS_ARITY(ty);i++) {
+                paramTypes[i] = dupTypeAux(T_CONS_TYPE_ARG(ty, i),r,varTable);
+            }
+            newt = newTupleType(T_CONS_ARITY(ty), paramTypes, r);
+            break;
         case T_VAR:
             name = getTVarName(T_VAR_ID(ty), buf);
             exist = (ExprType *)lookupFromHashTable(varTable, name);
             if(exist != NULL)
-                return exist;
+                newt = exist;
             else {
                 newt = newTVar2(T_VAR_NUM_DISJUNCTS(ty), T_VAR_DISJUNCTS(ty), r);
                 insertIntoHashTable(varTable, name, newt);
-                return newt;
+
             }
+            break;
         case T_FLEX:
             paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*1);
             paramTypes[0] = dupTypeAux(ty->subtrees[0],r,varTable);
             newt = newExprType(T_FLEX, 1, paramTypes, r);
-            return newt;
-
+            break;
 
         default:
-            return ty;
+            newt = ty;
     }
-
+    newt->vararg = ty->vararg;
+    newt->iotype = ty->iotype;
+	return newt;
 }
 int coercible(ExprType *a, ExprType *b) {
             return (a->nodeType!=T_CONS && a->nodeType == b->nodeType) ||
@@ -100,6 +109,9 @@ int coercible(ExprType *a, ExprType *b) {
 ExprType* unifyTVarL(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r) {
     char buf[128];
     if(T_VAR_NUM_DISJUNCTS(type)==0) { /* free */
+    	if(occursIn(type, expected)) {
+    		return NULL;
+    	}
         insertIntoHashTable(varTypes, getTVarName(T_VAR_ID(type), buf), expected);
         return dereference(expected, varTypes, r);
     } else { /* union type */
@@ -121,6 +133,9 @@ ExprType* unifyTVarL(ExprType *type, ExprType* expected, Hashtable *varTypes, Re
 ExprType* unifyTVarR(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r) {
     char buf[128];
     if(T_VAR_NUM_DISJUNCTS(expected)==0) { /* free */
+    	if(occursIn(expected, type)) {
+    		return NULL;
+    	}
         insertIntoHashTable(varTypes, getTVarName(T_VAR_ID(expected), buf), type);
         return dereference(expected, varTypes, r);
     } else { /* union type */
@@ -144,6 +159,9 @@ ExprType* unifyTVarR(ExprType *type, ExprType* expected, Hashtable *varTypes, Re
  *        NULL if false
  */
 ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r) {
+	if(type->vararg != expected->vararg) {
+		return NULL;
+	}
     char buf[128];
     /* dereference types to get the most specific type */
     /* as dereference only deref top level types, it is necessary to call dereference again */
@@ -153,7 +171,7 @@ ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Reg
     if(type->nodeType == T_UNSPECED) {
         return expected;
     }
-    if(expected->nodeType == T_UNSPECED) {
+    if(expected->nodeType == T_DYNAMIC) {
         return type;
     }
     if(type->nodeType == T_VAR && expected->nodeType == T_VAR) {
@@ -240,7 +258,7 @@ ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes,
 	} else if(expected->nodeType == type->nodeType) { /* primitive types */
                 return expected;
 	} else {
-            return NULL;
+            return newErrorType(TYPE_ERROR, r);
 	}
 }
 /*
@@ -294,7 +312,8 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
     node->exprType = NULL;
     node->coercionType = NULL;
     node->coerce = 0;
-    node->ioType = 'i';
+    node->iotype = IO_TYPE_INPUT;
+    node->value.constructTuple = 0;
     if(eloc!=NULL) {
         setBase(node, eloc->base, r);
     } else {
@@ -302,6 +321,11 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
     }
 	return node;
 }
+Node **allocSubtrees(Region *r, int size)
+{
+    return (Node**)region_alloc(r, sizeof (Node*) * size);
+}
+
 
 Node *newExprType(NodeType type, int degree, Node **subtrees, Region *r) {
     ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
@@ -313,6 +337,7 @@ Node *newExprType(NodeType type, int degree, Node **subtrees, Region *r) {
     t->expr = 0;
     t->text = NULL;
     t->typed = 1;
+    t->iotype = IO_TYPE_INPUT;
     return t;
 
 }
@@ -348,23 +373,24 @@ ExprType *newErrorType(int errcode, Region *r) {
     return res;
 
 }
-ExprType *newFuncType(int arity, ExprType **paramTypes, ExprType* retType, Region *r) {
-    return newFuncTypeVarArg(arity, ONCE, paramTypes, retType, r);
-}
-ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType* retType, Region *r) {
+ExprType *newFuncType(ExprType *paramType, ExprType* retType, Region *r) {
     ExprType **typeArgs = (ExprType **)region_alloc(r, sizeof(ExprType *) * 2);
-    typeArgs[0] = newConsTypeVarArg(arity, vararg, cpStringExt(TUPLE, r), paramTypes, r);
+    typeArgs[0] = paramType;
     typeArgs[1] = retType;
     return newConsType(2, cpStringExt(FUNC, r), typeArgs, r);
 }
-ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r) {
-        return newConsTypeVarArg(arity, ONCE, cons, paramTypes, r);
+ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType* retType, Region *r) {
+    return newFuncType(newTupleTypeVarArg(arity, vararg, paramTypes, r), retType, r);
 }
-ExprType *newConsTypeVarArg(int arity, enum vararg vararg, char *cons, ExprType **paramTypes, Region *r) {
+ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r) {
 	ExprType *t = newExprType(T_CONS, arity, paramTypes, r);
-        T_CONS_VARARG(t) = vararg;
-        T_CONS_TYPE_NAME(t) = cpString(cons, r);
-        return t;
+    T_CONS_TYPE_NAME(t) = cpString(cons, r);
+    return t;
+}
+ExprType *newTupleTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, Region *r) {
+	ExprType *t = newExprType(T_TUPLE, arity, paramTypes, r);
+    t->vararg = vararg;
+    return t;
 }
 
 ExprType *newIRODSType(char *name, Region *r) {
@@ -380,10 +406,71 @@ ExprType *newCollType(ExprType *elemType, Region *r) {
 }
 
 ExprType *newTupleType(int arity, ExprType **typeArgs, Region *r) {
-        return newConsType(arity, cpStringExt(TUPLE, r), typeArgs, r);
+        return newExprType(T_TUPLE, arity, typeArgs, r);
+}
+ExprType *newUnaryType(NodeType nodeType, ExprType *typeArg, Region *r) {
+    ExprType **typeArgs = (ExprType**) region_alloc(r, sizeof(ExprType*));
+    typeArgs[0] = typeArg;
+    return newExprType(nodeType, 1, typeArgs, r);
 }
 /** Res functions */
+/*FunctionDesc *newFunctionDesc(char *type, SmsiFuncPtrType func, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    desc->value.func = func;
+    desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
+    desc->nodeType = N_C_FUNC;
+    return desc;
+}
+FunctionDesc *newConstructorDesc(char *type, Region *r) {
+    return newConstructorDesc2(parseFuncTypeFromString(type, r), r);
+}
 
+FunctionDesc *newConstructorDesc2(Node *type, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    desc->exprType = type;
+    desc->nodeType = N_CONSTRUCTOR;
+    return desc;
+}
+FunctionDesc *newDeconstructorDesc(char *type, int proj, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
+    desc->nodeType = N_DECONSTRUCTOR;
+    desc->value.proj = proj;
+    return desc;
+}*/
+FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r) {
+    Res *desc = newRes(r);
+    desc->nodeType = N_FUNC_SYM_LINK;
+    desc->text = cpStringExt(fn ,r);
+    desc->value.nArgs = nArgs;
+    desc->exprType = newSimpType(T_DYNAMIC, r);
+    return desc;
+}
+
+Node *newPartialApplication(Node *func, Node *arg, int nArgsLeft, Region *r) {
+    Res *res1 = newRes(r);
+    res1->nodeType = N_PARTIAL_APPLICATION;
+    res1->value.nArgs = nArgsLeft;
+    res1->degree = 2;
+    res1->subtrees = (Res **)region_alloc(r, sizeof(Res *)*2);
+    res1->subtrees[0] = func;
+    res1->subtrees[1] = arg;
+    return res1;
+}
+
+Node *newTupleRes(int arity, Res **comps, Region *r) {
+	Res *res1 = newRes(r);
+	res1->nodeType = N_TUPLE;
+	res1->subtrees = comps;
+	res1->degree = arity;
+	ExprType **compTypes = (ExprType **)region_alloc(r, sizeof(ExprType *) * arity);
+	int i;
+	for(i=0;i<arity;i++) {
+		compTypes[i] = comps[i]->exprType;
+	}
+	res1->exprType = newTupleType(arity, compTypes, r);
+	return res1;
+}
 Res* newCollRes(int size, ExprType *elemType, Region *r) {
 	Res *res1 = newRes(r);
         res1->exprType = newCollType(elemType, r);
@@ -402,37 +489,38 @@ Res* newCollRes2(int size, Region *r) {
 Res* newRes(Region *r) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
         res1->exprType = NULL;
+        res1->coercionType = NULL;
         res1->nodeType = N_VAL;
+        res1->iotype = IO_TYPE_INPUT;
 	return res1;
 }
 Res* newUninterpretedRes(Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf) {
-	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
+	Res *res1 = newRes(r);
         res1->exprType = newIRODSType(typeName, r);
         res1->value.uninterpreted.inOutStruct = ioStruct;
         res1->value.uninterpreted.inOutBuffer = ioBuf;
 	return res1;
 }
 Res* newIntRes(Region *r, int n) {
-	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
+	Res *res1 = newRes(r);
         res1->exprType = newSimpType(T_INT,r);
         res1->value.dval = n;
 	return res1;
 }
 Res* newDoubleRes(Region *r, double a) {
-	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
+	Res *res1 = newRes(r);
         res1->exprType = newSimpType(T_DOUBLE,r);
         res1->value.dval = a;
 	return res1;
 }
 Res* newBoolRes(Region *r, int n) {
-	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
+	Res *res1 = newRes(r);
         res1->exprType = newSimpType(T_BOOL,r);
         res1->value.dval = n;
 	return res1;
 }
-/* precond: len(s) < size of res1->value.s */
 Res* newStringRes(Region *r, char *s) {
-	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
+	Res *res1 = newRes(r);
         res1->exprType = newSimpType(T_STRING,r);
         res1->value.strlen = strlen(s);
         int size = (res1->value.strlen+1)*sizeof(char);
@@ -440,15 +528,21 @@ Res* newStringRes(Region *r, char *s) {
         memcpy(res1->text, s, size);
 	return res1;
 }
+Res* newUnspecifiedRes(Region *r) {
+	Res *res1 = newRes(r);
+        res1->exprType = newSimpType(T_UNSPECED,r);
+        res1->text = cpStringExt("", r);
+	return res1;
+}
 Res* newDatetimeRes(Region *r, long dt) {
-	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
+	Res *res1 = newRes(r);
         res1->exprType = newSimpType(T_DATETIME,r);
         res1->value.tval = dt;
 	return res1;
 }
 Res* newErrorRes(Region *r, int errcode) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->exprType = newSimpType(T_ERROR,r);
+        res1->nodeType = N_ERROR;
         res1->value.errcode = errcode;
 	return res1;
 }
@@ -657,13 +751,17 @@ void printType(ExprType *type, Hashtable *var_types) {
 char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize) {
     buf[0] = '\0';
     Region *r = make_region(0, NULL);
+    if(type->vararg!=ONCE) {
+    	snprintf(buf+strlen(buf), bufsize-strlen(buf), "vararg ");
+    }
         ExprType *etype = type;
         if(etype->nodeType == T_VAR && var_types != NULL) {
             /* dereference */
             etype = dereference(etype, var_types, r);
         }
-        snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", etype == NULL?"?":typeName_ExprType(etype));
+
         if(etype->nodeType == T_VAR) {
+        	snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", etype == NULL?"?":typeName_ExprType(etype));
             snprintf(buf+strlen(buf), bufsize-strlen(buf), "%d", T_VAR_ID(etype));
             if(T_VAR_NUM_DISJUNCTS(type)!=0) {
                 snprintf(buf+strlen(buf), bufsize-strlen(buf), "{");
@@ -674,19 +772,68 @@ char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
                 snprintf(buf+strlen(buf), bufsize-strlen(buf), "}");
             }
         } else if(etype->nodeType == T_CONS) {
-            snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", T_CONS_TYPE_NAME(etype));
+        	if(strcmp(etype->text, FUNC) == 0) {
+        		snprintf(buf+strlen(buf), bufsize-strlen(buf), "(");
+				typeToString(T_CONS_TYPE_ARG(etype, 0), var_types, buf+strlen(buf), bufsize-strlen(buf));
+				snprintf(buf+strlen(buf), bufsize-strlen(buf), ")");
+        		snprintf(buf+strlen(buf), bufsize-strlen(buf), "->");
+        		typeToString(T_CONS_TYPE_ARG(etype, 1), var_types, buf+strlen(buf), bufsize-strlen(buf));
+			} else {
+
+        	snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", T_CONS_TYPE_NAME(etype));
             int i;
-            for(i=0;i<T_CONS_ARITY(etype);i++) {
-                typeToString(T_CONS_TYPE_ARG(etype, i), var_types, buf+strlen(buf), bufsize-strlen(buf));
+            if(T_CONS_ARITY(etype) != 0) {
+				snprintf(buf+strlen(buf), bufsize-strlen(buf), "(");
+				for(i=0;i<T_CONS_ARITY(etype);i++) {
+					if(i!=0) {
+						snprintf(buf+strlen(buf), bufsize-strlen(buf), ", ");
+					}
+					typeToString(T_CONS_TYPE_ARG(etype, i), var_types, buf+strlen(buf), bufsize-strlen(buf));
+				}
+				snprintf(buf+strlen(buf), bufsize-strlen(buf), ")");
             }
+			}
         } else if(etype->nodeType == T_FLEX) {
+        	snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", etype == NULL?"?":typeName_ExprType(etype));
             typeToString(etype->subtrees[0], var_types, buf+strlen(buf), bufsize-strlen(buf));
+        } else if(etype->nodeType == T_TUPLE) {
+        	if(T_CONS_ARITY(etype) == 0) {
+        		snprintf(buf+strlen(buf), bufsize-strlen(buf), "unit");
+        	} else {
+        		if(T_CONS_ARITY(etype) == 1) {
+            		snprintf(buf+strlen(buf), bufsize-strlen(buf), "(");
+        		}
+				int i;
+				for(i=0;i<T_CONS_ARITY(etype);i++) {
+					if(i!=0) {
+						snprintf(buf+strlen(buf), bufsize-strlen(buf), " * ");
+					}
+					typeToString(T_CONS_TYPE_ARG(etype, i), var_types, buf+strlen(buf), bufsize-strlen(buf));
+				}
+        		if(T_CONS_ARITY(etype) == 1) {
+            		snprintf(buf+strlen(buf), bufsize-strlen(buf), ")");
+        		}
+        	}
+        } else {
+        	snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", etype == NULL?"?":typeName_ExprType(etype));
         }
 
 
     region_free(r);
     return buf;
 
+}
+void typingConstraintsToString(List *typingConstraints, Hashtable *var_types, char *buf, int bufsize) {
+    char buf2[1024];
+    char buf3[1024];
+    ListNode *p = typingConstraints->head;
+    buf[0] = '\0';
+    while(p!=NULL) {
+        snprintf(buf + strlen(buf), bufsize-strlen(buf), "%s<%s\n",
+                typeToString(TC_A((TypingConstraint *)p->value), NULL, /*var_types,*/ buf2, 1024),
+                typeToString(TC_B((TypingConstraint *)p->value), NULL, /*var_types,*/ buf3, 1024));
+        p=p->next;
+    }
 }
 ExprType *dereference(ExprType *type, Hashtable *type_table, Region *r) {
     if(type->nodeType == T_VAR) {
@@ -758,10 +905,15 @@ int writeIntToTmp(char *fileName, int text) {
     return 1;
 }
 
-void printEnvToStdOut(Hashtable *env) {
+void printEnvToStdOut(Env *env) {
+	Env *e = env;
     char buffer[1024];
-    printHashtable(env, buffer);
-    printf("%s\n", buffer);
+    while(e!=NULL) {
+    	if(e!=env)
+    		printf("%s\n===========\n", buffer);
+    	printHashtable(e->current, buffer);
+    	e = e->previous;
+    }
 /*
     int i;
     for(i=0;i<env->size;i++) {
@@ -821,10 +973,11 @@ void deleteMsParamArray(msParamArray_t *msParamArray) {
 
 }
 
-Env *newEnv(Hashtable *current, Env *previous) {
+Env *newEnv(Hashtable *current, Env *previous, Env *callerEnv) {
     Env *env = (Env *)malloc(sizeof(Env));
     env->current = current;
     env->previous = previous;
+    env->lower = callerEnv;
     return env;
 }
 
@@ -899,13 +1052,14 @@ void listRemove(List *list, ListNode *node) {
 
 }
 
-TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, TypingConstraintType type, Node *node, Region *r) {
+TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r) {
     TypingConstraint *tc = (TypingConstraint *)region_alloc(r, sizeof (TypingConstraint));
-    tc->a = a;
-    tc->b = b;
-    tc->constraintType = type;
-    tc->node = node;
-    tc->next = NULL;
+    tc->subtrees = (Node **)region_alloc(r, sizeof(Node *)*4);
+    TC_A(tc) = a;
+    TC_B(tc) = b;
+    tc->nodeType = type;
+    TC_NODE(tc) = node;
+    TC_NEXT(tc) = NULL;
     return tc;
 }
 
@@ -946,7 +1100,7 @@ int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str) {
   return 0;
 }
 
-void logErrMsg(rError_t *errmsg) {
+void logErrMsg(rError_t *errmsg, rError_t *system) {
     char errbuf[ERR_MSG_LEN*1024];
     errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
 #ifdef DEBUG
@@ -954,7 +1108,11 @@ void logErrMsg(rError_t *errmsg) {
     writeToTmp("err.log", errbuf);
     writeToTmp("err.log", "end errlog\n");
 #endif
-    rodsLog (LOG_ERROR, "%s", errbuf);
+    if(system!=NULL) {
+    	rodsLogAndErrorMsg(LOG_ERROR, system,-1, "%s", errbuf);
+    } else {
+    	rodsLog (LOG_ERROR, "%s", errbuf);
+    }
 }
 
 char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
@@ -1018,14 +1176,14 @@ void freeEnvUninterpretedStructs(Env *e) {
 }
 int isPattern(Node *pattern) {
 
-    if(pattern->nodeType == N_APPLICATION) {
+    if(pattern->nodeType == N_APPLICATION || pattern->nodeType == N_TUPLE) {
         int i;
         for(i=0;i<pattern->degree;i++) {
             if(!isPattern(pattern->subtrees[i]))
                 return 0;
         }
         return 1;
-    } else if(pattern->nodeType == TK_TEXT) {
+    } else if(pattern->nodeType == TK_TEXT || pattern->nodeType == TK_VAR) {
         return 1;
     } else {
         return 0;

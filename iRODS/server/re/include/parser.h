@@ -23,7 +23,7 @@
 #define MAX_NUM_APP_RULES 10000
 #define RULE_NODE_NUM_PARAMS(r) ((r)->subtrees[0]->subtrees[0]->degree)
 
-#define MAX_PREC 10
+#define MAX_PREC 20
 #define MIN_PREC 0
 
 #define POINTER_BUF_SIZE 128
@@ -122,6 +122,12 @@ typedef struct {
             } \
             context->nodeStackTop -= (consume); \
             CASCADE(var);}
+
+#define BUILD_APP_NODE(cons,loc,deg) \
+		BUILD_NODE(N_TUPLE, TUPLE, loc, deg, deg); \
+		BUILD_NODE(TK_TEXT, cons, loc, 0, 0); \
+		SWAP; \
+		BUILD_NODE(N_APPLICATION, APPLICATION, loc, 2, 2); \
 
 #define PARSER_FUNC_PROTO(l) \
 void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context)
@@ -349,6 +355,7 @@ char *nextRuleSection(char *expr, char* section);
 char *parseFunctionParameters(char *e, char *args[], int *argc);
 char *functionParameters(char *expr, char* param);
 ExprType *parseFuncTypeFromString(char *string, Region *r);
+Node* parseTypingConstraintsFromString(char *string, Region *r);
 ExprType *parseType(Pointer *e, int prec, Env *vtable, int lifted, Region *r);
 
 Label *getFPos(Label *label, Pointer *p);

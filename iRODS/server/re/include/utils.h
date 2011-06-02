@@ -53,25 +53,32 @@
 #define T_CONS_TYPE_ARG(x, n) ((x)->subtrees[n])
 #define T_CONS_TYPE_NAME(x) ((x)->text)
 #define T_CONS_ARITY(x) ((x)->degree)
-#define T_CONS_VARARG(x) ((x)->vararg)
 #define T_FUNC_PARAM_TYPE(x, n) (T_CONS_TYPE_ARG((x)->subtrees[0], n))
 #define T_FUNC_PARAM_TYPE_VARARG(x, n) (n<T_FUNC_ARITY(x)?T_FUNC_PARAM_TYPE(x,n):T_FUNC_PARAM_TYPE(x,T_FUNC_ARITY(x)-1))
 #define T_FUNC_RET_TYPE(x) ((x)->subtrees[1])
 #define T_FUNC_ARITY(x) ((x)->subtrees[0]->degree)
-#define T_FUNC_VARARG(x) ((x)->subtrees[0]->vararg)
+#define T_FUNC_VARARG(x) ((x)->vararg)
 #define T_VAR_ID(x) ((x)->value.vid)
 #define T_VAR_DISJUNCT(x, n) ((x)->subtrees[n])
 #define T_VAR_DISJUNCTS(x) ((x)->subtrees)
 #define T_VAR_NUM_DISJUNCTS(x) ((x)->degree)
+#define TC_A(tc) (tc)->subtrees[0]
+#define TC_B(tc) (tc)->subtrees[1]
+#define TC_NODE(tc) (tc)->subtrees[2]
+#define TC_NEXT(tc) (tc)->subtrees[3]
+
 
 #define LIST "[]"
 #define TUPLE "<>"
+#define APPLICATION "()"
 #define ST_TUPLE "()"
 #define FUNC "->"
 
 typedef struct node Node;
 typedef struct node ExprType;
 typedef struct node Res;
+typedef struct node FunctionDesc;
+
 typedef ExprType *ExprTypePtr;
 typedef struct bucket Bucket;
 typedef Bucket *BucketPtr;
@@ -86,21 +93,28 @@ typedef enum node_type {
     TK_BOOL = 5,
     TK_BACKQUOTED = 6,
     TK_DATETIME = 7, /* unused */
+    TK_VAR = 8,
     TK_LOCAL_VAR = 10,
     TK_SESSION_VAR = 11,
     TK_OP = 12,
     TK_MISC_OP = 14,
-    N_APPLICATION = 20,
-    N_ACTIONS = 21,
-    N_ACTIONS_RECOVERY = 22,
-    N_RULE = 30,
-    N_RULE_NAME = 31,
-    N_PARAM_LIST = 32,
-    N_PARAM_TYPE_LIST = 33,
-    N_RULESET = 34,
-    N_RULE_PACK = 35,
-    N_VAL = 28,
-    T_UNSPECED = 100,
+    N_VAL = 20,
+    N_TUPLE = 21,
+    N_APPLICATION = 22,
+    N_PARTIAL_APPLICATION = 23,
+    N_ACTIONS = 30,
+    N_ACTIONS_RECOVERY = 31,
+    N_RULE_NAME = 32,
+    N_PARAM_LIST = 33,
+    N_PARAM_TYPE_LIST = 34,
+    N_RULESET = 35,
+    N_RULE_PACK = 36,
+    N_RULE = 40,
+    N_C_FUNC = 41,
+    N_CONSTRUCTOR = 42,
+    N_DECONSTRUCTOR = 43,
+    N_FUNC_SYM_LINK = 44,
+    T_UNSPECED = 100, /* indicates a variable which is not assigned a value is passed in to a microservice */
     T_ERROR = 101,
     T_DYNAMIC = 200,
     T_DOUBLE = 201,
@@ -109,22 +123,27 @@ typedef enum node_type {
     T_DATETIME = 204,
     T_BOOL = 205,
     T_FLEX = 206,
+    T_TUPLE = 208,
     T_CONS = 209,
     T_BREAK = 230,
     T_SUCCESS = 231,
     T_VAR = 300,
     T_IRODS = 400,
     T_TYPE = 500,
+    TC_LT = 600,
+    TC_SET = 660,
 } NodeType;
 
 enum vararg {
     ONCE = 0,
     STAR = 1,
-    PLUS = 2
+    PLUS = 2,
+    OPTIONAL = 3,
 };
 
 typedef struct env Env;
 
+typedef Res *(*SmsiFuncPtrType)(Node **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
 /* value */
 union node_ext {
     int errcode;
@@ -136,6 +155,10 @@ union node_ext {
         void *inOutStruct;
         bytesBuf_t *inOutBuffer;
     } uninterpreted;
+    SmsiFuncPtrType func;
+    int proj;
+	int nArgs;
+    int constructTuple;
 };
 
 typedef struct str_list StringList;
@@ -147,6 +170,7 @@ struct str_list {
 struct env {
     Hashtable *current;
     Env *previous;
+    Env *lower;
 };
 
 
@@ -163,12 +187,18 @@ typedef struct token {
     int vars[100];
     long exprloc;
 } Token;
+
+#define IO_TYPE_INPUT 0x1
+#define IO_TYPE_OUTPUT 0x2
+#define IO_TYPE_DYNAMIC 0x4
+#define IO_TYPE_EXPRESSION 0x8
+#define IO_TYPE_ACTIONS 0x10
 struct node {
     NodeType nodeType; /* node type */
     ExprType *exprType; /* expression type */
     ExprType *coercionType; /* coercion type */
     int coerce; /* weather runtime coercion is needed */
-    char ioType; /* i input o output p input/output d dynamic a actions e expression */
+    int iotype;
     char *text;
     long expr;
     int degree;
@@ -182,20 +212,7 @@ struct node {
 typedef Node *NodePtr;
 typedef char *charPtr;
 
-typedef struct typingConstraint TypingConstraint;
-enum typingConstraintType {
-    LT
-};
-
-typedef enum typingConstraintType TypingConstraintType;
-
-struct typingConstraint {
-   ExprType *a;
-   ExprType *b;
-   TypingConstraintType constraintType;
-   Node *node;
-   TypingConstraint *next;
-};
+typedef struct node TypingConstraint;
 
 typedef struct list List;
 typedef struct listNode ListNode;
@@ -221,20 +238,23 @@ char* getTVarNameRegionFromExprType(ExprType *tvar, Region *r);
 ExprType *dupType(ExprType *ty, Region *r);
 int typeEqSyntatic(ExprType *a, ExprType *b);
 
+Node **allocSubtrees(Region *r, int size);
 Node *newNode(NodeType type, char* text, Label * exprloc, Region *r);
 Node *newExprType(NodeType t, int degree, Node **subtrees, Region *r);
 ExprType *newTVar(Region *r);
 ExprType *newTVar2(int numDisjuncts, Node **disjuncts, Region *r);
 ExprType *newCollType(ExprType *elemType, Region *r);
 ExprType *newTupleType(int arity, ExprType **typeArgs, Region *r);
-ExprType *newFuncType(int arity, ExprType **paramTypes, ExprType *elemType, Region *r);
+ExprType *newUnaryType(NodeType nodeType, ExprType *typeArg, Region *r);
+ExprType *newFuncType(ExprType *paramType, ExprType *retType, Region *r);
 ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType *elemType, Region *r);
 ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r);
-ExprType *newConsTypeVarArg(int arity, enum vararg vararg, char *cons, ExprType **paramTypes, Region *r);
+ExprType *newTupleTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, Region *r);
 ExprType *newSimpType(NodeType t, Region *r);
 ExprType *newErrorType(int errcode, Region *r);
 ExprType *newIRODSType(char *name, Region *r);
-ExprType *newStringPair();
+FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r);
+Node *newPartialApplication(Node *func, Node *arg, int nArgsLeft, Region *r);
 void setStringPair(ExprType *ty, Region *r);
 void replace(Hashtable *varTypes, int a, ExprType *b);
 void replaceCons(ExprType *consType, int a, ExprType *b);
@@ -247,10 +267,12 @@ Res* newIntRes(Region *r, int n);
 Res* newDoubleRes(Region *r, double a);
 Res* newBoolRes(Region *r, int n);
 Res* newErrorRes(Region *r, int errcode);
+Res* newUnspecifiedRes(Region *r);
 Res* newStringRes(Region *r, char *s);
 Res* newDatetimeRes(Region *r, long dt);
 Res* newCollRes(int size, ExprType *elemType, Region *r);
 Res* newUninterpretedRes(Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf);
+Res* newTupleRes(int arity, Res **compTypes, Region *r);
 
 ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable);
 Res *cpRes(Res *res, Region *r);
@@ -265,6 +287,7 @@ ExprType *cpType2(ExprType *type, Region *oldr, Region *newr);
 void cpHashtable2(Hashtable *env, Region *oldr, Region *newr);
 void cpEnv2(Env *env, Region *oldr, Region *newr);
 Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r);
+int occursIn(ExprType *var, ExprType *type);
 ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r);
 ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes, Region *r);
 ExprType* unifyTVarL(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r);
@@ -272,11 +295,12 @@ ExprType* unifyTVarR(ExprType *type, ExprType* expected, Hashtable *varTypes, Re
 
 void printType(ExprType *type, Hashtable *var_types);
 char *typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize);
+void typingConstraintsToString(List *typingConstraints, Hashtable *var_types, char *buf, int bufsize);
 
 msParamArray_t *newMsParamArray();
 void deleteMsParamArray(msParamArray_t *msParamArray);
 
-Env *newEnv(Hashtable *current, Env *previous);
+Env *newEnv(Hashtable *current, Env *previous, Env *lower);
 void deleteEnv(Env *env, int deleteCurrent);
 void *lookupFromEnv(Env *env, char *key);
 void updateInEnv(Env *env, char *varname, Res *res);
@@ -288,10 +312,10 @@ void listAppend(List *list, void *value, Region *r);
 void listAppendToNode(List *list, ListNode *node, void *value, Region *r);
 void listRemove(List *list, ListNode *node);
 
-TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, TypingConstraintType type, Node *node, Region *r);
+TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r);
 
 int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str);
-void logErrMsg(rError_t *errmsg);
+void logErrMsg(rError_t *errmsg, rError_t *system);
 char *errMsgToString(rError_t *errmsg, char *buf, int buflen);
 
 int isPattern(Node *pattern);

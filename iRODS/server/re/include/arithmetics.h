@@ -28,10 +28,11 @@
 Res* evaluateActions(Node *ruleAction, Node *ruleRecovery,
                    ruleExecInfo_t *rei, int reiSaveFlag , Env *env,
                    rError_t *errmsg, Region *r);
-Res* evaluateExpression3(Node *node, int applyAll, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r);
+Res* evaluateExpression3(Node *node, int applyAll, int force, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r);
 Res* attemptToEvaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
-Res* evaluateFunction3(char* fn, Node** args, unsigned int nargs, int applyAll, Node *node, ruleExecInfo_t* rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
+Res *evaluateFunctionApplication(Node *func, Node *arg, int applyAll, Node *node, ruleExecInfo_t* rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
+Res* evaluateFunction3(Node* appNode, int applyAll, Node *astNode, Env *env, ruleExecInfo_t* rei, int reiSaveFlag, rError_t *errmsg, Region *r);
 Res* execAction3(char *fn, Res** args, unsigned int nargs, int applyAll, Node *node, Env *env, ruleExecInfo_t* rei, int reiSaveFlag, rError_t *errmsg, Region *r);
 Res* execMicroService3 (char *inAction, Res** largs, unsigned int nargs, Node *node, Env *env, ruleExecInfo_t *rei, rError_t *errmsg, Region *r);
 Res* execRule(char *ruleName, Res** args, unsigned int narg, int applyAll, Env *outEnv, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);

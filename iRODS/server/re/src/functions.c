@@ -23,15 +23,12 @@ region_free(_rnew); \
 _rnew = _rnew2;}
 #define GC_END region_free(_rnew);
 
-/* precond: len(valueOrExpression) < size(desc->valueOrExpression) */
-FunctionDesc *newFunctionDesc(char *valueOrExpression, char *type, SmsiFuncPtrType func, Region *r) {
+FunctionDesc *newFunctionDesc(char *type, SmsiFuncPtrType func, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
     /*desc->arity = arity; */
-    desc->func = func;
-    desc->next = NULL;
-    desc->type = type == NULL? NULL:parseFuncTypeFromString(type, r);
-    desc->fdtype = FD_FUNC;
-    strcpy(desc->inOutValExp, valueOrExpression);
+    desc->value.func = func;
+    desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
+    desc->nodeType = N_C_FUNC;
     return desc;
 }
 FunctionDesc *newConstructorDesc(char *type, Region *r) {
@@ -41,39 +38,16 @@ FunctionDesc *newConstructorDesc(char *type, Region *r) {
 FunctionDesc *newConstructorDesc2(Node *type, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
     /*desc->arity = arity; */
-    desc->next = NULL;
-    desc->type = type;
-    desc->fdtype = FD_CONS;
-    int i;
-    for(i=0;i<T_FUNC_ARITY(desc->type);i++) {
-        desc->inOutValExp[i] = 'i';
-    }
-    switch(T_FUNC_VARARG(desc->type)) {
-        case ONCE:
-            break;
-        case PLUS:
-            desc->inOutValExp[i++] = '+';
-            break;
-        case STAR:
-            desc->inOutValExp[i++] = '*';
-            break;
-    }
-    desc->inOutValExp[i++] = '\0';
+    desc->exprType = type;
+    desc->nodeType = N_CONSTRUCTOR;
     return desc;
 }
 FunctionDesc *newDeconstructorDesc(char *type, int proj, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
-    /*desc->arity = arity; */
-    desc->next = NULL;
-    desc->type = type == NULL? NULL:parseFuncTypeFromString(type, r);
-    desc->fdtype = FD_DECONS;
-    desc->proj = proj;
-    strcpy(desc->inOutValExp, "i");
+    desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
+    desc->nodeType = N_DECONSTRUCTOR;
+    desc->value.proj = proj;
     return desc;
-}
-FunctionDesc *newFunctionDescChain(FunctionDesc *curr, FunctionDesc * next) {
-    curr->next = next;
-    return curr;
 }
 Node *wrapToActions(Node *node, Region *r) {
     if(node->nodeType!=N_ACTIONS) {
@@ -87,8 +61,8 @@ Node *wrapToActions(Node *node, Region *r) {
     return node;
 }
 Res *smsi_ifExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
-    Res *res = evaluateExpression3((Node *)params[0], 0,rei,reiSaveFlag,env,errmsg,r);
-    if(TYPE(res) == T_ERROR) {
+    Res *res = evaluateExpression3((Node *)params[0], 0, 1, rei,reiSaveFlag,env,errmsg,r);
+    if(res->nodeType == N_ERROR) {
         return res;
     }
     if(res->value.dval == 0) {
@@ -99,14 +73,14 @@ Res *smsi_ifExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
 }
 
 Res *smsi_if2Exec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
-    Res *res = evaluateExpression3((Node *)params[0], 0,rei,reiSaveFlag,env,errmsg,r);
-    if(TYPE(res) == T_ERROR) {
+    Res *res = evaluateExpression3((Node *)params[0], 0,1,rei,reiSaveFlag,env,errmsg,r);
+    if(res->nodeType == N_ERROR) {
         return res;
     }
     if(res->value.dval == 0) {
-        return evaluateExpression3((Node *)params[2], 0,rei,reiSaveFlag,env,errmsg,r);
+        return evaluateExpression3((Node *)params[2], 0, 1, rei,reiSaveFlag,env,errmsg,r);
     } else {
-        return evaluateExpression3((Node *)params[1], 0,rei,reiSaveFlag,env,errmsg,r);
+        return evaluateExpression3((Node *)params[1], 0, 1, rei,reiSaveFlag,env,errmsg,r);
     }
 }
 
@@ -115,23 +89,23 @@ Res *smsi_do(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
             case N_ACTIONS:
                 return evaluateActions((Node *)params[0], NULL, rei, reiSaveFlag,env, errmsg, r);
             default:
-                return evaluateExpression3((Node *)params[0], 0,rei,reiSaveFlag,env,errmsg,r);
+                return evaluateExpression3((Node *)params[0], 0, 1, rei,reiSaveFlag,env,errmsg,r);
         }
 
 }
 Res *smsi_letExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
-    Res *res = evaluateExpression3(params[1], 0,rei,reiSaveFlag,env,errmsg,r);
-    if(TYPE(res) == T_ERROR) {
+    Res *res = evaluateExpression3(params[1], 0, 1,rei,reiSaveFlag,env,errmsg,r);
+    if(res->nodeType == N_ERROR) {
             return res;
     }
-    Env *nEnv = newEnv(newHashTable(100), env);
+    Env *nEnv = newEnv(newHashTable(100), env, NULL);
     Res *pres = matchPattern(params[0], res, nEnv, rei, reiSaveFlag, errmsg, r);
-    if(TYPE(pres)==T_ERROR) {
+    if(pres->nodeType == N_ERROR) {
         deleteEnv(nEnv, 1);
         return pres;
     }
 /*                printTree(params[2], 0); */
-    res = evaluateExpression3(params[2], 0,rei,reiSaveFlag,nEnv,errmsg,r);
+    res = evaluateExpression3(params[2], 0,1, rei,reiSaveFlag,nEnv,errmsg,r);
     deleteEnv(nEnv, 1);
     return res;
 }
@@ -143,8 +117,8 @@ Res *smsi_whileExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
     GC_BEGIN
     while(1) {
 
-        cond = evaluateExpression3((Node *)params[0], 0,rei,reiSaveFlag, env,errmsg,GC_REGION);
-        if(TYPE(cond) == T_ERROR) {
+        cond = evaluateExpression3((Node *)params[0], 0,1, rei,reiSaveFlag, env,errmsg,GC_REGION);
+        if(cond->nodeType == N_ERROR) {
             res = cond;
             break;
         }
@@ -153,7 +127,7 @@ Res *smsi_whileExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
             break;
         }
         res = evaluateActions((Node *)params[1],(Node *)params[2], rei,reiSaveFlag, env,errmsg,GC_REGION);
-        if(TYPE(res) == T_ERROR) {
+        if(res->nodeType == N_ERROR) {
             break;
         } else
         if(TYPE(res) == T_BREAK) {
@@ -177,8 +151,8 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
 
     Res *init, *cond, *res, *step;
     Region *rnew = make_region(0, r->label);
-    init = evaluateExpression3((Node *)params[0], 0,rei,reiSaveFlag, env,errmsg,rnew);
-    if(TYPE(init) == T_ERROR) {
+    init = evaluateExpression3((Node *)params[0], 0,1,rei,reiSaveFlag, env,errmsg,rnew);
+    if(init->nodeType == N_ERROR) {
         res = init;
         cpEnv(env, r);
         res = cpRes(res, r);
@@ -188,8 +162,8 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     GC_BEGIN
     while(1) {
 
-        cond = evaluateExpression3((Node *)params[1], 0,rei,reiSaveFlag, env,errmsg,rnew);
-        if(TYPE(cond) == T_ERROR) {
+        cond = evaluateExpression3((Node *)params[1], 0, 1,rei,reiSaveFlag, env,errmsg,rnew);
+        if(cond->nodeType == N_ERROR) {
             res = cond;
             break;
         }
@@ -198,7 +172,7 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
             break;
         }
         res = evaluateActions((Node *)params[3],(Node *)params[4], rei,reiSaveFlag, env,errmsg,rnew);
-        if(TYPE(res) == T_ERROR) {
+        if(res->nodeType == N_ERROR) {
             break;
         } else
         if(TYPE(res) == T_BREAK) {
@@ -209,8 +183,8 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
         if(TYPE(res) == T_SUCCESS) {
             break;
         }
-        step = evaluateExpression3((Node *)params[2], 0,rei,reiSaveFlag, env,errmsg,rnew);
-        if(TYPE(step) == T_ERROR) {
+        step = evaluateExpression3((Node *)params[2], 0,1,rei,reiSaveFlag, env,errmsg,rnew);
+        if(step->nodeType == N_ERROR) {
             res = step;
             break;
         }
@@ -248,7 +222,7 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
                     elem = orig->subtrees[i];
                     setVariableValue(varName, elem, rei, env, errmsg, r);
                     res = evaluateActions(subtrees[1], subtrees[2], rei,reiSaveFlag, env,errmsg,r);
-                    if(TYPE(res) == T_ERROR) {
+                    if(res->nodeType == N_ERROR) {
                         break;
                     } else
                     if(TYPE(res) == T_BREAK) {
@@ -258,7 +232,7 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
                         break;
                     }
             }
-            if(TYPE(res)!=T_ERROR) {
+            if(res->nodeType != N_ERROR) {
                 res = newIntRes(r,0);
             }
         } else {
@@ -269,14 +243,14 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
                     elem = getValueFromCollection(orig->exprType->text, orig->value.uninterpreted.inOutStruct, i, r);
                     setVariableValue(varName, elem, rei, env, errmsg, r);
                     res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], rei,reiSaveFlag,  env,errmsg,r);
-                    if(TYPE(res) == T_ERROR) {
+                    if(res->nodeType == N_ERROR) {
                             break;
                     }
                     if(TYPE(res) == T_BREAK) {
                             break;
                     }
             }
-            if(TYPE(res)!=T_ERROR) {
+            if(res->nodeType != N_ERROR) {
                 res = newIntRes(r,0);
             }
 
@@ -298,9 +272,7 @@ Res *smsi_succeed(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int r
 }
 Res *smsi_fail(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
-	Res *	res = newRes(r);
-        res->exprType = newSimpType(T_ERROR, r);
-        res->value.errcode = n == 0 ?FAIL_ACTION_ENCOUNTERED_ERR:(int)((Res *)subtrees[0])->value.dval;
+	Res *	res = newErrorRes(r, n == 0 ?FAIL_ACTION_ENCOUNTERED_ERR:(int)((Res *)subtrees[0])->value.dval);
         return res;
 }
 
@@ -309,8 +281,8 @@ Res *smsi_assign(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
 
     /* An smsi shares the same env as the enclosing rule. */
     /* Therefore, our modification to the env is reflected to the enclosing rule automatically. */
-    Res *val = evaluateExpression3((Node *)subtrees[1], 0, rei, reiSaveFlag,  env, errmsg,r);
-    if(TYPE(val)==T_ERROR) {
+    Res *val = evaluateExpression3((Node *)subtrees[1], 0, 1, rei, reiSaveFlag,  env, errmsg,r);
+    if(val->nodeType == N_ERROR) {
         return val;
     }
     Res *ret = matchPattern(subtrees[0], val, env, rei, reiSaveFlag, errmsg, r);
@@ -546,8 +518,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		char* format;
 		if(TYPE(params[0])!=T_STRING ||
 			(n == 2 && TYPE(params[1])!=T_STRING)) { /* error not a string */
-                        res->exprType = newSimpType(T_ERROR,r);
-			res->value.errcode = UNSUPPORTED_OP_OR_TYPE;
+                        res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
                         snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res((Res *)params[0]), n==2?typeName_Res((Res *)params[1]):"null");
                         addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
 		} else {
@@ -575,8 +546,7 @@ Res *smsi_timestr(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
         char* format;
         if(TYPE(params[0])!=T_DATETIME ||
             (n == 2 && TYPE(params[1])!=T_STRING)) {
-            res->exprType = newSimpType(T_ERROR,r);
-            res->value.errcode = UNSUPPORTED_OP_OR_TYPE;
+            res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
             snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res((Res *)params[0]), n==2?typeName_Res((Res *)params[1]):"null");
             addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
         } else {
@@ -611,6 +581,7 @@ Res *smsi_arity(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 }
 Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
                 char errbuf[ERR_MSG_LEN];
+                char errmsgbuf[ERR_MSG_LEN];
 		Res *val = params[0], *res;
 		if(TYPE(val) == T_INT
 		|| TYPE(val) == T_DOUBLE
@@ -630,7 +601,8 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                     }
 		} else {
                     res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
-                    snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to string.", typeName_Res(val));
+                    snprintf(errmsgbuf, ERR_MSG_LEN, "error: unsupported type. can not convert %s to string.", typeName_Res(val));
+                    generateErrMsg(errmsgbuf, node->expr, node->base, errbuf);
                     addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
 		}
                 return res;
@@ -647,8 +619,7 @@ Res *smsi_double(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
                 } else if(TYPE(val) == T_DOUBLE) {
                     res = val;
                 } else {
-                    res->exprType = newSimpType(T_ERROR,r);
-                    res->value.errcode = UNSUPPORTED_OP_OR_TYPE;
+                    res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
                     snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to double.", typeName_Res(val));
                     addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
 		}
@@ -666,8 +637,7 @@ Res *smsi_int(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
         } else if(TYPE(val) == T_INT) {
             res = val;
         } else {
-            res->exprType = newSimpType(T_ERROR,r);
-            res->value.errcode = UNSUPPORTED_OP_OR_TYPE;
+            res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
             snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to double.", typeName_Res(val));
             addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
         }
@@ -1064,10 +1034,10 @@ Res *smsi_errorcode(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
                 res = evaluateActions((Node *)paramsr[0], (Node *)paramsr[1], rei, reiSaveFlag,  env, errmsg, r);
                 break;
             default:
-                res = evaluateExpression3((Node *)paramsr[0], 0,rei,reiSaveFlag,env,errmsg,r);
+                res = evaluateExpression3((Node *)paramsr[0], 0,1, rei,reiSaveFlag,env,errmsg,r);
         }
-        switch(TYPE(res)) {
-            case T_ERROR:
+        switch(res->nodeType) {
+            case N_ERROR:
                 return newIntRes(r, res->value.errcode);
             default:
                 return newIntRes(r, 0);
@@ -1087,13 +1057,13 @@ Res *smsi_errormsg(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int r
                 paramsr[2] = newStringRes(r, errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024));
                 break;
             default:
-                res = evaluateExpression3((Node *)paramsr[0], 0,rei,reiSaveFlag,env,errmsg,r);
+                res = evaluateExpression3((Node *)paramsr[0], 0,1,rei,reiSaveFlag,env,errmsg,r);
                 paramsr[1] = newStringRes(r, errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024));
     }
     freeRErrorContent(errmsg);
     free(errbuf);
-    switch(TYPE(res)) {
-        case T_ERROR:
+    switch(res->nodeType) {
+        case N_ERROR:
             return newIntRes(r, res->value.errcode);
         default:
             return newIntRes(r, 0);
@@ -1311,7 +1281,7 @@ Res *smsi_trimr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
 }
 
 /* utilities */
-FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
+/*FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
             ExprType *fTypeCopy = fDesc->type;
 
             while((T_FUNC_VARARG(fTypeCopy) == ONCE && n != T_FUNC_ARITY(fTypeCopy))
@@ -1324,7 +1294,7 @@ FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
                 fTypeCopy = fDesc->type;
             }
             return fDesc;
-}
+}*/
 
 Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r) {
     Pointer *e = newPointer2(expr);
@@ -1367,45 +1337,41 @@ Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Re
 }
 
 void getSystemFunctions(Hashtable *ft, Region *r) {
-    insertIntoHashTable(ft, "do", newFunctionDesc("e", "0->?", smsi_do, r));
-    insertIntoHashTable(ft, "eval", newFunctionDesc("i", "string->?", smsi_eval, r));
-    insertIntoHashTable(ft, "errorcode", newFunctionDescChain(
-            newFunctionDesc("aa", "0 * 1->integer", smsi_errorcode, r),
-            newFunctionDesc("e", "0->integer", smsi_errorcode, r)));
-    insertIntoHashTable(ft, "errormsg", newFunctionDescChain(
-            newFunctionDesc("aao", "0 * 1 * string->integer", smsi_errormsg, r),
-            newFunctionDesc("eo", "0 * string->integer", smsi_errormsg, r)));
-    insertIntoHashTable(ft, "let", newFunctionDesc("eee", "0 * f 0 * 1->1", smsi_letExec, r));
-    insertIntoHashTable(ft, "if2", newFunctionDesc("eeeee", "boolean * 0 * 0 * ? * ?->0", smsi_if2Exec, r));
-    insertIntoHashTable(ft, "if", newFunctionDesc("eeeee", "boolean * ? * ? * ? * ?->?", smsi_ifExec, r));
-    insertIntoHashTable(ft, "ifExec", newFunctionDesc("eeeee", "boolean * ? * ? * ? * ?->?", smsi_ifExec, r));
-    insertIntoHashTable(ft, "for", newFunctionDesc("eeeaa", "? * boolean * ? * ? * ?->?",smsi_forExec, r));
-    insertIntoHashTable(ft, "forExec", newFunctionDesc("eeeaa", "? * boolean * ? * ? * ?->?", smsi_forExec, r));
-    insertIntoHashTable(ft, "while", newFunctionDesc("eaa", "boolean * ? * ?->?",smsi_whileExec, r));
-    insertIntoHashTable(ft, "whileExec", newFunctionDesc("eaa", "boolean * ? * ?->?", smsi_whileExec, r));
-    insertIntoHashTable(ft, "foreach", newFunctionDesc("eaa", "list 0 * ? * ?->?", smsi_forEachExec, r));
-    insertIntoHashTable(ft, "forEachExec", newFunctionDesc("eaa", "list 0 * ? * ?->?", smsi_forEachExec, r));
-    insertIntoHashTable(ft, "break", newFunctionDesc("", "->integer", smsi_break, r));
-    insertIntoHashTable(ft, "succeed", newFunctionDesc("", "->integer", smsi_succeed, r));
-    insertIntoHashTable(ft, "fail", newFunctionDescChain(
-            newFunctionDesc("i", "integer->integer", smsi_fail, r),
-            newFunctionDesc("", "->integer", smsi_fail, r)));
-    insertIntoHashTable(ft, "assign", newFunctionDesc("ee", "0 * f 0->integer", smsi_assign, r));
-    insertIntoHashTable(ft, "lmsg", newFunctionDesc("i", "string->integer", smsi_lmsg, r));
-    insertIntoHashTable(ft, "listvars", newFunctionDesc("", "->string", smsi_listvars, r));
-    insertIntoHashTable(ft, "listcorerules", newFunctionDesc("", "->list string", smsi_listcorerules, r));
-    insertIntoHashTable(ft, "true", newFunctionDesc("", "->boolean", smsi_true, r));
-    insertIntoHashTable(ft, "false", newFunctionDesc("", "->boolean", smsi_false, r));
-    insertIntoHashTable(ft, "time", newFunctionDesc("", "->time", smsi_time, r));
-    insertIntoHashTable(ft, "timestr", newFunctionDesc("i", "time->string", smsi_timestr, r));
-    insertIntoHashTable(ft, "str", newFunctionDesc("i", "?->string", smsi_str, r));
-    insertIntoHashTable(ft, "datetime", newFunctionDesc("i", "string->time", smsi_datetime, r));
-    insertIntoHashTable(ft, "timestrf", newFunctionDesc("ii", "time * string->string", smsi_timestr, r));
-    insertIntoHashTable(ft, "datetimef", newFunctionDesc("ii", "string * string->time", smsi_datetime, r));
-    insertIntoHashTable(ft, "double", newFunctionDesc("i", "f 0{string double time}->double", smsi_double, r));
-    insertIntoHashTable(ft, "int", newFunctionDesc("i", "0{integer string double}->integer", smsi_int, r));
-    insertIntoHashTable(ft, "list", newFunctionDesc("i*", "forall X, X*->list X", smsi_list, r));
-    insertIntoHashTable(ft, "tuple",
+    insertIntoHashTable(ft, "do", newFunctionDesc("e 0->?", smsi_do, r));
+    insertIntoHashTable(ft, "eval", newFunctionDesc("string->?", smsi_eval, r));
+    insertIntoHashTable(ft, "errorcodea", newFunctionDesc("a ? * a ?->integer", smsi_errorcode, r));
+    insertIntoHashTable(ft, "errorcode", newFunctionDesc("e ?->integer", smsi_errorcode, r));
+    insertIntoHashTable(ft, "errormsga", newFunctionDesc("a ? * a ? * o string->integer", smsi_errormsg, r));
+    insertIntoHashTable(ft, "errormsg", newFunctionDesc("e ? * o string->integer", smsi_errormsg, r));
+    insertIntoHashTable(ft, "let", newFunctionDesc("e 0 * e f 0 * e 1->1", smsi_letExec, r));
+    insertIntoHashTable(ft, "if2", newFunctionDesc("e boolean * e 0 * e 0 * e ? * e ?->0", smsi_if2Exec, r));
+    insertIntoHashTable(ft, "if", newFunctionDesc("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
+    insertIntoHashTable(ft, "ifExec", newFunctionDesc("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
+    insertIntoHashTable(ft, "for", newFunctionDesc("e ? * e boolean * e ? * a ? * a ?->?",smsi_forExec, r));
+    insertIntoHashTable(ft, "forExec", newFunctionDesc("e ? * e boolean * a ? * a ? * a ?->?", smsi_forExec, r));
+    insertIntoHashTable(ft, "while", newFunctionDesc("e boolean * a ? * a ?->?",smsi_whileExec, r));
+    insertIntoHashTable(ft, "whileExec", newFunctionDesc("e boolean * a ? * a ?->?", smsi_whileExec, r));
+    insertIntoHashTable(ft, "foreach", newFunctionDesc("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "forEachExec", newFunctionDesc("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "break", newFunctionDesc("->integer", smsi_break, r));
+    insertIntoHashTable(ft, "succeed", newFunctionDesc("->integer", smsi_succeed, r));
+    insertIntoHashTable(ft, "fail", newFunctionDesc("integer ?->integer", smsi_fail, r));
+    insertIntoHashTable(ft, "assign", newFunctionDesc("e 0 * e f 0->integer", smsi_assign, r));
+    insertIntoHashTable(ft, "lmsg", newFunctionDesc("string->integer", smsi_lmsg, r));
+    insertIntoHashTable(ft, "listvars", newFunctionDesc("->string", smsi_listvars, r));
+    insertIntoHashTable(ft, "listcorerules", newFunctionDesc("->list string", smsi_listcorerules, r));
+    insertIntoHashTable(ft, "true", newFunctionDesc("boolean", smsi_true, r));
+    insertIntoHashTable(ft, "false", newFunctionDesc("boolean", smsi_false, r));
+    insertIntoHashTable(ft, "time", newFunctionDesc("->time", smsi_time, r));
+    insertIntoHashTable(ft, "timestr", newFunctionDesc("time->string", smsi_timestr, r));
+    insertIntoHashTable(ft, "str", newFunctionDesc("?->string", smsi_str, r));
+    insertIntoHashTable(ft, "datetime", newFunctionDesc("string->time", smsi_datetime, r));
+    insertIntoHashTable(ft, "timestrf", newFunctionDesc("time * string->string", smsi_timestr, r));
+    insertIntoHashTable(ft, "datetimef", newFunctionDesc("string * string->time", smsi_datetime, r));
+    insertIntoHashTable(ft, "double", newFunctionDesc("f 0{string double time}->double", smsi_double, r));
+    insertIntoHashTable(ft, "int", newFunctionDesc("0{integer string double}->integer", smsi_int, r));
+    insertIntoHashTable(ft, "list", newFunctionDesc("forall X, X*->list X", smsi_list, r));
+    /*insertIntoHashTable(ft, "tuple",
             newFunctionDescChain(newConstructorDesc("-> <>", r),
             newFunctionDescChain(newConstructorDesc("A-> <A>", r),
             newFunctionDescChain(newConstructorDesc("A * B-> <A * B>", r),
@@ -1416,53 +1382,52 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
             newFunctionDescChain(newConstructorDesc("A * B * C * D * E * F * G * H-> <A * B * C * D * E * F * G * H>", r),
             newFunctionDescChain(newConstructorDesc("A * B * C * D * E * F * G * H * I-> <A * B * C * D * E * F * G * H * I>", r),
             newConstructorDesc("A * B * C * D * E * F * G * H * I * J-> <A * B * C * D * E * F * G * H * I * J>", r)
-            ))))))))));
-    insertIntoHashTable(ft, "elem", newFunctionDesc("ii", "forall X, list X * integer->X", smsi_elem, r));
-    insertIntoHashTable(ft, "setelem", newFunctionDesc("iii", "forall X, list X * integer * X->list X", smsi_setelem, r));
-    insertIntoHashTable(ft, "hd", newFunctionDesc("i", "forall X, list X->X", smsi_hd, r));
-    insertIntoHashTable(ft, "tl", newFunctionDesc("i", "forall X, list X->list X", smsi_tl, r));
-    insertIntoHashTable(ft, "cons", newFunctionDesc("ii", "forall X, X * list X->list X", smsi_cons, r));
-    insertIntoHashTable(ft, "size", newFunctionDesc("i", "forall X, list X->integer", smsi_size, r));
-    insertIntoHashTable(ft, "type", newFunctionDesc("i", "forall X, X->string",smsi_type, r));
-    insertIntoHashTable(ft, "arity", newFunctionDesc("i", "string->integer",smsi_arity, r));
-    insertIntoHashTable(ft, "+", newFunctionDesc("ii", "forall X in {integer double}, f X * f X->X",smsi_add, r));
-    insertIntoHashTable(ft, "++", newFunctionDesc("ii", "f string * f string->string",smsi_concat, r));
-    insertIntoHashTable(ft, "-", newFunctionDescChain(
-            newFunctionDesc("ii", "forall X in {integer double}, f X * f X->X",smsi_subtract, r),
-            newFunctionDesc("i", "forall X in {integer double}, X-> X", smsi_negate, r)));
-    insertIntoHashTable(ft, "*", newFunctionDesc("ii", "forall X in {integer double}, f X * f X->X",smsi_multiply, r));
-    insertIntoHashTable(ft, "/", newFunctionDesc("ii", "forall X in {integer double}, f X * f X->?",smsi_divide, r));
-    insertIntoHashTable(ft, "%", newFunctionDesc("ii", "forall X in {integer double}, f X * f X->X",smsi_modulo, r));
-    insertIntoHashTable(ft, "^", newFunctionDesc("ii", "f double * f double->double",smsi_power, r));
-    insertIntoHashTable(ft, "@", newFunctionDesc("ii", "f double * f double->double",smsi_root, r));
-    insertIntoHashTable(ft, "log", newFunctionDesc("i", "f double->double",smsi_log, r));
-    insertIntoHashTable(ft, "exp", newFunctionDesc("i", "f double->double",smsi_exp, r));
-    insertIntoHashTable(ft, "!", newFunctionDesc("i", "boolean->boolean",smsi_not, r));
-    insertIntoHashTable(ft, "&&", newFunctionDesc("ii", "boolean * boolean->boolean",smsi_and, r));
-    insertIntoHashTable(ft, "||", newFunctionDesc("ii", "boolean * boolean->boolean",smsi_or, r));
-    insertIntoHashTable(ft, "%%", newFunctionDesc("ii", "boolean * boolean->boolean",smsi_or, r));
-    insertIntoHashTable(ft, "==", newFunctionDesc("ii", "forall X in {integer double boolean string time}, f X * f X->boolean",smsi_eq, r));
-    insertIntoHashTable(ft, "!=", newFunctionDesc("ii", "forall X in {integer double boolean string time}, f X * f X->boolean",smsi_neq, r));
-    insertIntoHashTable(ft, ">", newFunctionDesc("ii", "forall X in {integer double string time}, f X * f X->boolean", smsi_gt, r));
-    insertIntoHashTable(ft, "<", newFunctionDesc("ii", "forall X in {integer double string time}, f X * f X->boolean", smsi_lt, r));
-    insertIntoHashTable(ft, ">=", newFunctionDesc("ii", "forall X in {integer double string time}, f X * f X->boolean", smsi_ge, r));
-    insertIntoHashTable(ft, "<=", newFunctionDesc("ii", "forall X in {integer double string time}, f X * f X->boolean", smsi_le, r));
-    insertIntoHashTable(ft, "floor", newFunctionDesc("i", "f double->integer", smsi_floor, r));
-    insertIntoHashTable(ft, "ceiling", newFunctionDesc("i", "f double->integer", smsi_ceiling, r));
-    insertIntoHashTable(ft, "abs", newFunctionDesc("i", "f double->double", smsi_abs, r));
-    insertIntoHashTable(ft, "max", newFunctionDesc("i*", "f double+->double", smsi_max, r));
-    insertIntoHashTable(ft, "min", newFunctionDesc("i*", "f double+->double", smsi_min, r));
-    insertIntoHashTable(ft, "average", newFunctionDesc("i*", "f double+->double", smsi_average, r));
-    insertIntoHashTable(ft, "like", newFunctionDesc("ii", "string * string->boolean", smsi_like_regex, r));
-    insertIntoHashTable(ft, "not like", newFunctionDesc("ii", "string * string->boolean", smsi_notlike_regex, r));
-    insertIntoHashTable(ft, "delayExec", newFunctionDesc("iii", "string * string * string->integer", smsi_delayExec, r));
-    insertIntoHashTable(ft, "remoteExec", newFunctionDesc("iiii", "string * string * string * string->integer", smsi_remoteExec,r));
-    insertIntoHashTable(ft, "writeLine", newFunctionDesc("ii", "string * string->integer", smsi_writeLine,r));
-    insertIntoHashTable(ft, "writeString", newFunctionDesc("ii", "string * string->integer", smsi_writeString,r));
-    insertIntoHashTable(ft, "triml", newFunctionDesc("ii","string * string->string", smsi_triml, r));
-    insertIntoHashTable(ft, "trimr", newFunctionDesc("ii","string * string->string", smsi_trimr, r));
-    insertIntoHashTable(ft, "strlen", newFunctionDesc("i","string->integer", smsi_strlen, r));
-    insertIntoHashTable(ft, "substr", newFunctionDesc("iii","string * integer * integer->string", smsi_substr, r));
+            ))))))))));*/
+    insertIntoHashTable(ft, "elem", newFunctionDesc("forall X, list X * integer->X", smsi_elem, r));
+    insertIntoHashTable(ft, "setelem", newFunctionDesc("forall X, list X * integer * X->list X", smsi_setelem, r));
+    insertIntoHashTable(ft, "hd", newFunctionDesc("forall X, list X->X", smsi_hd, r));
+    insertIntoHashTable(ft, "tl", newFunctionDesc("forall X, list X->list X", smsi_tl, r));
+    insertIntoHashTable(ft, "cons", newFunctionDesc("forall X, X * list X->list X", smsi_cons, r));
+    insertIntoHashTable(ft, "size", newFunctionDesc("forall X, list X->integer", smsi_size, r));
+    insertIntoHashTable(ft, "type", newFunctionDesc("forall X, X->string",smsi_type, r));
+    insertIntoHashTable(ft, "arity", newFunctionDesc("string->integer",smsi_arity, r));
+    insertIntoHashTable(ft, "+", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_add, r));
+    insertIntoHashTable(ft, "++", newFunctionDesc("f string * f string->string",smsi_concat, r));
+    insertIntoHashTable(ft, "-", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_subtract, r));
+    insertIntoHashTable(ft, "neg", newFunctionDesc("forall X in {integer double}, X-> X", smsi_negate, r));
+    insertIntoHashTable(ft, "*", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_multiply, r));
+    insertIntoHashTable(ft, "/", newFunctionDesc("forall X in {integer double}, f X * f X->?",smsi_divide, r));
+    insertIntoHashTable(ft, "%", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_modulo, r));
+    insertIntoHashTable(ft, "^", newFunctionDesc("f double * f double->double",smsi_power, r));
+    insertIntoHashTable(ft, "@", newFunctionDesc("f double * f double->double",smsi_root, r));
+    insertIntoHashTable(ft, "log", newFunctionDesc("f double->double",smsi_log, r));
+    insertIntoHashTable(ft, "exp", newFunctionDesc("f double->double",smsi_exp, r));
+    insertIntoHashTable(ft, "!", newFunctionDesc("boolean->boolean",smsi_not, r));
+    insertIntoHashTable(ft, "&&", newFunctionDesc("boolean * boolean->boolean",smsi_and, r));
+    insertIntoHashTable(ft, "||", newFunctionDesc("boolean * boolean->boolean",smsi_or, r));
+    insertIntoHashTable(ft, "%%", newFunctionDesc("boolean * boolean->boolean",smsi_or, r));
+    insertIntoHashTable(ft, "==", newFunctionDesc("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_eq, r));
+    insertIntoHashTable(ft, "!=", newFunctionDesc("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_neq, r));
+    insertIntoHashTable(ft, ">", newFunctionDesc("forall X in {integer double string time}, f X * f X->boolean", smsi_gt, r));
+    insertIntoHashTable(ft, "<", newFunctionDesc("forall X in {integer double string time}, f X * f X->boolean", smsi_lt, r));
+    insertIntoHashTable(ft, ">=", newFunctionDesc("forall X in {integer double string time}, f X * f X->boolean", smsi_ge, r));
+    insertIntoHashTable(ft, "<=", newFunctionDesc("forall X in {integer double string time}, f X * f X->boolean", smsi_le, r));
+    insertIntoHashTable(ft, "floor", newFunctionDesc("f double->integer", smsi_floor, r));
+    insertIntoHashTable(ft, "ceiling", newFunctionDesc("f double->integer", smsi_ceiling, r));
+    insertIntoHashTable(ft, "abs", newFunctionDesc("f double->double", smsi_abs, r));
+    insertIntoHashTable(ft, "max", newFunctionDesc("f double+->double", smsi_max, r));
+    insertIntoHashTable(ft, "min", newFunctionDesc("f double+->double", smsi_min, r));
+    insertIntoHashTable(ft, "average", newFunctionDesc("f double+->double", smsi_average, r));
+    insertIntoHashTable(ft, "like", newFunctionDesc("string * string->boolean", smsi_like_regex, r));
+    insertIntoHashTable(ft, "not like", newFunctionDesc("string * string->boolean", smsi_notlike_regex, r));
+    insertIntoHashTable(ft, "delayExec", newFunctionDesc("string * string * string->integer", smsi_delayExec, r));
+    insertIntoHashTable(ft, "remoteExec", newFunctionDesc("string * string * string * string->integer", smsi_remoteExec,r));
+    insertIntoHashTable(ft, "writeLine", newFunctionDesc("string * string->integer", smsi_writeLine,r));
+    insertIntoHashTable(ft, "writeString", newFunctionDesc("string * string->integer", smsi_writeString,r));
+    insertIntoHashTable(ft, "triml", newFunctionDesc("string * string->string", smsi_triml, r));
+    insertIntoHashTable(ft, "trimr", newFunctionDesc("string * string->string", smsi_trimr, r));
+    insertIntoHashTable(ft, "strlen", newFunctionDesc("string->integer", smsi_strlen, r));
+    insertIntoHashTable(ft, "substr", newFunctionDesc("string * integer * integer->string", smsi_substr, r));
 
 
 }
