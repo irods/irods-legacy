@@ -1280,6 +1280,16 @@ Res *smsi_trimr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
 
 }
 
+Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char buf[1024*16];
+	int i;
+	for(i=0;i<coreRules.len;i++) {
+		ruleToString(buf, 1024*16, coreRules.rules[i]->node);
+		printf("%s", buf);
+		writeStringNew("stdout", buf, env, r);
+	}
+	return newIntRes(r, 0);
+}
 /* utilities */
 /*FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
             ExprType *fTypeCopy = fDesc->type;
@@ -1428,6 +1438,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "trimr", newFunctionDesc("string * string->string", smsi_trimr, r));
     insertIntoHashTable(ft, "strlen", newFunctionDesc("string->integer", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionDesc("string * integer * integer->string", smsi_substr, r));
+    insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionDesc("e ? ?->integer", smsi_msiAdmShowIRB, r));
 
 
 }

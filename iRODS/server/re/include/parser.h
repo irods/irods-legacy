@@ -351,6 +351,11 @@ int isLocalVariableNode(Node *node);
 int isSessionVariableNode(Node *node);
 int isVariableNode(Node *node);
 
+void ruleToString(char *buf, int size, Node *n);
+void actionsToString(char **p, int *s, int indent, Node *na, Node *nr);
+void indentToString(char **p, int *s, int indent);
+void termToString(char **p, int *s, int indent, int prec, Node *n);
+
 char *nextRuleSection(char *expr, char* section);
 char *parseFunctionParameters(char *e, char *args[], int *argc);
 char *functionParameters(char *expr, char* param);

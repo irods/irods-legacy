@@ -1301,6 +1301,203 @@ void printTree(Node *n, int indent) {
 	}
 
 }
+#define PRINT(p, s, f, d) 	snprintf(*p, *s, f, d);*s -= strlen(*p); *p += strlen(*p);
+void termToString(char **p, int *s, int indent, int prec, Node *n) {
+	switch(n->nodeType) {
+	case N_ACTIONS_RECOVERY:
+		actionsToString(p, s, indent, n->subtrees[0], n->subtrees[1]);
+		break;
+	case N_APPLICATION:
+		if(n->subtrees[0]->nodeType == TK_TEXT) {
+			char *fn = n->subtrees[0]->text;
+			if(strcmp(fn, "if") == 0) {
+				PRINT(p, s, "%s", "if (");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, "%s", ") ");
+				actionsToString(p, s, indent, n->subtrees[1]->subtrees[1], n->subtrees[1]->subtrees[3]);
+				PRINT(p, s, "%s", " else ");
+				actionsToString(p, s, indent, n->subtrees[1]->subtrees[2], n->subtrees[1]->subtrees[4]);
+				break;
+			}
+			if(strcmp(fn, "if2") == 0) {
+				PRINT(p, s, "%s", "if ");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, "%s", " then ");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+				PRINT(p, s, "%s", " else ");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2]);
+				break;
+			}
+			if(strcmp(fn, "while") == 0) {
+				PRINT(p, s, "%s", "while (");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, "%s", ") ");
+				actionsToString(p, s, indent, n->subtrees[1]->subtrees[1], n->subtrees[1]->subtrees[2]);
+				break;
+			}
+			if(strcmp(fn, "foreach") == 0) {
+				PRINT(p, s, "%s", "foreach (");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, "%s", ") ");
+				actionsToString(p, s, indent, n->subtrees[1]->subtrees[1], n->subtrees[1]->subtrees[2]);
+				break;
+			}
+			if(strcmp(fn, "for") == 0) {
+				PRINT(p, s, "%s", "for (");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, "%s", ";");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+				PRINT(p, s, "%s", ";");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2]);
+				PRINT(p, s, "%s", ") ");
+				actionsToString(p, s, indent, n->subtrees[1]->subtrees[3], n->subtrees[1]->subtrees[4]);
+				break;
+			}
+			if(strcmp(fn, "let") == 0) {
+				PRINT(p, s, "%s", "let ");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, "%s", " = ");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+				PRINT(p, s, "%s", " in ");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2]);
+				break;
+			}
+			if(strcmp(fn, "assign") == 0) {
+							termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+							PRINT(p, s, "%s", " = ");
+							termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+							break;
+						}
+			Token t;
+			strcpy(t.text, fn);
+			if(isBinaryOp(&t)) {
+				int opPrec = getBinaryPrecedence(&t);
+				if(opPrec < prec) {
+					PRINT(p, s, "%s", "(");
+				}
+				termToString(p, s, indent, prec, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, " %s ", fn);
+				termToString(p, s, indent, prec+1, n->subtrees[1]->subtrees[1]);
+				if(opPrec < prec) {
+					PRINT(p, s, "%s", ")");
+				}
+				break;
+			}
+		}
+		termToString(p, s, indent, MIN_PREC, n->subtrees[0]);
+		termToString(p, s, indent, MIN_PREC, n->subtrees[1]);
+		break;
+	case N_TUPLE:
+		PRINT(p, s, "%s", "(");
+		int i;
+		for(i=0;i<n->degree;i++) {
+			if(i!=0) {
+				PRINT(p, s, "%s", ",");
+			}
+			termToString(p, s, indent, MIN_PREC, n->subtrees[i]);
+		}
+		PRINT(p, s, "%s", ")");
+		break;
+	case TK_BOOL:
+	case TK_DOUBLE:
+	case TK_INT:
+	case TK_VAR:
+	case TK_TEXT:
+		PRINT(p, s, "%s", n->text);
+		break;
+	case TK_STRING:
+		PRINT(p, s, "%s", "\"");
+		unsigned int k;
+		for(k=0;k<strlen(n->text);k++) {
+			switch(n->text[k]) {
+			case '\t':
+				PRINT(p, s, "%s", "\\t");
+				break;
+			case '\n':
+				PRINT(p, s, "%s", "\\n");
+				break;
+			case '\\':
+				PRINT(p, s, "%s", "\\\\");
+				break;
+			case '*':
+				PRINT(p, s, "%s", "\\*");
+				break;
+			case '\"':
+				PRINT(p, s, "%s", "\\\"");
+				break;
+			case '\'':
+				PRINT(p, s, "%s", "\\\'");
+				break;
+			case '\r':
+				PRINT(p, s, "%s", "\\r");
+				break;
+			default:
+				PRINT(p, s, "%c", n->text[k]);
+
+			}
+
+		}
+		PRINT(p, s, "%s", "\"");
+		break;
+	default:
+		PRINT(p, s, "%s", "<unsupported>");
+	}
+}
+void indentToString(char **p, int *s, int indent) {
+	int i;
+	for(i=0;i<indent;i++) {
+		PRINT(p, s, "%s", "    ");
+	}
+
+}
+void actionsToString(char **p, int *s, int indent, Node *na, Node *nr) {
+	int n = na->degree;
+
+	int i;
+	PRINT(p, s, "%s", "{\n");
+	for(i=0;i<n;i++) {
+		indentToString(p, s, indent+1);
+		termToString(p, s, indent+1, MIN_PREC, na->subtrees[i]);
+		if(i<nr->degree && (nr->subtrees[i]->nodeType!=N_APPLICATION || strcmp(nr->subtrees[i]->subtrees[0]->text, "nop")!=0)) {
+			PRINT(p, s, "%s", ":::");
+			termToString(p, s, indent+1, MIN_PREC, nr->subtrees[i]);
+		}
+		if((*p)[-1]!='}')
+		PRINT(p, s, "%s", ";");
+		PRINT(p, s, "%s", "\n");
+	}
+	indentToString(p, s, indent);
+	PRINT(p, s, "%s", "}");
+}
+
+void ruleToString(char *buf, int size, Node *n) {
+	char **p = &buf;
+	int *s = &size;
+	PRINT(p, s, "%s", n->subtrees[0]->text);
+	PRINT(p, s, "%s", "(");
+	int i;
+	for(i=0;i<n->subtrees[0]->subtrees[0]->degree;i++) {
+		if(i!=0) {
+			PRINT(p, s, "%s", ",");
+		}
+		PRINT(p, s, "%s", n->subtrees[0]->subtrees[0]->subtrees[i]->text);
+	}
+	PRINT(p, s, "%s", ")");
+	if(n->subtrees[3]->nodeType == N_ACTIONS) {
+	PRINT(p, s, "%s", " {\n");
+	indentToString(p, s, 1);
+	PRINT(p, s, "%s", "on(");
+	termToString(p, s, 1, MIN_PREC, n->subtrees[1]);
+	PRINT(p, s, "%s", ") ");
+	actionsToString(p, s, 1, n->subtrees[2], n->subtrees[3]);
+	PRINT(p, s, "%s", "\n}\n");
+	} else {
+		PRINT(p, s, "%s", " = ");
+		termToString(p, s, 1, MIN_PREC, n->subtrees[2]);
+		PRINT(p, s, "%s", "\n");
+	}
+}
+
 void printTreeDeref(Node *n, int indent, Hashtable *var_types, Region *r) {
 	printIndent(indent);
 	printf("%s:%d->",n->text, n->nodeType);
