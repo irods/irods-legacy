@@ -1119,11 +1119,27 @@ char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
     errbuf[0] = '\0';
     int p = 0;
     int i;
+    int first = 1;
+    int restart = 0;
     for(i=errmsg->len-1;i>=0;i--) {
-        if(i!=errmsg->len-1) {
+    	if(strcmp(errmsg->errMsg[i]->msg, ERR_MSG_SEP) == 0) {
+    		if(first || restart)
+    			continue;
+    		else {
+    			restart = 1;
+    			continue;
+    		}
+    	}
+    	if(restart) {
+    		snprintf(errbuf+p, buflen-p, "%s\n", ERR_MSG_SEP);
+    	}
+        if(!first && !restart) {
             snprintf(errbuf+p, buflen-p, "caused by: %s\n", errmsg->errMsg[i]->msg);
         } else {
             snprintf(errbuf+p, buflen-p, "%s\n", errmsg->errMsg[i]->msg);
+            first = 0;
+    		restart = 0;
+
         }
         p += strlen(errbuf+p);
     }

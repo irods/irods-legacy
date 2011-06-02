@@ -1036,7 +1036,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         }
 
         if(!first) {
-            addRErrorMsg(errmsg, statusI, "==========");
+            addRErrorMsg(errmsg, statusI, ERR_MSG_SEP);
         } else {
             first = 0;
         }

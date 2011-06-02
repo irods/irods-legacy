@@ -292,6 +292,7 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
 }
 ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
             /* printf("%s\n", node->subtrees[0]->text); */
+			addRErrorMsg(errmsg, -1, ERR_MSG_SEP);
             char buf[ERR_MSG_LEN];
             Node *node = rule->node;
 #if 0
@@ -299,7 +300,6 @@ ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, Lis
             Node *type = node->subtrees[0]->subtrees[1]; /* subtrees[1] = return type */
 #endif
 
-            freeRErrorContent(errmsg);
             ExprType *resType = typeExpression3(node->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             /*printf("Type %d\n",resType->t); */
             ERROR(resType->nodeType == T_ERROR);
@@ -322,22 +322,12 @@ ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, Lis
                 postProcessCoercion(node->subtrees[i], varTypes, errmsg, errnode, r);
                 postProcessActions(node->subtrees[i], funcDesc, errmsg, errnode, r);
             }
-            freeRErrorContent(errmsg);
             /*printTree(node, 0); */
             return newSimpType(T_INT, r);
 
         error:
             snprintf(buf, ERR_MSG_LEN, "type error: in rule %s", node->subtrees[0]->text);
             addRErrorMsg(errmsg, -1, buf);
-            char *errbuf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
-            errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
-#ifdef DEBUG
-            writeToTmp("ruleerr.log", errbuf);
-            writeToTmp("ruleerr.log", "\n");
-#endif
-            rodsLog (LOG_ERROR, "%s", errbuf);
-            free(errbuf);
-            freeRErrorContent(errmsg);
             return resType;
 
 }
@@ -358,6 +348,15 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
         deleteHashTable(varTypes, nop);
         if(restype->nodeType == T_ERROR) {
             res = restype;
+            char *errbuf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
+            errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
+#ifdef DEBUG
+            writeToTmp("ruleerr.log", errbuf);
+            writeToTmp("ruleerr.log", "\n");
+#endif
+            rodsLog (LOG_ERROR, "%s", errbuf);
+            free(errbuf);
+            freeRErrorContent(errmsg);
             RETURN;
         }
         /* check that function names are unique */

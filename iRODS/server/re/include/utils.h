@@ -73,6 +73,7 @@
 #define APPLICATION "()"
 #define ST_TUPLE "()"
 #define FUNC "->"
+#define ERR_MSG_SEP "=========="
 
 typedef struct node Node;
 typedef struct node ExprType;
