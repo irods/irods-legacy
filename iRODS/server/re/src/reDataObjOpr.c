@@ -2641,7 +2641,7 @@ ruleExecInfo_t *rei)
  * \usage None
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
- * \param[out] outParam - a INT_MS_T containing an integer with value COLL_OBJ_T or DATA_OBJ_T.
+ * \param[out] outParam - a RodsObjStat_MS_T containing the rodsObjStat_t struct of the object.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
