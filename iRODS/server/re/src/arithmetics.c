@@ -1181,7 +1181,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
                     #endif
             }
         } else {
-            if(res->nodeType!=N_ERROR) {
+            if(res->nodeType!=N_ERROR && TYPE(res)!=T_BOOL) {
                 char buf[ERR_MSG_LEN];
                 generateErrMsg("error: the rule condition does not evaluate to a boolean value", ruleCondition->expr, ruleCondition->base, buf);
                 addRErrorMsg(errmsg, TYPE_ERROR, buf);
