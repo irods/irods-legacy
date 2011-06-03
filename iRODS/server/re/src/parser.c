@@ -1470,32 +1470,49 @@ void actionsToString(char **p, int *s, int indent, Node *na, Node *nr) {
 	PRINT(p, s, "%s", "}");
 }
 
-void ruleToString(char *buf, int size, Node *n) {
+void ruleToString(char *buf, int size, Node *node) {
 	char **p = &buf;
 	int *s = &size;
-	PRINT(p, s, "%s", n->subtrees[0]->text);
+	PRINT(p, s, "%s", node->subtrees[0]->text);
 	PRINT(p, s, "%s", "(");
 	int i;
-	for(i=0;i<n->subtrees[0]->subtrees[0]->degree;i++) {
+	for(i=0;i<node->subtrees[0]->subtrees[0]->degree;i++) {
 		if(i!=0) {
 			PRINT(p, s, "%s", ",");
 		}
-		PRINT(p, s, "%s", n->subtrees[0]->subtrees[0]->subtrees[i]->text);
+		PRINT(p, s, "%s", node->subtrees[0]->subtrees[0]->subtrees[i]->text);
 	}
 	PRINT(p, s, "%s", ")");
-	if(n->subtrees[3]->nodeType == N_ACTIONS) {
-	PRINT(p, s, "%s", " {\n");
-	indentToString(p, s, 1);
-	PRINT(p, s, "%s", "on(");
-	termToString(p, s, 1, MIN_PREC, n->subtrees[1]);
-	PRINT(p, s, "%s", ") ");
-	actionsToString(p, s, 1, n->subtrees[2], n->subtrees[3]);
-	PRINT(p, s, "%s", "\n}\n");
+	if(node->subtrees[3]->nodeType == N_ACTIONS) {
+
+		int indent;
+		Node *subt = node->subtrees[1];
+		if(subt->nodeType == N_TUPLE && subt->degree == 1) {
+			subt = subt->subtrees[0];
+		}
+		if(subt->nodeType != N_APPLICATION ||
+				subt->subtrees[0]->nodeType != TK_TEXT ||
+				strcmp(subt->subtrees[0]->text, "true") != 0) {
+			PRINT(p, s, "%s", " {\n");
+			indentToString(p, s, 1);
+			PRINT(p, s, "%s", "on ");
+			PRINT(p, s, "%s", "(");
+			termToString(p, s, 1, MIN_PREC, subt);
+			PRINT(p, s, "%s", ") ");
+			indent = 1;
+		} else {
+			indent = 0;
+		}
+		actionsToString(p, s, indent, node->subtrees[2], node->subtrees[3]);
+		if(indent == 1) {
+			PRINT(p, s, "%s", "\n}");
+		}
+
 	} else {
 		PRINT(p, s, "%s", " = ");
-		termToString(p, s, 1, MIN_PREC, n->subtrees[2]);
-		PRINT(p, s, "%s", "\n");
+		termToString(p, s, 1, MIN_PREC, node->subtrees[2]);
 	}
+	PRINT(p, s, "%s", "\n");
 }
 
 void printTreeDeref(Node *n, int indent, Hashtable *var_types, Region *r) {
