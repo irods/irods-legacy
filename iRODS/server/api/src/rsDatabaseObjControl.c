@@ -98,7 +98,7 @@ _rsDatabaseObjControl (rsComm_t *rsComm,
 
     maxBufSize = 1024*50;
 
-    outBuf = malloc(maxBufSize);
+    outBuf = (char *)malloc(maxBufSize);
     *outBuf='\0';
 
     if (databaseObjControlInp->option == DBO_EXECUTE) {
@@ -126,7 +126,7 @@ _rsDatabaseObjControl (rsComm_t *rsComm,
        return(DBO_INVALID_CONTROL_OPTION);
     }
 
-    myObjControlOut = malloc(sizeof(databaseObjControlOut_t));
+    myObjControlOut = (databaseObjControlOut_t *)malloc(sizeof(databaseObjControlOut_t));
     memset (myObjControlOut, 0, sizeof (databaseObjControlOut_t));
     myObjControlOut->outBuf = outBuf;
 
