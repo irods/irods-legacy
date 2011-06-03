@@ -1285,9 +1285,16 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 	int i;
 	for(i=0;i<coreRules.len;i++) {
 		ruleToString(buf, 1024*16, coreRules.rules[i]->node);
+#ifdef DEBUG
 		printf("%s", buf);
+#endif
 		writeStringNew("stdout", buf, env, r);
 	}
+/*	for(i=0;i<appRules.len;i++) {
+		ruleToString(buf, 1024*16, appRules.rules[i]->node);
+		printf("%s", buf);
+		writeStringNew("stdout", buf, env, r);
+	}*/
 	return newIntRes(r, 0);
 }
 /* utilities */
