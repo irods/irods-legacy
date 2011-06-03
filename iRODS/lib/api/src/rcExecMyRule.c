@@ -11,6 +11,7 @@ rcExecMyRule (rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
 msParamArray_t **outParamArray)
 {
     int status;
+    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
 
     status = procApiRequest (conn, EXEC_MY_RULE_AN, execMyRuleInp, NULL, 
         (void **)outParamArray, NULL);
@@ -28,21 +29,35 @@ msParamArray_t **outParamArray)
 	    dataObjInp = (dataObjInp_t *) myMsParam->inOutStruct;
 	    if ((locFilePath = getValByKey (&dataObjInp->condInput, 
 	      LOCAL_PATH_KW)) == NULL) {
-		rcOprComplete (conn, USER_FILE_DOES_NOT_EXIST);
-	    } else {
-	        status = rcDataObjPut (conn, dataObjInp, locFilePath);
-		rcOprComplete (conn, status);
+                if ((status = splitPathByKey (dataObjInp->objPath,
+                  myDir, myFile, '/')) < 0) {
+                    rodsLogError (LOG_ERROR, status,
+                      "rcExecMyRule: splitPathByKey for %s error",
+                      dataObjInp->objPath);
+                    rcOprComplete (conn, USER_FILE_DOES_NOT_EXIST);
+                } else {
+                    locFilePath = (char *) myFile;
+                }
 	    }
+	    status = rcDataObjPut (conn, dataObjInp, locFilePath);
+	    rcOprComplete (conn, status);
 	} else if ((myMsParam = getMsParamByLabel (*outParamArray, 
 	  CL_GET_ACTION)) != NULL) {
             dataObjInp = (dataObjInp_t *) myMsParam->inOutStruct;
             if ((locFilePath = getValByKey (&dataObjInp->condInput,
               LOCAL_PATH_KW)) == NULL) {
-                rcOprComplete (conn, USER_FILE_DOES_NOT_EXIST);
-            } else {
-                status = rcDataObjGet (conn, dataObjInp, locFilePath);
-                rcOprComplete (conn, status);
+                if ((status = splitPathByKey (dataObjInp->objPath, 
+                  myDir, myFile, '/')) < 0) {
+        	    rodsLogError (LOG_ERROR, status,
+                      "rcExecMyRule: splitPathByKey for %s error",
+                      dataObjInp->objPath);
+                    rcOprComplete (conn, USER_FILE_DOES_NOT_EXIST);
+		} else {
+		    locFilePath = (char *) myFile;
+		}
             }
+            status = rcDataObjGet (conn, dataObjInp, locFilePath);
+            rcOprComplete (conn, status);
 	} else {
 	    rcOprComplete (conn, SYS_SVR_TO_CLI_MSI_NO_EXIST);
 	}
