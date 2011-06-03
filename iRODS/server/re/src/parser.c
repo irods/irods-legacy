@@ -211,7 +211,7 @@ int isVariableNode(Node *node) {
         isSessionVariableNode(node);
 }
 int nKeywords = 12;
-char *keywords[] = { "in", "let", "for", "while", "foreach", "if", "then", "else", "Inductive", "on", "or", "oron"};
+char *keywords[] = { "in", "let", "for", "while", "foreach", "if", "then", "else", "data", "on", "or", "oron"};
 int isKeyword(char *text) {
 	int i;
 	for(i=0;i<nKeywords;i++) {
@@ -410,7 +410,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
         char *rk;
         int rulegen = 0;
     TRY(defType)
-        TTEXT("Inductive");
+        TTEXT("data");
         TTYPE(TK_TEXT);
         BUILD_NODE(TK_TEXT, token.text, &pos, 0, 0);
         TTEXT(":");
@@ -511,14 +511,16 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             (void) POP;
             BUILD_NODE(N_RULE_PACK, rk, &start, numberOfRules, numberOfRules);
         } else {
+        	Label pos = *FPOS;
             TRY(ruleCond)
                 /* empty condition */
                 TTEXT("|");
-            	BUILD_APP_NODE("true", FPOS, 0);
+            	BUILD_APP_NODE("true", &pos, 0);
             OR(ruleCond)
                 NT2(Term, 0, MIN_PREC);
                 TTEXT("|");
             END_TRY(ruleCond)
+			BUILD_NODE(N_TUPLE, TUPLE, &pos, 1, 1);
 
             NT2(Actions, 0, backwardCompatible);
             TTEXT("|");
@@ -1487,18 +1489,19 @@ void ruleToString(char *buf, int size, Node *node) {
 
 		int indent;
 		Node *subt = node->subtrees[1];
-		if(subt->nodeType == N_TUPLE && subt->degree == 1) {
+		while(subt->nodeType == N_TUPLE && subt->degree == 1) {
 			subt = subt->subtrees[0];
 		}
+
+		PRINT(p, s, "%s", " ");
 		if(subt->nodeType != N_APPLICATION ||
 				subt->subtrees[0]->nodeType != TK_TEXT ||
 				strcmp(subt->subtrees[0]->text, "true") != 0) {
-			PRINT(p, s, "%s", " {\n");
+			PRINT(p, s, "%s", "{\n");
 			indentToString(p, s, 1);
 			PRINT(p, s, "%s", "on ");
-			PRINT(p, s, "%s", "(");
-			termToString(p, s, 1, MIN_PREC, subt);
-			PRINT(p, s, "%s", ") ");
+			termToString(p, s, 1, MIN_PREC, node->subtrees[1]);
+			PRINT(p, s, "%s", " ");
 			indent = 1;
 		} else {
 			indent = 0;
@@ -2371,19 +2374,19 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Re
  * parse the string for an ExprType
  * supported types:
  * ? dynamic
- * i int
+ * i integer
  * b boolean
  * d double
- * t datetime
+ * t time
  * s string
- * c <type> collection
+ * list <type> list
  * f <type> flexible
  * <var> ({ <type> ... <type> })? variable
  * <type> * ... * <type> product
  * < <type> * ... * <type> > lifted product
  * `irods PI` irods
  *
- * <type> (*|+)? -> <type> function
+ * <type> (*|+|?)? -> <type> function
  * forall <var> (in { <type> ... <type> })?, <type> universal
  */
 Node* parseFuncTypeFromString(char *string, Region *r) {
