@@ -3,7 +3,7 @@
 /* irodsXmsgServer.c - The irods xmsg server
  */
 
-#include <pthread.h>
+// JMC #include <pthread.h>
 #include "irodsXmsgServer.h"
 #include "xmsgLib.h"
 #include "rsGlobal.h"

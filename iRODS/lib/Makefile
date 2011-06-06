@@ -66,6 +66,11 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/phybunUtil.o \
 		$(libCoreObjDir)/scanUtil.o \
 		$(libCoreObjDir)/fsckUtil.o
+
+ifdef USE_BOOST_ASIO
+LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 
+endif
+
 ifdef GSI_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
 endif
@@ -144,6 +149,7 @@ endif
 ifdef IRODS_SYSLOG
 CFLAGS_OPTIONS += -D IRODS_SYSLOG
 endif
+
 
 #
 # Princpal Targets

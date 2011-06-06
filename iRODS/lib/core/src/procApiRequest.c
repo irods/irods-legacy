@@ -6,8 +6,12 @@
 #include "procApiRequest.h"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
-#ifndef windows_platform
+
+#ifdef USE_BOOST
+#else
+//#ifndef windows_platform
 #include <pthread.h>
+//#endif
 #endif
 
 /* procApiRequest - This is the main function used by the client API
@@ -105,15 +109,15 @@ bytesBuf_t *inputBsBBuf)
     bytesBuf_t *inputStructBBuf = NULL;
     bytesBuf_t *myInputStructBBuf;
 
-#ifndef windows_platform
+//#ifndef windows_platform
     cliChkReconnAtSendStart (conn);
-#endif
+//#endif
 
     if (RcApiTable[apiInx].inPackInstruct != NULL) {
         if (inputStruct == NULL) {
-#ifndef windows_platform
+//#ifndef windows_platform
             cliChkReconnAtSendEnd (conn);
-#endif
+//#endif
             return (USER_API_INPUT_ERR);
         }
         status = packStruct ((void *) inputStruct, &inputStructBBuf,
@@ -122,9 +126,9 @@ bytesBuf_t *inputBsBBuf)
        if (status < 0) {
             rodsLogError (LOG_ERROR, status,
              "sendApiRequest: packStruct error, status = %d", status);
-#ifndef windows_platform
+//#ifndef windows_platform
             cliChkReconnAtSendEnd (conn);
-#endif
+//#endif
             return status;
         }
 
@@ -144,16 +148,24 @@ bytesBuf_t *inputBsBBuf)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
          "sendApiRequest: sendRodsMsg error, status = %d", status);
-#ifndef windows_platform
+//#ifndef windows_platform
         if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
 	    int status1;
             int savedStatus = status;
+#ifdef USE_BOOST
+	    conn->lock->lock();
+#else
             pthread_mutex_lock (&conn->lock);
+#endif
             status1 = cliSwitchConnect (conn);
             rodsLog (LOG_DEBUG,
               "sendApiRequest: svrSwitchConnect. cliState = %d,agState=%d",
               conn->clientState, conn->agentState);
+#ifdef USE_BOOST
+	    conn->lock->unlock();
+#else
             pthread_mutex_unlock (&conn->lock);
+#endif
             if (status1 > 0) {
                 /* should not be here */
                 rodsLog (LOG_NOTICE,
@@ -169,7 +181,7 @@ bytesBuf_t *inputBsBBuf)
                 }
             }
         }
-#endif
+//#endif
 
     }
 
@@ -228,12 +240,20 @@ bytesBuf_t *outBsBBuf)
 	if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
             int savedStatus = status;
             /* try again. the socket might have changed */
+#ifdef USE_BOOST
+	    conn->lock->lock();
+#else
             pthread_mutex_lock (&conn->lock);
+#endif
             rodsLog (LOG_DEBUG,
               "readAndProcClientMsg:svrSwitchConnect.cliState = %d,agState=%d",
               conn->clientState, conn->agentState);
             cliSwitchConnect (conn);
+#ifdef USE_BOOST
+	    conn->lock->unlock();
+#else
             pthread_mutex_unlock (&conn->lock);
+#endif
             status = readMsgHeader (conn->sock, &myHeader, NULL);
             if (status < 0) {
                 cliChkReconnAtReadEnd (conn);

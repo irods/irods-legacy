@@ -9,9 +9,16 @@
 #include "dataObjOpr.h"
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
+
+#ifdef USE_BOOST
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
+#else
 #ifdef PARA_OPR
 #include <pthread.h>
 #endif
+#endif // BOOST
 
 int
 sendTranHeader (int sock, int oprType, int flags, rodsLong_t offset,
@@ -117,7 +124,11 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
     int numThreads; 
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
 #ifdef PARA_OPR
+#ifdef USE_BOOST
+    boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
+#else
     pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
+#endif // BOOST
 #endif
     int retVal = 0;
 
@@ -204,15 +215,24 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
 		continue;
             }
             fillRcPortalTransferInp (conn, &myInput[i], sock, in_fd, i);
-            pthread_create (&tid[i], pthread_attr_default,
-             (void *(*)(void *)) rcPartialDataPut, (void *) &myInput[i]);
+#ifdef USE_BOOST
+            tid[i] = new boost::thread( rcPartialDataPut, &myInput[i] );
+#else
+            pthread_create (&tid[i], pthread_attr_default, 
+	     (void *(*)(void *)) rcPartialDataPut, (void *) &myInput[i]);
+#endif /* BOOST */
         }
 	if (retVal < 0)
 	    return (retVal);
 
         for ( i = 0; i < numThreads; i++) {
             if (tid[i] != 0) {
+
+#ifdef USE_BOOST
+		tid[i]->join();
+#else
                 pthread_join (tid[i], NULL);
+#endif
 	    }
 	    totalWritten += myInput[i].bytesWritten;
             if (myInput[i].status < 0) {
@@ -670,9 +690,13 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
     int i, sock, out_fd;
     int numThreads;
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
+#ifdef USE_BOOST
+    boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
+#else
 #ifdef PARA_OPR
     pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
 #endif
+#endif // BOOST
     int retVal = 0;
 
     if (portalOprOut == NULL || portalOprOut->numThreads <= 0) {
@@ -764,8 +788,12 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
 		continue;
             }
             fillRcPortalTransferInp (conn, &myInput[i], out_fd, sock, i);
+#ifdef USE_BOOST
+	    tid[i] = new boost::thread( rcPartialDataGet, &myInput[i] );
+#else
             pthread_create (&tid[i], pthread_attr_default,
              (void *(*)(void *)) rcPartialDataGet, (void *) &myInput[i]);
+#endif
         }
 
 	if (retVal < 0) {
@@ -774,7 +802,11 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
 
         for ( i = 0; i < numThreads; i++) {
             if (tid[i] != 0) {
+#ifdef USE_BOOST
+		tid[i]->join();
+#else
                 pthread_join (tid[i], NULL);
+#endif
             }
             totalWritten += myInput[i].bytesWritten;
             if (myInput[i].status < 0) {

@@ -36,6 +36,130 @@ connToutHandler (int sig)
 }
 #endif  /* _WIN32 */
 
+#ifdef USE_BOOST_ASIO
+
+// =-=-=-=-=-=-=-
+// open socket for incoming connection
+int sockOpenForInConn ( rsComm_t* _rsComm, int* _portNum, char** _addr, int _proto ) {
+    // =-=-=-=-=-=-=-
+    // get rid of alot of namespace references
+    using namespace boost::asio::ip;
+
+    // =-=-=-=-=-=-=-
+    // return value
+    int status = 0;
+ 
+    // =-=-=-=-=-=-=-
+    // value check incoming protocol
+    if( proto != SOCK_DGRAM && proto != SOCK_STREAM ) {
+        rodsLog( LOG_ERROR, "sockOpenForInConn() -- invalid input protocol %d", proto );
+        return SYS_INVALID_PROTOCOL_TYPE;
+    } // if proto
+
+    // =-=-=-=-=-=-=-
+    // based on protocol, create either tcp or udp flavored socket wrapper
+    if( SOCK_STREAM == _proto ) {
+        _rsComm->sock =  new socket_wrapper_tcp;
+    else if( SOCK_DGRAM == _proto ) {
+        _rsComm->sock = new socket_wrapper_udp;
+        // FIXME rodsSetSockOpt (sock, rsComm->windowSize);
+    } // if/else proto
+    
+    // =-=-=-=-=-=-=-
+    // trap failed socket creation
+    if( !_rsComm->sock ) {
+	    status = SYS_SOCK_OPEN_ERR - errno;
+	    rodsLogError( LOG_NOTICE, status, "sockOpenForInConn: open socket error. status = %d", status );
+	    return status;
+    } // if !sock
+
+    // =-=-=-=-=-=-=-
+    // if portNum is <= 0 and env svrPortRangeStart is set, pick a port
+    // in the range.
+    char* tmpPtr = 0;
+    int svrPortRangeStart = 0;
+    int svrPortRangeEnd   = 0;
+
+    if( *portNum <= 0 && ( tmpPtr = getenv( "svrPortRangeStart" ) ) != NULL ) {
+        int portRangeCount = 0;
+	    int bindCnt        = 0;
+        int myPortNum      = 0;
+
+        svrPortRangeStart = atoi( tmpPtr );
+
+        // =-=-=-=-=-=-=-
+        // test for env vars which describe the valid port range to scan
+        if( ( tmpPtr = getenv( "svrPortRangeEnd" ) ) != NULL ) { 
+            svrPortRangeEnd = atoi( tmpPtr );
+            if ( svrPortRangeEnd < svrPortRangeStart ) {
+                rodsLog( LOG_ERROR, "sockOpenForInConn: PortRangeStart %d > PortRangeEnd %d", 
+                                    svrPortRangeStart, svrPortRangeEnd);
+                svrPortRangeEnd = svrPortRangeStart + DEF_NUMBER_SVR_PORT - 1;
+            }
+        } else {
+            svrPortRangeEnd = svrPortRangeStart + DEF_NUMBER_SVR_PORT - 1;
+        }
+        
+        portRangeCount = svrPortRangeEnd   - svrPortRangeStart + 1;
+        myPortNum      = svrPortRangeStart + random() % portRangeCount;
+
+        // =-=-=-=-=-=-=-
+        // loop through port range and find one that sticks
+        while( bindCnt < portRangeCount ) {
+            if( myPortNum > svrPortRangeEnd ) {
+                myPortNum = svrPortRangeStart;
+            }
+
+            if( _rsComm->sock->open( myPortNum, "" ) )  {
+                *portNum = myPortNum;
+                rodsLog( LOG_DEBUG, "sockOpenForInConn: port number = %d", myPortNum );
+                break;
+            } // if success
+            bindCnt ++;
+            myPortNum ++;
+        } // while bindCnd < portRangeCount
+    } else {
+        // =-=-=-=-=-=-=-
+        // else use the provided port number parameter
+        status = _rsComm->sock->open( _port, "" );
+    } // else port > 0
+
+    // =-=-=-=-=-=-=-
+    // error out if unsuccessful
+    if( status < 0 ) { 
+	    status = SYS_SOCK_BIND_ERR - errno;
+        rodsLog( LOG_NOTICE, "sockOpenForInConn: bind socket error. portNum = %d, errno = %d", 
+                             *portNum, errno );
+        return ( status );
+    } // if status
+
+    if( addr != NULL ) {
+        struct sockaddr_in sin;
+#if defined(aix_platform)
+	socklen_t  length = sizeof (sin);
+#elif defined(windows_platform)
+	int length;
+#else
+        uint length = sizeof (sin);
+#endif
+        if (getsockname (sock, (struct sockaddr *) &sin, &length)) {
+            rodsLog (LOG_NOTICE,
+            "sockOpenForInConn() -- getsockname() failed: errno=%d", errno);
+            return SYS_SOCK_BIND_ERR - errno;
+	}
+	*portNum = ntohs (sin.sin_port);
+        *addr =  strdup (rods_inet_ntoa (sin.sin_addr));
+    }
+
+    return (sock);
+
+} // sockOpenForInConn
+
+
+
+
+#else
+
 /* open sock for incoming connection */
 int 
 sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
@@ -1485,4 +1609,5 @@ mySockClose (int sock)
 #endif
     return status;
 }
- 
+
+#endif // USE_BOOST_ASIO 

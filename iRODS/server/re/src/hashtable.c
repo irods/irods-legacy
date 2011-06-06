@@ -50,7 +50,7 @@ int insertIntoHashTable(Hashtable *h, char* key, void *value) {
 	if(b==NULL) {
 		return 0;
 	}
-	unsigned long hs = hash(key);
+	unsigned long hs = myhash(key);
 	unsigned long index = hs%h->size;
 	if(h->buckets[index] == NULL) {
 		h->buckets[index] = b;
@@ -67,7 +67,7 @@ int insertIntoHashTable(Hashtable *h, char* key, void *value) {
  * update hash table returns the pointer to the old value
  */
 void* updateInHashTable(Hashtable *h, char* key, void* value) {
-	unsigned long hs = hash(key);
+	unsigned long hs = myhash(key);
 	unsigned long index = hs%h->size;
 	if(h->buckets[index] != NULL) {
 		struct bucket *b0 = h->buckets[index];
@@ -87,7 +87,7 @@ void* updateInHashTable(Hashtable *h, char* key, void* value) {
  * delete from hash table
  */
 void *deleteFromHashTable(Hashtable *h, char* key) {
-	unsigned long hs = hash(key);
+	unsigned long hs = myhash(key);
 	unsigned long index = hs%h->size;
 	void *temp = NULL;
 	if(h->buckets[index] != NULL) {
@@ -119,7 +119,7 @@ void *deleteFromHashTable(Hashtable *h, char* key) {
  * returns NULL if not found
  */
 void* lookupFromHashTable(Hashtable *h, char* key) {
-	unsigned long hs = hash(key);
+	unsigned long hs = myhash(key);
 	unsigned long index = hs%h->size;
 	struct bucket *b0 = h->buckets[index];
 	while(b0!=NULL) {
@@ -134,7 +134,7 @@ void* lookupFromHashTable(Hashtable *h, char* key) {
  * returns NULL if not found
  */
 struct bucket* lookupBucketFromHashTable(Hashtable *h, char* key) {
-	unsigned long hs = hash(key);
+	unsigned long hs = myhash(key);
 	unsigned long index = hs%h->size;
 	struct bucket *b0 = h->buckets[index];
 	while(b0!=NULL) {

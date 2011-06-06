@@ -3,7 +3,7 @@
 /* reServerLib.c - functions for the irodsReServer */
 
 #ifndef windows_platform
-#include <pthread.h>
+// JMC #include <pthread.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif

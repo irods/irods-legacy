@@ -12,7 +12,7 @@
 #include <sys/types.h>
 
 #ifndef _WIN32
-#include <sys/socket.h>
+//#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #endif
@@ -28,6 +28,8 @@
 #include "QUANTAnet_rbudpSender_c.h"
 #include "QUANTAnet_rbudpReceiver_c.h"
 #endif	/* RBUDP_TRANSFER */
+
+#include "structFileSync.h" /* JMC */
 
 #define MAX_RECON_ERROR_CNT	10
 

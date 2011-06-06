@@ -370,3 +370,12 @@ endif
 # variable irodsServiceUser is set to the desired system user.
 # RUN_SERVER_AS_ROOT = 1
  
+# USE_BOOST -  specify whether the BOOST library should be used. BOOST_DIR is
+# the directory where the BOOST directory is located.
+# USE_BOOST=1
+ifdef USE_BOOST
+ifndef BOOST_DIR
+BOOST_DIR=/home/mwan/myapps/boost/install
+endif
+endif
+

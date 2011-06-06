@@ -3,7 +3,12 @@
 /* objMetaOpr.c - metadata operation at the object level */
 
 #ifndef windows_platform
-#include <pthread.h>
+
+#ifdef USE_BOOST
+#else
+// JMC	#include <pthread.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif

@@ -4,9 +4,13 @@
 /* initServer.c - Server initialization routines
  */
 
+#ifdef USE_BOOST
+#else
 #ifndef windows_platform
 #include <pthread.h>
 #endif
+#endif
+
 #include "initServer.h"
 #include "resource.h"
 #include "rsGlobalExtern.h"
@@ -1348,12 +1352,17 @@ initAgent (rsComm_t *rsComm)
         } else {
 	    rsComm->cookie = random ();
 	}
+#ifdef USE_BOOST
+	rsComm->lock = new boost::mutex;
+	rsComm->cond = new boost::condition_variable;
+	rsComm->reconnThr = new boost::thread( reconnManager, rsComm );
+#else
 	pthread_mutex_init (&rsComm->lock, NULL);
 	pthread_cond_init (&rsComm->cond, NULL);
         status = pthread_create  (&rsComm->reconnThr, pthread_attr_default,
               (void *(*)(void *)) reconnManager,
               (void *) rsComm);
-
+#endif
         if (status < 0) {
             rodsLog (LOG_ERROR, "initAgent: pthread_create failed, stat=%d",
 	      status);

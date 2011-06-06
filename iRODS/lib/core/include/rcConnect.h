@@ -21,6 +21,20 @@
 #include "dataObjInpOut.h"
 #include "irodsGuiProgressCallback.h"
 
+#ifdef USE_BOOST
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
+#endif
+
+#ifdef USE_BOOST_ASIO
+// =-=-=-=-=-=-=-
+// JMC :: my wrapper around boost::asio tcp & udp sockets
+//     :: we need this since there is no non-template base
+//     :: class
+#include "socket_wrapper.hpp"
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -97,10 +111,17 @@ typedef struct {
     int windowSize;
     int reconnectedSock;
     time_t reconnTime;
+#ifdef USE_BOOST
+    volatile bool		exit_flg;
+    boost::thread*              reconnThr;
+    boost::mutex*               lock;
+    boost::condition_variable*  cond;
+#else
 #ifndef windows_platform
     pthread_t reconnThr;
     pthread_mutex_t lock;
     pthread_cond_t cond;
+#endif
 #endif
     procState_t agentState;
     procState_t clientState;
@@ -117,7 +138,11 @@ typedef struct {
 /* the server connection handle. probably should go somewhere else */
 typedef struct {
     irodsProt_t irodsProt;
+#ifdef USE_BOOST_ASIO
+    irods::socket_wrapper* sock;
+#else
     int sock;
+#endif
     int connectCnt;
     struct sockaddr_in  localAddr;   /* local address */
     struct sockaddr_in  remoteAddr;  /* remote address */
@@ -141,10 +166,16 @@ typedef struct {
     char *reconnAddr;
     int cookie;
 
+#ifdef USE_BOOST
+    boost::thread*              reconnThr;
+    boost::mutex*               lock;
+    boost::condition_variable*  cond;
+#else
 #ifndef windows_platform
     pthread_t reconnThr;
     pthread_mutex_t lock;
     pthread_cond_t cond;
+#endif
 #endif
     procState_t agentState;	
     procState_t clientState;

@@ -203,6 +203,8 @@ LDFLAGS += -L$(CCMALLOC_DIR)/lib
 endif
 
 
+# JMC :: BOOST	Not needed MW
+# LDFLAGS += -L/home/jasonc/dev/lib/boost/boost_1_45_0/stage/lib -lboost_thread
 
 
 #

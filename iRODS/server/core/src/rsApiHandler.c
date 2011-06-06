@@ -12,11 +12,20 @@
 #include "regReplica.h"
 #include "unregDataObj.h"
 #include "modAVUMetadata.h"
+
+#ifdef USE_BOOST
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
+#include <setjmp.h>
+jmp_buf Jenv;
+#else
 #ifndef windows_platform
 #include <pthread.h>
 #include <setjmp.h>
 jmp_buf Jenv;
 #endif
+#endif	/* USE_BOOST */
 
 int
 rsApiHandler (rsComm_t *rsComm, int apiNumber, bytesBuf_t *inputStructBBuf,
@@ -236,9 +245,9 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
     bytesBuf_t *rErrorBBuf = NULL;
     bytesBuf_t *myRErrorBBuf;
 
-#ifndef windows_platform
+//#ifndef windows_platform
     svrChkReconnAtSendStart (rsComm);
-#endif
+//#endif
 
     if (retVal == SYS_HANDLER_DONE_NO_ERROR) {
 	/* not actually an error */
@@ -256,9 +265,9 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
              "sendApiReply: packStruct error, status = %d", status);
             sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
               NULL, NULL, status, rsComm->irodsProt);
-#ifndef windows_platform
+//#ifndef windows_platform
             svrChkReconnAtSendEnd (rsComm);
-#endif
+//#endif
             return status;
 	}
 
@@ -280,9 +289,9 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
              "sendApiReply: packStruct error, status = %d", status);
             sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
               NULL, NULL, status, rsComm->irodsProt);
-#ifndef windows_platform
+//#ifndef windows_platform
             svrChkReconnAtSendEnd (rsComm);
-#endif
+//#endif
             return status;
         }
 
@@ -298,15 +307,24 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 	int status1;
         rodsLog (LOG_NOTICE,
          "sendApiReply: sendRodsMsg error, status = %d", status);
-#ifndef windows_platform
+//#ifndef windows_platform
         if (rsComm->reconnSock > 0) {
 	    int savedStatus = status;
+#ifdef USE_BOOST
+	    boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
+            rodsLog (LOG_DEBUG,
+              "sendApiReply: svrSwitchConnect. cliState = %d,agState=%d",
+              rsComm->clientState, rsComm->agentState);
+	    status1 = svrSwitchConnect (rsComm);
+	    boost_lock.unlock();
+#else
 	    pthread_mutex_lock (&rsComm->lock);
             rodsLog (LOG_DEBUG,
               "sendApiReply: svrSwitchConnect. cliState = %d,agState=%d",
               rsComm->clientState, rsComm->agentState);
 	    status1 = svrSwitchConnect (rsComm);
 	    pthread_mutex_unlock (&rsComm->lock);
+#endif
 	    if (status1 > 0) {
 	        /* should not be here */
                 rodsLog (LOG_NOTICE,
@@ -322,12 +340,12 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 		}
 	    }
 	}
-#endif
+//#endif
     }
 
-#ifndef windows_platform
+//#ifndef windows_platform
     svrChkReconnAtSendEnd (rsComm);
-#endif
+//#endif
 
     freeBBuf (outStructBBuf);
     freeBBuf (rErrorBBuf);
@@ -423,18 +441,18 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
-#ifndef windows_platform
+//#ifndef windows_platform
     svrChkReconnAtReadStart (rsComm);
-#endif
+//#endif
     /* everything else are set in readMsgBody */
 
     memset (&bsBBuf, 0, sizeof (bsBBuf));
 
     /* read the header */
 
-#ifdef windows_platform
-    status = readMsgHeader (rsComm->sock, &myHeader, NULL);
-#else
+//#ifdef windows_platform
+//    status = readMsgHeader (rsComm->sock, &myHeader, NULL);
+//#else
     if ((flags & READ_HEADER_TIMEOUT) != 0) {
 	int retryCnt = 0;
 #if 0
@@ -485,10 +503,10 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     } else {
         status = readMsgHeader (rsComm->sock, &myHeader, NULL);
     }
-#endif
+//#endif
 
     if (status < 0) {
-#ifndef windows_platform
+//#ifndef windows_platform
         rodsLog (LOG_DEBUG,
           "readAndProcClientMsg: readMsgHeader error. status = %d", status);
         /* attempt to accept reconnect. ENOENT result  from
@@ -496,12 +514,21 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
         if (rsComm->reconnSock > 0) {
 	    int savedStatus = status;
 	    /* try again. the socket might have changed */ 
+#ifdef USE_BOOST
+	    boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
+	    rodsLog (LOG_DEBUG,
+              "readAndProcClientMsg: svrSwitchConnect. cliState = %d,agState=%d",
+              rsComm->clientState, rsComm->agentState);
+	    svrSwitchConnect (rsComm);
+	    boost_lock.unlock();
+#else
 	    pthread_mutex_lock (&rsComm->lock);
             rodsLog (LOG_DEBUG,
               "readAndProcClientMsg: svrSwitchConnect. cliState = %d,agState=%d",
               rsComm->clientState, rsComm->agentState);
 	    svrSwitchConnect (rsComm);
 	    pthread_mutex_unlock (&rsComm->lock);
+#endif
 	    status = readMsgHeader (rsComm->sock, &myHeader, NULL);
 	    if (status < 0) {
                 svrChkReconnAtReadEnd (rsComm);
@@ -511,9 +538,9 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
             svrChkReconnAtReadEnd (rsComm);
             return (status);
 	}
-#else
-	return (status);
-#endif
+//#else
+//	return (status);
+//#endif
     }
 
 #ifdef SYS_TIMING
@@ -528,15 +555,15 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     if (status < 0) {
         rodsLog (LOG_NOTICE,
           "agentMain: readMsgBody error. status = %d", status);
-#ifndef windows_platform
+//#ifndef windows_platform
         svrChkReconnAtReadEnd (rsComm);
-#endif
+//#endif
         return (status);
     }
 
-#ifndef windows_platform
+//#ifndef windows_platform
     svrChkReconnAtReadEnd (rsComm);
-#endif
+//#endif
 
     /* handler switch by msg type */
 
@@ -682,7 +709,7 @@ collOprStat_t *collOprStat, int retval)
     return (status);
 }
 
-#ifndef windows_platform
+//#ifndef windows_platform
 void
 readTimeoutHandler (int sig)
 {
@@ -699,5 +726,5 @@ readTimeoutHandler (int sig)
         longjmp (Jenv, READ_HEADER_TIMED_OUT);
     }
 }
-#endif
+//#endif
 

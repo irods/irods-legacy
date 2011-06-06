@@ -29,7 +29,17 @@ CC_IS_GCC=0
 endif
 endif
 
+dded by Jason
+CCFLAGS += -Wno-write-strings
 
+# =-=-=-=-=-=-=-
+# JMC :: BOOST Include & Linking
+ifdef USE_BOOST
+CCFLAGS+=-I$(BOOST_DIR)/include
+CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND
+LDRFLAGS+=-L$(BOOST_DIR)/lib -lboost_thread
+endif
+# =-=-=-=-=-=-=-
 
 
 ifdef CCFLAGS

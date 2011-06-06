@@ -28,15 +28,38 @@ agentProc_t *ConnReqHead = NULL;
 agentProc_t *SpawnReqHead = NULL;
 agentProc_t *BadReqHead = NULL;
 
+#if 0	/* defined in config.mk */
+#define USE_BOOST 
+#define USE_BOOST_COND
+#endif
+
 #ifndef SINGLE_SVR_THR
-pthread_mutex_t ReadReqCondMutex;
-pthread_cond_t ReadReqCond;
-pthread_mutex_t ConnectedAgentMutex;
-pthread_mutex_t SpawnReqCondMutex;
-pthread_cond_t SpawnReqCond;
-pthread_mutex_t BadReqMutex;
-pthread_t ReadWorkerThread[NUM_READ_WORKER_THR];
-pthread_t SpawnManagerThread;
+	#ifdef USE_BOOST
+	#include <boost/thread/thread.hpp>
+	#include <boost/thread/mutex.hpp>
+	#include <boost/thread/condition.hpp>
+	boost::mutex		  ConnectedAgentMutex;
+	boost::mutex		  BadReqMutex;
+	boost::thread*		  ReadWorkerThread[NUM_READ_WORKER_THR];
+	boost::thread*		  SpawnManagerThread;
+	#else
+	pthread_mutex_t ConnectedAgentMutex;
+	pthread_mutex_t BadReqMutex;
+	pthread_t       ReadWorkerThread[NUM_READ_WORKER_THR];
+	pthread_t       SpawnManagerThread;
+	#endif
+#endif
+
+#ifdef USE_BOOST_COND
+	boost::mutex		  ReadReqCondMutex;
+	boost::mutex		  SpawnReqCondMutex;
+	boost::condition_variable ReadReqCond;
+	boost::condition_variable SpawnReqCond;
+#else
+	pthread_mutex_t ReadReqCondMutex;
+	pthread_mutex_t SpawnReqCondMutex;
+	pthread_cond_t ReadReqCond;
+	pthread_cond_t SpawnReqCond;
 #endif
 
 #ifndef windows_platform   /* all UNIX */
@@ -385,7 +408,11 @@ getAgentProcByPid (int childPid, agentProc_t **agentProcHead)
     prevAgentProc = NULL;
  
 #ifndef SINGLE_SVR_THR
-    pthread_mutex_lock (&ConnectedAgentMutex);
+	#ifdef USE_BOOST
+	boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
+	#else
+	pthread_mutex_lock(&ConnectedAgentMutex);
+	#endif
 #endif
     tmpAgentProc = *agentProcHead;
 
@@ -402,7 +429,11 @@ getAgentProcByPid (int childPid, agentProc_t **agentProcHead)
 	tmpAgentProc = tmpAgentProc->next;
     }
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST
+    con_agent_lock.unlock();
+    #else
     pthread_mutex_unlock (&ConnectedAgentMutex);
+    #endif
 #endif
     return (tmpAgentProc);
 }
@@ -595,13 +626,21 @@ agentProc_t **agentProcHead)
 
     connReq->pid = childPid;
 #ifndef SINGLE_SVR_THR
-    pthread_mutex_lock (&ConnectedAgentMutex);
+	#ifdef USE_BOOST
+	boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
+	#else
+	pthread_mutex_lock (&ConnectedAgentMutex);
+	#endif
 #endif
 
     queAgentProc (connReq, agentProcHead, TOP_POS);
 
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST
+    con_agent_lock.unlock();
+    #else
     pthread_mutex_unlock (&ConnectedAgentMutex);
+    #endif
 #endif
 
     return (0);
@@ -614,7 +653,11 @@ getAgentProcCnt ()
     int count = 0;
 
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST
+    boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
+    #else
     pthread_mutex_lock (&ConnectedAgentMutex);
+    #endif
 #endif
 
     tmpAagentProc = ConnectedAgentHead;
@@ -623,7 +666,11 @@ getAgentProcCnt ()
 	tmpAagentProc = tmpAagentProc->next;
     }
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST
+    con_agent_lock.unlock();
+    #else
     pthread_mutex_unlock (&ConnectedAgentMutex);
+    #endif
 #endif
 
     return count;
@@ -656,7 +703,11 @@ chkConnectedAgentProcQue ()
     prevAgentProc = NULL;
 
 #ifndef SINGLE_SVR_THR
-    pthread_mutex_lock (&ConnectedAgentMutex);
+	#ifdef USE_BOOST
+	boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
+	#else
+	pthread_mutex_lock (&ConnectedAgentMutex);
+	#endif
 #endif
     tmpAgentProc = ConnectedAgentHead;
 
@@ -685,7 +736,11 @@ chkConnectedAgentProcQue ()
 	}
     }
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST
+    con_agent_lock.unlock();
+    #else
     pthread_mutex_unlock (&ConnectedAgentMutex);
+    #endif
 #endif
     return 0;
 }
@@ -878,7 +933,11 @@ addConnReqToQue (rsComm_t *rsComm, int sock)
     agentProc_t *myConnReq;
 
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST_COND
+    boost::unique_lock< boost::mutex > read_req_lock( ReadReqCondMutex );
+    #else
     pthread_mutex_lock (&ReadReqCondMutex);
+    #endif
 #endif
     myConnReq = (agentProc_t*)calloc (1, sizeof (agentProc_t));
 
@@ -887,8 +946,13 @@ addConnReqToQue (rsComm_t *rsComm, int sock)
     queAgentProc (myConnReq, &ConnReqHead, BOTTOM_POS);
 
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST_COND
+    ReadReqCond.notify_all(); // NOTE:: check all vs one
+    read_req_lock.unlock();
+    #else
     pthread_cond_signal (&ReadReqCond);
     pthread_mutex_unlock (&ReadReqCondMutex);
+    #endif
 #endif
 
     return (0);
@@ -898,12 +962,14 @@ int
 initConnThreadEnv ()
 {
 #ifndef SINGLE_SVR_THR
+    #ifndef USE_BOOST_COND
     pthread_mutex_init (&ReadReqCondMutex, NULL);
     pthread_mutex_init (&ConnectedAgentMutex, NULL);
     pthread_mutex_init (&SpawnReqCondMutex, NULL);
     pthread_mutex_init (&BadReqMutex, NULL);
     pthread_cond_init (&ReadReqCond, NULL);
     pthread_cond_init (&SpawnReqCond, NULL);
+    #endif
 #endif
     return (0);
 }
@@ -915,30 +981,50 @@ getConnReqFromQue ()
 
     while (myConnReq == NULL) {
 #ifndef SINGLE_SVR_THR
-        pthread_mutex_lock (&ReadReqCondMutex);
+	#ifdef USE_BOOST_COND
+	boost::unique_lock<boost::mutex> read_req_lock( ReadReqCondMutex );
+	#else
+	pthread_mutex_lock (&ReadReqCondMutex);
+	#endif
 #endif
         if (ConnReqHead != NULL) {
             myConnReq = ConnReqHead;
             ConnReqHead = ConnReqHead->next;
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_unlock (&ReadReqCondMutex);
+	    #ifdef USE_BOOST_COND
+	    read_req_lock.unlock();
+	    #else
+	    pthread_mutex_unlock (&ReadReqCondMutex);
+	    #endif
 #endif
             break;
         }
 
 #ifndef SINGLE_SVR_THR
-        pthread_cond_wait (&ReadReqCond, &ReadReqCondMutex);
+	#ifdef USE_BOOST_COND
+	ReadReqCond.wait( read_req_lock );
+	#else
+	pthread_cond_wait (&ReadReqCond, &ReadReqCondMutex);
+	#endif
 #endif
         if (ConnReqHead == NULL) {
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_unlock (&ReadReqCondMutex);
+	#ifdef USE_BOOST_COND
+	read_req_lock.unlock();
+	#else
+	pthread_mutex_unlock (&ReadReqCondMutex);
+	#endif
 #endif
             continue;
         } else {
             myConnReq = ConnReqHead;
             ConnReqHead = ConnReqHead->next;
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_unlock (&ReadReqCondMutex);
+	    #ifdef USE_BOOST_COND
+	    read_req_lock.unlock();
+	    #else
+	    pthread_mutex_unlock (&ReadReqCondMutex);
+	    #endif
 #endif
             break;
         }
@@ -956,16 +1042,24 @@ startProcConnReqThreads ()
 
     initConnThreadEnv ();
     for (i = 0; i < NUM_READ_WORKER_THR; i++) {
-        status = pthread_create(&ReadWorkerThread[i], NULL,
+	#ifdef USE_BOOST
+	ReadWorkerThread[i] = new boost::thread( readWorkerTask );
+	#else
+	status = pthread_create(&ReadWorkerThread[i], NULL, 
           (void *(*)(void *)) readWorkerTask, (void *) NULL);
+	#endif
 	if (status < 0) {
 	    rodsLog (LOG_ERROR,
 	      "pthread_create of readWorker %d failed, errno = %d",
 	      i, errno);
 	}
     }
-    status = pthread_create(&SpawnManagerThread, NULL,
+#ifdef USE_BOOST
+    SpawnManagerThread = new boost::thread( spawnManagerTask );
+#else
+    status = pthread_create(&SpawnManagerThread, NULL, 
       (void *(*)(void *)) spawnManagerTask, (void *) NULL);
+    #endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "pthread_create of spawnManage failed, errno = %d", errno);
@@ -1001,11 +1095,19 @@ readWorkerTask ()
               inet_ntoa (myConnReq->remoteAddr.sin_addr), status);
             sendVersion (newSock, status, 0, NULL, 0);
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_lock (&BadReqMutex);
+	    #ifdef USE_BOOST
+	    boost::unique_lock<boost::mutex> bad_req_lock( BadReqMutex );
+	    #else
+	    pthread_mutex_lock (&BadReqMutex);
+	    #endif
 #endif
 	    queAgentProc (myConnReq, &BadReqHead, TOP_POS);
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_unlock (&BadReqMutex);
+	    #ifdef USE_BOOST
+	    bad_req_lock.unlock();
+	    #else
+	    pthread_mutex_unlock (&BadReqMutex);
+	    #endif
 #endif
             mySockClose (newSock);
 	} else if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
@@ -1025,12 +1127,21 @@ readWorkerTask ()
 	    myConnReq->startupPack = *startupPack;
 	    free (startupPack);
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_lock (&SpawnReqCondMutex);
+	    #ifdef USE_BOOST_COND
+	    boost::unique_lock< boost::mutex > spwn_req_lock( SpawnReqCondMutex );
+	    #else
+	    pthread_mutex_lock (&SpawnReqCondMutex);
+	    #endif
 #endif
 	    queAgentProc (myConnReq, &SpawnReqHead, BOTTOM_POS);
 #ifndef SINGLE_SVR_THR
-            pthread_cond_signal (&SpawnReqCond);
-            pthread_mutex_unlock (&SpawnReqCondMutex);
+	    #ifdef USE_BOOST_COND
+	    SpawnReqCond.notify_all(); // NOTE:: look into notify_one vs notify_all 
+	    spwn_req_lock.unlock();
+	    #else
+	    pthread_cond_signal (&SpawnReqCond);
+	    pthread_mutex_unlock (&SpawnReqCondMutex);
+	    #endif
 #endif
 	}
     }
@@ -1045,14 +1156,23 @@ spawnManagerTask ()
     uint agentQueChkTime = 0;
     while (1) {
 #ifndef SINGLE_SVR_THR
-        pthread_mutex_lock (&SpawnReqCondMutex);
-        pthread_cond_wait (&SpawnReqCond, &SpawnReqCondMutex);
+	#ifdef USE_BOOST_COND
+	boost::unique_lock<boost::mutex> spwn_req_lock( SpawnReqCondMutex );
+	SpawnReqCond.wait( spwn_req_lock );
+	#else
+	pthread_mutex_lock (&SpawnReqCondMutex);
+	pthread_cond_wait (&SpawnReqCond, &SpawnReqCondMutex);
+	#endif
 #endif
 	while (SpawnReqHead != NULL) {
             mySpawnReq = SpawnReqHead;
 	    SpawnReqHead = mySpawnReq->next;
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_unlock (&SpawnReqCondMutex);
+	    #ifdef USE_BOOST_COND
+	    spwn_req_lock.unlock();
+	    #else
+	    pthread_mutex_unlock (&SpawnReqCondMutex);
+	    #endif
 #endif
             status = spawnAgent (mySpawnReq, &ConnectedAgentHead);
             close (mySpawnReq->sock);
@@ -1072,11 +1192,19 @@ spawnManagerTask ()
                   inet_ntoa (mySpawnReq->remoteAddr.sin_addr));
 	    }
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_lock (&SpawnReqCondMutex);
+	    #ifdef USE_BOOST_COND
+	    spwn_req_lock.lock();
+	    #else
+	    pthread_mutex_lock (&SpawnReqCondMutex);
+	    #endif
 #endif
         }
 #ifndef SINGLE_SVR_THR
-        pthread_mutex_unlock (&SpawnReqCondMutex);
+	#ifdef USE_BOOST_COND
+	spwn_req_lock.unlock();
+	#else
+	pthread_mutex_unlock (&SpawnReqCondMutex);
+	#endif
 #endif
 	curTime = time (0);
 	if (curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
@@ -1147,7 +1275,11 @@ procBadReq ()
     agentProc_t *tmpConnReq, *nextConnReq;
     /* just free them for now */
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST
+    boost::unique_lock< boost::mutex > bad_req_lock( BadReqMutex );
+    #else
     pthread_mutex_lock (&BadReqMutex);
+    #endif
 #endif
     tmpConnReq = BadReqHead;
     while (tmpConnReq != NULL) {
@@ -1157,7 +1289,11 @@ procBadReq ()
     }
     BadReqHead = NULL;
 #ifndef SINGLE_SVR_THR
+    #ifdef USE_BOOST
+    bad_req_lock.unlock();
+    #else
     pthread_mutex_unlock (&BadReqMutex);
+    #endif
 #endif
 
     return 0;
