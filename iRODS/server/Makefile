@@ -50,7 +50,7 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
-        $(svrCoreObjDir)/fileDriverNoOpFunctions.o
+		$(svrCoreObjDir)/fileDriverNoOpFunctions.o
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
@@ -263,7 +263,6 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/typing.o \
 		$(svrReObjDir)/utils.o \
 		$(svrReObjDir)/cache.o \
-                $(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reIn2p3SysRule.o \
 		$(svrReObjDir)/nre.reLib1.o	\
 		$(svrReObjDir)/nre.reLib2.o \
@@ -278,6 +277,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/reDBO.o \
 		$(svrReObjDir)/reRDA.o \
 		$(svrReObjDir)/testMS.o \
+		$(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reAutoReplicateService.o
 
 INCLUDES +=	-I$(svrReIncDir)
@@ -468,7 +468,8 @@ clean:
 	@rm -f $(svrCoreObjDir)/ruleAdmin.o $(serverBinDir)/ruleAdmin
 
 
-
+# Not needed
+# LDFLAGS += /home/jasonc/dev/lib/boost/boost_1_45_0/stage/lib/libboost_thread.a
 
 #
 # Compilation Targets
