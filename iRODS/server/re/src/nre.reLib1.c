@@ -11,6 +11,7 @@
 #include "rules.h"
 #include "cache.h"
 #include "functions.h"
+#include "configuration.h"
 
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal
@@ -866,11 +867,8 @@ clearRuleStruct(ruleStruct_t *inRuleStrct)
 
   }
   inRuleStrct->MaxNumOfRules  = 0;
-	if(inRuleStrct == &coreRuleStrct) {
-		clearIndex(&coreRuleIndex);
-	} else if(inRuleStrct == &appRuleStrct) {
-		clearIndex(&appRuleIndex);
-	}
+  clearRuleSetAndIndex(inRuleStrct);
+  createCoreAppExtRuleNodeIndex();
 
   return(0);
 }
@@ -901,9 +899,9 @@ int clearFuncMapStruct( rulefmapdef_t* inRuleFuncMapDef)
   }
   inRuleFuncMapDef->MaxNumOfFMaps = 0;
 	if(inRuleFuncMapDef == &coreRuleFuncMapDef) {
-		clearIndex(&coreRuleFuncMapDefIndex);
+		clearIndex(coreRuleFuncMapDefIndex);
 	} else if(inRuleFuncMapDef == &appRuleFuncMapDef) {
-		clearIndex(&appRuleFuncMapDefIndex);
+		clearIndex(appRuleFuncMapDefIndex);
 	}
 
   return(0);
@@ -1094,19 +1092,29 @@ findNextRule (char *action,  int *ruleInx)
 
    if (i < 0)
      i = 0;
-   if (i < MAX_NUM_APP_RULES) {
+   if (i < APP_RULE_INDEX_OFF) {
      for( ; i < appRuleStrct.MaxNumOfRules; i++) {
        if (!strcmp( appRuleStrct.action[i],action)) {
 	 *ruleInx = i;
 	 return(0);
        }
      }
-     i = MAX_NUM_APP_RULES;
+     i = APP_RULE_INDEX_OFF;
    }
-   i  = i - MAX_NUM_APP_RULES;
+   i  = i - APP_RULE_INDEX_OFF;
+   if (i < CORE_RULE_INDEX_OFF) {
+     for( ; i < appRuleStrct.MaxNumOfRules; i++) {
+       if (!strcmp( appRuleStrct.action[i],action)) {
+	 *ruleInx = i;
+	 return(0);
+       }
+     }
+     i = CORE_RULE_INDEX_OFF;
+   }
+   i  = i - CORE_RULE_INDEX_OFF;
    for( ; i < coreRuleStrct.MaxNumOfRules; i++) {
      if (!strcmp( coreRuleStrct.action[i],action)) {
-       *ruleInx = i + MAX_NUM_APP_RULES;
+       *ruleInx = i + APP_RULE_INDEX_OFF;
        return(0);
      }
    }
@@ -1120,7 +1128,7 @@ getRule(int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
 	char *ruleAction, char *ruleRecovery, int rSize)
 {
 
-  if (ri < MAX_NUM_APP_RULES) {
+  if (ri < CORE_RULE_INDEX_OFF) {
     rstrcpy( ruleBase , appRuleStrct.ruleBase[ri], rSize);
     rstrcpy( ruleHead , appRuleStrct.ruleHead[ri], rSize);
     rstrcpy( ruleCondition , appRuleStrct.ruleCondition[ri], rSize);
@@ -1128,7 +1136,7 @@ getRule(int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
     rstrcpy( ruleRecovery , appRuleStrct.ruleRecovery[ri], rSize);
   }
   else {
-    ri = ri - MAX_NUM_APP_RULES;
+    ri = ri - CORE_RULE_INDEX_OFF;
     rstrcpy( ruleBase , coreRuleStrct.ruleBase[ri], rSize);
     rstrcpy( ruleHead , coreRuleStrct.ruleHead[ri], rSize);
     rstrcpy( ruleCondition , coreRuleStrct.ruleCondition[ri], rSize);

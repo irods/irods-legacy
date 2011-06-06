@@ -5,6 +5,7 @@
 #include "index.h"
 #include "functions.h"
 #include "arithmetics.h"
+#include "configuration.h"
 
 #define ERROR(cond) if(cond) { goto error; }
 
@@ -20,9 +21,6 @@ typedef struct {
 extern int NumOfAction;
 extern microsdef_t MicrosTable[];
 #endif
-
-RuleSet coreRules, appRules;
-Hashtable *funcDescIndex = NULL;
 
 /**
  * Read a set of rules from files.
@@ -185,34 +183,38 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
         return POINTER_ERROR;
     }
 
-    int tempLen=coreRules.len;
-    Hashtable *tempIndex = NULL;
+    int tempLen = ruleEngineConfig.extRuleSet->len;
+
+    int checkPoint=checkPointExtRuleSet();
 
     int errloc;
-    /* add rules into rule index */
-    if(parseRuleSet(e, &coreRules, &errloc, errmsg, r) == -1) {
+    /* add rules into ext rule set */
+    if(parseRuleSet(e, ruleEngineConfig.extRuleSet, &errloc, errmsg, r) == -1) {
         deletePointer(e);
         return PARSER_ERROR;
     }
 
+    /* save secondary index status */
+    RuleEngineStatus cis = ruleEngineConfig.condIndexStatus;
+
+    /* add rules into rule index */
+	int i;
+	for(i=tempLen;i<ruleEngineConfig.extRuleSet->len;i++) {
+		prependRuleIntoIndex(ruleEngineConfig.extRuleSet->rules[i], i, r);
+		if(lookupFromHashTable(ruleEngineConfig.condIndex, RULE_NAME(ruleEngineConfig.extRuleSet->rules[i]->node))!=NULL) {
+			ruleEngineConfig.condIndexStatus = DISABLED;
+		}
+	}
+
     /* exec the first rule */
-    RuleDesc *rd = coreRules.rules[tempLen];
+    RuleDesc *rd = ruleEngineConfig.extRuleSet->rules[tempLen];
 	node = rd->node;
-
-    int updateIndex = coreRules.len - tempLen > 1 || isRecursive(node);
-
-    if(updateIndex) {
-        tempIndex = coreRuleIndex;
-        coreRuleIndex = NULL;
-        createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
-    }
-
 
     Hashtable *varTypes = newHashTable(100);
 
     List *typingConstraints = newList(r);
     Node *errnode;
-    ExprType *type = typeRule(rd, funcDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
+    ExprType *type = typeRule(rd, ruleEngineConfig.funcDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
 
 	deleteHashTable(varTypes, nop);
 
@@ -224,11 +226,12 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
         rescode = TYPE_ERROR;
     }
 
-    /* remove rules from core rules */
-    coreRules.len = tempLen;
-    if(updateIndex) {
-        deleteHashTable(coreRuleIndex, nop);
-        coreRuleIndex = tempIndex;
+    /* remove rules from ext rule set */
+    popExtRuleSet(checkPoint);
+
+    /* restore secondary index status */
+    if(ruleEngineConfig.condIndexStatus == DISABLED) {
+    	ruleEngineConfig.condIndexStatus = cis;
     }
 
     return rescode;
@@ -333,7 +336,7 @@ ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, Lis
 }
 
 ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r) {
-    Hashtable *funcDesc = funcDescIndex;
+    Hashtable *funcDesc = ruleEngineConfig.funcDescIndex;
     Hashtable *ruleType = newHashTable(MAX_NUM_RULES * 2);
     ExprType *res;
     int i;
@@ -393,7 +396,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
     if(!node->typed) {
         /*printTree(node, 0); */
         List *typingConstraints = newList(r);
-        resType = typeExpression3(node, funcDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
+        resType = typeExpression3(node, ruleEngineConfig.funcDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
         if(resType->nodeType == T_ERROR) {
             addRErrorMsg(errmsg, -1, "type error: in rule");
@@ -401,7 +404,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
             RETURN;
         }
         postProcessCoercion(node, varTypes, errmsg, errnode, r);
-        postProcessActions(node, funcDescIndex, errmsg, errnode, r);
+        postProcessActions(node, ruleEngineConfig.funcDescIndex, errmsg, errnode, r);
         /*    printTree(node, 0); */
         deleteHashTable(varTypes, nop);
         varTypes = NULL;
@@ -508,11 +511,14 @@ int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *
 Node* getRuleNode(int ri)
 {
 
-	if (ri < MAX_NUM_APP_RULES) {
-		return appRules.rules[ri]->node;
+	if(ri< APP_RULE_INDEX_OFF) {
+		return ruleEngineConfig.extRuleSet->rules[ri]->node;
+	} else
+	if (ri < CORE_RULE_INDEX_OFF) {
+		return ruleEngineConfig.appRuleSet->rules[ri]->node;
 	} else {
-		ri = ri - MAX_NUM_APP_RULES;
-		return coreRules.rules[ri]->node;
+		ri = ri - CORE_RULE_INDEX_OFF;
+		return ruleEngineConfig.coreRuleSet->rules[ri]->node;
 	}
 	return(NULL);
 }

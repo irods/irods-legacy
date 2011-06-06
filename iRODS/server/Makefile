@@ -263,6 +263,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/typing.o \
 		$(svrReObjDir)/utils.o \
 		$(svrReObjDir)/cache.o \
+                $(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reIn2p3SysRule.o \
 		$(svrReObjDir)/nre.reLib1.o	\
 		$(svrReObjDir)/nre.reLib2.o \

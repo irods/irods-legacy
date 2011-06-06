@@ -8,6 +8,7 @@
 #include "index.h"
 #include "rules.h"
 #include "functions.h"
+#include "configuration.h"
 
 #ifndef DEBUG
 #include "regExpMatch.h"
@@ -90,7 +91,7 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 					res = evaluateVar3(expr->text, expr, rei, reiSaveFlag,  env, errmsg,r);
 					break;
 			case TK_TEXT:
-					fd = (FunctionDesc *)lookupFromHashTable(funcDescIndex, expr->text);
+					fd = (FunctionDesc *)lookupFromHashTable(ruleEngineConfig.funcDescIndex, expr->text);
 					if(fd!=NULL) {
 						int nArgs = 0;
 						ExprType *type = fd->exprType;
@@ -447,7 +448,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     List *localTypingConstraints = NULL;
     FunctionDesc *fd = NULL;
     /* look up function descriptor */
-    fd = (FunctionDesc *)lookupFromHashTable(funcDescIndex, fn);
+    fd = (FunctionDesc *)lookupFromHashTable(ruleEngineConfig.funcDescIndex, fn);
         /* find matching arity */
 /*    if(fd!=NULL) {
         if((fd->exprType->vararg == ONCE && T_FUNC_ARITY(fd->exprType) == n) ||
@@ -677,7 +678,7 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
       if (i >= 0) {
             if (varValue != NULL) {
                 Res *res = NULL;
-                FunctionDesc *fd = (FunctionDesc *) lookupBucketFromHashTable(funcDescIndex, varMap);
+                FunctionDesc *fd = (FunctionDesc *) lookupBucketFromHashTable(ruleEngineConfig.funcDescIndex, varMap);
                 if (fd == NULL) {
                     /* default to string */
                     res = newStringRes(r, (char *) varValue);
@@ -746,7 +747,7 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
 		if (actionRet->nodeType == N_ERROR && (
                         actionRet->value.errcode == NO_RULE_FOUND_ERR ||
                         actionRet->value.errcode == NO_MORE_RULES_ERR)) {
-			snprintf(buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, coreRules.len);
+			snprintf(buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, availableRules());
                         generateErrMsg(buf, node->expr, node->base, buf2);
                         addRErrorMsg(errmsg, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR, buf2);
                         /*dumpHashtableKeys(coreRules); */
@@ -956,7 +957,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
             RETURN;
         }
 
-        rule = getRuleNode(indexNode->ruleIndex+MAX_NUM_APP_RULES); /* increase the index to move it to core rules index below MAX_NUM_APP_RULES are app rules */
+        rule = getRuleNode(indexNode->ruleIndex+CORE_RULE_INDEX_OFF); /* increase the index to move it to core rules index below MAX_NUM_APP_RULES are app rules */
 
         status = execRuleNodeRes(rule, args, argc,  env, rei, reiSaveFlag, errmsg, r);
 
@@ -1000,8 +1001,8 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
     mapExternalFuncToInternalProc2(ruleName);
 
     /* try to find rule by cond index */
-    if(condIndex!=NULL) { /* if index has been initialized */
-        CondIndexVal *civ = (CondIndexVal *)lookupFromHashTable(condIndex, ruleName);
+    if(ruleEngineConfig.condIndexStatus == INITIALIZED) { /* if index has been initialized */
+        CondIndexVal *civ = (CondIndexVal *)lookupFromHashTable(ruleEngineConfig.condIndex, ruleName);
         if(civ != NULL) {
             statusRes = execRuleFromCondIndex(ruleName, args, argc, civ,  env, rei, reiSaveFlag, errmsg, r);
             /* restore global flag */
@@ -1204,7 +1205,7 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
         char matcherName[MAX_NAME_LEN];
         matcherName[0]='~';
         strcpy(matcherName+1, pattern->subtrees[0]->text);
-        int ruleInx = 0;
+        int ruleInx = -1;
         if(findNextRule2(matcherName, &ruleInx) == 0) {
             v = execRule(matcherName, &val, 1, 0, env, rei, reiSaveFlag, errmsg, r);
             ERROR2(v->nodeType == N_ERROR, "user defined pattern function error");

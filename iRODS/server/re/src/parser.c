@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "rules.h"
 #include "functions.h"
+#include "configuration.h"
 
 int num_ops = 30;
 Op new_ops[] = {
@@ -210,8 +211,8 @@ int isVariableNode(Node *node) {
         isLocalVariableNode(node) ||
         isSessionVariableNode(node);
 }
-int nKeywords = 12;
-char *keywords[] = { "in", "let", "for", "while", "foreach", "if", "then", "else", "data", "on", "or", "oron"};
+#define nKeywords 16
+char *keywords[nKeywords] = { "in", "let", "for", "forExec", "while", "whileExec", "foreach", "forEachExec", "if", "ifExec", "then", "else", "data", "on", "or", "oron"};
 int isKeyword(char *text) {
 	int i;
 	for(i=0;i<nKeywords;i++) {
@@ -1028,7 +1029,11 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             END_TRY(funcIf)
         OR(func)
             ABORT(!rulegen);
-            TTEXT("while");
+            TRY(whil)
+            	TTEXT("while");
+            OR(whil)
+            	TTEXT("whileExec");
+            END_TRY(whil)
             TTEXT("(");
             NT2(Term, 1, MIN_PREC);
             TTEXT(")");
@@ -1038,7 +1043,11 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             BUILD_APP_NODE("while", &start, 3);
         OR(func)
             ABORT(!rulegen);
-            TTEXT("foreach");
+        	TRY(foreach)
+            	TTEXT("foreach");
+        	OR(foreach)
+        		TTEXT("forEachExec");
+        	END_TRY(foreach)
             TTEXT("(");
             NT2(Term, 1, MIN_PREC);
             TTEXT(")");
@@ -1048,7 +1057,11 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             BUILD_APP_NODE("foreach", &start, 3);
         OR(func)
             ABORT(!rulegen);
-            TTEXT("for");
+        	TRY(fo)
+            	TTEXT("for");
+        	OR(fo)
+        		TTEXT("forExec");
+        	END_TRY(fo)
             TTEXT("(");
             NT2(Term, 1, MIN_PREC);
             TTEXT(";");
@@ -1112,7 +1125,7 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             NT1(TermSystemBackwardCompatible, 0);
         OR(func)
             TTYPE(TK_TEXT);
-        	ABORT(isKeyword(token.text));
+        	ABORT(rulegen && isKeyword(token.text));
             char *fn = cpStringExt(token.text, context->region);
             BUILD_NODE(TK_TEXT, fn, &start, 0, 0);
             TRY(nullary)
@@ -2341,12 +2354,12 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Re
                 if(strcmp(node->text, "INDUCT") == 0) {
                     int k;
                     for(k=2;k<n;k+=2) {
-                        if(lookupBucketFromHashTable(funcDescIndex, nodes[k]->text)!=NULL) {
+                        if(lookupBucketFromHashTable(ruleEngineConfig.funcDescIndex, nodes[k]->text)!=NULL) {
                             generateErrMsg("readRuleSetFromFile: redefinition of constructor.", nodes[k]->expr, nodes[k]->base, errbuf);
                             addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
                             return -1;
                         }
-                        insertIntoHashTable(funcDescIndex, nodes[k]->text, newConstructorDesc2(nodes[k+1], r));
+                        insertIntoHashTable(ruleEngineConfig.funcDescIndex, nodes[k]->text, newConstructorDesc2(nodes[k+1], r));
                     }
                 } else {
                     if(strcmp(node->text, "REL")==0) {

@@ -1,19 +1,10 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include <semaphore.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/fcntl.h>
 #include "cache.h"
 #include "rules.h"
 #include "functions.h"
 
-RuleEngineStatus _ruleEngineStatus = UNINITIALIZED;
 
-RuleEngineStatus getRuleEngineStatus() {
-    return _ruleEngineStatus;
-}
 #define NODE_KEY_SIZE 1024
 void nodeKey(Node *node, char *keyBuf) {
 	memset(keyBuf, 0, NODE_KEY_SIZE);
@@ -190,9 +181,9 @@ CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable
     return civcopy;
 }
 
-Cache *copyCache(unsigned char **buf, Cache *c) {
+Cache *copyCache(unsigned char **buf, long size, Cache *c) {
     Hashtable *objectMap = newHashTable(100);
-
+    unsigned char *start = *buf;
 
     unsigned char *p = *buf;
     ((CacheRecordDesc *)p)->type = Cache_T;
@@ -204,17 +195,12 @@ Cache *copyCache(unsigned char **buf, Cache *c) {
     /*allocate(p, Cache, ccopy, *c); */
     /* shared objects */
     Region *r = make_region(0, NULL);
-    insertIntoHashTable(objectMap, typeName_NodeType(T_INT), copyNode(&p, newSimpType(T_INT, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_BOOL), copyNode(&p, newSimpType(T_BOOL, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_DOUBLE), copyNode(&p, newSimpType(T_DOUBLE, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_DATETIME), copyNode(&p, newSimpType(T_DATETIME, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_STRING), copyNode(&p, newSimpType(T_STRING, r), objectMap));
-    insertIntoHashTable(objectMap, typeName_NodeType(T_DYNAMIC), copyNode(&p, newSimpType(T_DYNAMIC, r), objectMap));
     region_free(r);
 
-    ccopy->offset = *buf;
+    ccopy->address = *buf;
     ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet, objectMap);
-    ccopy->coreRuleIndex = ccopy->coreRuleIndex == NULL? NULL:copyHashtable(&p, ccopy->coreRuleIndex, (Copier)copyRuleIndexList, objectMap);
+    ccopy->appRuleSet = ccopy->appRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->appRuleSet, objectMap);
+    ccopy->ruleIndex = ccopy->ruleIndex == NULL? NULL:copyHashtable(&p, ccopy->ruleIndex, (Copier)copyRuleIndexList, objectMap);
     ccopy->condIndex = ccopy->condIndex == NULL? NULL:copyHashtable(&p, ccopy->condIndex, (Copier)copyCondIndexVal, objectMap);
     ccopy->funcDescIndex = copyHashtable(&p, ccopy->funcDescIndex, (Copier)copyNode, objectMap);
     ccopy->dataSize = (p - (*buf));
@@ -222,6 +208,9 @@ Cache *copyCache(unsigned char **buf, Cache *c) {
     *buf = p;
 
     deleteHashTable(objectMap, nop);
+    ccopy->address = start;
+    ccopy->dataSize = *buf - start;
+    ccopy->cacheSize = size;
     return ccopy;
 }
 Cache *restoreCache(unsigned char *buf) {
@@ -237,7 +226,7 @@ Cache *restoreCache(unsigned char *buf) {
     memcpy(bufCopy, buf, cache->dataSize);
 
     cache = (Cache *)(bufCopy + sizeof(CacheRecordDesc));
-    unsigned char *bufOffset = cache->offset;
+    unsigned char *bufOffset = cache->address;
     unsigned char *bufCopyOffset = bufCopy;
 
     long diff = bufCopyOffset - bufOffset;
@@ -251,9 +240,10 @@ Cache *restoreCache(unsigned char *buf) {
             case Cache_T:
                 for(i=0;i<length;i++) {
                     APPLY_DIFF(((Cache *)p)->condIndex, Hashtable, diff);
-                    APPLY_DIFF(((Cache *)p)->coreRuleIndex, Hashtable, diff);
+                    APPLY_DIFF(((Cache *)p)->ruleIndex, Hashtable, diff);
                     APPLY_DIFF(((Cache *)p)->coreRuleSet, RuleSet, diff);
-                    APPLY_DIFF(((Cache *)p)->offset, unsigned char, diff);
+                    APPLY_DIFF(((Cache *)p)->appRuleSet, RuleSet, diff);
+                    APPLY_DIFF(((Cache *)p)->address, unsigned char, diff);
                     p+=sizeof(Cache);
                 }
                 break;
@@ -367,23 +357,8 @@ Cache *restoreCache(unsigned char *buf) {
 
 
 }
-#ifdef DEBUG
-#define RULE_SET_DEF_LENGTH 1000
-int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char sep) {
-    char *i = strchr(all, sep);
-    if(i==NULL) {
-        tail[0] = '\0';
-        strcpy(head, all);
-    } else {
-        strcpy(tail, i+1);
-        strncpy(head, all, i-all);
-        head[i-all] = '\0';
-    }
-    return 0;
-}
-#endif
 
-#define SEM_NAME "irods_sem_re"
+
 int lockMutex(sem_t **mutex) {
   *mutex = sem_open(SEM_NAME,O_CREAT,0644,1);
   if(*mutex == SEM_FAILED)
@@ -414,179 +389,3 @@ void unlockMutex(sem_t **mutex) {
   sem_close(*mutex);
 }
 
-int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
-    char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
-    strcpy(r2,irbSet);
-    int res = 0;
-    Region *r = make_region(0, NULL);
-    unsigned char *buf = NULL;
-    int loadToBuf;
-    int unlock_mutex = 0;
-    sem_t *mutex = NULL;
-    if(CACHE_ENABLE) {
-
-        if(lockMutex(&mutex) != 0) {
-            res = -1;
-            RETURN;
-        }
-        unlock_mutex = 1;
-
-        int shmid = - 1;
-        int key = 1200;
-        void *addr = SHM_BASE_ADDR;
-        if(isServer) {
-            loadToBuf = 1;
-            shmid = shmget(key, SHMMAX, IPC_CREAT /*| IPC_EXCL*/ | 0666);
-            if(shmid!= -1) {
-                unsigned char *shm = (unsigned char *)shmat(shmid, SHM_BASE_ADDR, 0);
-                buf = shm;
-            } else {
-                buf = (unsigned char *)malloc(SHMMAX);
-            }
-        } else {
-            shmid = shmget(key, SHMMAX, 0666);
-            if(shmid != -1) { /* not server process and shm is successfully allocated */
-                loadToBuf = 0;
-                buf = (unsigned char *)shmat(shmid, addr, 0);
-            } else {
-                loadToBuf = 1;
-                buf = (unsigned char *)malloc(SHMMAX);
-            }
-        }
-    } else {
-        loadToBuf = 1;
-        buf = (unsigned char *)malloc(SHMMAX);
-    }
-    if(loadToBuf) {
-        funcDescIndex = newHashTable(100);
-        getSystemFunctions(funcDescIndex, r);
-        while (strlen(r2) > 0) {
-                int i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
-                if (i == 0)
-                  i = readRuleStructAndRuleSetFromFile(r1, inRuleStruct, r);
-                if (i != 0) {
-                  res = i;
-                  RETURN;
-                }
-                strcpy(r2,r3);
-        }
-        Cache cacheBuf;
-        cacheBuf.coreRuleIndex = coreRuleIndex;
-        cacheBuf.coreRuleSet = &coreRules;
-        cacheBuf.condIndex = condIndex;
-        cacheBuf.funcDescIndex = funcDescIndex;
-#ifdef DEBUG
-        unsigned char *bufStart = buf;
-#endif
-        Cache *cacheNew = copyCache(&buf, &cacheBuf);
-#ifdef DEBUG
-        printf("Buffer usage: %fM\n", ((double)(buf-bufStart))/(1024*1024));
-#endif
-        deleteHashTable(coreRuleIndex, nop);
-        deleteHashTable(condIndex, (void (*)(void *))deleteCondIndexVal);
-        deleteHashTable(funcDescIndex, nop);
-        coreRuleIndex = cacheNew->coreRuleIndex;
-        coreRules = *cacheNew->coreRuleSet;
-        condIndex = cacheNew->condIndex;
-        funcDescIndex = cacheNew->funcDescIndex;
-    } else {
-        Cache *cache = restoreCache(buf);
-        coreRuleIndex = cache->coreRuleIndex;
-        coreRules = *(cache->coreRuleSet);
-        condIndex = cache->condIndex;
-        funcDescIndex = cache->funcDescIndex;
-    }
-
-ret:
-    if(unlock_mutex)
-    {
-        unlockMutex(&mutex);
-    }
-    region_free(r);
-    _ruleEngineStatus = INITIALIZED;
-
-    return res;
-}
-int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct, Region *r)
-{
-  int i;
-/*  char l0[MAX_RULE_LENGTH]; */
-/*  char l1[MAX_RULE_LENGTH]; */
-/*  char l2[MAX_RULE_LENGTH]; */
-/*  char l3[MAX_RULE_LENGTH]; */
-   char rulesFileName[MAX_NAME_LEN];
-/*   FILE *file; */
-/*   char buf[MAX_RULE_LENGTH]; */
-   char *configDir;
-/*   char *t; */
-   i = inRuleStrct->MaxNumOfRules;
-
-   if (ruleBaseName[0] == '/' || ruleBaseName[0] == '\\' ||
-       ruleBaseName[1] == ':') {
-     snprintf (rulesFileName,MAX_NAME_LEN, "%s",ruleBaseName);
-   }
-   else {
-     configDir = getConfigDir ();
-     snprintf (rulesFileName,MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir,ruleBaseName);
-   }
-   /*file = fopen(rulesFileName, "r");
-   if (file == NULL) {
-#ifndef DEBUG
-       rodsLog(LOG_NOTICE,
-	     "readRuleStructFromFile() could not open rules file %s\n",
-	     rulesFileName);
-#endif
-     return(RULES_FILE_READ_ERROR);
-   }
-   buf[MAX_RULE_LENGTH-1]='\0';
-   while (fgets (buf, MAX_RULE_LENGTH-1, file) != NULL) {
-     if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
-     if (buf[0] == '#' || strlen(buf) < 4)
-       continue;
-		char *l0, *l2, *l3;
-		// rSplitStr(buf, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
-		l0 = nextRuleSection(buf, l1);
-     inRuleStrct->action[i] = strdup(l1);
-     inRuleStrct->ruleHead[i] = strdup(l1);
-     if ((t = strstr(inRuleStrct->action[i],"(")) != NULL) {
-       *t = '\0';
-     }
-     inRuleStrct->ruleBase[i] = strdup(ruleBaseName);
-		// rSplitStr(l0, l1, MAX_RULE_LENGTH, l3, MAX_RULE_LENGTH,'|');
-		l3 = nextRuleSection(l0, l1);
-     inRuleStrct->ruleCondition[i] = strdup(l1);
-		// rSplitStr(l3, l1, MAX_RULE_LENGTH, l2, MAX_RULE_LENGTH, '|');
-		l2 = nextRuleSection(l3, l1);
-     inRuleStrct->ruleAction[i] = strdup(l1);
-     inRuleStrct->ruleRecovery[i] = strdup(l2);
-     i++;
-   }
-   fclose (file);
-   inRuleStrct->MaxNumOfRules = i;*/
-	int errloc;
-	rError_t errmsgBuf;
-        errmsgBuf.errMsg = NULL;
-        errmsgBuf.len = 0;
-
-        char *buf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
-        int res = 0;
-	if(inRuleStrct == &coreRuleStrct) {
-		if(readRuleSetFromFile(ruleBaseName,&coreRules,&errloc,&errmsgBuf, r)==0) {
-                    createRuleNodeIndex(&coreRules, &coreRuleIndex, r);
-                } else {
-                    errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
-                    rodsLog(LOG_ERROR, "%s", buf);
-                    res = -1;
-                }
-	} else if(inRuleStrct == &appRuleStrct) {
-		if(readRuleSetFromFile(ruleBaseName,&appRules,&errloc,&errmsgBuf, r)==0) {
-                    createRuleNodeIndex(&appRules, &appRuleIndex, r);
-                } else {
-                    errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
-                    rodsLog(LOG_ERROR, "%s", buf);
-                    res = -1;
-                }
-	}
-        free(buf);
-        return res;
-}

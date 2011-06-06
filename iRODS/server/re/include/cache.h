@@ -2,8 +2,15 @@
  */
 #ifndef CACHE_H
 #define CACHE_H
+#include <semaphore.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/fcntl.h>
 #include "rules.h"
 #include "index.h"
+#include "configuration.h"
+#define SEM_NAME "irods_sem_re"
 #define CACHE_ENABLE 0
 
 #define allocate(p, ty, vn, val) \
@@ -23,14 +30,6 @@
 #define SHM_BASE_ADDR ((void *)0x80000000)
 #define APPLY_DIFF(p, t, d) if((p)!=NULL){unsigned char *temp = (unsigned char *)p; temp+=(d); (p)=(t *)temp;}
 #define MAKE_COPY(buf, type, src, tgt) if((src)!=NULL) {tgt=CONCAT(copy, type)(&(buf), src);}
-typedef struct {
-    unsigned char *offset;
-    long dataSize;
-    RuleSet *coreRuleSet;
-    Hashtable *funcDescIndex;
-    Hashtable *coreRuleIndex;
-    Hashtable *condIndex;
-} Cache;
 typedef void * (*Copier)(unsigned char **, void *, Hashtable *);
 enum cacheRecordType {
         Cache_T,
@@ -56,23 +55,15 @@ typedef struct {
     int length;
 } CacheRecordDesc;
 
-typedef enum ruleEngineStatus {
-    UNINITIALIZED,
-    INITIALIZED
-} RuleEngineStatus;
 
-extern RuleEngineStatus _ruleEngineStatus;
-extern int isServer;
-
-RuleEngineStatus getRuleEngineStatus();
 char *copyString(unsigned char **buf, char *string);
 Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap);
 RuleDesc *copyRuleDesc(unsigned char **buf, RuleDesc *h, Hashtable *objectMap);
 Hashtable* copyHashtableCharPrtToIntPtr(unsigned char **buf, Hashtable *h, Hashtable *objectMap);
 RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap);
 CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable *objectMap);
-Cache *copyCache(unsigned char **buf, Cache *c);
-int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct, Region *r);
-int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct);
-
+Cache *copyCache(unsigned char **buf, long size, Cache *c);
+Cache *restoreCache(unsigned char *buf);
+void unlockMutex(sem_t **mutex);
+int lockMutex(sem_t **mutex);
 #endif

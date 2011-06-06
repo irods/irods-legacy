@@ -20,8 +20,10 @@
 
 #define MAX_FUNC_PARAMS 20
 #define MAX_NUM_RULES 50000
-#define MAX_NUM_APP_RULES 10000
+#define CORE_RULE_INDEX_OFF 30000
+#define APP_RULE_INDEX_OFF 10000
 #define RULE_NODE_NUM_PARAMS(r) ((r)->subtrees[0]->subtrees[0]->degree)
+#define RULE_NAME(r) ((r)->subtrees[0]->text)
 
 #define MAX_PREC 20
 #define MIN_PREC 0

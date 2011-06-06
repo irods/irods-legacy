@@ -7,10 +7,7 @@
 #include "arithmetics.h"
 #include "typing.h"
 
-
-extern RuleSet coreRules, appRules;
 extern Hashtable *funcDescIndex;
-
 
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
 int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, int* errloc, rError_t *errmsg, Region *r);

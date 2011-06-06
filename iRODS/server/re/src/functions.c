@@ -4,6 +4,8 @@
 #include "functions.h"
 #include "arithmetics.h"
 #include "datetime.h"
+#include "cache.h"
+#include "configuration.h"
 
 #ifndef DEBUG
 #include "execMyRule.h"
@@ -325,10 +327,18 @@ Res *smsi_listvars(Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
         return res;
     }
 Res *smsi_listcorerules(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
-    Res *coll = newCollRes(coreRules.len, newSimpType(T_STRING, r), r);
+    Res *coll = newCollRes(ruleEngineConfig.coreRuleSet->len, newSimpType(T_STRING, r), r);
     int i;
-    for(i=0;i<coreRules.len;i++) {
-        coll->subtrees[i] = newStringRes(r, coreRules.rules[i]->node->subtrees[0]->text);
+    for(i=0;i<ruleEngineConfig.coreRuleSet->len;i++) {
+        coll->subtrees[i] = newStringRes(r, ruleEngineConfig.coreRuleSet->rules[i]->node->subtrees[0]->text);
+    }
+    return coll;
+}
+Res *smsi_listapprules(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res *coll = newCollRes(ruleEngineConfig.appRuleSet->len, newSimpType(T_STRING, r), r);
+    int i;
+    for(i=0;i<ruleEngineConfig.appRuleSet->len;i++) {
+        coll->subtrees[i] = newStringRes(r, ruleEngineConfig.appRuleSet->rules[i]->node->subtrees[0]->text);
     }
     return coll;
 }
@@ -574,10 +584,10 @@ Res *smsi_arity(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 		if(findNextRule2(val->text, &ruleInx)<0) {
                     return newErrorRes(r, -1);
                 }
-                if(ruleInx >= MAX_NUM_APP_RULES)
-                    return newIntRes(r, RULE_NODE_NUM_PARAMS(coreRules.rules[ruleInx-MAX_NUM_APP_RULES]->node));
+                if(ruleInx >= CORE_RULE_INDEX_OFF)
+                    return newIntRes(r, RULE_NODE_NUM_PARAMS(ruleEngineConfig.coreRuleSet->rules[ruleInx-CORE_RULE_INDEX_OFF]->node));
                 else
-                    return newIntRes(r, RULE_NODE_NUM_PARAMS(appRules.rules[ruleInx]->node));
+                    return newIntRes(r, RULE_NODE_NUM_PARAMS(ruleEngineConfig.appRuleSet->rules[ruleInx]->node));
 }
 Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
                 char errbuf[ERR_MSG_LEN];
@@ -1283,18 +1293,21 @@ Res *smsi_trimr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
 Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	char buf[1024*16];
 	int i;
-	for(i=0;i<coreRules.len;i++) {
-		ruleToString(buf, 1024*16, coreRules.rules[i]->node);
+	if(ruleEngineConfig.coreRuleSetStatus == INITIALIZED) {
+		for(i=0;i<ruleEngineConfig.coreRuleSet->len;i++) {
+			ruleToString(buf, 1024*16, ruleEngineConfig.coreRuleSet->rules[i]->node);
 #ifdef DEBUG
-		printf("%s", buf);
+			printf("%s", buf);
 #endif
-		writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r);
+		}
 	}
-/*	for(i=0;i<appRules.len;i++) {
-		ruleToString(buf, 1024*16, appRules.rules[i]->node);
-		printf("%s", buf);
-		writeStringNew("stdout", buf, env, r);
-	}*/
+	if(ruleEngineConfig.appRuleSetStatus == INITIALIZED) {
+		for(i=0;i<ruleEngineConfig.appRuleSet->len;i++) {
+			ruleToString(buf, 1024*16, ruleEngineConfig.appRuleSet->rules[i]->node);
+			writeStringNew("stdout", buf, env, r);
+		}
+	}
 	return newIntRes(r, 0);
 }
 /* utilities */
@@ -1314,9 +1327,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 }*/
 
 Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r) {
-    Pointer *e = newPointer2(expr);
     Res *res = parseAndComputeExpression(expr, env, rei, saveREI, errmsg, r);
-    deletePointer(e);
     return res;
 }
 
@@ -1377,6 +1388,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "lmsg", newFunctionDesc("string->integer", smsi_lmsg, r));
     insertIntoHashTable(ft, "listvars", newFunctionDesc("->string", smsi_listvars, r));
     insertIntoHashTable(ft, "listcorerules", newFunctionDesc("->list string", smsi_listcorerules, r));
+    insertIntoHashTable(ft, "listapprules", newFunctionDesc("->list string", smsi_listapprules, r));
     insertIntoHashTable(ft, "true", newFunctionDesc("boolean", smsi_true, r));
     insertIntoHashTable(ft, "false", newFunctionDesc("boolean", smsi_false, r));
     insertIntoHashTable(ft, "time", newFunctionDesc("->time", smsi_time, r));
