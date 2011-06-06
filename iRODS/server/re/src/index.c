@@ -45,29 +45,32 @@ int createRuleStructIndex(ruleStruct_t *inRuleStrct, Hashtable *ruleIndex)
 	return 1;
 }
 int createCoreAppExtRuleNodeIndex() {
-	clearIndex(ruleEngineConfig.ruleIndex);
+	if(ruleEngineConfig.ruleIndexStatus == INITIALIZED) {
+		clearIndex(ruleEngineConfig.ruleIndex);
+	}
+	createRegion(INDEX, Index);
 	ruleEngineConfig.ruleIndex = newHashTable(MAX_NUM_RULES * 2);
     if (ruleEngineConfig.ruleIndex == NULL)
-        return 0;
+        return OUT_OF_MEMORY;
 
 
-	if(ruleEngineConfig.extRuleSetStatus == INITIALIZED) {
+	if(isComponentInitialized(ruleEngineConfig.extRuleSetStatus)) {
 		ERROR(createRuleNodeIndex(ruleEngineConfig.extRuleSet, ruleEngineConfig.ruleIndex, 0, ruleEngineConfig.regionIndex) == 0);
 	}
-	if(ruleEngineConfig.appRuleSetStatus == INITIALIZED) {
+	if(isComponentInitialized(ruleEngineConfig.appRuleSetStatus)) {
 		ERROR(createRuleNodeIndex(ruleEngineConfig.appRuleSet, ruleEngineConfig.ruleIndex, APP_RULE_INDEX_OFF, ruleEngineConfig.regionIndex) == 0);
 	}
-	if(ruleEngineConfig.coreRuleSetStatus == INITIALIZED) {
+	if(isComponentInitialized(ruleEngineConfig.coreRuleSetStatus)) {
 		ERROR(createRuleNodeIndex(ruleEngineConfig.coreRuleSet, ruleEngineConfig.ruleIndex, CORE_RULE_INDEX_OFF, ruleEngineConfig.regionIndex) == 0);
 	}
 
 	createCondIndex(ruleEngineConfig.regionIndex);
 	ruleEngineConfig.ruleIndexStatus = INITIALIZED;
-	return 1;
+	return 0;
 error:
 	deleteHashTable(ruleEngineConfig.ruleIndex, nop);
 	ruleEngineConfig.ruleIndex=NULL;
-	return 0;
+	return -1;
 
 }
 int createCondIndex(Region *r) {
@@ -294,7 +297,7 @@ int findNextRuleFromIndex(Hashtable *ruleIndex, char *action, int *index)
  * adapted from original code
  */
 int findNextRule2(char *action,  int *ruleInx) {
-	if (ruleEngineConfig.ruleIndexStatus == INITIALIZED) {
+	if (isComponentInitialized(ruleEngineConfig.ruleIndexStatus)) {
 		int ii = findNextRuleFromIndex(ruleEngineConfig.ruleIndex, action, ruleInx);
 		if (ii!=NO_MORE_RULES_ERR) {
 			return 0;

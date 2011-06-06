@@ -137,6 +137,7 @@ error:
     rei->status = rescode;
     freeRErrorContent(&errmsgBuf);
     deleteEnv(env, 3);
+    clearDelayed();
 
     return rescode;
 
@@ -187,13 +188,16 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 
     int checkPoint=checkPointExtRuleSet();
 
+    int rescode;
+
     int errloc;
+
     /* add rules into ext rule set */
-    if(parseRuleSet(e, ruleEngineConfig.extRuleSet, &errloc, errmsg, r) == -1) {
-        deletePointer(e);
+    rescode = parseRuleSet(e, ruleEngineConfig.extRuleSet, &errloc, errmsg, r);
+    deletePointer(e);
+    if(rescode != 0) {
         return PARSER_ERROR;
     }
-
     /* save secondary index status */
     RuleEngineStatus cis = ruleEngineConfig.condIndexStatus;
 
@@ -218,7 +222,6 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 
 	deleteHashTable(varTypes, nop);
 
-    int rescode;
     if(type->nodeType!=T_ERROR) {
         Res *res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
         rescode = res->nodeType  ==  N_ERROR? res->value.errcode:0;
@@ -291,6 +294,7 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     }
     Res *res = computeExpressionNode(node, env, rei, reiSaveFlag, errmsg,r);
     deleteEnv(env, 3);
+    clearDelayed();
     return res;
 }
 ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
@@ -515,6 +519,7 @@ Node* getRuleNode(int ri)
 		return ruleEngineConfig.extRuleSet->rules[ri]->node;
 	} else
 	if (ri < CORE_RULE_INDEX_OFF) {
+		ri = ri - APP_RULE_INDEX_OFF;
 		return ruleEngineConfig.appRuleSet->rules[ri]->node;
 	} else {
 		ri = ri - CORE_RULE_INDEX_OFF;
@@ -572,6 +577,7 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     if(freeRei) {
         free(rei);
     }
+    clearDelayed();
     return res;
 
 }

@@ -312,6 +312,9 @@ ListNode *newListNode(void *value, Region *r);
 void listAppend(List *list, void *value, Region *r);
 void listAppendToNode(List *list, ListNode *node, void *value, Region *r);
 void listRemove(List *list, ListNode *node);
+ListNode *newListNodeNoRegion(void *value);
+void listAppendNoRegion(List *list, void *value);
+void listRemoveNoRegion(List *list, ListNode *node);
 
 TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r);
 

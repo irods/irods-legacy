@@ -13,6 +13,7 @@
 #include "reFuncDefs.h"
 #include "rsMisc.h"
 #include "stringOpr.h"
+#include "miscServerFunct.h"
 #endif
 
 #define GC_BEGIN Region *_rnew = make_region(0, NULL), *_rnew2 = NULL;
@@ -1293,7 +1294,7 @@ Res *smsi_trimr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
 Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	char buf[1024*16];
 	int i;
-	if(ruleEngineConfig.coreRuleSetStatus == INITIALIZED) {
+	if(isComponentInitialized(ruleEngineConfig.coreRuleSetStatus)) {
 		for(i=0;i<ruleEngineConfig.coreRuleSet->len;i++) {
 			ruleToString(buf, 1024*16, ruleEngineConfig.coreRuleSet->rules[i]->node);
 #ifdef DEBUG
@@ -1302,13 +1303,67 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 			writeStringNew("stdout", buf, env, r);
 		}
 	}
-	if(ruleEngineConfig.appRuleSetStatus == INITIALIZED) {
+	if(isComponentInitialized(ruleEngineConfig.appRuleSetStatus)) {
 		for(i=0;i<ruleEngineConfig.appRuleSet->len;i++) {
 			ruleToString(buf, 1024*16, ruleEngineConfig.appRuleSet->rules[i]->node);
 			writeStringNew("stdout", buf, env, r);
 		}
 	}
 	return newIntRes(r, 0);
+}
+Res *smsi_msiAdmClearAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+
+	  int i;
+#ifndef DEBUG
+	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+		  return newIntRes(r, i);
+	  i = clearRuleSetAndIndex(&appRuleStrct);
+	  if (i < 0)
+		  return newIntRes(r, i);
+	  i = createCoreAppExtRuleNodeIndex();
+	  if (i < 0)
+		  return newIntRes(r, i);
+	  i = clearDVarStruct(&appRuleVarDef);
+	  if (i < 0)
+		  return newIntRes(r, i);
+	  i = clearFuncMapStruct(&appRuleFuncMapDef);
+	  return newIntRes(r, i);
+#else
+	  i = clearRuleSetAndIndex(&appRuleStrct);
+	  i = createCoreAppExtRuleNodeIndex();
+	  return newIntRes(r, 0);
+#endif
+
+}
+Res *smsi_msiAdmAddAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	  int i;
+
+#ifndef DEBUG
+	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+		  return newIntRes(r, i);
+
+	  if (strlen(paramsr[0]->text) > 0) {
+	    i = loadRuleFromCacheOrFile(paramsr[0]->text, &appRuleStrct);
+	    if (i < 0)
+	  	  return newIntRes(r, i);
+	  }
+	  if (strlen(paramsr[1]->text) > 0) {
+	    i = readDVarStructFromFile(paramsr[1]->text, &appRuleVarDef);
+	    if (i < 0)
+	  	  return newIntRes(r, i);
+	  }
+	  if (strlen(paramsr[2]->text) > 0) {
+	    i = readFuncMapStructFromFile(paramsr[2]->text, &appRuleFuncMapDef);
+	    if (i < 0)
+	  	  return newIntRes(r, i);
+	  }
+	  return newIntRes(r, 0);
+#else
+	  i = loadRuleFromCacheOrFile(paramsr[0]->text, &appRuleStrct);
+	  return newIntRes(r, i);
+
+#endif
+
 }
 /* utilities */
 /*FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
@@ -1458,6 +1513,13 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "strlen", newFunctionDesc("string->integer", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionDesc("string * integer * integer->string", smsi_substr, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionDesc("e ? ?->integer", smsi_msiAdmShowIRB, r));
+#ifdef DEBUG
+    insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionDesc("string->integer", smsi_msiAdmAddAppRuleStruct, r));
+    insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionDesc("->integer", smsi_msiAdmClearAppRuleStruct, r));
+#else
+    insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionDesc("string * string * string->integer", smsi_msiAdmAddAppRuleStruct, r));
+    insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionDesc("->integer", smsi_msiAdmClearAppRuleStruct, r));
+#endif
 
 
 }

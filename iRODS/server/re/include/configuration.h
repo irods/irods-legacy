@@ -20,6 +20,7 @@ typedef enum ruleEngineStatus {
     UNINITIALIZED,
     INITIALIZED,
     SHARED,
+    COMPRESSED,
     DISABLED
 } RuleEngineStatus;
 typedef struct {
@@ -49,6 +50,48 @@ typedef struct {
     Region *regionCore;
     Region *regionApp;
 } Cache;
+#define isComponentInitialized(x) ((x)==INITIALIZED || (x)==COMPRESSED)
+#define clearRegion(u, l) \
+		if((resources & RESC_REGION_##u) && ruleEngineConfig.region##l##Status == INITIALIZED) { \
+			region_free(ruleEngineConfig.region##l); \
+			ruleEngineConfig.region##l##Status = UNINITIALIZED; \
+		} \
+
+#define delayClearRegion(u, l) \
+		if((resources & RESC_REGION_##u) && ruleEngineConfig.region##l##Status == INITIALIZED) { \
+			listAppendNoRegion(&regionsToClear, ruleEngineConfig.region##l); \
+			ruleEngineConfig.region##l##Status = UNINITIALIZED; \
+		} \
+
+#define createRegion(u, l) \
+		if(ruleEngineConfig.region##l##Status != INITIALIZED) { \
+			ruleEngineConfig.region##l = make_region(0, NULL); \
+			ruleEngineConfig.region##l##Status = INITIALIZED; \
+		} \
+
+#define clearRuleSet(u, l) \
+		if((resources & RESC_##u##_RULE_SET) && ruleEngineConfig.l##RuleSetStatus == INITIALIZED) { \
+			free(ruleEngineConfig.l##RuleSet); \
+			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
+		} else if((resources & RESC_##u##_RULE_SET) && ruleEngineConfig.l##RuleSetStatus == COMPRESSED) { \
+			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
+		} \
+
+#define delayClearRuleSet(u, l) \
+		if((resources & RESC_##u##_RULE_SET) && ruleEngineConfig.l##RuleSetStatus == INITIALIZED) { \
+			listAppendNoRegion(&memoryToFree, ruleEngineConfig.l##RuleSet); \
+			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
+		} else if((resources & RESC_##u##_RULE_SET) && ruleEngineConfig.l##RuleSetStatus == COMPRESSED) { \
+			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
+		} \
+
+#define createRuleSet(u, l) \
+		if(!isComponentInitialized(ruleEngineConfig.l##RuleSetStatus)) { \
+			ruleEngineConfig.l##RuleSet = (RuleSet *)malloc(sizeof(RuleSet)); \
+			ruleEngineConfig.l##RuleSet->len = 0; \
+			ruleEngineConfig.l##RuleSetStatus = INITIALIZED; \
+		} \
+
 
 extern unsigned char *ruleEngineMem;
 extern RuleEngineStatus _ruleEngineStatus;
@@ -56,7 +99,7 @@ extern int isServer;
 extern Cache ruleEngineConfig;
 RuleEngineStatus getRuleEngineStatus();
 void clearResources(int resources);
-void clearRuleSetAndIndex(ruleStruct_t *inRuleStruct);
+int clearRuleSetAndIndex(ruleStruct_t *inRuleStruct);
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct);
 int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct);
 int availableRules();
@@ -67,5 +110,6 @@ int checkPointExtRuleSet();
 void appendAppRule(RuleDesc *rd, Region *r);
 void prependAppRule(RuleDesc *rd, Region *r);
 void popExtRuleSet(int checkPoint);
+void clearDelayed();
 
 #endif /* _CONFIGURATION_H */

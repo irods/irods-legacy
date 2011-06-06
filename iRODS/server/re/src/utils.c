@@ -1005,6 +1005,12 @@ List *newList(Region *r) {
     return l;
 }
 
+ListNode *newListNodeNoRegion(void *value) {
+    ListNode *l = (ListNode *)malloc(sizeof (ListNode));
+    l->next = NULL;
+    l->value = value;
+    return l;
+}
 ListNode *newListNode(void *value, Region *r) {
     ListNode *l = (ListNode *)region_alloc(r, sizeof (ListNode));
     l->next = NULL;
@@ -1012,6 +1018,14 @@ ListNode *newListNode(void *value, Region *r) {
     return l;
 }
 
+void listAppendNoRegion(List *list, void *value) {
+    ListNode *ln = newListNodeNoRegion(value);
+    if(list->head != NULL) {
+        list->tail = list->tail->next = ln;
+    } else {
+        list->head = list->tail = ln;
+    }
+}
 void listAppend(List *list, void *value, Region *r) {
     ListNode *ln = newListNode(value, r);
     if(list->head != NULL) {
@@ -1041,6 +1055,26 @@ void listRemove(List *list, ListNode *node) {
                 prev->next = node->next;
             }
             /*free(node); */
+            break;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
+    if(list->tail == node) {
+        list->tail = prev;
+    }
+
+}
+void listRemoveNoRegion(List *list, ListNode *node) {
+    ListNode *prev = NULL, *curr = list->head;
+    while(curr != NULL) {
+        if(curr == node) {
+            if(prev == NULL) {
+                list->head = node->next;
+            } else {
+                prev->next = node->next;
+            }
+            free(node);
             break;
         }
         prev = curr;

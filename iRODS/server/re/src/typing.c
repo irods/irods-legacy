@@ -570,6 +570,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
                     addRErrorMsg(errmsg, -1, errmsgbuf2);
                     /*printVarTypeEnvToStdOut(typingEnv); */
                     /* printf("absurdity\n"); */
+                    deleteHashTable(equivalence, nop);
                     return ABSURDITY;
             }
             ln = ln->next;
@@ -583,6 +584,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
         simpleTypingConstraints->head = simpleTypingConstraints->tail = NULL;
     } while(changed < typingEnv->len);
 
+    deleteHashTable(equivalence, nop);
     return ret;
 }
 
