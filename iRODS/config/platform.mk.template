@@ -29,7 +29,7 @@ CC_IS_GCC=0
 endif
 endif
 
-dded by Jason
+# added by Jason C
 CCFLAGS += -Wno-write-strings
 
 # =-=-=-=-=-=-=-
