@@ -186,7 +186,7 @@ msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPar
 
 
 	/* Call copyAVUMetadata() */
-	rei->status = copyAVUMetadata((char*)inpParam1->inOutStruct, (char*)inpParam2->inOutStruct, rsComm);
+	rei->status = copyAVUMetadata((char*)inpParam2->inOutStruct, (char*)inpParam1->inOutStruct, rsComm);
 
 	return (rei->status);
 }

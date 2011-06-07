@@ -353,6 +353,7 @@ acPostProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 #acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||writeLine(serverLog,"TEST:acPreProcForModifyAVUMetadata:*Option,*ItemType,*ItemName")|nop
 #
 acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
+acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue)||nop|nop
 #
 # 25) acPostProcForModifyAVUmetadata - This rule set the post-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
@@ -362,6 +363,7 @@ acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)
 #acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||writeLine(serverLog,"TEST:acPostProcForModifyAVUMetadata:*Option,*ItemType,*ItemName")|nop
 #
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
+acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue)||nop|nop
 #
 # 26) acPreProcForCreateUser - This rule set the pre-processing policy for
 # creating a new user.
