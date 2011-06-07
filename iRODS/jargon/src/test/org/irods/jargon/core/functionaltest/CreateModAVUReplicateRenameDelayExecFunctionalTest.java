@@ -38,20 +38,21 @@ public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
 				testingPropertiesHelper
 						.buildIRODSAccountFromTestProperties(testingProperties));
-		
+
 		String targetIrodsCollection = testingPropertiesHelper
-		.buildIRODSCollectionAbsolutePathFromTestProperties(
-				testingProperties, IRODS_TEST_SUBDIR_PATH);
-		
-		IRODSFile testColl = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		IRODSFile testColl = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 		testColl.delete(true);
 		testColl.mkdirs();
-	
-		//irodsTestSetupUtilities = new IRODSTestSetupUtilities();
-		//irodsTestSetupUtilities.initializeIrodsScratchDirectory();
-		//irodsTestSetupUtilities
-		//		.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
-		//assertionHelper = new AssertionHelper();
+
+		// irodsTestSetupUtilities = new IRODSTestSetupUtilities();
+		// irodsTestSetupUtilities.initializeIrodsScratchDirectory();
+		// irodsTestSetupUtilities
+		// .initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+		// assertionHelper = new AssertionHelper();
 	}
 
 	@AfterClass
@@ -65,13 +66,14 @@ public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 	@After
 	public void tearDown() throws Exception {
 	}
-	
+
 	/*
 	 * [#160] Files with no ACL in complex create new, stream, set metadata,
 	 * delay exec
 	 */
 	@Test
-	public final void testCollectionLoseACLScenarioWithDelayExec() throws Exception {
+	public final void testCollectionLoseACLScenarioWithDelayExec()
+			throws Exception {
 		// generate a local scratch file
 		String testFileNamePrefix = "testCollectionLoseACLScenarioWithDelayExec";
 		String testAvuNamePrefix = "testCollectionLoseACLScenarioWithDelayExecName";
@@ -111,10 +113,13 @@ public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 		IRODSFile irodsFile = null;
 		IRODSFile permIrodsFile = null;
 		for (int i = 0; i < numberIterations; i++) {
-			fileId = new Date().getTime();
-			testFileNameTemp = testFileNamePrefix + fileId + tempPrefix
+			// fileId = new Date().getTime();
+			// testFileNameTemp = testFileNamePrefix + fileId + tempPrefix
+			testFileNameTemp = testFileNamePrefix + tempPrefix
 					+ testFileNameSuffix;
-			testFileNamePerm = testFileNamePrefix + fileId + testFileNameSuffix;
+			// testFileNamePerm = testFileNamePrefix + fileId +
+			// testFileNameSuffix;
+			testFileNamePerm = testFileNamePrefix + testFileNameSuffix;
 			FileGenerator.generateFileOfFixedLengthGivenName(absPath,
 					testFileNameTemp, fileLength);
 			FileGenerator.generateFileOfFixedLengthGivenName(absPath,
@@ -124,7 +129,7 @@ public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 			localFile = new File(absPath + "/" + testFileNamePerm);
 
 			// create a permanent file that the temp will delete and replace
-			permIrodsFile.copyFrom(new LocalFile(localFile));
+			//permIrodsFile.copyFrom(new LocalFile(localFile));
 
 			// 1. create (using IRODSFile.createNewFile()) a temporary empty
 			// file, say temp1
@@ -170,8 +175,9 @@ public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 			 */
 
 			StringBuilder ruleBuilder = new StringBuilder();
-			//ruleBuilder.append("testdelay||msiDataObjRepl(*filename, *resource,*status)|nop\n");
-			ruleBuilder.append("testdelay||delayExec(<PLUSET>10s</PLUSET><EF>30s</EF>,msiDataObjRepl(*filename, *resource,*status),nop)|nop\n");
+			// ruleBuilder.append("testdelay||msiDataObjRepl(*filename, *resource,*status)|nop\n");
+			ruleBuilder
+					.append("testdelay||delayExec(<PLUSET>10s</PLUSET><EF>30s</EF>,msiDataObjRepl(*filename, *resource,*status),nop)|nop\n");
 			ruleBuilder.append("*filename=");
 			ruleBuilder.append(permIrodsFile.getAbsolutePath());
 			ruleBuilder.append("%*resource=");
@@ -183,8 +189,8 @@ public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 			ruleBuilder.append("*ruleExecOut");
 			ruleBuilder.toString();
 
-			Map<String,String> ruleResult =
-			 irodsFileSystem.executeRule(ruleBuilder.toString());
+			Map<String, String> ruleResult = irodsFileSystem
+					.executeRule(ruleBuilder.toString());
 
 			// 7. update an AVU (file_status from 'not_ready' to 'ready') for
 			// perm1
@@ -194,6 +200,5 @@ public class CreateModAVUReplicateRenameDelayExecFunctionalTest {
 
 		irodsFileSystem.close();
 	}
-	
-	
+
 }
