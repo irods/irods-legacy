@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #define HASH_BASE 5381
-/* the name hash conflict with the name defined in /4.2/bits/locale_facets.h */
-/* #define hash(x) B_hash((unsigned char*)(x)) */
 #define myhash(x) B_hash((unsigned char*)(x))
 
 struct bucket {

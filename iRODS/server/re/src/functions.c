@@ -1097,12 +1097,10 @@ Res *smsi_delayExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
   msParamArray_t *tmp = rei->msParamArray;
   rei->msParamArray = newMsParamArray();
 
-/*
   int ret = convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
   if(ret!=0) {
       return newErrorRes(r, ret);
   }
-*/
 
   i = _delayExec(actionCall, recoveryActionCall, delayCondition, rei);
 

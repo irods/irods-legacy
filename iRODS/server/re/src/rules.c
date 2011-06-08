@@ -570,6 +570,8 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     Env *global = newEnv(newHashTable(100), NULL, NULL);
     Env *env = newEnv(newHashTable(100),global, NULL);
     addCmdExecOutToEnv(global, r);
+    /* retrieve generated data here as it may be overridden by convertMsParamArrayToEnv */
+    Res *execOutRes = (Res *) lookupFromHashTable(global->current, "ruleExecOut");
 
     Res *res;
     rError_t errmsgBuf;
@@ -593,7 +595,6 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
 
     rei->msParamArray = orig;
 
-    Res *execOutRes = (Res *) lookupFromHashTable(global->current, "ruleExecOut");
 	free(execOutRes->value.uninterpreted.inOutStruct);
     deleteEnv(env, 3);
     if(res->nodeType == N_ERROR) {
