@@ -1144,7 +1144,7 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
 
   i = rsExecMyRule (rei->rsComm, &execMyRuleInp,  &outParamArray);
 
-  updateMsParamArrayToEnv(rei->msParamArray, env, errmsg, r);
+  updateMsParamArrayToEnvAndFreeNonIRODSType(rei->msParamArray, env, errmsg, r);
   deleteMsParamArray(rei->msParamArray);
   rei->msParamArray = NULL;
   return newIntRes(r, i);
@@ -1258,6 +1258,10 @@ Res *smsi_substr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int rei
     return retres;
 }
 
+Res *smsi_undefined(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	return newUnspecifiedRes(r);
+
+}
 Res *smsi_trimr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res *strres = (Res *)paramsr[0];
     Res *delimres = (Res *)paramsr[1];
@@ -1512,6 +1516,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "trimr", newFunctionDesc("string * string->string", smsi_trimr, r));
     insertIntoHashTable(ft, "strlen", newFunctionDesc("string->integer", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionDesc("string * integer * integer->string", smsi_substr, r));
+    insertIntoHashTable(ft, "unspeced", newFunctionDesc("-> ?", smsi_undefined, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionDesc("e ? ?->integer", smsi_msiAdmShowIRB, r));
 #ifdef DEBUG
     insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionDesc("string->integer", smsi_msiAdmAddAppRuleStruct, r));

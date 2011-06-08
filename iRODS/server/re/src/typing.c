@@ -427,7 +427,7 @@ Satisfiability simplifyLocally(ExprType *tca, ExprType *tcb, int flex, Node *nod
     tca = dereference(tca, typingEnv, r);
     tcb = dereference(tcb, typingEnv, r);
 
-	if(tca->nodeType == T_UNSPECED || tcb->nodeType == T_DYNAMIC) { /* is an undefined variable argument or a parameter with dynamic type */
+	if(tca->nodeType == T_UNSPECED || tca->nodeType == T_DYNAMIC || tcb->nodeType == T_DYNAMIC) { /* is an undefined variable argument or a parameter with dynamic type */
 		return TAUTOLOGY;
 	}
 	else if(isBaseType(tca) && isBaseType(tcb)) {

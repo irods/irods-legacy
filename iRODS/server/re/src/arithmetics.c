@@ -30,14 +30,6 @@ extern int GlobalAllRuleExecFlag;
 extern int GlobalREDebugFlag;
 
 /* utilities */
-Env* globalEnv(Env *env) {
-        Env *global = env;
-        while(global->previous!=NULL) {
-            global = global->previous;
-        }
-        return global;
-}
-
 int initializeEnv(Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, Hashtable *env, Region *r) {
 
 
@@ -483,9 +475,8 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
             case IO_TYPE_DYNAMIC: /* dynamic */
             	if(isVariableNode(appArgs[i])) {
 					args[i] = attemptToEvaluateVar3(appArgs[i]->text, appArgs[i], rei, reiSaveFlag, env, errmsg, newRegion);
-					if(args[i] == NULL) { // output only
+					if(TYPE(args[i]) == T_UNSPECED) {
 						ioParam[i] = 'o';
-						args[i] = newUnspecifiedRes(r);
 					} else {
 						ioParam[i] = 'p';
 						if(args[i]->nodeType==N_ERROR) {
@@ -622,10 +613,18 @@ Res* attemptToEvaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSav
 	if(vn[0]=='*') { /* local variable */
 		/* try to get local var from env */
 		Res* res0 = (Res *)lookupFromEnv(env, vn);
-        return res0;
+		if(res0==NULL) {
+			return newUnspecifiedRes(r);
+		} else {
+			return res0;
+		}
 	} else if(vn[0]=='$') { /* session variable */
         Res *res = getSessionVar("",vn,rei, env, errmsg,r);
-        return res;
+		if(res==NULL) {
+			return newUnspecifiedRes(r);
+		} else {
+			return res;
+		}
 	} else {
         return NULL;
 	}
@@ -765,7 +764,7 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
  * execute micro service msiName
  */
 Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node, Env *env, ruleExecInfo_t *rei, rError_t *errmsg, Region *r) {
-        msParamArray_t *origMsParamArray = rei->msParamArray;
+	msParamArray_t *origMsParamArray = rei->msParamArray;
 	funcPtr myFunc = NULL;
 	int actionInx;
 	unsigned int numOfStrArgs;
@@ -809,6 +808,7 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
                     for(;j>=0;j--) {
                         if(TYPE(args[j])!=T_IRODS) {
                             free(myArgv[j]->inOutStruct);
+                            myArgv[j]->inOutStruct = NULL;
                         }
                         free(myArgv[j]->label);
                         free(myArgv[j]->type);
@@ -863,7 +863,7 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
         RETURN;
     }
     /* converts back env */
-	ret = updateMsParamArrayToEnv(rei->msParamArray, env, errmsg, r);
+	ret = updateMsParamArrayToEnvAndFreeNonIRODSType(rei->msParamArray, env, errmsg, r);
     if(ret!=0) {
         generateErrMsg("execMicroService3: error env from MsParamArray", node->expr, node->base, errbuf);
         addRErrorMsg(errmsg, ret, errbuf);
@@ -874,7 +874,7 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 	for (i = 0; i < numOfStrArgs; i++) {
         if(myArgv[i] != NULL) {
             int ret =
-                convertMsParamToRes(myArgv[i], args[i], errmsg, r);
+                convertMsParamToResAndFreeNonIRODSType(myArgv[i], args[i], errmsg, r);
             if(ret!=0) {
                 generateErrMsg("execMicroService3: error converting arguments from MsParam", node->expr, node->base, errbuf);
                 addRErrorMsg(errmsg, ret, errbuf);
@@ -895,12 +895,12 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 */
 	res = newIntRes(r, ii);
 ret:
-    if(rei->msParamArray!=NULL && rei->msParamArray != origMsParamArray) {
+    if(rei->msParamArray!=NULL) {
         deleteMsParamArray(rei->msParamArray);
-        rei->msParamArray = origMsParamArray;
     }
+    rei->msParamArray = origMsParamArray;
     for(i=0;i<numOfStrArgs;i++) {
-        if(TYPE(args[i])!=T_IRODS) {
+        if(TYPE(args[i])!=T_IRODS && myArgv[i]->inOutStruct!=NULL) {
             free(myArgv[i]->inOutStruct);
         }
         free(myArgv[i]->label);

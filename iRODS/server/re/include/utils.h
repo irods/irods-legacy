@@ -306,6 +306,7 @@ void deleteEnv(Env *env, int deleteCurrent);
 void *lookupFromEnv(Env *env, char *key);
 void updateInEnv(Env *env, char *varname, Res *res);
 void freeEnvUninterpretedStructs(Env *e);
+Env* globalEnv(Env *env);
 
 List *newList(Region *r);
 ListNode *newListNode(void *value, Region *r);

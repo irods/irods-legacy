@@ -175,6 +175,69 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 
 
 }
+int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
+    #ifdef DEBUG
+    writeToTmp("relog.txt", "type: ");
+    writeToTmp("relog.txt", mP->type);
+    writeToTmp("relog.txt", "\n");
+    #endif
+	if (strcmp(mP->type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
+		convertDoubleValue(res, *(double *)mP->inOutStruct,r);
+		free(mP->inOutStruct);
+		mP->inOutStruct = NULL;
+		return 0;
+	} else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
+            /* this could be int, bool, or datatime */
+            if(res->exprType == NULL) { /* output parameter */
+                res->value.dval = *(int *)mP->inOutStruct;
+                res->exprType = newSimpType(T_INT, r);
+            } else
+            switch(TYPE(res)) {
+                case T_INT:
+                case T_BOOL:
+                    res->value.dval = *(int *)mP->inOutStruct;
+                    break;
+                case T_DATETIME:
+                    res->value.tval = (time_t)*(int *)mP->inOutStruct;
+                    break;
+                default:
+                    convertIntValue(res, *(int *)mP->inOutStruct,r);
+            }
+    		free(mP->inOutStruct);
+    		mP->inOutStruct = NULL;
+            return 0;
+	} else if (strcmp(mP->type, STR_MS_T) == 0) { /* if the parameter is a string */
+		convertStrValue(res, (char *)mP->inOutStruct,r);
+		free(mP->inOutStruct);
+		mP->inOutStruct = NULL;
+		return 0;
+	} else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
+		res->value.tval = *(time_t *)mP->inOutStruct;
+		TYPE(res) = T_DATETIME;
+		free(mP->inOutStruct);
+		mP->inOutStruct = NULL;
+		return 0;
+/*
+	} else if(strcmp(mP->type, StrArray_MS_T) == 0) {
+		convertCollectionToRes(mP, res);
+		return 1;
+	} else if(strcmp(mP->type, IntArray_MS_T) == 0) {
+		convertCollectionToRes(mP, res);
+		return 1;
+	} else if(strcmp(mP->type, GenQueryOut_MS_T) == 0) {
+		convertCollectionToRes(mP, res);
+		return 1;
+*/
+	} else {
+            res->value.uninterpreted.inOutStruct = mP->inOutStruct;
+            res->value.uninterpreted.inOutBuffer = mP->inpOutBuf;
+            res->exprType = newIRODSType(mP->type,r);
+            return 0;
+        }
+	return -1;
+
+
+}
 /************************ Microservice parameter type to ExprType ***********************/
 ExprType *convertToExprType(char *type, Region *r) {
 	if (strcmp(type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
@@ -283,11 +346,11 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
                         var->inOutStruct = arr2;
                         var->type = strdup(IntArray_MS_T);
                         break;
-                    case T_IRODS:
+                    /*case T_IRODS:
                         var->inOutStruct = res->value.uninterpreted.inOutStruct;
                         var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
                         var->type = strdup(KeyValPair_MS_T);
-                        break;
+                        break;*/
                     default:
                         /* current there is no existing packing instructions for arbitrary collection */
                         /* report error */
@@ -358,11 +421,29 @@ int convertMsParamArrayToEnv(msParamArray_t *var, Env *env, rError_t *errmsg, Re
     return updateMsParamArrayToEnv(var, env, errmsg, r);
 }
 
+int convertMsParamArrayToEnvAndFreeNonIRODSType(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
+    return updateMsParamArrayToEnvAndFreeNonIRODSType(var, env, errmsg, r);
+}
 int updateMsParamArrayToEnv(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
 	int i;
 	for(i=0;i<var->len;i++) {
 		Res *res = newRes(r);
 		int ret = convertMsParamToRes(var->msParam[i], res, errmsg, r);
+        if(ret != 0) {
+            return ret;
+        }
+		char *varName = var->msParam[i]->label;
+        if(varName!=NULL) {
+            updateInEnv(env, varName, res);
+        }
+	}
+        return 0;
+}
+int updateMsParamArrayToEnvAndFreeNonIRODSType(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
+	int i;
+	for(i=0;i<var->len;i++) {
+		Res *res = newRes(r);
+		int ret = convertMsParamToResAndFreeNonIRODSType(var->msParam[i], res, errmsg, r);
         if(ret != 0) {
             return ret;
         }

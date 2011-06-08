@@ -114,17 +114,31 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     Env *env = defaultEnv(r);
     rei->status = 0;
 
+    msParamArray_t *orig = NULL;
+
     int rescode = 0;
     if(msParamArray!=NULL) {
-        rescode = parseAndComputeMsParamArrayToEnv(msParamArray, env->previous, rei, reiSaveFlag, &errmsgBuf, r);
-        ERROR(rescode < 0);
+    	if(strncmp(rule, "@external\n", 10) == 0) {
+            rescode = parseAndComputeMsParamArrayToEnv(msParamArray, globalEnv(env), rei, reiSaveFlag, &errmsgBuf, r);
+            ERROR(rescode < 0);
+            rule = rule + 10;
+    	} else {
+    		rescode = convertMsParamArrayToEnv(msParamArray, globalEnv(env), &errmsgBuf, r);
+            ERROR(rescode < 0);
+    	}
     }
+
+    orig = rei->msParamArray;
+    rei->msParamArray = NULL;
 
     rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, &errmsgBuf, r);
     ERROR(rescode < 0);
 
-    if(rei->msParamArray==NULL) {
+    if(orig==NULL) {
         rei->msParamArray = newMsParamArray();
+    } else {
+    	rei->msParamArray = orig;
+    	clearMsParamArray(orig, 1);
     }
     convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
 
@@ -148,17 +162,23 @@ int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag,
     Env *env = defaultEnv(r);
 
     int rescode = 0;
+    msParamArray_t *orig = NULL;
 
     if(msParamArray!=NULL) {
         rescode = convertMsParamArrayToEnv(msParamArray, env->previous, errmsg, r);
         ERROR(rescode < 0);
     }
 
+    orig = rei->msParamArray;
+    rei->msParamArray = NULL;
+
     rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, errmsg, r);
     ERROR(rescode < 0);
 
-    if(rei->msParamArray==NULL) {
+    if(orig==NULL) {
         rei->msParamArray = newMsParamArray();
+    } else {
+    	rei->msParamArray = orig;
     }
     rescode = convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
     ERROR(rescode < 0);
@@ -556,18 +576,25 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     errmsgBuf.errMsg = NULL;
     errmsgBuf.len = 0;
 
+    msParamArray_t *orig = rei->msParamArray;
+    rei->msParamArray = NULL;
+
     if(inMsParamArray!=NULL) {
         convertMsParamArrayToEnv(inMsParamArray, env, &errmsgBuf, r);
     }
 
     res = parseAndComputeExpression(inAction, env, rei, reiSaveFlag, &errmsgBuf, r);
-    if(inMsParamArray != NULL) {
+/*    if(inMsParamArray != NULL) {
         clearMsParamArray(inMsParamArray, 0);
     	convertEnvToMsParamArray(inMsParamArray, env, &errmsgBuf, r);
     } else {
         freeEnvUninterpretedStructs(env);
-    }
+    }*/
 
+    rei->msParamArray = orig;
+
+    Res *execOutRes = (Res *) lookupFromHashTable(global->current, "ruleExecOut");
+	free(execOutRes->value.uninterpreted.inOutStruct);
     deleteEnv(env, 3);
     if(res->nodeType == N_ERROR) {
         logErrMsg(&errmsgBuf, &rei->rsComm->rError);
@@ -577,6 +604,7 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     if(freeRei) {
         free(rei);
     }
+
     clearDelayed();
     return res;
 

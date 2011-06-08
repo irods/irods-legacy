@@ -999,6 +999,14 @@ void deleteEnv(Env *env, int deleteCurrent) {
     free(env);
 }
 
+Env* globalEnv(Env *env) {
+        Env *global = env;
+        while(global->previous!=NULL) {
+            global = global->previous;
+        }
+        return global;
+}
+
 List *newList(Region *r) {
     List *l = (List *)region_alloc(r, sizeof (List));
     l->head = l->tail = NULL;

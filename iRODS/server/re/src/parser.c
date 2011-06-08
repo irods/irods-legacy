@@ -529,6 +529,12 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             BUILD_NODE(N_RULE,"RULE", &start,4, 4);
             BUILD_NODE(N_RULE_PACK, rk, &start, 1, 1);
         }
+	/*OR(defType)
+		TTYPE(TK_LOCAL_VAR);
+		BUILD_NODE(TK_VAR, token.text, &pos, 0, 0);
+		TTEXT("=");
+        NT2(Term, 0, MIN_PREC);
+        BUILD_NODE(N_RULE_PACK, "GLOBAL", &start, 2, 2);*/
     END_TRY(defType)
 PARSER_FUNC_END(Rule)
 

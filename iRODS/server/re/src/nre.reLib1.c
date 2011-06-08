@@ -357,16 +357,13 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   writeToTmp("entry.log", "\n");
 #endif
   int i;
-  int pFlag = 0;
 /*
+  int pFlag = 0;
+
   msParam_t *mP;
   char tmpStr[MAX_ACTION_SIZE];
 */
 
-  if (inMsParamArray == NULL) {
-    inMsParamArray = (msParamArray_t*)mallocAndZero(sizeof(msParamArray_t));
-    pFlag = 1;
-  }
   Region *r = make_region(0, NULL);
   rError_t errmsgBuf;
   errmsgBuf.errMsg = NULL;
@@ -387,8 +384,6 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   }
   /* RAJA ADDED Jul 14, 2008 to get back the changed args */
 #endif
-  if (pFlag == 1)
-    free(inMsParamArray);
   if(i!=0) {
     logErrMsg(&errmsgBuf, &rei->rsComm->rError);
   }

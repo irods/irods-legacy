@@ -23,7 +23,10 @@ int startsWith(char *str, char *prefix) {
 	return prefix[i] == '\0';
 }
 
-int convertListToMultiString(char *strInput) {
+int convertListToMultiString(char *strInput, int input) {
+	if(strcmp(strInput, "null")==0) {
+		return 0;
+	}
 	char *src = strdup(strInput);
 
 	char *p = strInput;
@@ -51,54 +54,55 @@ int convertListToMultiString(char *strInput) {
 		while(!isspace(*psrc) && *psrc != '=' && *psrc != ',' && *psrc != '\0') {
 			*(p++) = *(psrc++);
 		}
-		if(*psrc == '\0') {
-			return -1;
-		}
+
 		/* skip spaces */
 		while(isspace(*psrc)) {
 			psrc++;
 		}
-		if(*psrc == '\0') {
-			return -1;
-		}
+		if(input) {
+			if(*psrc == '=') {
+				/* assignment */
+				*(p++) = *(psrc++);
 
-
-		if(*psrc == '=') {
-			/* assignment */
-			*(p++) = *(psrc++);
-
-			int inString = 0;
-			char delim = '\0';
-			while(*psrc!='\0') {
-				if(inString) {
-					if(*psrc == delim) {
-						inString = 0;
-					} else if(*psrc == '\\') {
-						*(p++) = *(psrc++);
-						if(*psrc=='\0') {
-							return -1;
+				int inString = 0;
+				char delim = '\0';
+				while(*psrc!='\0') {
+					if(inString) {
+						if(*psrc == delim) {
+							inString = 0;
+						} else if(*psrc == '\\') {
+							*(p++) = *(psrc++);
+							if(*psrc=='\0') {
+								return -1;
+							}
 						}
-					}
-					*(p++) = *(psrc++);
-				} else {
-					if(*psrc == ',') {
-						*(p++) = '%';
-						psrc++;
-						break;
+						*(p++) = *(psrc++);
 					} else {
-						if(*psrc == '\'' || *psrc == '\"') {
-							inString = 1;
-							delim = *psrc;
+						if(*psrc == ',') {
+							*(p++) = '%';
+							psrc++;
+							break;
+						} else {
+							if(*psrc == '\'' || *psrc == '\"') {
+								inString = 1;
+								delim = *psrc;
+							}
+							*(p++) = *(psrc++);
 						}
-						*(p++) = *(psrc++);
 					}
 				}
+			} else {
+				return -1;
 			}
-		} else if (*psrc == ','){
-			*(p++) = '%';
-		    psrc++;
 		} else {
-			return -1;
+			if(*psrc == '\0') {
+				break;
+			} else if (*psrc == ','){
+				*(p++) = '%';
+				psrc++;
+			} else {
+				return -1;
+			}
 		}
 		/* skip spaces */
 		while(isspace(*psrc)) {
@@ -107,6 +111,61 @@ int convertListToMultiString(char *strInput) {
 	}
 	*p = '\0';
 	return 0;
+}
+void appendOutputToInput(msParamArray_t *inpParamArray, char **inpParamNames, int inpParamN, char **outParamNames, int outParamN) {
+	int i, k, repeat = 0;
+	for(i=0;i<outParamN;i++) {
+		if(strcmp(outParamNames[i], "ruleExecOut")!= 0) {
+			repeat = 0;
+			for(k=0;k<inpParamN;k++) {
+				if(strcmp(outParamNames[i], inpParamNames[k]) == 0) {
+					repeat = 1;
+					break;
+				}
+			}
+			if(!repeat) {
+				addMsParam (inpParamArray, outParamNames[i],STR_MS_T,strdup("unspeced"), NULL);
+			}
+		}
+
+	}
+
+}
+int extractVarNames(char **varNames, char *outBuf) {
+    if (outBuf == NULL || strcmp (outBuf, "null") == 0) {
+    	return 0;
+    }
+    int n = 0;
+	char *p = outBuf;
+	char *psrc = p;
+
+	for(;;) {
+		if(*psrc == '=') {
+			*psrc = '\0';
+			varNames[n++] = strdup(p);
+			*psrc = '=';
+			while(*psrc!='\0' && *psrc!='%') psrc++;
+			if(*psrc == '\0') {
+				break;
+			}
+			p = psrc+1;
+
+		} else if(*psrc == '%') {
+			if(psrc[1] == '%') {
+				psrc++;
+			} else {
+				*psrc = '\0';
+				varNames[n++] = strdup(p);
+				*psrc = '%';
+				p = psrc+1;
+			}
+		} else if(*psrc == '\0') {
+			varNames[n++] = strdup(p);
+			break;
+		}
+		psrc++;
+	}
+	return n;
 }
 
 char *trimPrefix(char *str) {
@@ -186,6 +245,10 @@ main(int argc, char **argv) {
 	int len;
 	int gotRule = 0;
 	char buf[META_STR_LEN];
+	char *inpParamNames[1024];
+	char *outParamNames[1024];
+	int inpParamN = 0;
+	int outParamN = 0;
 	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
 	if (!strncmp(myRodsArgs.fileString,"i:",2)) {
 	  status = getRodsEnv (&myEnv);
@@ -241,7 +304,7 @@ main(int argc, char **argv) {
 	    exit (1);
 	}
 	int rulegen = strcmp(myRodsArgs.fileString+strlen(myRodsArgs.fileString)-2, ".r") == 0;
-	rstrcpy (execMyRuleInp.myRule, "", META_STR_LEN);
+	rstrcpy (execMyRuleInp.myRule, "@external\n", META_STR_LEN);
 	while ((len = getLine (fptr, buf, META_STR_LEN)) > 0) {
 	    if (myRodsArgs.longOption == True)
 	    	puts(buf);
@@ -263,22 +326,32 @@ main(int argc, char **argv) {
 		if (gotRule == 0) {
 	    	if(!rulegen) {
 				/* the input is a rule */
-				rstrcpy (execMyRuleInp.myRule, buf, META_STR_LEN);
+				snprintf (execMyRuleInp.myRule + strlen(execMyRuleInp.myRule), META_STR_LEN - strlen(execMyRuleInp.myRule), "%s\n", buf);
 	    	} else {
 	    		snprintf (execMyRuleInp.myRule + strlen(execMyRuleInp.myRule), META_STR_LEN - strlen(execMyRuleInp.myRule), "%s\n", buf);
 	    	}
 	    } else if (gotRule == 1) {
 	    	if(rulegen) {
-	    		convertListToMultiString(buf);
+	    		if(convertListToMultiString(buf, 1)!=0) {
+	    			printf("Input parameter list format error for %s\n", myRodsArgs.fileString);
+	    			exit(10);
+	    		}
 	    	}
+	    	inpParamN = extractVarNames(inpParamNames, buf);
 	    	parseMsInputParam (argc, argv, optind, &execMyRuleInp, buf);
 	    } else if (gotRule == 2) {
 	    	if(rulegen) {
-	    		convertListToMultiString(buf);
+	    		if(convertListToMultiString(buf, 0)!=0) {
+	    			printf("Output parameter list format error for %s\n", myRodsArgs.fileString);
+	    			exit(10);
+	    		}
 	    	}
+	    	outParamN = extractVarNames(outParamNames, buf);
 			if (strcmp (buf, "null") != 0) {
 				rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
 			}
+    		appendOutputToInput(execMyRuleInp.inpParamArray, inpParamNames, inpParamN, outParamNames, outParamN);
+
 	        break;
 	    } else {
 	    	break;
@@ -341,7 +414,7 @@ main(int argc, char **argv) {
       }
     }
     if (myRodsArgs.verbose == True) {
-        printf ("rcExecMyRule: %s\n", execMyRuleInp.myRule);
+        printf ("rcExecMyRule: %s\n", execMyRuleInp.myRule + 10);
 	printf ("outParamDesc: %s\n", execMyRuleInp.outParamDesc);
     }
 
