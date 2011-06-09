@@ -38,8 +38,8 @@ int msiListFields (msParam_t *collinp, msParam_t *fieldinp,
 	gqin.maxRows = MAX_SQL_ROWS;
 
 	/* construct an SQL query from the parameter list */
-	collname = (char*) strdup (collinp->inOutStruct);
-	fieldname = (char*) strdup (fieldinp->inOutStruct);
+	collname = strdup ((char*)collinp->inOutStruct);
+	fieldname = strdup ((char*)fieldinp->inOutStruct);
 	if ((fieldid = getAttrIdFromAttrName(fieldname))==NO_COLUMN_NAME_FOUND) {
 		sprintf (tmpstr, "Field: %s not found in database", fieldname);
 		appendToByteBuf (mybuf, tmpstr);
@@ -118,7 +118,7 @@ int msiTestForEachExec (msParam_t* mPout1, ruleExecInfo_t *rei) {
 
 	mPout1->type = strdup (STR_MS_T);
 	//fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
-	fillStrInMsParam (mPout1, mybuf->buf);
+	fillStrInMsParam (mPout1, (char*)mybuf->buf);
 
 	return(rei->status);
 	
@@ -190,10 +190,10 @@ int verifyCollOwners (genQueryOut_t* gqout, char* ownerlist, bytesBuf_t* mybuf) 
 
 int verifyCollAVU (genQueryOut_t* gqout, char* myavuname, char* myavuvalue, char* myavuattr, bytesBuf_t* mybuf) {
 
-	sqlResult_t* collName;
-	sqlResult_t* avuname;
-	sqlResult_t* avuavlue;
-	sqlResult_t* avuattr;
+//	sqlResult_t* collName;
+//	sqlResult_t* avuname;
+//	sqlResult_t* avuavlue;
+//	sqlResult_t* avuattr;
 	int status;
 
 	return (status);

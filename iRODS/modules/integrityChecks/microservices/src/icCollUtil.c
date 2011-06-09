@@ -80,12 +80,12 @@ int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp,
     mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
     memset (mybuf, 0, sizeof (bytesBuf_t));
 
-	collname = strdup (collinp->inOutStruct);
-	ownerlist = strdup (ownerinp->inOutStruct);
+	collname = strdup ((char*)collinp->inOutStruct);
+	ownerlist = strdup ((char*)ownerinp->inOutStruct);
 	
 	status = icCollOps (collname, "owner", ownerlist, mybuf, status);
 
-	fillStrInMsParam (bufout, mybuf->buf);
+	fillStrInMsParam (bufout, (char*)mybuf->buf);
 	fillIntInMsParam (statout, status);
 	return (status);
 }
@@ -113,10 +113,10 @@ int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* a
     mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
     memset (mybuf, 0, sizeof (bytesBuf_t));
 
-	collname = strdup (collinp->inOutStruct);
-	myavuname = strdup (avunameinp->inOutStruct);
-	myavuvalue = strdup (avuvalueinp->inOutStruct);
-	myavuattr = strdup (avuattrinp->inOutStruct);
+	collname = strdup ((char*)collinp->inOutStruct);
+	myavuname = strdup ((char*)avunameinp->inOutStruct);
+	myavuvalue = strdup ((char*)avuvalueinp->inOutStruct);
+	myavuattr = strdup ((char*)avuattrinp->inOutStruct);
 	
 	/* Generate a query - we only want subcollection data objects */
     addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
@@ -139,7 +139,7 @@ int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* a
 	} else
 		verifyCollAVU (gqout, myavuname, myavuvalue, myavuattr, mybuf);
 
-	fillStrInMsParam (bufout, mybuf->buf);
+	fillStrInMsParam (bufout, (char*)mybuf->buf);
 	fillIntInMsParam (statout, status);
 	return (status);
 }
@@ -165,9 +165,9 @@ int msiVerifySubCollACL (msParam_t* collinp, msParam_t* acltypeinp, msParam_t* a
 	mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
 	memset (mybuf, 0, sizeof (bytesBuf_t));
 
-	collname = strdup (collinp->inOutStruct);
-	myaclname = strdup (aclnameinp->inOutStruct);
-	myacltype = strdup (acltypeinp->inOutStruct);
+	collname = strdup ((char*)collinp->inOutStruct);
+	myaclname = strdup ((char*)aclnameinp->inOutStruct);
+	myacltype = strdup ((char*)acltypeinp->inOutStruct);
 
 	/* Generate a query - we only want subcollection data objects */
     addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
@@ -191,7 +191,7 @@ int msiVerifySubCollACL (msParam_t* collinp, msParam_t* acltypeinp, msParam_t* a
 
 	printGenQueryOut(stderr, NULL, NULL, gqout);
 
-	fillStrInMsParam (bufout, mybuf->buf);
+	fillStrInMsParam (bufout, (char*)mybuf->buf);
 	fillIntInMsParam (statout, status);
 	return (status);
 }
@@ -223,7 +223,7 @@ int	msiListColl (msParam_t* collectionname, msParam_t* buf, ruleExecInfo_t* rei)
 	rsComm = rei->rsComm;
 
 	/* need to turn parameter 1 into a collInp_t struct */
-	collname = strdup (collectionname->inOutStruct);
+	collname = strdup ((char*)collectionname->inOutStruct);
 	
 	/* init stuff */
 	memset (&gqin, 0, sizeof(genQueryInp_t));

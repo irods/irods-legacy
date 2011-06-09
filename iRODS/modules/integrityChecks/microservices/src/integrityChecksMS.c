@@ -83,7 +83,7 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
     memset (stuff, 0, sizeof (bytesBuf_t));
 
 	/* construct an SQL query from the parameter list */
-	collname = (char*) strdup (collinp->inOutStruct);
+	collname = strdup ((char*)collinp->inOutStruct);
 
 	/* this is the info we want returned from the query */
 	addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
@@ -102,7 +102,7 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
 		dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
 		dataOwner = getSqlResultByInx (genQueryOut, COL_D_OWNER_NAME);
 
-		ownerlist = (char*) strdup (ownerinp->inOutStruct);
+		ownerlist = strdup ((char*)ownerinp->inOutStruct);
 		//fprintf(stderr, "ownerlist: %s\n", ownerlist);
 
 		if (strlen(ownerlist)>0) { /* our rule contains a list of owners we want to compare against */
@@ -269,12 +269,12 @@ msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msPara
 		3. collname=/sdscZone/home/rods%*User=rods%*Auth=own*Notflag=1  
 	*/
 
-	collname = (char*) strdup (collinp->inOutStruct);
+	collname = strdup ((char*)collinp->inOutStruct);
 	if (collname == NULL) return (USER__NULL_INPUT_ERR);
 	/* These next three don't necessarily have to be set */
-	username = (char*) strdup (userinp->inOutStruct);
-	accessauth = (char*) strdup (authinp->inOutStruct);
-	notflag = (char*) strdup (notflaginp->inOutStruct);
+	username = strdup ((char*)userinp->inOutStruct);
+	accessauth = strdup ((char*)authinp->inOutStruct);
+	notflag = strdup ((char*)notflaginp->inOutStruct);
 	
 	if ((username==NULL) && (accessauth==NULL)) {
 		querytype=1; /* Case #1. see above */
@@ -462,9 +462,9 @@ msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msP
 
 
 	/* construct an SQL query from the parameter list */
-	collname = (char*) strdup (collinp->inOutStruct);
-	inputtime = (char*) strdup (timeinp->inOutStruct);
-	querytype = (char*) strdup (typeinp->inOutStruct);
+	collname = strdup ((char*)collinp->inOutStruct);
+	inputtime = strdup ((char*)timeinp->inOutStruct);
+	querytype = strdup ((char*)typeinp->inOutStruct);
 
 	/* 
 		We have a couple of rule query possibilities:
@@ -639,7 +639,7 @@ msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp,
  
 
 	/* construct an SQL query from the parameter list */
-	collname = (char*) strdup (collinp->inOutStruct);
+	collname = strdup ((char*)collinp->inOutStruct);
 
 	/* Return just the name and id of all the files in the collection for our first query */
 	addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
@@ -689,9 +689,9 @@ msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp,
 			dataAttrUnits = getSqlResultByInx (gqout2, COL_META_DATA_ATTR_UNITS);  
 
 			/* Assigning the inputted AVU values */
-			inputattrname = (char*) strdup (avunameinp->inOutStruct); 
-			inputattrvalue = (char*) strdup (avuvalueinp->inOutStruct); 
-			inputattrunits = (char*) strdup (avuattrsinp->inOutStruct); 
+			inputattrname = strdup ((char*)avunameinp->inOutStruct);
+			inputattrvalue = strdup ((char*)avuvalueinp->inOutStruct);
+			inputattrunits = strdup ((char*)avuattrsinp->inOutStruct);
 
 			/* Ok now for each data object id returned in Query 1, see if there's a matching ID returned in Query 2 */
 			for (i=0; i<q1rows; i++) {
