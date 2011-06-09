@@ -96,8 +96,8 @@ msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,
 	     "msiGetFormattedSystemTime: input rei or rsComm is NULL");
     return (SYS_INTERNAL_NULL_INPUT_ERR);
   }
-  format = inpParam->inOutStruct;
-  dateFormat = inpFormatParam->inOutStruct;
+  format = (char*)inpParam->inOutStruct;
+  dateFormat = (char*)inpFormatParam->inOutStruct;
   
   if (!format || strcmp(format, "human")) {
     getNowStr(tStr);
