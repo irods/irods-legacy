@@ -195,7 +195,7 @@ int msiXmsgCreateStream(msParam_t* inConnParam,
   }
   conn = (rcComm_t *) inConnParam->inOutStruct;
 
-  if (inGgetXmsgTicketInpParam->inOutStruct != NULL)
+  if (inGgetXmsgTicketInpParam->inOutStruct != NULL && !(strcmp(inGgetXmsgTicketInpParam->type, STR_MS_T) == 0 && strcmp((char *)inGgetXmsgTicketInpParam->inOutStruct, "") == 0))
     getXmsgTicketInp = (getXmsgTicketInp_t *) inGgetXmsgTicketInpParam->inOutStruct;
   else {
     getXmsgTicketInp = (getXmsgTicketInp_t *)  malloc(sizeof (getXmsgTicketInp_t));
@@ -327,7 +327,7 @@ int msiCreateXmsgInp(msParam_t* inMsgNumber,
     sendXmsgInp->sendXmsgInfo.numRcv = (uint) atoi( (char*)inNumberOfReceivers->inOutStruct);
   else
     sendXmsgInp->sendXmsgInfo.numRcv = (uint) CAST_PTR_INT inNumberOfReceivers->inOutStruct;
-  sendXmsgInp->sendXmsgInfo.msg = (char *) inMsg->inOutStruct;
+  sendXmsgInp->sendXmsgInfo.msg = strdup((char *) inMsg->inOutStruct);
   if (!strcmp(inNumberOfDeliverySites->type,STR_MS_T))
     sendXmsgInp->sendXmsgInfo.numDeli = (int) atoi( (char*)inNumberOfDeliverySites->inOutStruct);
   else
@@ -340,7 +340,7 @@ int msiCreateXmsgInp(msParam_t* inMsgNumber,
     sendXmsgInp->sendXmsgInfo.deliAddress =  (char**)inDeliveryAddressList->inOutStruct;
     sendXmsgInp->sendXmsgInfo.deliPort =  (uint*)inDeliveryPortList->inOutStruct;
   }
-  sendXmsgInp->sendXmsgInfo.miscInfo = (char *) inMiscInfo->inOutStruct;
+  sendXmsgInp->sendXmsgInfo.miscInfo = strdup((char *) inMiscInfo->inOutStruct);
 
   outSendXmsgInpParam->inOutStruct = (void *) sendXmsgInp;
   outSendXmsgInpParam->type = (char *) strdup(SendXmsgInp_MS_T);

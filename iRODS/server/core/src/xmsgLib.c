@@ -215,6 +215,9 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
   * (int *) XMsgMsParamArray.msParam[5]->inOutStruct = (int) irodsXmsg->seqNumber;        /* *XSEQNUM*/
   * (int *) XMsgMsParamArray.msParam[6]->inOutStruct = (int) irodsXmsg->sendTime;         /* *XTIME*/
 
+  if(strcmp(condStr, "") == 0) {
+	  return 0;
+  }
   i  = replaceMsParams(condStr, &XMsgMsParamArray);
   i =  computeExpression(condStr, NULL, 0, res);
   if (strcmp(res, "true") == 0)
