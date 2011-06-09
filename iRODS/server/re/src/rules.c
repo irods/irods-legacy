@@ -605,7 +605,7 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
 
 	free(execOutRes->value.uninterpreted.inOutStruct);
     deleteEnv(env, 3);
-    if(res->nodeType == N_ERROR) {
+    if(res->nodeType == N_ERROR && !freeRei) {
         logErrMsg(&errmsgBuf, &rei->rsComm->rError);
         rei->status = res->value.errcode;
     }
