@@ -203,6 +203,63 @@ char *trimSpaces(char *str) {
 	return str;
 
 }
+int
+printMsParamNew (msParamArray_t *outParamArray, int output)
+{
+    int i,j;
+    keyValPair_t *kVPairs;
+    tagStruct_t *tagValues;
+
+    if (outParamArray == NULL) {
+	return (0);
+    }
+    for (i = 0; i < outParamArray->len; i++) {
+	msParam_t *msParam;
+
+	msParam = outParamArray->msParam[i];
+        if (msParam->label != NULL &&
+	    msParam->type != NULL &&
+	    msParam->inOutStruct != NULL) {
+	  if (strcmp (msParam->type, STR_MS_T) == 0)
+	    printf("%s = %s\n",msParam->label, (char *) msParam->inOutStruct);
+	  else  if (strcmp (msParam->type, INT_MS_T) == 0)
+	    printf("%s = %i\n",msParam->label,*(int *) msParam->inOutStruct);
+	  else if (strcmp (msParam->type, KeyValPair_MS_T) == 0 ) {
+	    kVPairs = (keyValPair_t *)msParam->inOutStruct;
+	    printf ("KVpairs %s: %i\n", msParam->label, kVPairs->len);
+	    for (j = 0; j < kVPairs->len; j++) {
+	      printf ("       %s = %s\n",kVPairs->keyWord[j],
+		      kVPairs->value[j]);
+	    }
+	  }
+	  else if (strcmp (msParam->type, TagStruct_MS_T) == 0 ) {
+	    tagValues = (tagStruct_t *) msParam->inOutStruct;
+	    printf ("Tags %s: %i\n", msParam->label, tagValues->len);
+	    for (j = 0; j < tagValues->len; j++) {
+	      printf ("       AttName = %s\n", tagValues->keyWord[j]);
+	      printf ("       PreTag  = %s\n", tagValues->preTag[j]);
+	      printf ("       PostTag = %s\n", tagValues->postTag[j]);
+	    }
+	  }
+	  else if (strcmp (msParam->type, ExecCmdOut_MS_T) == 0 && output) {
+	    execCmdOut_t *execCmdOut;
+	    execCmdOut = (execCmdOut_t *) msParam->inOutStruct;
+	    if (execCmdOut->stdoutBuf.buf != NULL)
+	      printf ("STDOUT = %s",(char *) execCmdOut->stdoutBuf.buf);
+	    if (execCmdOut->stderrBuf.buf != NULL)
+	      printf ("STRERR = %s", (char *) execCmdOut->stderrBuf.buf);
+	  }
+	  else {
+		  printf ("%s: %s\n",msParam->label, msParam->type);
+		  }
+	  }
+	if (msParam->inpOutBuf != NULL) {
+	    printf ("    outBuf: buf length = %d\n", msParam->inpOutBuf->len);
+	}
+
+    }
+    return (0);
+}
 
 int
 main(int argc, char **argv) {
@@ -455,9 +512,10 @@ main(int argc, char **argv) {
 
     if (myRodsArgs.verbose == True) {
         printf ("ExecMyRule completed successfully.    Output \n\n");
-        printMsParam (outParamArray);
+        printMsParamNew (outParamArray, 1);
     }
     else {
+        printMsParamNew (outParamArray, 0);
       msParam_t *mP;
       execCmdOut_t *execCmdOut;
       if ((mP = getMsParamByType (outParamArray, ExecCmdOut_MS_T)) != NULL) {
@@ -483,6 +541,62 @@ main(int argc, char **argv) {
 
 }
 
+int
+splitMultiStr (char *strInput, strArray_t *strArray)
+{
+    char *startPtr, *endPtr;
+    int endReached = 0;
+
+   if (strInput == NULL || strArray == NULL) {
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    startPtr = endPtr = strInput;
+
+    while (1) {
+      /* RAJA changed JUl 11, 2007 so that two %% will be taken as an input %
+	 instead of as a delimiter */
+        while (*endPtr != '%' && *endPtr != '\0') {
+            endPtr ++;
+        }
+        if (*endPtr == '%') {
+        	if (*(endPtr+1) == '%') {
+        		endPtr ++;endPtr ++;
+        		continue;
+        	}
+        	*endPtr = '\0';
+        } else {
+            endReached = 1;
+        }
+
+        char *str = strdup(startPtr);
+        char *p = str;
+        char *psrc = str;
+        while(*psrc!='\0') {
+			while(*psrc!='%' && *psrc!='\0') *(p++) = *(psrc++);
+			if(*psrc == '%') {
+			*(p++) = *(psrc++);
+			psrc++;
+			}
+        }
+        *p = '\0';
+
+        addStrArray (strArray, str);
+
+        free(str);
+
+        if (endReached == 1) {
+            break;
+        }
+
+        endPtr++;
+        startPtr = endPtr;
+    }
+
+    return (strArray->len);
+}
+
+
 
 int
 parseMsInputParam (int argc, char **argv, int optInd, 
@@ -503,7 +617,7 @@ parseMsInputParam (int argc, char **argv, int optInd,
     nInput = argc - optInd;
     memset (&strArray, 0, sizeof (strArray));
 
-    status = parseMultiStr (inBuf, &strArray);
+    status = splitMultiStr (inBuf, &strArray);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "parseMsInputParam: parseMultiStr error, status = %d", status);

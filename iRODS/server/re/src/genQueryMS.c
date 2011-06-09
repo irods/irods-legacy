@@ -731,8 +731,10 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
     writeId = where->label;
   }
 
-  genQueryInp = (genQueryInp_t *)  strtol((char *)genQueryInpParam->inOutStruct,
-    (char **) NULL,0);
+/*  genQueryInp = (genQueryInp_t *)  strtol((char *)genQueryInpParam->inOutStruct,
+    (char **) NULL,0); */
+
+  genQueryInp = (genQueryInp_t *)  genQueryInpParam->inOutStruct;
 
 
   /* print each selection pair to writeStr */
