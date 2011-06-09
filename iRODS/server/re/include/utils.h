@@ -62,10 +62,13 @@
 #define T_VAR_DISJUNCT(x, n) ((x)->subtrees[n])
 #define T_VAR_DISJUNCTS(x) ((x)->subtrees)
 #define T_VAR_NUM_DISJUNCTS(x) ((x)->degree)
-#define TC_A(tc) (tc)->subtrees[0]
-#define TC_B(tc) (tc)->subtrees[1]
-#define TC_NODE(tc) (tc)->subtrees[2]
-#define TC_NEXT(tc) (tc)->subtrees[3]
+#define TC_A(tc) ((tc)->subtrees[0])
+#define TC_B(tc) ((tc)->subtrees[1])
+#define TC_NODE(tc) ((tc)->subtrees[2])
+#define TC_NEXT(tc) ((tc)->subtrees[3])
+#define N_APP_ARG(x, n) ((x)->subtrees[1]->subtrees[n])
+#define N_APP_FUNC(x) ((x)->subtrees[0])
+#define N_APP_ARITY(x) ((x)->subtrees[1]->degree)
 
 
 #define LIST "[]"

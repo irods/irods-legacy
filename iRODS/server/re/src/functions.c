@@ -112,6 +112,31 @@ Res *smsi_letExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     deleteEnv(nEnv, 1);
     return res;
 }
+Res *smsi_matchExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
+    Res *res = evaluateExpression3(params[0], 0, 1,rei,reiSaveFlag,env,errmsg,r);
+    if(res->nodeType == N_ERROR) {
+            return res;
+    }
+    char errmsgBuf[ERR_MSG_LEN];
+    int i;
+    for(i=1;i<n;i++) {
+    Env *nEnv = newEnv(newHashTable(100), env, NULL);
+    Res *pres = matchPattern(params[i]->subtrees[0], res, nEnv, rei, reiSaveFlag, errmsg, r);
+    if(pres->nodeType == N_ERROR) {
+        deleteEnv(nEnv, 1);
+        /* generateErrMsg("", params[i]->subtrees[0]->expr, params[i]->subtrees[0]->base, errmsgBuf); */
+        addRErrorMsg(errmsg, -1, ERR_MSG_SEP);
+        continue;
+    }
+/*                printTree(params[2], 0); */
+    res = evaluateExpression3(params[i]->subtrees[1], 0,0, rei,reiSaveFlag,nEnv,errmsg,r);
+    deleteEnv(nEnv, 1);
+    return res;
+    }
+    generateErrMsg("pattern not matched", node->expr, node->base, errmsgBuf);
+    addRErrorMsg(errmsg, PATTERN_NOT_MATCHED, errmsgBuf);
+    return newErrorRes(r, PATTERN_NOT_MATCHED);
+}
 
 
 Res *smsi_whileExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -201,6 +226,65 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
 
 }
 
+Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
+{
+    Res *res = newRes(r);
+    char* varName = ((Node *)subtrees[0])->text;
+	Res* coll = evaluateExpression3(subtrees[1], 0, 1, rei, reiSaveFlag, env, errmsg, r);
+	if(TYPE(coll) != T_CONS &&
+	   (TYPE(coll) != T_IRODS || (
+			strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
+			strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
+			strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0))) {
+		char errbuf[ERR_MSG_LEN], errbuf2[ERR_MSG_LEN];
+		snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
+		generateErrMsg(errbuf, ((Node *)subtrees[0])->expr, ((Node *)subtrees[0])->base, errbuf2);
+		addRErrorMsg(errmsg, -1, errbuf2);
+		return newErrorRes(r, -1);
+	}
+	res = newIntRes(r, 0);
+	if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
+		int i;
+		Res* elem;
+		for(i=0;i<coll->degree;i++) {
+				elem = coll->subtrees[i];
+				setVariableValue(varName, elem, rei, env, errmsg, r);
+				res = evaluateActions(subtrees[2], subtrees[3], rei,reiSaveFlag, env,errmsg,r);
+				if(res->nodeType == N_ERROR) {
+					break;
+				} else
+				if(TYPE(res) == T_BREAK) {
+					break;
+				} else
+				if(TYPE(res) == T_SUCCESS) {
+					break;
+				}
+		}
+		if(res->nodeType != N_ERROR) {
+			res = newIntRes(r,0);
+		}
+	} else {
+		int i;
+		Res* elem;
+		int len = getCollectionSize(coll->exprType->text, coll->value.uninterpreted.inOutStruct, r);
+		for(i=0;i<len;i++) {
+				elem = getValueFromCollection(coll->exprType->text, coll->value.uninterpreted.inOutStruct, i, r);
+				setVariableValue(varName, elem, rei, env, errmsg, r);
+				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], rei,reiSaveFlag,  env,errmsg,r);
+				if(res->nodeType == N_ERROR) {
+						break;
+				}
+				if(TYPE(res) == T_BREAK) {
+						break;
+				}
+		}
+		if(res->nodeType != N_ERROR) {
+			res = newIntRes(r,0);
+		}
+
+	}
+	return res;
+}
 Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
 {
     Res *res = newRes(r);
@@ -1429,6 +1513,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "errormsga", newFunctionDesc("a ? * a ? * o string->integer", smsi_errormsg, r));
     insertIntoHashTable(ft, "errormsg", newFunctionDesc("e ? * o string->integer", smsi_errormsg, r));
     insertIntoHashTable(ft, "let", newFunctionDesc("e 0 * e f 0 * e 1->1", smsi_letExec, r));
+    insertIntoHashTable(ft, "match", newFunctionDesc("e 0 * e (0 * 1)*->1", smsi_matchExec, r));
     insertIntoHashTable(ft, "if2", newFunctionDesc("e boolean * e 0 * e 0 * e ? * e ?->0", smsi_if2Exec, r));
     insertIntoHashTable(ft, "if", newFunctionDesc("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
     insertIntoHashTable(ft, "ifExec", newFunctionDesc("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
@@ -1437,6 +1522,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "while", newFunctionDesc("e boolean * a ? * a ?->?",smsi_whileExec, r));
     insertIntoHashTable(ft, "whileExec", newFunctionDesc("e boolean * a ? * a ?->?", smsi_whileExec, r));
     insertIntoHashTable(ft, "foreach", newFunctionDesc("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "foreach2", newFunctionDesc("forall X, e X * e list X * a ? * a ?->?", smsi_forEach2Exec, r));
     insertIntoHashTable(ft, "forEachExec", newFunctionDesc("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
     insertIntoHashTable(ft, "break", newFunctionDesc("->integer", smsi_break, r));
     insertIntoHashTable(ft, "succeed", newFunctionDesc("->integer", smsi_succeed, r));

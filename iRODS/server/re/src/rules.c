@@ -386,12 +386,20 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
             freeRErrorContent(errmsg);
             RETURN;
         }
-        /* check that function names are unique */
+        /* check that function names are unique and do not conflict with system msis */
+        char errbuf[ERR_MSG_LEN];
         char *ruleName = rule->node->subtrees[0]->text;
+        if(lookupFromHashTable(funcDesc, ruleName) != NULL) {
+            generateErrMsg("redefinition of system microservice", rule->node->expr, rule->node->base, errbuf);
+            addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
+            res = newErrorType(FUNCTION_REDEFINITION, r);
+            *errnode = rule->node;
+            RETURN;
+        }
+
         RuleDesc *rd = (RuleDesc *)lookupFromHashTable(ruleType, ruleName);
         if(rd!=NULL) {
             if(rule->ruleType == RK_FUNC || rd ->ruleType == RK_FUNC) {
-                char errbuf[ERR_MSG_LEN];
                 generateErrMsg("redefinition of function", rule->node->expr, rule->node->base, errbuf);
                 addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
                 res = newErrorType(FUNCTION_REDEFINITION, r);

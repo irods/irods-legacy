@@ -1,3 +1,5 @@
+/* For copyright information please refer to files in the COPYRIGHT directory
+ */
 #include "configuration.h"
 #include "utils.h"
 #include "rules.h"

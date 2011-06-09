@@ -211,8 +211,8 @@ int isVariableNode(Node *node) {
         isLocalVariableNode(node) ||
         isSessionVariableNode(node);
 }
-#define nKeywords 16
-char *keywords[nKeywords] = { "in", "let", "for", "forExec", "while", "whileExec", "foreach", "forEachExec", "if", "ifExec", "then", "else", "data", "on", "or", "oron"};
+#define nKeywords 18
+char *keywords[nKeywords] = { "in", "let", "match", "with", "for", "forExec", "while", "whileExec", "foreach", "forEachExec", "if", "ifExec", "then", "else", "data", "on", "or", "oron"};
 int isKeyword(char *text) {
 	int i;
 	for(i=0;i<nKeywords;i++) {
@@ -293,9 +293,9 @@ Token* nextTokenRuleGen(Pointer* e, Token* token, int rulegen) {
                     skipComments(e);
                     continue;
                 }
-            } else if(ch == '-') {
+            } else if(ch == '-' || ch == '=') {
                 if(lookAhead(e,1)=='>') {
-                    token->text[0] = '-';
+                    token->text[0] = ch;
                     token->text[1] = '>';
                     token->text[2] = '\0';
                     token->type = TK_MISC_OP;
@@ -412,10 +412,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
         int rulegen = 0;
     TRY(defType)
         TTEXT("data");
-        TTYPE(TK_TEXT);
-        BUILD_NODE(TK_TEXT, token.text, &pos, 0, 0);
-        TTEXT(":");
-        NT(FuncType);
+    	NT(RuleName);
         TTEXT("=");
         int n = 0;
         OPTIONAL_BEGIN(semicolon)
@@ -436,7 +433,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
         OPTIONAL_BEGIN(semicolon)
             TTEXT(";");
         OPTIONAL_END(semicolon)
-        n = n*2+2;
+        n = n*2+1;
         BUILD_NODE(N_RULE_PACK, "INDUCT", &start, n, n);
     OR(defType)
         NT(RuleName);
@@ -580,7 +577,7 @@ PARSER_FUNC_BEGIN(RuleName)
 
     TRY(retType)
         TTEXT(":");
-        NT(Type);
+        NT(FuncType);
     OR(retType)
         BUILD_NODE(T_UNSPECED, NULL, FPOS, 0, 0);
     END_TRY(retType)
@@ -1055,12 +1052,24 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         		TTEXT("forEachExec");
         	END_TRY(foreach)
             TTEXT("(");
-            NT2(Term, 1, MIN_PREC);
-            TTEXT(")");
-            TTEXT("{");
-            NT2(Actions, 1, 0);
-            TTEXT("}");
-            BUILD_APP_NODE("foreach", &start, 3);
+            TTYPE(TK_LOCAL_VAR);
+            BUILD_NODE(TK_VAR, token.text, &pos, 0, 0);
+            TRY(foreach2)
+	            TTEXT(")");
+	            TTEXT("{");
+	            NT2(Actions, 1, 0);
+	            TTEXT("}");
+	            BUILD_APP_NODE("foreach", &start, 3);
+			OR(foreach2)
+				TTEXT("in");
+				NT2(Term, 1, MIN_PREC);
+				TTEXT(")");
+				TTEXT("{");
+				NT2(Actions, 1, 0);
+				TTEXT("}");
+				BUILD_APP_NODE("foreach2", &start, 4);
+			END_TRY(foreach2)
+
         OR(func)
             ABORT(!rulegen);
         	TRY(fo)
@@ -1126,6 +1135,29 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             TTEXT("in");
             NT2(Term, 1, MIN_PREC);
             BUILD_APP_NODE("let", &start, 3);
+		OR(func)
+			ABORT(!rulegen);
+			TTEXT("match");
+			NT2(Term, 1, 2);
+			TTEXT("with");
+			int n = 0;
+			LOOP_BEGIN(cases)
+				Label cpos = *FPOS;
+				TRY(vbar)
+					TTEXT("|");
+				OR(vbar)
+					ABORT(n==0);
+					DONE(cases)
+				OR(vbar)
+					ABORT(n!=0);
+				END_TRY(vbar);
+				NT2(Term, 1, MIN_PREC);
+				TTEXT("=>");
+				NT2(Term, 1, MIN_PREC);
+				BUILD_NODE(N_TUPLE, TUPLE, &cpos, 2, 2);
+				n++;
+			LOOP_END(cases)
+			BUILD_APP_NODE("match", &start, n+1);
         OR(func)
             ABORT(rulegen);
             NT1(TermSystemBackwardCompatible, 0);
@@ -1363,6 +1395,15 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 				actionsToString(p, s, indent, n->subtrees[1]->subtrees[1], n->subtrees[1]->subtrees[2]);
 				break;
 			}
+			if(strcmp(fn, "foreach2") == 0) {
+				PRINT(p, s, "%s", "foreach (");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, "%s", " in ");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+				PRINT(p, s, "%s", ") ");
+				actionsToString(p, s, indent, n->subtrees[1]->subtrees[2], n->subtrees[1]->subtrees[3]);
+				break;
+			}
 			if(strcmp(fn, "for") == 0) {
 				PRINT(p, s, "%s", "for (");
 				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
@@ -1381,6 +1422,21 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
 				PRINT(p, s, "%s", " in ");
 				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2]);
+				break;
+			}
+			if(strcmp(fn, "match") == 0) {
+				PRINT(p, s, "%s", "match ");
+				termToString(p, s, indent, MIN_PREC, N_APP_ARG(n, 0));
+				PRINT(p, s, "%s", " with");
+				int i;
+				for(i=1;i<N_APP_ARITY(n);i++) {
+					PRINT(p, s, "%s", "\n");
+					indentToString(p, s, indent + 1);
+					PRINT(p, s, "%s", "| ");
+					termToString(p, s, indent + 1, MIN_PREC, N_APP_ARG(n, i)->subtrees[0]);
+					PRINT(p, s, "%s", " => ");
+					termToString(p, s, indent + 1, MIN_PREC, N_APP_ARG(n, i)->subtrees[1]);
+				}
 				break;
 			}
 			if(strcmp(fn, "assign") == 0) {
@@ -2186,6 +2242,10 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     TTEXT("type");
                     CASCADE(newSimpType(T_TYPE, context->region));
                     /* type */
+			OR(type)
+					TTEXT("set");
+					CASCADE(newSimpType(T_TYPE, context->region));
+					/* set */
             OR(type)
                     TTYPE(TK_TEXT);
                     char *cons = cpStringExt(token.text, context->region);
@@ -2359,7 +2419,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Re
                 RuleType rk;
                 if(strcmp(node->text, "INDUCT") == 0) {
                     int k;
-                    for(k=2;k<n;k+=2) {
+                    for(k=1;k<n;k+=2) {
                         if(lookupBucketFromHashTable(ruleEngineConfig.funcDescIndex, nodes[k]->text)!=NULL) {
                             generateErrMsg("readRuleSetFromFile: redefinition of constructor.", nodes[k]->expr, nodes[k]->base, errbuf);
                             addRErrorMsg(errmsg, TYPE_ERROR, errbuf);

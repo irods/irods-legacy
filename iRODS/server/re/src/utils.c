@@ -1174,6 +1174,7 @@ char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
     	}
     	if(restart) {
     		snprintf(errbuf+p, buflen-p, "%s\n", ERR_MSG_SEP);
+    		p += strlen(errbuf+p);
     	}
         if(!first && !restart) {
             snprintf(errbuf+p, buflen-p, "caused by: %s\n", errmsg->errMsg[i]->msg);
