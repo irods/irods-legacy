@@ -110,7 +110,7 @@ int reconnFlag)
 	if (getIrodsErrno (status) == SYS_SOCK_READ_TIMEDOUT) {
 	    /* timed out. try again */
 	    rodsLog (LOG_ERROR, 
-	      "_rcConnect: connectToRhost timeedout retrying");
+	      "_rcConnect: connectToRhost timedout retrying");
 	    status = connectToRhost (conn, connectCnt, reconnFlag);
 	}
     }
