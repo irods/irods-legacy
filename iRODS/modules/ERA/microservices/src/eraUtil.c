@@ -433,8 +433,9 @@ getDataObjPSmeta(char *objPath, bytesBuf_t *mybuf, rsComm_t *rsComm)
       genQueryInp.selectInp.len = 1;
       status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
       if (status==0) {
-	 /* printf("None\n"); */
-	 return(0);
+    	  appendStrToBBuf(mybuf, "");
+    	  /* printf("None\n"); */
+    	  return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
 
