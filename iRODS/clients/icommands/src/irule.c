@@ -361,6 +361,12 @@ main(int argc, char **argv) {
 	    exit (1);
 	}
     char *fileType = strrchr(myRodsArgs.fileString, '.');
+    if(fileType == NULL) {
+        printf (
+          "Unsupported input file type\n");
+        exit(10);
+
+    }
 	int rulegen;
 	if(strcmp(fileType, ".r") == 0) {
 		rulegen = 1;
@@ -368,7 +374,7 @@ main(int argc, char **argv) {
 		rulegen = 0;
 	} else {
         printf (
-          "Unsupported input file type \"%s\"\n", fileType);
+          "Unsupported input file type %s\n", fileType);
         exit(10);
 
 	}
