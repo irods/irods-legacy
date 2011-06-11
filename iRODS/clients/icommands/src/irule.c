@@ -370,7 +370,7 @@ main(int argc, char **argv) {
 	int rulegen;
 	if(strcmp(fileType, ".r") == 0) {
 		rulegen = 1;
-	} else if(strcmp(fileType, ".ir") == 0) {
+	} else if(strcmp(fileType, ".ir") == 0 || strcmp(fileType, ".irb") == 0) {
 		rulegen = 0;
 	} else {
 		rodsLog (LOG_ERROR,
