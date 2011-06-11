@@ -373,7 +373,7 @@ main(int argc, char **argv) {
 	} else if(strcmp(fileType, ".ir") == 0) {
 		rulegen = 0;
 	} else {
-        printf (
+		rodsLog (LOG_ERROR,
           "Unsupported input file type %s\n", fileType);
         exit(10);
 
@@ -407,7 +407,8 @@ main(int argc, char **argv) {
 	    } else if (gotRule == 1) {
 	    	if(rulegen) {
 	    		if(convertListToMultiString(buf, 1)!=0) {
-	    			printf("Input parameter list format error for %s\n", myRodsArgs.fileString);
+	    			rodsLog (LOG_ERROR,
+	    					"Input parameter list format error for %s\n", myRodsArgs.fileString);
 	    			exit(10);
 	    		}
 	    	}
@@ -416,7 +417,8 @@ main(int argc, char **argv) {
 	    } else if (gotRule == 2) {
 	    	if(rulegen) {
 	    		if(convertListToMultiString(buf, 0)!=0) {
-	    			printf("Output parameter list format error for %s\n", myRodsArgs.fileString);
+	    			rodsLog (LOG_ERROR,
+	    					"Output parameter list format error for %s\n", myRodsArgs.fileString);
 	    			exit(10);
 	    		}
 	    	}
