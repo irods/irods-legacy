@@ -360,7 +360,18 @@ main(int argc, char **argv) {
               myRodsArgs.fileString, errno);
 	    exit (1);
 	}
-	int rulegen = strcmp(myRodsArgs.fileString+strlen(myRodsArgs.fileString)-2, ".r") == 0;
+    char *fileType = strrchr(myRodsArgs.fileString, '.');
+	int rulegen;
+	if(strcmp(fileType, ".r") == 0) {
+		rulegen = 1;
+	} else if(strcmp(fileType, ".ir") == 0) {
+		rulegen = 0;
+	} else {
+        printf (
+          "Unsupported input file type \"%s\"\n", fileType);
+        exit(10);
+
+	}
 	rstrcpy (execMyRuleInp.myRule, "@external\n", META_STR_LEN);
 	while ((len = getLine (fptr, buf, META_STR_LEN)) > 0) {
 	    if (myRodsArgs.longOption == True)
