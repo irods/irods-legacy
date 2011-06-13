@@ -26,6 +26,8 @@ region_free(_rnew); \
 _rnew = _rnew2;}
 #define GC_END region_free(_rnew);
 
+int fileConcatenate(char *file1, char *file2, char *file3);
+
 FunctionDesc *newFunctionDesc(char *type, SmsiFuncPtrType func, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
     /*desc->arity = arity; */
@@ -1451,7 +1453,82 @@ Res *smsi_msiAdmAddAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecInfo
 #endif
 
 }
+
+Res *smsi_msiAdmAppendToTopOfCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+#ifndef DEBUG
+	  int i;
+	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+	    return newIntRes(r, i);
+#endif
+	  char *conDir = getConfigDir ();
+	  char file1[1024];
+	  char file2[1024];
+	  char file3[1024];
+	  snprintf(file1, 1024, "%s/reConfigs/%s",
+		   conDir, paramsr[0]->text);
+	  snprintf(file2, 1024, "%s/reConfigs/core.re",
+		   conDir);
+	  snprintf(file3, 1024, "%s/reConfigs/admtmpcore.re", conDir);
+	  int errcode;
+	  if((errcode = fileConcatenate(file1, file2, file3))!=0) {
+		  return newErrorRes(r, errcode);
+	  }
+	  if(rename(file3, file2)!=0) {
+		  return newErrorRes(r, -1);
+	  }
+	  return newIntRes(r, 0);
+
+}
+Res *smsi_msiAdmChangeCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+#ifndef DEBUG
+	  int i;
+	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+	    return newIntRes(r, i);
+#endif
+	  char *conDir = getConfigDir ();
+	  char file1[1024];
+	  char file2[1024];
+	  snprintf(file1, 1024, "%s/reConfigs/%s",
+		   conDir, paramsr[0]->text);
+	  snprintf(file2, 1024, "%s/reConfigs/core.re",
+		   conDir);
+	  int errcode;
+	  if((errcode = fileConcatenate(file1, NULL, file2))!=0) {
+		  return newErrorRes(r, errcode);
+	  }
+	  return newIntRes(r, 0);
+
+}
+
 /* utilities */
+int fileConcatenate(char *file1, char *file2, char *file3) {
+	char buf[1024];
+	FILE *f1 = fopen(file1, "r");
+	FILE *f2 = file2 == NULL? NULL : fopen(file2, "r");
+	FILE *f3 = fopen(file3, "w");
+
+	size_t len;
+	while(!feof(f1)) {
+		len = fread(buf, 1, 1024, f1);
+		fwrite(buf, 1, len, f3);
+	}
+	fclose(f1);
+	if(f2!=NULL) {
+		while(!feof(f2)) {
+			len = fread(buf, 1, 1024, f2);
+			fwrite(buf, 1, len, f3);
+		}
+		fclose(f2);
+	}
+	fclose(f3);
+	return 0;
+}
+
+Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r) {
+    Res *res = parseAndComputeExpression(expr, env, rei, saveREI, errmsg, r);
+    return res;
+}
+
 /*FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
             ExprType *fTypeCopy = fDesc->type;
 
@@ -1465,30 +1542,9 @@ Res *smsi_msiAdmAddAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecInfo
                 fTypeCopy = fDesc->type;
             }
             return fDesc;
-}*/
-
-Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r) {
-    Res *res = parseAndComputeExpression(expr, env, rei, saveREI, errmsg, r);
-    return res;
 }
 
-int getParamIOType(char *iotypes, int index) {
-    int l = strlen(iotypes);
-    int repeat = 0;
-    if(iotypes[l-1] == '*' || iotypes[l-1] == '+') {
-        l--;
-        repeat = 1;
-    }
-
-    if(l>index) {
-        return iotypes[index];
-    } else if(repeat) {
-        return iotypes[l-1];
-    } else { /* error */
-        return -1;
-    }
-}
-
+*/
 
 Node *construct(char *fn, Node **args, int argc, Node *constype, Region *r) {
     Node *res = newRes(r);
@@ -1604,11 +1660,12 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionDesc("e ? ?->integer", smsi_msiAdmShowIRB, r));
 #ifdef DEBUG
     insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionDesc("string->integer", smsi_msiAdmAddAppRuleStruct, r));
-    insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionDesc("->integer", smsi_msiAdmClearAppRuleStruct, r));
 #else
     insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionDesc("string * string * string->integer", smsi_msiAdmAddAppRuleStruct, r));
-    insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionDesc("->integer", smsi_msiAdmClearAppRuleStruct, r));
 #endif
+    insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionDesc("->integer", smsi_msiAdmClearAppRuleStruct, r));
+    insertIntoHashTable(ft, "msiAdmAppendToTopOfCoreRE", newFunctionDesc("string->integer", smsi_msiAdmAppendToTopOfCoreRE, r));
+    insertIntoHashTable(ft, "msiAdmChangeCoreRE", newFunctionDesc("string->integer", smsi_msiAdmChangeCoreRE, r));
 
 
 }
