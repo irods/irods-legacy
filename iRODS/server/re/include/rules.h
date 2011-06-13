@@ -24,6 +24,7 @@ Res *computeExpressionNode(Node *expr, Env *env, ruleExecInfo_t *rei, int reiSav
 ExprType *typeRule(RuleDesc *ruleNode, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r);
 ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r);
 void addCmdExecOutToEnv(Env *global, Region *r);
+void freeCmdExecOut(execCmdOut_t *ruleExecOut);
 Node *getRuleNode(int ri);
 int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *r);
 int actionTableLookUp (char *action);
