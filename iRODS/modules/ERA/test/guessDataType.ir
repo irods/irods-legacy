@@ -1,3 +1,3 @@
-Guess Data Type for Object||msiGuessDataType(*objPath,*dataType,*Status)##writeLine(stdout,*dataType)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
-*objPath=/tempZone/home/antoine/tmp.txt
+GuessDataType||msiGuessDataType(*objPath,*dataType,*Status)##writeLine("stdout",*dataType)##writePosInt("stdout",*Status)##writeLine("stdout","")|nop
+*objPath="/pho27/home/rods/README.txt"
 ruleExecOut

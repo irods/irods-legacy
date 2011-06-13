@@ -1944,6 +1944,11 @@ msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
 	}
 
 
+	/* zero out input for rsModDataObjMeta */
+	memset (&dataObjInfo, 0, sizeof (dataObjInfo_t));
+	memset (&regParam, 0, sizeof (keyValPair_t));
+
+
 	/* parse inpParam1: data object ID */
 	if ((dataIdStr = parseMspForStr(inpParam1)) != NULL)  {
 		dataObjInfo.dataId = (rodsLong_t) atoll(dataIdStr);
@@ -1968,7 +1973,6 @@ msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
 		rodsLog (LOG_ERROR, "msiSetDataType: parseMspForStr error for param 3.");
 		return (USER__NULL_INPUT_ERR);
 	}
-	memset (&regParam, 0, sizeof (regParam));
 	addKeyVal (&regParam, DATA_TYPE_KW, dataTypeStr);
 
 	
