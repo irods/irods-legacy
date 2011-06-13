@@ -36,7 +36,7 @@ typedef struct op {
     int prec;
 } Op;
 
-extern int num_ops;
+#define num_ops 30
 extern Op new_ops[];
 
 typedef struct pointer {

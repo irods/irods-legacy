@@ -8,8 +8,8 @@
 #include "functions.h"
 #include "configuration.h"
 
-int num_ops = 30;
-Op new_ops[] = {
+
+Op new_ops[num_ops] = {
     {"-",1,10},
     {"++",2,6},
     {"+",2,6},
@@ -31,8 +31,8 @@ Op new_ops[] = {
     {"not like regex",2,8},
     {"like",2,8},
     {"not like",2,8},
+    {"^^",2,8},
     {"^",2,8},
-    {"@",2,8},
     {"floor",1,10},
     {"ceiling",1,10},
     {"log",1,10},
@@ -58,6 +58,7 @@ PARSER_FUNC_PROTO(FuncType);
 PARSER_FUNC_PROTO(_FuncType);
 PARSER_FUNC_PROTO(TypingConstraints);
 PARSER_FUNC_PROTO(_TypingConstraints);
+PARSER_FUNC_PROTO(Metadata);
 
 /***** utility functions *****/
 ParserContext *newParserContext(rError_t *errmsg, Region *r) {
@@ -274,7 +275,7 @@ Token* nextTokenRuleGen(Pointer* e, Token* token, int rulegen) {
             break;
         } else {
             int i;
-            if (ch == '{' || ch == '}' || ch == '(' || ch == ')' || ch == ',' || (ch == '|' && (!rulegen || lookAhead(e, 1) != '|')) || ch == ';' || ch == '?') {
+            if (ch == '{' || ch == '}' || ch == '(' || ch == ')' || ch == ',' || ch == '@' || (ch == '|' && (!rulegen || lookAhead(e, 1) != '|')) || ch == ';' || ch == '?') {
                 *(token->text) = ch;
                 (token->text)[1] = '\0';
                 token->type = TK_MISC_OP;
@@ -453,10 +454,11 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
         if(strcmp(rk, "FUNC")==0) {
             BUILD_APP_NODE("true", FPOS, 0);
             NT(FuncExpr);
+            NT(Metadata);
             OPTIONAL_BEGIN(semicolon)
 				TTEXT(";");
             OPTIONAL_END(semicolon)
-            BUILD_NODE(N_RULE,"RULE", &start,4, 4);
+            BUILD_NODE(N_RULE,"RULE", &start,5, 5);
             BUILD_NODE(N_RULE_PACK,rk, &start,1, 1);
         } else if(rulegen) {
             int numberOfRules = 0;
@@ -475,7 +477,8 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
                     TTEXT("{");
                     NT2(Actions, 1, 0);
                     TTEXT("}");
-                    BUILD_NODE(N_RULE, "RULE", &start, 4, 3);
+                    NT(Metadata);
+                    BUILD_NODE(N_RULE, "RULE", &start, 5, 4);
                     SWAP;
                     numberOfRules++;
                 OR(rulePack)
@@ -488,24 +491,26 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
                     TTEXT("{");
                     NT2(Actions, 1, 0);
                     TTEXT("}");
-                    BUILD_NODE(N_RULE, "RULE", &start, 4, 3);
+                    NT(Metadata);
+                    BUILD_NODE(N_RULE, "RULE", &start, 5, 4);
                     SWAP;
                     numberOfRules++;
                 OR(rulePack)
                     ABORT(numberOfRules == 0);
-                    TTEXT_LOOKAHEAD("}");
+                    TTEXT("}");
                     DONE(rule);
                 OR(rulePack)
                     ABORT(numberOfRules != 0);
                 	BUILD_APP_NODE("true", FPOS, 0);
                     NT2(Actions, 1, 0);
+                    TTEXT("}");
+                    NT(Metadata);
                     numberOfRules = 1;
-                    BUILD_NODE(N_RULE, "RULE", &start, 4, 3);
+                    BUILD_NODE(N_RULE, "RULE", &start, 5, 4);
                     SWAP;
                     DONE(rule);
                 END_TRY(rulePack)
             LOOP_END(rule)
-            TTEXT("}");
             (void) POP;
             BUILD_NODE(N_RULE_PACK, rk, &start, numberOfRules, numberOfRules);
         } else {
@@ -523,7 +528,19 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             NT2(Actions, 0, backwardCompatible);
             TTEXT("|");
             NT2(Actions, 0, backwardCompatible);
-            BUILD_NODE(N_RULE,"RULE", &start,4, 4);
+            int n = 0;
+            Label metadataStart = *FPOS;
+            OPTIONAL_BEGIN(ruleId)
+            	TTEXT("|");
+				TTYPE(TK_INT);
+            	BUILD_NODE(TK_STRING,"id", &pos, 0, 0);
+            	BUILD_NODE(TK_STRING,token.text, &pos, 0, 0);
+            	BUILD_NODE(TK_STRING,"", &pos, 0, 0);
+            	BUILD_NODE(N_AVU,AVU, &pos, 3, 3);
+            	n++;
+            OPTIONAL_END(ruleId)
+            BUILD_NODE(N_META_DATA, META_DATA, &metadataStart, n, n);
+            BUILD_NODE(N_RULE,"RULE", &start, 5, 5);
             BUILD_NODE(N_RULE_PACK, rk, &start, 1, 1);
         }
 	/*OR(defType)
@@ -583,6 +600,37 @@ PARSER_FUNC_BEGIN(RuleName)
     END_TRY(retType)
     BUILD_NODE(N_RULE_NAME, ruleName, &start, 3, 3);
 PARSER_FUNC_END(RuleName)
+
+PARSER_FUNC_BEGIN(Metadata)
+	int rulegen = 1;
+	int n = 0;
+	LOOP_BEGIN(metadata)
+		TRY(avu)
+			TTEXT("@");
+			TTEXT("(");
+			TTYPE(TK_STRING);
+			BUILD_NODE(TK_STRING, token.text, &pos, 0, 0);
+			TTEXT(",");
+			TTYPE(TK_STRING);
+			BUILD_NODE(TK_STRING, token.text, &pos, 0, 0);
+			TRY(u)
+				TTEXT(",");
+				TTYPE(TK_STRING);
+				BUILD_NODE(TK_STRING, token.text, &pos, 0, 0);
+				TTEXT(")");
+			OR(u)
+				TTEXT(")");
+				BUILD_NODE(TK_STRING, "", &pos, 0, 0);
+			END_TRY(u)
+			BUILD_NODE(N_AVU, AVU, &pos, 3, 3);
+			n++;
+		OR(avu)
+			DONE(metadata);
+		END_TRY(avu)
+	LOOP_END(metadata)
+	BUILD_NODE(N_META_DATA, META_DATA, &start, n, n);
+PARSER_FUNC_END(Metadata)
+
 
 PARSER_FUNC_BEGIN(FuncExpr)
     int rulegen = 1;

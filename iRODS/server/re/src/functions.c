@@ -1627,7 +1627,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "/", newFunctionDesc("forall X in {integer double}, f X * f X->?",smsi_divide, r));
     insertIntoHashTable(ft, "%", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_modulo, r));
     insertIntoHashTable(ft, "^", newFunctionDesc("f double * f double->double",smsi_power, r));
-    insertIntoHashTable(ft, "@", newFunctionDesc("f double * f double->double",smsi_root, r));
+    insertIntoHashTable(ft, "^^", newFunctionDesc("f double * f double->double",smsi_root, r));
     insertIntoHashTable(ft, "log", newFunctionDesc("f double->double",smsi_log, r));
     insertIntoHashTable(ft, "exp", newFunctionDesc("f double->double",smsi_exp, r));
     insertIntoHashTable(ft, "!", newFunctionDesc("boolean->boolean",smsi_not, r));

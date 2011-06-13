@@ -74,6 +74,8 @@
 #define LIST "[]"
 #define TUPLE "<>"
 #define APPLICATION "()"
+#define META_DATA "@()"
+#define AVU "avu"
 #define ST_TUPLE "()"
 #define FUNC "->"
 #define ERR_MSG_SEP "=========="
@@ -118,6 +120,8 @@ typedef enum node_type {
     N_CONSTRUCTOR = 42,
     N_DECONSTRUCTOR = 43,
     N_FUNC_SYM_LINK = 44,
+    N_META_DATA = 45,
+    N_AVU = 46,
     T_UNSPECED = 100, /* indicates a variable which is not assigned a value is passed in to a microservice */
     T_ERROR = 101,
     T_DYNAMIC = 200,
