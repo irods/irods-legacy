@@ -1044,6 +1044,52 @@ Res *smsi_neq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     addRErrorMsg(errmsg, -1, errbuf);
     return newErrorRes(r, -1);
 }
+Res *smsi_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res **params = paramsr;
+    Res *res = newRes(r);
+	char *pattern;
+	char *bufstr;
+	pattern = params[1]->text;
+	bufstr = strdup(params[0]->text);
+        #ifdef _POSIX_VERSION
+        /* make the regexp match whole strings */
+        char *buf2;
+        buf2 = wildCardToRegex(pattern);
+        regex_t regbuf;
+        regcomp(&regbuf,buf2,REG_EXTENDED);
+        res->exprType = newSimpType(T_BOOL,r);
+        res->value.dval = regexec(&regbuf,	bufstr, 0,0,0)==0?1:0;
+        regfree(&regbuf);
+        #else
+        res->value.dval = match(pattern, expr1->value.s)==TRUE?1:0;
+        #endif
+        free(buf2);
+        free(bufstr);
+        return res;
+}
+Res *smsi_not_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res **params = paramsr;
+    Res *res = newRes(r);
+	char *pattern;
+	char *bufstr;
+	pattern = params[1]->text;
+	bufstr = strdup(params[0]->text);
+        #ifdef _POSIX_VERSION
+        /* make the regexp match whole strings */
+        char *buf2;
+        buf2 = wildCardToRegex(pattern);
+        regex_t regbuf;
+        regcomp(&regbuf,buf2,REG_EXTENDED);
+        res->exprType = newSimpType(T_BOOL,r);
+        res->value.dval = regexec(&regbuf,	bufstr, 0,0,0)==0?0:1;
+        regfree(&regbuf);
+        #else
+        res->value.dval = match(pattern, expr1->value.s)==TRUE?0:1;
+        #endif
+        free(buf2);
+        free(bufstr);
+        return res;
+}
 Res *smsi_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **params = (Res **)paramsr;
     Res *res = newRes(r);
@@ -1077,7 +1123,7 @@ Res *smsi_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
         free(bufstr);
         return res;
 }
-Res *smsi_notlike_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+Res *smsi_not_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **params = (Res **)paramsr;
     Res *res = newRes(r);
 
@@ -1646,8 +1692,10 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "max", newFunctionDesc("f double+->double", smsi_max, r));
     insertIntoHashTable(ft, "min", newFunctionDesc("f double+->double", smsi_min, r));
     insertIntoHashTable(ft, "average", newFunctionDesc("f double+->double", smsi_average, r));
-    insertIntoHashTable(ft, "like", newFunctionDesc("string * string->boolean", smsi_like_regex, r));
-    insertIntoHashTable(ft, "not like", newFunctionDesc("string * string->boolean", smsi_notlike_regex, r));
+    insertIntoHashTable(ft, "like", newFunctionDesc("string * string->boolean", smsi_like, r));
+    insertIntoHashTable(ft, "not like", newFunctionDesc("string * string->boolean", smsi_not_like, r));
+    insertIntoHashTable(ft, "like regex", newFunctionDesc("string * string->boolean", smsi_like_regex, r));
+    insertIntoHashTable(ft, "not like regex", newFunctionDesc("string * string->boolean", smsi_not_like_regex, r));
     insertIntoHashTable(ft, "delayExec", newFunctionDesc("string * string * string->integer", smsi_delayExec, r));
     insertIntoHashTable(ft, "remoteExec", newFunctionDesc("string * string * string * string->integer", smsi_remoteExec,r));
     insertIntoHashTable(ft, "writeLine", newFunctionDesc("string * string->integer", smsi_writeLine,r));

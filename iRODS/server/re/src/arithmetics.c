@@ -52,6 +52,35 @@ char *matchWholeString(char *buf) {
     return buf2;
 }
 
+char *wildCardToRegex(char *buf) {
+    char *buf2 = (char *)malloc(sizeof(char)*strlen(buf)*3+2+1);
+    char *p = buf2;
+    int i;
+    *(p++)='^';
+    int n = strlen(buf);
+    for(i=0;i<n;i++) {
+    	switch(buf[i]) {
+    		case '*':
+    			*(p++) = '.';
+    			*(p++) = buf[i];
+    			break;
+    		case ']':
+    		case '[':
+    		case '^':
+    			*(p++) = '\\';
+    			*(p++) = buf[i];
+    			break;
+    		default:
+    			*(p++) = '[';
+    			*(p++) = buf[i];
+    			*(p++) = ']';
+    	}
+    }
+    *(p++)='$';
+    *(p++)='\0';
+    return buf2;
+}
+
 char* getVariableName(Node *node) {
     return node->subtrees[0]->text;
 }

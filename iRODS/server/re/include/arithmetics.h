@@ -46,6 +46,7 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
 /** utilities */
 char* getVariableName(Node *node);
 char* matchWholeString(char *buf);
+char *wildCardToRegex(char *buf);
 void copyFromEnv(Res**params, char **paramNames, int paramsCount, Hashtable *env, Region *r);
 int initializeEnv(Node *ruleHead, Res **args, int argc, Hashtable *env, Region *r);
 

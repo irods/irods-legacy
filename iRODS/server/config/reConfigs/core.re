@@ -103,7 +103,7 @@ acAclPolicy||nop|nop
 # acSetRescSchemeForCreate||msiSetNoDirectRescInp("xyz%demoResc8%abc")##msiSetDefaultResc("demoResc8","noForce")##msiSetRescSortScheme("default")|nop##nop##nop
 # acSetRescSchemeForCreate||msiSetDefaultResc("demoResc","null")##msiSetRescSortScheme("random")##msiSetRescSortScheme("byRescClass")|nop##nop##nop
 # acSetRescSchemeForCreate||msiSetDefaultResc("demoResc7%demoResc8","preferred")|nop
-# acSetRescSchemeForCreate|$objPath like "/oneZone/home/rods/protected/.*"|msiOprDisallowed|nop##nop
+# acSetRescSchemeForCreate|$objPath like "/oneZone/home/rods/protected/*"|msiOprDisallowed|nop##nop
 acSetRescSchemeForCreate||msiSetDefaultResc("demoResc","null")|nop
 # acSetRescSchemeForCreate||msiGetSessionVarValue("all","all")##msiSetDefaultResc("demoResc","null")|nop
 #acSetRescSchemeForCreate||msiSetDefaultResc("demoResc","noForce")##msiSetRescSortScheme("random")##msiSetRescSortScheme("byRescClass")|nop##nop##nop
@@ -183,12 +183,12 @@ acSetMultiReplPerResc||nop|nop
 # acPostProcForPut||delayExec("<A></A>","msiSysReplDataObj('demoResc8','all')","nop")|nop
 # acWriteLine(*A,*B)||writeLine(*A,*B)|nop
 # acPostProcForPut||delayExec("<PLUSET>1m</PLUSET>","acWriteLine('serverLog','delayed by a minute message1')##acWriteLine('serverLog','delayed by a minute message2')","nop")|nop
-# acPostProcForPut|$objPath like "/tempZone/home/rods/nvo/.*"|delayExec("<PLUSET>1m</PLUSET>","msiSysReplDataObj('nvoReplResc','null')","nop")|nop
+# acPostProcForPut|$objPath like "/tempZone/home/rods/nvo/*"|delayExec("<PLUSET>1m</PLUSET>","msiSysReplDataObj('nvoReplResc','null')","nop")|nop
 # acPostProcForPut||msiSysReplDataObj("demoResc8","all")|nop
 #acPostProcForPut||msiSetDataTypeFromExt|nop
-#acPostProcForPut|$objPath like "/tempZone/home/rods/tg/.*"|msiSysReplDataObj("nvoReplResc","null")|nop
-#acPostProcForPut|$objPath like "/tempZone/home/rods/mytest/.*"|writeLine("serverLog","File Path is "++$filePath)|nop
-#acPostProcForPut|$objPath like "/tempZone/home/rods/mytest/.*"|writeLine("serverLog","File Path is "++$filePath)##msiSplitPath($filePath,*fileDir, *fileName)##msiExecCmd("send.sh", "*fileDir *fileName", "null", "null","null",*Junk)##writeLine("serverLog","After File Path is *fileDir *fileName")|nop
+#acPostProcForPut|$objPath like "/tempZone/home/rods/tg/*"|msiSysReplDataObj("nvoReplResc","null")|nop
+#acPostProcForPut|$objPath like "/tempZone/home/rods/mytest/*"|writeLine("serverLog","File Path is "++$filePath)|nop
+#acPostProcForPut|$objPath like "/tempZone/home/rods/mytest/*"|writeLine("serverLog","File Path is "++$filePath)##msiSplitPath($filePath,*fileDir, *fileName)##msiExecCmd("send.sh", "*fileDir *fileName", "null", "null","null",*Junk)##writeLine("serverLog","After File Path is *fileDir *fileName")|nop
 acPostProcForPut||nop|nop
 acPostProcForCopy||nop|nop
 acPostProcForFilePathReg||nop|nop
@@ -225,13 +225,13 @@ acSetNumThreads||msiSetNumThreads("default","16","default")|nop
 # Only one function can be called:
 #    msiDeleteDisallowed() - Disallow the deletion of the data object. 
 # Examples:
-#    acDataDeletePolicy|$objPath like "/foo/bar/.*"|msiDeleteDisallowed|nop 
+#    acDataDeletePolicy|$objPath like "/foo/bar/*"|msiDeleteDisallowed|nop 
 #      this rule prevents the deletion of any data objects or collections
 #      beneath the collection /foo/bar/
 #    acDataDeletePolicy|$rescName == "demoResc8"|msiDeleteDisallowed|nop
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
-# acDataDeletePolicy|$objPath like "/tempZone/home/rods/.*"|msiDeleteDisallowed|nop
+# acDataDeletePolicy|$objPath like "/tempZone/home/rods/*"|msiDeleteDisallowed|nop
 acDataDeletePolicy||nop|nop
 #
 # 11) acPostProcForDelete - This rule set the post-processing policy for 
