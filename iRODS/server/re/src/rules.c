@@ -28,13 +28,13 @@ extern microsdef_t MicrosTable[];
  *        otherwise error code
  */
 
-int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, int* errloc, rError_t *errmsg, Region *r) {
+int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r) {
 	char rulesFileName[MAX_NAME_LEN];
 	getRuleBasePath(ruleBaseName, rulesFileName);
 
-	return readRuleSetFromLocalFile(ruleBaseName, rulesFileName, ruleSet, errloc, errmsg,r);
+	return readRuleSetFromLocalFile(ruleBaseName, rulesFileName, ruleSet, funcDesc, errloc, errmsg,r);
 }
-int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Region *r) {
+int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r) {
 
 	FILE *file;
     char errbuf[ERR_MSG_LEN];
@@ -47,7 +47,7 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
             return(RULES_FILE_READ_ERROR);
 	}
     Pointer *e = newPointer(file, ruleBaseName);
-    int ret = parseRuleSet(e, ruleSet, errloc, errmsg, r);
+    int ret = parseRuleSet(e, ruleSet, funcDesc, errloc, errmsg, r);
     deletePointer(e);
     if(ret == -1) {
         return -1;
@@ -234,7 +234,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
     int errloc;
 
     /* add rules into ext rule set */
-    rescode = parseRuleSet(e, ruleEngineConfig.extRuleSet, &errloc, errmsg, r);
+    rescode = parseRuleSet(e, ruleEngineConfig.extRuleSet, ruleEngineConfig.extFuncDescIndex, &errloc, errmsg, r);
     deletePointer(e);
     if(rescode != 0) {
         return PARSER_ERROR;
@@ -259,7 +259,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 
     List *typingConstraints = newList(r);
     Node *errnode;
-    ExprType *type = typeRule(rd, ruleEngineConfig.funcDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
+    ExprType *type = typeRule(rd, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
 
 	deleteHashTable(varTypes, nop);
 
@@ -338,7 +338,7 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     clearDelayed();
     return res;
 }
-ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
+ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
             /* printf("%s\n", node->subtrees[0]->text); */
 			addRErrorMsg(errmsg, -1, ERR_MSG_SEP);
             char buf[ERR_MSG_LEN];
@@ -381,7 +381,7 @@ ExprType *typeRule(RuleDesc *rule, Hashtable *funcDesc, Hashtable *varTypes, Lis
 }
 
 ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r) {
-    Hashtable *funcDesc = ruleEngineConfig.funcDescIndex;
+    Env *funcDesc = ruleEngineConfig.extFuncDescIndex;
     Hashtable *ruleType = newHashTable(MAX_NUM_RULES * 2);
     ExprType *res;
     int i;
@@ -410,12 +410,31 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
         /* check that function names are unique and do not conflict with system msis */
         char errbuf[ERR_MSG_LEN];
         char *ruleName = rule->node->subtrees[0]->text;
-        if(lookupFromHashTable(funcDesc, ruleName) != NULL) {
-            generateErrMsg("redefinition of system microservice", rule->node->expr, rule->node->base, errbuf);
-            addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
-            res = newErrorType(FUNCTION_REDEFINITION, r);
-            *errnode = rule->node;
-            RETURN;
+        FunctionDesc *fd;
+        if((fd = (FunctionDesc *)lookupFromEnv(funcDesc, ruleName)) != NULL) {
+        	if(fd->nodeType != N_FD_EXTERNAL) {
+        		char *err;
+        		switch(fd->nodeType) {
+        		case N_FD_CONSTRUCTOR:
+        			err = "redefinition of constructor";
+        			break;
+        		case N_FD_DECONSTRUCTOR:
+        			err = "redefinition of deconstructor";
+        			break;
+        		case N_FD_C_FUNC:
+        			err = "redefinition of system microservice";
+        			break;
+        		default:
+        			err = "redefinition of system symbol";
+        			break;
+        		}
+
+				generateErrMsg(err, rule->node->expr, rule->node->base, errbuf);
+				addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
+				res = newErrorType(FUNCTION_REDEFINITION, r);
+				*errnode = rule->node;
+				RETURN;
+        	}
         }
 
         RuleDesc *rd = (RuleDesc *)lookupFromHashTable(ruleType, ruleName);
@@ -449,7 +468,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
     if(!node->typed) {
         /*printTree(node, 0); */
         List *typingConstraints = newList(r);
-        resType = typeExpression3(node, ruleEngineConfig.funcDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
+        resType = typeExpression3(node, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
         if(resType->nodeType == T_ERROR) {
             addRErrorMsg(errmsg, -1, "type error: in rule");
@@ -457,7 +476,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
             RETURN;
         }
         postProcessCoercion(node, varTypes, errmsg, errnode, r);
-        postProcessActions(node, ruleEngineConfig.funcDescIndex, errmsg, errnode, r);
+        postProcessActions(node, ruleEngineConfig.extFuncDescIndex, errmsg, errnode, r);
         /*    printTree(node, 0); */
         deleteHashTable(varTypes, nop);
         varTypes = NULL;
@@ -599,7 +618,7 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     Env *env = defaultEnv(r);
     Hashtable *global = env->previous->current;
     /* retrieve generated data here as it may be overridden by convertMsParamArrayToEnv */
-    execCmdOut_t *execOut = (execCmdOut_t *)((Res *) lookupFromHashTable(global, "ruleExecOut"))->value.uninterpreted.inOutBuffer;
+    execCmdOut_t *execOut = (execCmdOut_t *)((Res *) lookupFromHashTable(global, "ruleExecOut"))->value.uninterpreted.inOutStruct;
 
     Res *res;
     rError_t errmsgBuf;

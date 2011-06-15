@@ -46,6 +46,7 @@ enum cacheRecordType {
         RuleIndexList_T,
         RuleIndexListNode_T,
         NodeType_T,
+        Env_T,
         char_T,
         int_T,
     };
@@ -58,6 +59,8 @@ typedef struct {
 
 char *copyString(unsigned char **buf, char *string);
 Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap);
+Hashtable *copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap);
+Env *copyEnv(unsigned char **buf, Env *e, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap);
 RuleDesc *copyRuleDesc(unsigned char **buf, RuleDesc *h, Hashtable *objectMap);
 Hashtable* copyHashtableCharPrtToIntPtr(unsigned char **buf, Hashtable *h, Hashtable *objectMap);
 RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap);

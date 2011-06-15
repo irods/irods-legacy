@@ -22,7 +22,7 @@ ExprType *getFullyBoundedVar(Region *r);
  * return 0 to len-1 index of the parameter with type error
  *        -1 success
  */
-int typeParameters(ExprType** paramTypes, int len, Node** subtrees, Hashtable* funcDesc, Hashtable *symbol_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
+int typeParameters(ExprType** paramTypes, int len, Node** subtrees, Env* funcDesc, Hashtable *symbol_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
 	int i;
 	for(i=0;i<len;i++) {
 		paramTypes[i] = dereference(typeExpression3(subtrees[i], funcDesc, symbol_type_table, typingConstraints, errmsg, errnode, r), symbol_type_table, r);
@@ -588,7 +588,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
     return ret;
 }
 
-ExprType* typeFunction3(Node* node, Hashtable* funcDesc, Hashtable* var_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
+ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
     /*printTree(node, 0); */
     int i;
     char *localErrorMsg;
@@ -760,7 +760,7 @@ int typeFuncParam(Node *param, Node *paramType, Node *formalParamType, Hashtable
             return 0;
 }
 
-ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
+ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
     ExprType *res;
     ExprType **components;
     ExprType* t = NULL;
@@ -787,7 +787,7 @@ ExprType* typeExpression3(Node *expr, Hashtable *funcDesc, Hashtable *varTypes, 
 				return expr->exprType = newFuncType(newTupleType(0, NULL, r), newSimpType(T_INT, r), r);
 			} else {
                 /* not a variable, evaluate as a function */
-			    FunctionDesc *fDesc = (FunctionDesc*)lookupFromHashTable(funcDesc, expr->text);
+			    FunctionDesc *fDesc = (FunctionDesc*)lookupFromEnv(funcDesc, expr->text);
                 if(fDesc!=NULL && fDesc->exprType!=NULL) {
                     return expr->exprType = dupType(fDesc->exprType, r);
                 } else {
@@ -880,7 +880,7 @@ void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node
 /*
  * convert single action to actions if the parameter is of type actions
  */
-void postProcessActions(Node *expr, Hashtable *systemFunctionTables, rError_t *errmsg, Node **errnode, Region *r) {
+void postProcessActions(Node *expr, Env *systemFunctionTables, rError_t *errmsg, Node **errnode, Region *r) {
     int i;
     switch(expr->nodeType) {
         case N_TUPLE:

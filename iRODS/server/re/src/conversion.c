@@ -126,7 +126,11 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
     writeToTmp("relog.txt", mP->type);
     writeToTmp("relog.txt", "\n");
     #endif
-	if (strcmp(mP->type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
+    if(mP->type == NULL) {
+    	res->exprType = newSimpType(T_UNSPECED, r);
+    	return 0;
+
+    } else if (strcmp(mP->type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
 		convertDoubleValue(res, *(double *)mP->inOutStruct,r);
 		return 0;
 	} else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
@@ -181,7 +185,12 @@ int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *er
     writeToTmp("relog.txt", mP->type);
     writeToTmp("relog.txt", "\n");
     #endif
-	if (strcmp(mP->type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
+    if(mP->type == NULL) {
+    	res->exprType = newSimpType(T_UNSPECED, r);
+    	return 0;
+
+    }
+    else if (strcmp(mP->type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
 		convertDoubleValue(res, *(double *)mP->inOutStruct,r);
 		free(mP->inOutStruct);
 		mP->inOutStruct = NULL;
@@ -368,8 +377,8 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             var->type = strdup(res->exprType->text);
             break;
         case T_UNSPECED:
-            var->inOutStruct = strdup("");
-            var->type = strdup(STR_MS_T);
+            var->inOutStruct = NULL;
+            var->type = NULL;
             break;
         default:
             /*error */

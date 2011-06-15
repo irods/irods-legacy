@@ -12,6 +12,7 @@
 
 
 FunctionDesc *newFunctionDesc(char* type, SmsiFuncPtrType func, Region *r);
+FunctionDesc *newExternalFunctionDesc2(Node* type, Region *r);
 FunctionDesc *newConstructorDesc(char* type, Region *r);
 FunctionDesc *newConstructorDesc2(Node* type, Region *r);
 FunctionDesc *newDeconstructorDesc(char *type, int proj, Region *r);

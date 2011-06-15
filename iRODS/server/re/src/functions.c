@@ -33,7 +33,7 @@ FunctionDesc *newFunctionDesc(char *type, SmsiFuncPtrType func, Region *r) {
     /*desc->arity = arity; */
     desc->value.func = func;
     desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
-    desc->nodeType = N_C_FUNC;
+    desc->nodeType = N_FD_C_FUNC;
     return desc;
 }
 FunctionDesc *newConstructorDesc(char *type, Region *r) {
@@ -44,13 +44,20 @@ FunctionDesc *newConstructorDesc2(Node *type, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
     /*desc->arity = arity; */
     desc->exprType = type;
-    desc->nodeType = N_CONSTRUCTOR;
+    desc->nodeType = N_FD_CONSTRUCTOR;
+    return desc;
+}
+FunctionDesc *newExternalFunctionDesc2(Node *type, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    /*desc->arity = arity; */
+    desc->exprType = type;
+    desc->nodeType = N_FD_EXTERNAL;
     return desc;
 }
 FunctionDesc *newDeconstructorDesc(char *type, int proj, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
     desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
-    desc->nodeType = N_DECONSTRUCTOR;
+    desc->nodeType = N_FD_DECONSTRUCTOR;
     desc->value.proj = proj;
     return desc;
 }
@@ -1051,21 +1058,21 @@ Res *smsi_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 	char *bufstr;
 	pattern = params[1]->text;
 	bufstr = strdup(params[0]->text);
-        #ifdef _POSIX_VERSION
-        /* make the regexp match whole strings */
-        char *buf2;
-        buf2 = wildCardToRegex(pattern);
-        regex_t regbuf;
-        regcomp(&regbuf,buf2,REG_EXTENDED);
-        res->exprType = newSimpType(T_BOOL,r);
-        res->value.dval = regexec(&regbuf,	bufstr, 0,0,0)==0?1:0;
-        regfree(&regbuf);
-        #else
-        res->value.dval = match(pattern, expr1->value.s)==TRUE?1:0;
-        #endif
-        free(buf2);
-        free(bufstr);
-        return res;
+	#ifdef _POSIX_VERSION
+	/* make the regexp match whole strings */
+	char *buf2;
+	buf2 = wildCardToRegex(pattern);
+	regex_t regbuf;
+	regcomp(&regbuf,buf2,REG_EXTENDED);
+	res->exprType = newSimpType(T_BOOL,r);
+	res->value.dval = regexec(&regbuf,	bufstr, 0,0,0)==0?1:0;
+	regfree(&regbuf);
+	#else
+	res->value.dval = match(pattern, expr1->value.s)==TRUE?1:0;
+	#endif
+	free(buf2);
+	free(bufstr);
+	return res;
 }
 Res *smsi_not_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **params = paramsr;
@@ -1074,21 +1081,21 @@ Res *smsi_not_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int r
 	char *bufstr;
 	pattern = params[1]->text;
 	bufstr = strdup(params[0]->text);
-        #ifdef _POSIX_VERSION
-        /* make the regexp match whole strings */
-        char *buf2;
-        buf2 = wildCardToRegex(pattern);
-        regex_t regbuf;
-        regcomp(&regbuf,buf2,REG_EXTENDED);
-        res->exprType = newSimpType(T_BOOL,r);
-        res->value.dval = regexec(&regbuf,	bufstr, 0,0,0)==0?0:1;
-        regfree(&regbuf);
-        #else
-        res->value.dval = match(pattern, expr1->value.s)==TRUE?0:1;
-        #endif
-        free(buf2);
-        free(bufstr);
-        return res;
+	#ifdef _POSIX_VERSION
+	/* make the regexp match whole strings */
+	char *buf2;
+	buf2 = wildCardToRegex(pattern);
+	regex_t regbuf;
+	regcomp(&regbuf,buf2,REG_EXTENDED);
+	res->exprType = newSimpType(T_BOOL,r);
+	res->value.dval = regexec(&regbuf,	bufstr, 0,0,0)==0?0:1;
+	regfree(&regbuf);
+	#else
+	res->value.dval = match(pattern, expr1->value.s)==TRUE?0:1;
+	#endif
+	free(buf2);
+	free(bufstr);
+	return res;
 }
 Res *smsi_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **params = (Res **)paramsr;
@@ -1166,6 +1173,11 @@ Res *smsi_eval(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSa
     return eval(params[0]->text, env, rei, reiSaveFlag, errmsg, r);
 }
 
+Res *smsi_evalrule(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res **params = (Res **)paramsr;
+    /*printf("\neval: %s\n", params[0]->text); */
+    return newIntRes(r, parseAndComputeRule(params[0]->text, env, rei, reiSaveFlag, errmsg, r));
+}
 /**
  * Run node and return the errorcode.
  * If the execution is successful, the returned errorcode is 0.
@@ -1445,6 +1457,25 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 	}
 	return newIntRes(r, 0);
 }
+Res *smsi_msiAdmShowCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char buf[1024];
+    char *conDir = getConfigDir ();
+    char file2[1024];
+    snprintf(file2, 1024, "%s/reConfigs/core.re",
+	    conDir);
+	FILE *f2 = fopen(file2, "r");
+
+	while(!feof(f2) && ferror(f2) == 0) {
+		if(fgets(buf, 1024, f2)!=NULL) {
+#ifdef DEBUG
+			printf("%s", buf);
+#endif
+			writeStringNew("stdout", buf, env, r);
+		}
+	}
+	fclose(f2);
+	return newIntRes(r, 0);
+}
 Res *smsi_msiAdmClearAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
 	  int i;
@@ -1464,6 +1495,7 @@ Res *smsi_msiAdmClearAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecIn
 	  return newIntRes(r, i);
 #else
 	  i = clearRuleSetAndIndex(&appRuleStrct);
+	  i = generateFunctionDescriptionTables();
 	  i = createCoreAppExtRuleNodeIndex();
 	  return newIntRes(r, 0);
 #endif
@@ -1554,20 +1586,26 @@ int fileConcatenate(char *file1, char *file2, char *file3) {
 	FILE *f3 = fopen(file3, "w");
 
 	size_t len;
-	while(!feof(f1)) {
+	int error = 0;
+	while(!feof(f1) && ferror(f1) == 0) {
 		len = fread(buf, 1, 1024, f1);
 		fwrite(buf, 1, len, f3);
 	}
-	fclose(f1);
-	if(f2!=NULL) {
-		while(!feof(f2)) {
+	error = ferror(f1);
+	if(error==0 && f2!=NULL) {
+		while(!feof(f2) && ferror(f2) == 0) {
 			len = fread(buf, 1, 1024, f2);
 			fwrite(buf, 1, len, f3);
 		}
+		error = ferror(f2);
+	}
+
+	fclose(f1);
+	if(f2!=NULL) {
 		fclose(f2);
 	}
 	fclose(f3);
-	return 0;
+	return error;
 }
 
 Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r) {
@@ -1610,6 +1648,7 @@ Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Re
 void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "do", newFunctionDesc("e 0->?", smsi_do, r));
     insertIntoHashTable(ft, "eval", newFunctionDesc("string->?", smsi_eval, r));
+    insertIntoHashTable(ft, "evalrule", newFunctionDesc("string->?", smsi_evalrule, r));
     insertIntoHashTable(ft, "errorcodea", newFunctionDesc("a ? * a ?->integer", smsi_errorcode, r));
     insertIntoHashTable(ft, "errorcode", newFunctionDesc("e ?->integer", smsi_errorcode, r));
     insertIntoHashTable(ft, "errormsga", newFunctionDesc("a ? * a ? * o string->integer", smsi_errormsg, r));
@@ -1706,6 +1745,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "substr", newFunctionDesc("string * integer * integer->string", smsi_substr, r));
     insertIntoHashTable(ft, "unspeced", newFunctionDesc("-> ?", smsi_undefined, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionDesc("e ? ?->integer", smsi_msiAdmShowIRB, r));
+    insertIntoHashTable(ft, "msiAdmShowCoreRE", newFunctionDesc("e ? ?->integer", smsi_msiAdmShowCoreRE, r));
 #ifdef DEBUG
     insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionDesc("string->integer", smsi_msiAdmAddAppRuleStruct, r));
 #else

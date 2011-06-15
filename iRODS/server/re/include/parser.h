@@ -329,7 +329,7 @@ int skip(Pointer *expr, char *text, Token *token, int rulegen);
 void skipWhitespace(Pointer *expr);
 char *findLineCont(char *expr);
 
-int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Region *r);
+int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r);
 /**
  * Parse a rule, create a rule pack.
  * If error, either ret==NULL or ret->type=N_ERROR.

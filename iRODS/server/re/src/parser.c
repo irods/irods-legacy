@@ -436,7 +436,13 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
         OPTIONAL_END(semicolon)
         n = n*2+1;
         BUILD_NODE(N_RULE_PACK, "INDUCT", &start, n, n);
-    OR(defType)
+	OR(defType)
+        TTYPE(TK_TEXT);
+		BUILD_NODE(TK_TEXT, token.text, &pos, 0, 0);
+		TTEXT(":");
+		NT(FuncType);
+        BUILD_NODE(N_RULE_PACK, "EXTERN", &start, 2, 2);
+	OR(defType)
         NT(RuleName);
         TRY(ruleType)
             TTEXT("{");
@@ -450,7 +456,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             TTEXT("=");
             rulegen = 1;
             rk = "FUNC";
-        END_TRY(ruleType);
+		END_TRY(ruleType);
         if(strcmp(rk, "FUNC")==0) {
             BUILD_APP_NODE("true", FPOS, 0);
             NT(FuncExpr);
@@ -1541,20 +1547,16 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 			case '\n':
 				PRINT(p, s, "%s", "\\n");
 				break;
-			case '\\':
-				PRINT(p, s, "%s", "\\\\");
-				break;
-			case '*':
-				PRINT(p, s, "%s", "\\*");
-				break;
-			case '\"':
-				PRINT(p, s, "%s", "\\\"");
-				break;
-			case '\'':
-				PRINT(p, s, "%s", "\\\'");
-				break;
 			case '\r':
 				PRINT(p, s, "%s", "\\r");
+				break;
+			case '$':
+			case '*':
+			case '\\':
+			case '\"':
+			case '\'':
+				PRINT(p, s, "%s", "\\");
+				PRINT(p, s, "%c", n->text[k]);
 				break;
 			default:
 				PRINT(p, s, "%c", n->text[k]);
@@ -1593,6 +1595,21 @@ void actionsToString(char **p, int *s, int indent, Node *na, Node *nr) {
 	}
 	indentToString(p, s, indent);
 	PRINT(p, s, "%s", "}");
+}
+
+void metadataToString(char **p, int *s, int indent, Node *nm) {
+	int n = nm->degree;
+	int i;
+	for(i=0;i<n;i++) {
+		indentToString(p, s, indent);
+		PRINT(p, s, "%s", "@(");
+		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[0]);
+		PRINT(p, s, "%s", ", ");
+		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[1]);
+		PRINT(p, s, "%s", ", ");
+		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[2]);
+		PRINT(p, s, "%s", ")\n");
+	}
 }
 
 void ruleToString(char *buf, int size, Node *node) {
@@ -1639,6 +1656,7 @@ void ruleToString(char *buf, int size, Node *node) {
 		termToString(p, s, 1, MIN_PREC, node->subtrees[2]);
 	}
 	PRINT(p, s, "%s", "\n");
+	metadataToString(p, s, 0, node->subtrees[4]);
 }
 
 void printTreeDeref(Node *n, int indent, Hashtable *var_types, Region *r) {
@@ -2286,6 +2304,12 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     node = POP;
                     node->iotype = IO_TYPE_ACTIONS;
                     PUSH(node);
+			OR(type)
+					TTEXT("d");
+					NT2(_Type, 1, 0);
+					node = POP;
+					node->iotype = IO_TYPE_DYNAMIC;
+					PUSH(node);
             OR(type)
                     TTEXT("type");
                     CASCADE(newSimpType(T_TYPE, context->region));
@@ -2407,7 +2431,7 @@ PARSER_FUNC_BEGIN(_FuncType)
     PUSH(node);
 PARSER_FUNC_END(_FuncType)
 
-int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Region *r) {
+int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, rError_t *errmsg, Region *r) {
     char errbuf[ERR_MSG_LEN];
     int i = ruleSet->len;
 	Token token;
@@ -2468,13 +2492,20 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Re
                 if(strcmp(node->text, "INDUCT") == 0) {
                     int k;
                     for(k=1;k<n;k+=2) {
-                        if(lookupBucketFromHashTable(ruleEngineConfig.funcDescIndex, nodes[k]->text)!=NULL) {
+                        if(lookupFromEnv(funcDescIndex, nodes[k]->text)!=NULL) {
                             generateErrMsg("readRuleSetFromFile: redefinition of constructor.", nodes[k]->expr, nodes[k]->base, errbuf);
                             addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
                             return -1;
                         }
-                        insertIntoHashTable(ruleEngineConfig.funcDescIndex, nodes[k]->text, newConstructorDesc2(nodes[k+1], r));
+                        insertIntoHashTable(funcDescIndex->current, nodes[k]->text, newConstructorDesc2(nodes[k+1], r));
                     }
+                } else if(strcmp(node->text, "EXTERN") == 0) {
+                        if(lookupFromEnv(funcDescIndex, nodes[0]->text)!=NULL) {
+                            generateErrMsg("readRuleSetFromFile: redefinition of function.", nodes[0]->expr, nodes[0]->base, errbuf);
+                            addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
+                            return -1;
+                        }
+                        insertIntoHashTable(funcDescIndex->current, nodes[0]->text, newExternalFunctionDesc2(nodes[1], r));
                 } else {
                     if(strcmp(node->text, "REL")==0) {
                         rk = RK_REL;

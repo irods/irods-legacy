@@ -112,7 +112,7 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 					res = evaluateVar3(expr->text, expr, rei, reiSaveFlag,  env, errmsg,r);
 					break;
 			case TK_TEXT:
-					fd = (FunctionDesc *)lookupFromHashTable(ruleEngineConfig.funcDescIndex, expr->text);
+					fd = (FunctionDesc *)lookupFromEnv(ruleEngineConfig.extFuncDescIndex, expr->text);
 					if(fd!=NULL) {
 						int nArgs = 0;
 						ExprType *type = fd->exprType;
@@ -219,6 +219,11 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
         if(typeEqSyntatic(coercion, res->exprType)) {
             return res;
         } else {
+            if(TYPE(res)==T_UNSPECED) {
+                generateErrMsg("error: dynamic coercion from an uninitialized value", node->expr, node->base, buf);
+                addRErrorMsg(errmsg, -1, buf);
+                return newErrorRes(r, -1);
+            }
             switch(coercion->nodeType) {
                 case T_DYNAMIC:
                     return res;
@@ -227,7 +232,7 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                         case T_DOUBLE:
                         case T_BOOL:
                             if((int)res->value.dval!=res->value.dval) {
-                                generateErrMsg("error: dynamic type conversion  double -> int: the double is not an integer", node->expr, node->base, buf);
+                                generateErrMsg("error: dynamic type conversion DOUBLE -> INT: the double is not an integer", node->expr, node->base, buf);
                                 addRErrorMsg(errmsg, -1, buf);
                                 return newErrorRes(r, -1);
                             } else {
@@ -348,7 +353,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
                     /* run recovery chain */
                     if(res->value.errcode != RETRY_WITHOUT_RECOVERY_ERR && reco!=NULL) {
                         int i2;
-                        for(i2 = reco->degree-1>i?reco->degree-1:i;i2>=0;i2--) {
+                        for(i2 = reco->degree-1<i?reco->degree-1:i;i2>=0;i2--) {
                             #ifndef DEBUG
                                 if (reTestFlag > 0) {
                                         if (reTestFlag == COMMAND_TEST_1 || COMMAND_TEST_MSI)
@@ -469,7 +474,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     List *localTypingConstraints = NULL;
     FunctionDesc *fd = NULL;
     /* look up function descriptor */
-    fd = (FunctionDesc *)lookupFromHashTable(ruleEngineConfig.funcDescIndex, fn);
+    fd = (FunctionDesc *)lookupFromEnv(ruleEngineConfig.extFuncDescIndex, fn);
         /* find matching arity */
 /*    if(fd!=NULL) {
         if((fd->exprType->vararg == ONCE && T_FUNC_ARITY(fd->exprType) == n) ||
@@ -524,7 +529,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
                 break;
             case IO_TYPE_OUTPUT: /* output */
                 ioParam[i] = 'o';
-                args[i] = newStringRes(r, "");
+                args[i] = newUnspecifiedRes(r);
                 break;
             case IO_TYPE_EXPRESSION: /* expression */
                 ioParam[i] = 'e';
@@ -582,14 +587,17 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 
     if(fd!=NULL) {
         switch(fd->nodeType) {
-            case N_DECONSTRUCTOR:
+            case N_FD_DECONSTRUCTOR:
                 res = deconstruct(fn, args, n, fd->value.proj, errmsg, r);
                 break;
-            case N_CONSTRUCTOR:
+            case N_FD_CONSTRUCTOR:
                 res = construct(fn, args, n, instantiate(node->exprType, env->current, 1, r), r);
                 break;
-            case N_C_FUNC:
+            case N_FD_C_FUNC:
                 res = (Res *) fd->value.func(args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
+                break;
+            case N_FD_EXTERNAL:
+            	res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
                 break;
             default:
                 printf("error!");
@@ -663,7 +671,7 @@ Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, En
     char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
     char buf2[ERR_MSG_LEN];
     Res *res = attemptToEvaluateVar3(vn, node, rei, reiSaveFlag, env, errmsg, r);
-    if(res == NULL) {
+    if(res == NULL || TYPE(res) == T_UNSPECED) {
         if(vn[0]=='*') { /* local variable */
 		    snprintf(buf, ERR_MSG_LEN, "error: unable to read local variable %s.", vn);
                     generateErrMsg(buf, node->expr, node->base, buf2);
@@ -706,7 +714,7 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
       if (i >= 0) {
             if (varValue != NULL) {
                 Res *res = NULL;
-                FunctionDesc *fd = (FunctionDesc *) lookupBucketFromHashTable(ruleEngineConfig.funcDescIndex, varMap);
+                FunctionDesc *fd = (FunctionDesc *) lookupFromEnv(ruleEngineConfig.extFuncDescIndex, varMap);
                 if (fd == NULL) {
                     /* default to string */
                     res = newStringRes(r, (char *) varValue);

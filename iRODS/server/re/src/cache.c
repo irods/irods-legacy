@@ -6,6 +6,10 @@
 
 
 #define NODE_KEY_SIZE 1024
+void envKey(Env *node, char *keyBuf) {
+	memset(keyBuf, 0, NODE_KEY_SIZE);
+		snprintf(keyBuf, NODE_KEY_SIZE, "%p", node);
+}
 void nodeKey(Node *node, char *keyBuf) {
 	memset(keyBuf, 0, NODE_KEY_SIZE);
 	if(node->degree>0) {
@@ -19,10 +23,10 @@ void nodeKey(Node *node, char *keyBuf) {
 	int len = strlen(keyBuf);
 	p += len;
 	switch(node->nodeType) {
-	case N_C_FUNC:
+	case N_FD_C_FUNC:
 		snprintf(p, NODE_KEY_SIZE - len, "::%p", node->value.func);
 		break;
-	case N_DECONSTRUCTOR:
+	case N_FD_DECONSTRUCTOR:
 		snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.proj);
 		break;
 	case N_ERROR:
@@ -141,6 +145,24 @@ RuleIndexList *copyRuleIndexList(unsigned char **buf, RuleIndexList *list) {
     *buf = p;
     return lcopy;
 }
+Env* copyEnv(unsigned char **buf, Env *e, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap) {
+	  Env *shared;
+	  char key[NODE_KEY_SIZE];
+	  envKey(e, key);
+	  if((shared = (Env *)lookupFromHashTable(objectMap, key)) != NULL) {
+
+	      return shared;
+	  } else {
+		unsigned char *p = *buf;
+		allocate(p, Env, ecopy, *e);
+		ecopy->previous = e->previous!=NULL? copyEnv(&p, e->previous, cpfn, objectMap) : NULL;
+		ecopy->lower = e->lower!=NULL? copyEnv(&p, e->lower, cpfn, objectMap) : NULL;
+		ecopy->current = copyHashtable(&p, e->current, cpfn, objectMap);
+		*buf = p;
+		insertIntoHashTable(objectMap, key, ecopy);
+		return ecopy;
+	  }
+}
 Hashtable* copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap) {
   unsigned char *p = *buf;
   allocate(p, Hashtable, hcopy, *h);
@@ -200,9 +222,16 @@ Cache *copyCache(unsigned char **buf, long size, Cache *c) {
     ccopy->address = *buf;
     ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet, objectMap);
     ccopy->appRuleSet = ccopy->appRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->appRuleSet, objectMap);
-    ccopy->ruleIndex = ccopy->ruleIndex == NULL? NULL:copyHashtable(&p, ccopy->ruleIndex, (Copier)copyRuleIndexList, objectMap);
-    ccopy->condIndex = ccopy->condIndex == NULL? NULL:copyHashtable(&p, ccopy->condIndex, (Copier)copyCondIndexVal, objectMap);
-    ccopy->funcDescIndex = copyHashtable(&p, ccopy->funcDescIndex, (Copier)copyNode, objectMap);
+    ccopy->extRuleSet = NULL;
+    ccopy->extRuleSetStatus = UNINITIALIZED;
+    ccopy->ruleIndex = NULL; /* ccopy->ruleIndex == NULL? NULL:copyHashtable(&p, ccopy->ruleIndex, (Copier)copyRuleIndexList, objectMap); */
+    ccopy->ruleIndexStatus = UNINITIALIZED;
+    ccopy->condIndex = NULL; /* ccopy->condIndex == NULL? NULL:copyHashtable(&p, ccopy->condIndex, (Copier)copyCondIndexVal, objectMap); */
+    ccopy->condIndexStatus = UNINITIALIZED;
+    ccopy->coreFuncDescIndex = copyEnv(&p, ccopy->coreFuncDescIndex, (Copier)copyNode, objectMap);
+    ccopy->appFuncDescIndex = copyEnv(&p, ccopy->appFuncDescIndex, (Copier)copyNode, objectMap);
+    ccopy->extFuncDescIndex = NULL;
+    ccopy->extFuncDescIndexStatus = UNINITIALIZED;
     ccopy->dataSize = (p - (*buf));
 
     *buf = p;
@@ -268,6 +297,14 @@ Cache *restoreCache(unsigned char *buf) {
                 break;
             case NodeType_T:
                 p+= length * sizeof(NodeType);
+                break;
+            case Env_T:
+                for(i=0;i<length;i++) {
+                    APPLY_DIFF(((Env *)p)->previous, Env, diff);
+                    APPLY_DIFF(((Env *)p)->lower, Env, diff);
+                    APPLY_DIFF(((Env *)p)->current, Hashtable, diff);
+                    p+=sizeof(Env);
+                }
                 break;
             case char_T:
                 p+= length * sizeof(char);

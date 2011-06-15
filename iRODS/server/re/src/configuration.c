@@ -14,22 +14,24 @@ Cache ruleEngineConfig = {
     UNINITIALIZED, // RuleEngineStatus coreRuleSetStatus
     UNINITIALIZED, // RuleEngineStatus appRuleSetStatus
     UNINITIALIZED, // RuleEngineStatus extRuleSetStatus
-    UNINITIALIZED, // RuleEngineStatus funcDescIndexStatus
+    UNINITIALIZED, // RuleEngineStatus coreFuncDescIndexStatus
+    UNINITIALIZED, // RuleEngineStatus appFuncDescIndexStatus
+    UNINITIALIZED, // RuleEngineStatus extFuncDescIndexStatus
     UNINITIALIZED, // RuleEngineStatus ruleIndexStatus
     UNINITIALIZED, // RuleEngineStatus condIndexStatus
     UNINITIALIZED, // RuleEngineStatus ruleEngineStatus
     UNINITIALIZED, // RuleEngineStatus cacheStatus
-    UNINITIALIZED, // RuleEngineStatus regionFuncStatus
     UNINITIALIZED, // RuleEngineStatus regionIndexStatus
     UNINITIALIZED, // RuleEngineStatus regionCoreStatus
     UNINITIALIZED, // RuleEngineStatus regionAppStatus
     NULL, // RuleSet *coreRuleSet
     NULL, // RuleSet *appRuleSet
     NULL, // RuleSet *extRuleSet
-    NULL, // Hashtable *funcDescIndex
+    NULL, // Env *coreFuncDescIndex
+    NULL, // Env *appFuncDescIndex
+    NULL, // Env *extFuncDescIndex
     NULL, // Hashtable *ruleIndex
     NULL, // Hashtable *condIndex
-    NULL, // Region *regionFunc
     NULL, // Region *regionIndex
     NULL, // Region *regionCore
     NULL, // Region *regionApp
@@ -79,6 +81,7 @@ void prependRuleIntoIndex(RuleDesc *rule, int i, Region *r) {
 	}
 }
 int checkPointExtRuleSet() {
+	ruleEngineConfig.extFuncDescIndex = newEnv(newHashTable(100), ruleEngineConfig.extFuncDescIndex, NULL);
 	return ruleEngineConfig.extRuleSet->len;
 }
 void appendAppRule(RuleDesc *rd, Region *r) {
@@ -92,6 +95,9 @@ void prependAppRule(RuleDesc *rd, Region *r) {
 	prependRuleIntoIndex(rd, i, r);
 }
 void popExtRuleSet(int checkPoint) {
+	Env *temp = ruleEngineConfig.extFuncDescIndex;
+	ruleEngineConfig.extFuncDescIndex = temp->previous;
+	deleteEnv(temp, 1);
 	int i;
 	for(i = checkPoint; i < ruleEngineConfig.extRuleSet->len; i++) {
 		removeRuleFromIndex(RULE_NAME(ruleEngineConfig.extRuleSet->rules[i]->node), i);
@@ -114,19 +120,17 @@ void setRuleEngineMemStatus(RuleEngineStatus s) {
 	_ruleEngineMemStatus = s;
 } */
 void clearResources(int resources) {
-	if((resources & RESC_RULE_INDEX) && ruleEngineConfig.ruleIndexStatus == INITIALIZED) {
+	if((resources & RESC_RULE_INDEX) && isComponentAllocated(ruleEngineConfig.ruleIndexStatus)) {
 		deleteHashTable(ruleEngineConfig.ruleIndex, nop);
 		ruleEngineConfig.ruleIndexStatus = UNINITIALIZED;
 	}
-	if((resources & RESC_COND_INDEX) && ruleEngineConfig.condIndexStatus == INITIALIZED) {
+	if((resources & RESC_COND_INDEX) && isComponentAllocated(ruleEngineConfig.condIndexStatus)) {
 		deleteHashTable(ruleEngineConfig.condIndex, (void (*)(void *))deleteCondIndexVal);
 		ruleEngineConfig.condIndexStatus = UNINITIALIZED;
 	}
-	if((resources & RESC_FUNC_DESC_INDEX) && ruleEngineConfig.funcDescIndexStatus == INITIALIZED) {
-		deleteHashTable(ruleEngineConfig.funcDescIndex, nop);
-		ruleEngineConfig.funcDescIndexStatus = UNINITIALIZED;
-	}
-	clearRegion(FUNC, Func);
+	clearFuncDescIndex(APP, app);
+	clearFuncDescIndex(CORE, core);
+	clearFuncDescIndex(EXT, ext);
 	clearRegion(INDEX, Index);
 	clearRegion(APP, App);
 	clearRegion(CORE, Core);
@@ -134,12 +138,13 @@ void clearResources(int resources) {
 	clearRuleSet(CORE, core);
 	clearRuleSet(EXT, ext);
 
-	if((resources & RESC_CACHE) && ruleEngineConfig.cacheStatus == INITIALIZED) {
+	if((resources & RESC_CACHE) && isComponentAllocated(ruleEngineConfig.cacheStatus)) {
 		free(ruleEngineConfig.address);
 		ruleEngineConfig.cacheStatus = UNINITIALIZED;
 	}
 }
 List hashtablesToClear = {NULL, NULL};
+List envToClear = {NULL, NULL};
 List regionsToClear = {NULL, NULL};
 List memoryToFree = {NULL, NULL};
 
@@ -152,13 +157,15 @@ void delayClearResources(int resources) {
 		listAppendNoRegion(hashtableToClear, ruleEngineConfig.condIndex);
 		ruleEngineConfig.condIndexStatus = UNINITIALIZED;
 	}*/
-	delayClearRegion(FUNC, Func);
 	delayClearRegion(INDEX, Index);
 	delayClearRegion(APP, App);
 	delayClearRegion(CORE, Core);
 	delayClearRuleSet(APP, app);
 	delayClearRuleSet(CORE, core);
 	delayClearRuleSet(EXT, ext);
+	delayClearFuncDescIndex(APP, app);
+	delayClearFuncDescIndex(CORE, core);
+	delayClearFuncDescIndex(EXT, ext);
 
 	if((resources & RESC_CACHE) && ruleEngineConfig.cacheStatus == INITIALIZED) {
 		listAppendNoRegion(&memoryToFree, ruleEngineConfig.address);
@@ -167,7 +174,13 @@ void delayClearResources(int resources) {
 }
 
 void clearDelayed() {
-	ListNode *n = hashtablesToClear.head;
+	ListNode *n = envToClear.head;
+	while(n!=NULL) {
+		deleteEnv((Env *) n->value, 1);
+		listRemoveNoRegion(&envToClear, n);
+		n = envToClear.head;
+	}
+	n = hashtablesToClear.head;
 	while(n!=NULL) {
 		deleteHashTable((Hashtable *) n->value, nop);
 		listRemoveNoRegion(&hashtablesToClear, n);
@@ -206,11 +219,14 @@ int generateLocalCache() {
 	setCacheAddress(buf, INITIALIZED, SHMMAX);
 	return 0;
 }
-void generateFunctionDescriptionTable() {
-    ruleEngineConfig.funcDescIndex = newHashTable(1000);
-    getSystemFunctions(ruleEngineConfig.funcDescIndex, ruleEngineConfig.regionFunc);
-	ruleEngineConfig.funcDescIndexStatus = INITIALIZED;
+int generateFunctionDescriptionTables() {
+    createFuncDescIndex(CORE, core);
+    createFuncDescIndex(APP, app);
+    createFuncDescIndex(EXT, ext);
+    ruleEngineConfig.extFuncDescIndex->previous = ruleEngineConfig.appFuncDescIndex;
+    ruleEngineConfig.appFuncDescIndex->previous = ruleEngineConfig.coreFuncDescIndex;
 
+	return 0;
 }
 void generateRuleSets() {
 	createRuleSet(APP, app);
@@ -218,17 +234,16 @@ void generateRuleSets() {
 	createRuleSet(EXT, ext);
 }
 void generateRegions() {
-	createRegion(FUNC, Func);
 	createRegion(INDEX, Index);
 	createRegion(APP, App);
 	createRegion(CORE, Core);
 }
 int clearRuleSetAndIndex(ruleStruct_t *inRuleStruct) {
 	if(inRuleStruct == &coreRuleStrct) {
-		clearResources(RESC_CORE_RULE_SET | RESC_COND_INDEX | RESC_RULE_INDEX | RESC_REGION_INDEX);
+		clearResources(RESC_CORE_RULE_SET | RESC_COND_INDEX | RESC_RULE_INDEX | RESC_CORE_FUNC_DESC_INDEX | RESC_REGION_INDEX);
 		delayClearResources(RESC_REGION_CORE);
 	} else if(inRuleStruct == &appRuleStrct) {
-		clearResources(RESC_COND_INDEX | RESC_APP_RULE_SET | RESC_RULE_INDEX | RESC_REGION_INDEX);
+		clearResources(RESC_COND_INDEX | RESC_APP_RULE_SET | RESC_RULE_INDEX | RESC_APP_FUNC_DESC_INDEX | RESC_REGION_INDEX);
 		delayClearResources(RESC_REGION_APP);
 	}
 	return 0;
@@ -299,13 +314,15 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
     }
     buf = ruleEngineConfig.address;
 	}
-	generateRegions();
+	clearResources(RESC_REGION_INDEX);
     if(loadToBuf) {
-    	if(ruleEngineConfig.ruleEngineStatus != INITIALIZED || inRuleStruct == &coreRuleStrct) {
-    		/* core.re may contain adt definitions, regenerating the table may reset constructors definitions */
-    		clearResources(RESC_FUNC_DESC_INDEX);
-    		generateFunctionDescriptionTable();
-    	}
+    	/* if(inRuleStruct == &coreRuleStrct) {
+    		clearResources(RESC_CORE_FUNC_DESC_INDEX);
+    	} else if(inRuleStruct == &appRuleStrct) {
+    		clearResources(RESC_APP_FUNC_DESC_INDEX);
+    	} */
+    	generateRegions();
+		generateFunctionDescriptionTables();
     	generateRuleSets();
         while (strlen(r2) > 0) {
 			int i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
@@ -318,40 +335,50 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 			strcpy(r2,r3);
         }
         Cache *configNew = copyCache(&buf, SHMMAX, &ruleEngineConfig);
+        configNew->regionIndexStatus = UNINITIALIZED;
+        configNew->regionAppStatus = UNINITIALIZED;
+        configNew->regionCoreStatus = UNINITIALIZED;
+        configNew->appRuleSetStatus = COMPRESSED;
+        configNew->coreRuleSetStatus = COMPRESSED;
+        configNew->coreFuncDescIndexStatus = COMPRESSED;
+        configNew->appFuncDescIndexStatus = COMPRESSED;
+
 #ifdef DEBUG
         printf("Buffer usage: %fM\n", ((double)(configNew->dataSize))/(1024*1024));
 #endif
         clearResources(RESC_APP_RULE_SET | RESC_CORE_RULE_SET
-        		     | RESC_COND_INDEX | RESC_FUNC_DESC_INDEX | RESC_RULE_INDEX
-        		     | RESC_REGION_APP | RESC_REGION_CORE | RESC_REGION_FUNC | RESC_REGION_INDEX );
+        		     | RESC_COND_INDEX | RESC_RULE_INDEX
+        		     | RESC_CORE_FUNC_DESC_INDEX | RESC_APP_FUNC_DESC_INDEX
+        		     | RESC_REGION_APP | RESC_REGION_CORE | RESC_REGION_INDEX );
         if(ruleEngineConfig.ruleEngineStatus == INITIALIZED) {
         	/* previous cache allocated */
         	if(loadToShared) {
         		/* previous cache is in shared memory, this must be a server process */
         		unsigned char *start = ruleEngineConfig.address;
         		configNew = copyCache(&start, SHMMAX, configNew);
-        		free(buf);
         	} else {
         		/* previous cache is not in shared memory, discard and replace with new cache */
         		delayClearResources(RESC_CACHE);
         	}
         }
+        /* copy extRuleSet and extFuncDescIndex */
+        configNew->extRuleSet = ruleEngineConfig.extRuleSet;
+        configNew->extFuncDescIndex = ruleEngineConfig.extFuncDescIndex;
         ruleEngineConfig = *configNew;
+        ruleEngineConfig.extRuleSetStatus = LOCAL;
+        ruleEngineConfig.extFuncDescIndexStatus = LOCAL;
+    	generateFunctionDescriptionTables();
     } else {
         Cache *cache = restoreCache(buf);
         cache->cacheStatus = INITIALIZED;
         ruleEngineConfig = *cache;
+        /* generate extRuleSet */
+    	generateRuleSets();
+    	generateFunctionDescriptionTables();
+        ruleEngineConfig.extRuleSetStatus = LOCAL;
+        ruleEngineConfig.extFuncDescIndexStatus = LOCAL;
     }
-    ruleEngineConfig.regionIndexStatus = UNINITIALIZED;
-    ruleEngineConfig.regionFuncStatus = UNINITIALIZED;
-    ruleEngineConfig.regionAppStatus = UNINITIALIZED;
-    ruleEngineConfig.regionCoreStatus = UNINITIALIZED;
-    ruleEngineConfig.appRuleSetStatus = COMPRESSED;
-    ruleEngineConfig.coreRuleSetStatus = COMPRESSED;
-    ruleEngineConfig.extRuleSetStatus = COMPRESSED;
-    ruleEngineConfig.ruleIndexStatus = COMPRESSED;
-    ruleEngineConfig.condIndexStatus = COMPRESSED;
-    ruleEngineConfig.funcDescIndexStatus = COMPRESSED;
+	createCoreAppExtRuleNodeIndex();
 
 ret:
     if(unlock_mutex)
@@ -426,16 +453,14 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
         char *buf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
         int res = 0;
 	if(inRuleStrct == &coreRuleStrct) {
-		if(readRuleSetFromFile(ruleBaseName,ruleEngineConfig.coreRuleSet,&errloc,&errmsgBuf, ruleEngineConfig.regionCore)==0) {
-			createCoreAppExtRuleNodeIndex();
+		if(readRuleSetFromFile(ruleBaseName,ruleEngineConfig.coreRuleSet,ruleEngineConfig.coreFuncDescIndex,&errloc,&errmsgBuf, ruleEngineConfig.regionCore)==0) {
 		} else {
 			errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
 			rodsLog(LOG_ERROR, "%s", buf);
 			res = -1;
 		}
 	} else if(inRuleStrct == &appRuleStrct) {
-		if(readRuleSetFromFile(ruleBaseName,ruleEngineConfig.appRuleSet,&errloc,&errmsgBuf, ruleEngineConfig.regionApp)==0) {
-			createCoreAppExtRuleNodeIndex();
+		if(readRuleSetFromFile(ruleBaseName,ruleEngineConfig.appRuleSet, ruleEngineConfig.appFuncDescIndex,&errloc,&errmsgBuf, ruleEngineConfig.regionApp)==0) {
 		} else {
 			errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
 			rodsLog(LOG_ERROR, "%s", buf);

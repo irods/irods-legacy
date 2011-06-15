@@ -10,8 +10,8 @@
 extern Hashtable *funcDescIndex;
 
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
-int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, int* errloc, rError_t *errmsg, Region *r);
-int readRuleSetFromLocalFile(char *ruleBaseName, char *fileName, RuleSet *ruleSet, int *errloc, rError_t *errmsg, Region *r);
+int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r);
+int readRuleSetFromLocalFile(char *ruleBaseName, char *fileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r);
 int parseAndComputeMsParamArrayToEnv(msParamArray_t *msParamArray, Env *global, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
 int parseAndComputeRule(char *expr, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
 int parseAndComputeRuleNewEnv( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r);
@@ -21,7 +21,7 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
 Res *computeExpressionWithParams(char *actionName, char** params, int paramCount, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *vars, rError_t *errmsg, Region *r);
 Res *computeExpressionNode(Node *expr, Env *env, ruleExecInfo_t *rei, int reiSaveFlag , rError_t *errmsg, Region *r);
 
-ExprType *typeRule(RuleDesc *ruleNode, Hashtable *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r);
+ExprType *typeRule(RuleDesc *ruleNode, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r);
 ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r);
 void addCmdExecOutToEnv(Env *global, Region *r);
 void freeCmdExecOut(execCmdOut_t *ruleExecOut);

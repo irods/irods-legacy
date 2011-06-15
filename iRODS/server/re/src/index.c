@@ -45,9 +45,8 @@ int createRuleStructIndex(ruleStruct_t *inRuleStrct, Hashtable *ruleIndex)
 	return 1;
 }
 int createCoreAppExtRuleNodeIndex() {
-	if(ruleEngineConfig.ruleIndexStatus == INITIALIZED) {
-		clearIndex(ruleEngineConfig.ruleIndex);
-	}
+	clearResources(RESC_RULE_INDEX);
+	clearResources(RESC_COND_INDEX);
 	createRegion(INDEX, Index);
 	ruleEngineConfig.ruleIndex = newHashTable(MAX_NUM_RULES * 2);
     if (ruleEngineConfig.ruleIndex == NULL)
@@ -65,7 +64,7 @@ int createCoreAppExtRuleNodeIndex() {
 	}
 
 	createCondIndex(ruleEngineConfig.regionIndex);
-	ruleEngineConfig.ruleIndexStatus = INITIALIZED;
+	ruleEngineConfig.ruleIndexStatus = LOCAL;
 	return 0;
 error:
 	deleteHashTable(ruleEngineConfig.ruleIndex, nop);
@@ -158,7 +157,7 @@ int createCondIndex(Region *r) {
         }
 
     }
-    ruleEngineConfig.condIndexStatus = INITIALIZED;
+    ruleEngineConfig.condIndexStatus = LOCAL;
     return 1;
 
 }
