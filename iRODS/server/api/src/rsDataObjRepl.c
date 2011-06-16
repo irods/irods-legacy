@@ -638,7 +638,8 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo, int updateFlag)
 
     if (L1desc[l1descInx].stageFlag != NO_STAGING) {
 	status = l3DataStageSync (rsComm, l1descInx);
-    } else if (L1desc[l1descInx].dataObjInp->numThreads == 0) {
+    } else if (L1desc[l1descInx].dataObjInp->numThreads == 0 && 
+      L1desc[l1descInx].dataObjInfo->dataSize <= MAX_SZ_FOR_SINGLE_BUF) {
         status = l3DataCopySingleBuf (rsComm, l1descInx);
     } else {
         status = dataObjCopy (rsComm, l1descInx);
