@@ -1029,6 +1029,7 @@ addInClauseToWhereForParentOf(char *inArg) {
    char tmpStr[MAX_SQL_SIZE];
    static char inStrings[MAX_SQL_SIZE];
    int inStrIx=0;
+
    rstrcat(whereSQL, " IN (", MAX_SQL_SIZE);
    len = strlen(inArg);
    for (i=0;i<len+1;i++) {
@@ -1047,7 +1048,7 @@ addInClauseToWhereForParentOf(char *inArg) {
 	 tmpStr[0]='\0';
 	 rstrncat(tmpStr, inArg, ncopy, MAX_SQL_SIZE);
 	 rstrcpy((char *)&inStrings[inStrIx], tmpStr,
-		  MAX_SQL_SIZE-inStrIx);
+		 (MAX_SQL_SIZE)-inStrIx);
 	 inStrings[inStrIx+ncopy]='\0';
 	 cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
 	 inStrIx = inStrIx+ncopy+1;
@@ -1061,15 +1062,20 @@ addInClauseToWhereForParentOf(char *inArg) {
 add an IN clause to the whereSQL string for a client IN request
  */
 int
-addInClauseToWhereForIn(char *inArg) {
+addInClauseToWhereForIn(char *inArg, int option) {
    int i, len;
    int startIx, endIx;
    int nput=0;
    int quoteState=0;
    char tmpStr[MAX_SQL_SIZE];
-   static char inStrings[MAX_SQL_SIZE];
-   int inStrIx=0;
+   static char inStrings[MAX_SQL_SIZE*2];
+   static int inStrIx;
    int ncopy;
+
+   if (option==1) {
+      inStrIx=0;
+      return(0);
+   }
    rstrcat(whereSQL, " IN (", MAX_SQL_SIZE);
    len = strlen(inArg);
    for (i=0;i<len+1;i++) {
@@ -1095,7 +1101,7 @@ addInClauseToWhereForIn(char *inArg) {
 	    ncopy = endIx-startIx+1;
 	    rstrncat(tmpStr, (char *)&inArg[startIx], ncopy, MAX_SQL_SIZE);
 	    rstrcpy((char *)&inStrings[inStrIx], tmpStr,
-		    MAX_SQL_SIZE-inStrIx);
+		    (MAX_SQL_SIZE*2)-inStrIx);
 	    inStrings[inStrIx+ncopy]='\0';
 	    cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
 	    inStrIx = inStrIx+ncopy+1;
@@ -1172,13 +1178,14 @@ insertWhere(char *condition, int option) {
 
    if (option==1) { /* reinitialize */
       bindIx=0;
+      addInClauseToWhereForIn(condition, option);
       return(0);
    }
 
    cp = strstr(condition, "in");
    if (cp == NULL) cp = strstr(condition, "IN");
    if (cp != NULL) {
-      return (addInClauseToWhereForIn(condition));
+      return (addInClauseToWhereForIn(condition,0));
    }
 
    cp = strstr(condition, "between");
