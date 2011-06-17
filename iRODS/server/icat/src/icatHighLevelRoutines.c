@@ -8893,5 +8893,4 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
    result->continueInx=statementNum+1;  /* the statementnumber but
 					   always >0 */
    return(0);
-
 }
