@@ -206,7 +206,7 @@ void setCacheAddress(unsigned char *addr, RuleEngineStatus status, long size) {
     ruleEngineConfig.cacheSize = size;
 
 }
-#define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }
+
 int generateLocalCache() {
     unsigned char *buf = NULL;
 	if(ruleEngineConfig.cacheStatus == INITIALIZED) {

@@ -2447,6 +2447,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 case TK_EOS:
                     ret = 0;
                     continue;
+                case TK_MISC_OP:
                 case TK_TEXT:
                     if(token.text[0] == '#') {
                         skipComments(e);
@@ -2455,6 +2456,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                         nextTokenRuleGen(e, &token, 1);
                         if(strcmp(token.text, "backwardCompatible")==0) {
                             nextTokenRuleGen(e, &token, 1);
+                            if(token.type == TK_TEXT) {
                             if(strcmp(token.text, "true")==0) {
                                 backwardCompatible = 1;
                             } else if(strcmp(token.text, "false")==0) {
@@ -2462,6 +2464,16 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                             } else {
                                 /* todo error handling */
                             }
+                            } else {
+                            	/* todo error handling */
+                            }
+                        } else if(strcmp(token.text, "include")==0) {
+                        	nextTokenRuleGen(e, &token, 1);
+                        	if(token.type == TK_TEXT || token.type == TK_STRING) {
+                        		CASCASE_NON_ZERO(readRuleSetFromFile(token.text, ruleSet, funcDescIndex, errloc, errmsg, r));
+                        	} else {
+                        		/* todo error handling */
+                        	}
                         } else {
                             /* todo error handling */
                         }

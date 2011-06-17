@@ -46,7 +46,7 @@
 
 #define DATETIME_MS_T "DATETIME_MS_T"
 
-
+#define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }
 #define TYPE(x) ((x)->exprType->nodeType)
 
 #define T_CONS_TYPE_ARGS(x) ((x)->subtrees)
