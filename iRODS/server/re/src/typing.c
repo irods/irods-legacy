@@ -5,13 +5,14 @@
 #include "functions.h"
 #define ERROR(x) if(x) {goto error;}
 #define ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
-#define N_BASE_TYPES 5
-NodeType baseTypes[] = {
+#define N_BASE_TYPES 6
+NodeType baseTypes[N_BASE_TYPES] = {
 		T_INT,
 		T_BOOL,
 		T_DOUBLE,
 		T_DATETIME,
-		T_STRING
+		T_STRING,
+		T_IRODS,
 };
 void doNarrow(Node **l, Node **r, int ln, int rn, int flex, Node **nl, Node **nr, int *nln, int *nrn);
 Satisfiability createSimpleConstraint(ExprType *a, ExprType *b, int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r);
@@ -106,6 +107,8 @@ int tautologyLtBase(ExprType *a, ExprType *b) {
             case T_BOOL:
             case T_STRING:
                 return a->nodeType==b->nodeType;
+            case T_IRODS:
+            	return b->nodeType==T_IRODS && strcmp(a->text, b->text) == 0 ? 1 : 0;
             default:
                 return 0;
         }

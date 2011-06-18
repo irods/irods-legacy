@@ -1322,23 +1322,27 @@ int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r) {
 }
 
 Res *smsi_writeLine(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+  char *inString = convertResToString(paramsr[1]);
 #ifdef DEBUG
-    printf("%s\n", ((Res *)paramsr[1])->text);
-    return newIntRes(r, 0);
+  printf("%s\n", inString);
+  free(inString);
+  return newIntRes(r, 0);
 #else
   Res *where = (Res *)paramsr[0];
   char *whereId = where->text;
-  Res *inString = (Res *)paramsr[1];
 
   if (strcmp (whereId, "serverLog") == 0) {
-      rodsLog (LOG_NOTICE, "writeLine: inString = %s\n", inString->text);
+      rodsLog (LOG_NOTICE, "writeLine: inString = %s\n", inString);
+      free(inString);
       return newIntRes(r, 0);
   }
 
-  int i = writeStringNew(whereId, inString->text, env, r);
+  int i = writeStringNew(whereId, inString, env, r);
 
-  if (i < 0)
-    return newErrorRes(r, i);
+  free(inString);
+  if (i < 0) {
+      return newErrorRes(r, i);
+  }
 
   i = writeStringNew(whereId, "\n", env, r);
 
@@ -1350,12 +1354,13 @@ Res *smsi_writeLine(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
 }
 Res *smsi_writeString(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
+  char *inString = convertResToString(paramsr[1]);
   Res *where = (Res *)paramsr[0];
   char *whereId = where->text;
-  Res *inString = (Res *)paramsr[1];
 
-  int i = writeStringNew(whereId, inString->text, env, r);
+  int i = writeStringNew(whereId, inString, env, r);
 
+  free(inString);
   if (i < 0)
     return newErrorRes(r, i);
   else
@@ -1737,8 +1742,8 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "not like regex", newFunctionDesc("string * string->boolean", smsi_not_like_regex, r));
     insertIntoHashTable(ft, "delayExec", newFunctionDesc("string * string * string->integer", smsi_delayExec, r));
     insertIntoHashTable(ft, "remoteExec", newFunctionDesc("string * string * string * string->integer", smsi_remoteExec,r));
-    insertIntoHashTable(ft, "writeLine", newFunctionDesc("string * string->integer", smsi_writeLine,r));
-    insertIntoHashTable(ft, "writeString", newFunctionDesc("string * string->integer", smsi_writeString,r));
+    insertIntoHashTable(ft, "writeLine", newFunctionDesc("string * ?->integer", smsi_writeLine,r));
+    insertIntoHashTable(ft, "writeString", newFunctionDesc("string * ?->integer", smsi_writeString,r));
     insertIntoHashTable(ft, "triml", newFunctionDesc("string * string->string", smsi_triml, r));
     insertIntoHashTable(ft, "trimr", newFunctionDesc("string * string->string", smsi_trimr, r));
     insertIntoHashTable(ft, "strlen", newFunctionDesc("string->integer", smsi_strlen, r));
