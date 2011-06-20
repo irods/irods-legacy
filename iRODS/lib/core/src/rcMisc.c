@@ -23,6 +23,9 @@
 #include "bulkDataObjPut.h"
 #include "putUtil.h"
 
+#include <cstdlib>
+#include <iostream>
+
 /* check with the input path is a valid path -
  * 1 - valid
  * 0 - not valid
@@ -4356,3 +4359,33 @@ clearAuthResponseInp (void *inauthResponseInp)
 
   return (0);
 }
+
+#ifdef USE_BOOST
+namespace boost
+{
+#if 0
+   inline void assertion_failed(char const * expr,
+#endif
+   void assertion_failed(char const * expr,
+      char const * function, char const * file, long line)
+   {
+       std::cerr <<
+         "***** Internal Program Error - assertion (" << expr << ") failed in "
+         << function << ":\n"
+         << file << '(' << line << "): errno = " << errno << std::endl;
+    }
+
+#if 0
+   inline void assertion_failed_msg(char const * expr, char const * msg,
+   void assertion_failed_msg(char const * expr, char const * msg,
+      char const * function, char const * file, long line)
+   {
+       std::cerr <<
+         "***** Internal Program Error - assertion (" << expr << ") failed in "
+         << function << ":\n"
+         << file << '(' << line << "): " << msg << std::endl;
+    }
+#endif
+
+} // namespace boost
+#endif
