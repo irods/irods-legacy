@@ -28,6 +28,14 @@
 #define IRODS_FREE		0
 #define IRODS_INUSE	1 
 
+
+#ifdef USE_BOOST
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
+#endif
+// =-=-=-=-=-=-=-
+
 typedef struct BufCache {
     rodsLong_t beginOffset;
     rodsLong_t endOffset;
@@ -53,7 +61,11 @@ typedef struct IFuseDesc {
     char *objPath;
     char *localPath;
     readCacheState_t locCacheState;
+#ifdef USE_BOOST
+    boost::mutex* mutex;
+#else
     pthread_mutex_t lock;
+#endif
 } iFuseDesc_t;
 
 #define NUM_PATH_HASH_SLOT	201

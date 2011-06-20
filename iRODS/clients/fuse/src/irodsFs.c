@@ -88,6 +88,30 @@ static void usage(const char *progname)
 int 
 main (int argc, char **argv)
 {
+
+irodsOper.getattr = irodsGetattr;
+irodsOper.readlink = irodsReadlink;
+irodsOper.readdir = irodsReaddir;
+irodsOper.mknod = irodsMknod;
+irodsOper.mkdir = irodsMkdir;
+irodsOper.symlink = irodsSymlink;
+irodsOper.unlink = irodsUnlink;
+irodsOper.rmdir = irodsRmdir;
+irodsOper.rename = irodsRename;
+irodsOper.link = irodsLink;
+irodsOper.chmod = irodsChmod;
+irodsOper.chown = irodsChown;
+irodsOper.truncate = irodsTruncate;
+irodsOper.utimens = irodsUtimens;
+irodsOper.open = irodsOpen;
+irodsOper.read = irodsRead;
+irodsOper.write = irodsWrite;
+irodsOper.statfs = irodsStatfs;
+irodsOper.release = irodsRelease;
+irodsOper.fsync = irodsFsync;
+irodsOper.flush = irodsFlush;
+
+
     int status;
     rodsArguments_t myRodsArgs;
     char *optStr;

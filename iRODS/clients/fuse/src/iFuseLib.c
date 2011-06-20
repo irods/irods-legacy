@@ -4,23 +4,39 @@
 /* iFuseLib.c - The misc lib functions for the iRODS/Fuse server. 
  */
 
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include <pthread.h>
 #include "irodsFs.h"
 #include "iFuseLib.h"
 #include "iFuseOper.h"
 
-static pthread_mutex_t DescLock;
-static pthread_mutex_t ConnLock;
-static pthread_mutex_t PathCacheLock;
-static pthread_mutex_t NewlyCreatedOprLock;
-pthread_t ConnManagerThr;
-pthread_mutex_t ConnManagerLock;
-pthread_cond_t ConnManagerCond;
+#include <cstdlib>
+#include <iostream>
+#include <boost/thread/thread_time.hpp>
+
+#ifdef USE_BOOST
+	static boost::mutex DescLock;
+	static boost::mutex ConnLock;
+	static boost::mutex PathCacheLock;
+	static boost::mutex NewlyCreatedOprLock;
+	boost::thread*            ConnManagerThr;
+	boost::mutex              ConnManagerLock;
+	boost::condition_variable ConnManagerCond;
+#else
+	#include <pthread.h>
+	static pthread_mutex_t DescLock;
+	static pthread_mutex_t ConnLock;
+	static pthread_mutex_t PathCacheLock;
+	static pthread_mutex_t NewlyCreatedOprLock;
+	pthread_t ConnManagerThr;
+	pthread_mutex_t ConnManagerLock;
+	pthread_cond_t ConnManagerCond;
+#endif
 
 char FuseCacheDir[MAX_NAME_LEN];
 
@@ -89,10 +105,15 @@ matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
 pathCache_t **outPathCache)
 {
     int status;
-
+#ifdef USE_BOOST
+    PathCacheLock.lock();
+    status = _matchPathInPathCache (inPath, pathQueArray, outPathCache);
+    PathCacheLock.unlock();
+#else
     pthread_mutex_lock (&PathCacheLock);
     status = _matchPathInPathCache (inPath, pathQueArray, outPathCache);
     pthread_mutex_unlock (&PathCacheLock);
+#endif
     return status;
 }
 
@@ -126,10 +147,15 @@ struct stat *stbuf, pathCache_t **outPathCache)
 {
     int status;
 
+#ifdef USE_BOOST
+    PathCacheLock.lock();
+    status = _addPathToCache (inPath, pathQueArray, stbuf, outPathCache);
+    PathCacheLock.unlock();
+#else
     pthread_mutex_lock (&PathCacheLock);
     status = _addPathToCache (inPath, pathQueArray, stbuf, outPathCache);
     pthread_mutex_unlock (&PathCacheLock);
-
+#endif
     return status;
 }
 
@@ -154,11 +180,15 @@ int
 rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray)
 {
     int status;
-
+#ifdef USE_BOOST
+    PathCacheLock.lock();
+    status = _rmPathFromCache (inPath, pathQueArray);
+    PathCacheLock.unlock();
+#else
     pthread_mutex_lock (&PathCacheLock);
     status = _rmPathFromCache (inPath, pathQueArray);
     pthread_mutex_unlock (&PathCacheLock);
-
+#endif
     return status;
 }
 
@@ -314,13 +344,15 @@ pathSum (char *inPath)
 int
 initIFuseDesc ()
 {
+#ifndef USE_BOOST
     pthread_mutex_init (&DescLock, NULL);
     pthread_mutex_init (&ConnLock, NULL);
     pthread_mutex_init (&NewlyCreatedOprLock, NULL);
     pthread_mutex_init (&PathCacheLock, NULL);
     pthread_mutex_init (&ConnManagerLock, NULL);
     pthread_cond_init (&ConnManagerCond, NULL);
-    memset (IFuseDesc, 0, sizeof (iFuseDesc_t) * MAX_IFUSE_DESC);
+#endif
+    // JMC - overwrites objects construction? -  memset (IFuseDesc, 0, sizeof (iFuseDesc_t) * MAX_IFUSE_DESC);
     return (0);
 }
 
@@ -329,6 +361,19 @@ allocIFuseDesc ()
 {
     int i;
 
+#ifdef USE_BOOST
+    DescLock.lock();
+    for (i = 3; i < MAX_IFUSE_DESC; i++) {
+        if (IFuseDesc[i].inuseFlag <= IRODS_FREE) {
+	    IFuseDesc[i].mutex = new boost::mutex; // JMC :: necessary since no ctor/dtor on struct
+            IFuseDesc[i].inuseFlag = IRODS_INUSE;
+	    IFuseDescInuseCnt++;
+            DescLock.unlock();
+            return (i);
+        };
+    }
+    DescLock.unlock();
+#else
     pthread_mutex_lock (&DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
         if (IFuseDesc[i].inuseFlag <= IRODS_FREE) {
@@ -340,7 +385,7 @@ allocIFuseDesc ()
         };
     }
     pthread_mutex_unlock (&DescLock);
-
+#endif
     rodsLog (LOG_ERROR, 
       "allocIFuseDesc: Out of iFuseDesc");
 
@@ -357,7 +402,15 @@ lockDesc (int descInx)
          "lockDesc: descInx %d out of range", descInx);
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
+#ifdef USE_BOOST
+    try {
+       IFuseDesc[descInx].mutex->lock();
+    } catch( boost::thread_resource_error ) {
+       status = -1;
+    }
+#else
     status = pthread_mutex_lock (&IFuseDesc[descInx].lock);
+#endif
     return status;
 }
 
@@ -371,7 +424,15 @@ unlockDesc (int descInx)
          "unlockDesc: descInx %d out of range", descInx);
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
+#ifdef USE_BOOST
+    try {
+        IFuseDesc[descInx].mutex->unlock(); 
+    } catch ( boost::thread_resource_error ) {
+        status = -1;
+    }
+#else
     status = pthread_mutex_unlock (&IFuseDesc[descInx].lock);
+#endif
     return status;
 }
 
@@ -382,7 +443,21 @@ iFuseConnInuse (iFuseConn_t *iFuseConn)
     int inuseCnt = 0;
 
     if (iFuseConn == NULL) return 0;
-
+#ifdef USE_BOOST
+    DescLock.lock();
+    for (i = 3; i < MAX_IFUSE_DESC; i++) {
+	if (inuseCnt >= IFuseDescInuseCnt) break;
+        if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
+	    inuseCnt++;
+	    if (IFuseDesc[i].iFuseConn != NULL && 
+	      IFuseDesc[i].iFuseConn == iFuseConn) {
+                DescLock.unlock();
+                return 1;
+	    }
+	}
+    }
+    DescLock.unlock();
+#else
     pthread_mutex_lock (&DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
 	if (inuseCnt >= IFuseDescInuseCnt) break;
@@ -396,6 +471,7 @@ iFuseConnInuse (iFuseConn_t *iFuseConn)
 	}
     }
     pthread_mutex_unlock (&DescLock);
+#endif
     return (0);
 }
 
@@ -434,7 +510,11 @@ freeIFuseDesc (int descInx)
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
 
+#ifdef USE_BOOST
+    DescLock.lock();
+#else
     pthread_mutex_lock (&DescLock);
+#endif
     for (i = 0; i < MAX_BUF_CACHE; i++) {
         if (IFuseDesc[descInx].bufCache[i].buf != NULL) {
 	    free (IFuseDesc[descInx].bufCache[i].buf);
@@ -445,15 +525,24 @@ freeIFuseDesc (int descInx)
 
     if (IFuseDesc[descInx].localPath != NULL)
 	free (IFuseDesc[descInx].localPath);
-
+#ifdef USE_BOOST
+    delete IFuseDesc[descInx].mutex;
+    IFuseDesc[descInx].mutex = 0;
+#else
     pthread_mutex_destroy (&IFuseDesc[descInx].lock);
+#endif
     tmpIFuseConn = IFuseDesc[descInx].iFuseConn;
     if (tmpIFuseConn != NULL) {
 	IFuseDesc[descInx].iFuseConn = NULL;
     }
     memset (&IFuseDesc[descInx], 0, sizeof (iFuseDesc_t));
     IFuseDescInuseCnt--;
+
+#ifdef USE_BOOST
+    DescLock.unlock();
+#else
     pthread_mutex_unlock (&DescLock);
+#endif
     /* have to do it outside the lock bacause _relIFuseConn lock it */
     if (tmpIFuseConn != NULL)
 	_relIFuseConn (tmpIFuseConn);
@@ -859,8 +948,11 @@ rodsEnv *myRodsEnv)
 {
     int i, status;
     int inuseCnt = 0;
-
+#ifdef USE_BOOST
+    DescLock.lock();
+#else
     pthread_mutex_lock (&DescLock);
+#endif
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
         if (inuseCnt >= IFuseDescInuseCnt) break;
         if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
@@ -869,15 +961,24 @@ rodsEnv *myRodsEnv)
               IFuseDesc[i].iFuseConn->conn != NULL &&
 	      strcmp (localPath, IFuseDesc[i].localPath) == 0) {
 		*iFuseConn = IFuseDesc[i].iFuseConn;
+#ifdef USE_BOOST
+                ConnLock.lock();
+                DescLock.unlock();
+#else
 		pthread_mutex_lock (&ConnLock);
     		pthread_mutex_unlock (&DescLock);
+#endif
 		_useIFuseConn (*iFuseConn);
 		return 0;
 	    }
 	}
     }
     /* no match. just assign one */
+#ifdef USE_BOOST
+    DescLock.unlock();
+#else
     pthread_mutex_unlock (&DescLock);
+#endif
     status = getIFuseConn (iFuseConn, myRodsEnv);
 
     return status;
@@ -891,7 +992,11 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
     int inuseCnt = 0;
 
     *iFuseConn = NULL;
+#ifdef USE_BOOST
+    ConnLock.lock();
+#else
     pthread_mutex_lock (&ConnLock);
+#endif
 
     /* get a free IFuseConn */
 
@@ -924,15 +1029,24 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
         return 0;
     }
 
-
+#ifdef USE_BOOST
+    ConnLock.unlock();
+#else
     pthread_mutex_unlock (&ConnLock);
+#endif
     /* nothing free. make one */
     tmpIFuseConn = (iFuseConn_t *) malloc (sizeof (iFuseConn_t));
-    if (tmpIFuseConn < 0) {
+    if (tmpIFuseConn == NULL) {
         return SYS_MALLOC_ERR;
     }
     bzero (tmpIFuseConn, sizeof (iFuseConn_t));
+
+
+#ifdef USE_BOOST
+    tmpIFuseConn->mutex = new boost::mutex;
+#else
     pthread_mutex_init (&tmpIFuseConn->lock, NULL);
+#endif
 
     status = ifuseConnect (tmpIFuseConn, myRodsEnv);
     if (status < 0) return status;
@@ -940,19 +1054,29 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
     useIFuseConn (tmpIFuseConn);
 
     *iFuseConn = tmpIFuseConn;
-
+#ifdef USE_BOOST
+    ConnLock.lock();
+#else
     pthread_mutex_lock (&ConnLock);
+#endif
     /* queue it on top */
     tmpIFuseConn->next = ConnHead;
     ConnHead = tmpIFuseConn;
+
+#ifdef USE_BOOST
+    ConnLock.unlock();
+#else
     pthread_mutex_unlock (&ConnLock);
+#endif
 
     if (ConnManagerStarted < 5 && ++ConnManagerStarted == 5) {
 	/* don't do it the first time */
-        status = pthread_create  (&ConnManagerThr, pthread_attr_default,
-                  (void *(*)(void *)) connManager,
-                  (void *) NULL);
 
+#ifdef USE_BOOST
+	ConnManagerThr = new boost::thread( connManager );
+#else
+        status = pthread_create  (&ConnManagerThr, pthread_attr_default,(void *(*)(void *)) connManager, (void *) NULL);
+#endif
         if (status < 0) {
             rodsLog (LOG_ERROR, "pthread_create failure, status = %d", status);
 	    ConnManagerStarted --;	/* try again */
@@ -969,7 +1093,11 @@ useIFuseConn (iFuseConn_t *iFuseConn)
     int status;
     if (iFuseConn == NULL || iFuseConn->conn == NULL)
         return USER__NULL_INPUT_ERR;
+#ifdef USE_BOOST
+    ConnLock.lock();
+#else
     pthread_mutex_lock (&ConnLock);
+#endif
     status = _useIFuseConn (iFuseConn);
     return status;
 }
@@ -983,13 +1111,26 @@ _useIFuseConn (iFuseConn_t *iFuseConn)
     iFuseConn->actTime = time (NULL);
     iFuseConn->status = IRODS_INUSE;
     iFuseConn->pendingCnt++;
+
+#ifdef USE_BOOST
+    ConnLock.unlock();
+    iFuseConn->mutex->lock();
+    ConnLock.lock();
+
+    iFuseConn->inuseCnt++;
+    iFuseConn->pendingCnt--;
+
+    ConnLock.unlock();
+#else
     pthread_mutex_unlock (&ConnLock);
     pthread_mutex_lock (&iFuseConn->lock);
     pthread_mutex_lock (&ConnLock);
+
     iFuseConn->inuseCnt++;
     iFuseConn->pendingCnt--;
-    pthread_mutex_unlock (&ConnLock);
 
+    pthread_mutex_unlock (&ConnLock);
+#endif
     return 0;
 }
 
@@ -1000,8 +1141,13 @@ useFreeIFuseConn (iFuseConn_t *iFuseConn)
     iFuseConn->actTime = time (NULL);
     iFuseConn->status = IRODS_INUSE;
     iFuseConn->inuseCnt++;
+#ifdef USE_BOOST
+    ConnLock.unlock();
+    iFuseConn->mutex->lock();
+#else
     pthread_mutex_unlock (&ConnLock);
     pthread_mutex_lock (&iFuseConn->lock);
+#endif
     return 0;
 }
 
@@ -1010,11 +1156,19 @@ unuseIFuseConn (iFuseConn_t *iFuseConn)
 {
     if (iFuseConn == NULL || iFuseConn->conn == NULL)
         return USER__NULL_INPUT_ERR;
+#ifdef USE_BOOST
+    ConnLock.lock();
+    iFuseConn->actTime = time (NULL);
+    iFuseConn->inuseCnt--;
+    ConnLock.unlock();
+    iFuseConn->mutex->unlock();
+#else
     pthread_mutex_lock (&ConnLock);
     iFuseConn->actTime = time (NULL);
     iFuseConn->inuseCnt--;
     pthread_mutex_unlock (&ConnLock);
     pthread_mutex_unlock (&iFuseConn->lock);
+#endif
     return 0;
 }
 
@@ -1065,6 +1219,31 @@ relIFuseConn (iFuseConn_t *iFuseConn)
 int
 _relIFuseConn (iFuseConn_t *iFuseConn)
 {
+#ifdef USE_BOOST
+    if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
+    ConnLock.lock(); 
+    iFuseConn->actTime = time (NULL);
+    if (iFuseConn->conn == NULL) {
+        /* unlock it before calling iFuseConnInuse which locks DescLock */
+        ConnLock.unlock(); 
+        if (iFuseConnInuse (iFuseConn) == 0) {
+            ConnLock.lock();
+            iFuseConn->status = IRODS_FREE;
+            ConnLock.unlock();
+        }
+    } else if (iFuseConn->pendingCnt + iFuseConn->inuseCnt <= 0) {
+        /* unlock it before calling iFuseConnInuse which locks DescLock */
+        ConnLock.unlock(); 
+        if (iFuseConnInuse (iFuseConn) == 0) {
+            ConnLock.lock();
+            iFuseConn->status = IRODS_FREE;
+            ConnLock.unlock();
+	}
+    } else {
+        ConnLock.unlock();
+    }
+    signalConnManager ();
+#else
     if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
     pthread_mutex_lock (&ConnLock);
     iFuseConn->actTime = time (NULL);
@@ -1088,12 +1267,23 @@ _relIFuseConn (iFuseConn_t *iFuseConn)
         pthread_mutex_unlock (&ConnLock);
     }
     signalConnManager ();
+#endif
     return 0;
 }
 
 int
 signalConnManager ()
 {
+#ifdef USE_BOOST
+    int connCnt;
+    ConnLock.lock();
+    connCnt = getNumConn ();
+    ConnLock.unlock();
+    if (connCnt > HIGH_NUM_CONN) {
+	ConnManagerCond.notify_all( );
+    }
+
+#else
     int connCnt;
     pthread_mutex_lock (&ConnLock);
     connCnt = getNumConn ();
@@ -1103,6 +1293,7 @@ signalConnManager ()
 	pthread_cond_signal (&ConnManagerCond);
         pthread_mutex_unlock (&ConnManagerLock);
     }
+#endif
     return 0;
 }
 
@@ -1123,7 +1314,16 @@ int
 disconnectAll ()
 {
     iFuseConn_t *tmpIFuseConn;
-
+#ifdef USE_BOOST
+    ConnLock.lock();
+    tmpIFuseConn = ConnHead;
+    while (tmpIFuseConn != NULL) {
+	if (tmpIFuseConn->conn != NULL) {
+	    rcDisconnect (tmpIFuseConn->conn);
+	}
+	tmpIFuseConn = tmpIFuseConn->next;
+    }
+#else
     pthread_mutex_lock (&ConnLock);
     tmpIFuseConn = ConnHead;
     while (tmpIFuseConn != NULL) {
@@ -1132,6 +1332,7 @@ disconnectAll ()
 	}
 	tmpIFuseConn = tmpIFuseConn->next;
     }
+#endif
     return 0;
 }
 
@@ -1141,12 +1342,20 @@ connManager ()
     time_t curTime;
     iFuseConn_t *tmpIFuseConn, *savedIFuseConn;
     iFuseConn_t *prevIFuseConn;
+#ifndef USE_BOOST
     struct timespec timeout;
+#endif
 
     while (1) {
 	int connCnt;
         curTime = time (NULL);
+
+#ifdef USE_BOOST
+	ConnLock.lock();
+#else
         pthread_mutex_lock (&ConnLock);
+#endif
+
         tmpIFuseConn = ConnHead;
 	connCnt = 0;
 	prevIFuseConn = NULL;
@@ -1157,8 +1366,15 @@ connManager ()
 		    if (tmpIFuseConn->conn != NULL) {
 		        rcDisconnect (tmpIFuseConn->conn);
 		    }
+#ifdef USE_BOOST
+#if 0	/* this seem to cause delete to fail */
+		    tmpIFuseConn->mutex->unlock();
+#endif
+		    delete tmpIFuseConn->mutex;
+#else
 		    pthread_mutex_unlock (&tmpIFuseConn->lock);
 		    pthread_mutex_destroy (&tmpIFuseConn->lock);
+#endif
 		    if (prevIFuseConn == NULL) {
 			/* top */
 			ConnHead = tmpIFuseConn->next;
@@ -1185,8 +1401,15 @@ connManager ()
                     if (tmpIFuseConn->conn != NULL) {
                         rcDisconnect (tmpIFuseConn->conn);
                     }
+#ifdef USE_BOOST
+#if 0	/* this seem to cause delete to fail */
+		    tmpIFuseConn->mutex->unlock();
+#endif
+		    delete tmpIFuseConn->mutex;
+#else
                     pthread_mutex_unlock (&tmpIFuseConn->lock);
                     pthread_mutex_destroy (&tmpIFuseConn->lock);
+#endif
                     if (prevIFuseConn == NULL) {
                         /* top */
                         ConnHead = tmpIFuseConn->next;
@@ -1203,15 +1426,25 @@ connManager ()
                 tmpIFuseConn = tmpIFuseConn->next;
             }
 	}
+#ifdef USE_BOOST
+        ConnLock.unlock();
+#else
         pthread_mutex_unlock (&ConnLock);
+#endif
 #if 0
         rodsSleep (CONN_MANAGER_SLEEP_TIME, 0);
+#else
+#ifdef USE_BOOST
+	boost::system_time const tt=boost::get_system_time() + boost::posix_time::seconds( CONN_MANAGER_SLEEP_TIME );
+        boost::unique_lock< boost::mutex > boost_lock( ConnManagerLock );
+        ConnManagerCond.timed_wait( boost_lock, tt );
 #else
 	bzero (&timeout, sizeof (timeout));
 	timeout.tv_sec = time (0) + CONN_MANAGER_SLEEP_TIME;
 	pthread_mutex_lock (&ConnManagerLock);
 	pthread_cond_timedwait (&ConnManagerCond, &ConnManagerLock, &timeout);
 	pthread_mutex_unlock (&ConnManagerLock);
+#endif
 #endif
 	
 
@@ -1239,8 +1472,11 @@ pathCache_t **tmpPathCache)
     int i;
     int newlyInx = -1;
     uint cachedTime = time (0);
-
+#ifdef USE_BOOST
+    NewlyCreatedOprLock.lock();
+#else
     pthread_mutex_lock (&NewlyCreatedOprLock);
+#endif
     for (i = 0; i < NUM_NEWLY_CREATED_SLOT; i++) {
 	if (newlyInx < 0 && NewlyCreatedFile[i].inuseFlag == IRODS_FREE) { 
 	    newlyInx = i;
@@ -1271,7 +1507,11 @@ pathCache_t **tmpPathCache)
       cachedTime, cachedTime);
     addPathToCache (path, PathArray, &NewlyCreatedFile[newlyInx].stbuf, 
       tmpPathCache);
+#ifdef USE_BOOST
+    NewlyCreatedOprLock.unlock();
+#else
     pthread_mutex_unlock (&NewlyCreatedOprLock);
+#endif
     return (0);
 }
 
@@ -1313,7 +1553,11 @@ getDescInxInNewlyCreatedCache (char *path, int flags)
 {
     int descInx = -1;
     int i;
+#ifdef USE_BOOST
+    NewlyCreatedOprLock.lock();
+#else
     pthread_mutex_lock (&NewlyCreatedOprLock);
+#endif
     for (i = 0; i < NUM_NEWLY_CREATED_SLOT; i++) {
         if (strcmp (path, NewlyCreatedFile[i].filePath) == 0) {
 	    if ((flags & O_RDWR) == 0 && (flags & O_WRONLY) == 0) {
@@ -1329,7 +1573,11 @@ getDescInxInNewlyCreatedCache (char *path, int flags)
 	    break;
 	}
     }
+#ifdef USE_BOOST
+    NewlyCreatedOprLock.unlock();
+#else
     pthread_mutex_unlock (&NewlyCreatedOprLock);
+#endif
     return descInx;
 }
 
@@ -1585,7 +1833,11 @@ getNewlyCreatedDescByPath (char *path)
     int i;
     int inuseCnt = 0;
 
+#ifdef USE_BOOST
+    DescLock.lock();
+#else
     pthread_mutex_lock (&DescLock);
+#endif
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
 	if (inuseCnt >= IFuseDescInuseCnt) break;
         if (IFuseDesc[i].inuseFlag == IRODS_INUSE) { 
@@ -1595,12 +1847,20 @@ getNewlyCreatedDescByPath (char *path)
 	        continue;
 	    }
 	    if (strcmp (IFuseDesc[i].localPath, path) == 0) { 
+#ifdef USE_BOOST
+                DescLock.unlock();
+#else
                 pthread_mutex_unlock (&DescLock);
+#endif
                 return (i);
             }
 	}
     }
+#ifdef USE_BOOST
+    DescLock.unlock();
+#else
     pthread_mutex_unlock (&DescLock);
+#endif
     return (-1);
 }
 
