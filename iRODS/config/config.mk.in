@@ -371,11 +371,14 @@ endif
 # RUN_SERVER_AS_ROOT = 1
  
 # USE_BOOST -  specify whether the BOOST library should be used. BOOST_DIR is
-# the directory where the BOOST directory is located.
+# the directory where the BOOST directory is located, which is normally
+# the .../iRODS/boost_irods directory.  First run 'buildboost.sh' in the
+# iRODS directory to create boost_irods.
 # USE_BOOST=1
 ifdef USE_BOOST
 ifndef BOOST_DIR
-BOOST_DIR=/home/mwan/myapps/boost/install
+#BOOST_DIR=/home/mwan/myapps/boost/install
+BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
 endif
 endif
 
