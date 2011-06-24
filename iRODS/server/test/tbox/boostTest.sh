@@ -17,6 +17,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/tbox/IRODS_BUILD/iRODS/boost_irods/lib
 make
 date
 
+./irodsctl restart
 ./irodsctl testWithoutConfirmation
 res=$?
 date
