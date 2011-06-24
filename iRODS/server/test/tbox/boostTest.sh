@@ -18,4 +18,6 @@ make
 date
 
 ./irodsctl testWithoutConfirmation
+res=$?
 date
+exit $res
