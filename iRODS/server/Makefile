@@ -229,7 +229,8 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/reRDA.o \
 		$(svrReObjDir)/reDBO.o \
 		$(svrReObjDir)/testMS.o \
-                $(svrReObjDir)/reAutoReplicateService.o
+		$(svrReObjDir)/reAutoReplicateService.o \
+		$(svrReObjDir)/sysBackupMS.o
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
@@ -278,7 +279,8 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/reRDA.o \
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/configuration.o \
-		$(svrReObjDir)/reAutoReplicateService.o
+		$(svrReObjDir)/reAutoReplicateService.o \
+		$(svrReObjDir)/sysBackupMS.o
 
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
