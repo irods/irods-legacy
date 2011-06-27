@@ -240,8 +240,9 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # $LOGFILE_INT - specifies the server log interval in number of days.
 # The default is 5 days.
 # $LOGFILE_INT=5;
-
-				  $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
+					
+$ENV{'irodsHomeDir'}      = $IRODS_HOME;
+$ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
 if ($irodsEnvFile)		{ $ENV{'irodsEnvFile'}        = $irodsEnvFile; }
 if ($irodsPort)			{ $ENV{'irodsPort'}           = $irodsPort; }
 if ($spLogLevel)		{ $ENV{'spLogLevel'}          = $spLogLevel; }
