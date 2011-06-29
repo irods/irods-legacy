@@ -1326,7 +1326,7 @@ public class IRODSCommands {
 							pass, // connection info
 							inputs[threads - 1], // sourceFile
 							transferLength * (threads - 1), // offset
-							(int) (length - transferLength * (threads - 1)) // length
+							(int) (length - transferLength * (threads - 1)) // length FIXME:should this be int?
 					);
 					transferThreads[threads - 1] = new Thread(
 							transfer[threads - 1]);
