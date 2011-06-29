@@ -135,7 +135,8 @@ int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei)
  * 				OUTPUT ruleExecOut
  *
  *
- * \param[in] inParam - Any type. A KeyValPair_MS_T can allow for multiple input parameters.
+ * \param[in] inParam - Any type. A STR_MS_T can be used to pass multiple parameters
+ * 				in the format keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  * \param[out] outParam - A KeyValPair_MS_T (by default).
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
