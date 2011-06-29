@@ -384,7 +384,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 
 	/* for reading from iRODS objects */
 	openedDataObjInp_t openedDataObjInp;
-	bytesBuf_t xmlBuf;
+	bytesBuf_t *xmlBuf = NULL;
 	char *tail;
 
 	/* for xml parsing and validating */
@@ -466,15 +466,21 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	rei->status = rsObjStat (rsComm, &xmlObjInp, &rodsObjStatOut);
 
 
+	/* xmlBuf init */
+	/* memory for xmlBuf->buf is allocated in rsFileRead() */
+	xmlBuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+	memset (xmlBuf, 0, sizeof (bytesBuf_t));
+
+
 	/* Read content of XML file */
 	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
 	openedDataObjInp.l1descInx = xmlObjID;
 	openedDataObjInp.len = (int)rodsObjStatOut->objSize + 1;	/* extra byte to add a null char */
 
-	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, xmlBuf);
 
 	/* add terminating null character */
-	tail = (char*)xmlBuf.buf;
+	tail = (char*)xmlBuf->buf;
 	tail[openedDataObjInp.len - 1] = '\0';
 
 
@@ -489,8 +495,8 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	/*************************************** PARSE XML DOCUMENT **************************************/
 
 	/* Parse xmlBuf.buf into an xmlDocPtr */
-	doc = xmlParseDoc((xmlChar*)xmlBuf.buf);
-	clearBBuf(&xmlBuf);
+	doc = xmlParseDoc((xmlChar*)xmlBuf->buf);
+	clearBBuf(xmlBuf);
 
 	if (doc == NULL)
 	{
@@ -526,10 +532,10 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	openedDataObjInp.l1descInx = xsdObjID;
 	openedDataObjInp.len = (int)rodsObjStatOut->objSize + 1;	/* to add null char */
 
-	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, xmlBuf);
 
 	/* add terminating null character */
-	tail = (char*)xmlBuf.buf;
+	tail = (char*)xmlBuf->buf;
 	tail[openedDataObjInp.len - 1] = '\0';
 
 
@@ -544,8 +550,8 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	/*************************************** PARSE XSD DOCUMENT **************************************/
 
 	/* Parse xmlBuf.buf into an xmlDocPtr */
-	xsd_doc = xmlParseDoc((xmlChar*)xmlBuf.buf);
-	clearBBuf(&xmlBuf);
+	xsd_doc = xmlParseDoc((xmlChar*)xmlBuf->buf);
+	clearBBuf(xmlBuf);
 
 	if (xsd_doc == NULL)
 	{

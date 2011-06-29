@@ -73,7 +73,7 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 	/* for reading from iRODS objects */
 	openedDataObjInp_t openedDataObjInp;
-	bytesBuf_t xmlBuf, xsltBuf;
+	bytesBuf_t *xmlBuf = NULL, *xsltBuf = NULL;
 
 	/* misc. to avoid repeating rei->rsComm */
 	rsComm_t *rsComm;
@@ -140,18 +140,24 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	rei->status = rsObjStat (rsComm, &xsltDataObjInp, &rodsObjStatOut);
 
 
+	/* xsltBuf init */
+	/* memory for xsltBuf->buf is allocated in rsFileRead() */
+	xsltBuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+	memset (xsltBuf, 0, sizeof (bytesBuf_t));
+
+
 	/* Read XSLT file */
 	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
 	openedDataObjInp.l1descInx = xsltObjID;
 	openedDataObjInp.len = (int)rodsObjStatOut->objSize;
 
-	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xsltBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, xsltBuf);
 	
 	/* Make sure that the result is null terminated */
-	if (strlen((char*)xsltBuf.buf) > (size_t)openedDataObjInp.len)
+	if (strlen((char*)xsltBuf->buf) > (size_t)openedDataObjInp.len)
 	{
-		((char*)xsltBuf.buf)[openedDataObjInp.len-1]='\0';
-	}	
+		((char*)xsltBuf->buf)[openedDataObjInp.len-1]='\0';
+	}
 
 
 	/* Close XSLT file */
@@ -174,17 +180,23 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	rei->status = rsObjStat (rsComm, &xmlDataObjInp, &rodsObjStatOut);
 
 
+	/* xmlBuf init */
+	/* memory for xmlBuf->buf is allocated in rsFileRead() */
+	xmlBuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+	memset (xmlBuf, 0, sizeof (bytesBuf_t));
+
+
 	/* Read XML file */
 	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
 	openedDataObjInp.l1descInx = xmlObjID;
 	openedDataObjInp.len = (int)rodsObjStatOut->objSize;
 
-	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, xmlBuf);
 
 	/* Make sure that the result is null terminated */
-	if (strlen((char*)xmlBuf.buf) > (size_t)openedDataObjInp.len)
+	if (strlen((char*)xmlBuf->buf) > (size_t)openedDataObjInp.len)
 	{
-		((char*)xmlBuf.buf)[openedDataObjInp.len-1]='\0';
+		((char*)xmlBuf->buf)[openedDataObjInp.len-1]='\0';
 	}
 
 
@@ -203,11 +215,11 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 
 	/* Parse xsltBuf.buf into an xmlDocPtr, and the xmlDocPtr into an xsltStylesheetPtr */
-	xslSheet = xmlParseDoc((xmlChar*)xsltBuf.buf);
+	xslSheet = xmlParseDoc((xmlChar*)xsltBuf->buf);
 	style = xsltParseStylesheetDoc(xslSheet);
 
 	/* Parse xmlBuf.buf into an xmlDocPtr */
-	doc = xmlParseDoc((xmlChar*)xmlBuf.buf);
+	doc = xmlParseDoc((xmlChar*)xmlBuf->buf);
 
 	/* And the magic happens */
 	res = xsltApplyStylesheet(style, doc, NULL);
