@@ -61,7 +61,7 @@
 		<echo message="Compiling Java sources..." />
 		<echo message="compiling java with debug setting of=${set.java.debug}" />
 		<!--  if debug is 'off' debuglevel will be ignored   debug="${set.java.debug}" -->
-		<javac destdir="${src.build.dir}" debug="${set.java.debug}" debuglevel="vars,lines,source" source="1.5" target="1.5">
+		<javac destdir="${src.build.dir}" debug="${set.java.debug}" debuglevel="vars,lines,source" source="1.5" target="1.5" includeantruntime="false">
 			<src path="${src.dir}" />
 			<classpath refid="class.path" />
 		</javac>
@@ -78,7 +78,7 @@
 	<!-- compile jargon library test source code -->
 	<target name="compile_test">
 		<echo message="Compiling unit test Java sources..." />
-		<javac destdir="${unittest.build.dir}" source="1.5" target="1.5" debug="${set.java.debug}" debuglevel="vars,lines,source">
+		<javac destdir="${unittest.build.dir}" source="1.5" target="1.5" debug="${set.java.debug}" debuglevel="vars,lines,source" includeantruntime="false">
 			<src path="${unittest.src.dir}" />
 			<classpath refid="class.path.test" />
 		</javac>
