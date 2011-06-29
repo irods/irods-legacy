@@ -242,6 +242,10 @@ This documentation is generated from the iRODS code.
   - #msiListEnabledMS - Returns the list of compiled microservices on the local iRODS server
   - #msiSetBulkPutPostProcPolicy - Sets whether acPostProcForPut should be run after a bulk put
 
+ \section msiadmin Admin Microservices
+  Can only be called by an administrator
+  - #msiServerBackup - Copies iRODS server files to the local resource
+
  \section msimodules Module Microservices
 
  \subsection msiera ERA - Electronic Records Archives Program
