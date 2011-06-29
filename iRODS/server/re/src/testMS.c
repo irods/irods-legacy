@@ -105,3 +105,82 @@ int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei)
   return(0);
 
 }
+
+
+/**
+ * \fn msiDoSomething(msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief Placeholder for microservice code to test.
+ *
+ * \module core
+ *
+ * \since 2.5.x
+ *
+ * \author  Antoine de Torcy
+ * \date    2011-06-29
+ *
+ *
+ * \note  This empty microservice is to be filled with your own code. It can serve as a
+ * 			platform for quickly testing server API functions and related code. Input and
+ * 			output parameters can be of any type, depending on how they are parsed and set up
+ * 			in msiDoSomething. A quick and dirty way to examine critical variables without firing gdb
+ * 			is to create a keyValPair_t*, dump data in it throughout the code with addKeyVal(), return
+ * 			it through outParam and follow with writeKeyValPairs.
+ *
+ * \usage		doSomething {
+ * 					msiDoSomething("", *keyValOut);
+ * 					writeKeyValPairs("stdout", *keyValOut, ": ");
+ * 					}
+ * 				INPUT null
+ * 				OUTPUT ruleExecOut
+ *
+ *
+ * \param[in] inParam - Any type. A KeyValPair_MS_T can allow for multiple input parameters.
+ * \param[out] outParam - A KeyValPair_MS_T (by default).
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre None
+ * \post None
+ * \sa None
+ * \bug  no known bugs
+**/
+int
+msiDoSomething(msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+	keyValPair_t *myKeyVal;						/* will contain results */
+
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiDoSomething")
+
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiDoSomething: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	/* myKeyVal init */
+	myKeyVal = (keyValPair_t*) malloc (sizeof(keyValPair_t));
+	memset (myKeyVal, 0, sizeof(keyValPair_t));
+
+
+	/***************************/
+	/******** YOUR CODE ********/
+	/***************************/
+
+	/* Return myKeyVal through outParam */
+	outParam->type = strdup(KeyValPair_MS_T);
+	outParam->inOutStruct = (void*) myKeyVal;
+
+	return 0;
+}
