@@ -53,6 +53,7 @@
 #include "rods.h"
 #include "rcConnect.h"
 #include "msParam.h"
+#include "miscServerFunct.h"
 
 #define NB_READ_TOUT_SEC	60	/* 60 sec timeout */
 #define NB_WRITE_TOUT_SEC	60	/* 60 sec timeout */

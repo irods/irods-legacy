@@ -12,6 +12,7 @@
 #include "rsApiHandler.h"
 #include "rsIcatOpr.h"
 #include <syslog.h>
+#include "miscServerFunct.h"
 
 extern int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei);
 

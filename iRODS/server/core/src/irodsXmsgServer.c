@@ -7,6 +7,7 @@
 #include "irodsXmsgServer.h"
 #include "xmsgLib.h"
 #include "rsGlobal.h"
+#include "miscServerFunct.h"
 
 int loopCnt=-1;  /* make it -1 to run infinitel */
 

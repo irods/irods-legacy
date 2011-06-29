@@ -8,6 +8,7 @@
 #include "rodsAgent.h"
 #include "rsApiHandler.h"
 #include "icatHighLevelRoutines.h"
+#include "miscServerFunct.h"
 #ifdef windows_platform
 #include "rsLog.h"
 static void NtAgentSetEnvsFromArgs(int ac, char **av);
