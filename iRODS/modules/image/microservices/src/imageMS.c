@@ -75,7 +75,7 @@
  * \return integer
  * \retval 0 on success
  * \pre none
- * \postnone
+ * \post none
  * \sa none
  * \bug  no known bugs
 **/
