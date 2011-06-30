@@ -1559,7 +1559,7 @@ Res *smsi_msiAdmAppendToTopOfCoreRE(Node **paramsr, int n, Node *node, ruleExecI
 	  char file1[1024];
 	  char file2[1024];
 	  char file3[1024];
-	  snprintf(file1, 1024, "%s/reConfigs/%s",
+	  snprintf(file1, 1024, "%s/reConfigs/%s.re",
 		   conDir, paramsr[0]->text);
 	  snprintf(file2, 1024, "%s/reConfigs/core.re",
 		   conDir);
@@ -1583,7 +1583,7 @@ Res *smsi_msiAdmChangeCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *
 	  char *conDir = getConfigDir ();
 	  char file1[1024];
 	  char file2[1024];
-	  snprintf(file1, 1024, "%s/reConfigs/%s",
+	  snprintf(file1, 1024, "%s/reConfigs/%s.re",
 		   conDir, paramsr[0]->text);
 	  snprintf(file2, 1024, "%s/reConfigs/core.re",
 		   conDir);
