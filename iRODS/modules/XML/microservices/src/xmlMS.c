@@ -121,7 +121,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 	/* for reading from iRODS objects */
 	openedDataObjInp_t openedDataObjInp;
-	bytesBuf_t xmlBuf;
+	bytesBuf_t *xmlBuf;
 
 	/* misc. to avoid repeating rei->rsComm */
 	rsComm_t *rsComm;
@@ -195,17 +195,23 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	rei->status = rsObjStat (rsComm, &xmlDataObjInp, &rodsObjStatOut);
 
 
+	/* xmlBuf init */
+	/* memory for xmlBuf->buf is allocated in rsFileRead() */
+	xmlBuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+	memset (xmlBuf, 0, sizeof (bytesBuf_t));
+
+
 	/* Read XML file */
 	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
 	openedDataObjInp.l1descInx = xmlObjID;
 	openedDataObjInp.len = (int)rodsObjStatOut->objSize;
 
-	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, xmlBuf);
 	
 	/* Make sure that the result is null terminated */
-	if (strlen((char*)xmlBuf.buf) > (size_t)openedDataObjInp.len)
+	if (strlen((char*)xmlBuf->buf) > (size_t)openedDataObjInp.len)
 	{
-		((char*)xmlBuf.buf)[openedDataObjInp.len-1]='\0';
+		((char*)xmlBuf->buf)[openedDataObjInp.len-1]='\0';
 	}
 
 
@@ -224,7 +230,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 
 	/* Parse xmlBuf.buf into an xmlDocPtr */
-	doc = xmlParseDoc((xmlChar*)xmlBuf.buf);
+	doc = xmlParseDoc((xmlChar*)xmlBuf->buf);
 
 
 	/* Create xpath evaluation context */
