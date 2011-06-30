@@ -174,7 +174,7 @@ char *getDBHomeDir()
 
 
 	/* Open server configuration file */
-	snprintf (configFilePath, PATH_MAX, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
+	snprintf (configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
     configFile = fopen(configFilePath, "r");
     if (configFile == NULL)
     {
@@ -230,7 +230,7 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
 
 
 	/* Open server configuration file */
-	snprintf (configFilePath, PATH_MAX, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
+	snprintf (configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
     configFile = fopen(configFilePath, "r");
     if (configFile == NULL)
     {
