@@ -242,34 +242,39 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
     /* save secondary index status */
     RuleEngineStatus cis = ruleEngineConfig.condIndexStatus;
 
+    RuleDesc *rd = NULL;
+    Res *res = NULL;
     /* add rules into rule index */
 	int i;
-	for(i=tempLen;i<ruleEngineConfig.extRuleSet->len;i++) {
+	for(i=ruleEngineConfig.extRuleSet->len-1;i>=tempLen;i--) {
 		prependRuleIntoIndex(ruleEngineConfig.extRuleSet->rules[i], i, r);
 		if(lookupFromHashTable(ruleEngineConfig.condIndex, RULE_NAME(ruleEngineConfig.extRuleSet->rules[i]->node))!=NULL) {
 			ruleEngineConfig.condIndexStatus = DISABLED;
 		}
 	}
 
+	for(i=tempLen;i<ruleEngineConfig.extRuleSet->len;i++) {
+	    Hashtable *varTypes = newHashTable(100);
+
+	    List *typingConstraints = newList(r);
+	    Node *errnode;
+	    ExprType *type = typeRule(ruleEngineConfig.extRuleSet->rules[i], ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
+
+		deleteHashTable(varTypes, nop);
+
+	    if(type->nodeType==T_ERROR) {
+	        rescode = TYPE_ERROR;
+	        RETURN;
+	    }
+	}
+
     /* exec the first rule */
-    RuleDesc *rd = ruleEngineConfig.extRuleSet->rules[tempLen];
+    rd = ruleEngineConfig.extRuleSet->rules[tempLen];
 	node = rd->node;
 
-    Hashtable *varTypes = newHashTable(100);
-
-    List *typingConstraints = newList(r);
-    Node *errnode;
-    ExprType *type = typeRule(rd, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
-
-	deleteHashTable(varTypes, nop);
-
-    if(type->nodeType!=T_ERROR) {
-        Res *res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
-        rescode = res->nodeType  ==  N_ERROR? res->value.errcode:0;
-    } else {
-        rescode = TYPE_ERROR;
-    }
-
+	res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
+	rescode = res->nodeType  ==  N_ERROR? res->value.errcode:0;
+ret:
     /* remove rules from ext rule set */
     popExtRuleSet(checkPoint);
 
