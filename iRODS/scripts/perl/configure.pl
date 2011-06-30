@@ -1373,7 +1373,6 @@ sub chooseCompiler()
 			# Look for gcc.
 #			$CC = findCommand( "gcc" );
 			$CC = findCommand( "g++" );
-			$CCFLAGS = $CCFLAGS . "-Wno-write-strings"; # for g++
 			if ( !defined( $CC ) || $CC eq "" )
 			{
 				# Look for cc.  Could fail.  Could find gcc
