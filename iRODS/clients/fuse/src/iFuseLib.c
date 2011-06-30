@@ -17,9 +17,9 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <boost/thread/thread_time.hpp>
 
 #ifdef USE_BOOST
+	#include <boost/thread/thread_time.hpp>
 	static boost::mutex DescLock;
 	static boost::mutex ConnLock;
 	static boost::mutex PathCacheLock;
