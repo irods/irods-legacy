@@ -1445,9 +1445,9 @@ Res *smsi_trimr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
 Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	char buf[1024*16];
 	int i;
-	if(isComponentInitialized(ruleEngineConfig.coreRuleSetStatus)) {
-		for(i=0;i<ruleEngineConfig.coreRuleSet->len;i++) {
-			ruleToString(buf, 1024*16, ruleEngineConfig.coreRuleSet->rules[i]->node);
+	if(isComponentInitialized(ruleEngineConfig.extRuleSetStatus)) {
+		for(i=0;i<ruleEngineConfig.extRuleSet->len;i++) {
+			ruleToString(buf, 1024*16, ruleEngineConfig.extRuleSet->rules[i]->node);
 #ifdef DEBUG
 			printf("%s", buf);
 #endif
@@ -1457,6 +1457,18 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 	if(isComponentInitialized(ruleEngineConfig.appRuleSetStatus)) {
 		for(i=0;i<ruleEngineConfig.appRuleSet->len;i++) {
 			ruleToString(buf, 1024*16, ruleEngineConfig.appRuleSet->rules[i]->node);
+#ifdef DEBUG
+			printf("%s", buf);
+#endif
+			writeStringNew("stdout", buf, env, r);
+		}
+	}
+	if(isComponentInitialized(ruleEngineConfig.coreRuleSetStatus)) {
+		for(i=0;i<ruleEngineConfig.coreRuleSet->len;i++) {
+			ruleToString(buf, 1024*16, ruleEngineConfig.coreRuleSet->rules[i]->node);
+#ifdef DEBUG
+			printf("%s", buf);
+#endif
 			writeStringNew("stdout", buf, env, r);
 		}
 	}
