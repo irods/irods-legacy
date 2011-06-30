@@ -23,8 +23,10 @@
 #include "bulkDataObjPut.h"
 #include "putUtil.h"
 
+#ifdef USE_BOOST
 #include <cstdlib>
 #include <iostream>
+#endif
 
 /* check with the input path is a valid path -
  * 1 - valid
