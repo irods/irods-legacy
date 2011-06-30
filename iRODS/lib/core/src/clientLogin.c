@@ -161,6 +161,9 @@ clientLogin(rcComm_t *Conn)
    char userNameAndZone[NAME_LEN*2];
    struct stat statbuf;
    MD5_CTX context;
+#ifdef OS_AUTH
+   int doOsAuthentication = 0;
+#endif
 
    if (Conn->loggedIn == 1) {
       /* already logged in */
@@ -190,6 +193,19 @@ clientLogin(rcComm_t *Conn)
 	    return(status);
 	 }
       }
+   }
+#endif
+
+#ifdef OS_AUTH
+   if (ProcessType==CLIENT_PT) {
+       char *getVar;
+       getVar = getenv("irodsAuthScheme");
+       if (getVar != NULL) {
+           if (strncmp("OS",getVar,2)==0 ||
+               strncmp("os",getVar,2)==0) {
+               doOsAuthentication = 1;
+           }
+       }
    }
 #endif
 
@@ -227,6 +243,12 @@ clientLogin(rcComm_t *Conn)
       md5Buf[CHALLENGE_LEN+1]='\0';
       i = 0;
    }
+#ifdef OS_AUTH
+   else if (doOsAuthentication) {
+       i = osauthGetAuth(authReqOut->challenge, Conn->proxyUser.userName, 
+                         md5Buf+CHALLENGE_LEN, MAX_PASSWORD_LEN);
+   }
+#endif
    else {
       i = obfGetPw(md5Buf+CHALLENGE_LEN);
    }
@@ -270,10 +292,16 @@ clientLogin(rcComm_t *Conn)
 
    authRespIn.response=digest;
    /* the authentication is always for the proxyUser. */
-   authRespIn.username = Conn->proxyUser.userName;
    strncpy(userNameAndZone, Conn->proxyUser.userName, NAME_LEN);
    strncat(userNameAndZone, "#", NAME_LEN);
    strncat(userNameAndZone, Conn->proxyUser.rodsZone, NAME_LEN*2);
+#ifdef OS_AUTH
+   /* here we attach a special string to the username
+      so that the server knows to do OS authentication */
+   if (doOsAuthentication) {
+       strncat(userNameAndZone, OS_AUTH_FLAG, NAME_LEN);
+   }
+#endif
    authRespIn.username = userNameAndZone;
    status = rcAuthResponse(Conn, &authRespIn);
 

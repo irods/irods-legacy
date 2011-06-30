@@ -3245,6 +3245,10 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    char myUserZone[MAX_NAME_LEN];
    char userName2[NAME_LEN+2];
    char userZone[NAME_LEN+2];
+#if defined(OS_AUTH)
+   int doOsAuthentication = 0;
+   char *os_auth_flag;
+#endif
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth");
 
@@ -3269,6 +3273,19 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	    (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
 	    (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
 
+#if defined(OS_AUTH)
+   /* check for the OS_AUTH_FLAG token in the username to see if
+    * we should run the OS level authentication. Make sure and
+    * strip it from the username string so other operations 
+    * don't fail parsing the format.
+   */
+   os_auth_flag = strstr(username, OS_AUTH_FLAG);
+   if (os_auth_flag) {
+       *os_auth_flag = 0;
+       doOsAuthentication = 1;
+   }
+#endif
+   
    status = parseUserName(username, userName2, userZone);
    if (userZone[0]=='\0') {
       status = getLocalZone();
@@ -3279,6 +3296,14 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       strncpy(myUserZone, userZone, MAX_NAME_LEN);
    }
 
+#if defined(OS_AUTH)
+   if (doOsAuthentication) {
+       if ((status = osauthVerifyResponse(challenge, userName2, response))) {
+           return status;
+       }
+       goto checkLevel;
+   }
+#endif
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
 

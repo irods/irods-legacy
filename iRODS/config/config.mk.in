@@ -382,3 +382,17 @@ BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
 endif
 endif
 
+# OS_AUTH - build in support for "OS level" authentication. This form
+# of authentication uses a shared secret and the genOSAuth command to
+# generate a credential that the user presents to the iRODS server. 
+# You can use this instead of using password authentication.
+# OS_AUTH = 1
+ifdef OS_AUTH
+OS_AUTH_KEYFILE = /etc/irods.key
+# Some environments don't have a uniform username/uid
+# space between the IES and the clients. Uncomment
+# OS_AUTH_NO_UID if this is the case, so the uid will
+# not be used when generating the authenticator.
+# OS_AUTH_NO_UID = 1
+endif
+

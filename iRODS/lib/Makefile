@@ -65,7 +65,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/bunUtil.o	\
 		$(libCoreObjDir)/phybunUtil.o \
 		$(libCoreObjDir)/scanUtil.o \
-		$(libCoreObjDir)/fsckUtil.o
+		$(libCoreObjDir)/fsckUtil.o \
+		$(libCoreObjDir)/osauth.o
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 

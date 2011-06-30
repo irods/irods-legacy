@@ -30,6 +30,7 @@
 #include "igsi.h"
 #include "ikrb.h"
 #include "rodsQuota.h"
+#include "osauth.h"
 
 #ifdef _WIN32
 #include "IRodsLib3.h"

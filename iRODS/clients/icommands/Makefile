@@ -82,7 +82,8 @@ OBJS =		\
 		$(objDir)/idbug.o \
 		$(objDir)/ips.o  \
 		$(objDir)/ifsck.o \
-		$(objDir)/idbo.o
+		$(objDir)/idbo.o \
+		$(objDir)/genOSAuth.o
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -129,7 +130,8 @@ BINS =		\
 		$(binDir)/idbug  \
 		$(binDir)/ips   \
 		$(binDir)/ifsck \
-		$(binDir)/idbo
+		$(binDir)/idbo \
+		$(binDir)/genOSAuth
 
 #
 # Compile and link flags
