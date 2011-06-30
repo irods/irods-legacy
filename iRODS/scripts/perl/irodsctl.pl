@@ -1107,6 +1107,20 @@ sub startIrods
 		printError( "    iRODS servers been compiled?\n" );
 		exit( 1 );
 	}
+	if ( ! -e $irodsLogDir )
+	{
+		printError( "Configuration problem:\n" );
+		printError( "    The server log directory, $irodsLogDir\n" );
+		printError( "    does not exist.  Please create it and retry.\n" );
+		exit( 1 );
+	}
+	if ( ! -w $irodsLogDir )
+	{
+		printError( "Configuration problem:\n" );
+		printError( "    The server log directory, $irodsLogDir\n" );
+		printError( "    is not writable.  Please chmod it and retry.\n" );
+		exit( 1 );
+	}
 
 	# Prepare
 	my $startingDir = cwd( );
