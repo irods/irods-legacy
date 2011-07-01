@@ -17,12 +17,13 @@
 #endif
 
 #include "rods.h"
+#include "rcGlobalExtern.h"
 
 int 
 osauthVerifyResponse(char *challenge, char *username, char *response)
 {
-    static char fname[] = "osauthVerifyResponse";
 #if defined(OS_AUTH)
+    static char fname[] = "osauthVerifyResponse";
     char authenticator[16]; /* MD5 hash */
     char md5buffer[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
     char md5digest[RESPONSE_LEN+2];
@@ -105,8 +106,8 @@ osauthGenerateAuthenticator(char *username, int uid,
                             char *challenge, char *key, int key_len,
                             char *authenticator, int authenticator_len)
 {
-    static char fname[] = "osauthGenerateAuthenticator";
 #if defined(OS_AUTH)
+    static char fname[] = "osauthGenerateAuthenticator";
     char *buffer, *bufp;
     int buflen;
     char md5digest[16];
@@ -176,8 +177,8 @@ osauthGenerateAuthenticator(char *username, int uid,
 int
 osauthGetKey(char **key, int *key_len) 
 {
-    static char fname[] = "osauthGetKey";
 #if defined(OS_AUTH)
+    static char fname[] = "osauthGetKey";
     struct stat stbuf;
     char *keybuf;
     int buflen, key_fd, nb;
@@ -241,8 +242,8 @@ osauthGetAuth(char *challenge,
               char *authenticator,
               int authenticator_buflen)
 {
-    static char fname[] = "osauthGetAuth";
 #if defined(OS_AUTH)
+    static char fname[] = "osauthGetAuth";
     int pipe1[2], pipe2[2];
     pid_t childPid;
     int childStatus = 0;
