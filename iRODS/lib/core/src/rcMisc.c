@@ -4259,7 +4259,7 @@ mySetenvStr (char *envname, char *envval)
 {
     int status;
 
-#if defined(solaris_platform)||defined(linux_platform)||defined(osx_platform) 
+#if defined(linux_platform)||defined(osx_platform) 
     if (envname == NULL || envval == NULL) return USER__NULL_INPUT_ERR;
     status = setenv (envname, envval, 1);
 #else
@@ -4280,7 +4280,7 @@ mySetenvInt (char *envname, int envval)
 {
     int status;
     
-#if defined(solaris_platform)||defined(linux_platform)||defined(osx_platform)
+#if defined(linux_platform)||defined(osx_platform)
     char myIntStr[NAME_LEN];
     if (envname == NULL) return USER__NULL_INPUT_ERR;
     snprintf (myIntStr, NAME_LEN, "%d", envval);
