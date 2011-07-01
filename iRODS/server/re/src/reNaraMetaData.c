@@ -15,7 +15,7 @@
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
+ * \author  DICE
  * \date 	2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-25
