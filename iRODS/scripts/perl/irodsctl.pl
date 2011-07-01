@@ -1111,7 +1111,7 @@ sub startIrods
 	{
 		printError( "Configuration problem:\n" );
 		printError( "    The server log directory, $irodsLogDir\n" );
-		printError( "    does not exist.  Please create it and retry.\n" );
+		printError( "    does not exist.  Please create it, make it writable, and retry.\n" );
 		exit( 1 );
 	}
 	if ( ! -w $irodsLogDir )
