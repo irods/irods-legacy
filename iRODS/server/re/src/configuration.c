@@ -275,6 +275,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 		loadToBuf = 1;
 
 	} else {
+#ifdef CACHE_ENABLE
     if(CACHE_ENABLE) {
 
         if(lockMutex(&mutex) != 0) {
@@ -308,7 +309,10 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
             	loadToBuf = 1;
             }
         }
-    } else {
+    }
+    else
+#endif
+	{
     	CASCASE_NON_ZERO(generateLocalCache());
     	loadToBuf = 1;
     }

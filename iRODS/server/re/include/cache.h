@@ -11,7 +11,7 @@
 #include "index.h"
 #include "configuration.h"
 #define SEM_NAME "irods_sem_re"
-#define CACHE_ENABLE 0
+/* #define CACHE_ENABLE 0 */
 
 #define allocate(p, ty, vn, val) \
     ((CacheRecordDesc *)p)->type = CONCAT(ty,_T); \
