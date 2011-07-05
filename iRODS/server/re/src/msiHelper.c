@@ -106,12 +106,21 @@ int
 msiGetStderrInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr,
 ruleExecInfo_t *rei)
 {
-    char *strPtr;
+    char *strPtr = NULL;
 
     rei->status = getStderrInExecCmdOut (inpExecCmdOut, &strPtr);
 
-    if (rei->status < 0) return rei->status;
+    if (rei->status < 0) {
+      if (rei->status != SYS_INTERNAL_NULL_INPUT_ERR)
+	return rei->status; 
+      else {
+	strPtr = "";
+	rei->status = 0;
+      }
+    }
 
+    if (strPtr == NULL)
+      strPtr="";
     fillStrInMsParam (outStr, strPtr);
 
     return rei->status;

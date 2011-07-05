@@ -214,9 +214,10 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
 
    RE_TEST_MACRO ("msiString2KeyValPair");
 
-   buf = (char *) inBufferP->inOutStruct;
+   buf = strdup((char *)  inBufferP->inOutStruct);
    memset(&strArray,0,sizeof (strArray_t));
    i =  parseMultiStr (buf, &strArray);
+   free(buf);
    if (i < 0)
      return(i);
    value = strArray.value;
@@ -236,6 +237,68 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
    }
    outKeyValPairP->inOutStruct = (void *) kvp;
    outKeyValPairP->type = (char *) strdup(KeyValPair_MS_T);
+   
+   return(0);
+}
+
+/**
+ * \fn msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice converts a %-separated strings into strArr_t structure.
+ * 
+ * \module core
+ * 
+ * \since 3.0
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2011-07
+ * 
+ * 
+ * \note  same as brief
+ *
+ * \usage
+ *
+ *
+ * 
+ * \param[in] inBufferP - a msParam of type STR_MS_T which is key=value pairs separated by %-sign.
+ * \param[out] outStrarrayP - a msParam of type StrArray_MS_T which is a structure of array of string.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa msiStrArray2String
+ * \bug  no known bugs
+**/
+int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecInfo_t *rei)
+{
+   strArray_t *strArray;
+   char *buf;
+   int i,j;
+
+   RE_TEST_MACRO ("msiString2StrArray");
+
+   if (inBufferP == NULL || inBufferP->inOutStruct == NULL ||
+       inBufferP->type == NULL || strcmp(inBufferP->type, StrArray_MS_T) != 0 )
+     return (USER_PARAM_TYPE_ERR);
+
+   buf = strdup((char *)  inBufferP->inOutStruct);
+   strArray = mallocAndZero(sizeof(strArray_t));
+   i =  parseMultiStr (buf, &strArray);
+   free(buf);
+   if (i < 0)
+     return(i);
+   outStrArrayP->inOutStruct = (void *) strArray;
+   outStrArrayP->type = (char *) strdup(StrArray_MS_T);
    
    return(0);
 }
