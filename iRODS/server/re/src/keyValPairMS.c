@@ -292,7 +292,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
      return (USER_PARAM_TYPE_ERR);
 
    buf = strdup((char *)  inBufferP->inOutStruct);
-   strArray = mallocAndZero(sizeof(strArray_t));
+   strArray = (strArray_t *) mallocAndZero(sizeof(strArray_t));
    i =  parseMultiStr (buf, strArray);
    free(buf);
    if (i < 0)
