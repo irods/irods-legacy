@@ -536,6 +536,7 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
 	genQueryOut_t *genQueryOut;		/* for query results */
 
 	rodsLong_t size, objCount;		/* to store total size and file count */
+	rodsLong_t coll_id;				/* collection ID */
 	char tmpStr[21];			/* to store total size and file count */
 	
 	sqlResult_t *sqlResult;			/* for parsing key-value pairs from genQueryOut */
@@ -598,6 +599,19 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
 
 	}
 
+
+	/* If no rows found, check for empty collection vs invalid path */
+	if (rei->status == CAT_NO_ROWS_FOUND)
+	{
+		/* Call isColl()*/
+		rei->status = isColl (rei->rsComm, outCollInp->collName, &coll_id);
+	    if (rei->status == CAT_NO_ROWS_FOUND)
+	    {
+	    	rodsLog (LOG_ERROR, "msiGetCollectionSize: Collection %s was not found. Status = %d",
+	    			outCollInp->collName, rei->status);
+	    	return (rei->status);
+	    }
+	}
 
 	/* store results in keyValPair_t*/
 	snprintf(tmpStr, 21, "%lld", size);
