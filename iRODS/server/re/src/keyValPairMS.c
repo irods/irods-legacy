@@ -283,7 +283,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 {
    strArray_t *strArray;
    char *buf;
-   int i,j;
+   int i;
 
    RE_TEST_MACRO ("msiString2StrArray");
 
@@ -293,7 +293,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 
    buf = strdup((char *)  inBufferP->inOutStruct);
    strArray = mallocAndZero(sizeof(strArray_t));
-   i =  parseMultiStr (buf, &strArray);
+   i =  parseMultiStr (buf, strArray);
    free(buf);
    if (i < 0)
      return(i);
