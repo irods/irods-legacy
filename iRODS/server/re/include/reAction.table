@@ -207,6 +207,7 @@ int msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
                ruleExecInfo_t *rei);
 int msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei);
 int msiDbrRollback(msParam_t *dbrName, ruleExecInfo_t *rei);
+int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
@@ -331,8 +332,7 @@ microsdef_t MicrosTable[] = {
   {"msiXmsgServerDisConnect",1,(funcPtr) msiXmsgServerDisConnect},
   {"msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair},
   {"msiStrArray2String",2,(funcPtr) msiStrArray2String},
-  {"msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair},
-  {"msiStrArray2String",2,(funcPtr) msiStrArray2String},
+  {"msiString2StrArray",2,(funcPtr) msiString2StrArray},
   {"msiRdaToStdout",6,(funcPtr) msiRdaToStdout},
   {"msiRdaToDataObj",7,(funcPtr) msiRdaToDataObj},
   {"msiRdaNoResults",6,(funcPtr) msiRdaNoResults},
