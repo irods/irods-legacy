@@ -395,5 +395,6 @@ void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ru
 void generateErrMsgFromSource(char *msg, long errloc, char *src, char errbuf[ERR_MSG_LEN]);
 void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_MSG_LEN]);
 char *generateErrMsg(char *msg, long errloc, char* ruleBaseName, char errbuf[ERR_MSG_LEN]);
+void generateAndAddErrMsg(char *msg, Node *node, int errcode, rError_t *errmsg);
 
 #endif

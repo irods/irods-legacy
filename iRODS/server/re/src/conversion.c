@@ -432,7 +432,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 			int varindex;
 			int ret;
 			for(varindex=0;varindex<var->len;varindex++) {
-				if(var->msParam[varindex]->label!=NULL && strcmp(var->msParam[varindex]->label, b->key) == NULL) {
+				if(var->msParam[varindex]->label!=NULL && strcmp(var->msParam[varindex]->label, b->key) == 0) {
 					v = var->msParam[varindex];
 					ret = updateResToMsParam(v, res, errmsg);
 					break;

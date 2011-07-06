@@ -2697,6 +2697,11 @@ void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_
             "%s\nline %d, col %d\n%s\n", msg, coor[0], coor[1], buf);
 
 }
+void generateAndAddErrMsg(char *msg, Node *node, int errcode, rError_t *errmsg) {
+	char errmsgBuf[ERR_MSG_LEN];
+	generateErrMsg(msg, node->expr, node->base, errmsgBuf);
+	addRErrorMsg(errmsg, errcode, errmsgBuf);
+}
 char *generateErrMsg(char *msg, long errloc, char *ruleBaseName, char errmsg[ERR_MSG_LEN]) {
     char ruleBasePath[MAX_NAME_LEN];
     switch(ruleBaseName[0]) {

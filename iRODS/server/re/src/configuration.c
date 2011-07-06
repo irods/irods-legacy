@@ -230,7 +230,7 @@ int generateFunctionDescriptionTables() {
     	ruleEngineConfig.extFuncDescIndex->previous = ruleEngineConfig.appFuncDescIndex;
     } else {
     	Env *extEnv = ruleEngineConfig.extFuncDescIndex;
-    	while(extEnv->previous->previous->previous != NULL) {
+    	while(extEnv->previous!= NULL) {
     		extEnv = extEnv->previous;
     	}
     	extEnv->previous = ruleEngineConfig.appFuncDescIndex;
@@ -248,6 +248,15 @@ void generateRegions() {
 	createRegion(INDEX, Index);
 	createRegion(APP, App);
 	createRegion(CORE, Core);
+}
+int unlinkFuncDescIndex() {
+	Env *extEnv = ruleEngineConfig.extFuncDescIndex;
+	while(extEnv->previous != ruleEngineConfig.appFuncDescIndex) {
+		extEnv = extEnv->previous;
+	}
+	extEnv->previous = NULL;
+	ruleEngineConfig.appFuncDescIndex->previous = NULL;
+	return 0;
 }
 int clearRuleSetAndIndex(ruleStruct_t *inRuleStruct) {
 	if(inRuleStruct == &coreRuleStrct) {
@@ -271,6 +280,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
     unsigned char *buf = NULL;
 	if(ruleEngineConfig.ruleEngineStatus == INITIALIZED) {
 		/* Reloading rule set, clear previously generated rule set */
+        unlinkFuncDescIndex();
 		clearRuleSetAndIndex(inRuleStruct);
 		buf = (unsigned char *)malloc(SHMMAX);
 		if(ruleEngineConfig.cacheStatus == SHARED) {
@@ -361,6 +371,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 #ifdef DEBUG
         printf("Buffer usage: %fM\n", ((double)(configNew->dataSize))/(1024*1024));
 #endif
+        unlinkFuncDescIndex();
         clearResources(RESC_APP_RULE_SET | RESC_CORE_RULE_SET
         		     | RESC_COND_INDEX | RESC_RULE_INDEX
         		     | RESC_CORE_FUNC_DESC_INDEX | RESC_APP_FUNC_DESC_INDEX

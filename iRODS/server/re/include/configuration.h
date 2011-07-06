@@ -130,6 +130,7 @@ extern RuleEngineStatus _ruleEngineStatus;
 extern int isServer;
 extern Cache ruleEngineConfig;
 RuleEngineStatus getRuleEngineStatus();
+int unlinkFuncDescIndex();
 void clearResources(int resources);
 int clearRuleSetAndIndex(ruleStruct_t *inRuleStruct);
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct);

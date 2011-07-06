@@ -126,24 +126,20 @@ Res *smsi_matchExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
     if(res->nodeType == N_ERROR) {
             return res;
     }
-    char errmsgBuf[ERR_MSG_LEN];
     int i;
     for(i=1;i<n;i++) {
-    Env *nEnv = newEnv(newHashTable(100), env, NULL);
-    Res *pres = matchPattern(params[i]->subtrees[0], res, nEnv, rei, reiSaveFlag, errmsg, r);
-    if(pres->nodeType == N_ERROR) {
-        deleteEnv(nEnv, 1);
-        /* generateErrMsg("", params[i]->subtrees[0]->expr, params[i]->subtrees[0]->base, errmsgBuf); */
-        addRErrorMsg(errmsg, -1, ERR_MSG_SEP);
-        continue;
+		Env *nEnv = newEnv(newHashTable(100), env, NULL);
+		Res *pres = matchPattern(params[i]->subtrees[0], res, nEnv, rei, reiSaveFlag, errmsg, r);
+		if(pres->nodeType == N_ERROR) {
+			deleteEnv(nEnv, 1);
+			addRErrorMsg(errmsg, -1, ERR_MSG_SEP);
+			continue;
+		}
+		res = evaluateExpression3(params[i]->subtrees[1], 0,0, rei,reiSaveFlag,nEnv,errmsg,r);
+		deleteEnv(nEnv, 1);
+		return res;
     }
-/*                printTree(params[2], 0); */
-    res = evaluateExpression3(params[i]->subtrees[1], 0,0, rei,reiSaveFlag,nEnv,errmsg,r);
-    deleteEnv(nEnv, 1);
-    return res;
-    }
-    generateErrMsg("pattern not matched", node->expr, node->base, errmsgBuf);
-    addRErrorMsg(errmsg, PATTERN_NOT_MATCHED, errmsgBuf);
+    generateAndAddErrMsg("pattern not matched", node, PATTERN_NOT_MATCHED, errmsg);
     return newErrorRes(r, PATTERN_NOT_MATCHED);
 }
 
@@ -245,11 +241,10 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 			strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
 			strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
 			strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0))) {
-		char errbuf[ERR_MSG_LEN], errbuf2[ERR_MSG_LEN];
-		snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
-		generateErrMsg(errbuf, ((Node *)subtrees[0])->expr, ((Node *)subtrees[0])->base, errbuf2);
-		addRErrorMsg(errmsg, -1, errbuf2);
-		return newErrorRes(r, -1);
+        char errbuf[ERR_MSG_LEN];
+        snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
+        generateAndAddErrMsg(errbuf, subtrees[0], -1, errmsg);
+        return newErrorRes(r, -1);
 	}
 	res = newIntRes(r, 0);
 	if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
@@ -304,10 +299,9 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
                 strcmp(orig->exprType->text, StrArray_MS_T) != 0 &&
                 strcmp(orig->exprType->text, IntArray_MS_T) != 0 &&
                 strcmp(orig->exprType->text, GenQueryOut_MS_T) != 0))) {
-            char errbuf[ERR_MSG_LEN], errbuf2[ERR_MSG_LEN];
+            char errbuf[ERR_MSG_LEN];
             snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(orig));
-            generateErrMsg(errbuf, ((Node *)subtrees[0])->expr, ((Node *)subtrees[0])->base, errbuf2);
-            addRErrorMsg(errmsg, -1, errbuf2);
+            generateAndAddErrMsg(errbuf, subtrees[0], -1, errmsg);
             return newErrorRes(r, -1);
         }
         res = newIntRes(r, 0);
@@ -489,7 +483,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(params[0]->degree > 0) {
                 return params[0]->subtrees[0];
             } else {
-                addRErrorMsg(errmsg, -1, "error: hd: empty list");
+                generateAndAddErrMsg("error: hd: empty list", node, -1, errmsg);
                 return newErrorRes(r, -1);
             }
 	}
@@ -507,7 +501,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		}
                 return res;
             } else {
-                addRErrorMsg(errmsg, -1, "error: tl: empty list\n");
+            	generateAndAddErrMsg("error: tl: empty list", node, -1, errmsg);
                 return newErrorRes(r, -1);
             }
 	}
@@ -533,9 +527,9 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             ExprType *elemType = coll->exprType->subtrees[0];
             int index = (int)indexRes->value.dval;
             if(0>index || index >= coll->degree) {
-                char buf[ERR_MSG_LEN];
-                snprintf(buf, ERR_MSG_LEN, "setelem: index out of bound %d", index);
-                addRErrorMsg(errmsg, -1, buf);
+                char errbuf[ERR_MSG_LEN];
+                snprintf(errbuf, ERR_MSG_LEN, "setelem: index out of bound %d", index);
+                generateAndAddErrMsg(errbuf, node, -1, errmsg);
                 return newErrorRes(r, -1);
             }
 
@@ -700,14 +694,13 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                     } else {
                         res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
                         snprintf(errbuf, ERR_MSG_LEN, "error: converting value of type %s to string.", typeName_Res(val));
-                        addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
+                        generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
 
                     }
 		} else {
                     res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
                     snprintf(errmsgbuf, ERR_MSG_LEN, "error: unsupported type. can not convert %s to string.", typeName_Res(val));
-                    generateErrMsg(errmsgbuf, node->expr, node->base, errbuf);
-                    addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
+                    generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
 		}
                 return res;
 }
@@ -725,7 +718,7 @@ Res *smsi_double(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
                 } else {
                     res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
                     snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to double.", typeName_Res(val));
-                    addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
+                    generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
 		}
                 return res;
 }
@@ -737,13 +730,13 @@ Res *smsi_int(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             res->value.dval = atoi(val->text);
         } else if(TYPE(val) == T_DOUBLE) {
             res->exprType = newSimpType(T_INT, r);
-            res->value.dval = val->value.dval;
+            res->value.dval = (int)val->value.dval;
         } else if(TYPE(val) == T_INT) {
             res = val;
         } else {
             res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
-            snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to double.", typeName_Res(val));
-            addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
+            snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to integer.", typeName_Res(val));
+            generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
         }
         return res;
 }
@@ -836,8 +829,8 @@ Res *smsi_multiply(Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
 Res *smsi_divide(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **args = (Res **)params;
     if(args[1]->value.dval == 0) {
-            addRErrorMsg(errmsg,DIVISION_BY_ZERO, "error: division by zero.");
-            return newErrorRes(r, DIVISION_BY_ZERO);
+    	generateAndAddErrMsg("division by zero.", node, DIVISION_BY_ZERO, errmsg);
+		return newErrorRes(r, DIVISION_BY_ZERO);
     }
     double val = args[0]->value.dval/args[1]->value.dval;
         return newDoubleRes(r, val);
@@ -846,8 +839,8 @@ Res *smsi_divide(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
 Res *smsi_modulo(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **args = (Res **)params;
     if(args[1]->value.dval == 0) {
-            addRErrorMsg(errmsg, DIVISION_BY_ZERO, "error: division by zero.");
-            return newErrorRes(r, DIVISION_BY_ZERO);
+    	generateAndAddErrMsg("division by zero.", node, DIVISION_BY_ZERO, errmsg);
+		return newErrorRes(r, DIVISION_BY_ZERO);
     }
     double val = ((int)args[0]->value.dval)%((int)args[1]->value.dval);
     if(TYPE(args[0])==T_INT&&TYPE(args[1])==T_INT) {
@@ -865,7 +858,7 @@ Res *smsi_power(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 Res *smsi_root(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **args = (Res **)params;
     if(args[1]->value.dval == 0) {
-        addRErrorMsg(errmsg, DIVISION_BY_ZERO, "error: division by zero.");
+    	generateAndAddErrMsg("division by zero.", node, DIVISION_BY_ZERO, errmsg);
         return newErrorRes(r, DIVISION_BY_ZERO);
     }
     double val = pow(args[0]->value.dval, 1/args[1]->value.dval);
@@ -912,7 +905,7 @@ Res *smsi_lt(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeName_Res(args[0]), typeName_Res((args[1])));
-    addRErrorMsg(errmsg, -1, errbuf);
+    generateAndAddErrMsg(errbuf, node, -1, errmsg);
     return newErrorRes(r, -1);
 
 }
@@ -938,7 +931,7 @@ Res *smsi_le(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeName_Res(args[0]), typeName_Res((args[1])));
-    addRErrorMsg(errmsg, -1, errbuf);
+    generateAndAddErrMsg(errbuf, node, -1, errmsg);
     return newErrorRes(r, -1);
 
 }
@@ -964,7 +957,7 @@ Res *smsi_gt(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeName_Res(args[0]), typeName_Res((args[1])));
-    addRErrorMsg(errmsg, -1, errbuf);
+    generateAndAddErrMsg(errbuf, node, -1, errmsg);
     return newErrorRes(r, -1);
 
 }
@@ -990,7 +983,7 @@ Res *smsi_ge(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeName_Res(args[0]), typeName_Res((args[1])));
-    addRErrorMsg(errmsg, -1, errbuf);
+    generateAndAddErrMsg(errbuf, node, -1, errmsg);
     return newErrorRes(r, -1);
 }
 Res *smsi_eq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -1019,7 +1012,7 @@ Res *smsi_eq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeName_Res(args[0]), typeName_Res((args[1])));
-    addRErrorMsg(errmsg, -1, errbuf);
+    generateAndAddErrMsg(errbuf, node, -1, errmsg);
     return newErrorRes(r, -1);
 }
 Res *smsi_neq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -1048,7 +1041,7 @@ Res *smsi_neq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     }
     char errbuf[ERR_MSG_LEN];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeName_Res(args[0]), typeName_Res((args[1])));
-    addRErrorMsg(errmsg, -1, errbuf);
+    generateAndAddErrMsg(errbuf, node, -1, errmsg);
     return newErrorRes(r, -1);
 }
 Res *smsi_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -1499,7 +1492,16 @@ Res *smsi_msiAdmClearAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecIn
 #ifndef DEBUG
 	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
 		  return newIntRes(r, i);
+	  i = unlinkFuncDescIndex();
+	  if (i < 0)
+		  return newIntRes(r, i);
 	  i = clearRuleSetAndIndex(&appRuleStrct);
+	  if (i < 0)
+		  return newIntRes(r, i);
+	  i = generateFunctionDescriptionTables();
+	  if (i < 0)
+		  return newIntRes(r, i);
+	  i = createCoreAppExtRuleNodeIndex();
 	  if (i < 0)
 		  return newIntRes(r, i);
 	  i = createCoreAppExtRuleNodeIndex();
@@ -1511,6 +1513,7 @@ Res *smsi_msiAdmClearAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecIn
 	  i = clearFuncMapStruct(&appRuleFuncMapDef);
 	  return newIntRes(r, i);
 #else
+	  i = unlinkFuncDescIndex();
 	  i = clearRuleSetAndIndex(&appRuleStrct);
 	  i = generateFunctionDescriptionTables();
 	  i = createCoreAppExtRuleNodeIndex();
