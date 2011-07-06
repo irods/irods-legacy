@@ -1563,18 +1563,13 @@ Res *smsi_msiAdmAppendToTopOfCoreRE(Node **paramsr, int n, Node *node, ruleExecI
 		   conDir, paramsr[0]->text);
 	  snprintf(file2, 1024, "%s/reConfigs/core.re",
 		   conDir);
-	  snprintf(file3, 1024, "%s/reConfigs/admtmpcore.re", conDir);
+	  snprintf(file3, 1024, "%s/reConfigs/core.tmp", conDir);
 	  int errcode;
 	  char errmsgBuf[ERR_MSG_LEN];
-	  if((errcode = fileConcatenate(file1, file2, file3))!=0) {
-		  generateErrMsg("file concatenate error", node->expr, node->base, errmsgBuf);
+	  if((errcode = fileConcatenate(file1, file2, file3))!=0 || (errcode = remove(file2))!=0 || (errcode = rename(file3, file2))!=0) {
+		  generateErrMsg("error appending to top of core.re", node->expr, node->base, errmsgBuf);
 		  addRErrorMsg(errmsg, errcode, errmsgBuf);
 		  return newErrorRes(r, errcode);
-	  }
-	  if(rename(file3, file2)!=0) {
-		  generateErrMsg("file rename error", node->expr, node->base, errmsgBuf);
-		  addRErrorMsg(errmsg, -1, errmsgBuf);
-		  return newErrorRes(r, -1);
 	  }
 	  return newIntRes(r, 0);
 
@@ -1593,7 +1588,10 @@ Res *smsi_msiAdmChangeCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *
 	  snprintf(file2, 1024, "%s/reConfigs/core.re",
 		   conDir);
 	  int errcode;
+	  char errmsgBuf[ERR_MSG_LEN];
 	  if((errcode = fileConcatenate(file1, NULL, file2))!=0) {
+		  generateErrMsg("error changing core.re", node->expr, node->base, errmsgBuf);
+		  addRErrorMsg(errmsg, errcode, errmsgBuf);
 		  return newErrorRes(r, errcode);
 	  }
 	  return newIntRes(r, 0);
