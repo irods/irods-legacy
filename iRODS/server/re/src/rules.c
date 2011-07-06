@@ -158,7 +158,6 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
         rei->msParamArray = newMsParamArray();
     } else {
     	rei->msParamArray = orig;
-    	clearMsParamArray(orig, 1);
     }
     convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
 

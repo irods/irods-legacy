@@ -387,6 +387,23 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
     }
     return 0;
 }
+int updateResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
+	if(strcmp(var->type, INT_MS_T) == 0 ||
+			strcmp(var->type, DOUBLE_MS_T) == 0 ||
+			strcmp(var->type, STR_MS_T) == 0) {
+		/* do not free msParam_t if its inOutStruct and inOutBuf are shared */
+		if(var->inOutStruct!=NULL) {
+			free(var->inOutStruct);
+		}
+		if(var->inpOutBuf!=NULL) {
+			free(var->inpOutBuf);
+		}
+	}
+	if(var->label!=NULL) {
+		free(var->label);
+	}
+	return convertResToMsParam(var, res, errmsg);
+}
 int convertEnvToMsParamArray(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
     if(env->previous!=NULL) {
         if(convertEnvToMsParamArray(var, env->previous, errmsg, r)!=0) {
@@ -401,26 +418,40 @@ int convertEnvToMsParamArray(msParamArray_t *var, Env *env, rError_t *errmsg, Re
 }
 int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t *errmsg, Region *r) {
 	int i;
-        if(var->msParam == NULL) {
-            var->len = 0;
-            var->msParam = (msParam_t **) malloc(sizeof(msParam_t *)*(env->len));
-        } else {
-            var->msParam = (msParam_t **) realloc(var->msParam, sizeof(msParam_t *)*(var->len + env->len));
-        }
+	if(var->msParam == NULL) {
+		var->len = 0;
+		var->msParam = (msParam_t **) malloc(sizeof(msParam_t *)*(env->len));
+	} else {
+		var->msParam = (msParam_t **) realloc(var->msParam, sizeof(msParam_t *)*(var->len + env->len));
+	}
 	for(i=0;i<env->size;i++) {
 		struct bucket *b = env->buckets[i];
 		while(b!=NULL) {
 			Res *res = (Res *)b->value;
-			msParam_t *v = (msParam_t *) malloc(sizeof(msParam_t));
-			int ret = convertResToMsParam(v, res, errmsg);
+			msParam_t *v = NULL;
+			int varindex;
+			int ret;
+			for(varindex=0;varindex<var->len;varindex++) {
+				if(var->msParam[varindex]->label!=NULL && strcmp(var->msParam[varindex]->label, b->key) == NULL) {
+					v = var->msParam[varindex];
+					ret = updateResToMsParam(v, res, errmsg);
+					break;
+				}
+			}
+			if(v == NULL) {
+				v = (msParam_t *) malloc(sizeof(msParam_t));
+				ret = convertResToMsParam(v, res, errmsg);
+				var->msParam[var->len++] = v;
+			}
 			v->label = strdup(b->key);
-                        if(ret != 0) {
-                            /* error */
-                            /* todo free msParamArray */
-                            free(v);
-                            return ret;
-                        }
-			var->msParam[var->len++] = v;
+
+			if(ret != 0) {
+				/* error */
+				/* todo free msParamArray */
+				free(v);
+				return ret;
+			}
+
 			b=b->next;
 		}
 	}

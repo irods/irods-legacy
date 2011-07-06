@@ -59,12 +59,14 @@ typedef struct {
 #define clearRegion(u, l) \
 		if((resources & RESC_REGION_##u) && isComponentAllocated(ruleEngineConfig.region##l##Status)) { \
 			region_free(ruleEngineConfig.region##l); \
+			ruleEngineConfig.region##l = NULL; \
 			ruleEngineConfig.region##l##Status = UNINITIALIZED; \
 		} \
 
 #define delayClearRegion(u, l) \
 		if((resources & RESC_REGION_##u) && isComponentAllocated(ruleEngineConfig.region##l##Status)) { \
 			listAppendNoRegion(&regionsToClear, ruleEngineConfig.region##l); \
+			ruleEngineConfig.region##l = NULL; \
 			ruleEngineConfig.region##l##Status = UNINITIALIZED; \
 		} \
 
@@ -77,6 +79,7 @@ typedef struct {
 #define clearRuleSet(u, l) \
 		if((resources & RESC_##u##_RULE_SET) && isComponentAllocated(ruleEngineConfig.l##RuleSetStatus)) { \
 			free(ruleEngineConfig.l##RuleSet); \
+			ruleEngineConfig.l##RuleSet = NULL; \
 			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
 		} else if((resources & RESC_##u##_RULE_SET) && ruleEngineConfig.l##RuleSetStatus == COMPRESSED) { \
 			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
@@ -85,6 +88,7 @@ typedef struct {
 #define delayClearRuleSet(u, l) \
 		if((resources & RESC_##u##_RULE_SET) && isComponentAllocated(ruleEngineConfig.l##RuleSetStatus)) { \
 			listAppendNoRegion(&memoryToFree, ruleEngineConfig.l##RuleSet); \
+			ruleEngineConfig.l##RuleSet = NULL; \
 			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
 		} else if((resources & RESC_##u##_RULE_SET) && ruleEngineConfig.l##RuleSetStatus == COMPRESSED) { \
 			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
@@ -93,6 +97,7 @@ typedef struct {
 #define delayClearFuncDescIndex(u, l) \
 		if((resources & RESC_##u##_FUNC_DESC_INDEX) && isComponentAllocated(ruleEngineConfig.l##FuncDescIndexStatus)) { \
 			listAppendNoRegion(&envToClear, ruleEngineConfig.l##FuncDescIndex); \
+			ruleEngineConfig.l##FuncDescIndex = NULL; \
 			ruleEngineConfig.l##FuncDescIndexStatus = UNINITIALIZED; \
 		} else if((resources & RESC_##u##_FUNC_DESC_INDEX) && ruleEngineConfig.l##FuncDescIndexStatus == COMPRESSED) { \
 			ruleEngineConfig.l##FuncDescIndexStatus = UNINITIALIZED; \
@@ -108,6 +113,7 @@ typedef struct {
 #define clearFuncDescIndex(u, l) \
 	if((resources & RESC_##u##_FUNC_DESC_INDEX) && isComponentAllocated(ruleEngineConfig.l##FuncDescIndexStatus)) { \
 		deleteEnv(ruleEngineConfig.l##FuncDescIndex, 1); \
+		ruleEngineConfig.l##FuncDescIndex = NULL; \
 		ruleEngineConfig.l##FuncDescIndexStatus = UNINITIALIZED; \
 	} \
 

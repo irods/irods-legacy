@@ -122,10 +122,12 @@ void setRuleEngineMemStatus(RuleEngineStatus s) {
 void clearResources(int resources) {
 	if((resources & RESC_RULE_INDEX) && isComponentAllocated(ruleEngineConfig.ruleIndexStatus)) {
 		deleteHashTable(ruleEngineConfig.ruleIndex, nop);
+		ruleEngineConfig.ruleIndex = NULL;
 		ruleEngineConfig.ruleIndexStatus = UNINITIALIZED;
 	}
 	if((resources & RESC_COND_INDEX) && isComponentAllocated(ruleEngineConfig.condIndexStatus)) {
 		deleteHashTable(ruleEngineConfig.condIndex, (void (*)(void *))deleteCondIndexVal);
+		ruleEngineConfig.condIndex = NULL;
 		ruleEngineConfig.condIndexStatus = UNINITIALIZED;
 	}
 	clearFuncDescIndex(APP, app);
@@ -140,6 +142,7 @@ void clearResources(int resources) {
 
 	if((resources & RESC_CACHE) && isComponentAllocated(ruleEngineConfig.cacheStatus)) {
 		free(ruleEngineConfig.address);
+		ruleEngineConfig.address = NULL;
 		ruleEngineConfig.cacheStatus = UNINITIALIZED;
 	}
 }
@@ -222,8 +225,16 @@ int generateLocalCache() {
 int generateFunctionDescriptionTables() {
     createFuncDescIndex(CORE, core);
     createFuncDescIndex(APP, app);
-    createFuncDescIndex(EXT, ext);
-    ruleEngineConfig.extFuncDescIndex->previous = ruleEngineConfig.appFuncDescIndex;
+    if(!isComponentInitialized(ruleEngineConfig.extFuncDescIndexStatus)) {
+    	createFuncDescIndex(EXT, ext);
+    	ruleEngineConfig.extFuncDescIndex->previous = ruleEngineConfig.appFuncDescIndex;
+    } else {
+    	Env *extEnv = ruleEngineConfig.extFuncDescIndex;
+    	while(extEnv->previous->previous->previous != NULL) {
+    		extEnv = extEnv->previous;
+    	}
+    	extEnv->previous = ruleEngineConfig.appFuncDescIndex;
+    }
     ruleEngineConfig.appFuncDescIndex->previous = ruleEngineConfig.coreFuncDescIndex;
 
 	return 0;

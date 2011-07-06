@@ -26,6 +26,7 @@ void convertStrValue(Res *res, char *val, Region *r);
 void convertIntValue(Res *res, int inval, Region *r);
 
 int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg);
+int updateResToMsParam(msParam_t *var, Res *res, rError_t *errmsg);
 int convertEnvToMsParamArray(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r);
 int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t *errmsg, Region *r);
 

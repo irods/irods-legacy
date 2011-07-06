@@ -1565,10 +1565,15 @@ Res *smsi_msiAdmAppendToTopOfCoreRE(Node **paramsr, int n, Node *node, ruleExecI
 		   conDir);
 	  snprintf(file3, 1024, "%s/reConfigs/admtmpcore.re", conDir);
 	  int errcode;
+	  char errmsgBuf[ERR_MSG_LEN];
 	  if((errcode = fileConcatenate(file1, file2, file3))!=0) {
+		  generateErrMsg("file concatenate error", node->expr, node->base, errmsgBuf);
+		  addRErrorMsg(errmsg, errcode, errmsgBuf);
 		  return newErrorRes(r, errcode);
 	  }
 	  if(rename(file3, file2)!=0) {
+		  generateErrMsg("file rename error", node->expr, node->base, errmsgBuf);
+		  addRErrorMsg(errmsg, -1, errmsgBuf);
 		  return newErrorRes(r, -1);
 	  }
 	  return newIntRes(r, 0);
@@ -1599,7 +1604,19 @@ Res *smsi_msiAdmChangeCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *
 int fileConcatenate(char *file1, char *file2, char *file3) {
 	char buf[1024];
 	FILE *f1 = fopen(file1, "r");
-	FILE *f2 = file2 == NULL? NULL : fopen(file2, "r");
+	if(f1 == NULL) {
+		return USER_FILE_DOES_NOT_EXIST;
+	}
+	FILE *f2;
+	if(file2 == NULL) {
+		f2 = NULL;
+	} else {
+		f2 = fopen(file2, "r");
+		if(f2 == NULL) {
+			fclose(f1);
+			return USER_FILE_DOES_NOT_EXIST;
+		}
+	}
 	FILE *f3 = fopen(file3, "w");
 
 	size_t len;
