@@ -23,6 +23,8 @@
 #include "modDataObjMeta.h"
 #include "phyBundleColl.h"
 #include "dataObjRepl.h"
+#include "regDataObj.h"
+#include "physPath.h"
 
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
@@ -273,6 +275,7 @@ dataObjInfo_t *dataObjInfo)
                     return CANT_UNREG_IN_VAULT_FILE;
 		}
 	    }
+#if 0	/* don't need this since we are doing orphan */
 	} else if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].driverType 
 	  == WOS_FILE_TYPE && dataObjUnlinkInp->oprType != UNREG_OPR) {
 	    /* WOS_FILE_TYPE, unlink first before unreg because orphan files
@@ -293,6 +296,7 @@ dataObjInfo_t *dataObjInfo)
                   dataObjUnlinkInp->objPath, status);
             }
             return status;
+#endif
 	}
         unregDataObjInp.dataObjInfo = dataObjInfo;
         unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
@@ -315,8 +319,27 @@ dataObjInfo_t *dataObjInfo)
               dataObjUnlinkInp->objPath, status);
 	    /* allow ENOENT to go on and unregister */
 	    if (myError != ENOENT && myError != EACCES) {
+		char orphanPath[MAX_NAME_LEN];
+		int status1 = 0;
                 rodsLog (LOG_NOTICE,
                   "dataObjUnlinkS: orphan file %s", dataObjInfo->filePath);
+		while (1) { 
+		    status1 = rsMkOrhpanPath (rsComm, dataObjInfo->objPath,
+		      orphanPath);
+		    if (status1 < 0) break;
+		    /* reg the orphan path */
+		    rstrcpy (dataObjInfo->objPath, orphanPath, MAX_NAME_LEN);
+		    status1 = svrRegDataObj (rsComm, dataObjInfo);
+		    if (status1 == CAT_NAME_EXISTS_AS_DATAOBJ ||
+		      status1 == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+			continue;
+		    } else if (status1 < 0) {
+			rodsLogError (LOG_ERROR, status1,
+			  "dataObjUnlinkS: svrRegDataObj of orphan %s error",
+			  dataObjInfo->objPath);
+		    }
+		    break;
+		}
 	        return (status);
 	    } else {
 	        status = 0;

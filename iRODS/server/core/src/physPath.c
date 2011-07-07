@@ -1095,3 +1095,62 @@ getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath)
     return 0;
 }
 
+/* rsMkOrhpanPath - given objPath, compose the orphan path which is
+ * /myZone/trash/orphan/userName#userZone/filename.random
+ * Also make the required directory.
+ */
+int
+rsMkOrhpanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
+{
+    int status;
+    char *tmpStr;
+    char *orphanPathPtr;
+    int len;
+    char parentColl[MAX_NAME_LEN], childName[MAX_NAME_LEN];
+    collInp_t collCreateInp;
+
+    status = splitPathByKey(objPath, parentColl, childName, '/');
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "rsMkOrhpanPath: splitPathByKey error for %s, status = %d",
+          objPath, status);
+        return (status);
+    }
+    orphanPathPtr = orphanPath;
+    *orphanPathPtr = '/';
+    orphanPathPtr++;
+    tmpStr = objPath + 1;
+    /* copy the zone */
+    while (*tmpStr != '\0') {
+        *orphanPathPtr = *tmpStr;
+        orphanPathPtr ++;
+        len ++;
+        if (*tmpStr == '/') {
+            tmpStr ++;
+            break;
+        }
+        tmpStr ++;
+    }
+    len = strlen (rsComm->clientUser.userName) + 
+    strlen (rsComm->clientUser.rodsZone);
+    snprintf (orphanPathPtr, len + 20, "trash/orphan/%s#%s",
+      rsComm->clientUser.userName, rsComm->clientUser.rodsZone);
+
+    memset (&collCreateInp, 0, sizeof (collCreateInp));
+    rstrcpy (collCreateInp.collName, orphanPath, MAX_NAME_LEN);
+    status = rsCollCreate (rsComm, &collCreateInp);
+
+    if (status < 0 && status != CAT_NAME_EXISTS_AS_COLLECTION) {
+        rodsLogError (LOG_ERROR, status,
+          "rsMkOrhpanPath: rsCollCreate error for %s",
+          orphanPath);
+    }
+    orphanPathPtr = orphanPath + strlen (orphanPath); 
+
+    snprintf (orphanPathPtr, strlen (childName) + 20, "/%s.%-d",
+      childName, (uint) random());
+
+    return 0;
+}
+
