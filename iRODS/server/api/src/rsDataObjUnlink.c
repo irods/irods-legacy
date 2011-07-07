@@ -324,11 +324,15 @@ dataObjInfo_t *dataObjInfo)
                 rodsLog (LOG_NOTICE,
                   "dataObjUnlinkS: orphan file %s", dataObjInfo->filePath);
 		while (1) { 
-		    status1 = rsMkOrhpanPath (rsComm, dataObjInfo->objPath,
-		      orphanPath);
-		    if (status1 < 0) break;
-		    /* reg the orphan path */
-		    rstrcpy (dataObjInfo->objPath, orphanPath, MAX_NAME_LEN);
+		    if (isOrphanPath (dataObjUnlinkInp->objPath) == 
+		      NOT_ORPHAN_PATH) {
+			/* don't rename orphan path */
+		        status1 = rsMkOrhpanPath (rsComm, dataObjInfo->objPath,
+		          orphanPath);
+		        if (status1 < 0) break;
+		        /* reg the orphan path */
+		        rstrcpy (dataObjInfo->objPath, orphanPath,MAX_NAME_LEN);
+		    }
 		    status1 = svrRegDataObj (rsComm, dataObjInfo);
 		    if (status1 == CAT_NAME_EXISTS_AS_DATAOBJ ||
 		      status1 == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {

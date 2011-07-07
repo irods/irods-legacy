@@ -187,6 +187,12 @@ typedef enum {
     ON_STATE
 } irodsStateFlag_t;
 
+typedef enum {
+    NOT_ORPHAN_PATH,
+    IS_ORPHAN_PATH,
+    is_ORPHAN_HOME
+} orphanPathType_t;
+
 #define DEF_IRODS_PROT	NATIVE_PROT
 
 /* general struct for a buffer of bytes */

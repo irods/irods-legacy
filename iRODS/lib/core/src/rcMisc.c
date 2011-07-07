@@ -2373,6 +2373,36 @@ isTrashHome (char *myPath)
     }
 }
 
+/* isOrphanPath - check if path is a orphan path - /myZone/trash/orphan
+ */
+orphanPathType_t
+isOrphanPath (char *myPath)
+{
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if (*tmpPtr != '/') {
+	return 0;
+    }
+
+    tmpPtr++;
+    if ((tmpPtr1 = strchr (tmpPtr, '/')) == NULL) {
+	return 0;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if (strncmp (tmpPtr, "trash/orphan", 12) != 0) {
+        return NOT_ORPHAN_PATH;
+    } else if (strcmp (tmpPtr, "trash/orphan") == 0) {
+	return is_ORPHAN_HOME;
+    } else {
+	return IS_ORPHAN_PATH;
+    }
+}
+
 /* isHomeColl - see if the path is /myZone/home or 
  * /myZone/home/myName.
  * return 0 if it is not

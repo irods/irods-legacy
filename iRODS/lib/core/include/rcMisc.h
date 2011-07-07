@@ -140,6 +140,8 @@ int
 appendRandomToPath (char *trashPath);
 int
 isTrashPath (char *myPath);
+orphanPathType_t
+isOrphanPath (char *myPath);
 int
 isHomeColl (char *myPath);
 int
