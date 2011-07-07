@@ -350,10 +350,10 @@ msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
 	}
 
 
-	/* Must be run by a local privileged user */
-	if (rei->uoic->authInfo.authFlag < 5)
+	/* Must be called from an admin account */
+	if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH)
 	{
-		status = USER_ACCESS_DENIED;
+		status = CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
 		rodsLog (LOG_ERROR, "msiServerBackup: User %s is not local admin. Status = %d",
 				rei->uoic->userName, status);
 		return(status);
