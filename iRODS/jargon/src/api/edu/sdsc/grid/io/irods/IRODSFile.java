@@ -1517,7 +1517,8 @@ public class IRODSFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				log.warn("io exception is logged and ignored", e);
+				log.error("io exception", e);
+				throw new JargonRuntimeException("io exception", e);
 			}
 		}
 
@@ -1530,7 +1531,8 @@ public class IRODSFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				log.warn("io exception is logged and ignored", e);
+				log.error("io exception", e);
+				throw new JargonRuntimeException("io exception", e);
 			}
 		}
 		return false;
@@ -1563,7 +1565,8 @@ public class IRODSFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				log.warn("io exception is logged and ignored", e);
+				log.error("io exception", e);
+				throw new JargonRuntimeException("io exception", e);
 			}
 		}
 
@@ -1577,7 +1580,8 @@ public class IRODSFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				log.warn("io exception is logged and ignored", e);
+				log.error("io exception", e);
+				throw new JargonRuntimeException("io exception", e);
 			}
 		}
 		return false;

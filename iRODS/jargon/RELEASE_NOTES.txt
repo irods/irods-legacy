@@ -55,6 +55,8 @@ Switched to GForge bug numbering as of iRODS2.5
 
 *Added close and buffering of streams in IRODSCommands.irodsFunction() method.
 
+*canRead and canWrite methods were logging and ignoring io exceptions, these now throw JargonRuntimeException
+
  
 ================================================================================================
 Outstanding Issues
