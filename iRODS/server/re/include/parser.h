@@ -353,6 +353,7 @@ int isLocalVariableNode(Node *node);
 int isSessionVariableNode(Node *node);
 int isVariableNode(Node *node);
 
+void ruleNameToString(char **p, int *s, int indent, Node *rn);
 void ruleToString(char *buf, int size, Node *n);
 void actionsToString(char **p, int *s, int indent, Node *na, Node *nr);
 void indentToString(char **p, int *s, int indent);

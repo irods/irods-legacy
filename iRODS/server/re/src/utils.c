@@ -1279,3 +1279,13 @@ int invokedIn(char *fn, Node *expr) {
 
     return 0;
 }
+Node *lookupAVUFromMetadata(Node *metadata, char *a) {
+	int i;
+	for(i=0;i<metadata->degree;i++) {
+		if(strcmp(metadata->subtrees[i]->subtrees[0]->text, a) == 0) {
+			return metadata->subtrees[i];
+		}
+	}
+	return NULL;
+
+}

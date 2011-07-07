@@ -18,6 +18,7 @@
 #endif
 
 #define MAX_PARAMS_LEN 100
+#define MAX_RULE_LEN 1024
 
 /* parser error -1203000 */
 #define PARSER_ERROR -1203000
@@ -334,6 +335,7 @@ char *errMsgToString(rError_t *errmsg, char *buf, int buflen);
 int isPattern(Node *pattern);
 int isRecursive(Node *rule);
 int invokedIn(char *fn, Node *expr);
+Node *lookupAVUFromMetadata(Node *metadata, char *a);
 
 #define CONCAT2(a,b) a##b
 #define CONCAT(a,b) CONCAT2(a,b)

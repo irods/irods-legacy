@@ -1142,6 +1142,79 @@ getRule(int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
 }
 
 int
+insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet,
+		  ruleExecInfo_t *rei)
+{
+  generalRowInsertInp_t generalRowInsertInp;
+  char ruleIdStr[MAX_NAME_LEN];
+  int rc1, i;
+  int  mapPriorityInt = 1;
+  char mapPriorityStr[50];
+  endTransactionInp_t endTransactionInp;
+  char myTime[50];
+
+  memset (&endTransactionInp, 0, sizeof (endTransactionInp_t));
+  getNowStr(myTime);
+
+  /* Before inserting rules and its base map, we need to first version out the base map */
+  generalRowInsertInp.tableName = "versionRuleBase";
+  generalRowInsertInp.arg1 = baseName;
+  generalRowInsertInp.arg2 = myTime;
+
+  rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+  if (rc1 < 0) {
+    endTransactionInp.arg0 = "rollback";
+    rsEndTransaction(rei->rsComm, &endTransactionInp);
+    return(rc1);
+  }
+
+  for (i = 0; i < ruleSet->len; i++) {
+	  RuleDesc *rd = ruleSet->rules[i];
+	  Node *ruleNode = rd->node;
+	  char ruleNameStr[MAX_RULE_LEN];
+	  char ruleCondStr[MAX_RULE_LEN];
+	  char ruleActionRecoveryStr[MAX_RULE_LEN];
+	  int s;
+	  char *p;
+	  p = ruleNameStr;
+	  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
+	  p = ruleCondStr;
+	  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1]);
+	  p = ruleActionRecoveryStr;
+	  actionsToString(&p, &s, 0, ruleNode->subtrees[2], ruleNode->subtrees[3]);
+	  Node *avu = lookupAVUFromMetadata(ruleNode->subtrees[4], "id");
+	  if(avu!=NULL) {
+		  rstrcpy(ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN);
+	  } else {
+		  rstrcpy(ruleIdStr, "", MAX_NAME_LEN);
+	  }
+    generalRowInsertInp.tableName = "ruleTable";
+    generalRowInsertInp.arg1 = baseName;
+    sprintf(mapPriorityStr, "%i", mapPriorityInt);
+    mapPriorityInt++;
+    generalRowInsertInp.arg2 = mapPriorityStr;
+    generalRowInsertInp.arg3 = ruleNode->subtrees[0]->text;
+    generalRowInsertInp.arg4 = ruleNameStr;
+    generalRowInsertInp.arg5 = ruleCondStr;
+    generalRowInsertInp.arg6 = ruleActionRecoveryStr;
+    generalRowInsertInp.arg7= "";
+    generalRowInsertInp.arg8 = ruleIdStr;
+    generalRowInsertInp.arg9 = myTime;
+
+    rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+    if (rc1 < 0) {
+      endTransactionInp.arg0 = "rollback";
+      rsEndTransaction(rei->rsComm, &endTransactionInp);
+      return(rc1);
+    }
+  }
+
+  endTransactionInp.arg0 = "commit";
+  rc1 = rsEndTransaction(rei->rsComm, &endTransactionInp);
+  return(rc1);
+}
+
+int
 insertRulesIntoDB(char * baseName, ruleStruct_t *coreRuleStruct,
 		  ruleExecInfo_t *rei)
 {
@@ -1194,7 +1267,6 @@ insertRulesIntoDB(char * baseName, ruleStruct_t *coreRuleStruct,
   rc1 = rsEndTransaction(rei->rsComm, &endTransactionInp);
   return(rc1);
 }
-
 
 int
 insertDVMapsIntoDB(char * baseName, dvmStruct_t *coreDVMStruct,

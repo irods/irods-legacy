@@ -528,8 +528,9 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             OR(ruleCond)
                 NT2(Term, 0, MIN_PREC);
                 TTEXT("|");
+                BUILD_NODE(N_TUPLE, TUPLE, &pos, 1, 1);
             END_TRY(ruleCond)
-			BUILD_NODE(N_TUPLE, TUPLE, &pos, 1, 1);
+
 
             NT2(Actions, 0, backwardCompatible);
             TTEXT("|");
@@ -1612,20 +1613,23 @@ void metadataToString(char **p, int *s, int indent, Node *nm) {
 	}
 }
 
-void ruleToString(char *buf, int size, Node *node) {
-	char **p = &buf;
-	int *s = &size;
-	PRINT(p, s, "%s", node->subtrees[0]->text);
+void ruleNameToString(char **p, int *s, int indent, Node *rn) {
+	PRINT(p, s, "%s", rn->text);
 	PRINT(p, s, "%s", "(");
 	int i;
-	for(i=0;i<node->subtrees[0]->subtrees[0]->degree;i++) {
+	for(i=0;i<rn->subtrees[0]->degree;i++) {
 		if(i!=0) {
 			PRINT(p, s, "%s", ",");
 		}
-		PRINT(p, s, "%s", node->subtrees[0]->subtrees[0]->subtrees[i]->text);
+		PRINT(p, s, "%s", rn->subtrees[0]->subtrees[i]->text);
 	}
 	PRINT(p, s, "%s", ")");
-	if(node->subtrees[3]->nodeType == N_ACTIONS) {
+}
+void ruleToString(char *buf, int size, Node *node) {
+	char **p = &buf;
+	int *s = &size;
+	ruleNameToString(p, s, 0, node->subtrees[0]);
+	if(node->subtrees[2]->nodeType == N_ACTIONS) {
 
 		int indent;
 		Node *subt = node->subtrees[1];

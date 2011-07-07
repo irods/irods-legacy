@@ -1316,11 +1316,6 @@ int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r) {
 
 Res *smsi_writeLine(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
   char *inString = convertResToString(paramsr[1]);
-#ifdef DEBUG
-  printf("%s\n", inString);
-  free(inString);
-  return newIntRes(r, 0);
-#else
   Res *where = (Res *)paramsr[0];
   char *whereId = where->text;
 
@@ -1329,21 +1324,21 @@ Res *smsi_writeLine(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
       free(inString);
       return newIntRes(r, 0);
   }
-
   int i = writeStringNew(whereId, inString, env, r);
+#ifdef DEBUG
+  printf("%s\n", inString);
+#endif
 
   free(inString);
   if (i < 0) {
       return newErrorRes(r, i);
   }
-
   i = writeStringNew(whereId, "\n", env, r);
 
   if (i < 0)
     return newErrorRes(r, i);
   else
     return newIntRes(r, i);
-#endif
 }
 Res *smsi_writeString(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
@@ -1597,6 +1592,74 @@ Res *smsi_msiAdmChangeCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *
 
 }
 
+int insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet, ruleExecInfo_t *rei);
+
+Res * smsi_msiAdmInsertRulesFromStructIntoDB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
+{
+
+  /* ruleStruct_t *coreRuleStruct; */
+  int i;
+#ifndef DEBUG
+  if ((i = isUserPrivileged(rei->rsComm)) != 0) {
+	  generateAndAddErrMsg("error inserting rules into database", node, i, errmsg);
+      return newIntRes(r, i);
+  }
+#endif
+
+  if (paramsr[0]->text == NULL ||
+      paramsr[1]->text == NULL || /* value.uninterpreted.inOutStruct == NULL || */
+      strlen(paramsr[0]->text) == 0 ) {
+	  generateAndAddErrMsg("empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg);
+	  return newErrorRes(r, PARAOPR_EMPTY_IN_STRUCT_ERR);
+  }
+
+  RuleSet *rs;
+  if(strcmp(paramsr[1]->text, "core") == 0) {
+	  rs = ruleEngineConfig.coreRuleSet;
+  } else if(strcmp(paramsr[1]->text, "app") == 0) {
+	  rs = ruleEngineConfig.appRuleSet;
+  } else {
+	  return newIntRes(r, 0);
+  }
+  i = insertRulesIntoDBNew(paramsr[0]->text, rs, rei);
+  if(i<0) {
+	  generateAndAddErrMsg("error inserting rules into database", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg);
+	  return newErrorRes(r, i);
+  } else {
+	  return newIntRes(r, i);
+  }
+
+}
+
+Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
+    if(res == NULL) {
+    	generateAndAddErrMsg("ruleExecOut not set", node, -1, errmsg);
+    	return newErrorRes(r, -1);
+    }
+
+    execCmdOut_t *out = (execCmdOut_t *)res->value.uninterpreted.inOutStruct;
+    int start = strlen((char *)out->stdoutBuf.buf);
+    Res *ret = smsi_do(paramsr, 1, node, rei, reiSaveFlag, env, errmsg, r);
+    /* int fin = strlen((char *)out->stdoutBuf.buf); */
+    paramsr[1] = newStringRes(r, ((char *)out->stdoutBuf.buf + start));
+    return ret;
+}
+
+Res *smsi_getstderr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
+    if(res == NULL) {
+    	generateAndAddErrMsg("ruleExecOut not set", node, -1, errmsg);
+    	return newErrorRes(r, -1);
+    }
+
+    execCmdOut_t *out = (execCmdOut_t *)res->value.uninterpreted.inOutStruct;
+    int start = strlen((char *)out->stderrBuf.buf);
+    Res *ret = smsi_do(paramsr, 1, node, rei, reiSaveFlag, env, errmsg, r);
+    paramsr[1] = newStringRes(r, ((char *)out->stderrBuf.buf + start));
+    return ret;
+}
+
 /* utilities */
 int fileConcatenate(char *file1, char *file2, char *file3) {
 	char buf[1024];
@@ -1684,6 +1747,8 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "errorcode", newFunctionDesc("e ?->integer", smsi_errorcode, r));
     insertIntoHashTable(ft, "errormsga", newFunctionDesc("a ? * a ? * o string->integer", smsi_errormsg, r));
     insertIntoHashTable(ft, "errormsg", newFunctionDesc("e ? * o string->integer", smsi_errormsg, r));
+    insertIntoHashTable(ft, "getstdout", newFunctionDesc("e ? * o string ->integer", smsi_getstdout, r));
+    insertIntoHashTable(ft, "getstderr", newFunctionDesc("e ? * o string ->integer", smsi_getstderr, r));
     insertIntoHashTable(ft, "let", newFunctionDesc("e 0 * e f 0 * e 1->1", smsi_letExec, r));
     insertIntoHashTable(ft, "match", newFunctionDesc("e 0 * e (0 * 1)*->1", smsi_matchExec, r));
     insertIntoHashTable(ft, "if2", newFunctionDesc("e boolean * e 0 * e 0 * e ? * e ?->0", smsi_if2Exec, r));
@@ -1785,6 +1850,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionDesc("->integer", smsi_msiAdmClearAppRuleStruct, r));
     insertIntoHashTable(ft, "msiAdmAppendToTopOfCoreRE", newFunctionDesc("string->integer", smsi_msiAdmAppendToTopOfCoreRE, r));
     insertIntoHashTable(ft, "msiAdmChangeCoreRE", newFunctionDesc("string->integer", smsi_msiAdmChangeCoreRE, r));
+    insertIntoHashTable(ft, "msiAdmInsertRulesFromStructIntoDB", newFunctionDesc("string * string -> integer", smsi_msiAdmInsertRulesFromStructIntoDB, r));
 
 
 }
