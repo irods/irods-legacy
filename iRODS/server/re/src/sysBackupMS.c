@@ -281,7 +281,7 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
  *
  * \module core
  *
- * \since 2.5.x
+ * \since 3.0.x
  *
  * \author  Antoine de Torcy
  * \date    2011-05-25

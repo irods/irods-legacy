@@ -114,7 +114,7 @@ int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei)
  *
  * \module core
  *
- * \since 2.5.x
+ * \since 3.0.x
  *
  * \author  Antoine de Torcy
  * \date    2011-06-29
