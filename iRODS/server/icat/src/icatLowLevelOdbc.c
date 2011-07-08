@@ -41,6 +41,22 @@ int cllBindVarCountPrev=0; /* cclBindVarCount earlier in processing */
 
 SQLCHAR  psgErrorMsg[SQL_MAX_MESSAGE_LENGTH + 10];
 
+#ifdef ADDR_64BITS
+/* Different argument types are needed on at least Ubuntu 11.04 on a
+   64-bit host when using MySQL, but may or may not apply to all
+   64-bit hosts.  The ODBCVER in sql.h is the same, 0x0351, but some
+   of the defines differ.  If it's using new defines and this isn't
+   used, there may be compiler warnings but it might link OK, but not
+   operate correctly consistently.  I'm not sure how to properly
+   differentiate between the two, but am using ADDR_64BITS for
+   now.  */
+#define SQL_INT_OR_LEN SQLLEN
+#define SQL_UINT_OR_ULEN SQLULEN
+#else
+#define SQL_INT_OR_LEN SQLINTEGER
+#define SQL_UINT_OR_ULEN SQLUINTEGER
+#endif
+
 /* for now: */
 #define MAX_TOKEN 256
 
@@ -562,7 +578,7 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
    HSTMT myHstmt;
    int result;
    char *status;
-   SQLINTEGER rowCount;
+   SQL_INT_OR_LEN rowCount;
 #ifdef NEW_ODBC
    int i;
 #endif
@@ -613,7 +629,7 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
       */
       if ( ! cmp_stmt(sql,"begin") && ! cmp_stmt(sql,"commit") && ! cmp_stmt(sql,"rollback") ) {
 	 /* Doesn't seem to return SQL_NO_DATA_FOUND, so check */
-	 i = SQLRowCount (myHstmt, (SQLINTEGER *)&rowCount);
+	 i = SQLRowCount (myHstmt, (SQL_INT_OR_LEN *)&rowCount);
 	 if (i) {
 	    /* error getting rowCount???, just call it no_info */
 	    result = CAT_SUCCESS_BUT_WITH_NO_INFO;
@@ -658,9 +674,9 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    SQLCHAR         colName[MAX_TOKEN];
    SQLSMALLINT     colType;
    SQLSMALLINT     colNameLen;
-   SQLUINTEGER     precision;
+   SQL_UINT_OR_ULEN precision;
    SQLSMALLINT     scale;
-   SQLINTEGER      displaysize;
+   SQL_INT_OR_LEN  displaysize;
 #ifndef NEW_ODBC
    static SQLINTEGER resultDataSize;
 #endif
@@ -837,9 +853,9 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
    SQLCHAR         colName[MAX_TOKEN];
    SQLSMALLINT     colType;
    SQLSMALLINT     colNameLen;
-   SQLUINTEGER     precision;
+   SQL_UINT_OR_ULEN precision;
    SQLSMALLINT     scale;
-   SQLINTEGER      displaysize;
+   SQL_INT_OR_LEN  displaysize;
 #ifndef NEW_ODBC
    static SQLINTEGER resultDataSize;
 #endif
@@ -1108,12 +1124,12 @@ cllGetRowCount(icatSessionStruct *icss, int statementNumber) {
    int i;
    HSTMT hstmt;
    icatStmtStrct *myStatement;
-   SQLINTEGER   RowCount;
+   SQL_INT_OR_LEN RowCount;
 
    myStatement=icss->stmtPtr[statementNumber];
    hstmt = myStatement->stmtPtr;
 
-   i = SQLRowCount (hstmt, (SQLINTEGER *)&RowCount);
+   i = SQLRowCount (hstmt, (SQL_INT_OR_LEN *)&RowCount);
    if (i) return(i);
    return(RowCount);
 }
