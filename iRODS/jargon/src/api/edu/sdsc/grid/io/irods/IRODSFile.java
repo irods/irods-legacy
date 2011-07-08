@@ -2564,8 +2564,8 @@ public class IRODSFile extends RemoteFile {
 				return super.renameTo(dest);
 			}
 		} catch (IOException e) {
-			log.warn("io exception is logged and ignored", e);
-			return false;
+			log.error("io exception during renameTo operation", e);
+			throw new JargonRuntimeException(e);
 		}
 
 		return true;
