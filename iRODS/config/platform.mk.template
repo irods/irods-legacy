@@ -30,7 +30,7 @@ endif
 endif
 
 # added by Jason C (updated by Wayne for solaris)
-ifeq ($(OS_platform), solaris_platform)
+ifneq ($(findstring solaris, $(OS_platform)),)
 # On Solaris, still not using g++ (for now) so can't have no-write-flags
 else
 CCFLAGS += -Wno-write-strings
