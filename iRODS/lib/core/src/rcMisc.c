@@ -2384,12 +2384,12 @@ isOrphanPath (char *myPath)
 
     /* start with a '/' */
     if (*tmpPtr != '/') {
-	return 0;
+	return NOT_ORPHAN_PATH;
     }
 
     tmpPtr++;
     if ((tmpPtr1 = strchr (tmpPtr, '/')) == NULL) {
-	return 0;
+	return NOT_ORPHAN_PATH;
     }
 
     tmpPtr = tmpPtr1 + 1;
