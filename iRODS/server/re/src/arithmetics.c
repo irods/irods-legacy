@@ -574,7 +574,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 		/* do the input value conversion */
 		ExprType **coercionTypes = coercionType->subtrees;
 		for(i=0;i<n;i++) {
-			if((ioParam[i] == 'i' || ioParam[i] == 'p') && nodeArgs[i]->coerce) {
+			if((ioParam[i] == 'i' || ioParam[i] == 'p') && (nodeArgs[i]->option & OPTION_COERCE) != 0) {
 				args[i] = processCoercion(nodeArgs[i], args[i], coercionTypes[i], env->current, errmsg, newRegion);
 				if(args[i]->nodeType==N_ERROR) {
 					res = (Res *)args[i];
@@ -615,7 +615,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
         Res *resp = NULL;
 
         if(ioParam[i] == 'o' || ioParam[i] == 'p') {
-            if(appArgs[i]->coerce) {
+            if((appArgs[i]->option & OPTION_COERCE) != 0) {
                 args[i] = processCoercion(nodeArgs[i], args[i], appArgs[i]->exprType, env->current, errmsg, newRegion);
             }
             if(args[i]->nodeType==N_ERROR) {

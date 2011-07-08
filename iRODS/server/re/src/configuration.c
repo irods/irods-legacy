@@ -35,6 +35,7 @@ Cache ruleEngineConfig = {
     NULL, // Region *regionIndex
     NULL, // Region *regionCore
     NULL, // Region *regionApp
+    1, // int clearDelayed
 };
 
 #ifdef DEBUG
@@ -54,10 +55,12 @@ int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char 
 #endif
 
 void removeRuleFromIndex(char *ruleName, int i) {
-	RuleIndexList *rd = (RuleIndexList *)lookupFromHashTable(ruleEngineConfig.ruleIndex, ruleName);
-	removeNodeFromRuleIndexList(rd, i);
-	if(rd->head == NULL) {
-		deleteFromHashTable(ruleEngineConfig.ruleIndex, ruleName);
+	if(isComponentInitialized(ruleEngineConfig.ruleIndexStatus)) {
+		RuleIndexList *rd = (RuleIndexList *)lookupFromHashTable(ruleEngineConfig.ruleIndex, ruleName);
+		removeNodeFromRuleIndexList(rd, i);
+		if(rd->head == NULL) {
+			deleteFromHashTable(ruleEngineConfig.ruleIndex, ruleName);
+		}
 	}
 
 }

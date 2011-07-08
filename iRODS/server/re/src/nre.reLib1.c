@@ -626,6 +626,79 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
 
 
 int
+readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleExecInfo_t *rei, rError_t *errmsg, Region *region)
+{
+  int i,status;
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
+  sqlResult_t *r[6];
+  memset(&genQueryInp, 0, sizeof(genQueryInp));
+  genQueryInp.maxRows = MAX_SQL_ROWS;
+
+  snprintf(condstr, MAX_NAME_LEN, "= '%s'", ruleBaseName);
+  addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_BASE_NAME, condstr);
+  snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
+  addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_VERSION, condstr2);
+
+  addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_PRIORITY, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_BASE_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_EVENT, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_CONDITION, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_BODY, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_RECOVERY, 1);
+  Env *env = newEnv(newHashTable(100), NULL, NULL);
+  status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+  while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
+    r[0] = getSqlResultByInx (genQueryOut, COL_RULE_BASE_MAP_BASE_NAME);
+    r[1] = getSqlResultByInx (genQueryOut, COL_RULE_NAME);
+    r[2] = getSqlResultByInx (genQueryOut, COL_RULE_EVENT);
+    r[3] = getSqlResultByInx (genQueryOut, COL_RULE_CONDITION);
+    r[4] = getSqlResultByInx (genQueryOut, COL_RULE_BODY);
+    r[5] = getSqlResultByInx (genQueryOut, COL_RULE_RECOVERY);
+    for (i = 0; i<genQueryOut->rowCnt; i++) {
+      char ruleStr[MAX_RULE_LEN * 4];
+      /* char *ruleBase = strdup(&r[0]->value[r[0]->len * i]);
+      char *action   = strdup(&r[1]->value[r[1]->len * i]); */
+      char *ruleHead = strdup(&r[2]->value[r[2]->len * i]);
+      char *ruleCondition = strdup(&r[3]->value[r[3]->len * i]);
+      char *ruleAction    = strdup(&r[4]->value[r[4]->len * i]);
+      char *ruleRecovery  = strdup(&r[5]->value[r[5]->len * i]);
+      if(strlen(ruleRecovery) == 0) {
+    	  /* rulegen */
+    	  if(ruleAction[0] == '{') {
+    		  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s { on(%s) %s }", ruleHead, ruleCondition, ruleAction);
+    	  } else {
+    		  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s = %s", ruleHead, ruleAction);
+    	  }
+      } else {
+    	  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s|%s|%s|%s", ruleHead, ruleCondition, ruleAction, ruleRecovery);
+      }
+	  Pointer *p = newPointer2(ruleStr);
+	  int errloc;
+	  int errcode = parseRuleSet(p, ruleSet, env, &errloc, errmsg, region);
+	  deletePointer(p);
+	  if(errcode<0) {
+		  deleteEnv(env, 3);
+		  freeGenQueryOut (&genQueryOut);
+		  return errcode;
+	  }
+    }
+    genQueryInp.continueInx =  genQueryOut->continueInx;
+    freeGenQueryOut (&genQueryOut);
+    if (genQueryInp.continueInx  > 0) {
+      /* More to come */
+      status =  rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+    }
+    else
+      break;
+  }
+  deleteEnv(env, 3);
+  return(0);
+}
+
+int
 readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleStrct, ruleExecInfo_t *rei)
 {
   int i,l,status;
@@ -1177,11 +1250,18 @@ insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet,
 	  int s;
 	  char *p;
 	  p = ruleNameStr;
+	  s = MAX_RULE_LEN;
 	  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
 	  p = ruleCondStr;
+	  s = MAX_RULE_LEN;
 	  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1]);
 	  p = ruleActionRecoveryStr;
-	  actionsToString(&p, &s, 0, ruleNode->subtrees[2], ruleNode->subtrees[3]);
+	  s = MAX_RULE_LEN;
+	  if(ruleNode->subtrees[2]->nodeType == N_ACTIONS) {
+		  actionsToString(&p, &s, 0, ruleNode->subtrees[2], ruleNode->subtrees[3]);
+	  } else {
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[2]);
+	  }
 	  Node *avu = lookupAVUFromMetadata(ruleNode->subtrees[4], "id");
 	  if(avu!=NULL) {
 		  rstrcpy(ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN);

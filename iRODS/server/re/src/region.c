@@ -89,6 +89,15 @@ void region_free(Region *r) {
         free(r->label);
 	free(r);
 }
+size_t region_size(Region *r) {
+	size_t s = 0;
+	struct region_node *node = r->head;
+	while(node!=NULL) {
+		s += node->used;
+		node = node->next;
+	}
+	return s;
+}
 
 /* tests */
 void assert(int res) {

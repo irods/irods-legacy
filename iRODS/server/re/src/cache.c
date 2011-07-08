@@ -16,9 +16,9 @@ void nodeKey(Node *node, char *keyBuf) {
 		snprintf(keyBuf, NODE_KEY_SIZE, "%p", node);
 	} else {
 	char *p = keyBuf;
-	snprintf(p, NODE_KEY_SIZE, "%s::%d::%p::%ld::%p::%d::%d::%s::%d",
-			node->base, node->coerce, node->coercionType, node->expr, node->exprType,
-			(int)node->iotype, (int)node->nodeType, node->text, (int)node->vararg
+	snprintf(p, NODE_KEY_SIZE, "%s::%d::%p::%ld::%p::%d::%d::%s",
+			node->base, node->option, node->coercionType, node->expr, node->exprType,
+			(int)node->iotype, (int)node->nodeType, node->text
 			);
 	int len = strlen(keyBuf);
 	p += len;
@@ -63,9 +63,9 @@ void nodeKey(Node *node, char *keyBuf) {
 	}
 	}
 }
-Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap) {
+Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap, int generateDescriptor) {
   unsigned char *p = *buf;
-  allocate(p, Node, ncopy, *node);
+  allocate(p, Node, ncopy, *node, generateDescriptor);
   ExprType *shared;
   char key[NODE_KEY_SIZE];
   nodeKey(node, key);
@@ -80,19 +80,19 @@ Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap) {
 
       return shared;
 */  } else {
-      allocate(p, ExprType, ncopy, *node);
-      if(ncopy->exprType != NULL) ncopy -> exprType = copyNode(&p, ncopy->exprType, objectMap);
-      if(ncopy->coercionType!=NULL) ncopy -> coercionType = copyNode(&p, ncopy->coercionType, objectMap);
+      allocate(p, ExprType, ncopy, *node, generateDescriptor);
+      if(ncopy->exprType != NULL) ncopy -> exprType = copyNode(&p, ncopy->exprType, objectMap, generateDescriptor);
+      if(ncopy->coercionType!=NULL) ncopy -> coercionType = copyNode(&p, ncopy->coercionType, objectMap, generateDescriptor);
       if(ncopy->base!=NULL) {
-          allocateArray(p, char, strlen(node->base)+1, ncopy->base, node->base);
+          allocateArray(p, char, strlen(node->base)+1, ncopy->base, node->base, generateDescriptor);
       }
       if(ncopy->text!=NULL) {
-          allocateArray(p, char, strlen(node->text)+1, ncopy->text, node->text);
+          allocateArray(p, char, strlen(node->text)+1, ncopy->text, node->text, generateDescriptor);
       }
-      allocateArray(p, NodePtr, ncopy->degree, ncopy->subtrees, node->subtrees);
+      allocateArray(p, NodePtr, ncopy->degree, ncopy->subtrees, node->subtrees, generateDescriptor);
       int i;
       for(i=0;i<ncopy->degree;i++) {
-        ncopy ->subtrees[i] = copyNode(&p, node->subtrees[i], objectMap);
+        ncopy ->subtrees[i] = copyNode(&p, node->subtrees[i], objectMap, generateDescriptor);
       }
       *buf = p;
 /*      printf("inserting %s\n", key); */
@@ -103,49 +103,49 @@ Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap) {
       return ncopy;
   }
 }
-RuleDesc *copyRuleDesc(unsigned char **buf, RuleDesc *h, Hashtable *objectMap) {
+RuleDesc *copyRuleDesc(unsigned char **buf, RuleDesc *h, Hashtable *objectMap, int generateDescriptor) {
   unsigned char *p = *buf;
-  allocate(p, RuleDesc, rdcopy, *h);
-  rdcopy->node = h->node!=NULL?copyNode(&p, h->node, objectMap):NULL;
-  rdcopy->type = h->type!=NULL?copyNode(&p, h->type, objectMap):NULL;
+  allocate(p, RuleDesc, rdcopy, *h, generateDescriptor);
+  rdcopy->node = h->node!=NULL?copyNode(&p, h->node, objectMap, generateDescriptor):NULL;
+  rdcopy->type = h->type!=NULL?copyNode(&p, h->type, objectMap, generateDescriptor):NULL;
   *buf = p;
   return rdcopy;
 }
-RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap) {
+RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap, int generateDescriptor) {
   unsigned char *p = *buf;
-  allocate(p, RuleSet, rscopy, *h);
+  allocate(p, RuleSet, rscopy, *h, generateDescriptor);
   int i =0;
   for(i=0;i<h->len;i++) {
-    rscopy->rules[i] = copyRuleDesc(&p, rscopy->rules[i], objectMap);
+    rscopy->rules[i] = copyRuleDesc(&p, rscopy->rules[i], objectMap, generateDescriptor);
   }
   *buf = p;
   return rscopy;
 }
-char *copyString(unsigned char **buf, char *string) {
+char *copyString(unsigned char **buf, char *string, int generateDescriptor) {
     char *ret;
     unsigned char *p = *buf;
-    allocateArray(p, char, strlen(string)+1, ret, string);
+    allocateArray(p, char, strlen(string)+1, ret, string, generateDescriptor);
     *buf = p;
     return ret;
 }
 
-RuleIndexListNode *copyRuleIndexListNode(unsigned char **buf, RuleIndexListNode *node) {
+RuleIndexListNode *copyRuleIndexListNode(unsigned char **buf, RuleIndexListNode *node, int generateDescriptor) {
     unsigned char *p = *buf;
-    allocate(p, RuleIndexListNode, ncopy, *node);
-    MAKE_COPY(p, RuleIndexListNode, node->next, ncopy->next);
+    allocate(p, RuleIndexListNode, ncopy, *node, generateDescriptor);
+    MAKE_COPY(p, RuleIndexListNode, node->next, ncopy->next, generateDescriptor);
     *buf = p;
     return ncopy;
 }
-RuleIndexList *copyRuleIndexList(unsigned char **buf, RuleIndexList *list) {
+RuleIndexList *copyRuleIndexList(unsigned char **buf, RuleIndexList *list, int generateDescriptor) {
     unsigned char *p = *buf;
-    allocate(p, RuleIndexList, lcopy, *list);
-    MAKE_COPY(p, RuleIndexListNode, list->head, lcopy->head);
-    MAKE_COPY(p, RuleIndexListNode, list->tail, lcopy->tail);
-    MAKE_COPY(p, String, list->ruleName, lcopy->ruleName);
+    allocate(p, RuleIndexList, lcopy, *list, generateDescriptor);
+    MAKE_COPY(p, RuleIndexListNode, list->head, lcopy->head, generateDescriptor);
+    MAKE_COPY(p, RuleIndexListNode, list->tail, lcopy->tail, generateDescriptor);
+    MAKE_COPY(p, String, list->ruleName, lcopy->ruleName, generateDescriptor);
     *buf = p;
     return lcopy;
 }
-Env* copyEnv(unsigned char **buf, Env *e, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap) {
+Env* copyEnv(unsigned char **buf, Env *e, void *(*cpfn)(unsigned char **, void *, Hashtable *, int), Hashtable *objectMap, int generateDescriptor) {
 	  Env *shared;
 	  char key[NODE_KEY_SIZE];
 	  envKey(e, key);
@@ -154,25 +154,25 @@ Env* copyEnv(unsigned char **buf, Env *e, void *(*cpfn)(unsigned char **, void *
 	      return shared;
 	  } else {
 		unsigned char *p = *buf;
-		allocate(p, Env, ecopy, *e);
-		ecopy->previous = e->previous!=NULL? copyEnv(&p, e->previous, cpfn, objectMap) : NULL;
-		ecopy->lower = e->lower!=NULL? copyEnv(&p, e->lower, cpfn, objectMap) : NULL;
-		ecopy->current = copyHashtable(&p, e->current, cpfn, objectMap);
+		allocate(p, Env, ecopy, *e, generateDescriptor);
+		ecopy->previous = e->previous!=NULL? copyEnv(&p, e->previous, cpfn, objectMap, generateDescriptor) : NULL;
+		ecopy->lower = e->lower!=NULL? copyEnv(&p, e->lower, cpfn, objectMap, generateDescriptor) : NULL;
+		ecopy->current = copyHashtable(&p, e->current, cpfn, objectMap, generateDescriptor);
 		*buf = p;
 		insertIntoHashTable(objectMap, key, ecopy);
 		return ecopy;
 	  }
 }
-Hashtable* copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap) {
+Hashtable* copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsigned char **, void *, Hashtable *, int), Hashtable *objectMap, int generateDescriptor) {
   unsigned char *p = *buf;
-  allocate(p, Hashtable, hcopy, *h);
-  allocateArray(p, BucketPtr, h->size, hcopy->buckets, h->buckets);
+  allocate(p, Hashtable, hcopy, *h, generateDescriptor);
+  allocateArray(p, BucketPtr, h->size, hcopy->buckets, h->buckets, generateDescriptor);
   int i;
   for(i=0;i<hcopy->size;i++) {
     struct bucket *b = hcopy->buckets[i];
     struct bucket *prev = NULL;
     while(b!=NULL) {
-      allocate(p, Bucket, bcopy, *b);
+      allocate(p, Bucket, bcopy, *b, generateDescriptor);
       if(prev == NULL) {
         hcopy->buckets[i] = bcopy;
       } else {
@@ -180,9 +180,9 @@ Hashtable* copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsign
       }
 
       /* copy key */
-      allocateArray(p, char, strlen(b->key) + 1, bcopy->key, b->key);
+      allocateArray(p, char, strlen(b->key) + 1, bcopy->key, b->key, generateDescriptor);
       /* copy value */
-      bcopy->value = cpfn(&p, b->value, objectMap);
+      bcopy->value = cpfn(&p, b->value, objectMap, generateDescriptor);
 
       prev = bcopy;
       b = b->next;
@@ -193,12 +193,12 @@ Hashtable* copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsign
 
 }
 
-CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable *objectMap) {
+CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable *objectMap, int generateDescriptor) {
     unsigned char *p = *buf;
-    allocate(p, CondIndexVal, civcopy, *civ);
-    civcopy->condExp = copyNode(&p, civcopy->condExp, objectMap);
-    civcopy->params = copyNode(&p, civcopy->params, objectMap);
-    civcopy->valIndex = copyHashtable(&p, civcopy->valIndex, (Copier)copyRuleIndexListNode, objectMap);
+    allocate(p, CondIndexVal, civcopy, *civ, generateDescriptor);
+    civcopy->condExp = copyNode(&p, civcopy->condExp, objectMap, generateDescriptor);
+    civcopy->params = copyNode(&p, civcopy->params, objectMap, generateDescriptor);
+    civcopy->valIndex = copyHashtable(&p, civcopy->valIndex, (Copier)copyRuleIndexListNode, objectMap, generateDescriptor);
     *buf = p;
     return civcopy;
 }
@@ -220,16 +220,16 @@ Cache *copyCache(unsigned char **buf, long size, Cache *c) {
     region_free(r);
 
     ccopy->address = *buf;
-    ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet, objectMap);
-    ccopy->appRuleSet = ccopy->appRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->appRuleSet, objectMap);
+    ccopy->coreRuleSet = ccopy->coreRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->coreRuleSet, objectMap, 1);
+    ccopy->appRuleSet = ccopy->appRuleSet == NULL? NULL:copyRuleSet(&p, ccopy->appRuleSet, objectMap, 1);
     ccopy->extRuleSet = NULL;
     ccopy->extRuleSetStatus = UNINITIALIZED;
     ccopy->ruleIndex = NULL; /* ccopy->ruleIndex == NULL? NULL:copyHashtable(&p, ccopy->ruleIndex, (Copier)copyRuleIndexList, objectMap); */
     ccopy->ruleIndexStatus = UNINITIALIZED;
     ccopy->condIndex = NULL; /* ccopy->condIndex == NULL? NULL:copyHashtable(&p, ccopy->condIndex, (Copier)copyCondIndexVal, objectMap); */
     ccopy->condIndexStatus = UNINITIALIZED;
-    ccopy->coreFuncDescIndex = copyEnv(&p, ccopy->coreFuncDescIndex, (Copier)copyNode, objectMap);
-    ccopy->appFuncDescIndex = copyEnv(&p, ccopy->appFuncDescIndex, (Copier)copyNode, objectMap);
+    ccopy->coreFuncDescIndex = copyEnv(&p, ccopy->coreFuncDescIndex, (Copier)copyNode, objectMap, 1);
+    ccopy->appFuncDescIndex = copyEnv(&p, ccopy->appFuncDescIndex, (Copier)copyNode, objectMap, 1);
     ccopy->extFuncDescIndex = NULL;
     ccopy->extFuncDescIndexStatus = UNINITIALIZED;
     ccopy->dataSize = (p - (*buf));

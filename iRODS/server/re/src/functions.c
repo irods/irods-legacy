@@ -1521,27 +1521,31 @@ Res *smsi_msiAdmAddAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecInfo
 
 #ifndef DEBUG
 	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-		  return newIntRes(r, i);
+		  return newErrorRes(r, i);
 
 	  if (strlen(paramsr[0]->text) > 0) {
 	    i = loadRuleFromCacheOrFile(paramsr[0]->text, &appRuleStrct);
 	    if (i < 0)
-	  	  return newIntRes(r, i);
+	  	  return newErrorRes(r, i);
 	  }
 	  if (strlen(paramsr[1]->text) > 0) {
 	    i = readDVarStructFromFile(paramsr[1]->text, &appRuleVarDef);
 	    if (i < 0)
-	  	  return newIntRes(r, i);
+	  	  return newErrorRes(r, i);
 	  }
 	  if (strlen(paramsr[2]->text) > 0) {
 	    i = readFuncMapStructFromFile(paramsr[2]->text, &appRuleFuncMapDef);
 	    if (i < 0)
-	  	  return newIntRes(r, i);
+	  	  return newErrorRes(r, i);
 	  }
 	  return newIntRes(r, 0);
 #else
 	  i = loadRuleFromCacheOrFile(paramsr[0]->text, &appRuleStrct);
-	  return newIntRes(r, i);
+	  if(i<0) {
+		  return newErrorRes(r, i);
+	  } else {
+		  return newIntRes(r, i);
+	  }
 
 #endif
 
@@ -1551,7 +1555,7 @@ Res *smsi_msiAdmAppendToTopOfCoreRE(Node **paramsr, int n, Node *node, ruleExecI
 #ifndef DEBUG
 	  int i;
 	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-	    return newIntRes(r, i);
+	    return newErrorRes(r, i);
 #endif
 	  char *conDir = getConfigDir ();
 	  char file1[1024];
@@ -1574,7 +1578,7 @@ Res *smsi_msiAdmChangeCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *
 #ifndef DEBUG
 	  int i;
 	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-	    return newIntRes(r, i);
+	    return newErrorRes(r, i);
 #endif
 	  char *conDir = getConfigDir ();
 	  char file1[1024];
@@ -1602,7 +1606,7 @@ Res * smsi_msiAdmInsertRulesFromStructIntoDB(Node **paramsr, int n, Node *node, 
 #ifndef DEBUG
   if ((i = isUserPrivileged(rei->rsComm)) != 0) {
 	  generateAndAddErrMsg("error inserting rules into database", node, i, errmsg);
-      return newIntRes(r, i);
+      return newErrorRes(r, i);
   }
 #endif
 
@@ -1613,14 +1617,7 @@ Res * smsi_msiAdmInsertRulesFromStructIntoDB(Node **paramsr, int n, Node *node, 
 	  return newErrorRes(r, PARAOPR_EMPTY_IN_STRUCT_ERR);
   }
 
-  RuleSet *rs;
-  if(strcmp(paramsr[1]->text, "core") == 0) {
-	  rs = ruleEngineConfig.coreRuleSet;
-  } else if(strcmp(paramsr[1]->text, "app") == 0) {
-	  rs = ruleEngineConfig.appRuleSet;
-  } else {
-	  return newIntRes(r, 0);
-  }
+  RuleSet *rs = (RuleSet *)paramsr[1]->value.uninterpreted.inOutStruct;
   i = insertRulesIntoDBNew(paramsr[0]->text, rs, rei);
   if(i<0) {
 	  generateAndAddErrMsg("error inserting rules into database", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg);
@@ -1630,6 +1627,150 @@ Res * smsi_msiAdmInsertRulesFromStructIntoDB(Node **paramsr, int n, Node *node, 
   }
 
 }
+Res * smsi_msiAdmReadRulesFromFileIntoStruct(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
+{
+
+  int i;
+  RuleSet *ruleSet;
+
+#ifndef DEBUG
+  if ((i = isUserPrivileged(rei->rsComm)) != 0) {
+	  generateAndAddErrMsg("error inserting rules into database", node, i, errmsg);
+      return newErrorRes(r, i);
+  }
+#endif
+
+/*  RE_TEST_MACRO ("Loopback on msiAdmReadRulesFromFileIntoStruct");*/
+
+
+  if (paramsr[0]->text == NULL ||
+      strlen(paramsr[0]->text) == 0 ) {
+	  generateAndAddErrMsg("empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg);
+	  return newErrorRes(r, PARAOPR_EMPTY_IN_STRUCT_ERR);
+  }
+  Region *rsr = make_region(0, NULL);
+
+  ruleSet = newRuleSet(rsr);
+
+  Env *rsEnv = newEnv(newHashTable(100), NULL, NULL);
+
+  int errloc = 0;
+  i = readRuleSetFromFile(paramsr[0]->text, ruleSet, rsEnv, &errloc, errmsg, rsr);
+  deleteEnv(rsEnv, 3);
+  if (i != 0) {
+	  region_free(rsr);
+    return newErrorRes(r, i);
+  }
+
+  size_t s = region_size(rsr);
+  unsigned char *buf = (unsigned char *) malloc(s);
+  unsigned char *p = buf;
+  Hashtable *objectMap = newHashTable(100);
+  copyRuleSet(&p, ruleSet, objectMap, 0);
+
+  if (TYPE(paramsr[1]) != T_UNSPECED) {
+	  free(paramsr[1]->value.uninterpreted.inOutStruct);
+  }
+  paramsr[1]->value.uninterpreted.inOutStruct = (void *) buf;
+  paramsr[1]->exprType = newIRODSType(RuleStruct_MS_T, r);
+
+  return newIntRes(r, 0);
+}
+
+Res *smsi_msiAdmWriteRulesFromStructIntoFile(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	int i;
+	  FILE *file;
+	  char fileName[MAX_NAME_LEN];
+	  char *configDir;
+
+	  char *inFileName = paramsr[0]->text;
+	  if (inFileName[0] == '/' || inFileName[0] == '\\' ||
+	      inFileName[1] == ':') {
+	      snprintf (fileName,MAX_NAME_LEN, "%s",inFileName);
+	  }
+	  else {
+	      configDir = getConfigDir ();
+	      snprintf (fileName,MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir,inFileName);
+	  }
+
+
+	  file = fopen(fileName, "w");
+	  if (file == NULL) {
+	    rodsLog(LOG_NOTICE,
+		    "msiAdmWriteRulesFromStructToFile could not open rules file %s for writing\n",
+		    fileName);
+	    generateAndAddErrMsg("error opening file for writing", node, FILE_OPEN_ERR, errmsg);
+	    return newErrorRes(r, FILE_OPEN_ERR);
+	  }
+
+    RuleSet *ruleSet = (RuleSet *) paramsr[1]->value.uninterpreted.inOutStruct;
+	char buf[1024*16];
+		for(i=0;i<ruleSet->len;i++) {
+			ruleToString(buf, 1024*16, ruleSet->rules[i]->node);
+			fprintf(file, "%s", buf);
+		}
+	  fclose (file);
+	return newIntRes(r, 0);
+}
+
+
+
+
+int readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *rs, ruleExecInfo_t *rei, rError_t *errmsg, Region *r);
+
+Res * smsi_msiGetRulesFromDBIntoStruct(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
+{
+
+  int i;
+  RuleSet *ruleSet;
+/*
+#ifndef DEBUG
+  if ((i = isUserPrivileged(rei->rsComm)) != 0) {
+	  generateAndAddErrMsg("error reading rules from database", node, i, errmsg);
+      return newIntRes(r, i);
+  }
+#endif
+*/
+  /* RE_TEST_MACRO ("Loopback on msiGetRulesFromDBIntoStruct"); */
+
+  if (paramsr[0]->text == NULL ||
+      strlen(paramsr[0]->text) == 0 ) {
+	  generateAndAddErrMsg("empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg);
+	  return newErrorRes(r, PARAOPR_EMPTY_IN_STRUCT_ERR);
+  }
+  if (paramsr[1]->text == NULL ||
+      strlen(paramsr[1]->text) == 0 ) {
+	  generateAndAddErrMsg("empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg);
+	  return newErrorRes(r, PARAOPR_EMPTY_IN_STRUCT_ERR);
+  }
+  Region *rsr = make_region(0, NULL);
+
+  ruleSet = newRuleSet(rsr);
+
+  Env *rsEnv = newEnv(newHashTable(100), NULL, NULL);
+
+  i = readRuleSetFromDB(paramsr[0]->text, paramsr[1]->text, ruleSet, rei, errmsg, rsr);
+  deleteEnv(rsEnv, 3);
+  if (i != 0) {
+	  region_free(rsr);
+    return newErrorRes(r, i);
+  }
+
+  size_t s = region_size(rsr);
+  unsigned char *buf = (unsigned char *) malloc(s);
+  unsigned char *p = buf;
+  Hashtable *objectMap = newHashTable(100);
+  copyRuleSet(&p, ruleSet, objectMap, 0);
+
+  if (TYPE(paramsr[2]) != T_UNSPECED) {
+	  free(paramsr[2]->value.uninterpreted.inOutStruct);
+  }
+  paramsr[2]->value.uninterpreted.inOutStruct = (void *) buf;
+  paramsr[2]->exprType = newIRODSType(RuleStruct_MS_T, r);
+
+  return newIntRes(r, 0);
+}
+
 
 Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
@@ -1850,7 +1991,10 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionDesc("->integer", smsi_msiAdmClearAppRuleStruct, r));
     insertIntoHashTable(ft, "msiAdmAppendToTopOfCoreRE", newFunctionDesc("string->integer", smsi_msiAdmAppendToTopOfCoreRE, r));
     insertIntoHashTable(ft, "msiAdmChangeCoreRE", newFunctionDesc("string->integer", smsi_msiAdmChangeCoreRE, r));
-    insertIntoHashTable(ft, "msiAdmInsertRulesFromStructIntoDB", newFunctionDesc("string * string -> integer", smsi_msiAdmInsertRulesFromStructIntoDB, r));
+    insertIntoHashTable(ft, "msiAdmInsertRulesFromStructIntoDB", newFunctionDesc("string * `RuleStruct_PI` -> integer", smsi_msiAdmInsertRulesFromStructIntoDB, r));
+    insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionDesc("string * d `RuleStruct_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
+    insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionDesc("string * `RuleStruct_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
+    insertIntoHashTable(ft, "msiGetRulesFromDBIntoStruct", newFunctionDesc("string * string * d `RuleStruct_PI` -> integer", smsi_msiGetRulesFromDBIntoStruct, r));
 
 
 }

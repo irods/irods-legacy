@@ -52,4 +52,5 @@ Region *make_region(size_t is, jmp_buf *label);
 void *region_alloc(Region *r, size_t s);
 /* free region r */
 void region_free(Region *r);
+size_t region_size(Region *r);
 #endif

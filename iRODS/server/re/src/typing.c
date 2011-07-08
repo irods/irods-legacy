@@ -108,7 +108,7 @@ int tautologyLtBase(ExprType *a, ExprType *b) {
             case T_STRING:
                 return a->nodeType==b->nodeType;
             case T_IRODS:
-            	return b->nodeType==T_IRODS && strcmp(a->text, b->text) == 0 ? 1 : 0;
+            	return b->nodeType==T_IRODS && (a->text==NULL || b->text == NULL || strcmp(a->text, b->text) == 0) ? 1 : 0;
             default:
                 return 0;
         }
@@ -214,7 +214,7 @@ Satisfiability simplifyR(ExprType *a, ExprType *b, int flex, Node *node, Hashtab
 	} else {
 		bm = b;
 	}
-	Node *cl[100], *cr[100];
+	Node *cl[MAX_NUM_DISJUNCTS], *cr[MAX_NUM_DISJUNCTS];
 	int nln, nrn;
 	doNarrow(&a, T_VAR_DISJUNCTS(bm), 1, T_VAR_NUM_DISJUNCTS(bm), flex, cl, cr, &nln, &nrn);
 	ExprType *bn;
@@ -246,7 +246,7 @@ Satisfiability simplifyL(ExprType *a, ExprType *b, int flex, Node *node, Hashtab
 	} else {
 		am = a;
 	}
-	Node *cl[100], *cr[100];
+	Node *cl[MAX_NUM_DISJUNCTS], *cr[MAX_NUM_DISJUNCTS];
 	int nln, nrn;
 	doNarrow(T_VAR_DISJUNCTS(am), &b, T_VAR_NUM_DISJUNCTS(am), 1, flex, cl, cr, &nln, &nrn);
 	ExprType *an;
@@ -275,33 +275,39 @@ void addToEquivalenceClass(ExprType *a, ExprType *b, Hashtable *equivalence) {
 	}
 }
 void doNarrow(Node **l, Node **r, int ln, int rn, int flex, Node **nl, Node **nr, int *nln, int *nrn) {
-	int retl[100], retr[100];
+	Node *retl[MAX_NUM_DISJUNCTS], *retr[MAX_NUM_DISJUNCTS];
 	int i,k;
 	for(i=0;i<ln;i++) {
-		retl[i] = 0;
+		retl[i] = NULL;
 	}
 	for(k=0;k<rn;k++) {
-		retr[k] = 0;
+		retr[k] = NULL;
 	}
 	for(k=0;k<rn;k++) {
 		for(i=0;i<ln;i++) {
 			if(splitBaseType(l[i], r[k], flex) == TAUTOLOGY) {
-				retl[i] = 1;
-				retr[k] = 1;
+				retl[i] = l[i];
+				retr[k] = r[k];
+				if(l[i]->nodeType == T_IRODS && l[i]->text == NULL) {
+					retl[i] = retr[k];
+				}
+				if(r[k]->nodeType == T_IRODS && r[k]->text == NULL) {
+					retr[k] = retl[i];
+				}
 			/*	break;*/
 			}
 		}
 	}
 	*nln = 0;
 	for(i=0;i<ln;i++) {
-		if(retl[i]) {
-			nl[(*nln)++] = l[i];
+		if(retl[i]!=NULL) {
+			nl[(*nln)++] = retl[i];
 		}
 	}
 	*nrn = 0;
 	for(k=0;k<rn;k++) {
-		if(retr[k]) {
-			nr[(*nrn)++] = r[k];
+		if(retr[k]!=NULL) {
+			nr[(*nrn)++] = retr[k];
 		}
 	}
 }
@@ -406,7 +412,9 @@ int isBaseType(ExprType *t) {
 
 Satisfiability splitBaseType(ExprType *tca, ExprType *tcb, int flex)
 {
-    return (flex && tautologyLtBase(tca, tcb)) || (!flex && typeEqSyntatic(tca, tcb)) ? TAUTOLOGY : ABSURDITY;
+    return (flex && tautologyLtBase(tca, tcb)) ||
+    		(!flex && ((tca->nodeType == T_IRODS && tcb->nodeType == T_IRODS && (tca->text == NULL || tcb->text == NULL)) ||
+    				typeEqSyntatic(tca, tcb))) ? TAUTOLOGY : ABSURDITY;
 }
 
 Satisfiability simplifyLocally(ExprType *tca, ExprType *tcb, int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r) {
@@ -671,17 +679,17 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
                     /* char errbuf[ERR_MSG_LEN]; */
                     char typebuf[ERR_MSG_LEN];
                     char typebuf2[ERR_MSG_LEN];ExprType *t = NULL;
-		if(fType->vararg!=ONCE) {
+		if(getVararg(fType) != OPTION_VARARG_ONCE) {
 			/* generate instance of vararg tuple so that no vararg tuple goes into typing constraints */
 			int fixParamN = paramType->degree - 1;
 			int argN = node->subtrees[1] ->degree;
 			int copyN = argN - fixParamN;
 			ExprType **subtrees = paramType->subtrees;
-			if(copyN < (fType->vararg == PLUS ? 1 : 0) || (fType->vararg == OPTIONAL && copyN > 1)) {
+			if(copyN < (getVararg(fType) == OPTION_VARARG_PLUS ? 1 : 0) || (getVararg(fType) == OPTION_VARARG_OPTIONAL && copyN > 1)) {
 				snprintf(buf, 1024, "unsolvable vararg typing constraint %s < %s %s",
 					typeToString(argType, var_type_table, typebuf, ERR_MSG_LEN),
 					typeToString(paramType, var_type_table, typebuf2, ERR_MSG_LEN),
-					fType->vararg == PLUS ? "*" : fType->vararg == OPTIONAL ? "?" : "+");
+					getVararg(fType) == OPTION_VARARG_PLUS ? "*" : getVararg(fType) == OPTION_VARARG_OPTIONAL? "?" : "+");
 				ERROR2(1, buf);
 			}
 			ExprType **paramTypes = allocSubtrees(r, argN);
@@ -768,7 +776,7 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
     ExprType **components;
     ExprType* t = NULL;
 	int i;
-	expr->typed = 1;
+	expr->option |= OPTION_TYPED;
 	switch(expr->nodeType) {
 		case TK_INT:
             return expr->exprType = newSimpType(T_INT,r);
@@ -797,7 +805,7 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
                     ExprType *paramType = newSimpType(T_DYNAMIC, r);
                     paramType->iotype = IO_TYPE_DYNAMIC;
                     ExprType *fType = newFuncType(newUnaryType(T_TUPLE, paramType, r), newSimpType(T_DYNAMIC, r), r);
-                    fType->vararg = STAR;
+                    setVararg(fType, OPTION_VARARG_STAR);
                     return expr->exprType = fType;
                 }
 			}
@@ -872,9 +880,9 @@ void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t *errmsg, Node
             	int i;
             	for(i=0;i<expr->degree;i++) {
                     if(typeEqSyntatic(expr->subtrees[i]->exprType, csubtrees[i])) {
-                		expr->subtrees[i]->coerce = 0;
+                		expr->subtrees[i]->option &= ~OPTION_COERCE;
                     } else {
-                		expr->subtrees[i]->coerce = 1;
+                		expr->subtrees[i]->option |= OPTION_COERCE;
                     }
             	}
             }

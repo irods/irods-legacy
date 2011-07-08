@@ -67,6 +67,7 @@ typedef struct {
 typedef struct ruleSet {
 	int len;
 	RuleDesc* rules[MAX_NUM_RULES];
+	/* Region *region; */
 } RuleSet;
 
 typedef struct {

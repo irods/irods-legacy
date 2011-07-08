@@ -19,6 +19,7 @@
 
 #define MAX_PARAMS_LEN 100
 #define MAX_RULE_LEN 1024
+#define MAX_NUM_DISJUNCTS 100
 
 /* parser error -1203000 */
 #define PARSER_ERROR -1203000
@@ -144,12 +145,17 @@ typedef enum node_type {
     TC_SET = 660,
 } NodeType;
 
-enum vararg {
-    ONCE = 0,
-    STAR = 1,
-    PLUS = 2,
-    OPTIONAL = 3,
-};
+#define OPTION_VARARG_ONCE 0x0
+#define OPTION_VARARG_STAR 0x1
+#define OPTION_VARARG_PLUS 0x2
+#define OPTION_VARARG_OPTIONAL 0x3
+#define OPTION_VARARG_MASK 0x3
+#define OPTION_COERCE 0x8
+#define OPTION_TYPED 0x10
+
+#define getVararg(n) ((n)->option & OPTION_VARARG_MASK)
+#define setVararg(n, v) (n)->option &= ~OPTION_VARARG_MASK; (n)->option |= (v);
+
 
 typedef struct env Env;
 
@@ -207,14 +213,13 @@ struct node {
     NodeType nodeType; /* node type */
     ExprType *exprType; /* expression type */
     ExprType *coercionType; /* coercion type */
-    int coerce; /* weather runtime coercion is needed */
+    int option; /* weather runtime coercion is needed */
+    /* when this node represents a type or a pattern, this field indicates whether the trailing subtree represents varargs */
     int iotype;
     char *text;
     long expr;
     int degree;
-    enum vararg vararg; /* when this node represents a type or a pattern, this field indicates whether the trailing subtree represents varargs */
     struct node **subtrees;
-    int typed;
     char *base;
     union node_ext value;
 };
@@ -257,9 +262,9 @@ ExprType *newCollType(ExprType *elemType, Region *r);
 ExprType *newTupleType(int arity, ExprType **typeArgs, Region *r);
 ExprType *newUnaryType(NodeType nodeType, ExprType *typeArg, Region *r);
 ExprType *newFuncType(ExprType *paramType, ExprType *retType, Region *r);
-ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType *elemType, Region *r);
+ExprType *newFuncTypeVarArg(int arity, int vararg, ExprType **paramTypes, ExprType *elemType, Region *r);
 ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r);
-ExprType *newTupleTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, Region *r);
+ExprType *newTupleTypeVarArg(int arity, int vararg, ExprType **paramTypes, Region *r);
 ExprType *newSimpType(NodeType t, Region *r);
 ExprType *newErrorType(int errcode, Region *r);
 ExprType *newIRODSType(char *name, Region *r);

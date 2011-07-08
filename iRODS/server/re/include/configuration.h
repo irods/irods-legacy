@@ -53,6 +53,7 @@ typedef struct {
     Region *regionIndex;
     Region *regionCore;
     Region *regionApp;
+    int clearDelayed;
 } Cache;
 #define isComponentInitialized(x) ((x)==INITIALIZED || (x)==COMPRESSED || (x)==LOCAL)
 #define isComponentAllocated(x) ((x)==INITIALIZED || (x)==LOCAL)

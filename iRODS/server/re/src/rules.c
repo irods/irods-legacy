@@ -123,6 +123,9 @@ Env *defaultEnv(Region *r) {
 }
 
 int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
+    /* set clearDelayed to 0 so that nested calls to this function do not call clearDelay() */
+    int recclearDelayed = ruleEngineConfig.clearDelayed;
+    ruleEngineConfig.clearDelayed = 0;
 
     rError_t errmsgBuf;
     errmsgBuf.errMsg = NULL;
@@ -171,7 +174,10 @@ error:
     rei->status = rescode;
     freeRErrorContent(&errmsgBuf);
     deleteEnv(env, 3);
+    if(recclearDelayed) {
     clearDelayed();
+    }
+    ruleEngineConfig.clearDelayed = recclearDelayed;
 
     return rescode;
 
@@ -292,6 +298,9 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     snprintf(buf, 1024, "computExpressionWithParams: %s\n", actionName);
     writeToTmp("entry.log", buf);
 #endif
+    /* set clearDelayed to 0 so that nested calls to this function do not call clearDelay() */
+    int recclearDelayed = ruleEngineConfig.clearDelayed;
+    ruleEngineConfig.clearDelayed = 0;
 
     if(overflow(actionName, MAX_COND_LEN)) {
             addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
@@ -339,7 +348,10 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     }
     Res *res = computeExpressionNode(node, env, rei, reiSaveFlag, errmsg,r);
     deleteEnv(env, 3);
-    clearDelayed();
+    if(recclearDelayed) {
+    	clearDelayed();
+    }
+    ruleEngineConfig.clearDelayed = recclearDelayed;
     return res;
 }
 ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
@@ -469,7 +481,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
     Node *en;
     Node **errnode = &en;
     Res* res;
-    if(!node->typed) {
+    if((node->option & OPTION_TYPED) == 0) {
         /*printTree(node, 0); */
         List *typingConstraints = newList(r);
         resType = typeExpression3(node, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
@@ -484,7 +496,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
         /*    printTree(node, 0); */
         deleteHashTable(varTypes, nop);
         varTypes = NULL;
-        node->typed = 1;
+        node->option |= OPTION_TYPED;
     }
     res = evaluateExpression3(node, GlobalAllRuleExecFlag, 0, rei, reiSaveFlag, env, errmsg, rNew);
 
@@ -575,7 +587,7 @@ int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *
             for(k=0;k<arity;k++) {
                 paramTypes[k] = newTVar(r);
             }
-            ExprType *ruleType = newFuncTypeVarArg(arity, ONCE, paramTypes, newSimpType(T_INT, r), r);
+            ExprType *ruleType = newFuncTypeVarArg(arity, OPTION_VARARG_ONCE, paramTypes, newSimpType(T_INT, r), r);
 
             if (insertIntoHashTable(symbol_type_table, key,ruleType) == 0) {
                     return 0;
@@ -612,6 +624,9 @@ int actionTableLookUp (char *action)
 	return (UNMATCHED_ACTION_ERR);
 }
 Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
+    /* set clearDelayed to 0 so that nested calls to this function do not call clearDelay() */
+    int recclearDelayed = ruleEngineConfig.clearDelayed;
+    ruleEngineConfig.clearDelayed = 0;
     int freeRei = 0;
     if(rei == NULL) {
         rei = (ruleExecInfo_t *) malloc(sizeof(ruleExecInfo_t));
@@ -656,8 +671,10 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     if(freeRei) {
         free(rei);
     }
-
-    clearDelayed();
+    if(recclearDelayed) {
+    	clearDelayed();
+    }
+    ruleEngineConfig.clearDelayed = recclearDelayed;
     return res;
 
 }

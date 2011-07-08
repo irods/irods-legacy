@@ -595,6 +595,10 @@ PARSER_FUNC_BEGIN(RuleName)
         BUILD_NODE(N_PARAM_LIST, "paramlist", &paramListStart, n, n);
         PUSH(node);
     OR(params)
+        OPTIONAL_BEGIN(epl)
+			TTEXT("(");
+			TTEXT(")");
+        OPTIONAL_END(epl)
         BUILD_NODE(N_PARAM_LIST, "paramlist", &paramListStart, 0, 0);
         BUILD_NODE(N_PARAM_TYPE_LIST, "paramTypelist", &paramListStart, 0, 0);
     END_TRY(params)
@@ -1401,7 +1405,7 @@ void printTree(Node *n, int indent) {
 	if(n->iotype & IO_TYPE_ACTIONS) {
 		strcat(iotype, "a");
 	}
-	printf("%s:%d %s => %s(coerce=%d)[%s]\n",n->text, n->nodeType, buf2, buf, n->coerce, iotype);
+	printf("%s:%d %s => %s(option=%d)[%s]\n",n->text, n->nodeType, buf2, buf, n->option, iotype);
 }
 	int i;
 	for(i=0;i<n->degree;i++) {
@@ -2250,7 +2254,7 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     NT2(_Type, 1, 0);
                     BUILD_NODE(T_CONS, LIST, &vpos, 1, 1);
                     Node *node = POP;
-                    node->vararg = ONCE;
+                    setVararg(node, OPTION_VARARG_ONCE);
                     PUSH(node);
 			OR(type)
                     TTEXT("unit");
@@ -2413,25 +2417,25 @@ PARSER_FUNC_END(TypingConstraints)
 
 PARSER_FUNC_BEGIN(_FuncType)
     int rulegen = 1;
-	enum vararg vararg = ONCE;
+	int vararg = 0;
     NT2(_Type, 0, 1);
     TRY(vararg)
         TTEXT("*");
-        vararg = STAR;
+        vararg = OPTION_VARARG_STAR;
     OR(vararg)
         TTEXT("+");
-        vararg = PLUS;
+        vararg = OPTION_VARARG_PLUS;
 	OR(vararg)
 		TTEXT("?");
-		vararg = OPTIONAL;
+		vararg = OPTION_VARARG_OPTIONAL;
     OR(vararg)
-        vararg = ONCE;
+        vararg = OPTION_VARARG_ONCE;
     END_TRY(vararg)
     TTEXT("->");
     NT2(_Type, 0, 0);
     BUILD_NODE(T_CONS, FUNC, &start, 2, 2);
     Node *node = POP;
-    node->vararg = vararg;
+    setVararg(node, vararg);
     PUSH(node);
 PARSER_FUNC_END(_FuncType)
 
@@ -2491,11 +2495,11 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
 
             Node *node = parseRuleRuleGen(e, backwardCompatible, errmsg, r);
             if(node==NULL) {
-                addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
+                addRErrorMsg(errmsg, OUT_OF_MEMORY, "parseRuleSet: out of memory.");
                 return -1;
             } else if(node->nodeType == N_ERROR) {
                     *errloc = node->expr;
-                    generateErrMsg("readRuleSetFromFile: error parsing rule.", *errloc, e->base, errbuf);
+                    generateErrMsg("parseRuleSet: error parsing rule.", *errloc, e->base, errbuf);
                     addRErrorMsg(errmsg, PARSER_ERROR, errbuf);
                     /* skip the current line and try to parse the rule from the next line */
                     skipComments(e);
@@ -2509,7 +2513,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                     int k;
                     for(k=1;k<n;k+=2) {
                         if(lookupFromEnv(funcDescIndex, nodes[k]->text)!=NULL) {
-                            generateErrMsg("readRuleSetFromFile: redefinition of constructor.", nodes[k]->expr, nodes[k]->base, errbuf);
+                            generateErrMsg("parseRuleSet: redefinition of constructor.", nodes[k]->expr, nodes[k]->base, errbuf);
                             addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
                             return -1;
                         }
@@ -2517,7 +2521,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                     }
                 } else if(strcmp(node->text, "EXTERN") == 0) {
                         if(lookupFromEnv(funcDescIndex, nodes[0]->text)!=NULL) {
-                            generateErrMsg("readRuleSetFromFile: redefinition of function.", nodes[0]->expr, nodes[0]->base, errbuf);
+                            generateErrMsg("parseRuleSet: redefinition of function.", nodes[0]->expr, nodes[0]->base, errbuf);
                             addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
                             return -1;
                         }

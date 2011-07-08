@@ -13,24 +13,28 @@
 #define SEM_NAME "irods_sem_re"
 /* #define CACHE_ENABLE 0 */
 
-#define allocate(p, ty, vn, val) \
+#define allocate(p, ty, vn, val, gd) \
+	if(gd) { \
     ((CacheRecordDesc *)p)->type = CONCAT(ty,_T); \
     ((CacheRecordDesc *)p)->length = 1; \
     p+= sizeof(CacheRecordDesc); \
+	} \
     ty *vn = ((ty *)p); \
     *vn = val; p+=sizeof(ty)
-#define allocateArray(p, elemTy, n, lval, val) \
+#define allocateArray(p, elemTy, n, lval, val, gd) \
+	if(gd) { \
     ((CacheRecordDesc *)p)->type = CONCAT(elemTy,_T); \
     ((CacheRecordDesc *)p)->length = n; \
     p+= sizeof(CacheRecordDesc); \
+	} \
     lval = ((elemTy *)p); \
     memcpy(lval, val, sizeof(elemTy)*(n)); \
     p+=sizeof(elemTy) * (n);
 #define SHMMAX 30000000
 #define SHM_BASE_ADDR ((void *)0x80000000)
 #define APPLY_DIFF(p, t, d) if((p)!=NULL){unsigned char *temp = (unsigned char *)p; temp+=(d); (p)=(t *)temp;}
-#define MAKE_COPY(buf, type, src, tgt) if((src)!=NULL) {tgt=CONCAT(copy, type)(&(buf), src);}
-typedef void * (*Copier)(unsigned char **, void *, Hashtable *);
+#define MAKE_COPY(buf, type, src, tgt, gd) if((src)!=NULL) {tgt=CONCAT(copy, type)(&(buf), src, gd);}
+typedef void * (*Copier)(unsigned char **, void *, Hashtable *, int);
 enum cacheRecordType {
         Cache_T,
         ExprType_T,
@@ -57,14 +61,14 @@ typedef struct {
 } CacheRecordDesc;
 
 
-char *copyString(unsigned char **buf, char *string);
-Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap);
-Hashtable *copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap);
-Env *copyEnv(unsigned char **buf, Env *e, void *(*cpfn)(unsigned char **, void *, Hashtable *), Hashtable *objectMap);
-RuleDesc *copyRuleDesc(unsigned char **buf, RuleDesc *h, Hashtable *objectMap);
-Hashtable* copyHashtableCharPrtToIntPtr(unsigned char **buf, Hashtable *h, Hashtable *objectMap);
-RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap);
-CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable *objectMap);
+char *copyString(unsigned char **buf, char *string, int generateDescriptor);
+Node *copyNode(unsigned char **buf, Node *node, Hashtable *objectMap, int generateDescriptor);
+Hashtable* copyHashtable(unsigned char **buf, Hashtable *h, void *(*cpfn)(unsigned char **, void *, Hashtable *, int), Hashtable *objectMap, int generateDescriptor);
+Env *copyEnv(unsigned char **buf, Env *e, void *(*cpfn)(unsigned char **, void *, Hashtable *, int), Hashtable *objectMap, int generateDescriptor);
+RuleDesc *copyRuleDesc(unsigned char **buf, RuleDesc *h, Hashtable *objectMap, int generateDescriptor);
+Hashtable* copyHashtableCharPrtToIntPtr(unsigned char **buf, Hashtable *h, Hashtable *objectMap, int generateDescriptor);
+RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap, int generateDescriptor);
+CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable *objectMap, int generateDescriptor);
 Cache *copyCache(unsigned char **buf, long size, Cache *c);
 Cache *restoreCache(unsigned char *buf);
 void unlockMutex(sem_t **mutex);

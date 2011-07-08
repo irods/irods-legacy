@@ -14,7 +14,7 @@ ExprType *dupType(ExprType *ty, Region *r) {
 }
 
 int typeEqSyntatic(ExprType *a, ExprType *b) {
-    if(a->nodeType!=b->nodeType || a->vararg != b->vararg) {
+    if(a->nodeType!=b->nodeType || getVararg(a) != getVararg(b)) {
         return 0;
     }
     switch(a->nodeType) {
@@ -83,7 +83,7 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable) {
         default:
             newt = ty;
     }
-    newt->vararg = ty->vararg;
+    newt->option = ty->option;
     newt->iotype = ty->iotype;
 	return newt;
 }
@@ -159,7 +159,7 @@ ExprType* unifyTVarR(ExprType *type, ExprType* expected, Hashtable *varTypes, Re
  *        NULL if false
  */
 ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r) {
-	if(type->vararg != expected->vararg) {
+	if(getVararg(type) != getVararg(expected)) {
 		return NULL;
 	}
     char buf[128];
@@ -308,10 +308,9 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
 	node->subtrees = NULL;
 	node->degree = 0;
 	node->expr = eloc == NULL? 0 : eloc->exprloc;
-    node->typed = 0;
+    node->option = 0;
     node->exprType = NULL;
     node->coercionType = NULL;
-    node->coerce = 0;
     node->iotype = IO_TYPE_INPUT;
     node->value.constructTuple = 0;
     if(eloc!=NULL) {
@@ -336,7 +335,7 @@ Node *newExprType(NodeType type, int degree, Node **subtrees, Region *r) {
     t->nodeType = type;
     t->expr = 0;
     t->text = NULL;
-    t->typed = 1;
+    t->option = OPTION_TYPED;
     t->iotype = IO_TYPE_INPUT;
     return t;
 
@@ -379,7 +378,7 @@ ExprType *newFuncType(ExprType *paramType, ExprType* retType, Region *r) {
     typeArgs[1] = retType;
     return newConsType(2, cpStringExt(FUNC, r), typeArgs, r);
 }
-ExprType *newFuncTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, ExprType* retType, Region *r) {
+ExprType *newFuncTypeVarArg(int arity, int vararg, ExprType **paramTypes, ExprType* retType, Region *r) {
     return newFuncType(newTupleTypeVarArg(arity, vararg, paramTypes, r), retType, r);
 }
 ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r) {
@@ -387,9 +386,9 @@ ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r) {
     T_CONS_TYPE_NAME(t) = cpString(cons, r);
     return t;
 }
-ExprType *newTupleTypeVarArg(int arity, enum vararg vararg, ExprType **paramTypes, Region *r) {
+ExprType *newTupleTypeVarArg(int arity, int vararg, ExprType **paramTypes, Region *r) {
 	ExprType *t = newExprType(T_TUPLE, arity, paramTypes, r);
-    t->vararg = vararg;
+    setVararg(t, vararg);
     return t;
 }
 
@@ -751,7 +750,7 @@ void printType(ExprType *type, Hashtable *var_types) {
 char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize) {
     buf[0] = '\0';
     Region *r = make_region(0, NULL);
-    if(type->vararg!=ONCE) {
+    if(getVararg(type) != OPTION_VARARG_ONCE) {
     	snprintf(buf+strlen(buf), bufsize-strlen(buf), "vararg ");
     }
         ExprType *etype = type;
