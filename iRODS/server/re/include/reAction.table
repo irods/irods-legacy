@@ -145,6 +145,8 @@ int msiRenameLocalZone(msParam_t *oldName, msParam_t *newName,
 int msiRenameCollection(msParam_t *oldName, msParam_t *newName,
                        ruleExecInfo_t *rei);
 int msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei);
+int msiSetQuota(msParam_t *type, msParam_t *name, msParam_t *resource, 
+				msParam_t *value, ruleExecInfo_t *rei);
 int msiRemoveKeyValuePairsFromObj(msParam_t *metadataParam, 
                                   msParam_t* objParam,
                                   msParam_t* typeParam,
@@ -342,6 +344,7 @@ microsdef_t MicrosTable[] = {
   {"msiRenameLocalZone",2,(funcPtr) msiRenameLocalZone},
   {"msiRenameCollection",2,(funcPtr) msiRenameCollection},
   {"msiAclPolicy",1,(funcPtr)msiAclPolicy},
+  {"msiSetQuota",4,(funcPtr)msiSetQuota},
   {"msiRemoveKeyValuePairsFromObj",3,(funcPtr) msiRemoveKeyValuePairsFromObj},
   {"msiDataObjPutWithOptions",6,(funcPtr) msiDataObjPutWithOptions},
   {"msiDataObjReplWithOptions",4,(funcPtr) msiDataObjReplWithOptions},
