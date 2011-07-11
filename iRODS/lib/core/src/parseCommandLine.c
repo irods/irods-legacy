@@ -125,6 +125,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
                argv[i+1]="-Z";
             }
          }
+         if (strcmp("--orphan", argv[i])==0) {
+            rodsArgs->orphan=True;
+            argv[i]="-Z";
+         }
       }
    }
 

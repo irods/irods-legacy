@@ -28,11 +28,9 @@ rodsPathInp_t *rodsPathInp)
 
     if (rodsPathInp->numSrc <= 0) {
 	char trashPath[MAX_NAME_LEN];
-	char orphanPath[MAX_NAME_LEN];
 	char *myZoneName;
 	char myZoneType[MAX_NAME_LEN];
 
-        *orphanPath = '\0';
 	if (myRodsArgs->zoneName != NULL) {
 	    myZoneName = myRodsArgs->zoneName;
 	} else {
@@ -42,12 +40,13 @@ rodsPathInp_t *rodsPathInp)
 	    if (myRodsArgs->user == True) {
 		snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/home/%s",
 		  myZoneName, myRodsArgs->userString);
+	    } else if (myRodsArgs->orphan  == True) {
+	        snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/orphan",
+                  myZoneName);
 	    } else {
 		snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/home",
                   myZoneName);
 	    }
-	    snprintf (orphanPath, MAX_NAME_LEN, "/%s/trash/orphan",
-              myZoneName);
 	} else {
 	    int remoteFlag = 0;
 	    status = getZoneType (conn, myZoneName, conn->clientUser.rodsZone, 
@@ -68,11 +67,6 @@ rodsPathInp_t *rodsPathInp)
         addSrcInPath (rodsPathInp, trashPath);
 	rstrcpy (rodsPathInp->srcPath[0].outPath, trashPath, MAX_NAME_LEN);
 	rodsPathInp->srcPath[0].objType = COLL_OBJ_T;
-	if (*orphanPath != '\0') {
-            addSrcInPath (rodsPathInp, orphanPath);
-            rstrcpy (rodsPathInp->srcPath[1].outPath, orphanPath, MAX_NAME_LEN);
-            rodsPathInp->srcPath[1].objType = COLL_OBJ_T;
-	}
     }
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {

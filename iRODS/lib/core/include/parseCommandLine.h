@@ -63,6 +63,7 @@ typedef struct {
    int progressFlag;
    int option;
    char *optionString;
+   int orphan;
    int prompt;
    int query;
    int rbudp;

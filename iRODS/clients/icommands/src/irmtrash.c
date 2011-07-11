@@ -82,7 +82,7 @@ void
 usage ()
 {
    char *msgs[]={
-   "Usage : irmtrash [-hMrvV] [-u user] [-z zoneName] [dataObj|collection ...] ",
+   "Usage : irmtrash [-hMrvV] [--orphan] [-u user] [-z zoneName] [dataObj|collection ...] ",
 "Remove one or more data-object or collection from a RODS trash bin.",
 "If the input dataObj|collection is not specified, the entire trash bin",
 "of the user (/$myZone/trash/$myUserName) will be removed.",
@@ -102,6 +102,8 @@ usage ()
 "     in the collection, and any subcollections and sub-data-objects in the",
 "     collection.",
 " -M  admin mode",
+" --orphan  remove the orphan files in the /myZone/trash/orphan collection",
+"     It must be used with the -M option.",
 " -u  user - Used with the -M option allowing an admin user to delete a",
 "     specific user's trash bin.",
 " -v  verbose",
