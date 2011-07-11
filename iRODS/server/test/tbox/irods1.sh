@@ -38,5 +38,9 @@ if [ -f /tmp/sleep ] ; then
     fi
 fi
 
-
+# Another control file to wait indefinitely,
+# for use when I'm doing manual testing
+while [ -f /tmp/wait ] ; do
+    sleep 60
+done
 exit $error1
