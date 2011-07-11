@@ -236,6 +236,7 @@ rescInfo_t *rescInfo)
 {
     dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
     regReplica_t regReplicaInp;
+    char *rescGroupName = NULL;
     int status;
 
     status = getDataObjInfo (rsComm, phyPathRegInp, &dataObjInfoHead,
@@ -253,6 +254,10 @@ rescInfo_t *rescInfo)
     rstrcpy (destDataObjInfo.filePath, filePath, MAX_NAME_LEN);
     destDataObjInfo.rescInfo = rescInfo;
     rstrcpy (destDataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
+    if ((rescGroupName = getValByKey (&phyPathRegInp->condInput,
+      RESC_GROUP_NAME_KW)) != NULL) {
+        rstrcpy (destDataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
+    }
     memset (&regReplicaInp, 0, sizeof (regReplicaInp));
     regReplicaInp.srcDataObjInfo = dataObjInfoHead;
     regReplicaInp.destDataObjInfo = &destDataObjInfo;
