@@ -381,8 +381,17 @@ Token* nextTokenRuleGen(Pointer* e, Token* token, int rulegen) {
                 nextString2(e, token->text, token->vars);
                 token->type = TK_STRING;
             } else if (ch == '`') {
-                nextStringBase(e, token->text, "`", 1, '\\', token->vars);
-                token->type = TK_BACKQUOTED;
+            	if(lookAhead(e, 1) == '`') {
+            		if(nextStringBase2(e, token->text, "``")==-1) {
+            			token->type = N_ERROR;
+            		} else {
+            			token->type = TK_STRING;
+            			token->vars[0] = -1;
+            		}
+            	} else {
+					nextStringBase(e, token->text, "`", 1, '\\', token->vars);
+					token->type = TK_BACKQUOTED;
+            	}
             } else {
                 token->type = N_ERROR;
             }
@@ -1244,6 +1253,29 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         NT(StringExpression);
     END_TRY(value)
 PARSER_FUNC_END(Value)
+
+int nextStringBase2(Pointer *e, char *value, char* delim) {
+		nextChar(e);
+    	char ch = nextChar(e);
+    	while(ch!=-1) {
+			if(delim[0] == ch && delim[1] == lookAhead(e, 1)) {
+				if(delim[0] == delim[1]) {
+					while(lookAhead(e, 2) == delim[1]) {
+						*(value++) = delim[0];
+						nextChar(e);
+					}
+				}
+				*value='\0';
+				nextChar(e);
+				nextChar(e);
+				return 0;
+			}
+    		*(value++) = ch;
+    		ch = nextChar(e);
+    	}
+    	return -1;
+
+}
 /*
  * return number of vars or -1 if no string found
  */
@@ -2196,6 +2228,8 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
         TRY(typeEnd)
             TTEXT_LOOKAHEAD("->");
         OR(typeEnd)
+        	TTEXT_LOOKAHEAD("=>");
+        OR(typeEnd)
             TTEXT_LOOKAHEAD(")");
         OR(typeEnd)
             TTEXT_LOOKAHEAD(">");
@@ -2287,7 +2321,14 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     TTEXT("f");
                     /* flexible type, non dynamic coercion allowed */
                     NT2(_Type, 1, 0);
-                    BUILD_NODE(T_FLEX, NULL, &start, 1, 1);
+                    TRY(ftype)
+                    	TTEXT("=>");
+                    	NT2(_Type, 1, 0);
+                    	BUILD_NODE(T_FIXD, NULL, &start, 2, 2);
+                    OR(ftype)
+                    	BUILD_NODE(T_FLEX, NULL, &start, 1, 1);
+                    END_TRY(ftype);
+
             OR(type)
                     TTEXT("o");
                     NT2(_Type, 1, 0);
@@ -2642,6 +2683,8 @@ char* typeName_NodeType(NodeType s) {
                 return "CONS";
             case T_FLEX:
                 return "FLEX";
+            case T_FIXD:
+                return "FIXD";
             case T_BOOL:
                 return "BOOLEAN";
             case T_INT:

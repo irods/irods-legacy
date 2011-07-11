@@ -381,6 +381,7 @@ int eqExprNodeSyntactic(Node *a, Node *b);
 int eqExprNodeSyntacticVarMapping(Node *a, Node *b, Hashtable *varMapping /* from a to b */);
 
 int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char escape, int vars[]);
+int nextStringBase2(Pointer *e, char *value, char* delim);
 Node *convertStringToExpression(Token *token, char *base, Node **node, Region *r);
 Node *nextActionBackwardCompatible(Pointer *e, Node **node, rError_t *errmsg, Region *r);
 Node *parseActionArgumentBackwardCompatible(Pointer *e, Node **node, rError_t *errmsg, Region *r);

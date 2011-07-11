@@ -9,8 +9,8 @@
 
 #define DEFAULT_BLOCK_SIZE 1024
 /* the alignment in the region in bytes */
-#define ALIGNMENT 4
-
+#define ALIGNMENT 8
+#define roundToAlignment(x) ((x)%ALIGNMENT == 0?(x):(((x)/ALIGNMENT)+1)*ALIGNMENT)
 struct error {
     int code;
     char msg[1024];

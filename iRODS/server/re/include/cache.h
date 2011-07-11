@@ -10,6 +10,7 @@
 #include "rules.h"
 #include "index.h"
 #include "configuration.h"
+#include "region.h"
 #define SEM_NAME "irods_sem_re"
 /* #define CACHE_ENABLE 0 */
 
@@ -17,7 +18,7 @@
 	if(gd) { \
     ((CacheRecordDesc *)p)->type = CONCAT(ty,_T); \
     ((CacheRecordDesc *)p)->length = 1; \
-    p+= sizeof(CacheRecordDesc); \
+    p+= roundToAlignment(sizeof(CacheRecordDesc)); \
 	} \
     ty *vn = ((ty *)p); \
     *vn = val; p+=sizeof(ty)
@@ -25,7 +26,7 @@
 	if(gd) { \
     ((CacheRecordDesc *)p)->type = CONCAT(elemTy,_T); \
     ((CacheRecordDesc *)p)->length = n; \
-    p+= sizeof(CacheRecordDesc); \
+    p+= roundToAlignment(sizeof(CacheRecordDesc)); \
 	} \
     lval = ((elemTy *)p); \
     memcpy(lval, val, sizeof(elemTy)*(n)); \

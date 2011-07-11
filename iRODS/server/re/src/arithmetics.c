@@ -201,6 +201,8 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
         ExprType *coercion = type;
         if(coercion->nodeType == T_FLEX) {
             coercion = coercion->subtrees[0];
+        } else if(coercion->nodeType == T_FIXD) {
+        	coercion = coercion->subtrees[1];
         }
         coercion = instantiate(coercion, tvarEnv, 0, r);
         if(coercion->nodeType == T_VAR) {

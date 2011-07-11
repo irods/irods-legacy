@@ -434,6 +434,8 @@ Satisfiability simplifyLocally(ExprType *tca, ExprType *tcb, int flex, Node *nod
     if(tcb->nodeType == T_FLEX) {
     	tcb = tcb->subtrees[0];
     	flex = 1;
+    } else if(tcb->nodeType == T_FIXD) {
+    	tcb = tcb->subtrees[0];
     }
     tca = dereference(tca, typingEnv, r);
     tcb = dereference(tcb, typingEnv, r);
@@ -491,7 +493,7 @@ Satisfiability solveConstraints(List *typingConstraints, Hashtable *typingEnv, r
             /* printf("dereferencing %s and %s.\n", typeToString(TC_A(tc), typingEnv, buf2, 1024), typeToString(TC_B(tc), typingEnv, buf3, 1024)); */
             ExprType *a = dereference(TC_A(tc), typingEnv, r);
             ExprType *b = dereference(TC_B(tc), typingEnv, r);
-            if(b->nodeType == T_FLEX) {
+            if(b->nodeType == T_FLEX || b->nodeType == T_FIXD) {
             	b = b->subtrees[0];
             }
 /*

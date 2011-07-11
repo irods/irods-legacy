@@ -793,8 +793,13 @@ char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
             }
 			}
         } else if(etype->nodeType == T_FLEX) {
-        	snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", etype == NULL?"?":typeName_ExprType(etype));
+        	snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", typeName_ExprType(etype));
             typeToString(etype->subtrees[0], var_types, buf+strlen(buf), bufsize-strlen(buf));
+        } else if(etype->nodeType == T_FIXD) {
+        	snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", typeName_ExprType(etype));
+            typeToString(etype->subtrees[0], var_types, buf+strlen(buf), bufsize-strlen(buf));
+        	snprintf(buf+strlen(buf), bufsize-strlen(buf), "=> ");
+        	typeToString(etype->subtrees[1], var_types, buf+strlen(buf), bufsize-strlen(buf));
         } else if(etype->nodeType == T_TUPLE) {
         	if(T_CONS_ARITY(etype) == 0) {
         		snprintf(buf+strlen(buf), bufsize-strlen(buf), "unit");
@@ -817,6 +822,9 @@ char* typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize)
         	snprintf(buf+strlen(buf), bufsize-strlen(buf), "%s ", etype == NULL?"?":typeName_ExprType(etype));
         }
 
+    int i = strlen(buf) - 1;
+    while(buf[i]==' ') i--;
+    buf[i+1]='\0';
 
     region_free(r);
     return buf;

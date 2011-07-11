@@ -134,6 +134,7 @@ typedef enum node_type {
     T_DATETIME = 204,
     T_BOOL = 205,
     T_FLEX = 206,
+    T_FIXD = 207,
     T_TUPLE = 208,
     T_CONS = 209,
     T_BREAK = 230,

@@ -66,7 +66,7 @@ unsigned char *region_alloc_nodesc(Region *r, size_t s) {
 	size_t alloc_size =
                 s>DEFAULT_BLOCK_SIZE?
                     s:
-                    s%ALIGNMENT == 0?s:(s/ALIGNMENT+1)*ALIGNMENT;
+                    roundToAlignment(s);
 	unsigned char *pointer = r->active->block + r->active->used;
 	r->active->used+=alloc_size;
 	return pointer;
