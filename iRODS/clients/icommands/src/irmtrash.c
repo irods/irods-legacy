@@ -21,9 +21,9 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hru:vVz:M";
+    optStr = "hru:vVz:MZ";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
     if (status < 0) {
         printf("Use -h for help.\n");
         exit (1);
