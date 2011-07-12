@@ -2,7 +2,11 @@ package edu.sdsc.grid.io.irods;
 
 import static org.junit.Assert.fail;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URI;
 import java.util.Properties;
 
@@ -134,6 +138,133 @@ public class IRODSFileInputStreamTest {
 		Assert.assertEquals(
 				"I did not skip and then read the remainder of the specified file",
 				fileLengthInBytes, skippedPlusRead);
+	}
+
+	@Test
+	public final void streamToBufferedStreamCopyTest() throws Exception {
+		String testFileName = "streamToBufferedStreamCopyTest.txt";
+		long fileLengthInBytes = 8091;
+
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				fileLengthInBytes);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// now try to do the read
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+		IRODSFileInputStream fis = new IRODSFileInputStream(irodsFile);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		String testAbsPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String newPath = testAbsPath + "output" + testFileName;
+		File outFile = new File(newPath);
+		outFile.createNewFile();
+		BufferedOutputStream bos = new BufferedOutputStream(
+				new FileOutputStream(outFile));
+
+		// read the rest
+		int bytesRead = 0;
+
+		int readBytes;
+		while ((readBytes = bis.read()) > -1) {
+			bos.write(readBytes);
+			bytesRead++;
+		}
+
+		bos.flush();
+		bos.close();
+		bis.close();
+		irodsFileSystem.close();
+		Assert.assertEquals("whole file not read back", fileLengthInBytes,
+				outFile.length());
+	}
+
+	@Test
+	public final void streamToBufferedStreamCopyTestReadBuff() throws Exception {
+		String testFileName = "streamToBufferedStreamCopyTestReadBuff.doc";
+		long fileLengthInBytes = 8091;
+
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				fileLengthInBytes);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// now try to do the read
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+		IRODSFileInputStream fis = new IRODSFileInputStream(irodsFile);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		String testAbsPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String newPath = testAbsPath + "output" + testFileName;
+		File outFile = new File(newPath);
+		outFile.createNewFile();
+		BufferedOutputStream bos = new BufferedOutputStream(
+				new FileOutputStream(outFile));
+
+		byte[] buf = new byte[1024];
+		int len = 0;
+		while ((len = bis.read(buf)) >= 0) {
+			bos.write(buf, 0, len);
+		}
+
+		bos.flush();
+		bos.close();
+		bis.close();
+		irodsFileSystem.close();
+		Assert.assertEquals("whole file not read back", fileLengthInBytes,
+				outFile.length());
 	}
 
 	@Test
@@ -411,9 +542,10 @@ public class IRODSFileInputStreamTest {
 				testString, actualString);
 
 	}
-	
+
 	@Test
-	public void testGetInputStreamWithConnectionReroutingBySpecifiedResource() throws Exception {
+	public void testGetInputStreamWithConnectionReroutingBySpecifiedResource()
+			throws Exception {
 
 		String useDistribResources = testingProperties
 				.getProperty("test.option.distributed.resources");
@@ -427,7 +559,7 @@ public class IRODSFileInputStreamTest {
 		if (ConnectionConstants.REROUTE_CONNECTIONS != true) {
 			TestCase.fail("attempt to test connection re-routing, but reroute connections not set in ConnectionConstants");
 		}
-		
+
 		IRODSAccount testAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
@@ -481,16 +613,23 @@ public class IRODSFileInputStreamTest {
 				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
 						uriPath.toString());
 		IRODSFile irodsFile = new IRODSFile(irodsUri);
-		irodsFile.setResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
-		IRODSFileInputStream irodsFileInputStream = new IRODSFileInputStream(irodsFile);
-		IRODSAccount streamAccount = (IRODSAccount) irodsFileInputStream.getFileSystem().getAccount();
-		TestCase.assertFalse("did not reroute connection", streamAccount.getHost().equals(testAccount.getHost()));
-		
+		irodsFile
+				.setResource(testingProperties
+						.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		IRODSFileInputStream irodsFileInputStream = new IRODSFileInputStream(
+				irodsFile);
+		IRODSAccount streamAccount = (IRODSAccount) irodsFileInputStream
+				.getFileSystem().getAccount();
+		TestCase.assertFalse("did not reroute connection", streamAccount
+				.getHost().equals(testAccount.getHost()));
+
 		// close the stream
 		irodsFileInputStream.close();
-		
-		TestCase.assertTrue("did not close the rerouted file system", irodsFileInputStream.getFileSystem() == null);
-		TestCase.assertTrue("original file system was closed",irodsFileSystem.isConnected() == true);
+
+		TestCase.assertTrue("did not close the rerouted file system",
+				irodsFileInputStream.getFileSystem() == null);
+		TestCase.assertTrue("original file system was closed",
+				irodsFileSystem.isConnected() == true);
 
 		irodsFileSystem.close();
 
