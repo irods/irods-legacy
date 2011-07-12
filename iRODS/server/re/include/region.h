@@ -11,7 +11,7 @@
 /* the alignment in the region in bytes */
 #define ALIGNMENT 8
 #define roundToAlignment(x) ((x)%ALIGNMENT == 0?(x):(((x)/ALIGNMENT)+1)*ALIGNMENT)
-struct error {
+struct region_error {
     int code;
     char msg[1024];
     void *obj; /* a generic point to an object which is the source of the error */
@@ -29,7 +29,7 @@ struct region_node {
 typedef struct region {
 	struct region_node *head, *active;
         jmp_buf *label;
-        struct error error;
+        struct region_error error;
 } Region;
 
 typedef struct region_desc {
