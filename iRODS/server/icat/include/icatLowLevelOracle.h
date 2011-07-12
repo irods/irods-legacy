@@ -32,7 +32,7 @@ int cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 int cllGetRow(icatSessionStruct *icss, int statementNumber);
 int cllFreeStatement(icatSessionStruct *icss, int statementNumber);
 int cllNextValueString(char *itemName, char *outString, int maxSize);
-int cllTest();
+int cllTest(char *userArg, char *pwArg);
 int cllCurrentValueString(char *itemName, char *outString, int maxSize);
 int cllGetRowCount(icatSessionStruct *icss, int statementNumber);
 

@@ -172,11 +172,10 @@ static int _igsiReadAll(int fd, char *buf, unsigned int nbyte)
  -1 if an error occurs or if it could not write all the data.
 */
 #if defined(GSI_AUTH)
-int _gsiSendToken(fd, tok)
-int fd;
-gss_buffer_t tok;
+int _gsiSendToken(int fd, gss_buffer_t tok)
 {
-    int len, ret;
+    int len;
+    unsigned int ret;
     char *cp;
     int status;
 
@@ -201,7 +200,7 @@ gss_buffer_t tok;
         }
     }
 
-    ret = _igsiWriteAll(fd, tok->value, tok->length);
+    ret = _igsiWriteAll(fd, (char *)tok->value, tok->length);
     if (ret < 0) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     } else if (ret != tok->length) {
@@ -219,8 +218,7 @@ gss_buffer_t tok;
 /*
  read the token hdr
  */
-int _igsiRcvTokenHeader(fd)
-int fd;
+int _igsiRcvTokenHeader(int fd)
 {
     int length;
     char *cp;
@@ -256,12 +254,9 @@ int fd;
  read the token body
  */
 #if defined(GSI_AUTH)
-int _igsiRcvTokenBody(fd, tok, length)
-int fd;
-gss_buffer_t tok;
-int length;
+int _igsiRcvTokenBody(int fd, gss_buffer_t tok, unsigned int length)
 {
-    int ret;
+    unsigned int ret;
     int status;
 
     if (tok->length < length) {
@@ -301,9 +296,7 @@ int length;
  Divided into two routines so that each can be called from igsi_read.
  */
 #if defined(GSI_AUTH)
-int _igsiRcvToken(fd, tok)
-int fd;
-gss_buffer_t tok;
+int _igsiRcvToken(int fd, gss_buffer_t tok)
 {
     int length;
     int i;
@@ -422,11 +415,10 @@ void _igsiDisplayCtxFlags()
  Print the contexts of a token (for debug).
 */
 #if defined(GSI_AUTH)
-void _igsiPrintToken(tok)
-gss_buffer_t tok;
+void _igsiPrintToken(gss_buffer_t tok)
 {
-    int i, j;
-    unsigned char *p = tok->value;
+    unsigned int i, j;
+    unsigned char *p = (unsigned char *)tok->value;
     fprintf(stderr, "_igsiPrintToken, length=%d\n", tok->length);
     j = 0;
     for (i = 0; i < tok->length; i++, p++) {
@@ -489,7 +481,7 @@ int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
 
     if (specifiedName != NULL) {
         name_buf.value = specifiedName;
-        name_buf.length = strlen(name_buf.value) + 1;
+	name_buf.length = strlen((char*)name_buf.value) + 1;
 	majorStatus = gss_import_name(&minorStatus, &name_buf,
 				   (gss_OID) gss_nt_service_name_gsi,
 				   &myName);
@@ -529,10 +521,10 @@ int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
        return GSI_ERROR_DISPLAYING_NAME;
     }
     if (client_name2.value != 0 && client_name2.length>0) {
-       *returnedName = malloc(client_name2.length+10);
+       *returnedName = (char*)malloc(client_name2.length+10);
        if (*returnedName != 0) {
 	  memset(*returnedName,  0, sizeof(client_name2.length));
-	  strncpy(*returnedName, client_name2.value, client_name2.length+1);
+	  strncpy(*returnedName, (char *)client_name2.value, client_name2.length+1);
        }
     }
 
@@ -599,7 +591,7 @@ int igsiEstablishContextServerside(rsComm_t *rsComm, char *clientName,
     gss_OID doid;
     OM_uint32 majorStatus, minorStatus;
 
-    int i;
+    int i, j;
 
 #if defined(IGSI_TIMING)
     struct timeval startTimeFunc, endTimeFunc, sTimeDiff;
@@ -675,8 +667,9 @@ int igsiEstablishContextServerside(rsComm_t *rsComm, char *clientName,
     if (maxLen_clientName < i)
         i = maxLen_clientName;
 
-    strncpy(clientName, client_name.value, i);
-    if (maxLen_clientName > client_name.length)
+    strncpy(clientName, (char*)client_name.value, i);
+    j = client_name.length;
+    if (maxLen_clientName > j)
         clientName[client_name.length] = '\0';
 
     /* release the name structure */
@@ -715,10 +708,7 @@ int igsiEstablishContextServerside(rsComm_t *rsComm, char *clientName,
 /*
  Return data previous read
  */
-int _NoUsed_igsiReturnCachedData(fd, buffer, length)
-int fd;
-char *buffer;
-int length;
+int _NoUsed_igsiReturnCachedData(int fd, char *buffer,int length)
 {
 #if defined(GSI_AUTH)
     int mv, i;
@@ -989,11 +979,7 @@ int igsi_debug(int val)
 This routine can be defined to replace the default SSL one for
 providing the key password.
 
-int EVP_read_pw_string(buf,len,prompt,verify)
-char *buf;
-int len;
-char *prompt;
-int verify;
+int EVP_read_pw_string(char *buf,int len,char *prompt,int verify)
 {
     int i;
     if (do_pw==1) {
@@ -1029,13 +1015,9 @@ int verify;
  * Return Parameters:
  * serverName: Pointer to the string contain DN of the connected server
  *  */
-int igsiEstablishContextClientsideWithoutServerDN(fd, serverName,
-                                                       maxLenServerName,
-							delegFlag)
-int fd;
-char *serverName;
-int maxLenServerName;
-int delegFlag;
+int igsiEstablishContextClientsideWithoutServerDN(int fd, char *serverName,
+                                                 unsigned int maxLenServerName,
+                                                 int delegFlag)
 {
 #if defined(GSI_AUTH)
     gss_OID oid = GSS_C_NULL_OID;
@@ -1044,7 +1026,7 @@ int delegFlag;
     gss_buffer_desc server_dn;
     OM_uint32 majorStatus, minorStatus;
     OM_uint32 flags = 0;
-    int i;
+    unsigned int i;
     int status;
 
 #if defined(IGSI_TIMING)
@@ -1146,7 +1128,7 @@ int delegFlag;
     if (maxLenServerName < i)
         i = maxLenServerName;
 
-    strncpy(serverName, server_dn.value, i);
+    strncpy(serverName, (char *)server_dn.value, i);
     if (maxLenServerName > server_dn.length)
         serverName[server_dn.length] = '\0';
 

@@ -151,8 +151,8 @@ cllCloseEnv(icatSessionStruct *icss) {
    /* OCITerminate can only be called once per process, so it 
       is no longer called. */
 
-   p_svc = icss->connectPtr;
-   p_env = icss->environPtr;
+   p_svc = (OCISvcCtx *) icss->connectPtr; 
+   p_env = (OCIEnv *) icss->environPtr;
 
    stat = OCIHandleFree((dvoid *) p_svc, OCI_HTYPE_SVCCTX);
 
@@ -176,8 +176,8 @@ cllConnect(icatSessionStruct *icss) {
    char *cp1, *cp2;
    int i, atFound;
    
-   p_svc = icss->connectPtr;
-   p_env = icss->environPtr;
+   p_svc = (OCISvcCtx *)icss->connectPtr;
+   p_env = (OCIEnv *)icss->environPtr;
 
    atFound=0;
    userName[0]='\0';
@@ -213,11 +213,11 @@ cllConnect(icatSessionStruct *icss) {
 		   strlen(icss->databasePassword),
 		   ORACLE_DATABASE_NAME, strlen(ORACLE_DATABASE_NAME));
 #endif
-   stat = OCILogon(p_env, p_err, &p_svc, userName,
+   stat = OCILogon(p_env, p_err, &p_svc, (OraText *)userName,
 		   strlen(userName),
-		   icss->databasePassword,
+		   (OraText *)icss->databasePassword,
 		   strlen(icss->databasePassword),
-		   databaseName, strlen(databaseName));
+		   (OraText *)databaseName, strlen(databaseName));
 
    if (stat != OCI_SUCCESS) {
       rodsLog(LOG_ERROR, "cllConnect: OCILogon failed: %d", stat);
@@ -243,8 +243,8 @@ cllConnectRda(icatSessionStruct *icss) {
    char *cp1, *cp2;
    int i, atFound;
    
-   p_svc = icss->connectPtr;
-   p_env = icss->environPtr;
+   p_svc = (OCISvcCtx *)icss->connectPtr;
+   p_env = (OCIEnv *)icss->environPtr;
 
    atFound=0;
    userName[0]='\0';
@@ -273,11 +273,11 @@ cllConnectRda(icatSessionStruct *icss) {
       return(CAT_INVALID_ARGUMENT);
    }
 
-   stat = OCILogon(p_env, p_err, &p_svc, userName,
+   stat = OCILogon(p_env, p_err, &p_svc, (OraText *)userName,
 		   strlen(userName),
-		   icss->databasePassword,
+		   (OraText *)icss->databasePassword,
 		   strlen(icss->databasePassword),
-		   databaseName, strlen(databaseName));
+		   (OraText *)databaseName, strlen(databaseName));
 
    if (stat != OCI_SUCCESS) {
       rodsLog(LOG_ERROR, "cllConnectRda: OCILogon failed: %d", stat);
@@ -303,8 +303,8 @@ cllConnectDbr(icatSessionStruct *icss, char *unused) {
    char *cp1, *cp2;
    int i, atFound;
    
-   p_svc = icss->connectPtr;
-   p_env = icss->environPtr;
+   p_svc = (OCISvcCtx *)icss->connectPtr;
+   p_env = (OCIEnv *)icss->environPtr;
 
    atFound=0;
    userName[0]='\0';
@@ -333,11 +333,11 @@ cllConnectDbr(icatSessionStruct *icss, char *unused) {
       return(CAT_INVALID_ARGUMENT);
    }
 
-   stat = OCILogon(p_env, p_err, &p_svc, userName,
+   stat = OCILogon(p_env, p_err, &p_svc, (OraText *)userName,
 		   strlen(userName),
-		   icss->databasePassword,
+		   (OraText *)icss->databasePassword,
 		   strlen(icss->databasePassword),
-		   databaseName, strlen(databaseName));
+		   (OraText *)databaseName, strlen(databaseName));
 
    if (stat != OCI_SUCCESS) {
       rodsLog(LOG_ERROR, "cllConnectRda: OCILogon failed: %d", stat);
@@ -357,7 +357,7 @@ cllDisconnect(icatSessionStruct *icss) {
    sword stat;
    OCISvcCtx *p_svc;
 
-   p_svc = icss->connectPtr;
+   p_svc = (OCISvcCtx *)icss->connectPtr;
 
    stat = OCILogoff(p_svc, p_err);                           /* Disconnect */
    if (stat != OCI_SUCCESS) {
@@ -454,7 +454,7 @@ bindTheVariables(OCIStmt *p_statement, char *sql) {
 	 len = strlen((char*)&bindName[i*5]);
 	 len2 = strlen(cllBindVars[i])+1;
 	 stat =  OCIBindByName(p_statement, &p_bind[i], p_err, 
-			       (dvoid *)&bindName[i*5],
+			       (OraText *)&bindName[i*5],
 			       len,
 			       (dvoid *)cllBindVars[i],
 			       len2,
@@ -524,8 +524,8 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
       return(CAT_OCI_ERROR);
    }
 
-   p_svc = icss->connectPtr;
-   p_env = icss->environPtr;
+   p_svc = (OCISvcCtx *)icss->connectPtr;
+   p_env = (OCIEnv *)icss->environPtr;
 
    if (strcmp(sql, "commit") == 0) {
       rodsLogSql(sql);
@@ -564,7 +564,7 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
    }
 
    /* Prepare SQL statement */
-   stat = OCIStmtPrepare(p_statement, p_err, sql,
+   stat = OCIStmtPrepare(p_statement, p_err, (OraText *)sql,
 			 (ub4) strlen(sql),
 			 (ub4) OCI_NTV_SYNTAX, (ub4) OCI_DEFAULT);
    if (stat != OCI_SUCCESS) {
@@ -592,7 +592,7 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
 
    /* malloc it so that it's aligned properly, else can get
       bus errors when doing 64-bit addressing */
-   pUb4 = malloc(sizeof(rows_affected));
+   pUb4 = (ub4*) malloc(sizeof(rows_affected));
    *pUb4=0;
    rows_affected = 0;
 
@@ -639,7 +639,7 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
 
    myStatement=icss->stmtPtr[statementNumber];
    nCols = myStatement->numOfCols;
-   p_statement = myStatement->stmtPtr;
+   p_statement = (OCIStmt *)myStatement->stmtPtr;
 
    stat = OCIStmtFetch(p_statement, p_err, (ub4)1, (ub2)0,
 		       (ub4) OCI_DEFAULT);
@@ -687,8 +687,8 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    static int columnLength[MAX_TOKEN]; 
    static sb2 indicator[MAX_TOKEN]; 
 
-   p_svc = icss->connectPtr;
-   p_env = icss->environPtr;
+   p_svc = (OCISvcCtx *)icss->connectPtr;
+   p_env = (OCIEnv *)icss->environPtr;
 
    i = convertSqlToOra(sql, sqlConverted);
    if (i !=0) {
@@ -726,7 +726,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    myStatement->stmtPtr = p_statement;
 
    /* Prepare SQL statement */
-   stat = OCIStmtPrepare(p_statement, p_err, sqlConverted,
+   stat = OCIStmtPrepare(p_statement, p_err, (OraText *)sqlConverted,
 			 (ub4) strlen(sqlConverted),
 			 (ub4) OCI_NTV_SYNTAX, (ub4) OCI_DEFAULT);
    if (stat != OCI_SUCCESS) {
@@ -830,9 +830,9 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
       i = counter-1;
       columnLength[i]=col_width;
 
-      if (strlen(colName)>col_width) columnLength[i]=strlen(colName);
+      if (strlen((char *)colName)>col_width) columnLength[i]=strlen((char*)colName);
 
-      myStatement->resultColName[i] = malloc((int)columnLength[i]+2);
+      myStatement->resultColName[i] = (char *)malloc((int)columnLength[i]+2);
       strncpy(myStatement->resultColName[i], 
 	      (char *)colName, columnLength[i]);
 
@@ -860,7 +860,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 	 cptr++;
       }
 
-      myStatement->resultValue[i] = malloc((int)columnLength[i]+2);
+      myStatement->resultValue[i] = (char *)malloc((int)columnLength[i]+2);
       strcpy((char *)myStatement->resultValue[i],"");
 
       stat = OCIDefineByPos(p_statement, &p_dfn, p_err, counter, 
@@ -970,10 +970,10 @@ cllGetRowCount(icatSessionStruct *icss, int statementNumber) {
 
    /* malloc it so that it's aligned properly, else can get
       bus errors when doing 64-bit addressing */
-   pUb4 = malloc(sizeof(rowCount));
+   pUb4 = (ub4 *)malloc(sizeof(rowCount));
 
    myStatement=icss->stmtPtr[statementNumber];
-   p_statement = myStatement->stmtPtr;
+   p_statement = (OCIStmt *)myStatement->stmtPtr;
    stat = OCIParamGet((dvoid *)p_statement, OCI_HTYPE_STMT, p_err,
 			     (dvoid **)&p_param, (ub4) 1);
    if (stat == OCI_SUCCESS) {
@@ -1006,13 +1006,13 @@ cllFreeStatement(icatSessionStruct *icss, int statementNumber) {
    icatStmtStrct *myStatement;
    OCIStmt  *p_statement;
 
-   p_env = icss->environPtr;
+   p_env = (OCIEnv *)icss->environPtr;
 
    myStatement=icss->stmtPtr[statementNumber];
    if (myStatement==NULL) { /* already freed */
       return(0);
    }
-   p_statement = myStatement->stmtPtr;
+   p_statement = (OCIStmt *)myStatement->stmtPtr;
 
    for (i=0;i<myStatement->numOfCols;i++) {
       free(myStatement->resultValue[i]);

@@ -27,7 +27,7 @@ rsGsiAuthRequest (rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut)
        return gsiAuthReqError;
     }
 
-    *gsiAuthRequestOut = (gsiAuthRequestOut_t*)malloc(sizeof(gsiAuthRequestOut_t));
+    *gsiAuthRequestOut = (gsiAuthRequestOut_t *)malloc(sizeof(gsiAuthRequestOut_t));
     memset((char *)*gsiAuthRequestOut, 0, sizeof(gsiAuthRequestOut_t));
 
     result = *gsiAuthRequestOut;
@@ -144,7 +144,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 
 	 rei.inOutMsParamArray = myInOutParamArray;
 
-	 myMsParamArray = malloc (sizeof (msParamArray_t));
+	 myMsParamArray = (msParamArray_t *) malloc (sizeof (msParamArray_t));
 	 memset (myMsParamArray, 0, sizeof (msParamArray_t));
 
 	 statusRule = applyRuleArgPA("acGetUserByDN", args, 2, 
@@ -189,7 +189,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       		 NAME_LEN);
        	 strncpy(rsComm->proxyUser.rodsZone, genQueryOut->sqlResult[3].value,
 		 NAME_LEN);
-	 myBuf = malloc (NAME_LEN * 2);
+	 myBuf = (char *)malloc (NAME_LEN * 2);
 	 snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_CLIENT_USER,
 		   rsComm->clientUser.userName);
 	 putenv (myBuf);
