@@ -288,7 +288,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
    RE_TEST_MACRO ("msiString2StrArray");
 
    if (inBufferP == NULL || inBufferP->inOutStruct == NULL ||
-       inBufferP->type == NULL || strcmp(inBufferP->type, StrArray_MS_T) != 0 )
+       inBufferP->type == NULL || strcmp(inBufferP->type, STR_MS_T) != 0 )
      return (USER_PARAM_TYPE_ERR);
 
    buf = strdup((char *)  inBufferP->inOutStruct);
