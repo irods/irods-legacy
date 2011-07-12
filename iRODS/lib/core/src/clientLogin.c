@@ -159,7 +159,9 @@ clientLogin(rcComm_t *Conn)
    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
    char digest[RESPONSE_LEN+2];
    char userNameAndZone[NAME_LEN*2];
+#ifndef USE_BOOST_FS
    struct stat statbuf;
+#endif
    MD5_CTX context;
 #ifdef OS_AUTH
    int doOsAuthentication = 0;
@@ -261,7 +263,12 @@ clientLogin(rcComm_t *Conn)
 		return i;
 #endif
       
+#ifdef USE_BOOST_FS
+      path p ("/bin/stty");
+      if (exists(p)) {
+#else
       if (stat ("/bin/stty", &statbuf) == 0) {
+#endif
 	 system("/bin/stty -echo 2> /dev/null");
 	 doStty=1;
       }

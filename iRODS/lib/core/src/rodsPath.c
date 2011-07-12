@@ -225,6 +225,28 @@ parseLocalPath (rodsPath_t *rodsPath)
     return (status);
 }
  
+#ifdef USE_BOOST_FS
+int
+getFileType (rodsPath_t *rodsPath)
+{
+    path p (rodsPath->outPath);
+
+    if (!exists(p)) {
+        rodsPath->objType = UNKNOWN_FILE_T;
+        rodsPath->objState = NOT_EXIST_ST;
+        return (NOT_EXIST_ST);
+    } else if (is_regular_file(p)) {
+        rodsPath->objType = LOCAL_FILE_T;
+        rodsPath->objState = EXIST_ST;
+        rodsPath->size = file_size(p);
+    } else if (is_directory(p)) {
+        rodsPath->objType = LOCAL_DIR_T;
+        rodsPath->objState = EXIST_ST;
+    }
+
+    return (rodsPath->objType);
+}
+#else	/* USE_BOOST_FS */
 int
 getFileType (rodsPath_t *rodsPath)
 {
@@ -260,6 +282,7 @@ getFileType (rodsPath_t *rodsPath)
 
     return (rodsPath->objType);
 }
+#endif	/* USE_BOOST_FS */
 
 int
 addSrcInPath (rodsPathInp_t *rodsPathInp, char *inPath)

@@ -93,11 +93,13 @@ mkdirR (char *startDir, char *destDir, int mode)
     int startLen;
     int pathLen, tmpLen;
     char tmpPath[MAX_NAME_LEN];
+#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
-	struct irodsntstat statbuf;
+    struct irodsntstat statbuf;
 #endif
+#endif	/* USE_BOOST_FS */
 
     startLen = strlen (startDir);
     pathLen = strlen (destDir);
@@ -107,11 +109,16 @@ mkdirR (char *startDir, char *destDir, int mode)
     tmpLen = pathLen;
 
     while (tmpLen > startLen) {
+#ifdef USE_BOOST_FS
+	path p (tmpPath);
+	if (exists(p)) break;
+#else 	/* USE_BOOST_FS */
 #ifndef windows_platform
 	if ((status = stat (tmpPath, &statbuf)) >= 0) break;
 #else
 	if ((status = iRODSNt_stat(tmpPath, &statbuf)) >= 0) break;
 #endif
+#endif	/* USE_BOOST_FS */
         if (status >= 0) {
 	    break;
         }
@@ -1787,11 +1794,13 @@ operProgress_t *operProgress)
     int status = 0;
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
     struct irodsntstat statbuf;
 #endif
+#endif	/* USE_BOOST_FS */
     char srcChildPath[MAX_NAME_LEN];
 
     if (isPathSymlink (rodsArgs, srcDir) > 0) return 0;
@@ -1814,6 +1823,24 @@ operProgress_t *operProgress)
 
 	if (isPathSymlink (rodsArgs, srcChildPath) > 0) return 0;
 
+#ifdef USE_BOOST_FS
+        path p (srcChildPath);
+        if (!exists(p)) {
+            rodsLog (LOG_ERROR,
+              "getDirSizeForProgStat: stat error for %s, errno = %d\n",
+              srcChildPath, errno);
+            closedir (dirPtr);
+            return (USER_INPUT_PATH_ERR);
+        } else if (is_regular_file(p)) {
+            operProgress->totalNumFiles++;
+            operProgress->totalFileSize += file_size(p);
+        } else if (is_directory(p)) {
+            status = getDirSizeForProgStat (rodsArgs, srcChildPath,
+              operProgress);
+            if (status < 0) return (status);
+
+        }
+#else	/* USE_BOOST_FS */
 #ifndef windows_platform
         status = stat (srcChildPath, &statbuf);
 #else
@@ -1837,6 +1864,7 @@ operProgress_t *operProgress)
             if (status < 0) return (status);
 
 	}
+#endif	/* USE_BOOST_FS */
     }
     return status;
 }
@@ -1933,11 +1961,13 @@ rmSubDir (char *mydir)
     int savedStatus = 0;
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
     struct irodsntstat statbuf;
 #endif
+#endif	/* USE_BOOST_FS */
     char childPath[MAX_NAME_LEN];
 
     dirPtr = opendir (mydir);
@@ -1953,18 +1983,27 @@ rmSubDir (char *mydir)
             continue;
 	}
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#ifdef USE_BOOST_FS
+        path p (childPath);
+	if (!exists(p)) {
+#else	/* USE_BOOST_FS */
 #ifndef windows_platform
         status = stat (childPath, &statbuf);
 #else
         status = iRODSNt_stat(childPath, &statbuf);
 #endif
         if (status != 0) {
+#endif	/* USE_BOOST_FS */
 	    savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, status,
+            rodsLogError (LOG_ERROR, savedStatus,
               "rmSubDir: stat error for %s", childPath);
 	    continue;
         }
+#ifdef USE_BOOST_FS
+	if (is_directory(p)) {
+#else
         if (statbuf.st_mode & S_IFDIR) {
+#endif
 	    status = rmSubDir (childPath);
 	    if (status < 0) {
                 savedStatus = USER_INPUT_PATH_ERR - errno;
@@ -1995,11 +2034,13 @@ rmFilesInDir (char *mydir)
     int savedStatus = 0;
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
     struct irodsntstat statbuf;
 #endif
+#endif	/* USE_BOOST_FS */
     char childPath[MAX_NAME_LEN];
 
     dirPtr = opendir (mydir);
@@ -2015,6 +2056,21 @@ rmFilesInDir (char *mydir)
             continue;
         }
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#ifdef USE_BOOST_FS
+	path p (childPath);
+
+	if (!exists(p)) {
+            savedStatus = USER_INPUT_PATH_ERR - errno;
+            rodsLogError (LOG_ERROR, savedStatus,
+              "rmFilesInDir: stat error for %s", childPath);
+            continue;
+        }
+        if (is_regular_file(p)) {
+            unlink (childPath);
+        } else {
+            continue;
+        }
+#else	/* USE_BOOST_FS */
 #ifndef windows_platform
         status = stat (childPath, &statbuf);
 #else
@@ -2022,7 +2078,7 @@ rmFilesInDir (char *mydir)
 #endif
         if (status != 0) {
             savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, status,
+            rodsLogError (LOG_ERROR, savedStatus,
               "rmFilesInDir: stat error for %s", childPath);
             continue;
         }
@@ -2031,6 +2087,7 @@ rmFilesInDir (char *mydir)
 	} else {
 	    continue;
 	}
+#endif	/* USE_BOOST_FS */
     }
     closedir (dirPtr);
     return savedStatus;
@@ -2042,11 +2099,13 @@ getNumFilesInDir (char *mydir)
     int savedStatus = 0;
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
     struct irodsntstat statbuf;
 #endif
+#endif	/* USE_BOOST_FS */
     char childPath[MAX_NAME_LEN];
     int count = 0;
 
@@ -2063,6 +2122,21 @@ getNumFilesInDir (char *mydir)
             continue;
         }
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#ifdef USE_BOOST_FS
+	path p (childPath);
+
+    if (!exists(p)) {
+            savedStatus = USER_INPUT_PATH_ERR - errno;
+            rodsLogError (LOG_ERROR, savedStatus,
+              "getNumFilesInDir: stat error for %s", childPath);
+            continue;
+        } 
+	if (is_regular_file(p)) {
+            count++;
+        } else {
+            continue;
+        }
+#else	/* USE_BOOST_FS */
 #ifndef windows_platform
         status = stat (childPath, &statbuf);
 #else
@@ -2070,7 +2144,7 @@ getNumFilesInDir (char *mydir)
 #endif
         if (status != 0) {
             savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, status,
+            rodsLogError (LOG_ERROR, savedStatus,
               "getNumFilesInDir: stat error for %s", childPath);
             continue;
         }
@@ -2079,6 +2153,7 @@ getNumFilesInDir (char *mydir)
         } else {
             continue;
         }
+#endif	/* USE_BOOST_FS */
     }
     closedir (dirPtr);
     return count;

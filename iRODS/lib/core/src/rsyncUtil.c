@@ -640,6 +640,7 @@ dataObjInp_t *dataObjOprInp)
             return (USER_INPUT_PATH_ERR);
         }
 
+	/* XXXXXXX don't see a way to get .st_mode in BOOST FS */
 	dataObjOprInp->createMode = statbuf.st_mode;
 	bzero (&myTargPath, sizeof (myTargPath));
         snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",

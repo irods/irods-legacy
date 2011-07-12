@@ -33,6 +33,19 @@
  * 0 - not valid
  */
 
+#ifdef USE_BOOST_FS
+int
+isPath (char *myPath)
+{
+    path p (myPath);
+
+    if (exists(p)) {
+	return (1);
+    } else {
+        return (0);
+    }
+}
+#else	/* USE_BOOST_FS */
 int
 isPath (char *path)
 {
@@ -54,7 +67,21 @@ isPath (char *path)
 	return 0;
 #endif
 }
+#endif	/* USE_BOOST_FS */
 
+#ifdef USE_BOOST_FS
+rodsLong_t
+getFileSize (char *myPath)
+{
+    path p (myPath);
+
+    if (exists(p) && is_regular_file (p)) {
+	return (file_size(p));
+    } else {
+	return (-1);
+    }
+}
+#else
 rodsLong_t
 getFileSize (char *path)
 {
@@ -75,6 +102,7 @@ getFileSize (char *path)
 	return -1;
 #endif
 }
+#endif	/* USE_BOOST_FS */
 
 
 int freeBBuf (bytesBuf_t *myBBuf)
@@ -2456,16 +2484,23 @@ int
 openRestartFile (char *restartFile, rodsRestart_t *rodsRestart, 
 rodsArguments_t *rodsArgs)
 {
+#ifdef USE_BOOST_FS
+    path p (restartFile);
+#else	/* USE_BOOST_FS */
 #ifndef windows_platform
     struct stat statbuf;
 #else
 	struct irodsntstat statbuf;
 #endif
+#endif	/* USE_BOOST_FS */
     char buf[MAX_NAME_LEN * 3];
     char *inptr;
     char tmpStr[MAX_NAME_LEN];
     int status; 
 
+#ifdef USE_BOOST_FS
+    if (!exists(p) || file_size(p) == 0) {
+#else
 #ifndef windows_platform
     status = stat (restartFile, &statbuf);
 #else
@@ -2473,6 +2508,7 @@ rodsArguments_t *rodsArgs)
 #endif
 
     if (status < 0 || statbuf.st_size == 0) {
+#endif	/* USE_BOOST_FS */
 #ifndef windows_platform
 	rodsRestart->fd = open (restartFile, O_RDWR|O_CREAT, 0644);
 #else
@@ -2486,7 +2522,11 @@ rodsArguments_t *rodsArgs)
 	}
 	rodsRestart->restartState = 0;
 	printf ("New restartFile %s opened\n", restartFile); 
+#ifdef USE_BOOST_FS
+    } else if (!is_regular_file(p)) {
+#else
     } else if ((statbuf.st_mode & S_IFREG) == 0) {
+#endif
 	close (rodsRestart->fd);
 	rodsRestart->fd = -1;
 	status = UNIX_FILE_OPEN_ERR;
@@ -4359,6 +4399,19 @@ getRandomArray (int **randomArray, int size)
     return (0);
 }
 
+#ifdef USE_BOOST_FS
+int
+isPathSymlink (rodsArguments_t *rodsArgs, char *myPath)
+{
+    path p (myPath);
+    if (rodsArgs != NULL && rodsArgs->link != True) return 0;
+    if (exists(p) && is_symlink (p)) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+#else	/* USE_BOOST_FS */
 int
 isPathSymlink (rodsArguments_t *rodsArgs, char *path)
 {
@@ -4373,6 +4426,7 @@ isPathSymlink (rodsArguments_t *rodsArgs, char *path)
     }
     return 0;
 }
+#endif	/* USE_BOOST_FS */
 
 /* Added by RAJA Nov 22 2010 */
 int

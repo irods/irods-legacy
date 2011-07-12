@@ -8,6 +8,15 @@
 #include "getRodsEnv.h"
 #include "rodsType.h"
 #include "objStat.h"
+#ifdef USE_BOOST_FS
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include <algorithm>
+#include <boost/filesystem.hpp>
+using namespace std;
+using namespace boost::filesystem;
+#endif
 
 #ifdef  __cplusplus
 extern "C" {

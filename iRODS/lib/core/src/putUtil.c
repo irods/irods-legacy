@@ -491,6 +491,7 @@ bulkOprInfo_t *bulkOprInfo)
             return (USER_INPUT_PATH_ERR);
         }
 
+	/* XXXXXX BOOST Filesystem does not give st_mode of a file */
 	dataObjOprInp->createMode = statbuf.st_mode;
         snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
 	  targColl, myDirent->d_name);
@@ -720,13 +721,20 @@ bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart)
 int
 getPhyBunDir (char *phyBunRootDir, char *userName, char *outPhyBunDir) 
 {
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
 
     while (1)
     {
         snprintf (outPhyBunDir, MAX_NAME_LEN, "%s/%s.phybun.%d", phyBunRootDir,
           userName, (int) random ());
+#ifdef USE_BOOST_FS
+	path p (outPhyBunDir);
+	if (!exists(p)) break;
+#else
         if (stat (outPhyBunDir, &statbuf) < 0) break;
+#endif
     }
     return 0;
 }

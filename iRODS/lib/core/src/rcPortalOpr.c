@@ -1230,10 +1230,26 @@ int
 readLfRestartFile (char *infoFile, fileRestartInfo_t **info)
 {
     int status, fd;
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
+    rodsLong_t mySize;
     char *buf;
 
     *info = NULL;
+#ifdef USE_BOOST_FS
+    path p (infoFile);
+    if (!exists (p) || !is_regular_file (p)) {
+        status = UNIX_FILE_STAT_ERR - errno;
+        return (status);
+    } else if ((mySize = file_size(p)) <= 0) {
+        status = UNIX_FILE_STAT_ERR - errno;
+        rodsLog (LOG_ERROR,
+          "readLfRestartFile restart infoFile size is 0 for %s",
+          infoFile);
+        return (status);
+    }
+#else	/* USE_BOOST_FS */
     status = stat (infoFile, &statbuf);
     if (status < 0) {
         status = UNIX_FILE_STAT_ERR - errno;
@@ -1246,6 +1262,9 @@ readLfRestartFile (char *infoFile, fileRestartInfo_t **info)
           infoFile);
         return (status);
     }
+    mySize = statbuf.st_size;
+#endif	/* USE_BOOST_FS */
+
     /* read the restart infoFile */
     fd = open (infoFile, O_RDONLY, 0640);
     if (fd < 0) {
@@ -1256,16 +1275,16 @@ readLfRestartFile (char *infoFile, fileRestartInfo_t **info)
         return (status);
     }
 
-    buf = (char *) calloc (1, 2 * statbuf.st_size);
+    buf = (char *) calloc (1, 2 * mySize);
     if (buf == NULL) {
 	close (fd);
         return SYS_MALLOC_ERR;
     }
-    status = read (fd, buf, statbuf.st_size);
-    if (status != statbuf.st_size) {
+    status = read (fd, buf, mySize);
+    if (status != mySize) {
         rodsLog (LOG_ERROR,
           "readLfRestartFile error failed for %s, toread %d, read %d",
-          infoFile, statbuf.st_size, status);
+          infoFile, mySize, status);
         status = UNIX_FILE_READ_ERR - errno;
         close (fd);
 	free (buf);
