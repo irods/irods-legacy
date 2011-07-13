@@ -709,7 +709,7 @@ msiSetQuota(msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *va
 	generalAdminInp.arg2 = parseMspForStr(name);
 
 	/* parse resource name */
-	if ((generalAdminInp.arg3 = parseMspForStr(resource)) == NULL);
+	if ((generalAdminInp.arg3 = parseMspForStr(resource)) == NULL)
 	{
 		generalAdminInp.arg3 = "total";
 	}
