@@ -311,7 +311,7 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
     node->option = 0;
     node->exprType = NULL;
     node->coercionType = NULL;
-    node->iotype = IO_TYPE_INPUT;
+    setIOType(node, IO_TYPE_INPUT);
     node->value.constructTuple = 0;
     if(eloc!=NULL) {
         setBase(node, eloc->base, r);

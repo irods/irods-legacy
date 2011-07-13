@@ -665,12 +665,18 @@ readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleEx
       char *ruleCondition = strdup(&r[3]->value[r[3]->len * i]);
       char *ruleAction    = strdup(&r[4]->value[r[4]->len * i]);
       char *ruleRecovery  = strdup(&r[5]->value[r[5]->len * i]);
-      if(strlen(ruleRecovery) == 0) {
+      if(ruleRecovery[0] == '@') {
     	  /* rulegen */
-    	  if(ruleAction[0] == '{') {
-    		  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s { on(%s) %s }", ruleHead, ruleCondition, ruleAction);
+    	  if(strcmp(ruleRecovery+1, "DATA") == 0) {
+    		  snprintf(ruleStr, MAX_RULE_LEN * 4, "data %s", ruleHead);
+    	  } else if(strcmp(ruleRecovery+1, "CONSTR") == 0) {
+			  snprintf(ruleStr, MAX_RULE_LEN * 4, "constructor %s : %s", ruleHead, ruleAction);
+    	  } else if(strcmp(ruleRecovery+1, "EXTERN") == 0) {
+			  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s : %s", ruleHead, ruleAction);
+    	  } else if(strcmp(ruleRecovery+1, "FUNC") == 0) {
+			  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s = %s", ruleHead, ruleAction);
     	  } else {
-    		  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s = %s", ruleHead, ruleAction);
+    		  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s { on(%s) %s }", ruleHead, ruleCondition, ruleAction);
     	  }
       } else {
     	  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s|%s|%s|%s", ruleHead, ruleCondition, ruleAction, ruleRecovery);
@@ -1243,30 +1249,78 @@ insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet,
 
   for (i = 0; i < ruleSet->len; i++) {
 	  RuleDesc *rd = ruleSet->rules[i];
+	  char *ruleType;
 	  Node *ruleNode = rd->node;
 	  char ruleNameStr[MAX_RULE_LEN];
 	  char ruleCondStr[MAX_RULE_LEN];
 	  char ruleActionRecoveryStr[MAX_RULE_LEN];
+	  Node *avu;
 	  int s;
 	  char *p;
-	  p = ruleNameStr;
-	  s = MAX_RULE_LEN;
-	  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
-	  p = ruleCondStr;
-	  s = MAX_RULE_LEN;
-	  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1]);
-	  p = ruleActionRecoveryStr;
-	  s = MAX_RULE_LEN;
-	  if(ruleNode->subtrees[2]->nodeType == N_ACTIONS) {
-		  actionsToString(&p, &s, 0, ruleNode->subtrees[2], ruleNode->subtrees[3]);
-	  } else {
+	  switch(rd->ruleType) {
+	  case RK_FUNC:
+		  ruleType = "@FUNC";
+		  p = ruleNameStr;
+		  s = MAX_RULE_LEN;
+		  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
+		  p = ruleCondStr;
+		  s = MAX_RULE_LEN;
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1]);
+		  p = ruleActionRecoveryStr;
+		  s = MAX_RULE_LEN;
 		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[2]);
-	  }
-	  Node *avu = lookupAVUFromMetadata(ruleNode->subtrees[4], "id");
-	  if(avu!=NULL) {
-		  rstrcpy(ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN);
-	  } else {
+		  avu = lookupAVUFromMetadata(ruleNode->subtrees[4], "id");
+		  if(avu!=NULL) {
+			  rstrcpy(ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN);
+		  } else {
+			  rstrcpy(ruleIdStr, "", MAX_NAME_LEN);
+		  }
+		  break;
+	  case RK_REL:
+		  ruleType = "@REL";
+		  p = ruleNameStr;
+		  s = MAX_RULE_LEN;
+		  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
+		  p = ruleCondStr;
+		  s = MAX_RULE_LEN;
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1]);
+		  p = ruleActionRecoveryStr;
+		  s = MAX_RULE_LEN;
+		  actionsToString(&p, &s, 0, ruleNode->subtrees[2], ruleNode->subtrees[3]);
+		  avu = lookupAVUFromMetadata(ruleNode->subtrees[4], "id");
+		  if(avu!=NULL) {
+			  rstrcpy(ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN);
+		  } else {
+			  rstrcpy(ruleIdStr, "", MAX_NAME_LEN);
+		  }
+		  break;
+	  case RK_DATA:
+		  ruleType = "@DATA";
+		  p = ruleNameStr;
+		  s = MAX_RULE_LEN;
+		  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
+		  rstrcpy(ruleCondStr, "", MAX_RULE_LEN);
+		  rstrcpy(ruleActionRecoveryStr, "", MAX_RULE_LEN);
 		  rstrcpy(ruleIdStr, "", MAX_NAME_LEN);
+		  break;
+	  case RK_CONSTRUCTOR:
+		  ruleType = "@CONSTR";
+		  rstrcpy(ruleNameStr, ruleNode->subtrees[0]->text, MAX_RULE_LEN);
+		  rstrcpy(ruleCondStr, "", MAX_RULE_LEN);
+		  p = ruleActionRecoveryStr;
+		  s = MAX_RULE_LEN;
+		  typeToStringParser(&p, &s, 0, 0, ruleNode->subtrees[1]);
+		  rstrcpy(ruleIdStr, "", MAX_NAME_LEN);
+		  break;
+	  case RK_EXTERN:
+		  ruleType = "@EXTERN";
+		  rstrcpy(ruleNameStr, ruleNode->subtrees[0]->text, MAX_RULE_LEN);
+		  rstrcpy(ruleCondStr, "", MAX_RULE_LEN);
+		  p = ruleActionRecoveryStr;
+		  s = MAX_RULE_LEN;
+		  typeToStringParser(&p, &s, 0, 0, ruleNode->subtrees[1]);
+		  rstrcpy(ruleIdStr, "", MAX_NAME_LEN);
+		  break;
 	  }
     generalRowInsertInp.tableName = "ruleTable";
     generalRowInsertInp.arg1 = baseName;
@@ -1277,7 +1331,7 @@ insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet,
     generalRowInsertInp.arg4 = ruleNameStr;
     generalRowInsertInp.arg5 = ruleCondStr;
     generalRowInsertInp.arg6 = ruleActionRecoveryStr;
-    generalRowInsertInp.arg7= "";
+    generalRowInsertInp.arg7 = ruleType;
     generalRowInsertInp.arg8 = ruleIdStr;
     generalRowInsertInp.arg9 = myTime;
 

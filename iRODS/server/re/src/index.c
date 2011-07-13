@@ -96,7 +96,7 @@ int createCondIndex(Region *r) {
             Node *params = NULL;
 
             while(createIndex && currIndexNode != NULL) {
-                Node *ruleNode = getRuleNode(currIndexNode->ruleIndex);
+                Node *ruleNode = getRuleDesc(currIndexNode->ruleIndex)->node;
                 if(ruleNode->subtrees[1]->nodeType == N_APPLICATION &&
 				   ruleNode->subtrees[1]->subtrees[0]->nodeType == TK_TEXT &&
 				   strcmp(ruleNode->subtrees[1]->subtrees[0]->text, "==") == 0 && /* comparison */
@@ -145,7 +145,7 @@ int createCondIndex(Region *r) {
 
             currIndexNode = currIndex->head;
             while(currIndexNode != NULL) {
-                Node *ruleNode = getRuleNode(currIndexNode->ruleIndex);
+                Node *ruleNode = getRuleDesc(currIndexNode->ruleIndex)->node;
                 Node *condNode = ruleNode->subtrees[1];
                 #ifdef DEBUG_INDEX
                 printf("inserting rule cond str %s, index %d into ruleEngineConfig.condIndex\n", condNode->subtrees[1]->text, currIndexNode->ruleIndex);
@@ -197,7 +197,8 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, Re
     /* generate main index */
     int i;
     for (i=0;i<inRuleSet->len;i++) {
-        Node *ruleNode = inRuleSet->rules[i]->node;
+    	RuleDesc *rd = inRuleSet->rules[i];
+        Node *ruleNode = rd->node;
         if(ruleNode == NULL)
             continue;
         char *key = ruleNode->subtrees[0]->text;
@@ -205,10 +206,11 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, Re
         if(list != NULL) {
         	appendRuleNodeToRuleIndexList(list, i + offset, r);
         } else {
-            RuleType ruleType = ruleNode->subtrees[2]->nodeType == N_ACTIONS? RK_REL : RK_FUNC;
-            if (insertIntoHashTable(ruleIndex, key, newRuleIndexList(key, ruleType, i + offset, r)) == 0) {
-
-                return 0;
+            RuleType ruleType = rd->ruleType;
+            if(ruleType == RK_REL || ruleType == RK_FUNC) {
+				if (insertIntoHashTable(ruleIndex, key, newRuleIndexList(key, ruleType, i + offset, r)) == 0) {
+					return 0;
+				}
             }
         }
     }

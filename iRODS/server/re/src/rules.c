@@ -402,69 +402,73 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
     ExprType *res;
     int i;
     for(i=0;i<ruleset->len;i++) {
-        Hashtable *varTypes = newHashTable(100);
-        List *typingConstraints = newList(r);
         RuleDesc *rule = ruleset->rules[i];
-        ExprType *restype = typeRule(rule, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+        if(rule->ruleType == RK_REL || rule->ruleType == RK_FUNC) {
+        	List *typingConstraints = newList(r);
+			Hashtable *varTypes = newHashTable(100);
+			ExprType *restype = typeRule(rule, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
         /*char buf[1024]; */
         /*typingConstraintsToString(typingConstraints, NULL, buf, 1024); */
         /*printf("rule %s, typing constraints: %s\n", ruleset->rules[i]->subtrees[0]->text, buf); */
-        deleteHashTable(varTypes, nop);
-        if(restype->nodeType == T_ERROR) {
-            res = restype;
-            char *errbuf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
-            errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
+			deleteHashTable(varTypes, nop);
+			if(restype->nodeType == T_ERROR) {
+				res = restype;
+				char *errbuf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
+				errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
 #ifdef DEBUG
-            writeToTmp("ruleerr.log", errbuf);
-            writeToTmp("ruleerr.log", "\n");
+				writeToTmp("ruleerr.log", errbuf);
+				writeToTmp("ruleerr.log", "\n");
 #endif
-            rodsLog (LOG_ERROR, "%s", errbuf);
-            free(errbuf);
-            freeRErrorContent(errmsg);
-            RETURN;
-        }
-        /* check that function names are unique and do not conflict with system msis */
-        char errbuf[ERR_MSG_LEN];
-        char *ruleName = rule->node->subtrees[0]->text;
-        FunctionDesc *fd;
-        if((fd = (FunctionDesc *)lookupFromEnv(funcDesc, ruleName)) != NULL) {
-        	if(fd->nodeType != N_FD_EXTERNAL) {
-        		char *err;
-        		switch(fd->nodeType) {
-        		case N_FD_CONSTRUCTOR:
-        			err = "redefinition of constructor";
-        			break;
-        		case N_FD_DECONSTRUCTOR:
-        			err = "redefinition of deconstructor";
-        			break;
-        		case N_FD_C_FUNC:
-        			err = "redefinition of system microservice";
-        			break;
-        		default:
-        			err = "redefinition of system symbol";
-        			break;
-        		}
-
-				generateErrMsg(err, rule->node->expr, rule->node->base, errbuf);
-				addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
-				res = newErrorType(FUNCTION_REDEFINITION, r);
-				*errnode = rule->node;
+				rodsLog (LOG_ERROR, "%s", errbuf);
+				free(errbuf);
+				freeRErrorContent(errmsg);
 				RETURN;
-        	}
-        }
+			}
+			/* check that function names are unique and do not conflict with system msis */
+			char errbuf[ERR_MSG_LEN];
+			char *ruleName = rule->node->subtrees[0]->text;
+			FunctionDesc *fd;
+			if((fd = (FunctionDesc *)lookupFromEnv(funcDesc, ruleName)) != NULL) {
+				if(fd->nodeType != N_FD_EXTERNAL) {
+					char *err;
+					switch(fd->nodeType) {
+					case N_FD_CONSTRUCTOR:
+						err = "redefinition of constructor";
+						break;
+					case N_FD_DECONSTRUCTOR:
+						err = "redefinition of deconstructor";
+						break;
+					case N_FD_C_FUNC:
+						err = "redefinition of system microservice";
+						break;
+					default:
+						err = "redefinition of system symbol";
+						break;
+					}
 
-        RuleDesc *rd = (RuleDesc *)lookupFromHashTable(ruleType, ruleName);
-        if(rd!=NULL) {
-            if(rule->ruleType == RK_FUNC || rd ->ruleType == RK_FUNC) {
-                generateErrMsg("redefinition of function", rule->node->expr, rule->node->base, errbuf);
-                addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
-                res = newErrorType(FUNCTION_REDEFINITION, r);
-                *errnode = rule->node;
-                RETURN;
-        }
+					generateErrMsg(err, rule->node->expr, rule->node->base, errbuf);
+					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
+					res = newErrorType(FUNCTION_REDEFINITION, r);
+					*errnode = rule->node;
+					RETURN;
+				}
+			}
+
+			RuleDesc *rd = (RuleDesc *)lookupFromHashTable(ruleType, ruleName);
+			if(rd!=NULL) {
+				if(rule->ruleType == RK_FUNC || rd ->ruleType == RK_FUNC) {
+					generateErrMsg("redefinition of function", rule->node->expr, rule->node->base, errbuf);
+					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
+					generateErrMsg("previous definition", rd->node->expr, rd->node->base, errbuf);
+					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
+					res = newErrorType(FUNCTION_REDEFINITION, r);
+					*errnode = rule->node;
+					RETURN;
+				}
             } else {
                 insertIntoHashTable(ruleType, ruleName, rule);
             }
+        }
     }
     res = newSimpType(T_INT, r); /* Although a rule set does not have type T_INT, return T_INT to indicate success. */
 
@@ -596,18 +600,18 @@ int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *
 	return 1;
 }
 
-Node* getRuleNode(int ri)
+RuleDesc* getRuleDesc(int ri)
 {
 
 	if(ri< APP_RULE_INDEX_OFF) {
-		return ruleEngineConfig.extRuleSet->rules[ri]->node;
+		return ruleEngineConfig.extRuleSet->rules[ri];
 	} else
 	if (ri < CORE_RULE_INDEX_OFF) {
 		ri = ri - APP_RULE_INDEX_OFF;
-		return ruleEngineConfig.appRuleSet->rules[ri]->node;
+		return ruleEngineConfig.appRuleSet->rules[ri];
 	} else {
 		ri = ri - CORE_RULE_INDEX_OFF;
-		return ruleEngineConfig.coreRuleSet->rules[ri]->node;
+		return ruleEngineConfig.coreRuleSet->rules[ri];
 	}
 	return(NULL);
 }

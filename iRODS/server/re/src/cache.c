@@ -39,7 +39,7 @@ void nodeKey(Node *node, char *keyBuf) {
 		snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.nArgs);
 		break;
 	case T_VAR:
-		snprintf(p, NODE_KEY_SIZE - len, "::%d", node->value.vid);
+		snprintf(p, NODE_KEY_SIZE - len, "::%d::%s", node->value.vid, node->text);
 		break;
 	case N_VAL:
 		switch(TYPE(node)) {

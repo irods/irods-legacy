@@ -25,7 +25,7 @@ ExprType *typeRule(RuleDesc *ruleNode, Env *funcDesc, Hashtable *varTypes, List 
 ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r);
 void addCmdExecOutToEnv(Env *global, Region *r);
 void freeCmdExecOut(execCmdOut_t *ruleExecOut);
-Node *getRuleNode(int ri);
+RuleDesc *getRuleDesc(int ri);
 int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *r);
 int actionTableLookUp (char *action);
 

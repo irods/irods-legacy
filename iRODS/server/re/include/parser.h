@@ -54,7 +54,9 @@ typedef struct pointer {
 typedef enum ruleType {
     RK_REL,
     RK_FUNC,
-    RK_INDUCT
+    RK_DATA,
+    RK_CONSTRUCTOR,
+    RK_EXTERN,
 } RuleType;
 
 typedef struct {
@@ -69,6 +71,8 @@ typedef struct ruleSet {
 	RuleDesc* rules[MAX_NUM_RULES];
 	/* Region *region; */
 } RuleSet;
+
+#define pushRule(rs, r) ((rs)->rules[(rs)->len++] = (r))
 
 typedef struct {
     Node *nodeStack[1024];
@@ -187,6 +191,13 @@ PARSER_FUNC_PROTO2(l, p, q) { \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
         break; \
     }
+#define TTEXT2(x,y) \
+    NEXT_TOKEN; \
+    if(!((TOKEN_TYPE(TK_TEXT)||TOKEN_TYPE(TK_OP)||TOKEN_TYPE(TK_MISC_OP)) && (TOKEN_TEXT(x)||TOKEN_TEXT(y)))) { \
+        context->error = 1; \
+        if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
+        break; \
+    }
 #define TTEXT_LOOKAHEAD(x) \
     TTEXT(x); \
     PUSHBACK;
@@ -296,6 +307,7 @@ if(!CONCAT(done, l)) { \
 CONCAT(done, l) = 1; \
 goto CONCAT(exit, l);
 
+
 /** utility functions */
 void setBase(Node *node, char *base, Region *r);
 Node **setDegree(Node *node, int d, Region *r);
@@ -355,10 +367,12 @@ int isSessionVariableNode(Node *node);
 int isVariableNode(Node *node);
 
 void ruleNameToString(char **p, int *s, int indent, Node *rn);
-void ruleToString(char *buf, int size, Node *n);
+void ruleToString(char *buf, int size, RuleDesc *rd);
 void actionsToString(char **p, int *s, int indent, Node *na, Node *nr);
 void indentToString(char **p, int *s, int indent);
 void termToString(char **p, int *s, int indent, int prec, Node *n);
+void patternToString(char **p, int *s, int indent, int prec, Node *n);
+void typeToStringParser(char **p, int *s, int indent, int lifted, Node *n);
 
 char *nextRuleSection(char *expr, char* section);
 char *parseFunctionParameters(char *e, char *args[], int *argc);
@@ -390,6 +404,7 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token);
 char* typeName_Res(Res *s);
 char* typeName_ExprType(ExprType *s);
 char* typeName_NodeType(NodeType s);
+char* typeName_Parser(NodeType s);
 void printTree(Node *n, int indent);
 void printIndent(int indent);
 

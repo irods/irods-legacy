@@ -1435,7 +1435,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 	int i;
 	if(isComponentInitialized(ruleEngineConfig.extRuleSetStatus)) {
 		for(i=0;i<ruleEngineConfig.extRuleSet->len;i++) {
-			ruleToString(buf, 1024*16, ruleEngineConfig.extRuleSet->rules[i]->node);
+			ruleToString(buf, 1024*16, ruleEngineConfig.extRuleSet->rules[i]);
 #ifdef DEBUG
 			printf("%s", buf);
 #endif
@@ -1444,7 +1444,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 	}
 	if(isComponentInitialized(ruleEngineConfig.appRuleSetStatus)) {
 		for(i=0;i<ruleEngineConfig.appRuleSet->len;i++) {
-			ruleToString(buf, 1024*16, ruleEngineConfig.appRuleSet->rules[i]->node);
+			ruleToString(buf, 1024*16, ruleEngineConfig.appRuleSet->rules[i]);
 #ifdef DEBUG
 			printf("%s", buf);
 #endif
@@ -1453,7 +1453,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 	}
 	if(isComponentInitialized(ruleEngineConfig.coreRuleSetStatus)) {
 		for(i=0;i<ruleEngineConfig.coreRuleSet->len;i++) {
-			ruleToString(buf, 1024*16, ruleEngineConfig.coreRuleSet->rules[i]->node);
+			ruleToString(buf, 1024*16, ruleEngineConfig.coreRuleSet->rules[i]);
 #ifdef DEBUG
 			printf("%s", buf);
 #endif
@@ -1706,7 +1706,7 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile(Node **paramsr, int n, Node *node, 
     RuleSet *ruleSet = (RuleSet *) paramsr[1]->value.uninterpreted.inOutStruct;
 	char buf[1024*16];
 		for(i=0;i<ruleSet->len;i++) {
-			ruleToString(buf, 1024*16, ruleSet->rules[i]->node);
+			ruleToString(buf, 1024*16, ruleSet->rules[i]);
 			fprintf(file, "%s", buf);
 		}
 	  fclose (file);
@@ -1995,6 +1995,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionDesc("string * d `RuleStruct_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
     insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionDesc("string * `RuleStruct_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
     insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionDesc("string * string * d `RuleStruct_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+    insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionDesc("double", (SmsiFuncPtrType) NULL, r));
 
 
 }

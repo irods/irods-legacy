@@ -578,7 +578,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
                 case ABSURDITY:
                     *errnode = TC_NODE(tc);
                     char errmsgbuf1[ERR_MSG_LEN], errmsgbuf2[ERR_MSG_LEN], buf2[1024], buf3[1024];
-                    snprintf(errmsgbuf1, ERR_MSG_LEN, "simplify: unsolvable typing constraint %s<%s.\n", typeToString(TC_A(tc), typingEnv, buf2, 1024), typeToString(TC_B(tc), typingEnv, buf3, 1024));
+                    snprintf(errmsgbuf1, ERR_MSG_LEN, "simplify: unsolvable typing constraint %s < %s.\n", typeToString(TC_A(tc), typingEnv, buf2, 1024), typeToString(TC_B(tc), typingEnv, buf3, 1024));
                     generateErrMsg(errmsgbuf1, (*errnode)->expr, (*errnode)->base, errmsgbuf2);
                     addRErrorMsg(errmsg, -1, errmsgbuf2);
                     /*printVarTypeEnvToStdOut(typingEnv); */
@@ -787,14 +787,14 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
 		case TK_STRING:
 			return expr->exprType = newSimpType(T_STRING,r);
 		case TK_VAR:
-				t = (ExprType *)lookupFromHashTable(varTypes, expr->text);
-				if(t==NULL) {
-					/* define new variable */
-					t = newTVar(r);
-					insertIntoHashTable(varTypes, expr->text, t);
-				}
-                                t = dereference(t, varTypes, r);
-				return expr->exprType = t;
+			t = (ExprType *)lookupFromHashTable(varTypes, expr->text);
+			if(t==NULL) {
+				/* define new variable */
+				t = newTVar(r);
+				insertIntoHashTable(varTypes, expr->text, t);
+			}
+			t = dereference(t, varTypes, r);
+			return expr->exprType = t;
 		case TK_TEXT:
 			if(strcmp(expr->text,"nop")==0) {
 				return expr->exprType = newFuncType(newTupleType(0, NULL, r), newSimpType(T_INT, r), r);
@@ -826,32 +826,32 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
             }
 
 		case N_APPLICATION:
-                        /* try to type as a function */
-                        /* the exprType is used to store the type of the return value */
-                        return expr->exprType = typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+			/* try to type as a function */
+			/* the exprType is used to store the type of the return value */
+			return expr->exprType = typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
 		case N_ACTIONS:
-                if(expr->degree == 0) {
-                    /* type of empty action sequence == T_INT */
-                    return expr->exprType = newSimpType(T_INT, r);
-                }
-                for(i=0;i<expr->degree;i++) {
-                    /*printf("typing action in actions"); */
-    				res = typeExpression3(expr->subtrees[i], funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-                    /*printVarTypeEnvToStdOut(varTypes); */
-                    if(res->nodeType == T_ERROR) {
-                        return expr->exprType = res;
-                    }
-                }
-                return expr->exprType = res;
+			if(expr->degree == 0) {
+				/* type of empty action sequence == T_INT */
+				return expr->exprType = newSimpType(T_INT, r);
+			}
+			for(i=0;i<expr->degree;i++) {
+				/*printf("typing action in actions"); */
+				res = typeExpression3(expr->subtrees[i], funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+				/*printVarTypeEnvToStdOut(varTypes); */
+				if(res->nodeType == T_ERROR) {
+					return expr->exprType = res;
+				}
+			}
+			return expr->exprType = res;
 		case N_ACTIONS_RECOVERY:
-                res = typeExpression3(expr->subtrees[0], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-                if(res->nodeType == T_ERROR) {
-                    return expr->exprType = res;
-                }
-                res = typeExpression3(expr->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-                return expr->exprType = res;
+			res = typeExpression3(expr->subtrees[0], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+			if(res->nodeType == T_ERROR) {
+				return expr->exprType = res;
+			}
+			res = typeExpression3(expr->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+			return expr->exprType = res;
         default:
-                break;
+			break;
 	}
 	*errnode = expr;
     char errbuf[ERR_MSG_LEN], errbuf0[ERR_MSG_LEN];

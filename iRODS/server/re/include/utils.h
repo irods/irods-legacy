@@ -117,7 +117,6 @@ typedef enum node_type {
     N_PARAM_TYPE_LIST = 34,
     N_RULESET = 35,
     N_RULE_PACK = 36,
-    N_RULE = 40,
     N_FD_C_FUNC = 41,
     N_FD_CONSTRUCTOR = 42,
     N_FD_DECONSTRUCTOR = 43,
@@ -125,6 +124,10 @@ typedef enum node_type {
     N_FUNC_SYM_LINK = 45,
     N_META_DATA = 46,
     N_AVU = 47,
+    N_RULE = 60,
+    N_CONSTRUCTOR_DEF = 61,
+    N_EXTERN_DEF = 62,
+    N_DATA_DEF = 63,
     T_UNSPECED = 100, /* indicates a variable which is not assigned a value is passed in to a microservice */
     T_ERROR = 101,
     T_DYNAMIC = 200,
@@ -150,12 +153,21 @@ typedef enum node_type {
 #define OPTION_VARARG_STAR 0x1
 #define OPTION_VARARG_PLUS 0x2
 #define OPTION_VARARG_OPTIONAL 0x3
-#define OPTION_VARARG_MASK 0x3
-#define OPTION_COERCE 0x8
-#define OPTION_TYPED 0x10
+#define OPTION_VARARG_MASK 0xf
+#define OPTION_COERCE 0x10
+#define OPTION_TYPED 0x20
+
+#define OPTION_IO_TYPE_MASK 0xff00
+#define IO_TYPE_INPUT 0x100
+#define IO_TYPE_OUTPUT 0x200
+#define IO_TYPE_DYNAMIC 0x400
+#define IO_TYPE_EXPRESSION 0x800
+#define IO_TYPE_ACTIONS 0x1000
 
 #define getVararg(n) ((n)->option & OPTION_VARARG_MASK)
 #define setVararg(n, v) (n)->option &= ~OPTION_VARARG_MASK; (n)->option |= (v);
+#define getIOType(n) ((n)->iotype & OPTION_IO_TYPE_MASK)
+#define setIOType(n, v) (n)->iotype &= ~OPTION_IO_TYPE_MASK; (n)->iotype |= (v);
 
 
 typedef struct env Env;
@@ -205,11 +217,6 @@ typedef struct token {
     long exprloc;
 } Token;
 
-#define IO_TYPE_INPUT 0x1
-#define IO_TYPE_OUTPUT 0x2
-#define IO_TYPE_DYNAMIC 0x4
-#define IO_TYPE_EXPRESSION 0x8
-#define IO_TYPE_ACTIONS 0x10
 struct node {
     NodeType nodeType; /* node type */
     ExprType *exprType; /* expression type */

@@ -275,7 +275,7 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                     switch(TYPE(res) ) {
                         case T_INT:
                         case T_DOUBLE:
-                            return newBoolRes(r, res->value.dval);
+                            return newBoolRes(r, (int) res->value.dval);
                         case T_STRING:
                             if(strcmp(res->text, "true")==0) {
                                 return newBoolRes(r, 1);
@@ -729,11 +729,11 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
                             free(varValue);
                             break;
                         case T_INT:
-                            res = newIntRes(r, *(int *) varValue);
+                            res = newIntRes(r, atoi((char *)varValue));
                             free(varValue);
                             break;
                         case T_DOUBLE:
-                            res = newDoubleRes(r, *(double *) varValue);
+                            res = newDoubleRes(r, atof((char *)varValue));
                             free(varValue);
                             break;
                         case T_IRODS:
@@ -957,6 +957,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
             /*printTree(civ->condExp, 0); */
         Res *status;
         Env *envNew = newEnv(newHashTable(100), globalEnv(env), env);
+        RuleDesc *rd;
         Node* rule = NULL;
         RuleIndexListNode *indexNode = NULL;
         Res* res = NULL;
@@ -996,7 +997,17 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
             RETURN;
         }
 
-        rule = getRuleNode(indexNode->ruleIndex+CORE_RULE_INDEX_OFF); /* increase the index to move it to core rules index below MAX_NUM_APP_RULES are app rules */
+        rd = getRuleDesc(indexNode->ruleIndex); /* increase the index to move it to core rules index below MAX_NUM_APP_RULES are app rules */
+
+        if(rd->ruleType != RK_REL && rd->ruleType != RK_FUNC) {
+#ifndef DEBUG
+            rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",ruleName, NO_MORE_RULES_ERR);
+#endif
+            status = newErrorRes(r, NO_MORE_RULES_ERR);
+            RETURN;
+        }
+
+        rule = rd->node;
 
         status = execRuleNodeRes(rule, args, argc,  env, rei, reiSaveFlag, errmsg, r);
 
@@ -1069,7 +1080,12 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
             break;
         }
 
-        Node* rule = getRuleNode(ruleInx);
+        RuleDesc *rd = getRuleDesc(ruleInx);
+        if(rd->ruleType != RK_REL && rd->ruleType != RK_FUNC) {
+        	continue;
+        }
+
+        Node* rule = rd->node;
         unsigned int inParamsCount = RULE_NODE_NUM_PARAMS(rule);
         if (inParamsCount != argc) {
             continue;
@@ -1172,10 +1188,15 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
 	Node* ruleHead = rule->subtrees[0];
     Node** paramsNodes = ruleHead->subtrees[0]->subtrees;
 	char* paramsNames[MAX_NUM_OF_ARGS_IN_ACTION];
-        int inParamsCount = RULE_NODE_NUM_PARAMS(rule);
+        unsigned int inParamsCount = RULE_NODE_NUM_PARAMS(rule);
         Res *statusRes;
 
-        int k;
+        if(inParamsCount != argc) {
+            generateAndAddErrMsg("error: action argument count mismatch", rule, ACTION_ARG_COUNT_MISMATCH, errmsg);
+            return newErrorRes(r, ACTION_ARG_COUNT_MISMATCH);
+
+        }
+        unsigned int k;
         for (k = 0; k < inParamsCount ; k++) {
             paramsNames[k] =  paramsNodes[k]->text;
         }
