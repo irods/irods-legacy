@@ -1,5 +1,6 @@
 package edu.sdsc.grid.io.irods;
 
+import java.io.File;
 import java.net.URI;
 import java.util.Properties;
 
@@ -65,20 +66,28 @@ public class IRODSCommandsGetTest {
 		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
 				1);
 
-		// put scratch file into irods in the right place on the first resource
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IputCommand iputCommand = new IputCommand();
-
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPath + testFileName);
+
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
+		/*
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
 
 		StringBuilder fileNameAndPath = new StringBuilder();
 		fileNameAndPath.append(absPath);
 
 		fileNameAndPath.append(testFileName);
 
+		
 		iputCommand.setLocalFileName(fileNameAndPath.toString());
 		iputCommand.setIrodsFileName(targetIrodsCollection);
 		iputCommand.setIrodsResource(testingProperties
@@ -86,23 +95,18 @@ public class IRODSCommandsGetTest {
 		iputCommand.setForceOverride(true);
 
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);*/
 
 		StringBuilder uriPath = new StringBuilder();
 		uriPath.append(IRODS_TEST_SUBDIR_PATH);
 		uriPath.append('/');
 		uriPath.append(testFileName);
 
-		// can I use jargon to access the file on IRODS and verify that it
-		// indeed exists?
 		URI irodsUri = testingPropertiesHelper
 				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
 						uriPath.toString());
 		IRODSFile irodsFile = new IRODSFile(irodsUri);
 
-		IRODSAccount testAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
 		// create a GeneralFile (local) for the get results
 
@@ -326,9 +330,12 @@ public class IRODSCommandsGetTest {
 		irodsFileSystem.close();
 
 	}
-	
-	@Test // FIXME:  will currently fail, might need custom gethostforget for data objects note sent to wayne and mike w
-	public void testGetDataObjectWithConnectionReroutingNoRescPassedIn() throws Exception {
+
+	@Test
+	// FIXME: will currently fail, might need custom gethostforget for data
+	// objects note sent to wayne and mike w
+	public void testGetDataObjectWithConnectionReroutingNoRescPassedIn()
+			throws Exception {
 
 		String useDistribResources = testingProperties
 				.getProperty("test.option.distributed.resources");
@@ -395,15 +402,12 @@ public class IRODSCommandsGetTest {
 
 		String getTargetFilePath = absPath + "GetResult" + testFileName;
 		GeneralFile localFile = new LocalFile(getTargetFilePath);
-		irodsFile
-				.copyTo(localFile,
-						true,"",
-						true);
+		irodsFile.copyTo(localFile, true, "", true);
 
 		irodsFileSystem.close();
 
 	}
-	
+
 	@Test
 	public void testGetCollectionWithConnectionRerouting() throws Exception {
 
@@ -415,7 +419,7 @@ public class IRODSCommandsGetTest {
 		} else {
 			return;
 		}
-		
+
 		IRODSAccount testAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
@@ -428,14 +432,17 @@ public class IRODSCommandsGetTest {
 			irodsFileSystem.close();
 			return;
 		}
-		
+
 		String testSubdir = "testGetCollectionWithConnectionReroutingSubdir";
 		String testFilePrefix = "testGetFile";
 		String testFileSuffix = ".doc";
-		
-		String localAbsPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH + "/" + testSubdir);
-		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH + "/" + testSubdir, testFilePrefix, testFileSuffix, 20, 10, 20);
-		
+
+		String localAbsPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH
+						+ "/" + testSubdir);
+		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH
+				+ "/" + testSubdir, testFilePrefix, testFileSuffix, 20, 10, 20);
+
 		// put scratch file into irods in the right place on the first resource
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
@@ -445,8 +452,8 @@ public class IRODSCommandsGetTest {
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH);
 
-	
-		iputCommand.setLocalFileName(localAbsPath.substring(0, localAbsPath.length() - 1));
+		iputCommand.setLocalFileName(localAbsPath.substring(0,
+				localAbsPath.length() - 1));
 		iputCommand.setIrodsFileName(targetIrodsCollection);
 		iputCommand
 				.setIrodsResource(testingProperties
@@ -466,17 +473,14 @@ public class IRODSCommandsGetTest {
 				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
 						uriPath.toString());
 		IRODSFile irodsFile = new IRODSFile(irodsUri);
-		
+
 		String testReturnSubdir = "testGetCollectionWithConnectionReroutingReturnedSubdir";
 		String absPath = scratchFileUtils
-				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH + "/" + testReturnSubdir);
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH
+						+ "/" + testReturnSubdir);
 
 		GeneralFile localFile = new LocalFile(absPath);
-		irodsFile
-				.copyTo(localFile,
-						true,
-						"",
-						true);
+		irodsFile.copyTo(localFile, true, "", true);
 
 		irodsFileSystem.close();
 		// unfortunately hard to test, just look for clean execution
