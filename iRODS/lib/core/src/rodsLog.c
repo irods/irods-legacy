@@ -1018,7 +1018,7 @@ int irodsErrorCount= 490;
 
 static int verbosityLevel=LOG_ERROR;
 static int sqlVerbosityLevel=0;
-static pid_t myPid=0;
+pid_t myPid=0;
 
 #ifdef windows_platform
 static void rodsNtElog(char *msg);
@@ -1074,7 +1074,7 @@ rodsLog(int level, char *formatStr, ...) {
       time(&timeValue);
       rstrcpy(timeBuf, ctime(&timeValue), 90);
       timeBuf[19]='\0';
-      if (myPid==0) myPid = getpid();
+      myPid = getpid();
       snprintf(extraInfo, 100-1, "%s pid:%d ", timeBuf+4, myPid);
    }
    else {
@@ -1164,7 +1164,7 @@ char *formatStr, ...) {
       time(&timeValue);
       rstrcpy(timeBuf, ctime(&timeValue), 90);
       timeBuf[19]='\0';
-      if (myPid==0) myPid = getpid();
+      myPid = getpid();
       snprintf(extraInfo, 100-1, "%s pid:%d ", timeBuf+4, myPid);
    }
    else {
@@ -1237,13 +1237,13 @@ rodsLogSqlReq(int onOrOff) {
 
 void
 rodsLogSql(char *sql) {
-   if (myPid==0) myPid = getpid();
+   myPid = getpid();
    if (sqlVerbosityLevel) rodsLog(LOG_SQL, "pid: %d sql: %s", 
 				  myPid, sql);
 }
 void
 rodsLogSqlResult(char *stat) {
-   if (myPid==0) myPid = getpid();
+   myPid = getpid();
    if (sqlVerbosityLevel) rodsLog(LOG_SQL, "pid: %d result: %s", 
 				  myPid, stat);
 }
