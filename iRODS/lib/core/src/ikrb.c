@@ -110,7 +110,7 @@ static gss_ctx_id_t context[MAX_FDS] = {
 
 #endif  /* end of #if defined(KRB_AUTH) */
 
-int context_flags;
+OM_uint32 context_flags;
 
 /* Function for time test 
  * Returns the difference between start time and end time in tdiff 
@@ -181,11 +181,9 @@ static int _ikrbReadAll(int fd, char *buf, unsigned int nbyte)
  -1 if an error occurs or if it could not write all the data.
 */
 #if defined(KRB_AUTH)
-int _krbSendToken(fd, tok)
-int fd;
-gss_buffer_t tok;
+int _krbSendToken(int fd, gss_buffer_t tok)
 {
-    int len, ret;
+    unsigned int len, ret;
     char *cp;
     int status;
 
@@ -210,7 +208,7 @@ gss_buffer_t tok;
         }
     }
 
-    ret = _ikrbWriteAll(fd, tok->value, tok->length);
+    ret = _ikrbWriteAll(fd, (char *)tok->value, tok->length);
     if (ret < 0) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     } else if (ret != tok->length) {
@@ -228,8 +226,7 @@ gss_buffer_t tok;
 /*
  read the token hdr
  */
-int _ikrbRcvTokenHeader(fd)
-int fd;
+int _ikrbRcvTokenHeader(int fd)
 {
     int length;
     char *cp;
@@ -265,15 +262,14 @@ int fd;
  read the token body
  */
 #if defined(KRB_AUTH)
-int _ikrbRcvTokenBody(fd, tok, length)
-int fd;
-gss_buffer_t tok;
-int length;
+int _ikrbRcvTokenBody(int fd, gss_buffer_t tok, int length)
 {
-    int ret;
+    unsigned int ret;
     int status;
+    int i;
 
-    if (tok->length < length) {
+    i = tok->length;
+    if (i < length) {
         status = KRB_ERROR_TOKEN_TOO_LARGE;
 	rodsLogAndErrorMsg( LOG_ERROR, ikrb_rErrorPtr, status,
 			    "_ikrbRcvTokenBody error, token is too large for buffer, %d bytes in token, buffer is %d bytes",
@@ -310,9 +306,7 @@ int length;
  Divided into two routines so that each can be called from ikrb_read.
  */
 #if defined(KRB_AUTH)
-int _ikrbRcvToken(fd, tok)
-int fd;
-gss_buffer_t tok;
+int _ikrbRcvToken(int fd, gss_buffer_t tok)
 {
     int length;
     int i;
@@ -366,7 +360,7 @@ static void _ikrbLogError_1(char *callerMsg, OM_uint32 code, int type)
 {
     OM_uint32 majorStatus, minorStatus;
     gss_buffer_desc msg;
-    int msg_ctx;
+    OM_uint32 msg_ctx;
     int status;
     char *whichSide;
 
@@ -431,11 +425,10 @@ void _ikrbDisplayCtxFlags()
  Print the contexts of a token (for debug).
 */
 #if defined(KRB_AUTH)
-void _ikrbPrintToken(tok)
-gss_buffer_t tok;
+void _ikrbPrintToken(gss_buffer_t tok)
 {
-    int i, j;
-    unsigned char *p = tok->value;
+    unsigned int i, j;
+    unsigned char *p = (unsigned char *)tok->value;
     fprintf(stderr, "_ikrbPrintToken, length=%d\n", tok->length);
     j = 0;
     for (i = 0; i < tok->length; i++, p++) {
@@ -498,7 +491,7 @@ int ikrbSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
 
     if (specifiedName != NULL) {
         name_buf.value = specifiedName;
-        name_buf.length = strlen(name_buf.value) + 1;
+        name_buf.length = strlen((char *)name_buf.value) + 1;
 	majorStatus =    GSS_IMPORT_NAME(&minorStatus, &name_buf,
 				   (gss_OID) gss_nt_service_name_krb,
 				   &myName);
@@ -545,10 +538,10 @@ int ikrbSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
        return KRB_ERROR_DISPLAYING_NAME;
     }
     if (client_name2.value != 0 && client_name2.length>0) {
-       *returnedName = malloc(client_name2.length+10);
+       *returnedName = (char *)malloc(client_name2.length+10);
        if (*returnedName != 0) {
 	  memset(*returnedName,  0, sizeof(client_name2.length));
-	  strncpy(*returnedName, client_name2.value, client_name2.length+1);
+	  strncpy(*returnedName, (char *)client_name2.value, client_name2.length+1);
        }
     }
 
@@ -615,7 +608,7 @@ int ikrbEstablishContextServerside(rsComm_t *rsComm, char *clientName,
     gss_OID doid;
     OM_uint32 majorStatus, minorStatus;
 
-    int i;
+    int i, j;
 
 #if defined(IKRB_TIMING)
     struct timeval startTimeFunc, endTimeFunc, sTimeDiff;
@@ -691,8 +684,9 @@ int ikrbEstablishContextServerside(rsComm_t *rsComm, char *clientName,
     if (maxLen_clientName < i)
         i = maxLen_clientName;
 
-    strncpy(clientName, client_name.value, i);
-    if (maxLen_clientName > client_name.length)
+    strncpy(clientName, (char *)client_name.value, i);
+    j = client_name.length;
+    if (maxLen_clientName > j)
         clientName[client_name.length] = '\0';
 
     /* release the name structure */
