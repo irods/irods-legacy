@@ -6,6 +6,12 @@
 #include "datetime.h"
 #include "cache.h"
 #include "configuration.h"
+#if defined(USE_BOOST)
+#include <boost/regex.h>
+#elif defined(_POSIX_VERSION)
+#include <regex.h>
+#endif
+
 
 #ifndef DEBUG
 #include "execMyRule.h"
@@ -1051,7 +1057,7 @@ Res *smsi_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 	char *bufstr;
 	pattern = params[1]->text;
 	bufstr = strdup(params[0]->text);
-	#ifdef _POSIX_VERSION
+	#if defined(_POSIX_VERSION) || defined(USE_BOOST)
 	/* make the regexp match whole strings */
 	char *buf2;
 	buf2 = wildCardToRegex(pattern);
@@ -1074,7 +1080,7 @@ Res *smsi_not_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int r
 	char *bufstr;
 	pattern = params[1]->text;
 	bufstr = strdup(params[0]->text);
-	#ifdef _POSIX_VERSION
+	#if defined(_POSIX_VERSION) || defined(USE_BOOST)
 	/* make the regexp match whole strings */
 	char *buf2;
 	buf2 = wildCardToRegex(pattern);
@@ -1097,7 +1103,7 @@ Res *smsi_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
         char *bufstr;
         pattern = params[1]->text;
         bufstr = strdup(params[0]->text);
-        #ifdef _POSIX_VERSION
+        #if defined(_POSIX_VERSION) || defined(USE_BOOST)
         /* make the regexp match whole strings */
         char *buf2;
         buf2 = matchWholeString(pattern);
@@ -1131,7 +1137,7 @@ Res *smsi_not_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei,
         char *bufstr;
         pattern = params[1]->text;
         bufstr = strdup(params[0]->text);
-        #ifdef _POSIX_VERSION
+        #if defined(_POSIX_VERSION) || defined(USE_BOOST)
         /* make the regexp match whole strings */
         char *buf2;
         buf2 = matchWholeString(pattern);

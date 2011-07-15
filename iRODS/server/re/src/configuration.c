@@ -54,6 +54,18 @@ int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char 
 }
 #endif
 
+void getResourceName(char buf[1024], char *rname) {
+	snprintf(buf, 1024, "%s/%s", getConfigDir(), rname);
+	char *ch = buf;
+	while(*ch != '\0') {
+		if(*ch == '\\' || *ch == '/') {
+			*ch = '_';
+		}
+		ch++;
+	}
+
+}
+
 void removeRuleFromIndex(char *ruleName, int i) {
 	if(isComponentInitialized(ruleEngineConfig.ruleIndexStatus)) {
 		RuleIndexList *rd = (RuleIndexList *)lookupFromHashTable(ruleEngineConfig.ruleIndex, ruleName);
@@ -271,149 +283,146 @@ int clearRuleSetAndIndex(ruleStruct_t *inRuleStruct) {
 	}
 	return 0;
 }
+
+#ifdef USE_BOOST
+static boost::interprocess::shared_memory_object *shm_obj = NULL;
+static boost::interprocess::mapped_region *mapped = NULL;
+#endif
+
+unsigned char *prepareServerMemory() {
+#ifdef USE_BOOST
+	char shm_name[1024];
+	getResourceName(shm_name, shm_rname);
+	shm_obj = new boost::interprocess::shared_memory_object(boost::interprocess::open_or_create, shm_name, boost::interprocess::read_write);
+	boost::interprocess::offset_t size;
+	if(shm_obj->get_size(size) && size==0) {
+		shm_obj->truncate(SHMMAX);
+	}
+	mapped = new boost::interprocess::mapped_region(*shm_obj, boost::interprocess::read_write);
+	unsigned char *shmBuf = (unsigned char *) mapped->get_address();
+	return shmBuf;
+#else
+		int shmid = - 1;
+		int key = 1200;
+		shmid = shmget(key, SHMMAX, IPC_CREAT /*| IPC_EXCL*/ | 0666);
+		if(shmid!= -1) {
+			unsigned char *shmBuf = (unsigned char *)shmat(shmid, SHM_BASE_ADDR, 0);
+			return shmBuf;
+		} else {
+			return NULL;
+		}
+#endif
+}
+
+unsigned char *prepareNonServerMemory() {
+#ifdef USE_BOOST
+	char shm_name[1024];
+	getResourceName(shm_name, shm_rname);
+
+    try {
+    	shm_obj = new boost::interprocess::shared_memory_object(boost::interprocess::open_only, shm_name, boost::interprocess::read_only);
+    	mapped = new boost::interprocess::mapped_region(*shm_obj, boost::interprocess::read_only);
+    	unsigned char *buf = (unsigned char *) mapped->get_address();
+    	return buf;
+    } catch(boost::interprocess::interprocess_exception e) {
+    	return NULL;
+    }
+#else
+	int key = 1200;
+	int shmid = shmget(key, SHMMAX, 0666);
+	if(shmid != -1) { /* not server process and shm is successfully allocated */
+		unsigned char *buf = (unsigned char *)shmat(shmid, SHM_BASE_ADDR, 0);
+		return buf;
+	} else {
+		return NULL;
+	}
+#endif
+}
+
 int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
     char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
     strcpy(r2,irbSet);
     int res = 0;
 
-    int loadToBuf;
-    int loadToShared;
-    int unlock_mutex = 0;
-    sem_t *mutex = NULL;
-    unsigned char *buf = NULL;
-	if(ruleEngineConfig.ruleEngineStatus == INITIALIZED) {
-		/* Reloading rule set, clear previously generated rule set */
-        unlinkFuncDescIndex();
-		clearRuleSetAndIndex(inRuleStruct);
-		buf = (unsigned char *)malloc(SHMMAX);
-		if(ruleEngineConfig.cacheStatus == SHARED) {
-			if(lockMutex(&mutex) != 0) {
-				res = -1;
-				RETURN;
-			}
-			unlock_mutex = 1;
-			loadToShared = 1;
-		} else {
-			loadToShared = 0;
-		}
-		loadToBuf = 1;
-
-	} else {
-#ifdef CACHE_ENABLE
-    if(CACHE_ENABLE) {
-
-        if(lockMutex(&mutex) != 0) {
-            res = -1;
-            RETURN;
-        }
-        unlock_mutex = 1;
-
-        int shmid = - 1;
-        int key = 1200;
-        void *addr = SHM_BASE_ADDR;
-        if(isServer) {
-            shmid = shmget(key, SHMMAX, IPC_CREAT /*| IPC_EXCL*/ | 0666);
-            if(shmid!= -1) {
-            	loadToBuf = 1;
-                unsigned char *shm = (unsigned char *)shmat(shmid, SHM_BASE_ADDR, 0);
-                setCacheAddress(shm, SHARED, SHMMAX);
-            } else {
-            	CASCASE_NON_ZERO(generateLocalCache());
-            	loadToBuf = 1;
-
-            }
-        } else {
-            shmid = shmget(key, SHMMAX, 0666);
-            if(shmid != -1) { /* not server process and shm is successfully allocated */
-                loadToBuf = 0;
-                buf = (unsigned char *)shmat(shmid, addr, 0);
-                setCacheAddress(buf, SHARED, SHMMAX);
-            } else {
-            	CASCASE_NON_ZERO(generateLocalCache());
-            	loadToBuf = 1;
-            }
-        }
-    }
-    else
-#endif
-	{
-    	CASCASE_NON_ZERO(generateLocalCache());
-    	loadToBuf = 1;
-    }
-    buf = ruleEngineConfig.address;
-	}
-	clearResources(RESC_REGION_INDEX);
-    if(loadToBuf) {
-    	/* if(inRuleStruct == &coreRuleStrct) {
-    		clearResources(RESC_CORE_FUNC_DESC_INDEX);
-    	} else if(inRuleStruct == &appRuleStrct) {
-    		clearResources(RESC_APP_FUNC_DESC_INDEX);
-    	} */
-    	generateRegions();
-		generateFunctionDescriptionTables();
-    	generateRuleSets();
-        while (strlen(r2) > 0) {
-			int i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
-			if (i == 0)
-				i = readRuleStructAndRuleSetFromFile(r1, inRuleStruct);
-			if (i != 0) {
-			    res = i;
-                RETURN;
-			}
-			strcpy(r2,r3);
-        }
-        Cache *configNew = copyCache(&buf, SHMMAX, &ruleEngineConfig);
-        configNew->regionIndexStatus = UNINITIALIZED;
-        configNew->regionAppStatus = UNINITIALIZED;
-        configNew->regionCoreStatus = UNINITIALIZED;
-        configNew->appRuleSetStatus = COMPRESSED;
-        configNew->coreRuleSetStatus = COMPRESSED;
-        configNew->coreFuncDescIndexStatus = COMPRESSED;
-        configNew->appFuncDescIndexStatus = COMPRESSED;
-
+    mutex_type *mutex = NULL;
 #ifdef DEBUG
-        printf("Buffer usage: %fM\n", ((double)(configNew->dataSize))/(1024*1024));
+    Cache *cache;
+    unsigned char *buf = NULL;
 #endif
-        unlinkFuncDescIndex();
-        clearResources(RESC_APP_RULE_SET | RESC_CORE_RULE_SET
-        		     | RESC_COND_INDEX | RESC_RULE_INDEX
-        		     | RESC_CORE_FUNC_DESC_INDEX | RESC_APP_FUNC_DESC_INDEX
-        		     | RESC_REGION_APP | RESC_REGION_CORE | RESC_REGION_INDEX );
-        if(ruleEngineConfig.ruleEngineStatus == INITIALIZED) {
-        	/* previous cache allocated */
-        	if(loadToShared) {
-        		/* previous cache is in shared memory, this must be a server process */
-        		unsigned char *start = ruleEngineConfig.address;
-        		configNew = copyCache(&start, SHMMAX, configNew);
-        	} else {
-        		/* previous cache is not in shared memory, discard and replace with new cache */
-        		delayClearResources(RESC_CACHE);
-        	}
-        }
-        /* copy extRuleSet and extFuncDescIndex */
-        configNew->extRuleSet = ruleEngineConfig.extRuleSet;
-        configNew->extFuncDescIndex = ruleEngineConfig.extFuncDescIndex;
-        ruleEngineConfig = *configNew;
-        ruleEngineConfig.extRuleSetStatus = LOCAL;
-        ruleEngineConfig.extFuncDescIndexStatus = LOCAL;
-    	generateFunctionDescriptionTables();
-    } else {
-        Cache *cache = restoreCache(buf);
-        cache->cacheStatus = INITIALIZED;
-        ruleEngineConfig = *cache;
-        /* generate extRuleSet */
-    	generateRuleSets();
-    	generateFunctionDescriptionTables();
-        ruleEngineConfig.extRuleSetStatus = LOCAL;
-        ruleEngineConfig.extFuncDescIndexStatus = LOCAL;
+
+#ifdef CACHE_ENABLE
+    /* try to find shared memory cache */
+    if(!isServer) {
+    	buf = prepareNonServerMemory();
+    	if(buf != NULL) {
+    		lockMutex(&mutex);
+            Cache *cache = restoreCache(buf);
+            unlockMutex(&mutex);
+#ifdef USE_BOOST
+			delete mapped;
+			delete shm_obj;
+#endif
+            cache->cacheStatus = INITIALIZED;
+            ruleEngineConfig = *cache;
+            /* generate extRuleSet */
+        	generateRegions();
+        	generateRuleSets();
+        	generateFunctionDescriptionTables();
+            ruleEngineConfig.extRuleSetStatus = LOCAL;
+            ruleEngineConfig.extFuncDescIndexStatus = LOCAL;
+            createCoreAppExtRuleNodeIndex();
+            RETURN;
+    	}
     }
+#endif
+
+    if(ruleEngineConfig.ruleEngineStatus == INITIALIZED) {
+		/* Reloading rule set, clear previously generated rule set */
+		unlinkFuncDescIndex();
+		clearRuleSetAndIndex(inRuleStruct);
+    }
+
+	generateRegions();
+	generateRuleSets();
+	generateFunctionDescriptionTables();
+    ruleEngineConfig.extRuleSetStatus = LOCAL;
+    ruleEngineConfig.extFuncDescIndexStatus = LOCAL;
+	while (strlen(r2) > 0) {
+		int i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
+		if (i == 0)
+			i = readRuleStructAndRuleSetFromFile(r1, inRuleStruct);
+		if (i != 0) {
+			res = i;
+			RETURN;
+		}
+		strcpy(r2,r3);
+	}
+
 	createCoreAppExtRuleNodeIndex();
+#ifdef DEBUG
+	CASCASE_NON_ZERO(generateLocalCache());
+	buf = ruleEngineConfig.address;
+	cache = copyCache(&buf, SHMMAX, &ruleEngineConfig);
+	printf("Buffer usage: %fM\n", ((double)(cache->dataSize))/(1024*1024));
+#endif
+
+#ifdef CACHE_ENABLE
+	if(isServer) {
+		unsigned char *shared = prepareServerMemory();
+
+		if(shared != NULL) {
+			lockMutex(&mutex);
+			copyCache(&shared, SHMMAX, &ruleEngineConfig);
+	        unlockMutex(&mutex);
+#ifdef USE_BOOST
+			delete mapped;
+			delete shm_obj;
+#endif
+		}
+	}
+#endif
 
 ret:
-    if(unlock_mutex)
-    {
-        unlockMutex(&mutex);
-    }
     ruleEngineConfig.ruleEngineStatus = INITIALIZED;
 
     return res;
@@ -502,5 +511,51 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
 }
 
 int availableRules() {
-	return (isComponentInitialized(ruleEngineConfig.appRuleSetStatus) ? ruleEngineConfig.coreRuleSet->len : 0) + (isComponentInitialized(ruleEngineConfig.coreRuleSetStatus) == INITIALIZED? ruleEngineConfig.appRuleSet->len : 0);
+	return (isComponentInitialized(ruleEngineConfig.appRuleSetStatus) ? ruleEngineConfig.coreRuleSet->len : 0) + (isComponentInitialized(ruleEngineConfig.appRuleSetStatus) == INITIALIZED? ruleEngineConfig.appRuleSet->len : 0);
 }
+
+
+int lockMutex(mutex_type **mutex) {
+	char sem_name[1024];
+	getResourceName(sem_name, SEM_NAME);
+#ifdef USE_BOOST
+	*mutex = new boost::interprocess::named_mutex(boost::interprocess::open_or_create, sem_name);
+	(*mutex)->lock();
+	return 0;
+#else
+	*mutex = sem_open(sem_name,O_CREAT,0644,1);
+	if(*mutex == SEM_FAILED)
+    {
+      perror("unable to create semaphore");
+      sem_unlink(SEM_NAME);
+      return -1;
+    } else {
+      int v;
+      sem_getvalue(*mutex, &v);
+      /* printf("sem val0: %d\n", v); */
+      sem_wait(*mutex);
+      sem_getvalue(*mutex, &v);
+      /* printf("sem val1: %d\n", v); */
+      sem_close(*mutex);
+      return 0;
+    }
+#endif
+}
+void unlockMutex(mutex_type **mutex) {
+#ifdef USE_BOOST
+	(*mutex)->unlock();
+	delete *mutex;
+#else
+	char sem_name[1024];
+	getResourceName(sem_name, SEM_NAME);
+	int v;
+	*mutex = sem_open(sem_name,O_CREAT,0644,1);
+	sem_getvalue(*mutex, &v);
+	/* printf("sem val2: %d\n", v); */
+	sem_post(*mutex);
+	sem_getvalue(*mutex, &v);
+	/* printf("sem val3: %d\n", v); */
+	sem_close(*mutex);
+#endif
+}
+

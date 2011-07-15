@@ -2,9 +2,24 @@
  */
 #ifndef _CONFIGURATION_H
 #define _CONFIGURATION_H
+
 #include "rules.h"
 #include "hashtable.h"
 #include "parser.h"
+#ifdef USE_BOOST
+#include <boost/interprocess/sync/named_mutex.hpp>
+#include <boost/interprocess/creation_tags.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/detail/os_file_functions.hpp>
+#else
+#include <semaphore.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/fcntl.h>
+#endif
+
 #define RESC_RULE_INDEX 0x1
 #define RESC_COND_INDEX 0x2
 #define RESC_CORE_RULE_SET 0x4
@@ -130,6 +145,7 @@ extern unsigned char *ruleEngineMem;
 extern RuleEngineStatus _ruleEngineStatus;
 extern int isServer;
 extern Cache ruleEngineConfig;
+
 RuleEngineStatus getRuleEngineStatus();
 int unlinkFuncDescIndex();
 void clearResources(int resources);
@@ -146,5 +162,16 @@ void prependAppRule(RuleDesc *rd, Region *r);
 void popExtRuleSet(int checkPoint);
 void clearDelayed();
 int generateFunctionDescriptionTables();
+
+#define SEM_NAME "irods_sem_re"
+#ifdef USE_BOOST
+typedef boost::interprocess::named_mutex mutex_type;
+#else
+typedef sem_t mutex_type;
+#endif
+
+void unlockMutex(mutex_type **mutex);
+int lockMutex(mutex_type **mutex);
+
 
 #endif /* _CONFIGURATION_H */

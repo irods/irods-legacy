@@ -2,19 +2,13 @@
  */
 #ifndef CACHE_H
 #define CACHE_H
-#include <semaphore.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/fcntl.h>
 #include "rules.h"
 #include "index.h"
 #include "configuration.h"
 #include "region.h"
-#define SEM_NAME "irods_sem_re"
 /* #define CACHE_ENABLE 0 */
 
-#define allocate(p, ty, vn, val, gd) \
+#define allocateInBuffer(p, ty, vn, val, gd) \
 	if(gd) { \
     ((CacheRecordDesc *)p)->type = CONCAT(ty,_T); \
     ((CacheRecordDesc *)p)->length = 1; \
@@ -22,7 +16,7 @@
 	} \
     ty *vn = ((ty *)p); \
     *vn = val; p+=sizeof(ty)
-#define allocateArray(p, elemTy, n, lval, val, gd) \
+#define allocateArrayInBuffer(p, elemTy, n, lval, val, gd) \
 	if(gd) { \
     ((CacheRecordDesc *)p)->type = CONCAT(elemTy,_T); \
     ((CacheRecordDesc *)p)->length = n; \
@@ -33,6 +27,7 @@
     p+=sizeof(elemTy) * (n);
 #define SHMMAX 30000000
 #define SHM_BASE_ADDR ((void *)0x80000000)
+#define shm_rname "SHM"
 #define APPLY_DIFF(p, t, d) if((p)!=NULL){unsigned char *temp = (unsigned char *)p; temp+=(d); (p)=(t *)temp;}
 #define MAKE_COPY(buf, type, src, tgt, gd) if((src)!=NULL) {tgt=CONCAT(copy, type)(&(buf), src, gd);}
 typedef void * (*Copier)(unsigned char **, void *, Hashtable *, int);
@@ -72,6 +67,4 @@ RuleSet *copyRuleSet(unsigned char **buf, RuleSet *h, Hashtable *objectMap, int 
 CondIndexVal *copyCondIndexVal(unsigned char **buf, CondIndexVal *civ, Hashtable *objectMap, int generateDescriptor);
 Cache *copyCache(unsigned char **buf, long size, Cache *c);
 Cache *restoreCache(unsigned char *buf);
-void unlockMutex(sem_t **mutex);
-int lockMutex(sem_t **mutex);
 #endif
