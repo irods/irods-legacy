@@ -346,7 +346,7 @@ void getCoor(Pointer *p, Label * errloc, int coor[2]);
 /**
  * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will has type N_ERROR if the token does not match
  */
-int skip(Pointer *expr, char *text, ParserContext *pc, Token **token, int rulegen);
+int skip(Pointer *expr, char *text, Token **token, ParserContext *pc, int rulegen);
 void skipWhitespace(Pointer *expr);
 char *findLineCont(char *expr);
 

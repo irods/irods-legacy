@@ -252,7 +252,7 @@ char *findLineCont(char *expr) {
  * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will has type N_ERROR if the token does not match
  * return 0 failure non 0 success
  */
-int skip(Pointer *e, char *text, Token **token, ParserContext *pc, int rulegen /* = rulegen */) {
+int skip(Pointer *e, char *text, Token **token, ParserContext *pc, int rulegen) {
 	*token = nextTokenRuleGen(e, pc, rulegen);
 	if(((*token)->type!=TK_TEXT && (*token)->type!=TK_OP && (*token)->type!=TK_MISC_OP) || strcmp((*token)->text,text)!=0) {
 		(*token)->type = N_ERROR;
@@ -261,9 +261,9 @@ int skip(Pointer *e, char *text, Token **token, ParserContext *pc, int rulegen /
 	return 1;
 }
 
-void getRuleCode(char buf[MAX_RULE_LEN], Pointer *e, int rulegen, ParserContext *context) {
+/*void getRuleCode(char buf[MAX_RULE_LEN], Pointer *e, int rulegen, ParserContext *context) {
 
-}
+}*/
 
 #define INC_MOD(x, m) x = (x + 1) % m
 #define DEC_MOD(x, m) x = (x + m - 1) % m
