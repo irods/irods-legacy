@@ -18,7 +18,7 @@
 #endif
 
 #define MAX_PARAMS_LEN 100
-#define MAX_RULE_LEN 1024
+#define MAX_RULE_LEN (1024 * 64)
 #define MAX_NUM_DISJUNCTS 100
 
 /* parser error -1203000 */
@@ -124,10 +124,12 @@ typedef enum node_type {
     N_FUNC_SYM_LINK = 45,
     N_META_DATA = 46,
     N_AVU = 47,
+    N_RULE_CODE = 50,
     N_RULE = 60,
     N_CONSTRUCTOR_DEF = 61,
     N_EXTERN_DEF = 62,
     N_DATA_DEF = 63,
+    N_UNPARSED = 64,
     T_UNSPECED = 100, /* indicates a variable which is not assigned a value is passed in to a microservice */
     T_ERROR = 101,
     T_DYNAMIC = 200,

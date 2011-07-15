@@ -546,7 +546,7 @@ int consistent(List *typingConstraints, Hashtable *typingEnv, Region *r) {
 Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t *errmsg, Node **errnode, Region *r) {
     ListNode *ln;
     int changed;
-    Hashtable *equivalence = newHashTable(100);
+    Hashtable *equivalence = newHashTable2(10, r);
     List *simpleTypingConstraints = newList(r);
     /* printf("start\n"); */
     /*char buf[1024];
@@ -583,7 +583,6 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
                     addRErrorMsg(errmsg, -1, errmsgbuf2);
                     /*printVarTypeEnvToStdOut(typingEnv); */
                     /* printf("absurdity\n"); */
-                    deleteHashTable(equivalence, nop);
                     return ABSURDITY;
             }
             ln = ln->next;
@@ -597,7 +596,6 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
         simpleTypingConstraints->head = simpleTypingConstraints->tail = NULL;
     } while(changed < typingEnv->len);
 
-    deleteHashTable(equivalence, nop);
     return ret;
 }
 

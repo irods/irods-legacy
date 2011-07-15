@@ -344,13 +344,14 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
     strcpy(r2,irbSet);
     int res = 0;
 
-    mutex_type *mutex = NULL;
 #ifdef DEBUG
     Cache *cache;
     unsigned char *buf = NULL;
 #endif
 
 #ifdef CACHE_ENABLE
+    mutex_type *mutex = NULL;
+
     /* try to find shared memory cache */
     if(!isServer) {
     	buf = prepareNonServerMemory();
@@ -400,10 +401,10 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 
 	createCoreAppExtRuleNodeIndex();
 #ifdef DEBUG
-	CASCASE_NON_ZERO(generateLocalCache());
+/*	CASCASE_NON_ZERO(generateLocalCache());
 	buf = ruleEngineConfig.address;
 	cache = copyCache(&buf, SHMMAX, &ruleEngineConfig);
-	printf("Buffer usage: %fM\n", ((double)(cache->dataSize))/(1024*1024));
+	printf("Buffer usage: %fM\n", ((double)(cache->dataSize))/(1024*1024)); */
 #endif
 
 #ifdef CACHE_ENABLE

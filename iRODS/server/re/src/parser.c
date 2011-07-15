@@ -70,13 +70,13 @@ ParserContext *newParserContext(rError_t *errmsg, Region *r) {
     pc->region = r;
     pc->errmsg = errmsg;
     pc->errnode = NULL;
-    pc->symtable = newHashTable(100);
+    pc->symtable = newHashTable2(100, r);
     pc->errmsgbuf[0] = '\0';
+    pc->tqp = pc->tqtop = pc->tqbot = 0;
     return pc;
 }
 
 void deleteParserContext(ParserContext *t) {
-    deleteHashTable(t->symtable, nop);
     free(t);
 }
 RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r) {
@@ -252,16 +252,35 @@ char *findLineCont(char *expr) {
  * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will has type N_ERROR if the token does not match
  * return 0 failure non 0 success
  */
-int skip(Pointer *e, char *text, Token *token, int rulegen /* = rulegen */) {
-	nextTokenRuleGen(e, token, rulegen);
-	if((token->type!=TK_TEXT && token->type!=TK_OP && token->type!=TK_MISC_OP) || strcmp(token->text,text)!=0) {
-		token->type = N_ERROR;
+int skip(Pointer *e, char *text, Token **token, ParserContext *pc, int rulegen /* = rulegen */) {
+	*token = nextTokenRuleGen(e, pc, rulegen);
+	if(((*token)->type!=TK_TEXT && (*token)->type!=TK_OP && (*token)->type!=TK_MISC_OP) || strcmp((*token)->text,text)!=0) {
+		(*token)->type = N_ERROR;
 		return 0;
 	}
 	return 1;
 }
 
-Token* nextTokenRuleGen(Pointer* e, Token* token, int rulegen) {
+void getRuleCode(char buf[MAX_RULE_LEN], Pointer *e, int rulegen, ParserContext *context) {
+
+}
+
+#define INC_MOD(x, m) x = (x + 1) % m
+#define DEC_MOD(x, m) x = (x + m - 1) % m
+
+Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen) {
+	if(context->tqp != context->tqtop) {
+		Token *token = &(context->tokenQueue[context->tqp]);
+		INC_MOD(context->tqp, 1024);
+		return token;
+	}
+
+	Token* token = &(context->tokenQueue[context->tqp]);
+	INC_MOD(context->tqtop, 1024);
+	if(context->tqbot == context->tqtop)
+		INC_MOD(context->tqbot, 1024);
+	context->tqp = context->tqtop;
+
     while (1) {
         skipWhitespace(e);
         Label start;
@@ -401,11 +420,11 @@ Token* nextTokenRuleGen(Pointer* e, Token* token, int rulegen) {
     return token;
 }
 
-void pushback(Pointer *e, Token *token) {
+void pushback(Pointer *e, Token *token, ParserContext *context) {
     if(token->type == TK_EOS) {
         return;
     }
-	seekInFile(e, token->exprloc);
+	DEC_MOD(context->tqp, 1024);
 }
 
 int eol(char ch) {
@@ -433,7 +452,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
 			LOOP_BEGIN(cons)
 				Label cpos = *FPOS;
 				TTYPE(TK_TEXT);
-				BUILD_NODE(TK_TEXT, token.text, &pos, 0, 0);
+				BUILD_NODE(TK_TEXT, token->text, &pos, 0, 0);
 				TTEXT(":");
 				NT(FuncType);
 			    BUILD_NODE(N_CONSTRUCTOR_DEF, "CONSTR", &cpos, 2, 2);
@@ -453,14 +472,14 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
 	OR(defType)
         TTEXT("constructor");
 		TTYPE(TK_TEXT);
-		BUILD_NODE(TK_TEXT, token.text, &pos, 0, 0);
+		BUILD_NODE(TK_TEXT, token->text, &pos, 0, 0);
 	    TTEXT(":")
         NT(FuncType);
 	    BUILD_NODE(N_CONSTRUCTOR_DEF, "CONSTR", &start, 2, 2);
         BUILD_NODE(N_RULE_PACK, "CONSTR", &start, 1, 1);
 	OR(defType)
         TTYPE(TK_TEXT);
-		BUILD_NODE(TK_TEXT, token.text, &pos, 0, 0);
+		BUILD_NODE(TK_TEXT, token->text, &pos, 0, 0);
 		TTEXT(":");
 		NT(FuncType);
 	    BUILD_NODE(N_EXTERN_DEF, "EXTERN", &start, 2, 2);
@@ -489,6 +508,13 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             OPTIONAL_END(semicolon)
             BUILD_NODE(N_RULE,"RULE", &start,5, 5);
             BUILD_NODE(N_RULE_PACK,rk, &start,1, 1);
+/*        } else if(PARSER_LAZY) {
+        	char buf[MAX_RULE_LEN];
+        	Label rcpos = *FPOS;
+        	getRuleCode(buf, e, rulegen, context);
+        	BUILD_NODE(N_RULE_CODE, buf, &rcpos, 0, 0);
+            BUILD_NODE(N_UNPARSED,"UNPARSED", &start,2, 2);
+            BUILD_NODE(N_RULE_PACK,rk, &start,1, 1); */
         } else if(rulegen) {
             int numberOfRules = 0;
             LOOP_BEGIN(rule)
@@ -564,7 +590,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             	TTEXT("|");
 				TTYPE(TK_INT);
             	BUILD_NODE(TK_STRING,"id", &pos, 0, 0);
-            	BUILD_NODE(TK_STRING,token.text, &pos, 0, 0);
+            	BUILD_NODE(TK_STRING,token->text, &pos, 0, 0);
             	BUILD_NODE(TK_STRING,"", &pos, 0, 0);
             	BUILD_NODE(N_AVU,AVU, &pos, 3, 3);
             	n++;
@@ -575,7 +601,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
         }
 	/*OR(defType)
 		TTYPE(TK_LOCAL_VAR);
-		BUILD_NODE(TK_VAR, token.text, &pos, 0, 0);
+		BUILD_NODE(TK_VAR, token->text, &pos, 0, 0);
 		TTEXT("=");
         NT2(Term, 0, MIN_PREC);
         BUILD_NODE(N_RULE_PACK, "GLOBAL", &start, 2, 2);*/
@@ -585,7 +611,7 @@ PARSER_FUNC_END(Rule)
 PARSER_FUNC_BEGIN(RuleName)
     int rulegen = 0;
     TTYPE(TK_TEXT);
-    char *ruleName = cpStringExt(token.text, context->region);
+    char *ruleName = cpStringExt(token->text, context->region);
     Label paramListStart = *FPOS;
     TRY(params)
         TTEXT("(");
@@ -643,14 +669,14 @@ PARSER_FUNC_BEGIN(Metadata)
 			TTEXT("@");
 			TTEXT("(");
 			TTYPE(TK_STRING);
-			BUILD_NODE(TK_STRING, token.text, &pos, 0, 0);
+			BUILD_NODE(TK_STRING, token->text, &pos, 0, 0);
 			TTEXT(",");
 			TTYPE(TK_STRING);
-			BUILD_NODE(TK_STRING, token.text, &pos, 0, 0);
+			BUILD_NODE(TK_STRING, token->text, &pos, 0, 0);
 			TRY(u)
 				TTEXT(",");
 				TTYPE(TK_STRING);
-				BUILD_NODE(TK_STRING, token.text, &pos, 0, 0);
+				BUILD_NODE(TK_STRING, token->text, &pos, 0, 0);
 				TTEXT(")");
 			OR(u)
 				TTEXT(")");
@@ -830,7 +856,7 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
         TTEXT("forEachExec");
         TTEXT("(");
         TTYPE(TK_LOCAL_VAR);
-        BUILD_NODE(TK_VAR, token.text, &start, 0, 0);
+        BUILD_NODE(TK_VAR, token->text, &start, 0, 0);
         TTEXT(",");
         NT2(Actions, 0, level);
         TTEXT(",");
@@ -873,14 +899,14 @@ PARSER_FUNC_BEGIN(TermBackwardCompatible)
 
     OR(func)
     	TTYPE(TK_TEXT);
-        char *fn = cpStringExt(token.text, context->region);
+        char *fn = cpStringExt(token->text, context->region);
         TTEXT("(");
         TTEXT(")");
         BUILD_APP_NODE(fn, &start, 0);
 
     OR(func)
         TTYPE(TK_TEXT);
-        char *fn = cpStringExt(token.text, context->region);
+        char *fn = cpStringExt(token->text, context->region);
         TTEXT("(");
         int n = 0;
         LOOP_BEGIN(func)
@@ -899,7 +925,7 @@ PARSER_FUNC_BEGIN(TermBackwardCompatible)
         BUILD_APP_NODE(fn, &start, n);
     OR(func)
 		TTYPE(TK_TEXT);
-        char *fn = cpStringExt(token.text, context->region);
+        char *fn = cpStringExt(token->text, context->region);
         BUILD_APP_NODE(fn, &start, 0);
 
     END_TRY(func)
@@ -907,8 +933,9 @@ PARSER_FUNC_END(ValueBackwardCompatible)
 
 
 PARSER_FUNC_BEGIN(ActionArgumentBackwardCompatible)
-    nextActionArgumentStringBackwardCompatible(e, &token);
-    if(token.type != TK_STRING) {
+	Token strtoken;
+    nextActionArgumentStringBackwardCompatible(e, &strtoken);
+    if(strtoken.type != TK_STRING) {
         BUILD_NODE(N_ERROR, "reached the end of stream while parsing an action argument", FPOS,0,0);
     } else {
         NT(StringExpression);
@@ -922,8 +949,8 @@ PARSER_FUNC_BEGIN2(Term, int rulegen, int prec)
         CHOICE_BEGIN(term)
             BRANCH_BEGIN(term)
                 TTYPE(TK_OP);
-                ABORT(!isBinaryOp(&token));
-                if(prec>=getBinaryPrecedence(&token)) {
+                ABORT(!isBinaryOp(token));
+                if(prec>=getBinaryPrecedence(token)) {
                     PUSHBACK;
                     done = 1;
                 } else {
@@ -931,9 +958,14 @@ PARSER_FUNC_BEGIN2(Term, int rulegen, int prec)
                     if(TOKEN_TEXT("=")) {
                         fn = "assign";
                     } else {
-                        fn = token.text;
+                        fn = token->text;
                     }
-                    NT2(Term, rulegen, getBinaryPrecedence(&token));
+                    NT2(Term, rulegen, getBinaryPrecedence(token));
+#ifdef DEBUG_VERBOSE
+                    char err[1024];
+                    generateErrMsg(fn, FPOS->exprloc, "ftest", err);
+                    printf("%s", err);
+#endif
                     BUILD_APP_NODE(fn, &start, 2);
                 }
 
@@ -963,7 +995,7 @@ PARSER_FUNC_END(Term)
 PARSER_FUNC_BEGIN(StringExpression)
     int rulegen = 0;
     TTYPE(TK_STRING);
-    Token *strToken = &token;
+    Token *strToken = token;
     int i = 0, k = 0;
     pos.base = e->base;
     long startLoc = strToken->exprloc;
@@ -1020,10 +1052,10 @@ PARSER_FUNC_END(StringExpression)
 PARSER_FUNC_BEGIN1(Value, int rulegen)
     TRY(value)
         TTYPE(TK_LOCAL_VAR);
-        BUILD_NODE(TK_VAR, token.text, &pos,0,0);
+        BUILD_NODE(TK_VAR, token->text, &pos,0,0);
     OR(value)
         TTYPE(TK_SESSION_VAR);
-        BUILD_NODE(TK_VAR, token.text, &pos,0,0);
+        BUILD_NODE(TK_VAR, token->text, &pos,0,0);
     OR(value)
         TTEXT("(");
         TRY(tuple)
@@ -1056,13 +1088,13 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
 
     OR(value)
         TTYPE(TK_OP);
-        ABORT(!isUnaryOp(&token));
-        NT2(Term, rulegen, getUnaryPrecedence(&token));
+        ABORT(!isUnaryOp(token));
+        NT2(Term, rulegen, getUnaryPrecedence(token));
         char *fn;
-        if(strcmp(token.text, "-")==0) {
+        if(strcmp(token->text, "-")==0) {
             fn = "neg";
         } else {
-            fn = token.text;
+            fn = token->text;
         }
         BUILD_APP_NODE(fn, &start,1);
 
@@ -1135,7 +1167,7 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         	END_TRY(foreach)
             TTEXT("(");
             TTYPE(TK_LOCAL_VAR);
-            BUILD_NODE(TK_VAR, token.text, &pos, 0, 0);
+            BUILD_NODE(TK_VAR, token->text, &pos, 0, 0);
             TRY(foreach2)
 	            TTEXT(")");
 	            TTEXT("{");
@@ -1245,9 +1277,14 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
             NT1(TermSystemBackwardCompatible, 0);
         OR(func)
             TTYPE(TK_TEXT);
-        	ABORT(rulegen && isKeyword(token.text));
-            char *fn = cpStringExt(token.text, context->region);
+        	ABORT(rulegen && isKeyword(token->text));
+            char *fn = cpStringExt(token->text, context->region);
             BUILD_NODE(TK_TEXT, fn, &start, 0, 0);
+#ifdef DEBUG_VERBOSE
+            char err[1024];
+            generateErrMsg(fn, start.exprloc, start.base, err);
+            printf("%s, %ld\n", err, start.exprloc);
+#endif
             TRY(nullary)
             	TTEXT_LOOKAHEAD("(");
             OR(nullary)
@@ -1259,10 +1296,10 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         END_TRY(func)
     OR(value)
         TTYPE(TK_INT);
-        BUILD_NODE(TK_INT, token.text, &start, 0, 0);
+        BUILD_NODE(TK_INT, token->text, &start, 0, 0);
     OR(value)
         TTYPE(TK_DOUBLE);
-        BUILD_NODE(TK_DOUBLE, token.text, &start, 0, 0);
+        BUILD_NODE(TK_DOUBLE, token->text, &start, 0, 0);
     OR(value)
         NT(StringExpression);
     END_TRY(value)
@@ -2046,6 +2083,7 @@ void initPointer(Pointer *p, FILE* fp, char* ruleBaseName /* = NULL */) {
 
 void initPointer2(Pointer *p, char *buf) {
     p->strbuf = buf;
+    p->strlen = strnlen(buf, MAX_RULE_LEN * APP_RULE_INDEX_OFF);
     p->strp = 0;
     p->isFile = 0;
     p->base = (char *)malloc(strlen(buf)+2);
@@ -2188,7 +2226,7 @@ int lookAhead(Pointer *p, unsigned int n) {
 		}
 		return (int)(p->buf[p->p+n]);
 	} else {
-		if(n >= strlen(p->strbuf+p->strp)) {
+		if(n+p->strp >= p->strlen) {
 			return -1;
 		}
 		return (int)p->strbuf[p->strp+n];
@@ -2390,29 +2428,27 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
 
 PARSER_FUNC_BEGIN(TypingConstraints)
     Hashtable *temp = context->symtable;
-    context->symtable = newHashTable(10);
+    context->symtable = newHashTable2(10, context->region);
     TRY(exec)
         NT(_TypingConstraints);
     FINALLY(exec)
-        deleteHashTable(context->symtable, nop);
         context->symtable = temp;
     END_TRY(exec)
 
 PARSER_FUNC_END(TypingConstraints)
 PARSER_FUNC_BEGIN(Type)
     Hashtable *temp = context->symtable;
-    context->symtable = newHashTable(10);
+    context->symtable = newHashTable2(10, context->region);
     TRY(exec)
         NT2(_Type, 0, 0);
     FINALLY(exec)
-        deleteHashTable(context->symtable, nop);
         context->symtable = temp;
     END_TRY(exec)
 PARSER_FUNC_END(Type)
 
 PARSER_FUNC_BEGIN(FuncType)
     Hashtable *temp = context->symtable;
-    context->symtable = newHashTable(10);
+    context->symtable = newHashTable2(10, context->region);
     TRY(exec)
         NT(_FuncType);
     OR(exec)
@@ -2421,7 +2457,6 @@ PARSER_FUNC_BEGIN(FuncType)
         SWAP;
         BUILD_NODE(T_CONS, FUNC, &start, 2, 2);
     FINALLY(exec)
-        deleteHashTable(context->symtable, nop);
         context->symtable = temp;
     END_TRY(exec)
 PARSER_FUNC_END(FuncType)
@@ -2449,15 +2484,15 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
             Label vpos = *FPOS;
             TRY(type)
                     TTYPE(TK_BACKQUOTED); /* irods type */
-                    BUILD_NODE(T_IRODS, token.text, &vpos, 0, 0);
+                    BUILD_NODE(T_IRODS, token->text, &vpos, 0, 0);
             OR(type)
                     TRY(typeVar)
                         TTYPE(TK_INT);
                     OR(typeVar)
                         TTYPE(TK_TEXT);
-                        ABORT(!isupper(token.text[0]));
+                        ABORT(!isupper(token->text[0]));
                     END_TRY(typeVar) /* type variable */
-                    char *vname = cpStringExt(token.text, context->region);
+                    char *vname = cpStringExt(token->text, context->region);
 
                     Node *tvar;
                     if ((tvar = (ExprType *) lookupFromHashTable(context->symtable, vname)) == NULL) {
@@ -2511,8 +2546,8 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
             OR(type)
                     TTEXT("forall");
                     TTYPE(TK_TEXT);
-                    ABORT(!isupper(token.text[0]));
-                    char *vname = cpStringExt(token.text, context->region);
+                    ABORT(!isupper(token->text[0]));
+                    char *vname = cpStringExt(token->text, context->region);
                     TRY(typeVarBound)
                         TTEXT("in");
                         NT(TypeSet);
@@ -2576,7 +2611,7 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
 					/* set */
             OR(type)
                     TTYPE(TK_TEXT);
-                    char *cons = cpStringExt(token.text, context->region);
+                    char *cons = cpStringExt(token->text, context->region);
                     /* user type */
                     int n = 0;
                     OPTIONAL_BEGIN(argList)
@@ -2603,10 +2638,10 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     TTYPE_LOOKAHEAD(TK_EOS);
                     DONE(type);
                 OR(typeEnd)
-                    long vloc = FPOS->exprloc;
                     TTEXT("*");
                     TTEXT("->");
-                    seekInFile(e,  vloc );
+                    PUSHBACK;
+                    PUSHBACK;
                     DONE(type);
                 OR(typeEnd)
                     TTEXT("*");
@@ -2689,14 +2724,18 @@ PARSER_FUNC_END(_FuncType)
 
 int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, rError_t *errmsg, Region *r) {
     char errbuf[ERR_MSG_LEN];
-	Token token;
+	Token *token;
+    ParserContext *pc = newParserContext(errmsg, r);
+
         int ret = 1;
         /* parser variables */
         int backwardCompatible = 0;
 
         while(ret == 1) {
-            nextTokenRuleGen(e, &token, 1);
-            switch(token.type) {
+        	pc->nodeStackTop = 0;
+        	pc->stackTopStackTop = 0;
+            token = nextTokenRuleGen(e, pc, 1);
+            switch(token->type) {
                 case N_ERROR:
                     return -1;
                 case TK_EOS:
@@ -2704,17 +2743,17 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                     continue;
                 case TK_MISC_OP:
                 case TK_TEXT:
-                    if(token.text[0] == '#') {
+                    if(token->text[0] == '#') {
                         skipComments(e);
                         continue;
-                    } else if(token.text[0] == '@') { /* directive */
-                        nextTokenRuleGen(e, &token, 1);
-                        if(strcmp(token.text, "backwardCompatible")==0) {
-                            nextTokenRuleGen(e, &token, 1);
-                            if(token.type == TK_TEXT) {
-                            if(strcmp(token.text, "true")==0) {
+                    } else if(token->text[0] == '@') { /* directive */
+                    	token = nextTokenRuleGen(e, pc, 1);
+                        if(strcmp(token->text, "backwardCompatible")==0) {
+                        	token = nextTokenRuleGen(e, pc, 1);
+                            if(token->type == TK_TEXT) {
+                            if(strcmp(token->text, "true")==0) {
                                 backwardCompatible = 1;
-                            } else if(strcmp(token.text, "false")==0) {
+                            } else if(strcmp(token->text, "false")==0) {
                                 backwardCompatible = 0;
                             } else {
                                 /* todo error handling */
@@ -2722,10 +2761,10 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                             } else {
                             	/* todo error handling */
                             }
-                        } else if(strcmp(token.text, "include")==0) {
-                        	nextTokenRuleGen(e, &token, 1);
-                        	if(token.type == TK_TEXT || token.type == TK_STRING) {
-                        		CASCASE_NON_ZERO(readRuleSetFromFile(token.text, ruleSet, funcDescIndex, errloc, errmsg, r));
+                        } else if(strcmp(token->text, "include")==0) {
+                        	token = nextTokenRuleGen(e, pc, 1);
+                        	if(token->type == TK_TEXT || token->type == TK_STRING) {
+                        		CASCASE_NON_ZERO(readRuleSetFromFile(token->text, ruleSet, funcDescIndex, errloc, errmsg, r));
                         	} else {
                         		/* todo error handling */
                         	}
@@ -2738,9 +2777,9 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 default:
                     break;
             }
-            pushback(e, &token);
+            pushback(e, token, pc);
 
-            Node *node = parseRuleRuleGen(e, backwardCompatible, errmsg, r);
+            Node *node = parseRuleRuleGen(e, backwardCompatible, pc, errmsg, r);
             if(node==NULL) {
                 addRErrorMsg(errmsg, OUT_OF_MEMORY, "parseRuleSet: out of memory.");
                 return -1;
@@ -2755,7 +2794,9 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 int n = node->degree;
                 Node **nodes = node->subtrees;
                 RuleType rk;
-                if(strcmp(node->text, "INDUCT") == 0) {
+/*                if(strcmp(node->text, "UNPARSED") == 0) {
+                	pushRule(ruleSet, newRuleDesc(RK_UNPARSED, nodes[0], r));
+                } else */ if(strcmp(node->text, "INDUCT") == 0) {
                     int k;
                     pushRule(ruleSet, newRuleDesc(RK_DATA, nodes[0], r));
                     for(k=1;k<n;k++) {
@@ -2800,6 +2841,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 }
             }
 		}
+        deleteParserContext(pc);
 		return 0;
 }
 
@@ -2843,8 +2885,7 @@ Node* parseTypingConstraintsFromString(char *string, Region *r) {
     deletePointer(p);
     return exprType;
 }
-Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, rError_t *errmsg, Region *r) {
-    ParserContext *pc = newParserContext(errmsg, r);
+Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc, rError_t *errmsg, Region *r) {
     nextRuleGenRule(expr, pc, backwardCompatible);
     Node *rulePackNode = pc->nodeStack[0];
     if(pc->error) {
@@ -2854,11 +2895,9 @@ Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, rError_t *errmsg, 
             rulePackNode =createErrorNode("parser error", &pc->errloc, r);
         }
     }
-    deleteParserContext(pc);
     return rulePackNode;
 }
-Node *parseTermRuleGen(Pointer *expr, int rulegen, rError_t *errmsg, Region *r) {
-    ParserContext *pc = newParserContext(errmsg, r);
+Node *parseTermRuleGen(Pointer *expr, int rulegen, ParserContext *pc, rError_t *errmsg, Region *r) {
     nextRuleGenTerm(expr, pc, rulegen, 0);
     Node *rulePackNode = pc->nodeStack[0];
         if(pc->error) {
@@ -2868,7 +2907,7 @@ Node *parseTermRuleGen(Pointer *expr, int rulegen, rError_t *errmsg, Region *r) 
             rulePackNode =createErrorNode("parser error", &pc->errloc, r);
         }
     }
-    deleteParserContext(pc);
+
     return rulePackNode;
 
 }

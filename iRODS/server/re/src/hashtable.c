@@ -1,6 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 #include "hashtable.h"
+#include "utils.h"
 /**
  * returns NULL if out of memory
  */
@@ -15,6 +16,16 @@ struct bucket *newBucket(char* key, void* value) {
 	return b;
 }
 
+struct bucket *newBucket2(char* key, void* value, Region *r) {
+	struct bucket *b = (struct bucket *)region_alloc(r, sizeof(struct bucket));
+	if(b==NULL) {
+		return NULL;
+	}
+	b->next = NULL;
+	b->key = key;
+	b->value = value;
+	return b;
+}
 
 /**
  * returns NULL if out of memory
@@ -24,16 +35,36 @@ Hashtable *newHashTable(int size) {
 	if(h==NULL) {
 		return NULL;
 	}
+	h->dynamic = 0;
+	h->bucketRegion = NULL;
 	h->size = size;
 	h->buckets = (struct bucket **)malloc(sizeof(struct bucket *)*size);
 	if(h->buckets == NULL) {
 		free(h);
 		return NULL;
 	}
-	int i;
-	for(i=0;i<size;i++) {
-		h->buckets[i]=NULL;
+	memset(h->buckets, 0, sizeof(struct bucket *)*size);
+	h->len = 0;
+	return h;
+}
+/**
+ * hashtable with dynamic expansion
+ * returns NULL if out of memory
+ */
+Hashtable *newHashTable2(int size, Region *r) {
+
+	Hashtable *h = (Hashtable *)region_alloc(r, sizeof (Hashtable));
+	if(h==NULL) {
+		return NULL;
 	}
+	h->dynamic = 1;
+	h->bucketRegion = r;
+	h->size = size;
+	h->buckets = (struct bucket **)region_alloc(h->bucketRegion, sizeof(struct bucket *)*size);
+	if(h->buckets == NULL) {
+		return NULL;
+	}
+	memset(h->buckets, 0, sizeof(struct bucket *)*size);
 	h->len = 0;
 	return h;
 }
@@ -46,22 +77,57 @@ int insertIntoHashTable(Hashtable *h, char* key, void *value) {
 /*
     printf("insert %s=%s\n", key, value==NULL?"null":"<value>");
 */
-	struct bucket *b = newBucket(strdup(key), value);
-	if(b==NULL) {
-		return 0;
-	}
-	unsigned long hs = myhash(key);
-	unsigned long index = hs%h->size;
-	if(h->buckets[index] == NULL) {
-		h->buckets[index] = b;
+	if(h->dynamic) {
+		if(h->len >= h->size) {
+			Hashtable *h2 = newHashTable2(h->size * 2, h->bucketRegion);
+			int i;
+			for(i=0;i<h->size;i++) {
+				if(h->buckets[i]!=NULL) {
+					struct bucket *b = h->buckets[i];
+					do {
+						insertIntoHashTable(h2, b->key, b->value);
+						b=b->next;
+
+					} while (b!=NULL);
+				}
+			}
+			*h = *h2;
+		}
+		struct bucket *b = newBucket2(cpStringExt(key, h->bucketRegion), value, h->bucketRegion);
+		if(b==NULL) {
+			return 0;
+		}
+
+		unsigned long hs = myhash(key);
+		unsigned long index = hs%h->size;
+		if(h->buckets[index] == NULL) {
+			h->buckets[index] = b;
+		} else {
+			struct bucket *b0 = h->buckets[index];
+			while(b0->next!=NULL)
+				b0=b0->next;
+			b0->next = b;
+		}
+		h->len ++;
+		return 1;
 	} else {
-		struct bucket *b0 = h->buckets[index];
-		while(b0->next!=NULL)
-			b0=b0->next;
-		b0->next = b;
+		struct bucket *b = newBucket(strdup(key), value);
+		if(b==NULL) {
+			return 0;
+		}
+		unsigned long hs = myhash(key);
+		unsigned long index = hs%h->size;
+		if(h->buckets[index] == NULL) {
+			h->buckets[index] = b;
+		} else {
+			struct bucket *b0 = h->buckets[index];
+			while(b0->next!=NULL)
+				b0=b0->next;
+			b0->next = b;
+		}
+		h->len ++;
+		return 1;
 	}
-	h->len ++;
-	return 1;
 }
 /**
  * update hash table returns the pointer to the old value
@@ -157,14 +223,28 @@ struct bucket* nextBucket(struct bucket *b0, char* key) {
 }
 
 void deleteHashTable(Hashtable *h, void (*f)(void *)) {
-	int i;
-	for(i =0;i<h->size;i++) {
-		struct bucket *b0 = h->buckets[i];
-		if(b0!=NULL)
-			deleteBucket(b0,f);
+	if(h->dynamic) {
+		/*if(f != NULL) {
+			int i;
+			for(i =0;i<h->size;i++) {
+				struct bucket *b0 = h->buckets[i];
+				while(b0!=NULL) {
+					f(b0->value);
+					b0= b0->next;
+				}
+			}
+
+		}*/
+	} else {
+		int i;
+		for(i =0;i<h->size;i++) {
+			struct bucket *b0 = h->buckets[i];
+			if(b0!=NULL)
+				deleteBucket(b0,f);
+		}
+			free(h->buckets);
+			free(h);
 	}
-        free(h->buckets);
-        free(h);
 }
 void deleteBucket(struct bucket *b0, void (*f)(void *)) {
 		if(b0->next!=NULL) {
@@ -172,7 +252,7 @@ void deleteBucket(struct bucket *b0, void (*f)(void *)) {
 		}
                 /* todo do not delete keys if they are allocated in regions */
                 free(b0->key);
-		f(b0->value);
+		if(f!=NULL) f(b0->value);
 		free(b0);
 }
 void nop(void *a) {

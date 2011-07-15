@@ -115,8 +115,8 @@ int parseAndComputeMsParamArrayToEnv(msParamArray_t *var, Env *env, ruleExecInfo
 
 }
 Env *defaultEnv(Region *r) {
-    Env *global = newEnv(newHashTable(100), NULL, NULL);
-    Env *env = newEnv(newHashTable(100), global, NULL);
+    Env *global = newEnv(newHashTable2(100, r), NULL, NULL);
+    Env *env = newEnv(newHashTable2(100, r), global, NULL);
 
     addCmdExecOutToEnv(global, r);
     return env;
@@ -259,13 +259,11 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 	}
 
 	for(i=tempLen;i<ruleEngineConfig.extRuleSet->len;i++) {
-	    Hashtable *varTypes = newHashTable(100);
+	    Hashtable *varTypes = newHashTable2(100, r);
 
 	    List *typingConstraints = newList(r);
 	    Node *errnode;
 	    ExprType *type = typeRule(ruleEngineConfig.extRuleSet->rules[i], ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
-
-		deleteHashTable(varTypes, nop);
 
 	    if(type->nodeType==T_ERROR) {
 	        rescode = TYPE_ERROR;
@@ -341,8 +339,8 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     }
 
     Node *node = createFunctionNode(actionName, paramNodes, paramsCount, NULL, r);
-    Env *global = newEnv(newHashTable(100), NULL, NULL);
-    Env *env = newEnv(newHashTable(100), global, NULL);
+    Env *global = newEnv(newHashTable2(100, r), NULL, NULL);
+    Env *env = newEnv(newHashTable2(100, r), global, NULL);
     if(msParamArray!=NULL) {
         convertMsParamArrayToEnv(msParamArray, global, errmsg, r);
     }
@@ -398,19 +396,18 @@ ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typ
 
 ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r) {
     Env *funcDesc = ruleEngineConfig.extFuncDescIndex;
-    Hashtable *ruleType = newHashTable(MAX_NUM_RULES * 2);
+    Hashtable *ruleType = newHashTable2(MAX_NUM_RULES * 2, r);
     ExprType *res;
     int i;
     for(i=0;i<ruleset->len;i++) {
         RuleDesc *rule = ruleset->rules[i];
         if(rule->ruleType == RK_REL || rule->ruleType == RK_FUNC) {
         	List *typingConstraints = newList(r);
-			Hashtable *varTypes = newHashTable(100);
+			Hashtable *varTypes = newHashTable2(100, r);
 			ExprType *restype = typeRule(rule, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
         /*char buf[1024]; */
         /*typingConstraintsToString(typingConstraints, NULL, buf, 1024); */
         /*printf("rule %s, typing constraints: %s\n", ruleset->rules[i]->subtrees[0]->text, buf); */
-			deleteHashTable(varTypes, nop);
 			if(restype->nodeType == T_ERROR) {
 				res = restype;
 				char *errbuf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
@@ -473,13 +470,12 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
     res = newSimpType(T_INT, r); /* Although a rule set does not have type T_INT, return T_INT to indicate success. */
 
 ret:
-    deleteHashTable(ruleType, nop);
     return res;
 }
 
 /* compute an expression given by an AST node */
 Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t* errmsg, Region *r) {
-    Hashtable *varTypes = newHashTable(100);
+    Hashtable *varTypes = newHashTable2(100, r);
     Region *rNew = make_region(0, NULL);
     ExprType *resType;
     Node *en;
@@ -498,7 +494,6 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
         postProcessCoercion(node, varTypes, errmsg, errnode, r);
         postProcessActions(node, ruleEngineConfig.extFuncDescIndex, errmsg, errnode, r);
         /*    printTree(node, 0); */
-        deleteHashTable(varTypes, nop);
         varTypes = NULL;
         node->option |= OPTION_TYPED;
     }
@@ -512,9 +507,6 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
             break;
     }*/
     ret:
-    if(varTypes!=NULL) {
-        deleteHashTable(varTypes, nop);
-    }
     res = cpRes(res, r);
     cpEnv(env, r);
     region_free(rNew);
@@ -539,13 +531,16 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
             return newErrorRes(r, BUFFER_OVERFLOW);
     }
     Pointer *e = newPointer2(expr);
+    ParserContext *pc = newParserContext(errmsg, r);
     if(e == NULL) {
         addRErrorMsg(errmsg, -1, "error: can not create pointer.");
         res = newErrorRes(r, -1);
         RETURN;
     }
     rulegen = strstr(expr, "##")==NULL?1:0;
-    node = parseTermRuleGen(e, rulegen, errmsg, r);
+
+
+    node = parseTermRuleGen(e, rulegen, pc, errmsg, r);
     if(node==NULL) {
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
             res = newErrorRes(r, OUT_OF_MEMORY);
@@ -556,10 +551,10 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
             res = newErrorRes(r, PARSER_ERROR);
             RETURN;
     } else {
-        Token token;
-        nextTokenRuleGen(e, &token, 0);
+        Token *token;
+        token = nextTokenRuleGen(e, pc, 0);
 
-        if(token.type!=TK_EOS) {
+        if(token->type!=TK_EOS) {
             Label pos;
             getFPos(&pos, e);
             generateErrMsg("error: unparsed suffix",pos.exprloc, pos.base, buf);
@@ -572,6 +567,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
 
     res = computeExpressionNode(node, env, rei, reiSaveFlag, errmsg,r);
     ret:
+    deleteParserContext(pc);
     deletePointer(e);
     return res;
 }

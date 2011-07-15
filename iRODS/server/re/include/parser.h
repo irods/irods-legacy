@@ -18,6 +18,7 @@
 #include "reHelpers1.h"
 #endif
 
+/* #define PARSER_LAZY 0 */
 #define MAX_FUNC_PARAMS 20
 #define MAX_NUM_RULES 50000
 #define CORE_RULE_INDEX_OFF 30000
@@ -28,7 +29,7 @@
 #define MAX_PREC 20
 #define MIN_PREC 0
 
-#define POINTER_BUF_SIZE 128
+#define POINTER_BUF_SIZE (16*1024)
 
 typedef struct op {
     char* string;
@@ -47,6 +48,7 @@ typedef struct pointer {
 	unsigned long fpos; /* position of the beginning of the buffer in file */
     unsigned int strp; /* pointer to next char in strbuf */
     char *strbuf; /* string buffer */
+    unsigned int strlen;
     int isFile;
     char *base; /* f + filename without extension, or s + source */
 } Pointer;
@@ -57,6 +59,7 @@ typedef enum ruleType {
     RK_DATA,
     RK_CONSTRUCTOR,
     RK_EXTERN,
+    /* RK_UNPARSED, */
 } RuleType;
 
 typedef struct {
@@ -88,6 +91,10 @@ typedef struct {
     Hashtable *symtable;
     rError_t *errmsg;
     Region *region;
+    Token tokenQueue[1024];
+    int tqp;
+    int tqtop;
+    int tqbot;
 } ParserContext;
 
 #define PUSH(n) (context->nodeStack[(context->nodeStackTop)++] = n)
@@ -95,17 +102,17 @@ typedef struct {
 #define NEXT_TOKEN \
 { \
     FPOS; \
-    nextTokenRuleGen(e, &token, rulegen); \
-    if(token.type==N_ERROR) { \
+    token = nextTokenRuleGen(e, context, rulegen); \
+    if(token->type==N_ERROR) { \
         context->error=1; \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
         break;\
     } \
 }
-#define TOKEN_TYPE(t) (token.type == (t))
-#define TOKEN_TEXT(str) (strcmp(token.text, (str))==0)
-#define PUSHBACK pushback(e, &token)
-#define FPOS getFPos(&pos, e)
+#define TOKEN_TYPE(t) (token->type == (t))
+#define TOKEN_TEXT(str) (strcmp(token->text, (str))==0)
+#define PUSHBACK pushback(e, token, context)
+#define FPOS (context->tqp==context->tqtop? getFPos(&pos, e) : (pos.base = e->base, pos.exprloc=context->tokenQueue[context->tqp].exprloc, &pos))
 #define UPDATE_ERR_LOC if(FPOS->exprloc > context->errloc.exprloc) {context->errloc = *FPOS;}
 #define CASCADE(x) \
 {\
@@ -145,7 +152,7 @@ void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context, p, q)
 #define PARSER_FUNC_LOCAL(l) \
     Label start; \
     Label pos; \
-    Token token; (void)token; \
+    Token *token; (void)token; \
     skipWhitespace(e); \
     getFPos(&start, (e)); \
     do {
@@ -234,6 +241,7 @@ CHECK_ERROR;
 if(context->error==0) { \
     Label CONCAT(l,Start); \
     int CONCAT(l,Finish) = 0; \
+    int CONCAT(l,TokenQueueP) = context->tqp; \
     getFPos(&CONCAT(l,Start), e); \
     context->stackTopStack[context->stackTopStackTop++] = context->nodeStackTop;
 
@@ -249,7 +257,7 @@ if(context->error==0) { \
 #define BRANCH_BEGIN(l) \
 if(!CONCAT(l,Finish)) { \
     do { \
-        seekInFile(e, CONCAT(l,Start).exprloc); \
+    	context->tqp = CONCAT(l,TokenQueueP); \
         context->nodeStackTop = context->stackTopStack[context->stackTopStackTop-1]; \
         context->error = 0;
 
@@ -324,7 +332,7 @@ void deleteParserContext(ParserContext *t);
 RuleSet *newRuleSet(Region *r);
 RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r);
 
-Token *nextTokenRuleGen(Pointer* expr, Token* token, int rulegen);
+Token *nextTokenRuleGen(Pointer* expr, ParserContext* pc, int rulegen);
 int nextString(Pointer *e, char *value, int vars[]);
 int nextString2(Pointer *e, char *value, int vars[]);
 int eol(char ch);
@@ -338,7 +346,7 @@ void getCoor(Pointer *p, Label * errloc, int coor[2]);
 /**
  * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will has type N_ERROR if the token does not match
  */
-int skip(Pointer *expr, char *text, Token *token, int rulegen);
+int skip(Pointer *expr, char *text, ParserContext *pc, Token **token, int rulegen);
 void skipWhitespace(Pointer *expr);
 char *findLineCont(char *expr);
 
@@ -347,9 +355,9 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rErro
  * Parse a rule, create a rule pack.
  * If error, either ret==NULL or ret->type=N_ERROR.
  */
-Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, rError_t *errmsg, Region *r);
-Node *parseTermRuleGen(Pointer *expr, int rulegn, rError_t *errmsg, Region *r);
-void pushback(Pointer *e, Token *token);
+Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc, rError_t *errmsg, Region *r);
+Node *parseTermRuleGen(Pointer *expr, int rulegn, ParserContext *pc, rError_t *errmsg, Region *r);
+void pushback(Pointer *e, ParserContext *pc, Token *token);
 void initPointer(Pointer *p, FILE* fp, char* ruleBaseName);
 void initPointer2(Pointer *p, char* buf);
 Pointer *newPointer(FILE* buf, char *ruleBaseName);

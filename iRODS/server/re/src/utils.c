@@ -4,10 +4,9 @@
 #include "conversion.h"
 /* make a new type by substituting tvars with fresh tvars */
 ExprType *dupType(ExprType *ty, Region *r) {
-    Hashtable *varTable = newHashTable(100);
+    Hashtable *varTable = newHashTable2(100, r);
     /* todo add oom handler here */
     ExprType *dup = dupTypeAux(ty, r, varTable);
-    deleteHashTable(varTable, nop);
     return dup;
 
 

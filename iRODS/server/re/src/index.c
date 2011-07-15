@@ -87,7 +87,7 @@ int createCondIndex(Region *r) {
             resumingBucket = curr->next;
 
             RuleIndexList *currIndex = (RuleIndexList *)curr->value;
-            Hashtable *processedStrs = newHashTable(MAX_NUM_RULES * 2);
+            Hashtable *processedStrs = newHashTable2(MAX_NUM_RULES * 2, r);
 
             RuleIndexListNode *currIndexNode = currIndex->head;
             int createIndex = 1;
@@ -113,14 +113,13 @@ int createCondIndex(Region *r) {
                         params = ruleNode->subtrees[0]->subtrees[0];
 
                     } else if(RULE_NODE_NUM_PARAMS(ruleNode) == params->degree) {
-                    	Hashtable *varMapping = newHashTable(100);
+                    	Hashtable *varMapping = newHashTable2(100, r);
                         for(i=0;i<params->degree;i++) {
                             updateInHashTable(varMapping, params->subtrees[i]->text, ruleNode->subtrees[0]->subtrees[0]->subtrees[i]->text);
                         }
                         if(!eqExprNodeSyntacticVarMapping(condExp, ruleNode->subtrees[1]->subtrees[0], varMapping)) {
                             createIndex = 0;
                         }
-                        deleteHashTable(varMapping, nop);
                     } else {
                         createIndex = 0;
                     }
@@ -129,7 +128,6 @@ int createCondIndex(Region *r) {
                 currIndexNode = currIndexNode ->next;
             }
 
-            deleteHashTable(processedStrs, nop);
             /* generate cond index if there are more than one rules in this group */
             if(!createIndex || groupCount <= 1) {
                 continue;
