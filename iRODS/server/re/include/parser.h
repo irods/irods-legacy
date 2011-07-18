@@ -357,7 +357,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rErro
  */
 Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc, rError_t *errmsg, Region *r);
 Node *parseTermRuleGen(Pointer *expr, int rulegn, ParserContext *pc, rError_t *errmsg, Region *r);
-void pushback(Pointer *e, ParserContext *pc, Token *token);
+void pushback(Pointer *e, Token *token, ParserContext *pc);
 void initPointer(Pointer *p, FILE* fp, char* ruleBaseName);
 void initPointer2(Pointer *p, char* buf);
 Pointer *newPointer(FILE* buf, char *ruleBaseName);

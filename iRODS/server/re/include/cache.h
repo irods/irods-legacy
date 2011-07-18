@@ -106,7 +106,7 @@ COPY_FUNC_PROTO_OBJ_MAP(RuleSet);
 COPY_FUNC_PROTO_OBJ_MAP(RuleIndexList);
 COPY_FUNC_PROTO_OBJ_MAP(RuleIndexListNode);
 COPY_FUNC_PROTO_OBJ_MAP(CondIndexVal);
-Cache *copyCache(unsigned char **buf, long size, Cache *c);
+Cache *copyCache(unsigned char **buf, size_t size, Cache *c);
 Cache *restoreCache(unsigned char *buf);
 void applyDiff(unsigned char *pointers, long pointersSize, long diff, long pointerDiff);
 void applyDiffToPointers(unsigned char *pointers, long pointersSize, long pointerDiff);
