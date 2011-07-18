@@ -180,17 +180,22 @@ osauthGetKey(char **key, int *key_len)
 #if defined(OS_AUTH)
     static char fname[] = "osauthGetKey";
     struct stat stbuf;
-    char *keybuf;
+    char *keyfile, *keybuf;
     int buflen, key_fd, nb;
 
     if (key == NULL || key_len == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    if (stat(OS_AUTH_KEYFILE, &stbuf) < 0) {
+    keyfile = getenv("irodsOsAuthKeyfile");
+    if (keyfile == NULL || *keyfile == '\0') {
+        keyfile = OS_AUTH_KEYFILE;
+    }
+
+    if (stat(keyfile, &stbuf) < 0) {
         rodsLog(LOG_ERROR,
                 "%s: couldn't stat %s. errno = %d", 
-                fname, OS_AUTH_KEYFILE, errno);
+                fname, keyfile, errno);
         return UNABLE_TO_STAT_FILE;
     }
     buflen = stbuf.st_size;
@@ -202,18 +207,18 @@ osauthGetKey(char **key, int *key_len)
                 fname, errno);
         return SYS_MALLOC_ERR;
     }
-    key_fd = open(OS_AUTH_KEYFILE, O_RDONLY, 0);
+    key_fd = open(keyfile, O_RDONLY, 0);
     if (key_fd < 0) {
         rodsLog(LOG_ERROR,
                 "%s: couldn't open %s for reading. errno = %d", 
-                fname, OS_AUTH_KEYFILE, errno);
+                fname, keyfile, errno);
         return FILE_OPEN_ERR;
     }
     nb = read(key_fd, keybuf, buflen);
     if (nb < 0) {
         rodsLog(LOG_ERROR,
                 "%s: couldn't read key from %s. errno = %d", 
-                fname, OS_AUTH_KEYFILE, errno);
+                fname, keyfile, errno);
         return FILE_READ_ERR;
     }
     close(key_fd);
