@@ -2080,7 +2080,7 @@ void initPointer(Pointer *p, FILE* fp, char* ruleBaseName /* = NULL */) {
 
 void initPointer2(Pointer *p, char *buf) {
     p->strbuf = buf;
-    p->strlen = strnlen(buf, MAX_RULE_LEN * APP_RULE_INDEX_OFF);
+    p->strlen = strlen(buf);
     p->strp = 0;
     p->isFile = 0;
     p->base = (char *)malloc(strlen(buf)+2);
