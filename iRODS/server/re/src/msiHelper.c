@@ -849,6 +849,6 @@ msiExit (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    return (rei->status);
+    /* return (rei->status); */
 }
 
