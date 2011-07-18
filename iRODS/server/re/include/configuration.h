@@ -55,7 +55,7 @@ typedef struct timespec time_type;
 #define time_type_set(mtim, timestamp) \
 		(mtim).tv_sec = (timestamp).tv_sec; \
 		(mtim).tv_nsec = (timestamp).tv_nsec;
-#define time_type_initializer {(__time_t) 0, (long int) 0}
+#define time_type_initializer {0, 0}
 #endif
 typedef struct {
     unsigned char *address;
