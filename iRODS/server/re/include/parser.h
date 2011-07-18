@@ -304,6 +304,17 @@ CHOICE_END(l);
 int CONCAT(done, l) = 0; \
 while(!CONCAT(done, l) && NO_SYNTAX_ERROR) {
 
+#if defined(solaris_platform)
+#define LOOP_END(l) \
+} \
+if(!CONCAT(done, l)) { \
+    break; \
+}
+
+#define DONE(l) \
+CONCAT(done, l) = 1;
+
+#else
 #define LOOP_END(l) \
 } \
 CONCAT(exit, l): \
@@ -314,7 +325,7 @@ if(!CONCAT(done, l)) { \
 #define DONE(l) \
 CONCAT(done, l) = 1; \
 goto CONCAT(exit, l);
-
+#endif
 
 /** utility functions */
 void setBase(Node *node, char *base, Region *r);

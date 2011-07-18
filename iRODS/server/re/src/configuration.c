@@ -420,7 +420,6 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 
 	Cache *cache;
     int update = 0;
-    mutex_type *mutex = NULL;
     unsigned char *buf = NULL;
 	/* try to find shared memory cache */
     if(!isServer && inRuleStruct == &coreRuleStrct) {

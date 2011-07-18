@@ -599,7 +599,6 @@ RuleDesc* getRuleDesc(int ri)
 		ri = ri - CORE_RULE_INDEX_OFF;
 		return ruleEngineConfig.coreRuleSet->rules[ri];
 	}
-	return(NULL);
 }
 
 int actionTableLookUp (char *action)

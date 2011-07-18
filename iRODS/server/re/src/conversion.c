@@ -175,7 +175,6 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
             res->exprType = newIRODSType(mP->type,r);
             return 0;
         }
-	return -1;
 
 
 }
@@ -243,7 +242,6 @@ int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *er
 		res->exprType = newIRODSType(mP->type,r);
 		return 0;
 	}
-	return -1;
 
 
 }
@@ -268,7 +266,6 @@ ExprType *convertToExprType(char *type, Region *r) {
 	} else {
 		return newIRODSType(type, r);
 	}
-	return NULL;
 }
 
 /*

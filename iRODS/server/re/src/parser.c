@@ -446,20 +446,20 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
         OPTIONAL_BEGIN(semicolon)
             TTEXT("|");
         OPTIONAL_END(semicolon)
-			LOOP_BEGIN(cons)
-				Label cpos = *FPOS;
-				TTYPE(TK_TEXT);
-				BUILD_NODE(TK_TEXT, token->text, &pos, 0, 0);
-				TTEXT(":");
-				NT(FuncType);
-			    BUILD_NODE(N_CONSTRUCTOR_DEF, "CONSTR", &cpos, 2, 2);
-				n++;
-				TRY(delim)
-					TTEXT("|");
-				OR(delim)
-					DONE(cons);
-				END_TRY(delim)
-			LOOP_END(cons)
+		LOOP_BEGIN(cons)
+			Label cpos = *FPOS;
+			TTYPE(TK_TEXT);
+			BUILD_NODE(TK_TEXT, token->text, &pos, 0, 0);
+			TTEXT(":");
+			NT(FuncType);
+			BUILD_NODE(N_CONSTRUCTOR_DEF, "CONSTR", &cpos, 2, 2);
+			n++;
+			TRY(delim)
+				TTEXT("|");
+			OR(delim)
+				DONE(cons);
+			END_TRY(delim)
+		LOOP_END(cons)
         OPTIONAL_END(consDefs)
         OPTIONAL_BEGIN(semicolon)
             TTEXT(";");
@@ -1252,21 +1252,22 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
 			NT2(Term, 1, 2);
 			TTEXT("with");
 			int n = 0;
+	        OPTIONAL_BEGIN(semicolon)
+	            TTEXT("|");
+	        OPTIONAL_END(semicolon)
 			LOOP_BEGIN(cases)
 				Label cpos = *FPOS;
-				TRY(vbar)
-					TTEXT("|");
-				OR(vbar)
-					ABORT(n==0);
-					DONE(cases)
-				OR(vbar)
-					ABORT(n!=0);
-				END_TRY(vbar);
 				NT2(Term, 1, MIN_PREC);
 				TTEXT("=>");
 				NT2(Term, 1, MIN_PREC);
 				BUILD_NODE(N_TUPLE, TUPLE, &cpos, 2, 2);
 				n++;
+				TRY(vbar)
+					TTEXT("|");
+				OR(vbar)
+					DONE(cases)
+
+				END_TRY(vbar);
 			LOOP_END(cases)
 			BUILD_APP_NODE("match", &start, n+1);
         OR(func)
