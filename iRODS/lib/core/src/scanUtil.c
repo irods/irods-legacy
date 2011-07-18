@@ -13,15 +13,24 @@ scanObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 {
 	char inpPath[LONG_NAME_LEN] = "";
 	char *inpPathO, *lastChar;
+#ifndef USE_BOOST_FS
 	struct stat sbuf;
+#endif
 	int lenInpPath, status;
 	
 	if ( rodsPathInp->numSrc == 1 ) {
 		inpPathO = rodsPathInp->srcPath[0].outPath;
 		if ( rodsPathInp->srcPath[0].objType == LOCAL_FILE_T || \
 			rodsPathInp->srcPath[0].objType == LOCAL_DIR_T ) {
+#ifdef USE_BOOST_FS
+        		path p (inpPathO);
+			if (exists(p)) {
+			    /* don't do anything if it is symlink */
+			    if (is_symlink (p)) return 0;
+#else
 			status = lstat(inpPathO, &sbuf);
 			if ( status == 0 ) {
+#endif
 				/* remove any trailing "/" from inpPathO */
 				lenInpPath = strlen(inpPathO);
 				lastChar = strrchr(inpPathO, '/');
@@ -29,7 +38,11 @@ scanObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 					lenInpPath = lenInpPath - 1;
 				}
 				strncpy(inpPath, inpPathO, lenInpPath);
+#ifdef USE_BOOST_FS
+				if (is_directory(p)) {
+#else
 				if ( S_ISDIR(sbuf.st_mode) == 1 ) {   /* check if it is not included into a mounted collection */
+#endif
 					status = checkIsMount(conn, inpPath);
 					if ( status != 0 ) {  /* if it is part of a mounted collection, abort */
 						printf("The directory %s or one of its subdirectories to be scanned is declared as being \
@@ -62,14 +75,24 @@ scanObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
 {
 	DIR *dirPtr;
 	struct dirent *myDirent;
+#ifndef USE_BOOST_FS
 	struct stat sbuf;
+#endif
 	int status;
 	char fullPath[LONG_NAME_LEN] = "\0";
 	
 	dirPtr = opendir (inpPath);
 	/* check if it is a directory */
+#ifdef USE_BOOST_FS
+        path p (inpPath);
+        if (is_symlink (p)) {
+            /* don't do anything if it is symlink */
+	    return 0;
+	} else if (is_directory(p)) {
+#else	/* USE_BOOST_FS */
 	lstat(inpPath, &sbuf);
 	if ( S_ISDIR(sbuf.st_mode) == 1 ) {
+#endif	/* USE_BOOST_FS */
 		if ( dirPtr == NULL ) {
 			return (-1);
 		}
@@ -86,8 +109,16 @@ scanObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
         strcpy(fullPath, inpPath);
         strcat(fullPath, "/");
         strcat(fullPath, myDirent->d_name);
+#ifdef USE_BOOST_FS
+        path cp (fullPath);
+        if (is_symlink (cp)) {
+            /* don't do anything if it is symlink */
+            continue;
+        } else if (is_directory(cp)) {
+#else
         lstat(fullPath, &sbuf);
 		if ( S_ISDIR(sbuf.st_mode) == 1 ) {
+#endif	/* USE_BOOST_FS */
 			if ( myRodsArgs->recursive == True ) {
 				status = scanObjDir(conn, myRodsArgs, fullPath, hostname);
 			}

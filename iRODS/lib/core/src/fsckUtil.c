@@ -13,7 +13,9 @@ fsckObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 {
 	char inpPath[LONG_NAME_LEN] = "";
 	char *inpPathO, *lastChar;
+#ifndef USE_BOOST_FS
 	struct stat sbuf;
+#endif
 	int lenInpPath, status;
 	
 	if ( rodsPathInp->numSrc != 1 ) {
@@ -22,8 +24,15 @@ fsckObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 	}
 	else {
 		inpPathO = rodsPathInp->srcPath[0].outPath;
+#ifdef USE_BOOST_FS
+                        path p (inpPathO);
+                        if (exists(p)) {
+                            /* don't do anything if it is symlink */
+                            if (is_symlink (p)) return 0;
+#else
 		status = lstat(inpPathO, &sbuf);
 		if ( status == 0 ) {
+#endif	/* USE_BOOST_FS */
 			/* remove any trailing "/" from inpPathO */
 			lenInpPath = strlen(inpPathO);
 			lastChar = strrchr(inpPathO, '/');
@@ -31,7 +40,11 @@ fsckObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 				lenInpPath = lenInpPath - 1;
 			}
 			strncpy(inpPath, inpPathO, lenInpPath);
+#ifdef USE_BOOST_FS
+                        if (is_directory(p)) {
+#else
 			if ( S_ISDIR(sbuf.st_mode) == 1 ) {   /* check if it is not included into a mounted collection */
+#endif
 				status = checkIsMount(conn, inpPath);
 				if ( status != 0 ) {  /* if it is part of a mounted collection, abort */
 					printf("The directory %s or one of its subdirectories to be checked is declared as being \
@@ -55,14 +68,24 @@ fsckObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
 {
 	DIR *dirPtr;
 	struct dirent *myDirent;
+#ifndef USE_BOOST_FS
 	struct stat sbuf;
+#endif
 	int status;
 	char fullPath[LONG_NAME_LEN] = "\0";
 	
 	dirPtr = opendir (inpPath);
 	/* check if it is a directory */
+#ifdef USE_BOOST_FS
+        path p (inpPath);
+        if (is_symlink (p)) {
+            /* don't do anything if it is symlink */
+            return 0;
+        } else if (is_directory(p)) {
+#else   /* USE_BOOST_FS */
 	lstat(inpPath, &sbuf);
 	if ( S_ISDIR(sbuf.st_mode) == 1 ) {
+#endif
 		if ( dirPtr == NULL ) {
 			return (-1);
 		}
@@ -79,8 +102,16 @@ fsckObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
         strcpy(fullPath, inpPath);
         strcat(fullPath, "/");
         strcat(fullPath, myDirent->d_name);
+#ifdef USE_BOOST_FS
+        path cp (fullPath);
+        if (is_symlink (cp)) {
+            /* don't do anything if it is symlink */
+            continue;
+        } else if (is_directory(cp)) {
+#else
         lstat(fullPath, &sbuf);
 		if ( S_ISDIR(sbuf.st_mode) == 1 ) {
+#endif
 			if ( myRodsArgs->recursive == True ) {
 				status = fsckObjDir(conn, myRodsArgs, fullPath, hostname);
 			}
@@ -101,11 +132,20 @@ chkObjConsistency (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
 	genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
 	char condStr[MAX_NAME_LEN], locChksum[NAME_LEN], *objChksum, *objName, *objPath;
+#ifndef USE_BOOST_FS
 	struct stat sbuf;
+#endif
 
 	/* retrieve the local file size */
+#ifdef USE_BOOST_FS
+        path p (inpPath);
+        /* don't do anything if it is symlink */
+        if (is_symlink (p)) return 0;
+	srcSize = file_size(p);
+#else   /* USE_BOOST_FS */
 	lstat(inpPath, &sbuf);
 	srcSize = sbuf.st_size;
+#endif
 	
 	/* retrieve object size and checksum in iRODS */
 	memset (&genQueryInp, 0, sizeof (genQueryInp));
