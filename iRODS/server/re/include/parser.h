@@ -219,7 +219,7 @@ PARSER_FUNC_PROTO2(l, p, q) { \
     TTYPE(x); \
     PUSHBACK;
 
-#define NO_ERROR (context->error == 0)
+#define NO_SYNTAX_ERROR (context->error == 0)
 #define CHECK_ERROR \
 if(context->error!=0) { \
     break; \
@@ -302,7 +302,7 @@ CHOICE_END(l);
 
 #define LOOP_BEGIN(l) \
 int CONCAT(done, l) = 0; \
-while(!CONCAT(done, l) && NO_ERROR) {
+while(!CONCAT(done, l) && NO_SYNTAX_ERROR) {
 
 #define LOOP_END(l) \
 } \

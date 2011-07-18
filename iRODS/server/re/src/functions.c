@@ -34,39 +34,6 @@ _rnew = _rnew2;}
 
 int fileConcatenate(char *file1, char *file2, char *file3);
 
-FunctionDesc *newFunctionDesc(char *type, SmsiFuncPtrType func, Region *r) {
-    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
-    /*desc->arity = arity; */
-    desc->value.func = func;
-    desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
-    desc->nodeType = N_FD_C_FUNC;
-    return desc;
-}
-FunctionDesc *newConstructorDesc(char *type, Region *r) {
-    return newConstructorDesc2(parseFuncTypeFromString(type, r), r);
-}
-
-FunctionDesc *newConstructorDesc2(Node *type, Region *r) {
-    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
-    /*desc->arity = arity; */
-    desc->exprType = type;
-    desc->nodeType = N_FD_CONSTRUCTOR;
-    return desc;
-}
-FunctionDesc *newExternalFunctionDesc2(Node *type, Region *r) {
-    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
-    /*desc->arity = arity; */
-    desc->exprType = type;
-    desc->nodeType = N_FD_EXTERNAL;
-    return desc;
-}
-FunctionDesc *newDeconstructorDesc(char *type, int proj, Region *r) {
-    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
-    desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
-    desc->nodeType = N_FD_DECONSTRUCTOR;
-    desc->value.proj = proj;
-    return desc;
-}
 Node *wrapToActions(Node *node, Region *r) {
     if(node->nodeType!=N_ACTIONS) {
         Node *actions[1];
@@ -674,14 +641,18 @@ Res *smsi_type(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
 }
 Res *smsi_arity(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 		Res *val = params[0];
-                int ruleInx = -1;
-		if(findNextRule2(val->text, &ruleInx)<0) {
-                    return newErrorRes(r, -1);
-                }
-                if(ruleInx >= CORE_RULE_INDEX_OFF)
-                    return newIntRes(r, RULE_NODE_NUM_PARAMS(ruleEngineConfig.coreRuleSet->rules[ruleInx-CORE_RULE_INDEX_OFF]->node));
-                else
-                    return newIntRes(r, RULE_NODE_NUM_PARAMS(ruleEngineConfig.appRuleSet->rules[ruleInx]->node));
+		RuleIndexListNode *ruleInxLstNode;
+		if(findNextRule2(val->text, 0, &ruleInxLstNode)<0) {
+			return newErrorRes(r, -1);
+		}
+		int ri;
+		if(ruleInxLstNode->secondaryIndex) {
+			return newErrorRes(r, -1);
+		} else {
+			ri = ruleInxLstNode->ruleIndex;
+		}
+		RuleDesc *rd = getRuleDesc(ri);
+		return newIntRes(r, RULE_NODE_NUM_PARAMS(rd->node));
 }
 Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
                 char errbuf[ERR_MSG_LEN];
@@ -1492,32 +1463,25 @@ Res *smsi_msiAdmClearAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecIn
 	  int i;
 #ifndef DEBUG
 	  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-		  return newIntRes(r, i);
+		  return newErrorRes(r, i);
 	  i = unlinkFuncDescIndex();
 	  if (i < 0)
-		  return newIntRes(r, i);
-	  i = clearRuleSetAndIndex(&appRuleStrct);
+		  return newErrorRes(r, i);
+	  i = clearResources(RESC_APP_RULE_SET | RESC_APP_FUNC_DESC_INDEX);
 	  if (i < 0)
-		  return newIntRes(r, i);
+		  return newErrorRes(r, i);
 	  i = generateFunctionDescriptionTables();
 	  if (i < 0)
-		  return newIntRes(r, i);
-	  i = createCoreAppExtRuleNodeIndex();
-	  if (i < 0)
-		  return newIntRes(r, i);
-	  i = createCoreAppExtRuleNodeIndex();
-	  if (i < 0)
-		  return newIntRes(r, i);
+		  return newErrorRes(r, i);
 	  i = clearDVarStruct(&appRuleVarDef);
 	  if (i < 0)
-		  return newIntRes(r, i);
+		  return newErrorRes(r, i);
 	  i = clearFuncMapStruct(&appRuleFuncMapDef);
 	  return newIntRes(r, i);
 #else
 	  i = unlinkFuncDescIndex();
-	  i = clearRuleSetAndIndex(&appRuleStrct);
+	  i = clearResources(RESC_APP_RULE_SET | RESC_APP_FUNC_DESC_INDEX);
 	  i = generateFunctionDescriptionTables();
-	  i = createCoreAppExtRuleNodeIndex();
 	  return newIntRes(r, 0);
 #endif
 
@@ -1658,7 +1622,7 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct(Node **paramsr, int n, Node *node, 
 
   ruleSet = newRuleSet(rsr);
 
-  Env *rsEnv = newEnv(newHashTable(100), NULL, NULL);
+  Env *rsEnv = newEnv(newHashTable2(100, rsr), NULL, NULL);
 
   int errloc = 0;
   i = readRuleSetFromFile(paramsr[0]->text, ruleSet, rsEnv, &errloc, errmsg, rsr);
@@ -1670,9 +1634,13 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct(Node **paramsr, int n, Node *node, 
 
   size_t s = region_size(rsr);
   unsigned char *buf = (unsigned char *) malloc(s);
+  if(buf == NULL) {
+	  return newErrorRes(r, OUT_OF_MEMORY);
+  }
+  unsigned char *pointers = buf+s;
   unsigned char *p = buf;
-  Hashtable *objectMap = newHashTable(100);
-  copyRuleSet(&p, ruleSet, objectMap, 0);
+  Hashtable *objectMap = newHashTable2(100, rsr);
+  copyRuleSet(NULL, &p, &pointers, ruleSet, objectMap, 0);
 
   if (TYPE(paramsr[1]) != T_UNSPECED) {
 	  free(paramsr[1]->value.uninterpreted.inOutStruct);
@@ -1680,6 +1648,7 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct(Node **paramsr, int n, Node *node, 
   paramsr[1]->value.uninterpreted.inOutStruct = (void *) buf;
   paramsr[1]->exprType = newIRODSType(RuleStruct_MS_T, r);
 
+  region_free(rsr);
   return newIntRes(r, 0);
 }
 
@@ -1753,7 +1722,7 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
 
   ruleSet = newRuleSet(rsr);
 
-  Env *rsEnv = newEnv(newHashTable(100), NULL, NULL);
+  Env *rsEnv = newEnv(newHashTable2(100, rsr), NULL, NULL);
 
   i = readRuleSetFromDB(paramsr[0]->text, paramsr[1]->text, ruleSet, rei, errmsg, rsr);
   deleteEnv(rsEnv, 3);
@@ -1764,9 +1733,13 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
 
   size_t s = region_size(rsr);
   unsigned char *buf = (unsigned char *) malloc(s);
+  if(buf == NULL) {
+	  return newErrorRes(r, OUT_OF_MEMORY);
+  }
+  unsigned char *pointers = buf + s;
   unsigned char *p = buf;
-  Hashtable *objectMap = newHashTable(100);
-  copyRuleSet(&p, ruleSet, objectMap, 0);
+  Hashtable *objectMap = newHashTable2(100, rsr);
+  copyRuleSet(NULL, &p, &pointers, ruleSet, objectMap, 0);
 
   if (TYPE(paramsr[2]) != T_UNSPECED) {
 	  free(paramsr[2]->value.uninterpreted.inOutStruct);
@@ -1774,6 +1747,7 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
   paramsr[2]->value.uninterpreted.inOutStruct = (void *) buf;
   paramsr[2]->exprType = newIRODSType(RuleStruct_MS_T, r);
 
+  region_free(rsr);
   return newIntRes(r, 0);
 }
 
@@ -1887,46 +1861,46 @@ Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Re
 }
 
 void getSystemFunctions(Hashtable *ft, Region *r) {
-    insertIntoHashTable(ft, "do", newFunctionDesc("e 0->?", smsi_do, r));
-    insertIntoHashTable(ft, "eval", newFunctionDesc("string->?", smsi_eval, r));
-    insertIntoHashTable(ft, "evalrule", newFunctionDesc("string->?", smsi_evalrule, r));
-    insertIntoHashTable(ft, "errorcodea", newFunctionDesc("a ? * a ?->integer", smsi_errorcode, r));
-    insertIntoHashTable(ft, "errorcode", newFunctionDesc("e ?->integer", smsi_errorcode, r));
-    insertIntoHashTable(ft, "errormsga", newFunctionDesc("a ? * a ? * o string->integer", smsi_errormsg, r));
-    insertIntoHashTable(ft, "errormsg", newFunctionDesc("e ? * o string->integer", smsi_errormsg, r));
-    insertIntoHashTable(ft, "getstdout", newFunctionDesc("e ? * o string ->integer", smsi_getstdout, r));
-    insertIntoHashTable(ft, "getstderr", newFunctionDesc("e ? * o string ->integer", smsi_getstderr, r));
-    insertIntoHashTable(ft, "let", newFunctionDesc("e 0 * e f 0 * e 1->1", smsi_letExec, r));
-    insertIntoHashTable(ft, "match", newFunctionDesc("e 0 * e (0 * 1)*->1", smsi_matchExec, r));
-    insertIntoHashTable(ft, "if2", newFunctionDesc("e boolean * e 0 * e 0 * e ? * e ?->0", smsi_if2Exec, r));
-    insertIntoHashTable(ft, "if", newFunctionDesc("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
-    insertIntoHashTable(ft, "ifExec", newFunctionDesc("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
-    insertIntoHashTable(ft, "for", newFunctionDesc("e ? * e boolean * e ? * a ? * a ?->?",smsi_forExec, r));
-    insertIntoHashTable(ft, "forExec", newFunctionDesc("e ? * e boolean * a ? * a ? * a ?->?", smsi_forExec, r));
-    insertIntoHashTable(ft, "while", newFunctionDesc("e boolean * a ? * a ?->?",smsi_whileExec, r));
-    insertIntoHashTable(ft, "whileExec", newFunctionDesc("e boolean * a ? * a ?->?", smsi_whileExec, r));
-    insertIntoHashTable(ft, "foreach", newFunctionDesc("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
-    insertIntoHashTable(ft, "foreach2", newFunctionDesc("forall X, e X * e list X * a ? * a ?->?", smsi_forEach2Exec, r));
-    insertIntoHashTable(ft, "forEachExec", newFunctionDesc("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
-    insertIntoHashTable(ft, "break", newFunctionDesc("->integer", smsi_break, r));
-    insertIntoHashTable(ft, "succeed", newFunctionDesc("->integer", smsi_succeed, r));
-    insertIntoHashTable(ft, "fail", newFunctionDesc("integer ?->integer", smsi_fail, r));
-    insertIntoHashTable(ft, "assign", newFunctionDesc("e 0 * e f 0->integer", smsi_assign, r));
-    insertIntoHashTable(ft, "lmsg", newFunctionDesc("string->integer", smsi_lmsg, r));
-    insertIntoHashTable(ft, "listvars", newFunctionDesc("->string", smsi_listvars, r));
-    insertIntoHashTable(ft, "listcorerules", newFunctionDesc("->list string", smsi_listcorerules, r));
-    insertIntoHashTable(ft, "listapprules", newFunctionDesc("->list string", smsi_listapprules, r));
-    insertIntoHashTable(ft, "true", newFunctionDesc("boolean", smsi_true, r));
-    insertIntoHashTable(ft, "false", newFunctionDesc("boolean", smsi_false, r));
-    insertIntoHashTable(ft, "time", newFunctionDesc("->time", smsi_time, r));
-    insertIntoHashTable(ft, "timestr", newFunctionDesc("time->string", smsi_timestr, r));
-    insertIntoHashTable(ft, "str", newFunctionDesc("?->string", smsi_str, r));
-    insertIntoHashTable(ft, "datetime", newFunctionDesc("string->time", smsi_datetime, r));
-    insertIntoHashTable(ft, "timestrf", newFunctionDesc("time * string->string", smsi_timestr, r));
-    insertIntoHashTable(ft, "datetimef", newFunctionDesc("string * string->time", smsi_datetime, r));
-    insertIntoHashTable(ft, "double", newFunctionDesc("f 0{string double time}->double", smsi_double, r));
-    insertIntoHashTable(ft, "int", newFunctionDesc("0{integer string double}->integer", smsi_int, r));
-    insertIntoHashTable(ft, "list", newFunctionDesc("forall X, X*->list X", smsi_list, r));
+    insertIntoHashTable(ft, "do", newFunctionFD("e 0->?", smsi_do, r));
+    insertIntoHashTable(ft, "eval", newFunctionFD("string->?", smsi_eval, r));
+    insertIntoHashTable(ft, "evalrule", newFunctionFD("string->?", smsi_evalrule, r));
+    insertIntoHashTable(ft, "errorcodea", newFunctionFD("a ? * a ?->integer", smsi_errorcode, r));
+    insertIntoHashTable(ft, "errorcode", newFunctionFD("e ?->integer", smsi_errorcode, r));
+    insertIntoHashTable(ft, "errormsga", newFunctionFD("a ? * a ? * o string->integer", smsi_errormsg, r));
+    insertIntoHashTable(ft, "errormsg", newFunctionFD("e ? * o string->integer", smsi_errormsg, r));
+    insertIntoHashTable(ft, "getstdout", newFunctionFD("e ? * o string ->integer", smsi_getstdout, r));
+    insertIntoHashTable(ft, "getstderr", newFunctionFD("e ? * o string ->integer", smsi_getstderr, r));
+    insertIntoHashTable(ft, "let", newFunctionFD("e 0 * e f 0 * e 1->1", smsi_letExec, r));
+    insertIntoHashTable(ft, "match", newFunctionFD("e 0 * e (0 * 1)*->1", smsi_matchExec, r));
+    insertIntoHashTable(ft, "if2", newFunctionFD("e boolean * e 0 * e 0 * e ? * e ?->0", smsi_if2Exec, r));
+    insertIntoHashTable(ft, "if", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
+    insertIntoHashTable(ft, "ifExec", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
+    insertIntoHashTable(ft, "for", newFunctionFD("e ? * e boolean * e ? * a ? * a ?->?",smsi_forExec, r));
+    insertIntoHashTable(ft, "forExec", newFunctionFD("e ? * e boolean * a ? * a ? * a ?->?", smsi_forExec, r));
+    insertIntoHashTable(ft, "while", newFunctionFD("e boolean * a ? * a ?->?",smsi_whileExec, r));
+    insertIntoHashTable(ft, "whileExec", newFunctionFD("e boolean * a ? * a ?->?", smsi_whileExec, r));
+    insertIntoHashTable(ft, "foreach", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "foreach2", newFunctionFD("forall X, e X * e list X * a ? * a ?->?", smsi_forEach2Exec, r));
+    insertIntoHashTable(ft, "forEachExec", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "break", newFunctionFD("->integer", smsi_break, r));
+    insertIntoHashTable(ft, "succeed", newFunctionFD("->integer", smsi_succeed, r));
+    insertIntoHashTable(ft, "fail", newFunctionFD("integer ?->integer", smsi_fail, r));
+    insertIntoHashTable(ft, "assign", newFunctionFD("e 0 * e f 0->integer", smsi_assign, r));
+    insertIntoHashTable(ft, "lmsg", newFunctionFD("string->integer", smsi_lmsg, r));
+    insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
+    insertIntoHashTable(ft, "listcorerules", newFunctionFD("->list string", smsi_listcorerules, r));
+    insertIntoHashTable(ft, "listapprules", newFunctionFD("->list string", smsi_listapprules, r));
+    insertIntoHashTable(ft, "true", newFunctionFD("boolean", smsi_true, r));
+    insertIntoHashTable(ft, "false", newFunctionFD("boolean", smsi_false, r));
+    insertIntoHashTable(ft, "time", newFunctionFD("->time", smsi_time, r));
+    insertIntoHashTable(ft, "timestr", newFunctionFD("time->string", smsi_timestr, r));
+    insertIntoHashTable(ft, "str", newFunctionFD("?->string", smsi_str, r));
+    insertIntoHashTable(ft, "datetime", newFunctionFD("string->time", smsi_datetime, r));
+    insertIntoHashTable(ft, "timestrf", newFunctionFD("time * string->string", smsi_timestr, r));
+    insertIntoHashTable(ft, "datetimef", newFunctionFD("string * string->time", smsi_datetime, r));
+    insertIntoHashTable(ft, "double", newFunctionFD("f 0{string double time}->double", smsi_double, r));
+    insertIntoHashTable(ft, "int", newFunctionFD("0{integer string double}->integer", smsi_int, r));
+    insertIntoHashTable(ft, "list", newFunctionFD("forall X, X*->list X", smsi_list, r));
     /*insertIntoHashTable(ft, "tuple",
             newFunctionDescChain(newConstructorDesc("-> <>", r),
             newFunctionDescChain(newConstructorDesc("A-> <A>", r),
@@ -1939,69 +1913,69 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
             newFunctionDescChain(newConstructorDesc("A * B * C * D * E * F * G * H * I-> <A * B * C * D * E * F * G * H * I>", r),
             newConstructorDesc("A * B * C * D * E * F * G * H * I * J-> <A * B * C * D * E * F * G * H * I * J>", r)
             ))))))))));*/
-    insertIntoHashTable(ft, "elem", newFunctionDesc("forall X, list X * integer->X", smsi_elem, r));
-    insertIntoHashTable(ft, "setelem", newFunctionDesc("forall X, list X * integer * X->list X", smsi_setelem, r));
-    insertIntoHashTable(ft, "hd", newFunctionDesc("forall X, list X->X", smsi_hd, r));
-    insertIntoHashTable(ft, "tl", newFunctionDesc("forall X, list X->list X", smsi_tl, r));
-    insertIntoHashTable(ft, "cons", newFunctionDesc("forall X, X * list X->list X", smsi_cons, r));
-    insertIntoHashTable(ft, "size", newFunctionDesc("forall X, list X->integer", smsi_size, r));
-    insertIntoHashTable(ft, "type", newFunctionDesc("forall X, X->string",smsi_type, r));
-    insertIntoHashTable(ft, "arity", newFunctionDesc("string->integer",smsi_arity, r));
-    insertIntoHashTable(ft, "+", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_add, r));
-    insertIntoHashTable(ft, "++", newFunctionDesc("f string * f string->string",smsi_concat, r));
-    insertIntoHashTable(ft, "-", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_subtract, r));
-    insertIntoHashTable(ft, "neg", newFunctionDesc("forall X in {integer double}, X-> X", smsi_negate, r));
-    insertIntoHashTable(ft, "*", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_multiply, r));
-    insertIntoHashTable(ft, "/", newFunctionDesc("forall X in {integer double}, f X * f X->?",smsi_divide, r));
-    insertIntoHashTable(ft, "%", newFunctionDesc("forall X in {integer double}, f X * f X->X",smsi_modulo, r));
-    insertIntoHashTable(ft, "^", newFunctionDesc("f double * f double->double",smsi_power, r));
-    insertIntoHashTable(ft, "^^", newFunctionDesc("f double * f double->double",smsi_root, r));
-    insertIntoHashTable(ft, "log", newFunctionDesc("f double->double",smsi_log, r));
-    insertIntoHashTable(ft, "exp", newFunctionDesc("f double->double",smsi_exp, r));
-    insertIntoHashTable(ft, "!", newFunctionDesc("boolean->boolean",smsi_not, r));
-    insertIntoHashTable(ft, "&&", newFunctionDesc("boolean * boolean->boolean",smsi_and, r));
-    insertIntoHashTable(ft, "||", newFunctionDesc("boolean * boolean->boolean",smsi_or, r));
-    insertIntoHashTable(ft, "%%", newFunctionDesc("boolean * boolean->boolean",smsi_or, r));
-    insertIntoHashTable(ft, "==", newFunctionDesc("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_eq, r));
-    insertIntoHashTable(ft, "!=", newFunctionDesc("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_neq, r));
-    insertIntoHashTable(ft, ">", newFunctionDesc("forall X in {integer double string time}, f X * f X->boolean", smsi_gt, r));
-    insertIntoHashTable(ft, "<", newFunctionDesc("forall X in {integer double string time}, f X * f X->boolean", smsi_lt, r));
-    insertIntoHashTable(ft, ">=", newFunctionDesc("forall X in {integer double string time}, f X * f X->boolean", smsi_ge, r));
-    insertIntoHashTable(ft, "<=", newFunctionDesc("forall X in {integer double string time}, f X * f X->boolean", smsi_le, r));
-    insertIntoHashTable(ft, "floor", newFunctionDesc("f double->integer", smsi_floor, r));
-    insertIntoHashTable(ft, "ceiling", newFunctionDesc("f double->integer", smsi_ceiling, r));
-    insertIntoHashTable(ft, "abs", newFunctionDesc("f double->double", smsi_abs, r));
-    insertIntoHashTable(ft, "max", newFunctionDesc("f double+->double", smsi_max, r));
-    insertIntoHashTable(ft, "min", newFunctionDesc("f double+->double", smsi_min, r));
-    insertIntoHashTable(ft, "average", newFunctionDesc("f double+->double", smsi_average, r));
-    insertIntoHashTable(ft, "like", newFunctionDesc("string * string->boolean", smsi_like, r));
-    insertIntoHashTable(ft, "not like", newFunctionDesc("string * string->boolean", smsi_not_like, r));
-    insertIntoHashTable(ft, "like regex", newFunctionDesc("string * string->boolean", smsi_like_regex, r));
-    insertIntoHashTable(ft, "not like regex", newFunctionDesc("string * string->boolean", smsi_not_like_regex, r));
-    insertIntoHashTable(ft, "delayExec", newFunctionDesc("string * string * string->integer", smsi_delayExec, r));
-    insertIntoHashTable(ft, "remoteExec", newFunctionDesc("string * string * string * string->integer", smsi_remoteExec,r));
-    insertIntoHashTable(ft, "writeLine", newFunctionDesc("string * ?->integer", smsi_writeLine,r));
-    insertIntoHashTable(ft, "writeString", newFunctionDesc("string * ?->integer", smsi_writeString,r));
-    insertIntoHashTable(ft, "triml", newFunctionDesc("string * string->string", smsi_triml, r));
-    insertIntoHashTable(ft, "trimr", newFunctionDesc("string * string->string", smsi_trimr, r));
-    insertIntoHashTable(ft, "strlen", newFunctionDesc("string->integer", smsi_strlen, r));
-    insertIntoHashTable(ft, "substr", newFunctionDesc("string * integer * integer->string", smsi_substr, r));
-    insertIntoHashTable(ft, "unspeced", newFunctionDesc("-> ?", smsi_undefined, r));
-    insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionDesc("e ? ?->integer", smsi_msiAdmShowIRB, r));
-    insertIntoHashTable(ft, "msiAdmShowCoreRE", newFunctionDesc("e ? ?->integer", smsi_msiAdmShowCoreRE, r));
+    insertIntoHashTable(ft, "elem", newFunctionFD("forall X, list X * integer->X", smsi_elem, r));
+    insertIntoHashTable(ft, "setelem", newFunctionFD("forall X, list X * integer * X->list X", smsi_setelem, r));
+    insertIntoHashTable(ft, "hd", newFunctionFD("forall X, list X->X", smsi_hd, r));
+    insertIntoHashTable(ft, "tl", newFunctionFD("forall X, list X->list X", smsi_tl, r));
+    insertIntoHashTable(ft, "cons", newFunctionFD("forall X, X * list X->list X", smsi_cons, r));
+    insertIntoHashTable(ft, "size", newFunctionFD("forall X, list X->integer", smsi_size, r));
+    insertIntoHashTable(ft, "type", newFunctionFD("forall X, X->string",smsi_type, r));
+    insertIntoHashTable(ft, "arity", newFunctionFD("string->integer",smsi_arity, r));
+    insertIntoHashTable(ft, "+", newFunctionFD("forall X in {integer double}, f X * f X->X",smsi_add, r));
+    insertIntoHashTable(ft, "++", newFunctionFD("f string * f string->string",smsi_concat, r));
+    insertIntoHashTable(ft, "-", newFunctionFD("forall X in {integer double}, f X * f X->X",smsi_subtract, r));
+    insertIntoHashTable(ft, "neg", newFunctionFD("forall X in {integer double}, X-> X", smsi_negate, r));
+    insertIntoHashTable(ft, "*", newFunctionFD("forall X in {integer double}, f X * f X->X",smsi_multiply, r));
+    insertIntoHashTable(ft, "/", newFunctionFD("forall X in {integer double}, f X * f X->?",smsi_divide, r));
+    insertIntoHashTable(ft, "%", newFunctionFD("forall X in {integer double}, f X * f X->X",smsi_modulo, r));
+    insertIntoHashTable(ft, "^", newFunctionFD("f double * f double->double",smsi_power, r));
+    insertIntoHashTable(ft, "^^", newFunctionFD("f double * f double->double",smsi_root, r));
+    insertIntoHashTable(ft, "log", newFunctionFD("f double->double",smsi_log, r));
+    insertIntoHashTable(ft, "exp", newFunctionFD("f double->double",smsi_exp, r));
+    insertIntoHashTable(ft, "!", newFunctionFD("boolean->boolean",smsi_not, r));
+    insertIntoHashTable(ft, "&&", newFunctionFD("boolean * boolean->boolean",smsi_and, r));
+    insertIntoHashTable(ft, "||", newFunctionFD("boolean * boolean->boolean",smsi_or, r));
+    insertIntoHashTable(ft, "%%", newFunctionFD("boolean * boolean->boolean",smsi_or, r));
+    insertIntoHashTable(ft, "==", newFunctionFD("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_eq, r));
+    insertIntoHashTable(ft, "!=", newFunctionFD("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_neq, r));
+    insertIntoHashTable(ft, ">", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_gt, r));
+    insertIntoHashTable(ft, "<", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_lt, r));
+    insertIntoHashTable(ft, ">=", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_ge, r));
+    insertIntoHashTable(ft, "<=", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_le, r));
+    insertIntoHashTable(ft, "floor", newFunctionFD("f double->integer", smsi_floor, r));
+    insertIntoHashTable(ft, "ceiling", newFunctionFD("f double->integer", smsi_ceiling, r));
+    insertIntoHashTable(ft, "abs", newFunctionFD("f double->double", smsi_abs, r));
+    insertIntoHashTable(ft, "max", newFunctionFD("f double+->double", smsi_max, r));
+    insertIntoHashTable(ft, "min", newFunctionFD("f double+->double", smsi_min, r));
+    insertIntoHashTable(ft, "average", newFunctionFD("f double+->double", smsi_average, r));
+    insertIntoHashTable(ft, "like", newFunctionFD("string * string->boolean", smsi_like, r));
+    insertIntoHashTable(ft, "not like", newFunctionFD("string * string->boolean", smsi_not_like, r));
+    insertIntoHashTable(ft, "like regex", newFunctionFD("string * string->boolean", smsi_like_regex, r));
+    insertIntoHashTable(ft, "not like regex", newFunctionFD("string * string->boolean", smsi_not_like_regex, r));
+    insertIntoHashTable(ft, "delayExec", newFunctionFD("string * string * string->integer", smsi_delayExec, r));
+    insertIntoHashTable(ft, "remoteExec", newFunctionFD("string * string * string * string->integer", smsi_remoteExec,r));
+    insertIntoHashTable(ft, "writeLine", newFunctionFD("string * ?->integer", smsi_writeLine,r));
+    insertIntoHashTable(ft, "writeString", newFunctionFD("string * ?->integer", smsi_writeString,r));
+    insertIntoHashTable(ft, "triml", newFunctionFD("string * string->string", smsi_triml, r));
+    insertIntoHashTable(ft, "trimr", newFunctionFD("string * string->string", smsi_trimr, r));
+    insertIntoHashTable(ft, "strlen", newFunctionFD("string->integer", smsi_strlen, r));
+    insertIntoHashTable(ft, "substr", newFunctionFD("string * integer * integer->string", smsi_substr, r));
+    insertIntoHashTable(ft, "unspeced", newFunctionFD("-> ?", smsi_undefined, r));
+    insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionFD("e ? ?->integer", smsi_msiAdmShowIRB, r));
+    insertIntoHashTable(ft, "msiAdmShowCoreRE", newFunctionFD("e ? ?->integer", smsi_msiAdmShowCoreRE, r));
 #ifdef DEBUG
-    insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionDesc("string->integer", smsi_msiAdmAddAppRuleStruct, r));
+    insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionFD("string->integer", smsi_msiAdmAddAppRuleStruct, r));
 #else
-    insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionDesc("string * string * string->integer", smsi_msiAdmAddAppRuleStruct, r));
+    insertIntoHashTable(ft, "msiAdmAddAppRuleStruct", newFunctionFD("string * string * string->integer", smsi_msiAdmAddAppRuleStruct, r));
 #endif
-    insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionDesc("->integer", smsi_msiAdmClearAppRuleStruct, r));
-    insertIntoHashTable(ft, "msiAdmAppendToTopOfCoreRE", newFunctionDesc("string->integer", smsi_msiAdmAppendToTopOfCoreRE, r));
-    insertIntoHashTable(ft, "msiAdmChangeCoreRE", newFunctionDesc("string->integer", smsi_msiAdmChangeCoreRE, r));
-    insertIntoHashTable(ft, "msiAdmInsertRulesFromStructIntoDB", newFunctionDesc("string * `RuleStruct_PI` -> integer", smsi_msiAdmInsertRulesFromStructIntoDB, r));
-    insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionDesc("string * d `RuleStruct_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
-    insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionDesc("string * `RuleStruct_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
-    insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionDesc("string * string * d `RuleStruct_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
-    insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionDesc("double", (SmsiFuncPtrType) NULL, r));
+    insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionFD("->integer", smsi_msiAdmClearAppRuleStruct, r));
+    insertIntoHashTable(ft, "msiAdmAppendToTopOfCoreRE", newFunctionFD("string->integer", smsi_msiAdmAppendToTopOfCoreRE, r));
+    insertIntoHashTable(ft, "msiAdmChangeCoreRE", newFunctionFD("string->integer", smsi_msiAdmChangeCoreRE, r));
+    insertIntoHashTable(ft, "msiAdmInsertRulesFromStructIntoDB", newFunctionFD("string * `RuleStruct_PI` -> integer", smsi_msiAdmInsertRulesFromStructIntoDB, r));
+    insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionFD("string * d `RuleStruct_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
+    insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionFD("string * `RuleStruct_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
+    insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleStruct_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+    insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double", (SmsiFuncPtrType) NULL, r));
 
 
 }

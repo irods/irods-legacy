@@ -249,7 +249,7 @@ char *findLineCont(char *expr) {
 }
 
 /**
- * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will has type N_ERROR if the token does not match
+ * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will have type N_ERROR if the token does not match
  * return 0 failure non 0 success
  */
 int skip(Pointer *e, char *text, Token **token, ParserContext *pc, int rulegen) {
@@ -264,9 +264,6 @@ int skip(Pointer *e, char *text, Token **token, ParserContext *pc, int rulegen) 
 /*void getRuleCode(char buf[MAX_RULE_LEN], Pointer *e, int rulegen, ParserContext *context) {
 
 }*/
-
-#define INC_MOD(x, m) x = (x + 1) % m
-#define DEC_MOD(x, m) x = (x + m - 1) % m
 
 Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen) {
 	if(context->tqp != context->tqtop) {
@@ -945,7 +942,7 @@ PARSER_FUNC_END(ActionArgumentBackwardCompatible)
 PARSER_FUNC_BEGIN2(Term, int rulegen, int prec)
     NT1(Value, rulegen);
     int done = 0;
-    while (!done && NO_ERROR) {
+    while (!done && NO_SYNTAX_ERROR) {
         CHOICE_BEGIN(term)
             BRANCH_BEGIN(term)
                 TTYPE(TK_OP);
@@ -2661,7 +2658,7 @@ PARSER_FUNC_BEGIN(TypeSet)
     TTEXT("{");
     int n = 0;
     int done2 = 0;
-    while (!done2 && NO_ERROR) {
+    while (!done2 && NO_SYNTAX_ERROR) {
         NT2(_Type, 1, 0);
         n++;
         OPTIONAL_BEGIN(typeVarBoundEnd)
@@ -2805,7 +2802,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                             addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
                             return -1;
                         }
-                        insertIntoHashTable(funcDescIndex->current, nodes[k]->subtrees[0]->text, newConstructorDesc2(nodes[k]->subtrees[1], r));
+                        insertIntoHashTable(funcDescIndex->current, nodes[k]->subtrees[0]->text, newConstructorFD2(nodes[k]->subtrees[1], r));
                         pushRule(ruleSet, newRuleDesc(RK_CONSTRUCTOR, nodes[k], r));
                     }
                 } else if(strcmp(node->text, "CONSTR") == 0) {
@@ -2814,7 +2811,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
 						addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
 						return -1;
 					}
-					insertIntoHashTable(funcDescIndex->current, nodes[0]->subtrees[0]->text, newConstructorDesc2(nodes[0]->subtrees[1], r));
+					insertIntoHashTable(funcDescIndex->current, nodes[0]->subtrees[0]->text, newConstructorFD2(nodes[0]->subtrees[1], r));
 					pushRule(ruleSet, newRuleDesc(RK_CONSTRUCTOR, nodes[0], r));
                 } else if(strcmp(node->text, "EXTERN") == 0) {
                 	FunctionDesc *fd;
@@ -2823,7 +2820,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
 						addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
 						return -1;
 					}
-					insertIntoHashTable(funcDescIndex->current, nodes[0]->subtrees[0]->text, newExternalFunctionDesc2(nodes[0]->subtrees[1], r));
+					insertIntoHashTable(funcDescIndex->current, nodes[0]->subtrees[0]->text, newExternalFD(nodes[0]->subtrees[1], r));
 					pushRule(ruleSet,  newRuleDesc(RK_EXTERN, nodes[0], r));
                 } else {
                     if(strcmp(node->text, "REL")==0) {

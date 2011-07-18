@@ -11,6 +11,11 @@
 /* the alignment in the region in bytes */
 #define ALIGNMENT 8
 #define roundToAlignment(x) ((x)%ALIGNMENT == 0?(x):(((x)/ALIGNMENT)+1)*ALIGNMENT)
+/* the point the elem i of type t starting from p in the cache, aligned */
+#define CACHE_ELEM(t, p, i) (((t)p)+i)
+/* the size of an array of type t and length i in the cache, aligned */
+#define CACHE_SIZE(t, l) roundToAlignment(sizeof(t)*l)
+
 struct region_error {
     int code;
     char msg[1024];

@@ -297,6 +297,7 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
 	Node *node = (Node *)region_alloc(r, sizeof(Node));
 	if(node == NULL)
 		return NULL;
+	memset(node, 0, sizeof(Node));
 	node->nodeType=type;
     if(text!=NULL) {
         node->text = (char *)region_alloc(r,(strlen(text) + 1) * sizeof(char));
@@ -304,12 +305,7 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
     } else {
         node->text = NULL;
     }
-	node->subtrees = NULL;
-	node->degree = 0;
 	node->expr = eloc == NULL? 0 : eloc->exprloc;
-    node->option = 0;
-    node->exprType = NULL;
-    node->coercionType = NULL;
     setIOType(node, IO_TYPE_INPUT);
     node->value.constructTuple = 0;
     if(eloc!=NULL) {
@@ -327,13 +323,10 @@ Node **allocSubtrees(Region *r, int size)
 
 Node *newExprType(NodeType type, int degree, Node **subtrees, Region *r) {
     ExprType *t = (ExprType *)region_alloc(r,sizeof(ExprType));
-    t->base = NULL;
-    t->exprType = NULL;
+    memset(t, 0, sizeof(ExprType));
     t->subtrees = subtrees;
     t->degree = degree;
     t->nodeType = type;
-    t->expr = 0;
-    t->text = NULL;
     t->option = OPTION_TYPED;
     t->iotype = IO_TYPE_INPUT;
     return t;
@@ -438,7 +431,7 @@ FunctionDesc *newDeconstructorDesc(char *type, int proj, Region *r) {
 }*/
 FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r) {
     Res *desc = newRes(r);
-    desc->nodeType = N_FUNC_SYM_LINK;
+    desc->nodeType = N_SYM_LINK;
     desc->text = cpStringExt(fn ,r);
     desc->value.nArgs = nArgs;
     desc->exprType = newSimpType(T_DYNAMIC, r);
@@ -486,8 +479,7 @@ Res* newCollRes2(int size, Region *r) {
 }
 Res* newRes(Region *r) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
-        res1->exprType = NULL;
-        res1->coercionType = NULL;
+	memset(res1, 0, sizeof(Res));
         res1->nodeType = N_VAL;
         res1->iotype = IO_TYPE_INPUT;
 	return res1;
@@ -539,7 +531,7 @@ Res* newDatetimeRes(Region *r, long dt) {
 	return res1;
 }
 Res* newErrorRes(Region *r, int errcode) {
-	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
+	Res *res1 = newRes(r);
         res1->nodeType = N_ERROR;
         res1->value.errcode = errcode;
 	return res1;
@@ -1102,6 +1094,7 @@ void listRemoveNoRegion(List *list, ListNode *node) {
 
 TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r) {
     TypingConstraint *tc = (TypingConstraint *)region_alloc(r, sizeof (TypingConstraint));
+    memset(tc, 0, sizeof(TypingConstraint));
     tc->subtrees = (Node **)region_alloc(r, sizeof(Node *)*4);
     TC_A(tc) = a;
     TC_B(tc) = b;
@@ -1294,4 +1287,46 @@ Node *lookupAVUFromMetadata(Node *metadata, char *a) {
 	}
 	return NULL;
 
+}
+FunctionDesc *newFunctionFD(char *type, SmsiFuncPtrType func, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    memset(desc, 0, sizeof(FunctionDesc));
+    desc->value.func = func;
+    desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
+    desc->nodeType = N_FD_FUNCTION;
+    return desc;
+}
+FunctionDesc *newConstructorFD(char *type, Region *r) {
+    return newConstructorFD2(parseFuncTypeFromString(type, r), r);
+}
+
+FunctionDesc *newConstructorFD2(Node *type, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    memset(desc, 0, sizeof(FunctionDesc));
+    desc->exprType = type;
+    desc->nodeType = N_FD_CONSTRUCTOR;
+    return desc;
+}
+FunctionDesc *newExternalFD(Node *type, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    memset(desc, 0, sizeof(FunctionDesc));
+    desc->exprType = type;
+    desc->nodeType = N_FD_EXTERNAL;
+    return desc;
+}
+FunctionDesc *newDeconstructorFD(char *type, int proj, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    memset(desc, 0, sizeof(FunctionDesc));
+    desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
+    desc->nodeType = N_FD_DECONSTRUCTOR;
+    desc->value.proj = proj;
+    return desc;
+}
+FunctionDesc *newRuleIndexListFD(RuleIndexList *ruleIndexList, ExprType *type, Region *r) {
+    FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
+    memset(desc, 0, sizeof(FunctionDesc));
+    desc->value.ruleIndexList = ruleIndexList;
+    desc->exprType = type;
+    desc->nodeType = N_FD_RULE_INDEX_LIST;
+    return desc;
 }

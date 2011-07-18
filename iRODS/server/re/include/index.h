@@ -9,29 +9,12 @@
 #include "reGlobalsExtern.h"
 #endif
 
-typedef struct condIndexVal CondIndexVal;
 
-struct condIndexVal {
-    int startIndex, finishIndex;
-    Node *params;
-    Node *condExp;
-    Hashtable *valIndex; /* char * -> int * */
-};
-
-typedef struct ruleIndexListNode {
-    int ruleIndex;
-    struct ruleIndexListNode *next;
-} RuleIndexListNode;
-
-typedef struct ruleIndexList {
-    char *ruleName;
-    RuleType type;
-    RuleIndexListNode *head, *tail;
-} RuleIndexList;
 
 char *convertRuleNameArityToKey(char *ruleName, int arity);
-RuleIndexList *newRuleIndexList(char *ruleName, RuleType type, int ruleIndex, Region *r);
-RuleIndexListNode *newRuleIndexListNode(int ruleIndex, Region *r);
+RuleIndexList *newRuleIndexList(char *ruleName, int ruleIndex, Region *r);
+RuleIndexListNode *newRuleIndexListNode(int ruleIndex, RuleIndexListNode *prev, RuleIndexListNode *next, Region *r);
+RuleIndexListNode *newRuleIndexListNode2(CondIndexVal* civ, RuleIndexListNode *prev, RuleIndexListNode *next, Region *r);
 CondIndexVal *newCondIndexVal(Node *condExp, Node *params, Hashtable *groupHashtable, Region *r);
 
 extern Hashtable *ruleIndex;
@@ -57,12 +40,14 @@ int createFuncMapDefIndex(rulefmapdef_t *inFuncStrct1, Hashtable **ruleIndex);
 /* int clearRuleSet(RuleSet *inRuleSet); */
 
 int mapExternalFuncToInternalProc2(char *funcName);
-int findNextRuleFromIndex(Hashtable *ruleIndex, char *action, int *index);
-int findNextRule2(char *action,  int *ruleInx);
+int findNextRuleFromIndex(Env *ruleIndex, char *action, int i, RuleIndexListNode **node);
+int findNextRule2(char *action,  int i, RuleIndexListNode **node);
 int actionTableLookUp2(char *action);
 int createMacorsIndex();
 void deleteCondIndexVal(CondIndexVal *h);
-void removeNodeFromRuleIndexList(RuleIndexList *rd, int i);
+void insertIntoRuleIndexList(RuleIndexList *rd, RuleIndexListNode *prev, CondIndexVal *civ, Region *r);
+void removeNodeFromRuleIndexList2(RuleIndexList *rd, int i);
+void removeNodeFromRuleIndexList(RuleIndexList *rd, RuleIndexListNode *node);
 void appendRuleNodeToRuleIndexList(RuleIndexList *rd, int i, Region *r);
 void prependRuleNodeToRuleIndexList(RuleIndexList *rd, int i, Region *r);
 

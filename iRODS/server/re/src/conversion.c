@@ -238,11 +238,11 @@ int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *er
 		return 1;
 */
 	} else {
-            res->value.uninterpreted.inOutStruct = mP->inOutStruct;
-            res->value.uninterpreted.inOutBuffer = mP->inpOutBuf;
-            res->exprType = newIRODSType(mP->type,r);
-            return 0;
-        }
+		res->value.uninterpreted.inOutStruct = mP->inOutStruct;
+		res->value.uninterpreted.inOutBuffer = mP->inpOutBuf;
+		res->exprType = newIRODSType(mP->type,r);
+		return 0;
+	}
 	return -1;
 
 
@@ -455,7 +455,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 			b=b->next;
 		}
 	}
-        return 0;
+	return 0;
 }
 int convertMsParamArrayToEnv(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
     return updateMsParamArrayToEnv(var, env, errmsg, r);
@@ -477,7 +477,7 @@ int updateMsParamArrayToEnv(msParamArray_t *var, Env *env, rError_t *errmsg, Reg
             updateInEnv(env, varName, res);
         }
 	}
-        return 0;
+	return 0;
 }
 int updateMsParamArrayToEnvAndFreeNonIRODSType(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
 	int i;
@@ -509,32 +509,32 @@ char* convertResToString(Res *res0) {
             case T_INT:
             case T_DOUBLE:
                 res = (char *)malloc(sizeof(char)*1024);
-		    if(res0->value.dval==(int)res0->value.dval) {
-				snprintf(res, 1024, "%d", (int)res0->value.dval);
-			} else {
-				snprintf(res, 1024, "%f", res0->value.dval);
-			}
-			return res;
+				if(res0->value.dval==(int)res0->value.dval) {
+					snprintf(res, 1024, "%d", (int)res0->value.dval);
+				} else {
+					snprintf(res, 1024, "%f", res0->value.dval);
+				}
+				return res;
             case T_STRING:
                 if(res0->text == NULL) {
                     res = strdup("<null>");
                 } else {
                     res = strdup(res0->text);
                 }
-			return res;
+                return res;
             case T_IRODS:
                 res = (char *)malloc(sizeof(char)*1024);
-                    if(strcmp(res0->exprType->text, KeyValPair_MS_T)==0) {
-                        keyValPair_t *kvp = (keyValPair_t *) res0->value.uninterpreted.inOutStruct;
-                        snprintf(res, 1024, "KeyValue[%d]:", kvp->len);
-                        int i;
-                        for(i=0;i<kvp->len;i++) {
-                            snprintf(res + strlen(res), 1024 - strlen(res), "%s=%s;", kvp->keyWord[i],kvp->value[i]);
-                        }
+				if(strcmp(res0->exprType->text, KeyValPair_MS_T)==0) {
+					keyValPair_t *kvp = (keyValPair_t *) res0->value.uninterpreted.inOutStruct;
+					snprintf(res, 1024, "KeyValue[%d]:", kvp->len);
+					int i;
+					for(i=0;i<kvp->len;i++) {
+						snprintf(res + strlen(res), 1024 - strlen(res), "%s=%s;", kvp->keyWord[i],kvp->value[i]);
+					}
 
-                    } else {
-			snprintf(res, 1024, "<value>");
-                    }
+				} else {
+					snprintf(res, 1024, "<value>");
+				}
 			return res;
             case T_BOOL:
                 res = strdup(((int)res0->value.dval)?"true":"false");
@@ -554,11 +554,11 @@ char* convertResToString(Res *res0) {
                     }
                 }
                 snprintf(res+strlen(res), 1024-strlen(res), "]");
-                        return res;
+				return res;
             case T_DATETIME:
-                        res = (char *)malloc(sizeof(char)*1024);
-			ttimestr(res, 1024-1, "", &(res0->value.tval));
-                        return res;
+				res = (char *)malloc(sizeof(char)*1024);
+				ttimestr(res, 1024-1, "", &(res0->value.tval));
+				return res;
             case T_UNSPECED:
                 res = strdup("<undefined>");
                 return res;

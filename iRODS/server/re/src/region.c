@@ -41,7 +41,7 @@ Region *make_region(size_t is, jmp_buf *label) {
         r->error.code = 0; /* set no error */
 	return r;
 }
-unsigned char *region_alloc_nodesc(Region *r, size_t s) {
+unsigned char *region_alloc_nodesc(Region *r, size_t s, size_t *alloc_size) {
 	if(s > r->active->size - r->active->used) {
             int blocksize;
             if(s > DEFAULT_BLOCK_SIZE) {
@@ -63,21 +63,22 @@ unsigned char *region_alloc_nodesc(Region *r, size_t s) {
 
 	}
 
-	size_t alloc_size =
+	*alloc_size =
                 s>DEFAULT_BLOCK_SIZE?
                     s:
                     roundToAlignment(s);
 	unsigned char *pointer = r->active->block + r->active->used;
-	r->active->used+=alloc_size;
+	r->active->used+=*alloc_size;
 	return pointer;
 
 }
 void *region_alloc(Region *r, size_t size) {
-    unsigned char *mem = region_alloc_nodesc(r, size + sizeof(RegionDesc));
+	size_t allocSize;
+    unsigned char *mem = region_alloc_nodesc(r, size + CACHE_SIZE(RegionDesc, 1), &allocSize);
     ((RegionDesc *)mem)->region = r;
-    ((RegionDesc *)mem)->size = size;
+    ((RegionDesc *)mem)->size = allocSize;
     ((RegionDesc *)mem)->del = 0;
-    return mem + sizeof(RegionDesc);
+    return mem + CACHE_SIZE(RegionDesc, 1);
 }
 void region_free(Region *r) {
 	while(r->head!=NULL) {
@@ -86,7 +87,7 @@ void region_free(Region *r) {
 		free(node->block);
 		free(node);
 	}
-        free(r->label);
+	free(r->label);
 	free(r);
 }
 size_t region_size(Region *r) {

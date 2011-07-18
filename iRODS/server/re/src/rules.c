@@ -7,7 +7,7 @@
 #include "arithmetics.h"
 #include "configuration.h"
 
-#define ERROR(cond) if(cond) { goto error; }
+#define RE_ERROR(cond) if(cond) { goto error; }
 
 extern int GlobalAllRuleExecFlag;
 #ifndef DEBUG
@@ -143,11 +143,11 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     if(msParamArray!=NULL) {
     	if(strncmp(rule, "@external\n", 10) == 0) {
             rescode = parseAndComputeMsParamArrayToEnv(msParamArray, globalEnv(env), rei, reiSaveFlag, &errmsgBuf, r);
-            ERROR(rescode < 0);
+            RE_ERROR(rescode < 0);
             rule = rule + 10;
     	} else {
     		rescode = convertMsParamArrayToEnv(msParamArray, globalEnv(env), &errmsgBuf, r);
-            ERROR(rescode < 0);
+            RE_ERROR(rescode < 0);
     	}
     }
 
@@ -155,7 +155,7 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     rei->msParamArray = NULL;
 
     rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, &errmsgBuf, r);
-    ERROR(rescode < 0);
+    RE_ERROR(rescode < 0);
 
     if(orig==NULL) {
         rei->msParamArray = newMsParamArray();
@@ -192,14 +192,14 @@ int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag,
 
     if(msParamArray!=NULL) {
         rescode = convertMsParamArrayToEnv(msParamArray, env->previous, errmsg, r);
-        ERROR(rescode < 0);
+        RE_ERROR(rescode < 0);
     }
 
     orig = rei->msParamArray;
     rei->msParamArray = NULL;
 
     rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, errmsg, r);
-    ERROR(rescode < 0);
+    RE_ERROR(rescode < 0);
 
     if(orig==NULL) {
         rei->msParamArray = newMsParamArray();
@@ -207,7 +207,7 @@ int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag,
     	rei->msParamArray = orig;
     }
     rescode = convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
-    ERROR(rescode < 0);
+    RE_ERROR(rescode < 0);
     deleteEnv(env, 3);
     return rescode;
 
@@ -244,18 +244,13 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
     if(rescode != 0) {
         return PARSER_ERROR;
     }
-    /* save secondary index status */
-    RuleEngineStatus cis = ruleEngineConfig.condIndexStatus;
 
     RuleDesc *rd = NULL;
     Res *res = NULL;
     /* add rules into rule index */
 	int i;
-	for(i=ruleEngineConfig.extRuleSet->len-1;i>=tempLen;i--) {
-		prependRuleIntoIndex(ruleEngineConfig.extRuleSet->rules[i], i, r);
-		if(lookupFromHashTable(ruleEngineConfig.condIndex, RULE_NAME(ruleEngineConfig.extRuleSet->rules[i]->node))!=NULL) {
-			ruleEngineConfig.condIndexStatus = DISABLED;
-		}
+	for(i=0;i<ruleEngineConfig.extRuleSet->len;i++) {
+		appendRuleIntoExtIndex(ruleEngineConfig.extRuleSet->rules[i], i, r);
 	}
 
 	for(i=tempLen;i<ruleEngineConfig.extRuleSet->len;i++) {
@@ -280,11 +275,6 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 ret:
     /* remove rules from ext rule set */
     popExtRuleSet(checkPoint);
-
-    /* restore secondary index status */
-    if(ruleEngineConfig.condIndexStatus == DISABLED) {
-    	ruleEngineConfig.condIndexStatus = cis;
-    }
 
     return rescode;
 }
@@ -364,21 +354,21 @@ ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typ
 
             ExprType *resType = typeExpression3(node->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             /*printf("Type %d\n",resType->t); */
-            ERROR(resType->nodeType == T_ERROR);
+            RE_ERROR(resType->nodeType == T_ERROR);
             if(resType->nodeType != T_BOOL && resType->nodeType != T_VAR && resType->nodeType != T_DYNAMIC) {
             	char buf2[1024], buf3[ERR_MSG_LEN];
             	typeToString(resType, varTypes, buf2, 1024);
             	snprintf(buf3, ERR_MSG_LEN, "error: the type %s of the rule condition is not supported", buf2);
                 generateErrMsg(buf3, node->subtrees[1]->expr, node->subtrees[1]->base, buf);
                 addRErrorMsg(errmsg, TYPE_ERROR, buf);
-                ERROR(1);
+                RE_ERROR(1);
             }
             resType = typeExpression3(node->subtrees[2], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-            ERROR(resType->nodeType == T_ERROR);
+            RE_ERROR(resType->nodeType == T_ERROR);
             resType = typeExpression3(node->subtrees[3], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-            ERROR(resType->nodeType == T_ERROR);
+            RE_ERROR(resType->nodeType == T_ERROR);
             /* printVarTypeEnvToStdOut(varTypes); */
-            ERROR(solveConstraints(typingConstraints, varTypes, errmsg, errnode, r) == ABSURDITY);
+            RE_ERROR(solveConstraints(typingConstraints, varTypes, errmsg, errnode, r) == ABSURDITY);
             int i;
             for(i =1;i<=3;i++) { // 1 = cond, 2 = actions, 3 = recovery
                 postProcessCoercion(node->subtrees[i], varTypes, errmsg, errnode, r);
@@ -435,7 +425,7 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
 					case N_FD_DECONSTRUCTOR:
 						err = "redefinition of deconstructor";
 						break;
-					case N_FD_C_FUNC:
+					case N_FD_FUNCTION:
 						err = "redefinition of system microservice";
 						break;
 					default:

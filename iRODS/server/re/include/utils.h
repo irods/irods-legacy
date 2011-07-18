@@ -40,8 +40,10 @@
 #define PATTERN_NOT_MATCHED -1205011
 #define STRING_OVERFLOW -1205012
 /* system error -1207000 */
-#define OUT_OF_MEMORY -1207001
 #define UNKNOWN_ERROR -1207000
+#define OUT_OF_MEMORY -1207001
+#define SHM_UNLINK_ERROR -1207002
+#define FILE_STAT_ERROR -1207003
 /* type error -1209000 */
 #define TYPE_ERROR -1209000
 #define FUNCTION_REDEFINITION -12090001
@@ -115,15 +117,16 @@ typedef enum node_type {
     N_RULE_NAME = 32,
     N_PARAM_LIST = 33,
     N_PARAM_TYPE_LIST = 34,
-    N_RULESET = 35,
-    N_RULE_PACK = 36,
-    N_FD_C_FUNC = 41,
+    N_AVU = 35,
+    N_META_DATA = 36,
+    N_RULE_PACK = 37,
+    N_RULESET = 38,
+    N_FD_FUNCTION = 41,
     N_FD_CONSTRUCTOR = 42,
     N_FD_DECONSTRUCTOR = 43,
     N_FD_EXTERNAL = 44,
-    N_FUNC_SYM_LINK = 45,
-    N_META_DATA = 46,
-    N_AVU = 47,
+    N_FD_RULE_INDEX_LIST = 45,
+    N_SYM_LINK = 46,
     N_RULE_CODE = 50,
     N_RULE = 60,
     N_CONSTRUCTOR_DEF = 61,
@@ -175,6 +178,27 @@ typedef enum node_type {
 typedef struct env Env;
 
 typedef Res *(*SmsiFuncPtrType)(Node **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
+
+typedef struct condIndexVal CondIndexVal;
+
+struct condIndexVal {
+    Node *params;
+    Node *condExp;
+    Hashtable *valIndex; /* char * -> int * */
+};
+
+typedef struct ruleIndexListNode {
+    struct ruleIndexListNode *next, *prev;
+    int secondaryIndex;
+	int ruleIndex;
+	CondIndexVal *condIndex;
+} RuleIndexListNode;
+
+typedef struct ruleIndexList {
+    char *ruleName;
+    RuleIndexListNode *head, *tail;
+} RuleIndexList;
+
 /* value */
 union node_ext {
     int errcode;
@@ -183,6 +207,7 @@ union node_ext {
     double dval;
     time_t tval;
     struct {
+    	int managed;
         void *inOutStruct;
         bytesBuf_t *inOutBuffer;
     } uninterpreted;
@@ -190,6 +215,7 @@ union node_ext {
     int proj;
 	int nArgs;
     int constructTuple;
+    RuleIndexList *ruleIndexList;
 };
 
 typedef struct str_list StringList;
@@ -352,6 +378,18 @@ int isRecursive(Node *rule);
 int invokedIn(char *fn, Node *expr);
 Node *lookupAVUFromMetadata(Node *metadata, char *a);
 
+FunctionDesc *newFunctionFD(char* type, SmsiFuncPtrType func, Region *r);
+FunctionDesc *newConstructorFD(char* type, Region *r);
+FunctionDesc *newExternalFD(Node* type, Region *r);
+FunctionDesc *newConstructorFD2(Node* type, Region *r);
+FunctionDesc *newDeconstructorFD(char *type, int proj, Region *r);
+FunctionDesc *newRuleIndexListFD(RuleIndexList *ruleIndexList, ExprType *, Region *r);
+
+#define INC_MOD(x, m) (x) = (((x) == ((m) - 1)) ? 0 : ((x) + 1))
+#define DEC_MOD(x, m) (x) = (((x) == 0) ? ((m) - 1) : ((x) - 1))
+
+/*#define INC_MOD(x, m) (x) = (x+1)% (m)*/
+/*#define DEC_MOD(x, m) (x) = (x+(m)-1) % (m)*/
 #define CONCAT2(a,b) a##b
 #define CONCAT(a,b) CONCAT2(a,b)
 

@@ -941,8 +941,11 @@ clearRuleStruct(ruleStruct_t *inRuleStrct)
 
   }
   inRuleStrct->MaxNumOfRules  = 0;
-  clearRuleSetAndIndex(inRuleStrct);
-  createCoreAppExtRuleNodeIndex();
+  if(inRuleStrct == &coreRuleStrct) {
+	  clearResources(RESC_CORE_RULE_SET | RESC_CORE_FUNC_DESC_INDEX);
+  } else if(inRuleStrct == &appRuleStrct) {
+	  clearResources(RESC_APP_RULE_SET | RESC_APP_FUNC_DESC_INDEX);
+  }
 
   return(0);
 }

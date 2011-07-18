@@ -22,10 +22,10 @@ extern int NumOfAction;
 extern microsdef_t MicrosTable[];
 #endif
 
-#define ERROR(x, y) if(x) {if((y)!=NULL){(y)->type.t=ERROR;*errnode=node;}return;}
-#define OUTOFMEMORY(x, res) if(x) {(res)->value.e = OUT_OF_MEMORY;TYPE(res) = ERROR;return;}
+#define RE_ERROR(x, y) if(x) {if((y)!=NULL){(y)->type.t=RE_ERROR;*errnode=node;}return;}
+#define OUTOFMEMORY(x, res) if(x) {(res)->value.e = OUT_OF_MEMORY;TYPE(res) = RE_ERROR;return;}
 
-#define ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
+#define RE_ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
 extern int GlobalAllRuleExecFlag;
 extern int GlobalREDebugFlag;
 
@@ -113,7 +113,7 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 					break;
 			case TK_TEXT:
 					fd = (FunctionDesc *)lookupFromEnv(ruleEngineConfig.extFuncDescIndex, expr->text);
-					if(fd!=NULL) {
+					if(fd!=NULL && fd->exprType != NULL) {
 						int nArgs = 0;
 						ExprType *type = fd->exprType;
 						while(type->nodeType == T_CONS && strcmp(type->text, FUNC) == 0) {
@@ -405,7 +405,7 @@ Res *evaluateFunctionApplication(Node *func, Node *arg, int applyAll, Node *node
     Res *res;
     char errbuf[ERR_MSG_LEN];
     switch(func->nodeType) {
-        case N_FUNC_SYM_LINK:
+        case N_SYM_LINK:
         case N_PARTIAL_APPLICATION:
             res = newPartialApplication(func, arg, func->value.nArgs - 1, r);
             if(res->value.nArgs == 0) {
@@ -595,18 +595,22 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
             case N_FD_CONSTRUCTOR:
                 res = construct(fn, args, n, instantiate(node->exprType, env->current, 1, r), r);
                 break;
-            case N_FD_C_FUNC:
+            case N_FD_FUNCTION:
                 res = (Res *) fd->value.func(args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
                 break;
             case N_FD_EXTERNAL:
-            	res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
+                res = execMicroService3(fn, args, n, node, nEnv, rei, errmsg, newRegion);
+                break;
+            case N_FD_RULE_INDEX_LIST:
+                res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
                 break;
             default:
-                printf("error!");
+            	res = newErrorRes(r, -1);
+                generateAndAddErrMsg("unsupported function descriptor type", node, -1, errmsg);
                 RETURN;
         }
     } else {
-        res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
+        res = execMicroService3(fn, args, n, node, nEnv, rei, errmsg, newRegion);
     }
 
     if(res->nodeType==N_ERROR) {
@@ -1017,10 +1021,6 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
 
     ret:
         deleteEnv(envNew, 2);
-        if(TYPE(status) == T_SUCCESS) {
-            status = newIntRes(r, 0);
-        }
-
         return status;
 
 
@@ -1032,7 +1032,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
  */
 Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRuleInp, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r)
 {
-    int ruleInx, statusI;
+    int ruleInx = 0, statusI;
     Res *statusRes;
     int  inited = 0;
     ruleExecInfo_t  *saveRei;
@@ -1046,25 +1046,15 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
     writeToTmp("entry.log", buf);
     #endif
 
-    ruleInx = -1; /* new rule */
+    ruleInx = 0; /* new rule */
     strcpy(ruleName, ruleNameInp);
     mapExternalFuncToInternalProc2(ruleName);
 
-    /* try to find rule by cond index */
-    if(ruleEngineConfig.condIndexStatus == INITIALIZED) { /* if index has been initialized */
-        CondIndexVal *civ = (CondIndexVal *)lookupFromHashTable(ruleEngineConfig.condIndex, ruleName);
-        if(civ != NULL) {
-            statusRes = execRuleFromCondIndex(ruleName, args, argc, civ,  env, rei, reiSaveFlag, errmsg, r);
-            /* restore global flag */
-            return statusRes;
-        }
-    }
-
-
+    RuleIndexListNode *ruleIndexListNode;
     int success = 0;
     int first = 1;
     while (1) {
-        statusI = findNextRule2(ruleName, &ruleInx);
+        statusI = findNextRule2(ruleName, ruleInx, &ruleIndexListNode);
 
         if (statusI != 0) {
             if (statusI == NO_MORE_RULES_ERR) {
@@ -1079,75 +1069,76 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
             }
             break;
         }
+		if (reiSaveFlag == SAVE_REI) {
+			int statusCopy = 0;
+			if (inited == 0) {
+				saveRei = (ruleExecInfo_t *) mallocAndZero(sizeof (ruleExecInfo_t));
+				statusCopy = copyRuleExecInfo(rei, saveRei);
+				inited = 1;
+			} else if (reTryWithoutRecovery == 0) {
+				statusCopy = copyRuleExecInfo(saveRei, rei);
+			}
+			if(statusCopy != 0) {
+				statusRes = newErrorRes(r, statusCopy);
+				break;
+			}
+		}
 
-        RuleDesc *rd = getRuleDesc(ruleInx);
-        if(rd->ruleType != RK_REL && rd->ruleType != RK_FUNC) {
-        	continue;
-        }
-
-        Node* rule = rd->node;
-        unsigned int inParamsCount = RULE_NODE_NUM_PARAMS(rule);
-        if (inParamsCount != argc) {
-            continue;
-        }
-
-        if(!first) {
-            addRErrorMsg(errmsg, statusI, ERR_MSG_SEP);
+		if(ruleIndexListNode->secondaryIndex) {
+        	statusRes = execRuleFromCondIndex(ruleName, args, argc, ruleIndexListNode->condIndex, env, rei, reiSaveFlag, errmsg, r);
         } else {
-            first = 0;
-        }
 
-        if (GlobalREDebugFlag)
-            reDebug("  GotRule", ruleInx, ruleName, NULL, rei); /* pass in NULL for inMsParamArray for now */
-#ifndef DEBUG
-        if (reTestFlag > 0) {
-            if (reTestFlag == COMMAND_TEST_1)
-                fprintf(stdout, "+Testing Rule Number:%i for Action:%s\n", ruleInx, ruleName);
-            else if (reTestFlag == HTML_TEST_1)
-                fprintf(stdout, "+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n", ruleInx, ruleName);
-            else if (rei != 0 && rei->rsComm != 0 && &(rei->rsComm->rError) != 0)
-                rodsLog(LOG_NOTICE, "+Testing Rule Number:%i for Action:%s\n", ruleInx, ruleName);
-        }
-#endif
-        /* printTree(rule, 0); */
-        if (reiSaveFlag == SAVE_REI) {
-            int statusCopy = 0;
-            if (inited == 0) {
-                saveRei = (ruleExecInfo_t *) mallocAndZero(sizeof (ruleExecInfo_t));
-                statusCopy = copyRuleExecInfo(rei, saveRei);
-                inited = 1;
-            } else if (reTryWithoutRecovery == 0) {
-                statusCopy = copyRuleExecInfo(saveRei, rei);
-            }
-            if(statusCopy != 0) {
-                statusRes = newErrorRes(r, statusCopy);
-                break;
-            }
-        }
+        	RuleDesc *rd = getRuleDesc(ruleIndexListNode->ruleIndex);
+			if(rd->ruleType == RK_REL || rd->ruleType == RK_FUNC) {
 
-        statusRes = execRuleNodeRes(rule, args, argc,  env, rei, reiSaveFlag, errmsg, r);
+				Node* rule = rd->node;
+				unsigned int inParamsCount = RULE_NODE_NUM_PARAMS(rule);
+				if (inParamsCount != argc) {
+					ruleInx++;
+					continue;
+				}
 
-        int ret = 0;
-        if(statusRes->nodeType!=N_ERROR) {
-            success = 1;
-            if (applyAllRule == 0) { /* apply first rule */
-                ret = 1;
-            } else { /* apply all rules */
-                if (reiSaveFlag == SAVE_REI) {
-                    freeRuleExecInfoStruct(saveRei, 0);
-                    inited = 0;
-                }
-            }
-        } else if(statusRes->value.errcode== RETRY_WITHOUT_RECOVERY_ERR) {
-            reTryWithoutRecovery = 1;
-        } else if(statusRes->value.errcode== CUT_ACTION_PROCESSED_ERR) {
-            ret = 1;
+				if(!first) {
+					addRErrorMsg(errmsg, statusI, ERR_MSG_SEP);
+				} else {
+					first = 0;
+				}
+
+				if (GlobalREDebugFlag)
+					reDebug("  GotRule", ruleInx, ruleName, NULL, rei); /* pass in NULL for inMsParamArray for now */
+		#ifndef DEBUG
+				if (reTestFlag > 0) {
+					if (reTestFlag == COMMAND_TEST_1)
+						fprintf(stdout, "+Testing Rule Number:%i for Action:%s\n", ruleInx, ruleName);
+					else if (reTestFlag == HTML_TEST_1)
+						fprintf(stdout, "+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n", ruleInx, ruleName);
+					else if (rei != 0 && rei->rsComm != 0 && &(rei->rsComm->rError) != 0)
+						rodsLog(LOG_NOTICE, "+Testing Rule Number:%i for Action:%s\n", ruleInx, ruleName);
+				}
+		#endif
+				/* printTree(rule, 0); */
+
+				statusRes = execRuleNodeRes(rule, args, argc,  env, rei, reiSaveFlag, errmsg, r);
+
+			}
         }
+		if(statusRes->nodeType!=N_ERROR) {
+			success = 1;
+			if (applyAllRule == 0) { /* apply first rule */
+				break;
+			} else { /* apply all rules */
+				if (reiSaveFlag == SAVE_REI) {
+					freeRuleExecInfoStruct(saveRei, 0);
+					inited = 0;
+				}
+			}
+		} else if(statusRes->value.errcode== RETRY_WITHOUT_RECOVERY_ERR) {
+			reTryWithoutRecovery = 1;
+		} else if(statusRes->value.errcode== CUT_ACTION_PROCESSED_ERR) {
+			break;
+		}
 
-        if (ret) {
-            break;
-        }
-
+        ruleInx++;
     }
 
     if (inited == 1) {
@@ -1265,17 +1256,17 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
         char matcherName[MAX_NAME_LEN];
         matcherName[0]='~';
         strcpy(matcherName+1, pattern->subtrees[0]->text);
-        int ruleInx = -1;
-        if(findNextRule2(matcherName, &ruleInx) == 0) {
+        RuleIndexListNode *node;
+        if(findNextRule2(matcherName, 0, &node) == 0) {
             v = execRule(matcherName, &val, 1, 0, env, rei, reiSaveFlag, errmsg, r);
-            ERROR2(v->nodeType == N_ERROR, "user defined pattern function error");
+            RE_ERROR2(v->nodeType == N_ERROR, "user defined pattern function error");
             if(v->nodeType!=N_TUPLE) {
             	Res **tupleComp = (Res **)region_alloc(r, sizeof(Res *));
             	*tupleComp = v;
             	v = newTupleRes(1, tupleComp ,r);
             }
         } else {
-            ERROR2(v->text == NULL || strcmp(pattern->subtrees[0]->text, v->text)!=0, "pattern mismatch constructor");
+            RE_ERROR2(v->text == NULL || strcmp(pattern->subtrees[0]->text, v->text)!=0, "pattern mismatch constructor");
             Res **tupleComp = (Res **)region_alloc(r, sizeof(Res *) * v->degree);
 			memcpy(tupleComp, v->subtrees, sizeof(Res *) * v->degree);
 			v = newTupleRes(v->degree, tupleComp ,r);
@@ -1297,8 +1288,8 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
         return newIntRes(r, 0);
 
     } else if (pattern->nodeType == N_TUPLE) {
-    	ERROR2(v->nodeType != N_TUPLE, "pattern mismatch value is not a tuple.");
-    	ERROR2(p->degree != v->degree, "pattern mismatch arity");
+    	RE_ERROR2(v->nodeType != N_TUPLE, "pattern mismatch value is not a tuple.");
+    	RE_ERROR2(p->degree != v->degree, "pattern mismatch arity");
 		int i;
 		for(i=0;i<p->degree;i++) {
 			Res *res = matchPattern(p->subtrees[i], v->subtrees[i], env, rei, reiSaveFlag, errmsg, r);
@@ -1308,7 +1299,7 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 		}
 		return newIntRes(r, 0);
     }
-    ERROR2(1, "malformatted pattern error");
+    RE_ERROR2(1, "malformatted pattern error");
     error:
         generateErrMsg(localErrorMsg,pattern->expr, pattern->base, errbuf);
         addRErrorMsg(errmsg, PATTERN_NOT_MATCHED, errbuf);

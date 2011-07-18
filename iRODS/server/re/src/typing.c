@@ -3,8 +3,8 @@
 
 #include "typing.h"
 #include "functions.h"
-#define ERROR(x) if(x) {goto error;}
-#define ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
+#define RE_ERROR(x) if(x) {goto error;}
+#define RE_ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
 #define N_BASE_TYPES 6
 NodeType baseTypes[N_BASE_TYPES] = {
 		T_INT,
@@ -612,14 +612,14 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
 
 
     if(fn->nodeType == TK_TEXT && strcmp(fn->text, "foreach") == 0) {
-        ERROR2(arg->nodeType != N_TUPLE || arg->degree != 3,"wrong number of arguments to microservice");
-        ERROR2(arg->subtrees[0]->nodeType!=TK_VAR,"argument form error");
+        RE_ERROR2(arg->nodeType != N_TUPLE || arg->degree != 3,"wrong number of arguments to microservice");
+        RE_ERROR2(arg->subtrees[0]->nodeType!=TK_VAR,"argument form error");
         char* varname = arg->subtrees[0]->text;
         ExprType *varType = (ExprType *)lookupFromHashTable(var_type_table, varname);
         ExprType *collType = varType == NULL? NULL:dereference(varType, var_type_table, r);
         if(collType!=NULL) {
             /* error if res is not a collection type or a type variable (primitive union type excluded) */
-            ERROR2(collType->nodeType != T_CONS && (collType->nodeType != T_VAR || T_VAR_NUM_DISJUNCTS(collType)!=0 ), "foreach is applied to a non collection type");
+            RE_ERROR2(collType->nodeType != T_CONS && (collType->nodeType != T_VAR || T_VAR_NUM_DISJUNCTS(collType)!=0 ), "foreach is applied to a non collection type");
             /* overwrite type of collection variable */
             if(collType->nodeType == T_VAR) {
                 unifyTVarL(collType, newCollType(newTVar(r), r), var_type_table, r);
@@ -634,9 +634,9 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
         }
         arg->subtrees[0]->exprType = collType;
         res3 = typeExpression3(arg->subtrees[1],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
-        ERROR2(res3->nodeType == T_ERROR, "foreach loop type error");
+        RE_ERROR2(res3->nodeType == T_ERROR, "foreach loop type error");
         res3 = typeExpression3(arg->subtrees[2],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
-        ERROR2(res3->nodeType == T_ERROR, "foreach recovery type error");
+        RE_ERROR2(res3->nodeType == T_ERROR, "foreach recovery type error");
         arg->subtrees[0]->iotype = IO_TYPE_EXPRESSION;
         for(i = 1;i<3;i++) {
         	arg->subtrees[i]->iotype = IO_TYPE_ACTIONS;
@@ -658,14 +658,14 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
 
 		ExprType *fType = fnType->nodeType == T_CONS && strcmp(fnType->text, FUNC) == 0 ? fnType : unifyWith(fnType, newFuncType(newTVar(r), newTVar(r), r), var_type_table, r);
 
-		ERROR2(fType->nodeType == T_ERROR, "the first component of a function application does not have a function type");
+		RE_ERROR2(fType->nodeType == T_ERROR, "the first component of a function application does not have a function type");
 		ExprType *paramType = dereference(fType->subtrees[0], var_type_table, r);
 		ExprType *retType = dereference(fType->subtrees[1], var_type_table, r);
 
-        ERROR2(fn->nodeType == TK_TEXT && strcmp(fn->text, "assign") == 0 &&
+        RE_ERROR2(fn->nodeType == TK_TEXT && strcmp(fn->text, "assign") == 0 &&
                 arg->degree>0 &&
                 !isPattern(arg->subtrees[0]), "the first argument of microservice assign is not a variable or a pattern");
-        ERROR2(fn->nodeType == TK_TEXT && strcmp(fn->text, "let") == 0 &&
+        RE_ERROR2(fn->nodeType == TK_TEXT && strcmp(fn->text, "let") == 0 &&
                 arg->degree>0 &&
                 !isPattern(arg->subtrees[0]), "the first argument of microservice let is not a variable or a pattern");
 
@@ -690,7 +690,7 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
 					typeToString(argType, var_type_table, typebuf, ERR_MSG_LEN),
 					typeToString(paramType, var_type_table, typebuf2, ERR_MSG_LEN),
 					getVararg(fType) == OPTION_VARARG_PLUS ? "*" : getVararg(fType) == OPTION_VARARG_OPTIONAL? "?" : "+");
-				ERROR2(1, buf);
+				RE_ERROR2(1, buf);
 			}
 			ExprType **paramTypes = allocSubtrees(r, argN);
 			int i;
@@ -709,7 +709,7 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
         int ret = typeFuncParam(node->subtrees[1], argType, t, var_type_table, typingConstraints, errmsg, r);
         if(ret!=0) {
             *errnode = node->subtrees[1];
-            ERROR2(ret != 0, "parameter type error");
+            RE_ERROR2(ret != 0, "parameter type error");
         }
 		int i;
 		for(i=0;i<node->subtrees[1]->degree;i++) {
