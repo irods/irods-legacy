@@ -238,6 +238,7 @@ endif
 
 ifdef RULE_ENGINE_N
 CFLAGS +=       -DRULE_ENGINE
+LDADD +=		-lrt
 
 SVR_RE_OBJS =	\
 		$(svrReObjDir)/extractAvuMS.o \
