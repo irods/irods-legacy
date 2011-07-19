@@ -320,11 +320,11 @@ sub _getCurrentHostAttributes()
 	# Check the POSIX uname function first.  See design
 	# notes at the top of this file for these values.
 	my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname( );
-	if ( $sysname != "" )
+	if ( $sysname ne "" )
 	{
 		$OS = $sysname;
 	}
-	if ( $machine != "" )
+	if ( $machine ne "" )
 	{
 		$PROCESSOR = $machine;
 	}
