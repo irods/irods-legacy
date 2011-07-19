@@ -9,7 +9,7 @@
 #include "rodsClient.h"
 
 #define MAX_SQL 300
-#define BIG_STR 200
+#define BIG_STR 3000
 
 char cwd[BIG_STR];
 
