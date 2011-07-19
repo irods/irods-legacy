@@ -91,7 +91,7 @@ char *getBaseTypeOrTVarId(ExprType *a, char buf[128]) {
 	if(isBaseType(a)) {
 		snprintf(buf, 128, "%s", typeName_ExprType(a));
 	} else {
-		getTVarName(a->value.vid, buf);
+		getTVarName(T_VAR_ID(a), buf);
 	}
 	return buf;
 }
@@ -637,9 +637,9 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
         RE_ERROR2(res3->nodeType == T_ERROR, "foreach loop type error");
         res3 = typeExpression3(arg->subtrees[2],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
         RE_ERROR2(res3->nodeType == T_ERROR, "foreach recovery type error");
-        arg->subtrees[0]->iotype = IO_TYPE_EXPRESSION;
+        setIOType(arg->subtrees[0], IO_TYPE_EXPRESSION);
         for(i = 1;i<3;i++) {
-        	arg->subtrees[i]->iotype = IO_TYPE_ACTIONS;
+        	setIOType(arg->subtrees[i], IO_TYPE_ACTIONS);
         }
         ExprType **typeArgs = allocSubtrees(r, 3);
         typeArgs[0] = collType;
@@ -652,7 +652,7 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
     } else {
     	ExprType *fnType = typeExpression3(fn, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
     	if(fnType->nodeType == T_ERROR) return fnType;
-    	arg->value.constructTuple = 1; /* arg must be a N_TUPLE or N_IMPLICIT_TUPLE node */
+    	N_TUPLE_CONSTRUCT_TUPLE(arg) = 1; /* arg must be a N_TUPLE node */
 		ExprType *argType = typeExpression3(arg, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
 		if(argType->nodeType == T_ERROR) return argType;
 
@@ -713,7 +713,7 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
         }
 		int i;
 		for(i=0;i<node->subtrees[1]->degree;i++) {
-			node->subtrees[1]->subtrees[i]->iotype = t->subtrees[i]->iotype;
+			setIOType(node->subtrees[1]->subtrees[i], getIOType(t->subtrees[i]));
 		}
 
         arg->coercionType = t; /* set coersion to parameter type */
@@ -738,7 +738,7 @@ ExprType *replaceDynamicWithNewTVar(ExprType *type, Region *r) {
 		*newt = *type;
 		if(type->nodeType == T_DYNAMIC) {
 			newt->nodeType = T_VAR;
-			newt->value.vid = newTVarId();
+			T_VAR_ID(newt) = newTVarId();
 		}
 		int i;
 		for(i=0;i<type->degree;i++) {
@@ -803,7 +803,7 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
                     return expr->exprType = dupType(fDesc->exprType, r);
                 } else {
                     ExprType *paramType = newSimpType(T_DYNAMIC, r);
-                    paramType->iotype = IO_TYPE_DYNAMIC;
+                    setIOType(paramType, IO_TYPE_DYNAMIC);
                     ExprType *fType = newFuncType(newUnaryType(T_TUPLE, paramType, r), newSimpType(T_DYNAMIC, r), r);
                     setVararg(fType, OPTION_VARARG_STAR);
                     return expr->exprType = fType;
@@ -817,7 +817,7 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
                 	return expr->exprType = components[i];
                 }
             }
-            if(expr->value.constructTuple || expr->degree != 1) {
+            if(N_TUPLE_CONSTRUCT_TUPLE(expr) || expr->degree != 1) {
             	return expr->exprType = newTupleType(expr->degree, components, r);
             } else {
             	return expr->exprType = components[0];
@@ -896,15 +896,15 @@ void postProcessActions(Node *expr, Env *systemFunctionTables, rError_t *errmsg,
     switch(expr->nodeType) {
         case N_TUPLE:
             for(i=0;i<expr->degree;i++) {
-                if(expr->subtrees[i]->iotype == IO_TYPE_ACTIONS && expr->subtrees[i]->nodeType != N_ACTIONS) {
-                    expr->subtrees[i]->iotype = IO_TYPE_INPUT;
+                if(getIOType(expr->subtrees[i]) == IO_TYPE_ACTIONS && expr->subtrees[i]->nodeType != N_ACTIONS) {
+                    setIOType(expr->subtrees[i], IO_TYPE_INPUT);
                     Node **params = (Node **)region_alloc(r, sizeof(Node *)*1);
                     params[0] = expr->subtrees[i];
                     Label pos;
                     pos.base = expr->base;
                     pos.exprloc = expr->expr;
                     expr->subtrees[i] = createActionsNode(params, 1, &pos, r);
-                    expr->subtrees[i]->iotype = IO_TYPE_ACTIONS;
+                    setIOType(expr->subtrees[i], IO_TYPE_ACTIONS);
                     expr->subtrees[i]->exprType = params[0]->exprType;
                 }
             }

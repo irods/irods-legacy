@@ -426,8 +426,6 @@ main(int argc, char **argv) {
 			if (strcmp (buf, "null") != 0) {
 				rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
 			}
-    		appendOutputToInput(execMyRuleInp.inpParamArray, inpParamNames, inpParamN, outParamNames, outParamN);
-
 	        break;
 	    } else {
 	    	break;

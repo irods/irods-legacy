@@ -60,7 +60,7 @@ int createCondIndex(Region *r) {
         	if(fd->nodeType != N_FD_RULE_INDEX_LIST) {
         		continue;
         	}
-            RuleIndexList *ruleIndexList= fd->value.ruleIndexList;
+            RuleIndexList *ruleIndexList= FD_RULE_INDEX_LIST(fd);
 			#ifdef DEBUG_INDEX
 			printf("processing rule pack %s into condIndex\n", resumingBucket->key);
 			#endif
@@ -232,7 +232,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, Re
 			if(fd != NULL) {
 /*				printf("adding %s\n", key);*/
 				if(fd->nodeType==N_FD_RULE_INDEX_LIST) {
-					RuleIndexList *list = fd->value.ruleIndexList;
+					RuleIndexList *list = FD_RULE_INDEX_LIST(fd);
 					appendRuleNodeToRuleIndexList(list, i + offset, r);
 				} else if(fd->nodeType == N_FD_EXTERNAL) {
 					/* combine N_FD_EXTERNAL with N_FD_RULE_LIST */
@@ -309,7 +309,7 @@ int findNextRuleFromIndex(Env *ruleIndex, char *action, int i, RuleIndexListNode
 			if (fd->nodeType!=N_FD_RULE_INDEX_LIST) {
 				return NO_MORE_RULES_ERR;
 			}
-			RuleIndexList *l=fd->value.ruleIndexList;
+			RuleIndexList *l=FD_RULE_INDEX_LIST(fd);
 			RuleIndexListNode *b = l->head;
 			while(k!=0) {
 				if(b!=NULL) {

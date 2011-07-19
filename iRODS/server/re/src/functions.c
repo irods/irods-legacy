@@ -243,9 +243,9 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 	} else {
 		int i;
 		Res* elem;
-		int len = getCollectionSize(coll->exprType->text, coll->value.uninterpreted.inOutStruct, r);
+		int len = getCollectionSize(coll->exprType->text, RES_UNINTER_STRUCT(coll), r);
 		for(i=0;i<len;i++) {
-				elem = getValueFromCollection(coll->exprType->text, coll->value.uninterpreted.inOutStruct, i, r);
+				elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, r);
 				setVariableValue(varName, elem, rei, env, errmsg, r);
 				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], rei,reiSaveFlag,  env,errmsg,r);
 				if(res->nodeType == N_ERROR) {
@@ -301,9 +301,9 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
         } else {
             int i;
             Res* elem;
-            int len = getCollectionSize(orig->exprType->text, orig->value.uninterpreted.inOutStruct, r);
+            int len = getCollectionSize(orig->exprType->text, RES_UNINTER_STRUCT(orig), r);
             for(i=0;i<len;i++) {
-                    elem = getValueFromCollection(orig->exprType->text, orig->value.uninterpreted.inOutStruct, i, r);
+                    elem = getValueFromCollection(orig->exprType->text, RES_UNINTER_STRUCT(orig), i, r);
                     setVariableValue(varName, elem, rei, env, errmsg, r);
                     res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], rei,reiSaveFlag,  env,errmsg,r);
                     if(res->nodeType == N_ERROR) {
@@ -559,13 +559,13 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                 return res;
             } else {
                 if(index <0 || index >= getCollectionSize(params[0]->exprType->text,
-                        params[0]->value.uninterpreted.inOutStruct, r) ) {
+                        RES_UNINTER_STRUCT(params[0]), r) ) {
                     snprintf(errbuf, ERR_MSG_LEN, "error: index out of range %d. %s", index, ((Res *)params[0])->exprType->text);
                     addRErrorMsg(errmsg, -1, errbuf);
                     return newErrorRes(r, -1);
                 }
                 Res *res2 = getValueFromCollection(params[0]->exprType->text,
-                        params[0]->value.uninterpreted.inOutStruct,
+                        RES_UNINTER_STRUCT(params[0]),
                         index,r);
 
                 return res2;
@@ -578,7 +578,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                     res->value.dval = params[0]->degree;
                 } else {
                     res->value.dval = getCollectionSize(params[0]->exprType->text,
-                            params[0]->value.uninterpreted.inOutStruct,r);
+                            RES_UNINTER_STRUCT(params[0]),r);
                 }
                 return res;
 	}
@@ -598,7 +598,7 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 			} else {
 				format="";
 			}
-			strttime(timestr->text, format, &(res->value.tval));
+			strttime(timestr->text, format, &(RES_TIME_VAL(res)));
                         res->exprType = newSimpType(T_DATETIME,r);
 		}
                 return res;
@@ -627,7 +627,7 @@ Res *smsi_timestr(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
                     format = "";
             }
             char buf[1024];
-            ttimestr(buf, 1024-1, format, &dtime->value.tval);
+            ttimestr(buf, 1024-1, format, &RES_TIME_VAL(dtime));
             res = newStringRes(r, buf);
         }
         return res;
@@ -689,7 +689,7 @@ Res *smsi_double(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
                     res->value.dval = atof(val->text);
 		} else if(TYPE(val) == T_DATETIME) {
                     res->exprType = newSimpType(T_DOUBLE,r);
-                    res->value.dval = (double)val->value.tval;
+                    res->value.dval = (double)RES_TIME_VAL(val);
                 } else if(TYPE(val) == T_DOUBLE) {
                     res = val;
                 } else {
@@ -849,10 +849,10 @@ Res *smsi_concat(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
         addRErrorMsg(errmsg, STRING_OVERFLOW, "error: string too long.");
         return newErrorRes(r, STRING_OVERFLOW);
     } else {*/
-    char *newbuf = (char *)malloc((args[0]->value.strlen + args[1]->value.strlen+1)*sizeof(char));
+    char *newbuf = (char *)malloc((RES_STRING_STR_LEN(args[0]) + RES_STRING_STR_LEN(args[1])+1)*sizeof(char));
 
     strcpy(newbuf, args[0]->text);
-    strcpy(newbuf+args[0]->value.strlen, args[1]->text);
+    strcpy(newbuf+RES_STRING_STR_LEN(args[0]), args[1]->text);
 
     Res *res = newStringRes(r, newbuf);
     free(newbuf);
@@ -871,7 +871,7 @@ Res *smsi_lt(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
             break;
         case T_DATETIME:
             if(TYPE(args[1]) == T_DATETIME)
-                return newBoolRes(r, difftime(args[0]->value.tval, args[1]->value.tval)<0?1:0);
+                return newBoolRes(r, difftime(RES_TIME_VAL(args[0]), RES_TIME_VAL(args[1]))<0?1:0);
             break;
         case T_STRING:
             if(TYPE(args[1]) == T_STRING)
@@ -897,7 +897,7 @@ Res *smsi_le(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
             break;
         case T_DATETIME:
             if(TYPE(args[1]) == T_DATETIME)
-                return newBoolRes(r, difftime(args[0]->value.tval, args[1]->value.tval)<=0?1:0);
+                return newBoolRes(r, difftime(RES_TIME_VAL(args[0]), RES_TIME_VAL(args[1]))<=0?1:0);
             break;
         case T_STRING:
             if(TYPE(args[1]) == T_STRING)
@@ -923,7 +923,7 @@ Res *smsi_gt(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
             break;
         case T_DATETIME:
             if(TYPE(args[1]) == T_DATETIME)
-                return newBoolRes(r, difftime(args[0]->value.tval, args[1]->value.tval)>0?1:0);
+                return newBoolRes(r, difftime(RES_TIME_VAL(args[0]), RES_TIME_VAL(args[1]))>0?1:0);
             break;
         case T_STRING:
             if(TYPE(args[1]) == T_STRING)
@@ -949,7 +949,7 @@ Res *smsi_ge(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
             break;
         case T_DATETIME:
             if(TYPE(args[1]) == T_DATETIME)
-                return newBoolRes(r, difftime(args[0]->value.tval, args[1]->value.tval)>=0?1:0);
+                return newBoolRes(r, difftime(RES_TIME_VAL(args[0]), RES_TIME_VAL(args[1]))>=0?1:0);
             break;
         case T_STRING:
             if(TYPE(args[1]) == T_STRING)
@@ -978,7 +978,7 @@ Res *smsi_eq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
             break;
         case T_DATETIME:
             if(TYPE(args[1]) == T_DATETIME)
-                return newBoolRes(r, difftime(args[0]->value.tval, args[1]->value.tval)==0?1:0);
+                return newBoolRes(r, difftime(RES_TIME_VAL(args[0]), RES_TIME_VAL(args[1]))==0?1:0);
             break;
         case T_STRING:
             if(TYPE(args[1]) == T_STRING)
@@ -1007,7 +1007,7 @@ Res *smsi_neq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             break;
         case T_DATETIME:
             if(TYPE(args[1]) == T_DATETIME)
-                return newBoolRes(r, difftime(args[0]->value.tval, args[1]->value.tval)!=0?1:0);
+                return newBoolRes(r, difftime(RES_TIME_VAL(args[0]), RES_TIME_VAL(args[1]))!=0?1:0);
             break;
         case T_STRING:
             if(TYPE(args[1]) == T_STRING)
@@ -1163,7 +1163,7 @@ Res *smsi_errorcode(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
         }
         switch(res->nodeType) {
             case N_ERROR:
-                return newIntRes(r, res->value.errcode);
+                return newIntRes(r, RES_ERR_CODE(res));
             default:
                 return newIntRes(r, 0);
         }
@@ -1189,7 +1189,7 @@ Res *smsi_errormsg(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int r
     free(errbuf);
     switch(res->nodeType) {
         case N_ERROR:
-            return newIntRes(r, res->value.errcode);
+            return newIntRes(r, RES_ERR_CODE(res));
         default:
             return newIntRes(r, 0);
     }
@@ -1270,7 +1270,7 @@ int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r) {
     return 0;
   }
   if ((execOutRes = (Res *)lookupFromEnv(env, "ruleExecOut")) != NULL) {
-    myExecCmdOut = (execCmdOut_t *)execOutRes->value.uninterpreted.inOutStruct;
+    myExecCmdOut = (execCmdOut_t *)RES_UNINTER_STRUCT(execOutRes);
   } else {
       Env *global = env;
       while(global->previous != NULL) {
@@ -1280,7 +1280,7 @@ int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r) {
     memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
     execOutRes = newRes(r);
     execOutRes->exprType  = newIRODSType(ExecCmdOut_MS_T, r);
-    execOutRes->value.uninterpreted.inOutStruct = myExecCmdOut;
+    RES_UNINTER_STRUCT(execOutRes) = myExecCmdOut;
     insertIntoHashTable(global->current, "ruleExecOut", execOutRes);
   }
 
@@ -1587,7 +1587,7 @@ Res * smsi_msiAdmInsertRulesFromStructIntoDB(Node **paramsr, int n, Node *node, 
 	  return newErrorRes(r, PARAOPR_EMPTY_IN_STRUCT_ERR);
   }
 
-  RuleSet *rs = (RuleSet *)paramsr[1]->value.uninterpreted.inOutStruct;
+  RuleSet *rs = (RuleSet *)RES_UNINTER_STRUCT(paramsr[1]);
   i = insertRulesIntoDBNew(paramsr[0]->text, rs, rei);
   if(i<0) {
 	  generateAndAddErrMsg("error inserting rules into database", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg);
@@ -1643,9 +1643,9 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct(Node **paramsr, int n, Node *node, 
   copyRuleSet(NULL, &p, &pointers, ruleSet, objectMap, 0);
 
   if (TYPE(paramsr[1]) != T_UNSPECED) {
-	  free(paramsr[1]->value.uninterpreted.inOutStruct);
+	  free(RES_UNINTER_STRUCT(paramsr[1]));
   }
-  paramsr[1]->value.uninterpreted.inOutStruct = (void *) buf;
+  RES_UNINTER_STRUCT(paramsr[1]) = (void *) buf;
   paramsr[1]->exprType = newIRODSType(RuleStruct_MS_T, r);
 
   region_free(rsr);
@@ -1678,7 +1678,7 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile(Node **paramsr, int n, Node *node, 
 	    return newErrorRes(r, FILE_OPEN_ERR);
 	  }
 
-    RuleSet *ruleSet = (RuleSet *) paramsr[1]->value.uninterpreted.inOutStruct;
+    RuleSet *ruleSet = (RuleSet *) RES_UNINTER_STRUCT(paramsr[1]);
 	char buf[1024*16];
 		for(i=0;i<ruleSet->len;i++) {
 			ruleToString(buf, 1024*16, ruleSet->rules[i]);
@@ -1742,9 +1742,9 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
   copyRuleSet(NULL, &p, &pointers, ruleSet, objectMap, 0);
 
   if (TYPE(paramsr[2]) != T_UNSPECED) {
-	  free(paramsr[2]->value.uninterpreted.inOutStruct);
+	  free(RES_UNINTER_STRUCT(paramsr[2]));
   }
-  paramsr[2]->value.uninterpreted.inOutStruct = (void *) buf;
+  RES_UNINTER_STRUCT(paramsr[2]) = (void *) buf;
   paramsr[2]->exprType = newIRODSType(RuleStruct_MS_T, r);
 
   region_free(rsr);
@@ -1759,7 +1759,7 @@ Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
     	return newErrorRes(r, -1);
     }
 
-    execCmdOut_t *out = (execCmdOut_t *)res->value.uninterpreted.inOutStruct;
+    execCmdOut_t *out = (execCmdOut_t *)RES_UNINTER_STRUCT(res);
     int start = strlen((char *)out->stdoutBuf.buf);
     Res *ret = smsi_do(paramsr, 1, node, rei, reiSaveFlag, env, errmsg, r);
     /* int fin = strlen((char *)out->stdoutBuf.buf); */
@@ -1774,7 +1774,7 @@ Res *smsi_getstderr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
     	return newErrorRes(r, -1);
     }
 
-    execCmdOut_t *out = (execCmdOut_t *)res->value.uninterpreted.inOutStruct;
+    execCmdOut_t *out = (execCmdOut_t *)RES_UNINTER_STRUCT(res);
     int start = strlen((char *)out->stderrBuf.buf);
     Res *ret = smsi_do(paramsr, 1, node, rei, reiSaveFlag, env, errmsg, r);
     paramsr[1] = newStringRes(r, ((char *)out->stderrBuf.buf + start));

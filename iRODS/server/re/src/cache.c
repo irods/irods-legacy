@@ -28,9 +28,9 @@ void keyNode(Node *node, char *keyBuf) {
 		snprintf(keyBuf, KEY_SIZE, "%p", node);
 	} else {
 		char *p = keyBuf;
-		int len = snprintf(p, KEY_SIZE, "node::%d::%p::%ld::%p::%d::%d::%s::%s::",
+		int len = snprintf(p, KEY_SIZE, "node::%d::%p::%lld::%p::%d::%s::%s::",
 				node->option, node->coercionType, node->expr, node->exprType,
-				(int)node->iotype, (int)node->nodeType, node->base, node->text
+				(int)node->nodeType, node->base, node->text
 				);
 		if(len + sizeof(union node_ext) * 3 >= KEY_SIZE) {
 			snprintf(keyBuf, KEY_SIZE, "pointer::%p", node);
@@ -54,7 +54,7 @@ COPY_FUNC_OBJ_MAP_SHARED_BEGIN(Node)
     	  MK_COPY_OBJ_MAP(Node, e->subtrees[i], ecopy->subtrees[i]);
       }
       if(e->nodeType == N_FD_RULE_INDEX_LIST) {
-    	  MK_COPY_OBJ_MAP(RuleIndexList, e->value.ruleIndexList, ecopy->value.ruleIndexList);
+    	  MK_COPY_OBJ_MAP(RuleIndexList,FD_RULE_INDEX_LIST(e), FD_RULE_INDEX_LIST_LVAL(ecopy));
       }
 /*      printf("inserting %s\n", key); */
 	  insertIntoHashTable(objectMap, key, ecopy);

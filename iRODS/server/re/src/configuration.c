@@ -71,7 +71,7 @@ void getResourceName(char buf[1024], char *rname) {
 void removeRuleFromExtIndex(char *ruleName, int i) {
 	if(isComponentInitialized(ruleEngineConfig.extFuncDescIndexStatus)) {
 		FunctionDesc *fd = (FunctionDesc *)lookupFromHashTable(ruleEngineConfig.extFuncDescIndex->current, ruleName);
-		RuleIndexList *rd = fd->value.ruleIndexList;
+		RuleIndexList *rd = FD_RULE_INDEX_LIST(fd);
 		removeNodeFromRuleIndexList2(rd, i);
 		if(rd->head == NULL) {
 			deleteFromHashTable(ruleEngineConfig.extFuncDescIndex->current, ruleName);
@@ -88,7 +88,7 @@ void appendRuleIntoExtIndex(RuleDesc *rule, int i, Region *r) {
 
 		insertIntoHashTable(ruleEngineConfig.extFuncDescIndex->current, RULE_NAME(rule->node), fd);
 	} else {
-		rd = fd->value.ruleIndexList;
+		rd = FD_RULE_INDEX_LIST(fd);
 		appendRuleNodeToRuleIndexList(rd, i ,r);
 	}
 }
@@ -101,7 +101,7 @@ void prependRuleIntoAppIndex(RuleDesc *rule, int i, Region *r) {
 		fd = newRuleIndexListFD(rd, NULL, r);
 		insertIntoHashTable(ruleEngineConfig.appFuncDescIndex->current, RULE_NAME(rule->node), fd);
 	} else {
-		rd = fd->value.ruleIndexList;
+		rd = FD_RULE_INDEX_LIST(fd);
 		prependRuleNodeToRuleIndexList(rd, i ,r);
 	}
 }

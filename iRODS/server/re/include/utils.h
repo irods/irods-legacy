@@ -15,6 +15,7 @@
 #ifndef DEBUG
 #include "objInfo.h"
 #include "reHelpers1.h"
+#include "rodsType.h"
 #endif
 
 #define MAX_PARAMS_LEN 100
@@ -62,7 +63,7 @@
 #define T_FUNC_RET_TYPE(x) ((x)->subtrees[1])
 #define T_FUNC_ARITY(x) ((x)->subtrees[0]->degree)
 #define T_FUNC_VARARG(x) ((x)->vararg)
-#define T_VAR_ID(x) ((x)->value.vid)
+#define T_VAR_ID(x) ((x)->value.ival)
 #define T_VAR_DISJUNCT(x, n) ((x)->subtrees[n])
 #define T_VAR_DISJUNCTS(x) ((x)->subtrees)
 #define T_VAR_NUM_DISJUNCTS(x) ((x)->degree)
@@ -171,8 +172,8 @@ typedef enum node_type {
 
 #define getVararg(n) ((n)->option & OPTION_VARARG_MASK)
 #define setVararg(n, v) (n)->option &= ~OPTION_VARARG_MASK; (n)->option |= (v);
-#define getIOType(n) ((n)->iotype & OPTION_IO_TYPE_MASK)
-#define setIOType(n, v) (n)->iotype &= ~OPTION_IO_TYPE_MASK; (n)->iotype |= (v);
+#define getIOType(n) ((n)->option & OPTION_IO_TYPE_MASK)
+#define setIOType(n, v) (n)->option &= ~OPTION_IO_TYPE_MASK; (n)->option |= (v);
 
 
 typedef struct env Env;
@@ -198,24 +199,39 @@ typedef struct ruleIndexList {
     char *ruleName;
     RuleIndexListNode *head, *tail;
 } RuleIndexList;
+#define FD_PROJ(x) (x)->value.ival
+#define RES_FUNC_N_ARGS(x) (x)->value.ival
+#define RES_ERR_CODE(x) (x)->value.ival
+#define RES_FUNC_N_ARGS(x) (x)->value.ival
+#define N_TUPLE_CONSTRUCT_TUPLE(x) (x)->value.ival
+#define RES_STRING_STR_LEN(x) (x)->value.ival
+#define RES_DOUBLE_VAL_LVAL(x) ((x)->value.dval)
+#define RES_INT_VAL_LVAL(x) ((x)->value.dval)
+#define RES_BOOL_VAL_LVAL(x) ((x)->value.dval)
+#define RES_DOUBLE_VAL(x) ((x)->value.dval)
+#define RES_INT_VAL(x) ((int)(x)->value.dval)
+#define RES_BOOL_VAL(x) ((int)(x)->value.dval)
+#define RES_TIME_VAL(x) (x)->value.lval
+#define FD_RULE_INDEX_LIST(x) ((x)->value.ruleIndexList)
+#define FD_RULE_INDEX_LIST_LVAL(x) FD_RULE_INDEX_LIST(x)
+#define FD_SMSI_FUNC_PTR(x) ((x)->value.func)
+#define FD_SMSI_FUNC_PTR_LVAL(x) FD_SMSI_FUNC_PTR(x)
+#define RES_UNINTER_STRUCT(x) ((x)->value.uninter.inOutStruct)
+#define RES_UNINTER_BUFFER(x) ((x)->value.uninter.inOutBuffer)
+
+
 
 /* value */
 union node_ext {
-    int errcode;
-    int vid;
-    int strlen;
+    int ival;
     double dval;
-    time_t tval;
-    struct {
-    	int managed;
-        void *inOutStruct;
-        bytesBuf_t *inOutBuffer;
-    } uninterpreted;
-    SmsiFuncPtrType func;
-    int proj;
-	int nArgs;
-    int constructTuple;
+    rodsLong_t lval;
     RuleIndexList *ruleIndexList;
+    SmsiFuncPtrType func;
+    struct {
+    	void *inOutStruct;
+    	bytesBuf_t *inOutBuffer;
+    } uninter;
 };
 
 typedef struct str_list StringList;
@@ -249,15 +265,31 @@ struct node {
     NodeType nodeType; /* node type */
     ExprType *exprType; /* expression type */
     ExprType *coercionType; /* coercion type */
+    int degree;
     int option; /* weather runtime coercion is needed */
     /* when this node represents a type or a pattern, this field indicates whether the trailing subtree represents varargs */
-    int iotype;
     char *text;
-    long expr;
-    int degree;
+    rodsLong_t expr;
     struct node **subtrees;
     char *base;
     union node_ext value;
+};
+typedef struct packNode rePackNode_t;
+struct packNode {
+	int degree;
+	int option;
+	int nodeType;
+	int ival;
+	rodsLong_t expr;
+	rodsLong_t lval;
+	double dval;
+	rePackNode_t *exprType;
+	rePackNode_t *coercionType;
+	rePackNode_t **subtrees;
+	char *text;
+	char *base;
+	RuleIndexList *ruleIndexList;
+	msParam_t *param;
 };
 
 typedef Node *NodePtr;

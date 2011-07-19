@@ -62,7 +62,7 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
 
 	return 0;
 }
-void addCmdExecOutToEnv(Env *global, Region *r) {
+execCmdOut_t *addCmdExecOutToEnv(Env *global, Region *r) {
     execCmdOut_t *ruleExecOut = (execCmdOut_t *)malloc (sizeof (execCmdOut_t));
     memset (ruleExecOut, 0, sizeof (execCmdOut_t));
     ruleExecOut->stdoutBuf.buf = strdup("");
@@ -71,8 +71,9 @@ void addCmdExecOutToEnv(Env *global, Region *r) {
     ruleExecOut->stderrBuf.len = 0;
     Res *execOutRes = newRes(r);
 	execOutRes->exprType  = newIRODSType(ExecCmdOut_MS_T, r);
-	execOutRes->value.uninterpreted.inOutStruct = ruleExecOut;
+	RES_UNINTER_STRUCT(execOutRes) = ruleExecOut;
     insertIntoHashTable(global->current, "ruleExecOut", execOutRes);
+    return ruleExecOut;
 
 }
 
@@ -97,15 +98,21 @@ int parseAndComputeMsParamArrayToEnv(msParamArray_t *var, Env *env, ruleExecInfo
         if(ret != 0) {
             return ret;
         }
+		char *varName = var->msParam[i]->label;
+        if(TYPE(res) == T_UNSPECED) {
+            if(varName!=NULL) {
+            	updateInEnv(env, varName, res);
+            }
+        	continue;
+        }
         if(TYPE(res) != T_STRING) {
             return -1;
         }
 
-		char *varName = var->msParam[i]->label;
 		char *expr = res->text;
 		res = parseAndComputeExpression(expr, env, rei, reiSaveFlag, errmsg, r);
 		if(res->nodeType  ==  N_ERROR) {
-		    return res->value.errcode;
+		    return RES_ERR_CODE(res);
 		}
         if(varName!=NULL) {
             updateInEnv(env, varName, res);
@@ -118,7 +125,6 @@ Env *defaultEnv(Region *r) {
     Env *global = newEnv(newHashTable2(100, r), NULL, NULL);
     Env *env = newEnv(newHashTable2(100, r), global, NULL);
 
-    addCmdExecOutToEnv(global, r);
     return env;
 }
 
@@ -132,12 +138,12 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     errmsgBuf.len = 0;
 
     Env *env = defaultEnv(r);
-    Hashtable *global = env->previous->current;
-    execCmdOut_t *execOut = (execCmdOut_t *)((Res *) lookupFromHashTable(global, "ruleExecOut"))->value.uninterpreted.inOutBuffer;
 
     rei->status = 0;
 
     msParamArray_t *orig = NULL;
+
+    Res *execOutRes;
 
     int rescode = 0;
     if(msParamArray!=NULL) {
@@ -149,6 +155,12 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     		rescode = convertMsParamArrayToEnv(msParamArray, globalEnv(env), &errmsgBuf, r);
             RE_ERROR(rescode < 0);
     	}
+    }
+
+    if((execOutRes = (Res *)lookupFromEnv(env, "ruleExecOut")) == NULL || TYPE(execOutRes) == T_UNSPECED) {
+    	/* add cmdExecOut only if ruleExecOut is an output parameter */
+    	deleteFromHashTable(globalEnv(env)->current, "ruleExecOut");
+    	addCmdExecOutToEnv(globalEnv(env), r);
     }
 
     orig = rei->msParamArray;
@@ -166,7 +178,6 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
 
     freeRErrorContent(&errmsgBuf);
     deleteEnv(env, 3);
-    freeCmdExecOut(execOut);
 
     return rescode;
 error:
@@ -186,6 +197,7 @@ error:
 
 int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r) {
     Env *env = defaultEnv(r);
+    addCmdExecOutToEnv(globalEnv(env), r);
 
     int rescode = 0;
     msParamArray_t *orig = NULL;
@@ -271,7 +283,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 	node = rd->node;
 
 	res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
-	rescode = res->nodeType  ==  N_ERROR? res->value.errcode:0;
+	rescode = res->nodeType  ==  N_ERROR? RES_ERR_CODE(res):0;
 ret:
     /* remove rules from ext rule set */
     popExtRuleSet(checkPoint);
@@ -321,7 +333,7 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
             return newErrorRes(r, OUT_OF_MEMORY);
         } else if (node->nodeType == N_ERROR) {
-            return newErrorRes(r, node->value.errcode);
+            return newErrorRes(r, RES_ERR_CODE(node));
 
         }*/
 
@@ -624,9 +636,8 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     }
     rei->status = 0;
     Env *env = defaultEnv(r);
-    Hashtable *global = env->previous->current;
     /* retrieve generated data here as it may be overridden by convertMsParamArrayToEnv */
-    execCmdOut_t *execOut = (execCmdOut_t *)((Res *) lookupFromHashTable(global, "ruleExecOut"))->value.uninterpreted.inOutStruct;
+    execCmdOut_t *execOut = addCmdExecOutToEnv(globalEnv(env), r);
 
     Res *res;
     rError_t errmsgBuf;
@@ -654,7 +665,7 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     deleteEnv(env, 3);
     if(res->nodeType == N_ERROR && !freeRei) {
         logErrMsg(&errmsgBuf, &rei->rsComm->rError);
-        rei->status = res->value.errcode;
+        rei->status = RES_ERR_CODE(res);
     }
     freeRErrorContent(&errmsgBuf);
     if(freeRei) {

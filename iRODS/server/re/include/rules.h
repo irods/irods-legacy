@@ -7,8 +7,6 @@
 #include "arithmetics.h"
 #include "typing.h"
 
-extern Hashtable *funcDescIndex;
-
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
 int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r);
 int readRuleSetFromLocalFile(char *ruleBaseName, char *fileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r);
@@ -23,7 +21,7 @@ Res *computeExpressionNode(Node *expr, Env *env, ruleExecInfo_t *rei, int reiSav
 
 ExprType *typeRule(RuleDesc *ruleNode, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r);
 ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r);
-void addCmdExecOutToEnv(Env *global, Region *r);
+execCmdOut_t *addCmdExecOutToEnv(Env *global, Region *r);
 void freeCmdExecOut(execCmdOut_t *ruleExecOut);
 RuleDesc *getRuleDesc(int ri);
 int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *r);

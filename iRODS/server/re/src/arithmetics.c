@@ -95,15 +95,18 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
     FunctionDesc *fd = NULL;
     int i;
     Res **tupleComps = NULL;
-    if(force || expr->iotype == IO_TYPE_INPUT) {
+    /* Only input parameters are evaluated here;
+     * The original AST node is needed for parameters of other IO types in evaluateFunction3.
+     */
+    if(force || getIOType(expr) == IO_TYPE_INPUT ) {
 		switch(expr->nodeType) {
 			case TK_INT:
 				res->exprType = newSimpType(T_INT,r);
-				res->value.dval=atof(expr->text);
+				RES_INT_VAL_LVAL(res)=atoi(expr->text);
 							break;
 			case TK_DOUBLE:
 				res->exprType = newSimpType(T_DOUBLE,r);
-				res->value.dval=atof(expr->text);
+				RES_DOUBLE_VAL_LVAL(res)=atof(expr->text);
 							break;
 			case TK_STRING:
 				res = newStringRes(r, expr->text);
@@ -164,7 +167,7 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 					}
 				}
 				if(expr->degree == 0 || res->nodeType != N_ERROR) {
-					if(expr->value.constructTuple || expr->degree != 1) {
+					if(N_TUPLE_CONSTRUCT_TUPLE(expr) || expr->degree != 1) {
 						res = newTupleRes(expr->degree, tupleComps, r);
 					}
 				}
@@ -233,12 +236,12 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                     switch(TYPE(res) ) {
                         case T_DOUBLE:
                         case T_BOOL:
-                            if((int)res->value.dval!=res->value.dval) {
+                            if((int)RES_DOUBLE_VAL(res)!=RES_DOUBLE_VAL(res)) {
                                 generateErrMsg("error: dynamic type conversion DOUBLE -> INT: the double is not an integer", node->expr, node->base, buf);
                                 addRErrorMsg(errmsg, -1, buf);
                                 return newErrorRes(r, -1);
                             } else {
-                                return newIntRes(r, (int)res->value.dval);
+                                return newIntRes(r, RES_INT_VAL(res));
                             }
                         case T_STRING:
                             return newIntRes(r, atoi(res->text));
@@ -250,7 +253,7 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                     switch(TYPE(res) ) {
                         case T_INT:
                         case T_BOOL:
-                            return newDoubleRes(r, res->value.dval);
+                            return newDoubleRes(r, RES_DOUBLE_VAL(res));
                         case T_STRING:
                             return newDoubleRes(r, atof(res->text));
                         default:
@@ -275,7 +278,7 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                     switch(TYPE(res) ) {
                         case T_INT:
                         case T_DOUBLE:
-                            return newBoolRes(r, (int) res->value.dval);
+                            return newBoolRes(r, RES_BOOL_VAL(res));
                         case T_STRING:
                             if(strcmp(res->text, "true")==0) {
                                 return newBoolRes(r, 1);
@@ -308,7 +311,7 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                 case T_DATETIME:
                     switch(TYPE(res)) {
                         case T_INT:
-                            newDatetimeRes(r, (time_t) res->value.dval);
+                            newDatetimeRes(r, (time_t) RES_INT_VAL(res));
                         default:
                             break;
                     }
@@ -322,7 +325,7 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
             generateErrMsg(buf, node->expr, node->base, buf3);
             addRErrorMsg(errmsg, -1, buf3);
             res->nodeType=N_ERROR;
-            res->value.errcode = -1;
+            RES_ERR_CODE(res) = -1;
             return res;
         }
 }
@@ -349,11 +352,11 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
                 if(res->nodeType == N_ERROR) {
                     #ifndef DEBUG
                         sprintf(tmpStr,"executeRuleAction Failed for %s",nodei->text);
-                        rodsLogError(LOG_ERROR,res->value.errcode,tmpStr);
-                        rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",nodei->text,res->value.errcode);
+                        rodsLogError(LOG_ERROR,RES_ERR_CODE(res),tmpStr);
+                        rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",nodei->text,RES_ERR_CODE(res));
                     #endif
                     /* run recovery chain */
-                    if(res->value.errcode != RETRY_WITHOUT_RECOVERY_ERR && reco!=NULL) {
+                    if(RES_ERR_CODE(res) != RETRY_WITHOUT_RECOVERY_ERR && reco!=NULL) {
                         int i2;
                         for(i2 = reco->degree-1<i?reco->degree-1:i;i2>=0;i2--) {
                             #ifndef DEBUG
@@ -372,7 +375,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
                             if(res2->nodeType == N_ERROR) {
                             #ifndef DEBUG
                                 sprintf(tmpStr,"executeRuleRecovery Failed for %s",reco->subtrees[i2]->text);
-                                rodsLogError(LOG_ERROR,res2->value.errcode,tmpStr);
+                                rodsLogError(LOG_ERROR,RES_ERR_CODE(res2),tmpStr);
                             #endif
                             }
                         }
@@ -407,8 +410,8 @@ Res *evaluateFunctionApplication(Node *func, Node *arg, int applyAll, Node *node
     switch(func->nodeType) {
         case N_SYM_LINK:
         case N_PARTIAL_APPLICATION:
-            res = newPartialApplication(func, arg, func->value.nArgs - 1, r);
-            if(res->value.nArgs == 0) {
+            res = newPartialApplication(func, arg, RES_FUNC_N_ARGS(func) - 1, r);
+            if(RES_FUNC_N_ARGS(res) == 0) {
                 res = evaluateFunction3(res, applyAll, node, env, rei, reiSaveFlag, errmsg, r);
             }
             return res;
@@ -495,7 +498,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     char ioParam[MAX_FUNC_PARAMS];
     /* evaluation parameters and try to resolve remaining tvars with unification */
     for(i=0;i<n;i++) {
-        switch(appArgs[i]->iotype) {
+        switch(getIOType(appArgs[i])) {
             case IO_TYPE_INPUT | IO_TYPE_OUTPUT: /* input/output */
                 ioParam[i] = 'p';
                 args[i] = evaluateExpression3(appArgs[i], applyAll, 0, rei, reiSaveFlag, env, errmsg, newRegion);
@@ -590,13 +593,13 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     if(fd!=NULL) {
         switch(fd->nodeType) {
             case N_FD_DECONSTRUCTOR:
-                res = deconstruct(fn, args, n, fd->value.proj, errmsg, r);
+                res = deconstruct(fn, args, n, FD_PROJ(fd), errmsg, r);
                 break;
             case N_FD_CONSTRUCTOR:
                 res = construct(fn, args, n, instantiate(node->exprType, env->current, 1, r), r);
                 break;
             case N_FD_FUNCTION:
-                res = (Res *) fd->value.func(args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
+                res = (Res *) FD_SMSI_FUNC_PTR(fd)(args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
                 break;
             case N_FD_EXTERNAL:
                 res = execMicroService3(fn, args, n, node, nEnv, rei, errmsg, newRegion);
@@ -742,8 +745,8 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
                             break;
                         case T_IRODS:
                             res = newRes(r);
-                            res->value.uninterpreted.inOutStruct = varValue;
-                            res->value.uninterpreted.inOutBuffer = NULL;
+                            RES_UNINTER_STRUCT(res) = varValue;
+                            RES_UNINTER_BUFFER(res) = NULL;
                             res->exprType = type;
                             break;
                         default:
@@ -787,8 +790,8 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
 		/* no action (microservice) found, try to lookup a rule */
 		Res *actionRet = execRule(actionName, args, nargs, applyAllRule, env, rei, reiSaveFlag, errmsg, r);
 		if (actionRet->nodeType == N_ERROR && (
-                        actionRet->value.errcode == NO_RULE_FOUND_ERR ||
-                        actionRet->value.errcode == NO_MORE_RULES_ERR)) {
+                        RES_ERR_CODE(actionRet) == NO_RULE_FOUND_ERR ||
+                        RES_ERR_CODE(actionRet) == NO_MORE_RULES_ERR)) {
 			snprintf(buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, availableRules());
                         generateErrMsg(buf, node->expr, node->base, buf2);
                         addRErrorMsg(errmsg, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR, buf2);
@@ -952,7 +955,7 @@ ret:
     }
     if(res->nodeType==N_ERROR) {
         generateErrMsg("execMicroService3: error when executing microservice", node->expr, node->base, errbuf);
-        addRErrorMsg(errmsg, res->value.errcode, errbuf);
+        addRErrorMsg(errmsg, RES_ERR_CODE(res), errbuf);
     }
     return res;
 }
@@ -1016,7 +1019,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
         status = execRuleNodeRes(rule, args, argc,  env, rei, reiSaveFlag, errmsg, r);
 
         if (status->nodeType == N_ERROR) {
-            rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",ruleName, status->value.errcode);
+            rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",ruleName, RES_ERR_CODE(status));
         }
 
     ret:
@@ -1132,9 +1135,9 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 					inited = 0;
 				}
 			}
-		} else if(statusRes->value.errcode== RETRY_WITHOUT_RECOVERY_ERR) {
+		} else if(RES_ERR_CODE(statusRes)== RETRY_WITHOUT_RECOVERY_ERR) {
 			reTryWithoutRecovery = 1;
-		} else if(statusRes->value.errcode== CUT_ACTION_PROCESSED_ERR) {
+		} else if(RES_ERR_CODE(statusRes)== CUT_ACTION_PROCESSED_ERR) {
 			break;
 		}
 
@@ -1156,7 +1159,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         }
     } else {
 #ifndef DEBUG
-            rodsLog (LOG_NOTICE,"applyRule Failed for action 2: %s with status %i",ruleName, statusRes->value.errcode);
+            rodsLog (LOG_NOTICE,"applyRule Failed for action 2: %s with status %i",ruleName, RES_ERR_CODE(statusRes));
 #endif
         return statusRes;
     }
@@ -1204,7 +1207,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
         /* printEnvToStdOut(envNew->current); */
         Res *res = evaluateExpression3(ruleCondition, 0, 0, rei, reiSaveFlag,  envNew, errmsg, rNew);
         /* todo consolidate every error into T_ERROR except OOM */
-        if (res->nodeType != N_ERROR && TYPE(res)==T_BOOL && res->value.dval!=0) {
+        if (res->nodeType != N_ERROR && TYPE(res)==T_BOOL && RES_BOOL_VAL(res)!=0) {
 #ifndef DEBUG
 #if 0
             if (reTestFlag > 0) {
@@ -1229,7 +1232,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
 
             if (statusRes->nodeType == N_ERROR) {
                     #ifndef DEBUG
-                    rodsLog (LOG_NOTICE,"applyRule Failed for action 2: %s with status %i",ruleHead->text, statusRes->value.errcode);
+                    rodsLog (LOG_NOTICE,"applyRule Failed for action 2: %s with status %i",ruleHead->text, RES_ERR_CODE(statusRes));
                     #endif
             }
         } else {

@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#define RULE_ENGINE_N
+/* #define RULE_ENGINE_N */
 #include "reGlobals.h"
 #include "initServer.h"
 #include "reHelpers1.h"
@@ -396,11 +396,11 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 int processReturnRes(Res *res) {
 	int ret;
 	if(res->nodeType == N_ERROR) {
-		ret = res->value.errcode;
+		ret = RES_ERR_CODE(res);
 	} else {
 		switch(TYPE(res)) {
         case T_INT:
-            ret = (int)res->value.dval;
+            ret = RES_INT_VAL(res);
             break;
         default:
             ret = 0; /* other types */
@@ -495,15 +495,50 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 }
 
 int
-execMyRule(char * ruleDef, msParamArray_t *inMsParamArray,
+execMyRule(char * ruleDef, msParamArray_t *inMsParamArray, char *outParamsDesc,
 	  ruleExecInfo_t *rei)
 {
 
-  return(execMyRuleWithSaveFlag(ruleDef,inMsParamArray,rei,0));
+  return execMyRuleWithSaveFlag(ruleDef, inMsParamArray, outParamsDesc, rei, 0);
+}
+void appendOutputToInput(msParamArray_t *inpParamArray, char **outParamNames, int outParamN) {
+	int i, k, repeat = 0;
+	for(i=0;i<outParamN;i++) {
+		repeat = 0;
+		for(k=0;k<inpParamArray->len;k++) {
+			if(inpParamArray->msParam[k]->label!=NULL && strcmp(outParamNames[i], inpParamArray->msParam[k]->label) == 0) {
+				repeat = 1;
+				break;
+			}
+		}
+		if(!repeat) {
+			addMsParam (inpParamArray, outParamNames[i], NULL, NULL, NULL);
+		}
+	}
+
+}
+int extractVarNames(char **varNames, char *outBuf) {
+    int n = 0;
+	char *p = outBuf;
+	char *psrc = p;
+
+	for(;;) {
+		if(*psrc == '%') {
+			*psrc = '\0';
+			varNames[n++] = strdup(p);
+			*psrc = '%';
+			p = psrc+1;
+		} else if(*psrc == '\0') {
+			varNames[n++] = strdup(p);
+			break;
+		}
+		psrc++;
+	}
+	return n;
 }
 
 int
-execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
+execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *outParamsDesc,
 	  ruleExecInfo_t *rei,int reiSaveFlag)
 
 {
@@ -541,6 +576,9 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 	    rodsLog (LOG_NOTICE,"+Executing MyRule for Action:%s\n",action);
     }
 #endif
+    char *outParamNames[MAX_PARAMS_LEN];
+    int n = extractVarNames(outParamNames, outParamsDesc);
+    appendOutputToInput(inMsParamArray, outParamNames, n);
     Region *r = make_region(0, NULL);
     status =
 	   parseAndComputeRuleAdapter(ruleDef, inMsParamArray, rei, reiSaveFlag, r);

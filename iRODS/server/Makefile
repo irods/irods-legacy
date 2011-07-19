@@ -237,7 +237,7 @@ SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
 endif
 
 ifdef RULE_ENGINE_N
-CFLAGS +=       -DRULE_ENGINE
+CFLAGS +=       -DRULE_ENGINE -DRULE_ENGINE_N
 LDADD +=		-lrt
 
 SVR_RE_OBJS =	\

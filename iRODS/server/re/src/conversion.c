@@ -3,6 +3,10 @@
 #include "arithmetics.h"
 #include "index.h"
 #include "datetime.h"
+#ifndef DEBUG
+#include "rodsType.h"
+#endif
+
 
 int addKeyVal(keyValPair_t *k, char * key, char *val);
 char * getAttrNameFromAttrId(int id);
@@ -16,21 +20,21 @@ void convertStrValue(Res *res, char *val, Region *r) {
     int len = (strlen(val)+1)*sizeof(char);
     res->text = (char*)region_alloc(r, len);
     memcpy(res->text, val, len);
-    res->value.strlen = strlen(val);
+    RES_STRING_STR_LEN(res) = strlen(val);
     res->exprType = newSimpType(T_STRING, r);
 }
 /**
  * convert int value to Res
  */
 void convertIntValue(Res *res, int inval, Region *r) {
-    res->value.dval = inval;
+    RES_INT_VAL_LVAL(res) = inval;
     res->exprType = newSimpType(T_INT, r);
 }
 /**
  * convert double value to Res
  */
 void convertDoubleValue(Res *res, double inval, Region *r) {
-    res->value.dval = inval;
+    RES_DOUBLE_VAL_LVAL(res) = inval;
     res->exprType = newSimpType(T_DOUBLE,r);
 }
 /**
@@ -71,7 +75,7 @@ Res* getValueFromCollection(char *typ, void *inPtr, int inx, Region *r) {
     if (inx >= intA->len) {
       return NULL;
     }
-    res->value.dval = intA->value[inx];
+    RES_INT_VAL_LVAL(res) = intA->value[inx];
     return res;
   }
   else if (!strcmp(typ,GenQueryOut_MS_T)) {
@@ -136,16 +140,18 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 	} else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
             /* this could be int, bool, or datatime */
             if(res->exprType == NULL) { /* output parameter */
-                res->value.dval = *(int *)mP->inOutStruct;
+                RES_INT_VAL_LVAL(res) = *(int *)mP->inOutStruct;
                 res->exprType = newSimpType(T_INT, r);
             } else
             switch(TYPE(res)) {
                 case T_INT:
+                    RES_INT_VAL_LVAL(res) = *(int *)mP->inOutStruct;
+                    break;
                 case T_BOOL:
-                    res->value.dval = *(int *)mP->inOutStruct;
+                    RES_BOOL_VAL_LVAL(res) = *(int *)mP->inOutStruct;
                     break;
                 case T_DATETIME:
-                    res->value.tval = (time_t)*(int *)mP->inOutStruct;
+                    RES_TIME_VAL(res) = *(rodsLong_t *)mP->inOutStruct;
                     break;
                 default:
                     convertIntValue(res, *(int *)mP->inOutStruct,r);
@@ -155,7 +161,7 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 		convertStrValue(res, (char *)mP->inOutStruct,r);
 		return 0;
 	} else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
-		res->value.tval = *(time_t *)mP->inOutStruct;
+		RES_TIME_VAL(res) = *(rodsLong_t *)mP->inOutStruct;
 		TYPE(res) = T_DATETIME;
 		return 0;
 /*
@@ -170,8 +176,8 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 		return 1;
 */
 	} else {
-            res->value.uninterpreted.inOutStruct = mP->inOutStruct;
-            res->value.uninterpreted.inOutBuffer = mP->inpOutBuf;
+            RES_UNINTER_STRUCT(res) = mP->inOutStruct;
+            RES_UNINTER_BUFFER(res) = mP->inpOutBuf;
             res->exprType = newIRODSType(mP->type,r);
             return 0;
         }
@@ -197,16 +203,18 @@ int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *er
 	} else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
             /* this could be int, bool, or datatime */
             if(res->exprType == NULL) { /* output parameter */
-                res->value.dval = *(int *)mP->inOutStruct;
+                RES_INT_VAL_LVAL(res) = *(int *)mP->inOutStruct;
                 res->exprType = newSimpType(T_INT, r);
             } else
             switch(TYPE(res)) {
                 case T_INT:
+                    RES_INT_VAL_LVAL(res) = *(int *)mP->inOutStruct;
+                    break;
                 case T_BOOL:
-                    res->value.dval = *(int *)mP->inOutStruct;
+                    RES_BOOL_VAL_LVAL(res) = *(int *)mP->inOutStruct;
                     break;
                 case T_DATETIME:
-                    res->value.tval = (time_t)*(int *)mP->inOutStruct;
+                    RES_TIME_VAL(res) = *(rodsLong_t *)mP->inOutStruct;
                     break;
                 default:
                     convertIntValue(res, *(int *)mP->inOutStruct,r);
@@ -220,7 +228,7 @@ int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *er
 		mP->inOutStruct = NULL;
 		return 0;
 	} else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
-		res->value.tval = *(time_t *)mP->inOutStruct;
+		RES_TIME_VAL(res) = *(rodsLong_t *)mP->inOutStruct;
 		TYPE(res) = T_DATETIME;
 		free(mP->inOutStruct);
 		mP->inOutStruct = NULL;
@@ -237,8 +245,8 @@ int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *er
 		return 1;
 */
 	} else {
-		res->value.uninterpreted.inOutStruct = mP->inOutStruct;
-		res->value.uninterpreted.inOutBuffer = mP->inpOutBuf;
+		RES_UNINTER_STRUCT(res) = mP->inOutStruct;
+		RES_UNINTER_BUFFER(res) = mP->inpOutBuf;
 		res->exprType = newIRODSType(mP->type,r);
 		return 0;
 	}
@@ -297,17 +305,17 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
     switch(TYPE(res)) {
         case T_ERROR: /* error message */
             var->inOutStruct = (int *)malloc(sizeof(int));
-            *((int *)var->inOutStruct) = res->value.errcode;
+            *((int *)var->inOutStruct) = RES_ERR_CODE(res);
             var->type = strdup(INT_MS_T);
             break;
         case T_DOUBLE: /* number */
             var->inOutStruct = (double *)malloc(sizeof(double));
-            *((double *)var->inOutStruct) = res->value.dval;
+            *((double *)var->inOutStruct) = RES_DOUBLE_VAL(res);
             var->type = strdup(DOUBLE_MS_T);
             break;
         case T_INT: /* number */
             var->inOutStruct = (int *)malloc(sizeof(int));
-            *((int *)var->inOutStruct) = (int)res->value.dval;
+            *((int *)var->inOutStruct) = (int)RES_INT_VAL(res);
             var->type = strdup(INT_MS_T);
             break;
         case T_STRING: /* string */
@@ -319,8 +327,8 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             /**((time_t *)var->inOutStruct) = res->value.t; */
             /*var->type = strdup(DATETIME_MS_T); */
             /* Here we pass datatime as an integer to reuse exiting packing instructions. Need to change to long int. */
-            var->inOutStruct = (int *)malloc(sizeof(int));
-            *((int *)var->inOutStruct) = (int)res->value.tval;
+            var->inOutStruct = (rodsLong_t *)malloc(sizeof(int));
+            *((rodsLong_t *)var->inOutStruct) = RES_TIME_VAL(res);
             var->type = strdup(INT_MS_T);
             break;
         case T_CONS:
@@ -331,7 +339,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
                         arr->len = res->degree;
                         maxlen = 0;
                         for(i=0;i<res->degree;i++) {
-                            int slen = res->subtrees[i]->value.strlen;
+                            int slen = RES_STRING_STR_LEN(res->subtrees[i]);
                             maxlen = maxlen < slen? slen: maxlen;
                         }
                         arr->size = maxlen;
@@ -347,7 +355,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
                         arr2->len = res->degree;
                         arr2->value = (int *)malloc(sizeof(int)*(arr2->len));
                         for(i=0;i<res->degree;i++) {
-                            arr2->value[i] = (int)res->subtrees[i]->value.dval;
+                            arr2->value[i] = RES_INT_VAL(res);
                         }
                         var->inOutStruct = arr2;
                         var->type = strdup(IntArray_MS_T);
@@ -369,8 +377,8 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             }
             break;
         case T_IRODS:
-            var->inOutStruct = res->value.uninterpreted.inOutStruct;
-            var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
+            var->inOutStruct = RES_UNINTER_STRUCT(res);
+            var->inpOutBuf = RES_UNINTER_BUFFER(res);
             var->type = strdup(res->exprType->text);
             break;
         case T_UNSPECED:
@@ -385,9 +393,9 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
     return 0;
 }
 int updateResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
-	if(strcmp(var->type, INT_MS_T) == 0 ||
+	if(var->type != NULL && (strcmp(var->type, INT_MS_T) == 0 ||
 			strcmp(var->type, DOUBLE_MS_T) == 0 ||
-			strcmp(var->type, STR_MS_T) == 0) {
+			strcmp(var->type, STR_MS_T) == 0)) {
 		/* do not free msParam_t if its inOutStruct and inOutBuf are shared */
 		if(var->inOutStruct!=NULL) {
 			free(var->inOutStruct);
@@ -499,7 +507,7 @@ char* convertResToString(Res *res0) {
 
 	case N_ERROR:
 		res = (char *)malloc(sizeof(char)*1024);
-		snprintf(res, 1024, "error %d", res0->value.errcode);
+		snprintf(res, 1024, "error %d", RES_ERR_CODE(res0));
 		return res;
 	case N_VAL:
 		switch(TYPE(res0)) {
@@ -522,7 +530,7 @@ char* convertResToString(Res *res0) {
             case T_IRODS:
                 res = (char *)malloc(sizeof(char)*1024);
 				if(strcmp(res0->exprType->text, KeyValPair_MS_T)==0) {
-					keyValPair_t *kvp = (keyValPair_t *) res0->value.uninterpreted.inOutStruct;
+					keyValPair_t *kvp = (keyValPair_t *) RES_UNINTER_STRUCT(res0);
 					snprintf(res, 1024, "KeyValue[%d]:", kvp->len);
 					int i;
 					for(i=0;i<kvp->len;i++) {
@@ -554,7 +562,7 @@ char* convertResToString(Res *res0) {
 				return res;
             case T_DATETIME:
 				res = (char *)malloc(sizeof(char)*1024);
-				ttimestr(res, 1024-1, "", &(res0->value.tval));
+				ttimestr(res, 1024-1, "", &RES_TIME_VAL(res0));
 				return res;
             case T_UNSPECED:
                 res = strdup("<undefined>");
@@ -630,10 +638,50 @@ void printHashtable(Hashtable *env, char* buf2) {
 int convertResToIntReturnValue(Res *res) {
     int retVal;
     if(res->nodeType == N_ERROR) {
-       retVal = res->value.errcode;
+       retVal = RES_ERR_CODE(res);
     } else {
-       retVal = (int)res->value.dval;
+       retVal = RES_INT_VAL(res);
     }
     return retVal;
 
+}
+
+rePackNode_t *convertResToPackNode(Res *res) {
+	rePackNode_t *n = (rePackNode_t *) malloc(sizeof(rePackNode_t));
+	memset(n, 0, sizeof(rePackNode_t));
+	n->base = strdup(res->base);
+	n->coercionType = convertResToPackNode(res->coercionType);
+	n->degree = res->degree;
+	if(res->nodeType == N_VAL &&
+			(TYPE(res) == T_BOOL || TYPE(res) == T_INT || TYPE(res) == T_DOUBLE)) {
+		n->dval = res->value.dval;
+	}
+	n->expr = res->expr;
+	n->exprType = convertResToPackNode(res->exprType);
+	if((res->nodeType == N_VAL && (TYPE(res) == T_ERROR || TYPE(res) == T_STRING)) ||
+		res->nodeType == N_FD_DECONSTRUCTOR ||
+		res->nodeType == N_TUPLE ||
+		res->nodeType == T_VAR ||
+		res->nodeType == N_SYM_LINK ||
+		res->nodeType == N_PARTIAL_APPLICATION) {
+		n->ival = res->value.ival;
+	}
+	if(res->nodeType == N_VAL && TYPE(res) == T_DATETIME) {
+		n->lval = res->value.lval;
+	}
+	n->nodeType = (int) res->nodeType;
+	n->option = res->option;
+	if(res->nodeType == N_VAL || TYPE(res) == T_IRODS) {
+		n->param = (msParam_t *)malloc(sizeof(msParam_t));
+		n->param->inOutStruct = res->value.uninter.inOutStruct;
+		n->param->inpOutBuf = res->value.uninter.inOutBuffer;
+	}
+	n->ruleIndexList = (RuleIndexList *) res->value.ruleIndexList;
+	n->subtrees = (rePackNode_t **) malloc(sizeof(rePackNode_t *) * res->degree);
+	int i;
+	for(i=0;i<res->degree;i++) {
+		n->subtrees[i] = convertResToPackNode(res->subtrees[i]);
+	}
+	n->text = strdup(res->text);
+	return n;
 }

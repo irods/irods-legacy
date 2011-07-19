@@ -1471,19 +1471,19 @@ void printTree(Node *n, int indent) {
 	}
 	char iotype[128];
 	strcpy(iotype, "");
-	if(n->iotype & IO_TYPE_INPUT) {
+	if(getIOType(n) & IO_TYPE_INPUT) {
 		strcat(iotype, "i");
 	}
-	if(n->iotype & IO_TYPE_OUTPUT) {
+	if(getIOType(n) & IO_TYPE_OUTPUT) {
 		strcat(iotype, "o");
 	}
-	if(n->iotype & IO_TYPE_DYNAMIC) {
+	if(getIOType(n) & IO_TYPE_DYNAMIC) {
 		strcat(iotype, "d");
 	}
-	if(n->iotype & IO_TYPE_EXPRESSION) {
+	if(getIOType(n) & IO_TYPE_EXPRESSION) {
 		strcat(iotype, "e");
 	}
-	if(n->iotype & IO_TYPE_ACTIONS) {
+	if(getIOType(n) & IO_TYPE_ACTIONS) {
 		strcat(iotype, "a");
 	}
 	printf("%s:%d %s => %s(option=%d)[%s]\n",n->text, n->nodeType, buf2, buf, n->option, iotype);
@@ -2501,7 +2501,7 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                             BUILD_NODE(T_VAR, vname, &vpos, 0, 0);
                         END_TRY(typeVarBound)
                         tvar = POP;
-                        tvar->value.vid = newTVarId();
+                        T_VAR_ID(tvar) = newTVarId();
                         insertIntoHashTable(context->symtable, vname, tvar);
                     }
                     CASCADE(tvar);
@@ -2553,7 +2553,7 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                         BUILD_NODE(T_VAR, vname, &vpos, 0, 0);
                     END_TRY(typeVarBound)
                     Node *tvar = POP;
-                    tvar->value.vid = newTVarId();
+                    T_VAR_ID(tvar) = newTVarId();
                     TTEXT(",");
                     insertIntoHashTable(context->symtable, vname, tvar);
                     cont = 1;

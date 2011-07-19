@@ -182,8 +182,17 @@ fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedRe
 ***/
 int print_uoi(userInfo_t *uoi);
 int print_doi(dataObjInfo_t *doi);
+#if defined(RULE_ENGINE_N)
+int execMyRule(char * ruleDef,  msParamArray_t *inMsParamArray, char *outParamsDesc,
+	  ruleExecInfo_t *rei);
+int execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *outParamsDesc,
+			   ruleExecInfo_t *rei,int reiSaveFlag);
+#else
 int execMyRule(char * ruleDef,  msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei);
+int execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
+			   ruleExecInfo_t *rei,int reiSaveFlag);
+#endif
 int executeMyRuleBody(char *action, char *ruleAction, char *ruleRecovery, 
 		msParamArray_t *inMsParamArray,
 		ruleExecInfo_t *rei, int reiSaveFlag );
@@ -233,8 +242,6 @@ int getNewVarName(char *v, msParamArray_t *msParamArray);
 int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei);
 int applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 		  ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag);
-int execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
-			   ruleExecInfo_t *rei,int reiSaveFlag);
 int splitActions(char *expr, char *expr1, char **expr2);
 int isStarVariable(char *str);
 

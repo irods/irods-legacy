@@ -54,6 +54,7 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable) {
                 paramTypes[i] = dupTypeAux(T_CONS_TYPE_ARG(ty, i),r,varTable);
             }
             newt = newConsType(T_CONS_ARITY(ty), T_CONS_TYPE_NAME(ty), paramTypes, r);
+            newt->option = ty->option;
             break;
         case T_TUPLE:
             paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*T_CONS_ARITY(ty));
@@ -61,6 +62,7 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable) {
                 paramTypes[i] = dupTypeAux(T_CONS_TYPE_ARG(ty, i),r,varTable);
             }
             newt = newTupleType(T_CONS_ARITY(ty), paramTypes, r);
+            newt->option = ty->option;
             break;
         case T_VAR:
             name = getTVarName(T_VAR_ID(ty), buf);
@@ -72,18 +74,18 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable) {
                 insertIntoHashTable(varTable, name, newt);
 
             }
+            newt->option = ty->option;
             break;
         case T_FLEX:
             paramTypes = (ExprType **) region_alloc(r,sizeof(ExprType *)*1);
             paramTypes[0] = dupTypeAux(ty->subtrees[0],r,varTable);
             newt = newExprType(T_FLEX, 1, paramTypes, r);
+            newt->option = ty->option;
             break;
 
         default:
             newt = ty;
     }
-    newt->option = ty->option;
-    newt->iotype = ty->iotype;
 	return newt;
 }
 int coercible(ExprType *a, ExprType *b) {
@@ -307,7 +309,6 @@ Node *newNode(NodeType type, char* text, Label * eloc, Region *r) {
     }
 	node->expr = eloc == NULL? 0 : eloc->exprloc;
     setIOType(node, IO_TYPE_INPUT);
-    node->value.constructTuple = 0;
     if(eloc!=NULL) {
         setBase(node, eloc->base, r);
     } else {
@@ -327,8 +328,8 @@ Node *newExprType(NodeType type, int degree, Node **subtrees, Region *r) {
     t->subtrees = subtrees;
     t->degree = degree;
     t->nodeType = type;
-    t->option = OPTION_TYPED;
-    t->iotype = IO_TYPE_INPUT;
+    t->option |= OPTION_TYPED;
+    setIOType(t, IO_TYPE_INPUT);
     return t;
 
 }
@@ -360,7 +361,7 @@ ExprType *newSimpType(NodeType type, Region *r) {
 }
 ExprType *newErrorType(int errcode, Region *r) {
     Res *res = newExprType(T_ERROR, 0, NULL, r);
-    res->value.errcode = errcode;
+    RES_ERR_CODE(res) = errcode;
     return res;
 
 }
@@ -433,7 +434,7 @@ FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r) {
     Res *desc = newRes(r);
     desc->nodeType = N_SYM_LINK;
     desc->text = cpStringExt(fn ,r);
-    desc->value.nArgs = nArgs;
+    RES_FUNC_N_ARGS(desc) = nArgs;
     desc->exprType = newSimpType(T_DYNAMIC, r);
     return desc;
 }
@@ -441,7 +442,7 @@ FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r) {
 Node *newPartialApplication(Node *func, Node *arg, int nArgsLeft, Region *r) {
     Res *res1 = newRes(r);
     res1->nodeType = N_PARTIAL_APPLICATION;
-    res1->value.nArgs = nArgsLeft;
+    RES_FUNC_N_ARGS(res1) = nArgsLeft;
     res1->degree = 2;
     res1->subtrees = (Res **)region_alloc(r, sizeof(Res *)*2);
     res1->subtrees[0] = func;
@@ -481,14 +482,14 @@ Res* newRes(Region *r) {
 	Res *res1 = (Res *) region_alloc(r,sizeof (Res));
 	memset(res1, 0, sizeof(Res));
         res1->nodeType = N_VAL;
-        res1->iotype = IO_TYPE_INPUT;
+        setIOType(res1, IO_TYPE_INPUT);
 	return res1;
 }
 Res* newUninterpretedRes(Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf) {
 	Res *res1 = newRes(r);
         res1->exprType = newIRODSType(typeName, r);
-        res1->value.uninterpreted.inOutStruct = ioStruct;
-        res1->value.uninterpreted.inOutBuffer = ioBuf;
+        RES_UNINTER_STRUCT(res1) = ioStruct;
+        RES_UNINTER_BUFFER(res1) = ioBuf;
 	return res1;
 }
 Res* newIntRes(Region *r, int n) {
@@ -512,8 +513,8 @@ Res* newBoolRes(Region *r, int n) {
 Res* newStringRes(Region *r, char *s) {
 	Res *res1 = newRes(r);
         res1->exprType = newSimpType(T_STRING,r);
-        res1->value.strlen = strlen(s);
-        int size = (res1->value.strlen+1)*sizeof(char);
+        RES_STRING_STR_LEN(res1) = strlen(s);
+        int size = (RES_STRING_STR_LEN(res1)+1)*sizeof(char);
         res1->text = (char *)region_alloc(r, size);
         memcpy(res1->text, s, size);
 	return res1;
@@ -527,13 +528,13 @@ Res* newUnspecifiedRes(Region *r) {
 Res* newDatetimeRes(Region *r, long dt) {
 	Res *res1 = newRes(r);
         res1->exprType = newSimpType(T_DATETIME,r);
-        res1->value.tval = dt;
+    RES_TIME_VAL(res1) = dt;
 	return res1;
 }
 Res* newErrorRes(Region *r, int errcode) {
 	Res *res1 = newRes(r);
         res1->nodeType = N_ERROR;
-        res1->value.errcode = errcode;
+        RES_ERR_CODE(res1) = errcode;
 	return res1;
 }
 
@@ -1101,6 +1102,7 @@ TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, N
     tc->nodeType = type;
     TC_NODE(tc) = node;
     TC_NEXT(tc) = NULL;
+    tc->degree = 4;
     return tc;
 }
 
@@ -1218,11 +1220,11 @@ void freeEnvUninterpretedStructs(Env *e) {
         while(b!=NULL) {
             Res *res = (Res *) b->value;
             if(TYPE(res) == T_IRODS) {
-                if(res->value.uninterpreted.inOutStruct!=NULL) {
-                    free(res->value.uninterpreted.inOutStruct);
+                if(RES_UNINTER_STRUCT(res)!=NULL) {
+                    free(RES_UNINTER_STRUCT(res));
                 }
-                if(res->value.uninterpreted.inOutBuffer!=NULL) {
-                    free(res->value.uninterpreted.inOutBuffer);
+                if(RES_UNINTER_BUFFER(res)!=NULL) {
+                    free(RES_UNINTER_BUFFER(res));
                 }
             }
             b=b->next;
@@ -1291,7 +1293,7 @@ Node *lookupAVUFromMetadata(Node *metadata, char *a) {
 FunctionDesc *newFunctionFD(char *type, SmsiFuncPtrType func, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
     memset(desc, 0, sizeof(FunctionDesc));
-    desc->value.func = func;
+    FD_SMSI_FUNC_PTR_LVAL(desc) = func;
     desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
     desc->nodeType = N_FD_FUNCTION;
     return desc;
@@ -1319,13 +1321,13 @@ FunctionDesc *newDeconstructorFD(char *type, int proj, Region *r) {
     memset(desc, 0, sizeof(FunctionDesc));
     desc->exprType = type == NULL? NULL:parseFuncTypeFromString(type, r);
     desc->nodeType = N_FD_DECONSTRUCTOR;
-    desc->value.proj = proj;
+    FD_PROJ(desc) = proj;
     return desc;
 }
 FunctionDesc *newRuleIndexListFD(RuleIndexList *ruleIndexList, ExprType *type, Region *r) {
     FunctionDesc *desc = (FunctionDesc *) region_alloc(r, sizeof(FunctionDesc));
     memset(desc, 0, sizeof(FunctionDesc));
-    desc->value.ruleIndexList = ruleIndexList;
+    FD_RULE_INDEX_LIST_LVAL(desc) = ruleIndexList;
     desc->exprType = type;
     desc->nodeType = N_FD_RULE_INDEX_LIST;
     return desc;
