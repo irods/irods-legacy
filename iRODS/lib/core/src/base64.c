@@ -9,7 +9,7 @@
 static const char *codes =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-static const unsigned char map[256] = {
+static const unsigned char mymap[256] = {
 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -108,7 +108,7 @@ int base64_decode(const unsigned char *in,  unsigned long inlen,
 
    g = 3;
    for (x = y = z = t = 0; x < inlen; x++) {
-       c = map[in[x]&0xFF];
+       c = mymap[in[x]&0xFF];
        if (c == 255) continue;
        /* the final = symbols are read and used to trim the remaining bytes */
        if (c == 254) {
