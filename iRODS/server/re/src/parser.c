@@ -7,7 +7,7 @@
 #include "rules.h"
 #include "functions.h"
 #include "configuration.h"
-
+#include "filesystem.h"
 
 Op new_ops[num_ops] = {
     {"-",1,10},

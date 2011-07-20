@@ -6,32 +6,20 @@
 #include "rules.h"
 #include "hashtable.h"
 #include "parser.h"
-#ifdef USE_BOOST
-#include <boost/interprocess/sync/named_mutex.hpp>
-#include <boost/interprocess/creation_tags.hpp>
-#include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/interprocess/mapped_region.hpp>
-#include <boost/interprocess/detail/os_file_functions.hpp>
-#include <boost/filesystem.hpp>
-#else
-#include <semaphore.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/mman.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
-#endif
+#include "datetime.h"
 
 #define RESC_CORE_RULE_SET 0x1
 #define RESC_APP_RULE_SET 0x2
 #define RESC_EXT_RULE_SET 0x4
-#define RESC_CORE_FUNC_DESC_INDEX 0x10
-#define RESC_APP_FUNC_DESC_INDEX 0x20
-#define RESC_EXT_FUNC_DESC_INDEX 0x40
-#define RESC_REGION_CORE 0x100
-#define RESC_REGION_APP 0x200
-#define RESC_REGION_EXT 0x300
-#define RESC_CACHE 0x800
+#define RESC_SYS_FUNC_DESC_INDEX 0x10
+#define RESC_CORE_FUNC_DESC_INDEX 0x20
+#define RESC_APP_FUNC_DESC_INDEX 0x40
+#define RESC_EXT_FUNC_DESC_INDEX 0x80
+#define RESC_REGION_SYS 0x100
+#define RESC_REGION_CORE 0x200
+#define RESC_REGION_APP 0x400
+#define RESC_REGION_EXT 0x800
+#define RESC_CACHE 0x1000
 typedef enum ruleEngineStatus {
     UNINITIALIZED,
     INITIALIZED,
@@ -40,23 +28,7 @@ typedef enum ruleEngineStatus {
     LOCAL,
     DISABLED*/
 } RuleEngineStatus;
-#if defined(USE_BOOST)
-typedef std::time_t time_type;
-#define time_type_gt(mtim, timestamp) \
-		(mtim > timestamp)
-#define time_type_set(mtim, timestamp) \
-		mtim = timestamp;
-#define time_type_initializer ((time_type) 0)
-#elif defined( _POSIX_VERSION )
-typedef struct timespec time_type;
-#define time_type_gt(mtim, timestamp) \
-		((mtim).tv_sec > (timestamp).tv_sec || \
-		((mtim).tv_sec == (timestamp).tv_sec && (mtim).tv_nsec > (timestamp).tv_nsec))
-#define time_type_set(mtim, timestamp) \
-		(mtim).tv_sec = (timestamp).tv_sec; \
-		(mtim).tv_nsec = (timestamp).tv_nsec;
-#define time_type_initializer {0, 0}
-#endif
+
 typedef struct {
     unsigned char *address;
     unsigned char *pointers;
@@ -65,20 +37,24 @@ typedef struct {
     RuleEngineStatus coreRuleSetStatus;
     RuleEngineStatus appRuleSetStatus;
     RuleEngineStatus extRuleSetStatus;
+    RuleEngineStatus sysFuncDescIndexStatus;
     RuleEngineStatus coreFuncDescIndexStatus;
     RuleEngineStatus appFuncDescIndexStatus;
     RuleEngineStatus extFuncDescIndexStatus;
     RuleEngineStatus ruleEngineStatus;
     RuleEngineStatus cacheStatus;
+    RuleEngineStatus sysRegionStatus;
     RuleEngineStatus coreRegionStatus;
     RuleEngineStatus appRegionStatus;
     RuleEngineStatus extRegionStatus;
     RuleSet *coreRuleSet;
     RuleSet *appRuleSet;
     RuleSet *extRuleSet;
+    Env *sysFuncDescIndex;
     Env *coreFuncDescIndex;
     Env *appFuncDescIndex;
     Env *extFuncDescIndex;
+    Region *sysRegion;
     Region *coreRegion;
     Region *appRegion;
     Region *extRegion;
@@ -173,17 +149,6 @@ void prependAppRule(RuleDesc *rd, Region *r);
 void popExtRuleSet(int checkPoint);
 void clearDelayed();
 int generateFunctionDescriptionTables();
-int getModifiedTime(char *fn, time_type *timestamp);
-
-#define SEM_NAME "irods_sem_re"
-#ifdef USE_BOOST
-typedef boost::interprocess::named_mutex mutex_type;
-#else
-typedef sem_t mutex_type;
-#endif
-
-void unlockMutex(mutex_type **mutex);
-int lockMutex(mutex_type **mutex);
 
 
 #endif /* _CONFIGURATION_H */

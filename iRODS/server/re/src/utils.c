@@ -1106,12 +1106,7 @@ TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, N
     return tc;
 }
 
-char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]) {
-    char *configDir = getConfigDir ();
-    snprintf (rulesFileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir,ruleBaseName);
-    return rulesFileName;
 
-}
 
 
 int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str) {

@@ -238,7 +238,9 @@ endif
 
 ifdef RULE_ENGINE_N
 CFLAGS +=       -DRULE_ENGINE -DRULE_ENGINE_N
+ifneq (osx_platform, $(OS_platform))
 LDADD +=		-lrt
+endif
 
 SVR_RE_OBJS =	\
 		$(svrReObjDir)/extractAvuMS.o \
@@ -264,6 +266,9 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/functions.o \
 		$(svrReObjDir)/typing.o \
 		$(svrReObjDir)/utils.o \
+		$(svrReObjDir)/locks.o \
+		$(svrReObjDir)/sharedmemory.o \
+		$(svrReObjDir)/filesystem.o \
 		$(svrReObjDir)/cache.o \
 		$(svrReObjDir)/reIn2p3SysRule.o \
 		$(svrReObjDir)/nre.reLib1.o	\

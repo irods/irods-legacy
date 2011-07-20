@@ -6,6 +6,9 @@
 #include "functions.h"
 #include "arithmetics.h"
 #include "configuration.h"
+#include "filesystem.h"
+
+
 
 #define RE_ERROR(cond) if(cond) { goto error; }
 

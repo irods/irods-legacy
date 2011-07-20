@@ -4,6 +4,9 @@
 #include "cache.h"
 #include "rules.h"
 #include "functions.h"
+#include "locks.h"
+#include "sharedmemory.h"
+#include "datetime.h"
 
 
 #define KEY_SIZE 1024
@@ -155,6 +158,11 @@ Cache *copyCache(unsigned char **p, size_t size, Cache *c) {
 	ccopy->coreRegionStatus = UNINITIALIZED;
 	ccopy->extRegion = NULL;
 	ccopy->extRegionStatus = UNINITIALIZED;
+	ccopy->sysRegion = NULL;
+	ccopy->sysRegionStatus = UNINITIALIZED;
+	ccopy->sysFuncDescIndex = NULL;
+	ccopy->sysFuncDescIndexStatus = UNINITIALIZED;
+	ccopy->ruleEngineStatus = UNINITIALIZED;
 
     deleteHashTable(objectMap, nop);
 

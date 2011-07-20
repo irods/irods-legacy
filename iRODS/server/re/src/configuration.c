@@ -9,35 +9,41 @@
 #include "cache.h"
 #include "region.h"
 #include "functions.h"
+#include "filesystem.h"
+#include "sharedmemory.h"
 Cache ruleEngineConfig = {
-    NULL, // unsigned char *address
-    NULL, // unsigned char *pointers
-    0, // size_t dataSize
-    0, // size_t cacheSize
-    UNINITIALIZED, // RuleEngineStatus coreRuleSetStatus
-    UNINITIALIZED, // RuleEngineStatus appRuleSetStatus
-    UNINITIALIZED, // RuleEngineStatus extRuleSetStatus
-    UNINITIALIZED, // RuleEngineStatus coreFuncDescIndexStatus
-    UNINITIALIZED, // RuleEngineStatus appFuncDescIndexStatus
-    UNINITIALIZED, // RuleEngineStatus extFuncDescIndexStatus
-    UNINITIALIZED, // RuleEngineStatus ruleEngineStatus
-    UNINITIALIZED, // RuleEngineStatus cacheStatus
-    UNINITIALIZED, // RuleEngineStatus regionCoreStatus
-    UNINITIALIZED, // RuleEngineStatus regionAppStatus
-    UNINITIALIZED, // RuleEngineStatus regionExtStatus
-    NULL, // RuleSet *coreRuleSet
-    NULL, // RuleSet *appRuleSet
-    NULL, // RuleSet *extRuleSet
-    NULL, // Env *coreFuncDescIndex
-    NULL, // Env *appFuncDescIndex
-    NULL, // Env *extFuncDescIndex
-    NULL, // Region *regionCore
-    NULL, // Region *regionApp
-    NULL, // Region *regionExt
-    0, // int clearDelayed
-    time_type_initializer, // time_type timestamp
-    time_type_initializer, // time_type updateTS
-    0, // int version
+    NULL, /* unsigned char *address */
+    NULL, /* unsigned char *pointers */
+    0, /* size_t dataSize */
+    0, /* size_t cacheSize */
+    UNINITIALIZED, /* RuleEngineStatus coreRuleSetStatus */
+    UNINITIALIZED, /* RuleEngineStatus appRuleSetStatus */
+    UNINITIALIZED, /* RuleEngineStatus extRuleSetStatus */
+    UNINITIALIZED, /* RuleEngineStatus sysFuncDescIndexStatus */
+    UNINITIALIZED, /* RuleEngineStatus coreFuncDescIndexStatus */
+    UNINITIALIZED, /* RuleEngineStatus appFuncDescIndexStatus */
+    UNINITIALIZED, /* RuleEngineStatus extFuncDescIndexStatus */
+    UNINITIALIZED, /* RuleEngineStatus ruleEngineStatus */
+    UNINITIALIZED, /* RuleEngineStatus cacheStatus */
+    UNINITIALIZED, /* RuleEngineStatus sysRegionStatus */
+    UNINITIALIZED, /* RuleEngineStatus regionCoreStatus */
+    UNINITIALIZED, /* RuleEngineStatus regionAppStatus */
+    UNINITIALIZED, /* RuleEngineStatus regionExtStatus */
+    NULL, /* RuleSet *coreRuleSet */
+    NULL, /* RuleSet *appRuleSet */
+    NULL, /* RuleSet *extRuleSet */
+    NULL, /* Env *sysFuncDescIndex */
+    NULL, /* Env *coreFuncDescIndex */
+    NULL, /* Env *appFuncDescIndex */
+    NULL, /* Env *extFuncDescIndex */
+    NULL, /* Region *sysRegion */
+    NULL, /* Region *coreRegion */
+    NULL, /* Region *appRegion */
+    NULL, /* Region *extRegion */
+    0, /* int clearDelayed */
+    time_type_initializer, /* time_type timestamp */
+    time_type_initializer, /* time_type updateTS */
+    0, /* int version */
 };
 
 #ifdef DEBUG
@@ -55,18 +61,6 @@ int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char 
     return 0;
 }
 #endif
-
-void getResourceName(char buf[1024], char *rname) {
-	snprintf(buf, 1024, "%s/%s", getConfigDir(), rname);
-	char *ch = buf;
-	while(*ch != '\0') {
-		if(*ch == '\\' || *ch == '/') {
-			*ch = '_';
-		}
-		ch++;
-	}
-
-}
 
 void removeRuleFromExtIndex(char *ruleName, int i) {
 	if(isComponentInitialized(ruleEngineConfig.extFuncDescIndexStatus)) {
@@ -146,9 +140,11 @@ void setRuleEngineMemStatus(RuleEngineStatus s) {
 } */
 int clearResources(int resources) {
 	clearFuncDescIndex(APP, app);
+	clearFuncDescIndex(SYS, sys);
 	clearFuncDescIndex(CORE, core);
 	clearFuncDescIndex(EXT, ext);
 	clearRegion(APP, app);
+	clearRegion(SYS, sys);
 	clearRegion(CORE, core);
 	clearRegion(EXT, ext);
 	clearRuleSet(APP, app);
@@ -177,12 +173,14 @@ void delayClearResources(int resources) {
 		ruleEngineConfig.condIndexStatus = UNINITIALIZED;
 	}*/
 	delayClearRegion(APP, app);
+	delayClearRegion(SYS, sys);
 	delayClearRegion(CORE, core);
 	delayClearRegion(EXT, ext);
 	delayClearRuleSet(APP, app);
 	delayClearRuleSet(CORE, core);
 	delayClearRuleSet(EXT, ext);
 	delayClearFuncDescIndex(APP, app);
+	delayClearFuncDescIndex(SYS, sys);
 	delayClearFuncDescIndex(CORE, core);
 	delayClearFuncDescIndex(EXT, ext);
 
@@ -239,7 +237,8 @@ int generateLocalCache() {
 	return 0;
 }
 int generateFunctionDescriptionTables() {
-    createFuncDescIndex(CORE, core);
+	createFuncDescIndex(SYS, sys);
+	createFuncDescIndex(CORE, core);
     createFuncDescIndex(APP, app);
     if(!isComponentInitialized(ruleEngineConfig.extFuncDescIndexStatus)) {
     	createFuncDescIndex(EXT, ext);
@@ -252,6 +251,7 @@ int generateFunctionDescriptionTables() {
     	extEnv->previous = ruleEngineConfig.appFuncDescIndex;
     }
     ruleEngineConfig.appFuncDescIndex->previous = ruleEngineConfig.coreFuncDescIndex;
+    ruleEngineConfig.coreFuncDescIndex->previous = ruleEngineConfig.sysFuncDescIndex;
 
 	return 0;
 }
@@ -263,6 +263,7 @@ void generateRuleSets() {
 void generateRegions() {
 	createRegion(APP, app);
 	createRegion(CORE, core);
+	createRegion(SYS, sys);
 	createRegion(EXT, ext);
 }
 int unlinkFuncDescIndex() {
@@ -272,6 +273,7 @@ int unlinkFuncDescIndex() {
 	}
 	extEnv->previous = NULL;
 	ruleEngineConfig.appFuncDescIndex->previous = NULL;
+	ruleEngineConfig.coreFuncDescIndex->previous = NULL;
 	return 0;
 }
 int clearRuleIndex(ruleStruct_t *inRuleStruct) {
@@ -283,100 +285,6 @@ int clearRuleIndex(ruleStruct_t *inRuleStruct) {
 	return 0;
 }
 
-#ifdef USE_BOOST
-static boost::interprocess::shared_memory_object *shm_obj = NULL;
-static boost::interprocess::mapped_region *mapped = NULL;
-#else
-int shmid = - 1;
-void *shmBuf = NULL;
-#endif
-
-unsigned char *prepareServerSharedMemory() {
-	char shm_name[1024];
-	getResourceName(shm_name, shm_rname);
-#ifdef USE_BOOST
-	shm_obj = new boost::interprocess::shared_memory_object(boost::interprocess::open_or_create, shm_name, boost::interprocess::read_write);
-	boost::interprocess::offset_t size;
-	if(shm_obj->get_size(size) && size==0) {
-		shm_obj->truncate(SHMMAX);
-	}
-	mapped = new boost::interprocess::mapped_region(*shm_obj, boost::interprocess::read_write);
-	unsigned char *shmBuf = (unsigned char *) mapped->get_address();
-	return shmBuf;
-#else
-		shmid = shm_open(shm_name, O_RDWR | O_CREAT, 0600);
-		if(shmid!= -1) {
-			if(ftruncate(shmid, SHMMAX) == -1) {
-				close(shmid);
-				shm_unlink(shm_name);
-				return NULL;
-			}
-			shmBuf = mmap(SHM_BASE_ADDR, SHMMAX, PROT_READ | PROT_WRITE, MAP_SHARED, shmid , 0);
-			if(shmBuf == MAP_FAILED) {
-				close(shmid);
-				shm_unlink(shm_name);
-				return NULL;
-			}
-			return (unsigned char *) shmBuf;
-		} else {
-			return NULL;
-		}
-#endif
-}
-
-void detachSharedMemory() {
-#ifdef USE_BOOST
-	delete mapped;
-	delete shm_obj;
-#else
-	munmap(shmBuf, SHMMAX);
-	close(shmid);
-#endif
-}
-
-int removeSharedMemory() {
-	char shm_name[1024];
-	getResourceName(shm_name, shm_rname);
-#ifdef USE_BOOST
-	if(!boost::interprocess::shared_memory_object::remove(shm_name)) {
-		return SHM_UNLINK_ERROR;
-	}
-
-#else
-	if(shm_unlink(shm_name) == -1) {
-		return SHM_UNLINK_ERROR;
-	}
-#endif
-	return 0;
-}
-
-unsigned char *prepareNonServerSharedMemory() {
-	char shm_name[1024];
-	getResourceName(shm_name, shm_rname);
-#ifdef USE_BOOST
-
-    try {
-    	shm_obj = new boost::interprocess::shared_memory_object(boost::interprocess::open_only, shm_name, boost::interprocess::read_only);
-    	mapped = new boost::interprocess::mapped_region(*shm_obj, boost::interprocess::read_only);
-    	unsigned char *buf = (unsigned char *) mapped->get_address();
-    	return buf;
-    } catch(boost::interprocess::interprocess_exception e) {
-    	return NULL;
-    }
-#else
-	shmid = shm_open(shm_name, O_RDONLY, 0400);
-	if(shmid!= -1) {
-		shmBuf = mmap(SHM_BASE_ADDR, SHMMAX, PROT_READ, MAP_SHARED, shmid, 0);
-		if(shmBuf == MAP_FAILED) { /* not server process and shm is successfully allocated */
-			close(shmid);
-			return NULL;
-		}
-		return (unsigned char *) shmBuf;
-	} else {
-		return NULL;
-	}
-#endif
-}
 
 int createRuleIndex(ruleStruct_t *inRuleStruct) {
 	if(inRuleStruct == &coreRuleStrct) {
@@ -410,7 +318,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 			time_type_set(timestamp, mtim);
 		}
 #if defined(DEBUG) && !defined(USE_BOOST)
-		printf("last modified time, %ld::%ld\n", timestamp.tv_sec, timestamp.tv_nsec);
+		printf("last modified time, %ld\n", timestamp);
 #endif
 		strcpy(r2,r3);
 	}
@@ -442,6 +350,9 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
         	generateRegions();
         	generateRuleSets();
         	generateFunctionDescriptionTables();
+        	if(inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
+        		getSystemFunctions(ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion);
+        	}
             /* ruleEngineConfig.extRuleSetStatus = LOCAL;
             ruleEngineConfig.extFuncDescIndexStatus = LOCAL; */
             /* createRuleIndex(inRuleStruct); */
@@ -460,8 +371,8 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 	generateRegions();
 	generateRuleSets();
 	generateFunctionDescriptionTables();
-	if(inRuleStruct == &coreRuleStrct) {
-		getSystemFunctions(ruleEngineConfig.coreFuncDescIndex->current, ruleEngineConfig.coreRegion);
+	if(inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
+		getSystemFunctions(ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion);
 	}
     /*ruleEngineConfig.extRuleSetStatus = LOCAL;
     ruleEngineConfig.extFuncDescIndexStatus = LOCAL;*/
@@ -587,66 +498,3 @@ int availableRules() {
 }
 
 
-int lockMutex(mutex_type **mutex) {
-	char sem_name[1024];
-	getResourceName(sem_name, SEM_NAME);
-#ifdef USE_BOOST
-	*mutex = new boost::interprocess::named_mutex(boost::interprocess::open_or_create, sem_name);
-	(*mutex)->lock();
-	return 0;
-#else
-	*mutex = sem_open(sem_name,O_CREAT,0644,1);
-	if(*mutex == SEM_FAILED)
-    {
-      perror("unable to create semaphore");
-      sem_unlink(SEM_NAME);
-      return -1;
-    } else {
-      int v;
-      sem_getvalue(*mutex, &v);
-      /* printf("sem val0: %d\n", v); */
-      sem_wait(*mutex);
-      sem_getvalue(*mutex, &v);
-      /* printf("sem val1: %d\n", v); */
-      sem_close(*mutex);
-      return 0;
-    }
-#endif
-}
-void unlockMutex(mutex_type **mutex) {
-#ifdef USE_BOOST
-	(*mutex)->unlock();
-	delete *mutex;
-#else
-	char sem_name[1024];
-	getResourceName(sem_name, SEM_NAME);
-	int v;
-	*mutex = sem_open(sem_name,O_CREAT,0644,1);
-	sem_getvalue(*mutex, &v);
-	/* printf("sem val2: %d\n", v); */
-	sem_post(*mutex);
-	sem_getvalue(*mutex, &v);
-	/* printf("sem val3: %d\n", v); */
-	sem_close(*mutex);
-#endif
-}
-
-int getModifiedTime(char *fn, time_type *timestamp) {
-#ifdef USE_BOOST
-	boost::filesystem::path path(fn);
-	std::time_t time = boost::filesystem::last_write_time(path);
-	time_type_set(*timestamp, time);
-	return 0;
-#else
-    struct stat filestat;
-
-	if(stat(fn, &filestat) == -1) {
-	#ifdef DEBUG
-		printf("error reading file stat %s\n", fn);
-	#endif
-	return FILE_STAT_ERROR;
-	}
-	time_type_set(*timestamp, filestat.st_mtim);
-	return 0;
-#endif
-}

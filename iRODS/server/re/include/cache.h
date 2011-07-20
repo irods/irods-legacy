@@ -17,9 +17,6 @@
     memcpy(lval, val, CACHE_SIZE(elemTy, n)); \
     (*p)+=CACHE_SIZE(elemTy, n); \
     if(*p > *pointers) return NULL;
-#define SHMMAX 30000000
-#define SHM_BASE_ADDR ((void *)0x80000000)
-#define shm_rname "SHM"
 #define CASCADE_NULL(x) if((x)==NULL) return NULL;
 #define MK_POINTER(ptr) \
 			if(generatePtrDesc) { \

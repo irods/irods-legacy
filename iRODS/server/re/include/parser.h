@@ -427,7 +427,6 @@ char* typeName_Parser(NodeType s);
 void printTree(Node *n, int indent);
 void printIndent(int indent);
 
-char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]);
 void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN]);
 void generateErrMsgFromSource(char *msg, long errloc, char *src, char errbuf[ERR_MSG_LEN]);
 void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_MSG_LEN]);
