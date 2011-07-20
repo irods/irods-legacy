@@ -238,7 +238,10 @@ endif
 
 ifdef RULE_ENGINE_N
 CFLAGS +=       -DRULE_ENGINE -DRULE_ENGINE_N
-ifneq (osx_platform, $(OS_platform))
+
+ifeq ($(OS_platform), osx_platform)
+# osx_platform does not support the POSIX realtime extension, but the shared memory functions are supported 
+else
 LDADD +=		-lrt
 endif
 
