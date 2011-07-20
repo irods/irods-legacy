@@ -46,9 +46,9 @@ public class IRODSTestSetupUtilities {
 		try {
 			// do an ils and see if scratch dir is there, if so, delete it
 			IlsCommand ilsCommand = new IlsCommand();
-			ilsCommand.setIlsBasePath(testingPropertiesHelper
-					.buildIRODSCollectionAbsolutePathFromTestProperties(
-							testingProperties, ""));
+			String scratchDirAbsPath = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, "");
+			ilsCommand.setIlsBasePath(scratchDirAbsPath);
 
 			String ilsResult = "";
 			try {
@@ -66,8 +66,7 @@ public class IRODSTestSetupUtilities {
 			if (ilsResult.indexOf("/"
 					+ testingProperties.getProperty(IRODS_SCRATCH_DIR_KEY)) > 0) {
 				IrmCommand irmCommand = new IrmCommand();
-				irmCommand
-						.setObjectName(invocationContext.getIrodsScratchDir());
+				irmCommand.setObjectName(scratchDirAbsPath);
 				irmCommand.setForce(true);
 				
 				invoker.invokeCommandAndGetResultAsString(irmCommand);

@@ -1,14 +1,11 @@
 package edu.sdsc.grid.io.irods;
 
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -50,55 +47,44 @@ public class IRODSCommandsDeleteBigTest {
 	@Test
 	public void testDeleteMultipleFilesInCollectionWithVerboseStatusTriggerDialog()
 			throws Exception {
-
+		
 		// test tuning variables
 		String testFileNamePrefix = "multiplefile";
 		String testFileExtension = ".txt";
 		String deleteCollectionSubdir = IRODS_TEST_SUBDIR_PATH + "/deleteme";
 		int numberOfTestFiles = 300;
-
-		// create collection to zap
-		String deleteCollectionAbsPath = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, deleteCollectionSubdir);
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		ImkdirCommand imkdrCommand = new ImkdirCommand();
-		imkdrCommand.setCollectionName(deleteCollectionAbsPath);
-		invoker.invokeCommandAndGetResultAsString(imkdrCommand);
-
-		IputCommand iputCommand = new IputCommand();
-		String genFileName = "";
-		String fullPathToTestFile = "";
-
+		String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(deleteCollectionSubdir);
+		
 		// generate a number of files in the subdir
-		for (int i = 0; i < numberOfTestFiles; i++) {
-			genFileName = testFileNamePrefix + String.valueOf(i)
-					+ testFileExtension;
-			fullPathToTestFile = FileGenerator
-					.generateFileOfFixedLengthGivenName(testingProperties
-							.getProperty(GENERATED_FILE_DIRECTORY_KEY)
-							+ "/", genFileName, 1);
+		String genFileName = "";
+        for (int i = 0; i < numberOfTestFiles; i++) {
+                genFileName = testFileNamePrefix + String.valueOf(i)
+                                + testFileExtension;
+                FileGenerator.generateFileOfFixedLengthGivenName(absPath + "/", genFileName, 1);
+                //FileGenerator.generateFileOfFixedLengthGivenName(testingProperties
+                				//.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+                                //+ "/", genFileName, 1);
+        }
+		
+		IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
-			iputCommand.setLocalFileName(fullPathToTestFile);
-			iputCommand.setIrodsFileName(deleteCollectionAbsPath);
-			iputCommand.setForceOverride(true);
-			invoker.invokeCommandAndGetResultAsString(iputCommand);
-		}
+        String deleteCollectionAbsPath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, deleteCollectionSubdir);
+        LocalFile sourceFile = new LocalFile(absPath);
 
-		// now try and delete the collecton
-		IRODSAccount account = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
-				testingPropertiesHelper
-						.buildIRODSCollectionAbsolutePathFromTestProperties(
-								testingProperties, deleteCollectionSubdir));
-
-		irodsFile.delete(true);
-		irodsFileSystem.close();
+        IRODSFile fileToPut = new IRODSFile(irodsFileSystem, deleteCollectionAbsPath);
+        fileToPut.copyFrom(sourceFile, true);
+        
+        
+        // now try and delete the collection    
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+                        testingPropertiesHelper
+                                        .buildIRODSCollectionAbsolutePathFromTestProperties(
+                                                        testingProperties, deleteCollectionSubdir));
+        
+        irodsFile.delete(true);
+        irodsFileSystem.close();
 
 	}
 

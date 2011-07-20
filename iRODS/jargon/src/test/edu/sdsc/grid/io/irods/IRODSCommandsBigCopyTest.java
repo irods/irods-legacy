@@ -2,15 +2,12 @@ package edu.sdsc.grid.io.irods;
 
 import edu.sdsc.grid.io.FileFactory;
 import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -66,23 +63,14 @@ public class IRODSCommandsBigCopyTest {
         FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH + '/' +  sourceDir , testFilePrefix, testFileSuffix, 100, 20, 5000000);
         
         // put scratch files into irods in the right place
-        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
-        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-
-        // make the put subdir
+        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
         String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH);
-        ImkdirCommand iMkdirCommand = new ImkdirCommand();
-        iMkdirCommand.setCollectionName(targetIrodsCollection);
-        invoker.invokeCommandAndGetResultAsString(iMkdirCommand);
-        
-        // put the files by putting the collection
-        IputCommand iputCommand = new IputCommand();
-        iputCommand.setForceOverride(true);
-        iputCommand.setIrodsFileName(targetIrodsCollection);
-        iputCommand.setLocalFileName(absPath + sourceDir);
-        iputCommand.setRecursive(true);
-        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        		IRODS_TEST_SUBDIR_PATH + '/' + sourceDir);
+        LocalFile sourceFile = new LocalFile(absPath + sourceDir);
+
+        IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+        fileToPut.copyFrom(sourceFile, true);
 
         // i've put all the files, now do a copy
         URI irodsSourceUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + sourceDir);
@@ -91,8 +79,6 @@ public class IRODSCommandsBigCopyTest {
         IRODSFile irodsSourceFile = new IRODSFile(irodsSourceUri);
         IRODSFile irodsDestFile = new IRODSFile(irodsDestUri);
         
-        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
         // just say overwrite
         irodsSourceFile.copyTo(irodsDestFile, true);
