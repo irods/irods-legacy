@@ -4475,3 +4475,19 @@ namespace boost
 
 } // namespace boost
 #endif
+
+#ifdef USE_BOOST_FS
+int
+getPathStMode (path & p)
+{
+    struct stat statbuf;
+
+    if (stat (p.c_str(), &statbuf) == 0 && 
+     (statbuf.st_mode & S_IFREG)) {
+	return statbuf.st_mode;
+    } else {
+	return -1;
+    }
+}
+#endif
+

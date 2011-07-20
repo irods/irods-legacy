@@ -575,11 +575,13 @@ dataObjInp_t *dataObjOprInp)
     int savedStatus = 0;
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
 	struct irodsntstat statbuf;
 #endif
+#endif	/* #ifndef USE_BOOST_FS */
     char *srcDir, *targColl;
     rodsPath_t mySrcPath, myTargPath;
 
@@ -626,37 +628,50 @@ dataObjInp_t *dataObjOprInp)
         snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
           srcDir, myDirent->d_name);
 
+        if (isPathSymlink (rodsArgs, mySrcPath.outPath) > 0) continue;
+#ifdef USE_BOOST_FS
+        path p (mySrcPath.outPath);
+	if (!exists(p)) {
+#else
 #ifndef windows_platform
         status = stat (mySrcPath.outPath, &statbuf);
 #else
-		status = iRODSNt_stat(mySrcPath.outPath, &statbuf);
+	status = iRODSNt_stat(mySrcPath.outPath, &statbuf);
 #endif
 
         if (status != 0) {
+#endif  /* USE_BOOST_FS */
             rodsLog (LOG_ERROR,
               "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
               mySrcPath.outPath, errno);
             closedir (dirPtr);
             return (USER_INPUT_PATH_ERR);
         }
-
-	/* XXXXXXX don't see a way to get .st_mode in BOOST FS */
-	dataObjOprInp->createMode = statbuf.st_mode;
 	bzero (&myTargPath, sizeof (myTargPath));
         snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
           targColl, myDirent->d_name);
 
-        if (isPathSymlink (rodsArgs, mySrcPath.outPath) > 0) {
-	    if ((statbuf.st_mode & S_IFDIR) != 0)
-                mkColl (conn, myTargPath.outPath);
-            continue;
+#ifdef USE_BOOST_FS
+        if (is_symlink (p)) {
+            path cp = read_symlink (p);
+            snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
+              srcDir, cp.c_str ());
+            p = path (mySrcPath.outPath);
         }
-
+	dataObjOprInp->createMode = getPathStMode (p);
+	if (is_regular_file(p)) {
+#else
+	dataObjOprInp->createMode = statbuf.st_mode;
         if ((statbuf.st_mode & S_IFREG) != 0) {     /* a file */
+#endif
             myTargPath.objType = DATA_OBJ_T;
             mySrcPath.objType = LOCAL_FILE_T;
 	    mySrcPath.objState = EXIST_ST;
+#ifdef USE_BOOST_FS
+	    mySrcPath.size = file_size (p);
+#else
 	    mySrcPath.size = statbuf.st_size;
+#endif
 	    getRodsObjType (conn, &myTargPath);
             status = rsyncFileToDataUtil (conn, &mySrcPath, &myTargPath,
               myRodsEnv, rodsArgs, dataObjOprInp);
@@ -669,7 +684,11 @@ dataObjInp_t *dataObjOprInp)
 	    if (myTargPath.objState != NOT_EXIST_ST)
 	        freeRodsObjStat (myTargPath.rodsObjStat);
 #endif
+#ifdef USE_BOOST_FS
+	} else if (is_directory(p)) {
+#else
         } else if ((statbuf.st_mode & S_IFDIR) != 0) {      /* a directory */
+#endif
 			status = 0;
 			/* only do the sync if no -l option specified */
 			if ( rodsArgs->longOption != True ) {
@@ -698,8 +717,13 @@ dataObjInp_t *dataObjOprInp)
             }
         } else {
             rodsLog (LOG_ERROR,
+#ifdef USE_BOOST_FS
+              "rsyncDirToCollUtil: unknown local path %s",
+              mySrcPath.outPath);
+#else
               "rsyncDirToCollUtil: unknown local path type %d for %s",
               statbuf.st_mode, mySrcPath.outPath);
+#endif	/* USE_BOOST_FS */
             status = USER_INPUT_PATH_ERR;
         }
 

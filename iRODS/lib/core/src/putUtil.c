@@ -412,15 +412,18 @@ bulkOprInfo_t *bulkOprInfo)
     int savedStatus = 0;
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
 	struct irodsntstat statbuf;
 #endif
+#endif	/* USE_BOOST_FS */
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
     objType_t childObjType;
     rcComm_t *conn;
     int bulkFlag;
+    rodsLong_t dataSize;
 
     if (srcDir == NULL || targColl == NULL) {
        rodsLog (LOG_ERROR,
@@ -477,11 +480,16 @@ bulkOprInfo_t *bulkOprInfo)
         snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s", 
 	  srcDir, myDirent->d_name);
 
+        if (isPathSymlink (rodsArgs, srcChildPath) > 0) continue;
+#ifdef USE_BOOST_FS
+	path p (srcChildPath);
+#else
 #ifndef windows_platform
         status = stat (srcChildPath, &statbuf);
 #else
 	status = iRODSNt_stat(srcChildPath, &statbuf);
 #endif
+#endif	/* USE_BOOST_FS */
 
         if (status != 0) {
             rodsLog (LOG_ERROR,
@@ -491,13 +499,31 @@ bulkOprInfo_t *bulkOprInfo)
             return (USER_INPUT_PATH_ERR);
         }
 
-	/* XXXXXX BOOST Filesystem does not give st_mode of a file */
+#ifdef USE_BOOST_FS
+	if (is_symlink (p)) {
+	    path cp = read_symlink (p);
+	    snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
+              srcDir, cp.c_str ());
+	    p = path (srcChildPath);
+	}
+	dataObjOprInp->createMode = getPathStMode (p);
+	if (is_regular_file(p)) {
+            childObjType = DATA_OBJ_T;
+	    dataSize = file_size (p);
+        } else if (is_directory(p)) {
+            childObjType = COLL_OBJ_T;
+        } else {
+            rodsLog (LOG_ERROR,
+              "putDirUtil: unknown local path type for %s",
+              srcChildPath);
+            savedStatus = USER_INPUT_PATH_ERR;
+            continue;
+        }
+#else	/* USE_BOOST_FS */
 	dataObjOprInp->createMode = statbuf.st_mode;
-        snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
-	  targColl, myDirent->d_name);
-
 	if (statbuf.st_mode & S_IFREG) {
 	    childObjType = DATA_OBJ_T;
+	    dataSize = statbuf.st_size;
 	} else if (statbuf.st_mode & S_IFDIR) {
 	    childObjType = COLL_OBJ_T;
         } else {
@@ -507,14 +533,28 @@ bulkOprInfo_t *bulkOprInfo)
             savedStatus = USER_INPUT_PATH_ERR;
 	    continue;
         }
+#endif	/* USE_BOOST_FS */
+        snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
+          targColl, myDirent->d_name);
 
+#if 0
         if (isPathSymlink (rodsArgs, srcChildPath) > 0) {
 	    if (childObjType == COLL_OBJ_T)
 	        mkColl (conn, targChildPath);
 	    continue;
 	}
+#endif
 
         if (childObjType == DATA_OBJ_T) {
+#ifdef USE_BOOST_FS
+            if (bulkFlag == BULK_OPR_SMALL_FILES &&
+              file_size(p) > MAX_BULK_OPR_FILE_SIZE) {
+                continue;
+            } else if (bulkFlag == BULK_OPR_LARGE_FILES &&
+              file_size(p) <= MAX_BULK_OPR_FILE_SIZE) {
+                continue;
+            }
+#else	/* USE_BOOST_FS */
 	    if (bulkFlag == BULK_OPR_SMALL_FILES &&
               statbuf.st_size > MAX_BULK_OPR_FILE_SIZE) {
 		continue;
@@ -522,6 +562,7 @@ bulkOprInfo_t *bulkOprInfo)
               statbuf.st_size <= MAX_BULK_OPR_FILE_SIZE) {
 	        continue;
 	    }
+#endif	/* USE_BOOST_FS */
 	}
 
 	status = chkStateForResume (conn, rodsRestart, targChildPath,
@@ -543,12 +584,12 @@ bulkOprInfo_t *bulkOprInfo)
         if (childObjType == DATA_OBJ_T) {     /* a file */
 	    if (bulkFlag == BULK_OPR_SMALL_FILES) {
                 status = bulkPutFileUtil (conn, srcChildPath, targChildPath,
-                  statbuf.st_size, statbuf.st_mode, myRodsEnv, rodsArgs,
+                  dataSize,  dataObjOprInp->createMode, myRodsEnv, rodsArgs,
                   bulkOprInp, bulkOprInfo);
 	    } else {
 		/* normal put */
                 status = putFileUtil (conn, srcChildPath, targChildPath,
-                  statbuf.st_size, myRodsEnv, rodsArgs, dataObjOprInp);
+                  dataSize, myRodsEnv, rodsArgs, dataObjOprInp);
 	    }
 #if 0
 	    } else if (bulkOprInfo->flags == BULK_OPR_SMALL_FILES) {
