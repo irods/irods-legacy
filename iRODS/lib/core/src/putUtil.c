@@ -483,15 +483,16 @@ bulkOprInfo_t *bulkOprInfo)
         if (isPathSymlink (rodsArgs, srcChildPath) > 0) continue;
 #ifdef USE_BOOST_FS
 	path p (srcChildPath);
+	if (!exists (p)) {
 #else
 #ifndef windows_platform
         status = stat (srcChildPath, &statbuf);
 #else
 	status = iRODSNt_stat(srcChildPath, &statbuf);
 #endif
-#endif	/* USE_BOOST_FS */
 
         if (status != 0) {
+#endif	/* USE_BOOST_FS */
             rodsLog (LOG_ERROR,
 	      "putDirUtil: stat error for %s, errno = %d\n", 
 	      srcChildPath, errno);
