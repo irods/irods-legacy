@@ -199,8 +199,18 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
   genQueryInp.continueInx=0;
 
   i = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
-  if (i < 0)
-    return(i);
+  if (i < 0) {
+    if (i == CAT_NO_ROWS_FOUND) {
+      genQueryOutParam->type = strdup(GenQueryOut_MS_T);
+      genQueryOut = (genQueryOut_t *) malloc(sizeof(genQueryOut_t));
+      memset (genQueryOut, 0, sizeof (genQueryOut_t));
+      genQueryOutParam->inOutStruct = genQueryOut;
+      return(0);
+    }
+    else {
+      return(i);
+    }
+  }
   genQueryOutParam->type = strdup(GenQueryOut_MS_T);
   genQueryOutParam->inOutStruct = genQueryOut;
   return(0);
@@ -258,8 +268,18 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
   genQueryInp = (genQueryInp_t*)genQueryInParam->inOutStruct;
 
   i = rsGenQuery(rei->rsComm, genQueryInp, &genQueryOut);
-  if (i < 0)
-    return(i);
+  if (i < 0) {
+    if (i == CAT_NO_ROWS_FOUND) {
+      genQueryOutParam->type = strdup(GenQueryOut_MS_T);
+      genQueryOut = (genQueryOut_t *) malloc(sizeof(genQueryOut_t));
+      memset (genQueryOut, 0, sizeof (genQueryOut_t));
+      genQueryOutParam->inOutStruct = genQueryOut;
+      return(0);
+    }
+    else {
+      return(i);
+    }
+  }
   genQueryOutParam->type = strdup(GenQueryOut_MS_T);
   genQueryOutParam->inOutStruct = genQueryOut;
   return(0);
