@@ -157,10 +157,12 @@ genQueryOut_t **procStatOut)
     DIR *dirPtr;
     struct dirent *myDirent;
     char childPath[MAX_NAME_LEN];
-    #ifndef windows_platform
+#ifndef USE_BOOST_FS
+#ifndef windows_platform
     struct stat statbuf;
 #else
     struct irodsntstat statbuf;
+#endif
 #endif
     int count = 0;
 
@@ -198,17 +200,25 @@ genQueryOut_t **procStatOut)
 	if (!isdigit (*myDirent->d_name)) continue;   /* not a pid */
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", ProcLogDir, 
 	  myDirent->d_name);
+#ifdef USE_BOOST_FS
+        path p (childPath);
+#else
 #ifndef windows_platform
         status = stat (childPath, &statbuf);
 #else
         status = iRODSNt_stat(childPath, &statbuf);
 #endif
+#endif  /* USE_BOOST_FS */
         if (status != 0) {
             rodsLogError (LOG_ERROR, status,
               "localProcStat: stat error for %s", childPath);
             continue;
         }
+#ifdef USE_BOOST_FS
+	if (is_directory(p)) {
+#else
         if (statbuf.st_mode & S_IFREG) {
+#endif
 	    if (count >= numProc) {
                 rodsLog (LOG_ERROR, 
                   "localProcStat: proc count %d exceeded", numProc);

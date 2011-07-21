@@ -713,11 +713,18 @@ chkConnectedAgentProcQue ()
 
     while (tmpAgentProc != NULL) {
         char procPath[MAX_NAME_LEN];
+#ifndef USE_BOOST_FS
 	struct stat statbuf;
+#endif
 
         snprintf (procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, 
 	  tmpAgentProc->pid);
+#ifdef USE_BOOST_FS
+        path p (procPath);
+        if (!exists (p)) {
+#else
 	if (stat (procPath, &statbuf) < 0) {
+#endif
 	    /* the agent proc is gone */
 	    unmatchedAgentProc = tmpAgentProc;
 	    rodsLog (LOG_DEBUG, 

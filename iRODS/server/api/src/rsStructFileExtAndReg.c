@@ -234,12 +234,15 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
     char subfilePath[MAX_NAME_LEN];
     char subObjPath[MAX_NAME_LEN];
     dataObjInp_t dataObjInp;
     int status;
     int savedStatus = 0;
+    rodsLong_t st_size;
 
     dirPtr = opendir (phyBunDir);
     if (dirPtr == NULL) {
@@ -257,9 +260,14 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
         snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
           phyBunDir, myDirent->d_name);
 
+#ifdef USE_BOOST_FS
+        path p (subfilePath);
+        if (!exists (p)) {
+#else
         status = stat (subfilePath, &statbuf);
 
         if (status != 0) {
+#endif
             rodsLog (LOG_ERROR,
               "regUnbunphySubfiles: stat error for %s, errno = %d",
               subfilePath, errno);
@@ -271,7 +279,11 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
         snprintf (subObjPath, MAX_NAME_LEN, "%s/%s",
           collection, myDirent->d_name);
 
+#ifdef USE_BOOST_FS
+	if (is_directory (p)) {
+#else
         if ((statbuf.st_mode & S_IFDIR) != 0) {
+#endif
             status = rsMkCollR (rsComm, "/", subObjPath);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
@@ -289,9 +301,15 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
                 savedStatus = status;
                 continue;
             }
+#ifdef USE_BOOST_FS
+        } else if (is_regular_file (p)) {
+	    st_size = file_size (p);
+#else
         } else if ((statbuf.st_mode & S_IFREG) != 0) {
+	    st_size = statbuf.st_size;
+#endif
 	    status = regSubfile (rsComm, rescInfo, rescGroupName,
-		subObjPath, subfilePath, statbuf.st_size, flags);
+		subObjPath, subfilePath, st_size, flags);
 	    unlink (subfilePath);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
@@ -313,7 +331,9 @@ char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
 {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
     int status;
     int modFlag = 0;
 
@@ -335,9 +355,15 @@ char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
         return (status);
     }
 
+#ifdef USE_BOOST_FS
+    path p (dataObjInfo.filePath);
+    if (exists (p)) {
+	if (is_directory (p)) {
+#else
     status = stat (dataObjInfo.filePath, &statbuf);
     if (status == 0 || errno != ENOENT) {
         if ((statbuf.st_mode & S_IFDIR) != 0) {
+#endif
 	    return SYS_PATH_IS_NOT_A_FILE;
 	}
 

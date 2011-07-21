@@ -178,7 +178,9 @@ createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir)
 {
     dataObjInfo_t dataObjInfo;
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
     int status;
 
     if (dataObjInp == NULL || rescInfo == NULL || phyBunDir == NULL) 
@@ -207,7 +209,13 @@ rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir)
     do {
 	snprintf (phyBunDir, MAX_NAME_LEN, "%s/%s.%d", dataObjInfo.filePath,
 	  TMP_PHY_BUN_DIR, (int) random ());
+#ifdef USE_BOOST_FS
+        path p (phyBunDir);
+	if (exists (p)) status = 0;
+	else status = -1;
+#else
 	status =  stat (phyBunDir, &statbuf);
+#endif
     } while (status == 0);
 
     mkdirR ("/", phyBunDir, getDefDirMode ());
@@ -273,12 +281,16 @@ genQueryOut_t *attriArray)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
     char subfilePath[MAX_NAME_LEN];
     char subObjPath[MAX_NAME_LEN];
     dataObjInp_t dataObjInp;
     int status;
     int savedStatus = 0;
+    int st_mode;
+    rodsLong_t st_size;
 
     dirPtr = opendir (phyBunDir);
     if (dirPtr == NULL) {
@@ -296,9 +308,14 @@ genQueryOut_t *attriArray)
         snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
           phyBunDir, myDirent->d_name);
 
+#ifdef USE_BOOST_FS
+        path p (subfilePath);
+	if (!exists (p)) {
+#else
         status = stat (subfilePath, &statbuf);
 
         if (status != 0) {
+#endif
             rodsLog (LOG_ERROR,
               "regUnbunphySubfiles: stat error for %s, errno = %d",
               subfilePath, errno);
@@ -309,7 +326,11 @@ genQueryOut_t *attriArray)
 
         snprintf (subObjPath, MAX_NAME_LEN, "%s/%s",
           collection, myDirent->d_name);
+#ifdef USE_BOOST_FS
+	if (is_directory (p)) {
+#else
        if ((statbuf.st_mode & S_IFDIR) != 0) {
+#endif
             status = rsMkCollR (rsComm, "/", subObjPath);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
@@ -328,10 +349,18 @@ genQueryOut_t *attriArray)
                 savedStatus = status;
                 continue;
             }
+#ifdef USE_BOOST_FS
+	} else if (is_regular_file (p)) {
+	    st_mode = getPathStMode (p);
+	    st_size = file_size (p);
+#else
         } else if ((statbuf.st_mode & S_IFREG) != 0) {
+	    st_mode = statbuf.st_mode;
+	    st_size = statbuf.st_size;
+#endif
             status = bulkProcAndRegSubfile (rsComm, rescInfo, rescGroupName,
-              subObjPath, subfilePath, statbuf.st_size,
-              statbuf.st_mode & 0777, flags, bulkDataObjRegInp,
+              subObjPath, subfilePath, st_size,
+              st_mode & 0777, flags, bulkDataObjRegInp,
               renamedPhyFiles, attriArray);
             unlink (subfilePath);
             if (status < 0) {
@@ -356,7 +385,9 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
 {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
     int status;
     int modFlag = 0;
     char *myChksum = NULL;
@@ -379,9 +410,15 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
         return (status);
     }
 
+#ifdef USE_BOOST_FS
+    path p (dataObjInfo.filePath);
+    if (exists (p)) {
+	if (is_directory (p)) {
+#else
     status = stat (dataObjInfo.filePath, &statbuf);
     if (status == 0 || errno != ENOENT) {
         if ((statbuf.st_mode & S_IFDIR) != 0) {
+#endif
             return SYS_PATH_IS_NOT_A_FILE;
         }
         if (chkOrphanFile (rsComm, dataObjInfo.filePath, rescInfo->rescName,

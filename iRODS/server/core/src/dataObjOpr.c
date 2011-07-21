@@ -994,7 +994,9 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
     char subfilePath[MAX_NAME_LEN];
     int savedStatus = 1;
     int status = 0;
@@ -1014,18 +1016,31 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
         snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
           dirPath, myDirent->d_name);
 
+#ifdef USE_BOOST_FS
+        path p (subfilePath);
+        if (!exists (p)) {
+#else
         status = stat (subfilePath, &statbuf);
 
         if (status != 0) {
+#endif
             rodsLog (LOG_ERROR,
               "chkOrphanDir: stat error for %s, errno = %d",
               subfilePath, errno);
 	    savedStatus = UNIX_FILE_STAT_ERR - errno;
             continue;
         }
+#ifdef USE_BOOST_FS
+	if (is_directory (p)) {
+#else
         if ((statbuf.st_mode & S_IFDIR) != 0) {
+#endif
 	    status = chkOrphanDir (rsComm, subfilePath, rescName);
+#ifdef USE_BOOST_FS
+        } else if (is_regular_file (p)) {
+#else
 	} else if ((statbuf.st_mode & S_IFREG) != 0) {
+#endif
 	    status = chkOrphanFile (rsComm, subfilePath, rescName, NULL);
 	}
 	if (status == 0) {

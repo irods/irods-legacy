@@ -881,11 +881,19 @@ char *userName, char *exeAddress, char *exeFrequency, char *priority,
 char *estimateExeTime, char *notificationAddr)
 {
     int status;
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
     int fd;
+    rodsLong_t st_size;
 
     rstrcpy (ruleExecSubmitInp->reiFilePath, reiFilePath, MAX_NAME_LEN);
+#ifdef USE_BOOST_FS
+    path p (ruleExecSubmitInp->reiFilePath);
+    if (!exists (p)) {
+#else
     if (stat (ruleExecSubmitInp->reiFilePath, &statbuf) < 0) {
+#endif
         status = UNIX_FILE_STAT_ERR - errno;
         rodsLog (LOG_ERROR,
          "fillExecSubmitInp: stat error for rei file %s, status = %d",
@@ -893,12 +901,17 @@ char *estimateExeTime, char *notificationAddr)
         return status;
     }
 
-    if (statbuf.st_size > ruleExecSubmitInp->packedReiAndArgBBuf->len) {
+#ifdef USE_BOOST_FS
+    st_size = file_size (p);
+#else
+    st_size = statbuf.st_size;
+#endif
+    if (st_size > ruleExecSubmitInp->packedReiAndArgBBuf->len) {
 	if (ruleExecSubmitInp->packedReiAndArgBBuf->buf != NULL)
             free (ruleExecSubmitInp->packedReiAndArgBBuf->buf);
         ruleExecSubmitInp->packedReiAndArgBBuf->buf =
-           malloc ((int) statbuf.st_size);
-        ruleExecSubmitInp->packedReiAndArgBBuf->len = statbuf.st_size;
+           malloc ((int) st_size);
+        ruleExecSubmitInp->packedReiAndArgBBuf->len = st_size;
     }
 
     fd = open (ruleExecSubmitInp->reiFilePath, O_RDONLY,0);
@@ -914,7 +927,7 @@ char *estimateExeTime, char *notificationAddr)
       ruleExecSubmitInp->packedReiAndArgBBuf->len);
 
     close (fd);
-    if (status != statbuf.st_size) {
+    if (status != (int) st_size) {
         if (status < 0) {
             status = UNIX_FILE_READ_ERR - errno;
             rodsLog (LOG_ERROR,

@@ -244,16 +244,24 @@ chkAndResetRule (rsComm_t *rsComm)
 {
     char *configDir;
     char rulesFileName[MAX_NAME_LEN];
+#ifndef USE_BOOST_FS
     struct stat statbuf;
+#endif
     int status;
     ruleExecInfo_t rei;
+    uint mtime;
 
     configDir = getConfigDir ();
     snprintf (rulesFileName, MAX_NAME_LEN, "%s/reConfigs/core.irb", 
       configDir); 
+#ifdef USE_BOOST_FS
+        path p (rulesFileName);
+        if (!exists (p)) {
+#else
     status = stat (rulesFileName, &statbuf);
 
     if (status != 0) {
+#endif
 	status = UNIX_FILE_STAT_ERR - errno;
         rodsLog (LOG_ERROR,
           "chkAndResetRule: unable to read rule config file %s, status = %d",
@@ -261,18 +269,24 @@ chkAndResetRule (rsComm_t *rsComm)
 	return (status);
     }
 
+#ifdef USE_BOOST_FS
+    mtime = (uint) last_write_time (p);
+#else
+    mtime = (uint) statbuf.st_mtime;
+#endif
+
     if (CoreIrbTimeStamp == 0) {
 	/* first time */
-	CoreIrbTimeStamp = (uint) statbuf.st_mtime;
+	CoreIrbTimeStamp = mtime;
 	return (0);
     }
 
-    if ((uint) statbuf.st_mtime > CoreIrbTimeStamp) {
+    if (mtime > CoreIrbTimeStamp) {
 	/* file has been changed */
         rodsLog (LOG_NOTICE,
           "chkAndResetRule: reconf file %s has been changed. re-initializing",
 	  rulesFileName);
-	CoreIrbTimeStamp = (uint) statbuf.st_mtime;
+	CoreIrbTimeStamp = mtime;
 	rei.rsComm = rsComm;
 	msiAdmClearAppRuleStruct (&rei);
 	clearCoreRule ();
