@@ -58,8 +58,8 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
 
 	Node *errnode;
 	ExprType *restype = typeRuleSet(ruleSet, errmsg, &errnode, r);
-	if(restype->nodeType == T_ERROR) {
-	    *errloc = errnode->expr;
+	if(getNodeType(restype) == T_ERROR) {
+	    *errloc = NODE_EXPR_POS(errnode);
 	    return -1;
 	}
 
@@ -72,9 +72,7 @@ execCmdOut_t *addCmdExecOutToEnv(Env *global, Region *r) {
     ruleExecOut->stdoutBuf.len = 0;
     ruleExecOut->stderrBuf.buf = strdup("");
     ruleExecOut->stderrBuf.len = 0;
-    Res *execOutRes = newRes(r);
-	execOutRes->exprType  = newIRODSType(ExecCmdOut_MS_T, r);
-	RES_UNINTER_STRUCT(execOutRes) = ruleExecOut;
+    Res *execOutRes = newUninterpretedRes(r, ExecCmdOut_MS_T, ruleExecOut, NULL);
     insertIntoHashTable(global->current, "ruleExecOut", execOutRes);
     return ruleExecOut;
 
@@ -114,7 +112,7 @@ int parseAndComputeMsParamArrayToEnv(msParamArray_t *var, Env *env, ruleExecInfo
 
 		char *expr = res->text;
 		res = parseAndComputeExpression(expr, env, rei, reiSaveFlag, errmsg, r);
-		if(res->nodeType  ==  N_ERROR) {
+		if(getNodeType(res)  ==  N_ERROR) {
 		    return RES_ERR_CODE(res);
 		}
         if(varName!=NULL) {
@@ -125,8 +123,8 @@ int parseAndComputeMsParamArrayToEnv(msParamArray_t *var, Env *env, ruleExecInfo
 
 }
 Env *defaultEnv(Region *r) {
-    Env *global = newEnv(newHashTable2(100, r), NULL, NULL);
-    Env *env = newEnv(newHashTable2(100, r), global, NULL);
+    Env *global = newEnv(newHashTable2(10, r), NULL, NULL, r);
+    Env *env = newEnv(newHashTable2(10, r), global, NULL, r);
 
     return env;
 }
@@ -180,14 +178,14 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
 
     freeRErrorContent(&errmsgBuf);
-    deleteEnv(env, 3);
+    /* deleteEnv(env, 3); */
 
     return rescode;
 error:
     logErrMsg(&errmsgBuf, &rei->rsComm->rError);
     rei->status = rescode;
     freeRErrorContent(&errmsgBuf);
-    deleteEnv(env, 3);
+    /* deleteEnv(env, 3); */
     if(recclearDelayed) {
     clearDelayed();
     }
@@ -223,12 +221,12 @@ int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag,
     }
     rescode = convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
     RE_ERROR(rescode < 0);
-    deleteEnv(env, 3);
+    /* deleteEnv(env, 3); */
     return rescode;
 
 error:
 
-    deleteEnv(env, 3);
+    /* deleteEnv(env, 3); */
     return rescode;
 }
 
@@ -247,7 +245,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 
     int tempLen = ruleEngineConfig.extRuleSet->len;
 
-    int checkPoint=checkPointExtRuleSet();
+    int checkPoint=checkPointExtRuleSet(r);
 
     int rescode;
 
@@ -269,13 +267,13 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 	}
 
 	for(i=tempLen;i<ruleEngineConfig.extRuleSet->len;i++) {
-	    Hashtable *varTypes = newHashTable2(100, r);
+	    Hashtable *varTypes = newHashTable2(10, r);
 
 	    List *typingConstraints = newList(r);
 	    Node *errnode;
 	    ExprType *type = typeRule(ruleEngineConfig.extRuleSet->rules[i], ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
 
-	    if(type->nodeType==T_ERROR) {
+	    if(getNodeType(type)==T_ERROR) {
 	        rescode = TYPE_ERROR;
 	        RETURN;
 	    }
@@ -286,7 +284,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 	node = rd->node;
 
 	res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
-	rescode = res->nodeType  ==  N_ERROR? RES_ERR_CODE(res):0;
+	rescode = getNodeType(res)  ==  N_ERROR? RES_ERR_CODE(res):0;
 ret:
     /* remove rules from ext rule set */
     popExtRuleSet(checkPoint);
@@ -335,7 +333,7 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
         /*if(node==NULL) {
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
             return newErrorRes(r, OUT_OF_MEMORY);
-        } else if (node->nodeType == N_ERROR) {
+        } else if (getNodeType(node) == N_ERROR) {
             return newErrorRes(r, RES_ERR_CODE(node));
 
         }*/
@@ -344,13 +342,13 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     }
 
     Node *node = createFunctionNode(actionName, paramNodes, paramsCount, NULL, r);
-    Env *global = newEnv(newHashTable2(100, r), NULL, NULL);
-    Env *env = newEnv(newHashTable2(100, r), global, NULL);
+    Env *global = newEnv(newHashTable2(10, r), NULL, NULL, r);
+    Env *env = newEnv(newHashTable2(10, r), global, NULL, r);
     if(msParamArray!=NULL) {
         convertMsParamArrayToEnv(msParamArray, global, errmsg, r);
     }
-    Res *res = computeExpressionNode(node, env, rei, reiSaveFlag, errmsg,r);
-    deleteEnv(env, 3);
+    Res *res = computeNode(node, env, rei, reiSaveFlag, errmsg,r);
+    /* deleteEnv(env, 3); */
     if(recclearDelayed) {
     	clearDelayed();
     }
@@ -369,19 +367,19 @@ ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typ
 
             ExprType *resType = typeExpression3(node->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             /*printf("Type %d\n",resType->t); */
-            RE_ERROR(resType->nodeType == T_ERROR);
-            if(resType->nodeType != T_BOOL && resType->nodeType != T_VAR && resType->nodeType != T_DYNAMIC) {
+            RE_ERROR(getNodeType(resType) == T_ERROR);
+            if(getNodeType(resType) != T_BOOL && getNodeType(resType) != T_VAR && getNodeType(resType) != T_DYNAMIC) {
             	char buf2[1024], buf3[ERR_MSG_LEN];
             	typeToString(resType, varTypes, buf2, 1024);
             	snprintf(buf3, ERR_MSG_LEN, "error: the type %s of the rule condition is not supported", buf2);
-                generateErrMsg(buf3, node->subtrees[1]->expr, node->subtrees[1]->base, buf);
+                generateErrMsg(buf3, NODE_EXPR_POS(node->subtrees[1]), node->subtrees[1]->base, buf);
                 addRErrorMsg(errmsg, TYPE_ERROR, buf);
                 RE_ERROR(1);
             }
             resType = typeExpression3(node->subtrees[2], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-            RE_ERROR(resType->nodeType == T_ERROR);
+            RE_ERROR(getNodeType(resType) == T_ERROR);
             resType = typeExpression3(node->subtrees[3], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-            RE_ERROR(resType->nodeType == T_ERROR);
+            RE_ERROR(getNodeType(resType) == T_ERROR);
             /* printVarTypeEnvToStdOut(varTypes); */
             RE_ERROR(solveConstraints(typingConstraints, varTypes, errmsg, errnode, r) == ABSURDITY);
             int i;
@@ -413,7 +411,7 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
         /*char buf[1024]; */
         /*typingConstraintsToString(typingConstraints, NULL, buf, 1024); */
         /*printf("rule %s, typing constraints: %s\n", ruleset->rules[i]->subtrees[0]->text, buf); */
-			if(restype->nodeType == T_ERROR) {
+			if(getNodeType(restype) == T_ERROR) {
 				res = restype;
 				char *errbuf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
 				errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
@@ -431,9 +429,9 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
 			char *ruleName = rule->node->subtrees[0]->text;
 			FunctionDesc *fd;
 			if((fd = (FunctionDesc *)lookupFromEnv(funcDesc, ruleName)) != NULL) {
-				if(fd->nodeType != N_FD_EXTERNAL) {
+				if(getNodeType(fd) != N_FD_EXTERNAL) {
 					char *err;
-					switch(fd->nodeType) {
+					switch(getNodeType(fd)) {
 					case N_FD_CONSTRUCTOR:
 						err = "redefinition of constructor";
 						break;
@@ -448,7 +446,7 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
 						break;
 					}
 
-					generateErrMsg(err, rule->node->expr, rule->node->base, errbuf);
+					generateErrMsg(err, NODE_EXPR_POS(rule->node), rule->node->base, errbuf);
 					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
 					res = newErrorType(FUNCTION_REDEFINITION, r);
 					*errnode = rule->node;
@@ -459,9 +457,9 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
 			RuleDesc *rd = (RuleDesc *)lookupFromHashTable(ruleType, ruleName);
 			if(rd!=NULL) {
 				if(rule->ruleType == RK_FUNC || rd ->ruleType == RK_FUNC) {
-					generateErrMsg("redefinition of function", rule->node->expr, rule->node->base, errbuf);
+					generateErrMsg("redefinition of function", NODE_EXPR_POS(rule->node), rule->node->base, errbuf);
 					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
-					generateErrMsg("previous definition", rd->node->expr, rd->node->base, errbuf);
+					generateErrMsg("previous definition", NODE_EXPR_POS(rd->node), rd->node->base, errbuf);
 					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
 					res = newErrorType(FUNCTION_REDEFINITION, r);
 					*errnode = rule->node;
@@ -478,9 +476,9 @@ ret:
     return res;
 }
 
-/* compute an expression given by an AST node */
-Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t* errmsg, Region *r) {
-    Hashtable *varTypes = newHashTable2(100, r);
+/* compute an expression or action given by an AST node */
+Res* computeNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t* errmsg, Region *r) {
+    Hashtable *varTypes = newHashTable2(10, r);
     Region *rNew = make_region(0, NULL);
     ExprType *resType;
     Node *en;
@@ -491,7 +489,7 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
         List *typingConstraints = newList(r);
         resType = typeExpression3(node, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
-        if(resType->nodeType == T_ERROR) {
+        if(getNodeType(resType) == T_ERROR) {
             addRErrorMsg(errmsg, -1, "type error: in rule");
             res = newErrorRes(r,-1);
             RETURN;
@@ -502,7 +500,11 @@ Res* computeExpressionNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSav
         varTypes = NULL;
         node->option |= OPTION_TYPED;
     }
-    res = evaluateExpression3(node, GlobalAllRuleExecFlag, 0, rei, reiSaveFlag, env, errmsg, rNew);
+    if(getNodeType(node) == N_ACTIONS) {
+    	res = evaluateActions(node, NULL, rei, reiSaveFlag, env, errmsg, rNew);
+    } else {
+    	res = evaluateExpression3(node, GlobalAllRuleExecFlag, 0, rei, reiSaveFlag, env, errmsg, rNew);
+    }
 
 /*    switch (TYPE(res)) {
         case T_ERROR:
@@ -542,16 +544,19 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
         res = newErrorRes(r, -1);
         RETURN;
     }
-    rulegen = strstr(expr, "##")==NULL?1:0;
+    rulegen = isRuleGenSyntax(expr);
 
-
-    node = parseTermRuleGen(e, rulegen, pc, errmsg, r);
+    if(rulegen) {
+    	node = parseTermRuleGen(e, rulegen, pc, errmsg, r);
+    } else {
+    	node= parseActionsRuleGen(e, rulegen, pc, errmsg, r);
+    }
     if(node==NULL) {
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
             res = newErrorRes(r, OUT_OF_MEMORY);
             RETURN;
-    } else if (node->nodeType == N_ERROR) {
-            generateErrMsg("error: syntax error",node->expr, node->base, buf);
+    } else if (getNodeType(node) == N_ERROR) {
+            generateErrMsg("error: syntax error",NODE_EXPR_POS(node), node->base, buf);
             addRErrorMsg(errmsg, PARSER_ERROR, buf);
             res = newErrorRes(r, PARSER_ERROR);
             RETURN;
@@ -569,8 +574,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
             RETURN;
         }
     }
-
-    res = computeExpressionNode(node, env, rei, reiSaveFlag, errmsg,r);
+	res = computeNode(node, env, rei, reiSaveFlag, errmsg,r);
     ret:
     deleteParserContext(pc);
     deletePointer(e);
@@ -665,8 +669,8 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     rei->msParamArray = orig;
 
 	freeCmdExecOut(execOut);
-    deleteEnv(env, 3);
-    if(res->nodeType == N_ERROR && !freeRei) {
+    /* deleteEnv(env, 3); */
+    if(getNodeType(res) == N_ERROR && !freeRei) {
         logErrMsg(&errmsgBuf, &rei->rsComm->rError);
         rei->status = RES_ERR_CODE(res);
     }

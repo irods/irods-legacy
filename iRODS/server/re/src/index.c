@@ -57,7 +57,7 @@ int createCondIndex(Region *r) {
 
         	FunctionDesc *fd = (FunctionDesc *) resumingBucket->value;
             resumingBucket = resumingBucket->next;
-        	if(fd->nodeType != N_FD_RULE_INDEX_LIST) {
+        	if(getNodeType(fd) != N_FD_RULE_INDEX_LIST) {
         		continue;
         	}
             RuleIndexList *ruleIndexList= FD_RULE_INDEX_LIST(fd);
@@ -85,16 +85,16 @@ int createCondIndex(Region *r) {
 						break;
 					}
 					Node *ruleCond = ruleNode->subtrees[1];
-					while(ruleCond->nodeType == N_TUPLE && ruleCond->degree == 1) {
+					while(getNodeType(ruleCond) == N_TUPLE && ruleCond->degree == 1) {
 						ruleCond = ruleCond->subtrees[0];
 					}
 					if(!(
-							ruleCond->nodeType == N_APPLICATION &&
-							ruleCond->subtrees[0]->nodeType == TK_TEXT &&
+							getNodeType(ruleCond) == N_APPLICATION &&
+							getNodeType(ruleCond->subtrees[0]) == TK_TEXT &&
 							strcmp(ruleCond->subtrees[0]->text, "==") == 0 && /* comparison */
-							ruleCond->subtrees[1]->nodeType == N_TUPLE &&
+							getNodeType(ruleCond->subtrees[1]) == N_TUPLE &&
 							ruleCond->subtrees[1]->degree == 2 &&
-							ruleCond->subtrees[1]->subtrees[1]->nodeType == TK_STRING  /* with a string */
+							getNodeType(ruleCond->subtrees[1]->subtrees[1]) == TK_STRING  /* with a string */
 					)) {
 						currIndexNode = currIndexNode->next;
 						break;
@@ -144,7 +144,7 @@ int createCondIndex(Region *r) {
 					Node *ruleNode = getRuleDesc(ri)->node;
 					removeNodeFromRuleIndexList(ruleIndexList, instIndexNode);
 					Node *ruleCond = ruleNode->subtrees[1];
-					while(ruleCond->nodeType == N_TUPLE && ruleCond->degree == 1) {
+					while(getNodeType(ruleCond) == N_TUPLE && ruleCond->degree == 1) {
 						ruleCond = ruleCond->subtrees[0];
 					}
 					char *strVal = ruleCond->subtrees[1]->subtrees[1]->text;
@@ -231,10 +231,10 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, Re
 			FunctionDesc *fd = (FunctionDesc *) lookupFromHashTable(ruleIndex, key);
 			if(fd != NULL) {
 /*				printf("adding %s\n", key);*/
-				if(fd->nodeType==N_FD_RULE_INDEX_LIST) {
+				if(getNodeType(fd)==N_FD_RULE_INDEX_LIST) {
 					RuleIndexList *list = FD_RULE_INDEX_LIST(fd);
 					appendRuleNodeToRuleIndexList(list, i + offset, r);
-				} else if(fd->nodeType == N_FD_EXTERNAL) {
+				} else if(getNodeType(fd) == N_FD_EXTERNAL) {
 					/* combine N_FD_EXTERNAL with N_FD_RULE_LIST */
 					if (updateInHashTable(ruleIndex, key, newRuleIndexListFD(newRuleIndexList(key, i + offset, r),fd->exprType, r)) == 0) {
 						return 0;
@@ -306,7 +306,7 @@ int findNextRuleFromIndex(Env *ruleIndex, char *action, int i, RuleIndexListNode
 	if (ruleIndex!=NULL) {
 		FunctionDesc *fd = (FunctionDesc *)lookupFromHashTable(ruleIndex->current, action);
 		if(fd != NULL) {
-			if (fd->nodeType!=N_FD_RULE_INDEX_LIST) {
+			if (getNodeType(fd)!=N_FD_RULE_INDEX_LIST) {
 				return NO_MORE_RULES_ERR;
 			}
 			RuleIndexList *l=FD_RULE_INDEX_LIST(fd);

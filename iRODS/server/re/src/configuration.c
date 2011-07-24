@@ -99,8 +99,8 @@ void prependRuleIntoAppIndex(RuleDesc *rule, int i, Region *r) {
 		prependRuleNodeToRuleIndexList(rd, i ,r);
 	}
 }
-int checkPointExtRuleSet() {
-	ruleEngineConfig.extFuncDescIndex = newEnv(newHashTable(100), ruleEngineConfig.extFuncDescIndex, NULL);
+int checkPointExtRuleSet(Region *r) {
+	ruleEngineConfig.extFuncDescIndex = newEnv(newHashTable2(100, r), ruleEngineConfig.extFuncDescIndex, NULL, r);
 	return ruleEngineConfig.extRuleSet->len;
 }
 /*void appendAppRule(RuleDesc *rd, Region *r) {
@@ -120,7 +120,7 @@ void popExtRuleSet(int checkPoint) {
 	}*/
 	Env *temp = ruleEngineConfig.extFuncDescIndex;
 	ruleEngineConfig.extFuncDescIndex = temp->previous;
-	deleteEnv(temp, 1);
+	/* deleteEnv(temp, 1); */
 	ruleEngineConfig.extRuleSet->len = checkPoint;
 }
 RuleEngineStatus getRuleEngineStatus() {
@@ -193,7 +193,7 @@ void delayClearResources(int resources) {
 void clearDelayed() {
 	ListNode *n = envToClear.head;
 	while(n!=NULL) {
-		deleteEnv((Env *) n->value, 1);
+		/* deleteEnv((Env *) n->value, 1); */
 		listRemoveNoRegion(&envToClear, n);
 		n = envToClear.head;
 	}
@@ -336,11 +336,15 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
             cache = restoreCache(buf);
 	        detachSharedMemory();
 
-	        if(time_type_gt(timestamp, cache->timestamp)) {
+	        if(cache == NULL) {
+#ifdef DEBUG
+	        	printf("failed to restore cache, load local copy\n");
+#endif
+	        } else if(time_type_gt(timestamp, cache->timestamp)) {
 	        	 update = 1;
 	        	 free(cache->address);
 #ifdef DEBUG
-		printf("rule file modified, force reload\n");
+	        	 printf("rule file modified, force reload\n");
 #endif
 	        } else {
 

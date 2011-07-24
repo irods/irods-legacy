@@ -28,6 +28,7 @@ int strttime(char* timestr, char* timeformat, rodsLong_t* t) {
 	/*printf("seconds since the Epoch: %ld\n", (long) t); */
 	return 1;
 }
+
 /*
  * returns 0 if failed
  *         1 if succeeded
@@ -43,3 +44,4 @@ int ttimestr(char* timestr, int n, char* timeformat, rodsLong_t* t) {
 	}
 	return 1;
 }
+

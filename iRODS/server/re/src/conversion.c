@@ -176,11 +176,15 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 		return 1;
 */
 	} else {
+		if(res->param==NULL) {
+			res->param = newMsParam(mP->type, mP->inOutStruct, mP->inpOutBuf, r);
+		} else {
             RES_UNINTER_STRUCT(res) = mP->inOutStruct;
             RES_UNINTER_BUFFER(res) = mP->inpOutBuf;
-            res->exprType = newIRODSType(mP->type,r);
-            return 0;
         }
+        res->exprType = newIRODSType(mP->type,r);
+        return 0;
+	}
 
 
 }
@@ -245,10 +249,14 @@ int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *er
 		return 1;
 */
 	} else {
-		RES_UNINTER_STRUCT(res) = mP->inOutStruct;
-		RES_UNINTER_BUFFER(res) = mP->inpOutBuf;
-		res->exprType = newIRODSType(mP->type,r);
-		return 0;
+		if(res->param==NULL) {
+			res->param = newMsParam(mP->type, mP->inOutStruct, mP->inpOutBuf, r);
+		} else {
+            RES_UNINTER_STRUCT(res) = mP->inOutStruct;
+            RES_UNINTER_BUFFER(res) = mP->inpOutBuf;
+        }
+        res->exprType = newIRODSType(mP->type,r);
+        return 0;
 	}
 
 
@@ -333,7 +341,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             break;
         case T_CONS:
             if(strcmp(T_CONS_TYPE_NAME(res->exprType), LIST) == 0) {
-                switch(T_CONS_TYPE_ARG(res->exprType, 0)->nodeType) {
+                switch(getNodeType(T_CONS_TYPE_ARG(res->exprType, 0))) {
                     case T_STRING:
                         arr = (strArray_t *)malloc(sizeof(strArray_t));
                         arr->len = res->degree;
@@ -421,14 +429,9 @@ int convertEnvToMsParamArray(msParamArray_t *var, Env *env, rError_t *errmsg, Re
         return -1;
     }
 }
+
 int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t *errmsg, Region *r) {
 	int i;
-	if(var->msParam == NULL) {
-		var->len = 0;
-		var->msParam = (msParam_t **) malloc(sizeof(msParam_t *)*(env->len));
-	} else {
-		var->msParam = (msParam_t **) realloc(var->msParam, sizeof(msParam_t *)*(var->len + env->len));
-	}
 	for(i=0;i<env->size;i++) {
 		struct bucket *b = env->buckets[i];
 		while(b!=NULL) {
@@ -446,6 +449,13 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 			if(v == NULL) {
 				v = (msParam_t *) malloc(sizeof(msParam_t));
 				ret = convertResToMsParam(v, res, errmsg);
+				if(var->msParam == NULL) {
+					var->len = 0;
+					var->msParam = (msParam_t **) malloc(sizeof(msParam_t *)*(PTR_ARRAY_MALLOC_LEN));
+				} else if(var->len % PTR_ARRAY_MALLOC_LEN == 0) {
+					var->msParam = (msParam_t **) realloc(var->msParam, sizeof(msParam_t *)*(PTR_ARRAY_MALLOC_LEN + var->len));
+				}
+
 				var->msParam[var->len++] = v;
 			}
 			v->label = strdup(b->key);
@@ -503,7 +513,7 @@ int updateMsParamArrayToEnvAndFreeNonIRODSType(msParamArray_t *var, Env *env, rE
 /************* Res to String *********************/
 char* convertResToString(Res *res0) {
     char *res;
-	switch (res0->nodeType) {
+	switch (getNodeType(res0)) {
 
 	case N_ERROR:
 		res = (char *)malloc(sizeof(char)*1024);
@@ -514,10 +524,10 @@ char* convertResToString(Res *res0) {
             case T_INT:
             case T_DOUBLE:
                 res = (char *)malloc(sizeof(char)*1024);
-				if(res0->value.dval==(int)res0->value.dval) {
-					snprintf(res, 1024, "%d", (int)res0->value.dval);
+				if(res0->dval==(int)res0->dval) {
+					snprintf(res, 1024, "%d", (int)res0->dval);
 				} else {
-					snprintf(res, 1024, "%f", res0->value.dval);
+					snprintf(res, 1024, "%f", res0->dval);
 				}
 				return res;
             case T_STRING:
@@ -542,7 +552,7 @@ char* convertResToString(Res *res0) {
 				}
 			return res;
             case T_BOOL:
-                res = strdup(((int)res0->value.dval)?"true":"false");
+                res = strdup(RES_BOOL_VAL(res0)?"true":"false");
                 return res;
             case T_CONS:
                 res = (char *)malloc(sizeof(char)*1024);
@@ -637,7 +647,7 @@ void printHashtable(Hashtable *env, char* buf2) {
 
 int convertResToIntReturnValue(Res *res) {
     int retVal;
-    if(res->nodeType == N_ERROR) {
+    if(getNodeType(res) == N_ERROR) {
        retVal = RES_ERR_CODE(res);
     } else {
        retVal = RES_INT_VAL(res);
@@ -646,42 +656,3 @@ int convertResToIntReturnValue(Res *res) {
 
 }
 
-rePackNode_t *convertResToPackNode(Res *res) {
-	rePackNode_t *n = (rePackNode_t *) malloc(sizeof(rePackNode_t));
-	memset(n, 0, sizeof(rePackNode_t));
-	n->base = strdup(res->base);
-	n->coercionType = convertResToPackNode(res->coercionType);
-	n->degree = res->degree;
-	if(res->nodeType == N_VAL &&
-			(TYPE(res) == T_BOOL || TYPE(res) == T_INT || TYPE(res) == T_DOUBLE)) {
-		n->dval = res->value.dval;
-	}
-	n->expr = res->expr;
-	n->exprType = convertResToPackNode(res->exprType);
-	if((res->nodeType == N_VAL && (TYPE(res) == T_ERROR || TYPE(res) == T_STRING)) ||
-		res->nodeType == N_FD_DECONSTRUCTOR ||
-		res->nodeType == N_TUPLE ||
-		res->nodeType == T_VAR ||
-		res->nodeType == N_SYM_LINK ||
-		res->nodeType == N_PARTIAL_APPLICATION) {
-		n->ival = res->value.ival;
-	}
-	if(res->nodeType == N_VAL && TYPE(res) == T_DATETIME) {
-		n->lval = res->value.lval;
-	}
-	n->nodeType = (int) res->nodeType;
-	n->option = res->option;
-	if(res->nodeType == N_VAL || TYPE(res) == T_IRODS) {
-		n->param = (msParam_t *)malloc(sizeof(msParam_t));
-		n->param->inOutStruct = res->value.uninter.inOutStruct;
-		n->param->inpOutBuf = res->value.uninter.inOutBuffer;
-	}
-	n->ruleIndexList = (RuleIndexList *) res->value.ruleIndexList;
-	n->subtrees = (rePackNode_t **) malloc(sizeof(rePackNode_t *) * res->degree);
-	int i;
-	for(i=0;i<res->degree;i++) {
-		n->subtrees[i] = convertResToPackNode(res->subtrees[i]);
-	}
-	n->text = strdup(res->text);
-	return n;
-}

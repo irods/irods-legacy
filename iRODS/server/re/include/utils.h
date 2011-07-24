@@ -4,311 +4,23 @@
 
 #ifndef UTILS_H
 #define UTILS_H
-#include "debug.h"
-#include "region.h"
-#include "hashtable.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "debug.h"
 #ifndef DEBUG
 #include "objInfo.h"
 #include "reHelpers1.h"
 #include "rodsType.h"
 #endif
 
-#define MAX_PARAMS_LEN 100
-#define MAX_RULE_LEN (1024 * 64)
-#define MAX_NUM_DISJUNCTS 100
-
-/* parser error -1203000 */
-#define PARSER_ERROR -1203000
-#define UNPARSED_SUFFIX -1203001
-#define POINTER_ERROR -1203002
-/* runtime error -1205000 */
-#define RUNTIME_ERROR -1205000
-#define DIVISION_BY_ZERO -1205001
-#define BUFFER_OVERFLOW -1205002
-#define UNSUPPORTED_OP_OR_TYPE -1205003
-#define UNSUPPORTED_SESSION_VAR -1205004
-#define UNABLE_TO_WRITE_LOCAL_VAR -1205005
-#define UNABLE_TO_READ_LOCAL_VAR -1205006
-#define UNABLE_TO_WRITE_SESSION_VAR -1205007
-#define UNABLE_TO_READ_SESSION_VAR -1205008
-#define UNABLE_TO_WRITE_VAR -1205009
-#define UNABLE_TO_READ_VAR -1205010
-#define PATTERN_NOT_MATCHED -1205011
-#define STRING_OVERFLOW -1205012
-/* system error -1207000 */
-#define UNKNOWN_ERROR -1207000
-#define OUT_OF_MEMORY -1207001
-#define SHM_UNLINK_ERROR -1207002
-#define FILE_STAT_ERROR -1207003
-/* type error -1209000 */
-#define TYPE_ERROR -1209000
-#define FUNCTION_REDEFINITION -12090001
-
-#define DATETIME_MS_T "DATETIME_MS_T"
+#include "restructs.h"
+#include "region.h"
+#include "hashtable.h"
 
 #define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }
-#define TYPE(x) ((x)->exprType->nodeType)
-
-#define T_CONS_TYPE_ARGS(x) ((x)->subtrees)
-#define T_CONS_TYPE_ARG(x, n) ((x)->subtrees[n])
-#define T_CONS_TYPE_NAME(x) ((x)->text)
-#define T_CONS_ARITY(x) ((x)->degree)
-#define T_FUNC_PARAM_TYPE(x, n) (T_CONS_TYPE_ARG((x)->subtrees[0], n))
-#define T_FUNC_PARAM_TYPE_VARARG(x, n) (n<T_FUNC_ARITY(x)?T_FUNC_PARAM_TYPE(x,n):T_FUNC_PARAM_TYPE(x,T_FUNC_ARITY(x)-1))
-#define T_FUNC_RET_TYPE(x) ((x)->subtrees[1])
-#define T_FUNC_ARITY(x) ((x)->subtrees[0]->degree)
-#define T_FUNC_VARARG(x) ((x)->vararg)
-#define T_VAR_ID(x) ((x)->value.ival)
-#define T_VAR_DISJUNCT(x, n) ((x)->subtrees[n])
-#define T_VAR_DISJUNCTS(x) ((x)->subtrees)
-#define T_VAR_NUM_DISJUNCTS(x) ((x)->degree)
-#define TC_A(tc) ((tc)->subtrees[0])
-#define TC_B(tc) ((tc)->subtrees[1])
-#define TC_NODE(tc) ((tc)->subtrees[2])
-#define TC_NEXT(tc) ((tc)->subtrees[3])
-#define N_APP_ARG(x, n) ((x)->subtrees[1]->subtrees[n])
-#define N_APP_FUNC(x) ((x)->subtrees[0])
-#define N_APP_ARITY(x) ((x)->subtrees[1]->degree)
-
-
-#define LIST "[]"
-#define TUPLE "<>"
-#define APPLICATION "()"
-#define META_DATA "@()"
-#define AVU "avu"
-#define ST_TUPLE "()"
-#define FUNC "->"
-#define ERR_MSG_SEP "=========="
-
-typedef struct node Node;
-typedef struct node ExprType;
-typedef struct node Res;
-typedef struct node FunctionDesc;
-
-typedef ExprType *ExprTypePtr;
-typedef struct bucket Bucket;
-typedef Bucket *BucketPtr;
-
-typedef enum node_type {
-    TK_EOS = -1,
-    N_ERROR = 0,
-    TK_INT = 1,
-    TK_DOUBLE = 2,
-    TK_TEXT = 3,
-    TK_STRING = 4,
-    TK_BOOL = 5,
-    TK_BACKQUOTED = 6,
-    TK_DATETIME = 7, /* unused */
-    TK_VAR = 8,
-    TK_LOCAL_VAR = 10,
-    TK_SESSION_VAR = 11,
-    TK_OP = 12,
-    TK_MISC_OP = 14,
-    N_VAL = 20,
-    N_TUPLE = 21,
-    N_APPLICATION = 22,
-    N_PARTIAL_APPLICATION = 23,
-    N_ACTIONS = 30,
-    N_ACTIONS_RECOVERY = 31,
-    N_RULE_NAME = 32,
-    N_PARAM_LIST = 33,
-    N_PARAM_TYPE_LIST = 34,
-    N_AVU = 35,
-    N_META_DATA = 36,
-    N_RULE_PACK = 37,
-    N_RULESET = 38,
-    N_FD_FUNCTION = 41,
-    N_FD_CONSTRUCTOR = 42,
-    N_FD_DECONSTRUCTOR = 43,
-    N_FD_EXTERNAL = 44,
-    N_FD_RULE_INDEX_LIST = 45,
-    N_SYM_LINK = 46,
-    N_RULE_CODE = 50,
-    N_RULE = 60,
-    N_CONSTRUCTOR_DEF = 61,
-    N_EXTERN_DEF = 62,
-    N_DATA_DEF = 63,
-    N_UNPARSED = 64,
-    T_UNSPECED = 100, /* indicates a variable which is not assigned a value is passed in to a microservice */
-    T_ERROR = 101,
-    T_DYNAMIC = 200,
-    T_DOUBLE = 201,
-    T_INT = 202,
-    T_STRING = 203,
-    T_DATETIME = 204,
-    T_BOOL = 205,
-    T_FLEX = 206,
-    T_FIXD = 207,
-    T_TUPLE = 208,
-    T_CONS = 209,
-    T_BREAK = 230,
-    T_SUCCESS = 231,
-    T_VAR = 300,
-    T_IRODS = 400,
-    T_TYPE = 500,
-    TC_LT = 600,
-    TC_SET = 660,
-} NodeType;
-
-#define OPTION_VARARG_ONCE 0x0
-#define OPTION_VARARG_STAR 0x1
-#define OPTION_VARARG_PLUS 0x2
-#define OPTION_VARARG_OPTIONAL 0x3
-#define OPTION_VARARG_MASK 0xf
-#define OPTION_COERCE 0x10
-#define OPTION_TYPED 0x20
-
-#define OPTION_IO_TYPE_MASK 0xff00
-#define IO_TYPE_INPUT 0x100
-#define IO_TYPE_OUTPUT 0x200
-#define IO_TYPE_DYNAMIC 0x400
-#define IO_TYPE_EXPRESSION 0x800
-#define IO_TYPE_ACTIONS 0x1000
-
-#define getVararg(n) ((n)->option & OPTION_VARARG_MASK)
-#define setVararg(n, v) (n)->option &= ~OPTION_VARARG_MASK; (n)->option |= (v);
-#define getIOType(n) ((n)->option & OPTION_IO_TYPE_MASK)
-#define setIOType(n, v) (n)->option &= ~OPTION_IO_TYPE_MASK; (n)->option |= (v);
-
-
-typedef struct env Env;
-
-typedef Res *(*SmsiFuncPtrType)(Node **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
-
-typedef struct condIndexVal CondIndexVal;
-
-struct condIndexVal {
-    Node *params;
-    Node *condExp;
-    Hashtable *valIndex; /* char * -> int * */
-};
-
-typedef struct ruleIndexListNode {
-    struct ruleIndexListNode *next, *prev;
-    int secondaryIndex;
-	int ruleIndex;
-	CondIndexVal *condIndex;
-} RuleIndexListNode;
-
-typedef struct ruleIndexList {
-    char *ruleName;
-    RuleIndexListNode *head, *tail;
-} RuleIndexList;
-#define FD_PROJ(x) (x)->value.ival
-#define RES_FUNC_N_ARGS(x) (x)->value.ival
-#define RES_ERR_CODE(x) (x)->value.ival
-#define RES_FUNC_N_ARGS(x) (x)->value.ival
-#define N_TUPLE_CONSTRUCT_TUPLE(x) (x)->value.ival
-#define RES_STRING_STR_LEN(x) (x)->value.ival
-#define RES_DOUBLE_VAL_LVAL(x) ((x)->value.dval)
-#define RES_INT_VAL_LVAL(x) ((x)->value.dval)
-#define RES_BOOL_VAL_LVAL(x) ((x)->value.dval)
-#define RES_DOUBLE_VAL(x) ((x)->value.dval)
-#define RES_INT_VAL(x) ((int)(x)->value.dval)
-#define RES_BOOL_VAL(x) ((int)(x)->value.dval)
-#define RES_TIME_VAL(x) (x)->value.lval
-#define FD_RULE_INDEX_LIST(x) ((x)->value.ruleIndexList)
-#define FD_RULE_INDEX_LIST_LVAL(x) FD_RULE_INDEX_LIST(x)
-#define FD_SMSI_FUNC_PTR(x) ((x)->value.func)
-#define FD_SMSI_FUNC_PTR_LVAL(x) FD_SMSI_FUNC_PTR(x)
-#define RES_UNINTER_STRUCT(x) ((x)->value.uninter.inOutStruct)
-#define RES_UNINTER_BUFFER(x) ((x)->value.uninter.inOutBuffer)
-
-
-
-/* value */
-union node_ext {
-    int ival;
-    double dval;
-    rodsLong_t lval;
-    RuleIndexList *ruleIndexList;
-    SmsiFuncPtrType func;
-    struct {
-    	void *inOutStruct;
-    	bytesBuf_t *inOutBuffer;
-    } uninter;
-};
-
-typedef struct str_list StringList;
-struct str_list {
-    char *str;
-    struct str_list *next;
-};
-
-struct env {
-    Hashtable *current;
-    Env *previous;
-    Env *lower;
-};
-
-
-/* todo change text of dynamically allocated array */
-#define MAX_TOKEN_TEXT_LEN 1023
-
-typedef struct label {
-    long exprloc;
-    char *base;
-} Label;
-typedef struct token {
-    NodeType type;
-    char text[MAX_TOKEN_TEXT_LEN+1];
-    int vars[100];
-    long exprloc;
-} Token;
-
-struct node {
-    NodeType nodeType; /* node type */
-    ExprType *exprType; /* expression type */
-    ExprType *coercionType; /* coercion type */
-    int degree;
-    int option; /* weather runtime coercion is needed */
-    /* when this node represents a type or a pattern, this field indicates whether the trailing subtree represents varargs */
-    char *text;
-    rodsLong_t expr;
-    struct node **subtrees;
-    char *base;
-    union node_ext value;
-};
-typedef struct packNode rePackNode_t;
-struct packNode {
-	int degree;
-	int option;
-	int nodeType;
-	int ival;
-	rodsLong_t expr;
-	rodsLong_t lval;
-	double dval;
-	rePackNode_t *exprType;
-	rePackNode_t *coercionType;
-	rePackNode_t **subtrees;
-	char *text;
-	char *base;
-	RuleIndexList *ruleIndexList;
-	msParam_t *param;
-};
-
-typedef Node *NodePtr;
-typedef char *charPtr;
-
-typedef struct node TypingConstraint;
-
-typedef struct list List;
-typedef struct listNode ListNode;
-
-struct list {
-    ListNode *head;
-    ListNode *tail;
-};
-
-struct listNode {
-    ListNode *next;
-    void *value;
-};
+#define CASCADE_NULL(x) if((x)==NULL) return NULL;
 
 extern int tvarNumber;
 
@@ -322,53 +34,32 @@ ExprType *dupType(ExprType *ty, Region *r);
 int typeEqSyntatic(ExprType *a, ExprType *b);
 
 Node **allocSubtrees(Region *r, int size);
-Node *newNode(NodeType type, char* text, Label * exprloc, Region *r);
-Node *newExprType(NodeType t, int degree, Node **subtrees, Region *r);
-ExprType *newTVar(Region *r);
-ExprType *newTVar2(int numDisjuncts, Node **disjuncts, Region *r);
-ExprType *newCollType(ExprType *elemType, Region *r);
-ExprType *newTupleType(int arity, ExprType **typeArgs, Region *r);
-ExprType *newUnaryType(NodeType nodeType, ExprType *typeArg, Region *r);
-ExprType *newFuncType(ExprType *paramType, ExprType *retType, Region *r);
-ExprType *newFuncTypeVarArg(int arity, int vararg, ExprType **paramTypes, ExprType *elemType, Region *r);
-ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r);
-ExprType *newTupleTypeVarArg(int arity, int vararg, ExprType **paramTypes, Region *r);
-ExprType *newSimpType(NodeType t, Region *r);
-ExprType *newErrorType(int errcode, Region *r);
-ExprType *newIRODSType(char *name, Region *r);
-FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r);
-Node *newPartialApplication(Node *func, Node *arg, int nArgsLeft, Region *r);
 void setStringPair(ExprType *ty, Region *r);
 void replace(Hashtable *varTypes, int a, ExprType *b);
 void replaceCons(ExprType *consType, int a, ExprType *b);
 ExprType* dereference(ExprType *type, Hashtable *tt, Region *r);
 ExprType *instantiate(ExprType *type, Hashtable *type_table, int replaceFreeVars, Region *r);
 
-/** Res functions */
-Res* newRes(Region *r);
-Res* newIntRes(Region *r, int n);
-Res* newDoubleRes(Region *r, double a);
-Res* newBoolRes(Region *r, int n);
-Res* newErrorRes(Region *r, int errcode);
-Res* newUnspecifiedRes(Region *r);
-Res* newStringRes(Region *r, char *s);
-Res* newDatetimeRes(Region *r, long dt);
-Res* newCollRes(int size, ExprType *elemType, Region *r);
-Res* newUninterpretedRes(Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf);
-Res* newTupleRes(int arity, Res **compTypes, Region *r);
 
 ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable);
-Res *cpRes(Res *res, Region *r);
+
+#define cpRes(p, r) regionRegionCpNode(p, r)
+#define cpType(p, r) regionRegionCpNode(p, r)
+#define cpRes2(p, oldr, r) regionRegion2CpNode(p, oldr, r)
+#define cpType2(p, oldr, r) regionRegion2CpNode(p, oldr, r)
+
+/*Res *cpRes(Res *res, Region *r);*/
+/*ExprType *cpType(ExprType *type, Region *r); */
 char *cpString(char *res, Region *r);
 char *cpStringExt(char* str, Region* r);
-ExprType *cpType(ExprType *type, Region *r);
 void cpHashtable(Hashtable *env, Region *r);
 void cpEnv(Env *env, Region *r);
-Res *cpRes2(Res *res, Region *oldr, Region *newr);
+/*Res *cpRes2(Res *res, Region *oldr, Region *newr);*/
+/*ExprType *cpType2(ExprType *type, Region *oldr, Region *newr);*/
 char *cpString2(char *res, Region *oldr, Region *newr);
-ExprType *cpType2(ExprType *type, Region *oldr, Region *newr);
 void cpHashtable2(Hashtable *env, Region *oldr, Region *newr);
 void cpEnv2(Env *env, Region *oldr, Region *newr);
+
 Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r);
 int occursIn(ExprType *var, ExprType *type);
 ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r);
@@ -380,26 +71,16 @@ void printType(ExprType *type, Hashtable *var_types);
 char *typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize);
 void typingConstraintsToString(List *typingConstraints, Hashtable *var_types, char *buf, int bufsize);
 
-msParamArray_t *newMsParamArray();
-void deleteMsParamArray(msParamArray_t *msParamArray);
-
-Env *newEnv(Hashtable *current, Env *previous, Env *lower);
-void deleteEnv(Env *env, int deleteCurrent);
 void *lookupFromEnv(Env *env, char *key);
 void updateInEnv(Env *env, char *varname, Res *res);
 void freeEnvUninterpretedStructs(Env *e);
 Env* globalEnv(Env *env);
 
-List *newList(Region *r);
-ListNode *newListNode(void *value, Region *r);
 void listAppend(List *list, void *value, Region *r);
 void listAppendToNode(List *list, ListNode *node, void *value, Region *r);
 void listRemove(List *list, ListNode *node);
-ListNode *newListNodeNoRegion(void *value);
 void listAppendNoRegion(List *list, void *value);
 void listRemoveNoRegion(List *list, ListNode *node);
-
-TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r);
 
 int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str);
 void logErrMsg(rError_t *errmsg, rError_t *system);
@@ -410,20 +91,51 @@ int isRecursive(Node *rule);
 int invokedIn(char *fn, Node *expr);
 Node *lookupAVUFromMetadata(Node *metadata, char *a);
 
-FunctionDesc *newFunctionFD(char* type, SmsiFuncPtrType func, Region *r);
-FunctionDesc *newConstructorFD(char* type, Region *r);
-FunctionDesc *newExternalFD(Node* type, Region *r);
-FunctionDesc *newConstructorFD2(Node* type, Region *r);
-FunctionDesc *newDeconstructorFD(char *type, int proj, Region *r);
-FunctionDesc *newRuleIndexListFD(RuleIndexList *ruleIndexList, ExprType *, Region *r);
+int isRuleGenSyntax(char *expr);
 
 #define INC_MOD(x, m) (x) = (((x) == ((m) - 1)) ? 0 : ((x) + 1))
 #define DEC_MOD(x, m) (x) = (((x) == 0) ? ((m) - 1) : ((x) - 1))
+#define FLOOR_MOD(x, m) ((x) % (m) == 0? (x) : (x) / (m) * (m))
+#define CEILING_MOD(x, m) ((x) % (m) == 0? (x) : (x) / (m) * (m) + (m))
 
 /*#define INC_MOD(x, m) (x) = (x+1)% (m)*/
 /*#define DEC_MOD(x, m) (x) = (x+(m)-1) % (m)*/
 #define CONCAT2(a,b) a##b
 #define CONCAT(a,b) CONCAT2(a,b)
+
+#define KEY_PROTO
+#include "key.proto.h"
+#include "proto.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+
+void keyBuf(unsigned char *buf, int size, char *keyBuf);
+
+#undef KEY_PROTO
+
+#include "region.to.region.proto.h"
+#include "proto.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+
+#include "to.region.proto.h"
+#include "proto.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+
+#include "to.memory.proto.h"
+#include "proto.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+
+#include "region.to.region2.proto.h"
+#include "proto.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+
+/*#include "region.check.proto.h"
+#include "restruct.templates.h"
+#include "end.instance.h"*/
 
 /** debugging functions */
 int writeToTmp(char *fileName, char *text);

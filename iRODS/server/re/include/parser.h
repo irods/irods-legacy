@@ -4,32 +4,24 @@
 
 #ifndef PARSER_H
 #define PARSER_H
-#include "debug.h"
-#include "region.h"
-#include "hashtable.h"
-#include "utils.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "debug.h"
 
 #ifndef DEBUG
 #include "objInfo.h"
 #include "reHelpers1.h"
 #endif
 
-/* #define PARSER_LAZY 0 */
-#define MAX_FUNC_PARAMS 20
-#define MAX_NUM_RULES 50000
-#define CORE_RULE_INDEX_OFF 30000
-#define APP_RULE_INDEX_OFF 10000
-#define RULE_NODE_NUM_PARAMS(r) ((r)->subtrees[0]->subtrees[0]->degree)
-#define RULE_NAME(r) ((r)->subtrees[0]->text)
+#include "reconstants.h"
+#include "restructs.h"
+#include "region.h"
+#include "hashtable.h"
+#include "utils.h"
 
-#define MAX_PREC 20
-#define MIN_PREC 0
-
-#define POINTER_BUF_SIZE (16*1024)
 
 typedef struct op {
     char* string;
@@ -53,29 +45,8 @@ typedef struct pointer {
     char *base; /* f + filename without extension, or s + source */
 } Pointer;
 
-typedef enum ruleType {
-    RK_REL,
-    RK_FUNC,
-    RK_DATA,
-    RK_CONSTRUCTOR,
-    RK_EXTERN,
-    /* RK_UNPARSED, */
-} RuleType;
-
-typedef struct {
-    int id;
-    Node *type;
-    Node *node;
-    RuleType ruleType;
-} RuleDesc;
-
-typedef struct ruleSet {
-	int len;
-	RuleDesc* rules[MAX_NUM_RULES];
-	/* Region *region; */
-} RuleSet;
-
 #define pushRule(rs, r) ((rs)->rules[(rs)->len++] = (r))
+
 
 typedef struct {
     Node *nodeStack[1024];
@@ -328,20 +299,8 @@ goto CONCAT(exit, l);
 #endif
 
 /** utility functions */
-void setBase(Node *node, char *base, Region *r);
-Node **setDegree(Node *node, int d, Region *r);
-Node *createUnaryFunctionNode(char *fn, Node *a, Label * exprloc, Region *r);
-Node *createBinaryFunctionNode(char *fn, Node *a, Node *b, Label * exprloc, Region *r);
-Node *createFunctionNode(char *fn, Node **params, int paramsLen, Label * exprloc, Region *r);
-Node *createActionsNode(Node **params, int paramsLen, Label * exprloc, Region *r);
-Node *createTextNode(char *t, Label * exprloc, Region *r);
-Node *createNumberNode(char *t, Label * exprloc, Region *r);
-Node *createStringNode(char *t, Label * exprloc, Region *r);
-Node *createErrorNode(char *error, Label * exprloc, Region *r);
 ParserContext *newParserContext(rError_t *errmsg, Region *r);
 void deleteParserContext(ParserContext *t);
-RuleSet *newRuleSet(Region *r);
-RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r);
 
 Token *nextTokenRuleGen(Pointer* expr, ParserContext* pc, int rulegen);
 int nextString(Pointer *e, char *value, int vars[]);
@@ -368,6 +327,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rErro
  */
 Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc, rError_t *errmsg, Region *r);
 Node *parseTermRuleGen(Pointer *expr, int rulegn, ParserContext *pc, rError_t *errmsg, Region *r);
+Node *parseActionsRuleGen(Pointer *expr, int rulegn, ParserContext *pc, rError_t *errmsg, Region *r);
 void pushback(Pointer *e, Token *token, ParserContext *pc);
 void initPointer(Pointer *p, FILE* fp, char* ruleBaseName);
 void initPointer2(Pointer *p, char* buf);

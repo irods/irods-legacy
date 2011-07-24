@@ -20,6 +20,7 @@
 #define RESC_REGION_APP 0x400
 #define RESC_REGION_EXT 0x800
 #define RESC_CACHE 0x1000
+
 typedef enum ruleEngineStatus {
     UNINITIALIZED,
     INITIALIZED,
@@ -63,6 +64,7 @@ typedef struct {
     time_type updateTS;
     unsigned int version;
 } Cache;
+
 #define isComponentInitialized(x) ((x)==INITIALIZED || (x)==COMPRESSED)
 #define isComponentAllocated(x) ((x)==INITIALIZED)
 #define clearRegion(u, l) \
@@ -115,19 +117,18 @@ typedef struct {
 
 #define clearFuncDescIndex(u, l) \
 	if((resources & RESC_##u##_FUNC_DESC_INDEX) && isComponentAllocated(ruleEngineConfig.l##FuncDescIndexStatus)) { \
-		deleteEnv(ruleEngineConfig.l##FuncDescIndex, 1); \
+		/* deleteEnv(ruleEngineConfig.l##FuncDescIndex, 1); */\
 		ruleEngineConfig.l##FuncDescIndex = NULL; \
 		ruleEngineConfig.l##FuncDescIndexStatus = UNINITIALIZED; \
 	} \
 
 #define createFuncDescIndex(u, l) \
 	if(!isComponentInitialized(ruleEngineConfig.l##FuncDescIndexStatus)) { \
-		ruleEngineConfig.l##FuncDescIndex = newEnv(NULL, NULL, NULL); \
+		ruleEngineConfig.l##FuncDescIndex = newEnv(NULL, NULL, NULL, ruleEngineConfig.l##Region); \
 		ruleEngineConfig.l##FuncDescIndex->current = newHashTable2(1000, ruleEngineConfig.l##Region); \
 		ruleEngineConfig.l##FuncDescIndexStatus = INITIALIZED; \
 	} \
 
-extern unsigned char *ruleEngineMem;
 extern RuleEngineStatus _ruleEngineStatus;
 extern int isServer;
 extern Cache ruleEngineConfig;
@@ -143,7 +144,7 @@ int availableRules();
 void removeRuleFromExtIndex(char *ruleName, int i);
 void appendRuleIntoExtIndex(RuleDesc *rule, int i, Region *r);
 void prependRuleIntoAppIndex(RuleDesc *rule, int i, Region *r);
-int checkPointExtRuleSet();
+int checkPointExtRuleSet(Region *r);
 void appendAppRule(RuleDesc *rd, Region *r);
 void prependAppRule(RuleDesc *rd, Region *r);
 void popExtRuleSet(int checkPoint);

@@ -686,7 +686,7 @@ readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleEx
   addInxIval(&genQueryInp.selectInp, COL_RULE_CONDITION, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_BODY, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_RECOVERY, 1);
-  Env *env = newEnv(newHashTable(100), NULL, NULL);
+  Env *env = newEnv(newHashTable2(100, region), NULL, NULL, region);
   status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
   while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
     r[0] = getSqlResultByInx (genQueryOut, COL_RULE_BASE_MAP_BASE_NAME);
@@ -724,7 +724,7 @@ readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleEx
 	  int errcode = parseRuleSet(p, ruleSet, env, &errloc, errmsg, region);
 	  deletePointer(p);
 	  if(errcode<0) {
-		  deleteEnv(env, 3);
+		  /* deleteEnv(env, 3); */
 		  freeGenQueryOut (&genQueryOut);
 		  return errcode;
 	  }
@@ -738,7 +738,7 @@ readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleEx
     else
       break;
   }
-  deleteEnv(env, 3);
+  /* deleteEnv(env, 3); */
   return(0);
 }
 

@@ -9,116 +9,11 @@
 #include "datetime.h"
 
 
-#define KEY_SIZE 1024
-void keychar(char *node, char *keyBuf) {
-	int len = snprintf(keyBuf, KEY_SIZE, "string::%s", node);
-	if(len >= KEY_SIZE) {
-		snprintf(keyBuf, KEY_SIZE, "pointer::%p", node);
-	}
+#include "cache.instance.h"
+#include "traversal.instance.h"
+#include "restruct.templates.h"
 
-}
-void keyRuleIndexListNode(RuleIndexListNode *node, char *keyBuf) {
-	memset(keyBuf, 0, KEY_SIZE);
-	snprintf(keyBuf, KEY_SIZE, "pointer::%p", node);
-}
-void keyEnv(Env *node, char *keyBuf) {
-	memset(keyBuf, 0, KEY_SIZE);
-	snprintf(keyBuf, KEY_SIZE, "pointer::%p", node);
-}
-void keyNode(Node *node, char *keyBuf) {
-	memset(keyBuf, 0, KEY_SIZE);
-	if(node->degree>0) {
-		snprintf(keyBuf, KEY_SIZE, "%p", node);
-	} else {
-		char *p = keyBuf;
-		int len = snprintf(p, KEY_SIZE, "node::%d::%p::%lld::%p::%d::%s::%s::",
-				node->option, node->coercionType, node->expr, node->exprType,
-				(int)node->nodeType, node->base, node->text
-				);
-		if(len + sizeof(union node_ext) * 3 >= KEY_SIZE) {
-			snprintf(keyBuf, KEY_SIZE, "pointer::%p", node);
-			return;
-		}
-		unsigned int i;
-		for(i=0;i<sizeof(union node_ext);i++) {
-			len += sprintf(keyBuf + len, "%02X ", ((unsigned char *)&(node->value))[i]);
-		}
-	}
-}
-COPY_FUNC_OBJ_MAP_SHARED_BEGIN(Node)
-      MK_COPY_OBJ_MAP(Node, e->exprType, ecopy->exprType);
-      MK_COPY_OBJ_MAP(Node, e->coercionType, ecopy->coercionType);
-      MK_COPY_OBJ_MAP(char, e->base, ecopy->base);
-      MK_COPY_OBJ_MAP(char, e->text, ecopy->text);
-      allocateArrayInBuffer(NodePtr, e->degree, ecopy->subtrees, e->subtrees);
-      MK_POINTER(&(ecopy->subtrees));
-      int i;
-      for(i=0;i<e->degree;i++) {
-    	  MK_COPY_OBJ_MAP(Node, e->subtrees[i], ecopy->subtrees[i]);
-      }
-      if(e->nodeType == N_FD_RULE_INDEX_LIST) {
-    	  MK_COPY_OBJ_MAP(RuleIndexList,FD_RULE_INDEX_LIST(e), FD_RULE_INDEX_LIST_LVAL(ecopy));
-      }
-/*      printf("inserting %s\n", key); */
-	  insertIntoHashTable(objectMap, key, ecopy);
-/*
-          printf("tvar %s is added to shared objects\n", tvarNameBuf);
-*/
-COPY_FUNC_END
-
-COPY_FUNC_OBJ_MAP_BEGIN(RuleDesc)
-  MK_COPY_OBJ_MAP(Node, e->node, ecopy->node);
-  MK_COPY_OBJ_MAP(Node, e->type, ecopy->type);
-COPY_FUNC_END
-COPY_FUNC_OBJ_MAP_BEGIN(RuleSet)
-  int i =0;
-  for(i=0;i<e->len;i++) {
-    MK_COPY_OBJ_MAP(RuleDesc, e->rules[i], ecopy->rules[i]);
-  }
-COPY_FUNC_END
-COPY_FUNC_OBJ_MAP_SHARED_NO_COPY_BEGIN(char)
-	char *ecopy;
-    allocateArrayInBuffer(char, strlen(e)+1, ecopy, e);
-COPY_FUNC_END
-
-COPY_FUNC_OBJ_MAP_SHARED_BEGIN(RuleIndexListNode)
-    MK_COPY_OBJ_MAP(RuleIndexListNode, e->next, ecopy->next);
-    MK_COPY_OBJ_MAP(CondIndexVal, e->condIndex, ecopy->condIndex);
-COPY_FUNC_END
-COPY_FUNC_OBJ_MAP_BEGIN(RuleIndexList)
-    MK_COPY_OBJ_MAP(RuleIndexListNode, e->head, ecopy->head);
-    MK_COPY_OBJ_MAP(RuleIndexListNode, e->tail, ecopy->tail);
-    MK_COPY_OBJ_MAP(char, e->ruleName, ecopy->ruleName);
-COPY_FUNC_END
-COPY_FUNC_COPIER_SHARED_BEGIN(Env)
-		MK_COPY_COPIER(Env, e->previous, ecopy->previous, cpfn);
-		MK_COPY_COPIER(Env, e->lower, ecopy->lower, cpfn);
-		MK_COPY_COPIER(Hashtable, e->current, ecopy->current, cpfn);
-		insertIntoHashTable(objectMap, key, ecopy);
-COPY_FUNC_END
-COPY_FUNC_COPIER_BEGIN(Bucket)
-	MK_COPY_OBJ_MAP(char, e->key, ecopy->key);
-	ecopy->value = COPIER(e->value);
-	MK_POINTER(&(ecopy->value));
-    MK_COPY_COPIER(Bucket, e->next, ecopy->next, cpfn);
-COPY_FUNC_END
-COPY_FUNC_COPIER_BEGIN(Hashtable)
-	allocateArrayInBuffer(BucketPtr, e->size, ecopy->buckets, e->buckets);
-	MK_POINTER(&(ecopy->buckets));
-	int i;
-	for(i=0;i<e->size;i++) {
-		MK_COPY_COPIER(Bucket, e->buckets[i], ecopy->buckets[i], cpfn);
-	}
-
-COPY_FUNC_END
-
-COPY_FUNC_OBJ_MAP_BEGIN(CondIndexVal)
-    MK_COPY_OBJ_MAP(Node, e->condExp, ecopy->condExp);
-    MK_COPY_OBJ_MAP(Node, e->params, ecopy->params);
-    MK_COPY_COPIER(Hashtable, e->valIndex, ecopy->valIndex, (Copier)copyRuleIndexListNode);
-COPY_FUNC_END
-
-Cache *copyCache(unsigned char **p, size_t size, Cache *c) {
+Cache *copyCache(unsigned char **p, size_t size, Cache *ptr) {
 	if(size%ALIGNMENT != 0) { /* size should be divisible by ALIGNMENT */
 		return NULL;
 	}
@@ -131,42 +26,43 @@ Cache *copyCache(unsigned char **p, size_t size, Cache *c) {
     unsigned char **pointers = &pointers0;
     int generatePtrDesc = 1;
 
-    allocateInBuffer(Cache, ccopy, c);
+    allocateInBuffer(Cache, ecopy, ptr);
 
-    MK_POINTER(&(ccopy->address));
-    MK_POINTER(&(ccopy->pointers));
-    MK_COPY_OBJ_MAP(RuleSet, c->coreRuleSet, ccopy->coreRuleSet);
-    ccopy->coreRuleSetStatus = COMPRESSED;
-    ccopy->appRuleSet = NULL;
-    ccopy->appRuleSetStatus = UNINITIALIZED;
-    ccopy->extRuleSet = NULL;
-    ccopy->extRuleSetStatus = UNINITIALIZED;
-    MK_COPY_COPIER(Env, c->coreFuncDescIndex, ccopy->coreFuncDescIndex, (Copier)copyNode);
-    ccopy->coreFuncDescIndexStatus = COMPRESSED;
-    ccopy->appFuncDescIndex = NULL;
-    ccopy->appFuncDescIndexStatus = UNINITIALIZED;
-    ccopy->extFuncDescIndex = NULL;
-    ccopy->extFuncDescIndexStatus = UNINITIALIZED;
-    ccopy->dataSize = (*p - buf);
-    ccopy->address = buf;
-    ccopy->pointers = pointers0;
-	ccopy->cacheSize = size;
-    ccopy->cacheStatus = INITIALIZED;
-	ccopy->appRegion = NULL;
-	ccopy->appRegionStatus = UNINITIALIZED;
-	ccopy->coreRegion = NULL;
-	ccopy->coreRegionStatus = UNINITIALIZED;
-	ccopy->extRegion = NULL;
-	ccopy->extRegionStatus = UNINITIALIZED;
-	ccopy->sysRegion = NULL;
-	ccopy->sysRegionStatus = UNINITIALIZED;
-	ccopy->sysFuncDescIndex = NULL;
-	ccopy->sysFuncDescIndexStatus = UNINITIALIZED;
-	ccopy->ruleEngineStatus = UNINITIALIZED;
+    MK_POINTER(&(ecopy->address));
+    MK_POINTER(&(ecopy->pointers));
+
+    MK_PTR(RuleSet, coreRuleSet);
+    MK_TRANSIENT_VAL(RuleEngineStatus, coreRuleSetStatus, COMPRESSED);
+    MK_TRANSIENT_PTR(RuleSet, appRuleSet);
+    MK_TRANSIENT_VAL(RuleEngineStatus, appRuleSetStatus, UNINITIALIZED);
+    MK_TRANSIENT_PTR(RuleSet, extRuleSet);
+    MK_TRANSIENT_VAL(RuleEngineStatus, extRuleSetStatus, UNINITIALIZED);
+    MK_PTR_GENERIC(Env, coreFuncDescIndex, GENERIC(Node));
+    MK_TRANSIENT_VAL(RuleEngineStatus, coreFuncDescIndexStatus, COMPRESSED);
+    MK_TRANSIENT_PTR(Hashtable, appFuncDescIndex);
+    MK_TRANSIENT_VAL(RuleEngineStatus, appFuncDescIndexStatus, UNINITIALIZED);
+    MK_TRANSIENT_PTR(Hashtable, extFuncDescIndex);
+    MK_TRANSIENT_VAL(RuleEngineStatus, extFuncDescIndexStatus, UNINITIALIZED);
+    ecopy->dataSize = (*p - buf);
+    ecopy->address = buf;
+    ecopy->pointers = pointers0;
+	ecopy->cacheSize = size;
+    ecopy->cacheStatus = INITIALIZED;
+	ecopy->appRegion = NULL;
+	ecopy->appRegionStatus = UNINITIALIZED;
+	ecopy->coreRegion = NULL;
+	ecopy->coreRegionStatus = UNINITIALIZED;
+	ecopy->extRegion = NULL;
+	ecopy->extRegionStatus = UNINITIALIZED;
+	ecopy->sysRegion = NULL;
+	ecopy->sysRegionStatus = UNINITIALIZED;
+	MK_TRANSIENT_PTR(Hashtable, sysFuncDescIndex);
+	MK_TRANSIENT_VAL(RuleEngineStatus, sysFuncDescIndexStatus, UNINITIALIZED);
+	MK_TRANSIENT_VAL(RuleEngineStatus, ruleEngineStatus, UNINITIALIZED);
 
     deleteHashTable(objectMap, nop);
 
-    return ccopy;
+    return ecopy;
 }
 Cache *restoreCache(unsigned char *buf) {
 	mutex_type *mutex;
@@ -182,7 +78,9 @@ Cache *restoreCache(unsigned char *buf) {
     unsigned int version, version2;
     int success = 0;
     do {
-		lockMutex(&mutex);
+		if(lockMutex(&mutex) != 0) {
+			break;
+		}
     	version = cache->version;
         unlockMutex(&mutex);
     	dataSize = cache->dataSize;
@@ -204,7 +102,11 @@ Cache *restoreCache(unsigned char *buf) {
 			return NULL;
 		}
 		memcpy(pointersCopy, pointersMapped+(buf - bufMapped), pointersSize);
-		lockMutex(&mutex);
+		if(lockMutex(&mutex)!=0) {
+			free(bufCopy);
+			free(pointersCopy);
+			break;
+		}
     	version2 = cache->version;
         unlockMutex(&mutex);
 		if(version2 != version) {
@@ -215,6 +117,10 @@ Cache *restoreCache(unsigned char *buf) {
 			success = 1;
 		}
     } while(!success);
+
+    if(!success) {
+    	return NULL;
+    }
     pointers = pointersCopy;
 
 /*    bufCopy = (unsigned char *)malloc(cache->dataSize);
@@ -274,7 +180,12 @@ void updateCache(unsigned char *shared, size_t size, Cache *cache, int forceRelo
 	time_type timestamp;
 	time_type_set(timestamp, cache->timestamp);
 
-	lockMutex(&mutex);
+	if(lockMutex(&mutex) != 0) {
+#ifdef DEBUG
+		printf("failed to update cache, lock mutex 1\n");
+#endif
+		return;
+	}
 	if(forceReload || time_type_gt(timestamp, ((Cache *)shared)->updateTS)) {
 		time_type_set(((Cache *)shared)->updateTS, timestamp);
 		unlockMutex(&mutex);
@@ -294,7 +205,13 @@ void updateCache(unsigned char *shared, size_t size, Cache *cache, int forceRelo
 				applyDiff(pointers, pointersSize, diff, 0);
 				applyDiffToPointers(pointers, pointersSize, diff);
 
-				lockMutex(&mutex);
+				if(lockMutex(&mutex) != 0) {
+#ifdef DEBUG
+					printf("failed to update cache, lock mutex 2\n");
+#endif
+					free(buf);
+					return;
+				}
 				if(forceReload || !time_type_gt(((Cache *)shared)->updateTS, timestamp)) {
 					/* copy data */
 					memcpy(shared, buf, cacheCopy->dataSize);

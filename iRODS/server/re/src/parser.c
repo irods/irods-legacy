@@ -79,132 +79,14 @@ ParserContext *newParserContext(rError_t *errmsg, Region *r) {
 void deleteParserContext(ParserContext *t) {
     free(t);
 }
-RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r) {
-    RuleDesc *rd = (RuleDesc *) region_alloc(r, sizeof(RuleDesc));
-    rd->id = -1;
-    rd->node = n;
-    rd->type = NULL;
-    rd->ruleType = rk;
-    return rd;
-}
-
-RuleSet *newRuleSet(Region *r) {
-    RuleSet *rs = (RuleSet *) region_alloc(r, sizeof(RuleSet));
-    rs->len = 0;
-    return rs;
-}
-
-void setBase(Node *node, char *base, Region *r) {
-        node->base= (char *)region_alloc(r, sizeof(char)*(strlen(base)+1));
-        strcpy(node->base, base);
-
-}
-/**
- * set the degree of a node and allocate subtrees array
- */
-Node **setDegree(Node *node, int d, Region *r) {
-	node->degree = d;
-	node->subtrees = (Node **)region_alloc(r,d*sizeof(Node *));
-	if(node->subtrees==NULL) {
-		return NULL;
-	}
-	return node->subtrees;
-}
-/*
-Node *dupNode(Node *node, Region* r) {
-    Node *dup = newNode(node->type, node->text, node->expr, r);
-    Node **subdup = setDegree(dup, node->degree, r);
-    int i;
-    for(i = 0;i<node->degree;i++) {
-        subdup[i] = dupNode(node->subtrees[i],r);
-    }
-    return dup;
-}*/
-Node *createUnaryFunctionNode(char *fn, Node *a, Label * expr, Region *r) {
-	Node *node = newNode(N_APPLICATION, fn, expr, r);
-	if(node == NULL) {
-		return NULL;
-	}
-	setDegree(node, 1,r);
-	node->subtrees[0] = a;
-	return node;
-}
-Node *createBinaryFunctionNode(char *fn, Node *a, Node *b, Label * expr, Region *r) {
-	Node *node = newNode(N_APPLICATION, fn, expr,r);
-	if(node == NULL) {
-		return NULL;
-	}
-	setDegree(node, 2, r);
-	node->subtrees[0] = a;
-	node->subtrees[1] = b;
-	return node;
-}
-Node *createFunctionNode(char *fn, Node **params, int paramsLen, Label * exprloc, Region *r) {
-	Node *node = newNode(N_APPLICATION, fn, exprloc, r);
-	if(node == NULL) {
-		return NULL;
-	}
-	Node *func = newNode(TK_TEXT, fn, exprloc, r);
-	Node *param = newNode(N_TUPLE, APPLICATION, exprloc, r);
-	setDegree(param, paramsLen, r);
-	memcpy(param->subtrees, params, paramsLen*sizeof(Node *));
-	setDegree(node, 2, r);
-	node->subtrees[0] = func;
-	node->subtrees[1] = param;
-	return node;
-}
-Node *createActionsNode(Node **params, int paramsLen, Label * exprloc, Region *r) {
-	Node *node = newNode(N_ACTIONS, "ACTIONS", exprloc, r);
-	if(node == NULL) {
-		return NULL;
-	}
-	setDegree(node, paramsLen,r);
-	memcpy(node->subtrees, params, paramsLen*sizeof(Node *));
-	return node;
-}
-Node *createTextNode(char *t, Label * exprloc, Region *r) {
-	Node *node = newNode(TK_TEXT, t, exprloc, r);
-	if(node == NULL) {
-		return NULL;
-	}
-	return node;
-}
-Node *createIntNode(char *t, Label * exprloc, Region *r) {
-	Node *node = newNode(TK_INT, t, exprloc, r);
-	if(node == NULL) {
-		return NULL;
-	}
-	return node;
-}
-Node *createDoubleNode(char *t, Label * exprloc, Region *r) {
-	Node *node = newNode(TK_DOUBLE, t, exprloc, r);
-	if(node == NULL) {
-		return NULL;
-	}
-	return node;
-}
-Node *createStringNode(char *t, Label * exprloc, Region *r) {
-	Node *node = newNode(TK_STRING, t, exprloc, r);
-	if(node == NULL) {
-		return NULL;
-	}
-	return node;
-}
-Node *createErrorNode(char *error, Label * exprloc, Region *r) {
-	Node *node = newNode(N_ERROR, error, exprloc, r);
-	if(node == NULL) {
-		return NULL;
-	}
-	return node;
-}
 int isLocalVariableNode(Node *node) {
     return
-        node->nodeType==TK_VAR &&
+        getNodeType(node)==TK_VAR &&
         node->text[0] == '*';
 }
 int isSessionVariableNode(Node *node) {
     return
-        node->nodeType==TK_VAR &&
+        getNodeType(node)==TK_VAR &&
         node->text[0] == '$';
 }
 int isVariableNode(Node *node) {
@@ -1452,12 +1334,12 @@ void trimquotes(char *string) {
 void printTree(Node *n, int indent) {
 	printIndent(indent);
 	char buf[128], buf2[128];
-	if(n->nodeType >= T_UNSPECED && n->nodeType <= T_TYPE ) {
+	if(getNodeType(n) >= T_UNSPECED && getNodeType(n) <= T_TYPE ) {
 		typeToString(n, NULL, buf, 128);
-		printf("%s:%d\n", buf, n->nodeType);
+		printf("%s:%d\n", buf, getNodeType(n));
 		return;
-	} else if(n->nodeType >= TC_LT && n->nodeType <= TC_SET) {
-		printf("%s:%d\n",n->text, n->nodeType);
+	} else if(getNodeType(n) >= TC_LT && getNodeType(n) <= TC_SET) {
+		printf("%s:%d\n",n->text, getNodeType(n));
 	} else {
 	if(n->coercionType!=NULL) {
 	    typeToString(n->coercionType, NULL, buf, 128);
@@ -1486,7 +1368,7 @@ void printTree(Node *n, int indent) {
 	if(getIOType(n) & IO_TYPE_ACTIONS) {
 		strcat(iotype, "a");
 	}
-	printf("%s:%d %s => %s(option=%d)[%s]\n",n->text, n->nodeType, buf2, buf, n->option, iotype);
+	printf("%s:%d %s => %s(option=%d)[%s]\n",n->text, getNodeType(n), buf2, buf, n->option, iotype);
 }
 	int i;
 	for(i=0;i<n->degree;i++) {
@@ -1496,9 +1378,9 @@ void printTree(Node *n, int indent) {
 }
 #define PRINT(p, s, f, d) 	snprintf(*p, *s, f, d);*s -= strlen(*p); *p += strlen(*p);
 void patternToString(char **p, int *s, int indent, int prec, Node *n) {
-	switch(n->nodeType) {
+	switch(getNodeType(n)) {
 	case N_APPLICATION:
-		if(n->subtrees[0]->nodeType == TK_TEXT) {
+		if(getNodeType(n->subtrees[0]) == TK_TEXT) {
 			char *fn = n->subtrees[0]->text;
 			Token t;
 			strcpy(t.text, fn);
@@ -1515,7 +1397,7 @@ void patternToString(char **p, int *s, int indent, int prec, Node *n) {
 				}
 			} else {
 				patternToString(p, s, indent, MIN_PREC, n->subtrees[0]);
-				if(n->subtrees[1]->nodeType != N_TUPLE || n->subtrees[1]->degree != 0) {
+				if(getNodeType(n->subtrees[1]) != N_TUPLE || n->subtrees[1]->degree != 0) {
 					patternToString(p, s, indent, MIN_PREC, n->subtrees[1]);
 				}
 			}
@@ -1575,12 +1457,12 @@ void patternToString(char **p, int *s, int indent, int prec, Node *n) {
 	}
 }
 void termToString(char **p, int *s, int indent, int prec, Node *n) {
-	switch(n->nodeType) {
+	switch(getNodeType(n)) {
 	case N_ACTIONS_RECOVERY:
 		actionsToString(p, s, indent, n->subtrees[0], n->subtrees[1]);
 		break;
 	case N_APPLICATION:
-		if(n->subtrees[0]->nodeType == TK_TEXT) {
+		if(getNodeType(n->subtrees[0]) == TK_TEXT) {
 			char *fn = n->subtrees[0]->text;
 			if(strcmp(fn, "if") == 0) {
 				PRINT(p, s, "%s", "if (");
@@ -1750,7 +1632,7 @@ void actionsToString(char **p, int *s, int indent, Node *na, Node *nr) {
 	for(i=0;i<n;i++) {
 		indentToString(p, s, indent+1);
 		termToString(p, s, indent+1, MIN_PREC, na->subtrees[i]);
-		if(i<nr->degree && (nr->subtrees[i]->nodeType!=N_APPLICATION || strcmp(nr->subtrees[i]->subtrees[0]->text, "nop")!=0)) {
+		if(i<nr->degree && (getNodeType(nr->subtrees[i])!=N_APPLICATION || strcmp(nr->subtrees[i]->subtrees[0]->text, "nop")!=0)) {
 			PRINT(p, s, "%s", ":::");
 			termToString(p, s, indent+1, MIN_PREC, nr->subtrees[i]);
 		}
@@ -1803,7 +1685,7 @@ void typeToStringParser(char **p, int *s, int indent, int lifted, ExprType *type
         } else if(getIOType(etype) == IO_TYPE_EXPRESSION) {
         	PRINT(p, s, "%s ", "expression");
         }
-        if(etype->nodeType == T_VAR) {
+        if(getNodeType(etype) == T_VAR) {
         	PRINT(p, s, "%s", etype->text);
             if(T_VAR_NUM_DISJUNCTS(type)!=0) {
                 PRINT(p, s, " %s", "{");
@@ -1814,7 +1696,7 @@ void typeToStringParser(char **p, int *s, int indent, int lifted, ExprType *type
                 }
                 PRINT(p, s, "%s", "}");
             }
-        } else if(etype->nodeType == T_CONS) {
+        } else if(getNodeType(etype) == T_CONS) {
         	if(strcmp(etype->text, FUNC) == 0) {
         		/* PRINT(p, s, "%s", "("); */
 				typeToStringParser(p, s, indent, 1, T_CONS_TYPE_ARG(etype, 0));
@@ -1842,15 +1724,15 @@ void typeToStringParser(char **p, int *s, int indent, int lifted, ExprType *type
 					PRINT(p, s, "%s", ")");
 				}
 			}
-        } else if(etype->nodeType == T_FLEX) {
-            PRINT(p, s, "%s ", typeName_Parser(etype->nodeType));
+        } else if(getNodeType(etype) == T_FLEX) {
+            PRINT(p, s, "%s ", typeName_Parser(getNodeType(etype)));
             typeToStringParser(p, s, indent, 0, etype->subtrees[0]);
-        } else if(etype->nodeType == T_FIXD) {
-        	PRINT(p, s, "%s ", typeName_Parser(etype->nodeType));
+        } else if(getNodeType(etype) == T_FIXD) {
+        	PRINT(p, s, "%s ", typeName_Parser(getNodeType(etype)));
             typeToStringParser(p, s, indent, 0, etype->subtrees[0]);
         	PRINT(p, s, " %s ", "=>");
         	typeToStringParser(p, s, indent, 0, etype->subtrees[1]);
-        } else if(etype->nodeType == T_TUPLE) {
+        } else if(getNodeType(etype) == T_TUPLE) {
         	if(T_CONS_ARITY(etype) == 0) {
         		PRINT(p, s, "%s", "unit");
         	} else {
@@ -1868,10 +1750,10 @@ void typeToStringParser(char **p, int *s, int indent, int lifted, ExprType *type
             		PRINT(p, s, "%s", ">");
         		}
         	}
-        } else if(etype->nodeType == T_IRODS) {
+        } else if(getNodeType(etype) == T_IRODS) {
         	PRINT(p, s, "`%s`", etype->text);
         } else {
-        	PRINT(p, s, "%s", typeName_Parser(etype->nodeType));
+        	PRINT(p, s, "%s", typeName_Parser(getNodeType(etype)));
         }
 
 }
@@ -1887,13 +1769,13 @@ void ruleToString(char *buf, int size, RuleDesc *rd) {
 
 			int indent;
 			subt = node->subtrees[1];
-			while(subt->nodeType == N_TUPLE && subt->degree == 1) {
+			while(getNodeType(subt) == N_TUPLE && subt->degree == 1) {
 				subt = subt->subtrees[0];
 			}
 
 			PRINT(p, s, "%s", " ");
-			if(subt->nodeType != N_APPLICATION ||
-					subt->subtrees[0]->nodeType != TK_TEXT ||
+			if(getNodeType(subt) != N_APPLICATION ||
+					getNodeType(subt->subtrees[0]) != TK_TEXT ||
 					strcmp(subt->subtrees[0]->text, "true") != 0) {
 				PRINT(p, s, "%s", "{\n");
 				indentToString(p, s, 1);
@@ -1943,7 +1825,7 @@ void ruleToString(char *buf, int size, RuleDesc *rd) {
 
 void printTreeDeref(Node *n, int indent, Hashtable *var_types, Region *r) {
 	printIndent(indent);
-	printf("%s:%d->",n->text, n->nodeType);
+	printf("%s:%d->",n->text, getNodeType(n));
         printType(n->coercionType, var_types);
         printf("\n");
 	int i;
@@ -1961,7 +1843,7 @@ void printIndent(int n) {
 }
 
 int eqExprNodeSyntactic(Node *a, Node *b) {
-    if(a->nodeType == b->nodeType &&
+    if(getNodeType(a) == getNodeType(b) &&
        strcmp(a->text, b->text) == 0 &&
        a->degree == b->degree) {
         int i;
@@ -1975,12 +1857,12 @@ int eqExprNodeSyntactic(Node *a, Node *b) {
 }
 int eqExprNodeSyntacticVarMapping(Node *a, Node *b, Hashtable *varMapping /* from a to b */) {
     char *val;
-    if(a->nodeType == TK_VAR && b->nodeType == TK_VAR &&
+    if(getNodeType(a) == TK_VAR && getNodeType(b) == TK_VAR &&
             (val = (char *)lookupFromHashTable(varMapping, a->text))!=NULL &&
             strcmp(val, b->text) == 0) {
         return 1;
     }
-    if(a->nodeType == b->nodeType &&
+    if(getNodeType(a) == getNodeType(b) &&
        strcmp(a->text, b->text) == 0 &&
        a->degree == b->degree) {
         int i;
@@ -1999,7 +1881,7 @@ StringList *getVarNamesInExprNode(Node *expr, Region *r) {
 
 StringList *getVarNamesInExprNodeAux(Node *expr, StringList *vars, Region *r) {
     int i;
-    switch(expr->nodeType) {
+    switch(getNodeType(expr)) {
         case TK_VAR:
             if(expr->text[0] == '*') {
                 StringList *nvars = (StringList*)region_alloc(r, sizeof(StringList));
@@ -2781,8 +2663,8 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
             if(node==NULL) {
                 addRErrorMsg(errmsg, OUT_OF_MEMORY, "parseRuleSet: out of memory.");
                 return -1;
-            } else if(node->nodeType == N_ERROR) {
-                    *errloc = node->expr;
+            } else if(getNodeType(node) == N_ERROR) {
+                    *errloc = NODE_EXPR_POS(node);
                     generateErrMsg("parseRuleSet: error parsing rule.", *errloc, e->base, errbuf);
                     addRErrorMsg(errmsg, PARSER_ERROR, errbuf);
                     /* skip the current line and try to parse the rule from the next line */
@@ -2799,7 +2681,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                     pushRule(ruleSet, newRuleDesc(RK_DATA, nodes[0], r));
                     for(k=1;k<n;k++) {
                         if(lookupFromEnv(funcDescIndex, nodes[k]->subtrees[0]->text)!=NULL) {
-                            generateErrMsg("parseRuleSet: redefinition of constructor.", nodes[k]->subtrees[0]->expr, nodes[k]->subtrees[0]->base, errbuf);
+                            generateErrMsg("parseRuleSet: redefinition of constructor.", NODE_EXPR_POS(nodes[k]->subtrees[0]), nodes[k]->subtrees[0]->base, errbuf);
                             addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
                             return -1;
                         }
@@ -2808,7 +2690,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                     }
                 } else if(strcmp(node->text, "CONSTR") == 0) {
 					if(lookupFromEnv(funcDescIndex, nodes[0]->subtrees[0]->text)!=NULL) {
-						generateErrMsg("parseRuleSet: redefinition of constructor.", nodes[0]->subtrees[0]->expr, nodes[0]->subtrees[0]->base, errbuf);
+						generateErrMsg("parseRuleSet: redefinition of constructor.", NODE_EXPR_POS(nodes[0]->subtrees[0]), nodes[0]->subtrees[0]->base, errbuf);
 						addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
 						return -1;
 					}
@@ -2817,7 +2699,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 } else if(strcmp(node->text, "EXTERN") == 0) {
                 	FunctionDesc *fd;
 					if((fd = (FunctionDesc *) lookupFromEnv(funcDescIndex, nodes[0]->subtrees[0]->text))!=NULL) {
-						generateErrMsg("parseRuleSet: redefinition of function.", nodes[0]->subtrees[0]->expr, nodes[0]->subtrees[0]->base, errbuf);
+						generateErrMsg("parseRuleSet: redefinition of function.", NODE_EXPR_POS(nodes[0]->subtrees[0]), nodes[0]->subtrees[0]->base, errbuf);
 						addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
 						return -1;
 					}
@@ -2909,16 +2791,30 @@ Node *parseTermRuleGen(Pointer *expr, int rulegen, ParserContext *pc, rError_t *
     return rulePackNode;
 
 }
+Node *parseActionsRuleGen(Pointer *expr, int rulegen, ParserContext *pc, rError_t *errmsg, Region *r) {
+    nextRuleGenActions(expr, pc, rulegen, 0);
+    Node *rulePackNode = pc->nodeStack[0];
+        if(pc->error) {
+        if(pc->errnode!=NULL) {
+            rulePackNode =pc->errnode;
+        } else {
+            rulePackNode =createErrorNode("parser error", &pc->errloc, r);
+        }
+    }
+
+    return rulePackNode;
+
+}
 char* typeName_Res(Res *s) {
     return typeName_ExprType(s->exprType);
 }
 
 char* typeName_ExprType(ExprType *s) {
-        switch(s->nodeType) {
+        switch(getNodeType(s)) {
             case T_IRODS:
                 return s->text;
             default:
-                return typeName_NodeType(s->nodeType);
+                return typeName_NodeType(getNodeType(s));
         }
 }
 
@@ -3040,7 +2936,7 @@ void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_
 }
 void generateAndAddErrMsg(char *msg, Node *node, int errcode, rError_t *errmsg) {
 	char errmsgBuf[ERR_MSG_LEN];
-	generateErrMsg(msg, node->expr, node->base, errmsgBuf);
+	generateErrMsg(msg, NODE_EXPR_POS(node), node->base, errmsgBuf);
 	addRErrorMsg(errmsg, errcode, errmsgBuf);
 }
 char *generateErrMsg(char *msg, long errloc, char *ruleBaseName, char errmsg[ERR_MSG_LEN]) {
