@@ -809,7 +809,6 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 	int handleInx;							/* collection handler */
 	msParam_t *msParam;						/* temporary pointer for parameter substitution */
 	dataObjInp_t *dataObjInp;				/* will contain pathnames for each object (one at a time) */
-	int loopcnt, oldlen, i;					/* misc counters */
 
 	
 	
@@ -823,7 +822,7 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 			return (SYS_INTERNAL_NULL_INPUT_ERR);
 	}
 	
-	
+
 	/* Parse collection input */
 	rei->status = parseMspForCollInp (collection, &collInpCache, &collInp, 0);
 	if (rei->status < 0) {
@@ -842,13 +841,7 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 	
 	
 	/* Parse action input */
-	if (parseMspForStr(action))
-	{
-		/* Allocated size is an educated guess from reading code in systemMS.c */
-		actionStr = (char *)malloc(strlen(parseMspForStr(action)) + 15 + MAX_COND_LEN * 2);
-		snprintf(actionStr, strlen(parseMspForStr(action)) + 15 + MAX_COND_LEN * 2, "%s|nop", parseMspForStr(action));
-    }
-    else
+	if ((actionStr = parseMspForStr(action)) == NULL)
     {
     	rei->status = USER_PARAM_TYPE_ERR;
     	rodsLog (LOG_ERROR, "msiIsCollectionSpider: input action error. status = %d", rei->status);
@@ -862,9 +855,16 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 
 	/* In our array of msParams, fill the one whose label is the same as 'objects' with a pointer to *dataObjInp */
 	msParam = getMsParamByLabel(rei->msParamArray, objects->label);
-	resetMsParam (msParam);
-	msParam->type = strdup(DataObjInp_MS_T);
-	msParam->inOutStruct = (void *)dataObjInp;
+	if(msParam == NULL)
+	{
+		addMsParam(rei->msParamArray, strdup(objects->label),
+				strdup(DataObjInp_MS_T), (void *)dataObjInp, NULL);
+	} else
+	{
+		resetMsParam (msParam);
+		msParam->type = strdup(DataObjInp_MS_T);
+		msParam->inOutStruct = (void *)dataObjInp;
+	}
 
 
 
@@ -880,7 +880,6 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 	
 		
 	/* Read our collection one object at a time */
-	loopcnt = 0;
 	while ((rei->status = rsReadCollection (rei->rsComm, &handleInx, &collEnt)) >= 0) 
 	{
 		
@@ -891,32 +890,12 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 			memset(dataObjInp, 0, sizeof(dataObjInp_t));
 			snprintf(dataObjInp->objPath, MAX_NAME_LEN, "%s/%s", collEnt->collName, collEnt->dataName);
 		
-			/* stores current length of msParamArray (for later trimming) */
-			oldlen = rei->msParamArray->len;
-		
-			/* And finally... run actionStr on our object */
-//            printMsParam(rei->msParamArray);
-//            rodsLog (LOG_NOTICE, "-----------------------------------------------");
-			rei->status = execMyRule(actionStr, rei->msParamArray, rei);	
+			/* Run actionStr on our object */
+			rei->status = applyRule(actionStr, rei->msParamArray, rei, 0);
 			if (rei->status < 0)
 			{
 				/* If an error occurs, log incident but keep going */			
 				rodsLog (LOG_ERROR, "msiCollectionSpider: execMyRule error. status = %d", rei->status);
-			}
-
-			/* Remove unnecessary newly added entries in msParamArray, to prevent bloating */
-			if (loopcnt++ > 0)
-			{
-			    for (i = rei->msParamArray->len-1; i >= oldlen; i--)
-			    {
-			        if (rei->msParamArray->msParam[i] != NULL)
-			        {
-			        	clearMsParam (rei->msParamArray->msParam[i], 1);
-			        	free (rei->msParamArray->msParam[i]);
-			        }
-			        rei->msParamArray->len--;
-			    }
-
 			}
 		
 		}
@@ -935,13 +914,10 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 
 
 	/* Return operation status */
-//	printMsParam(rei->msParamArray);
-//	fillIntInMsParam (status, rei->msParamArray->len);
 	fillIntInMsParam (status, rei->status);
 	
 
 	/* Done */
-  	free(actionStr);
 	return rei->status;
 }
 
