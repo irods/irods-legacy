@@ -3,7 +3,7 @@ collectionSpiderExample {
 	*actions=``{
 					msiIsData(*objects, *dataID, *foo); 
 					writePosInt('stdout', *dataID); 
-					writeLine('stdout', '')
+					writeLine('stdout', '');
 			}``;
 	msiCollectionSpider(*collection, *objects, *actions, *status);
 }
