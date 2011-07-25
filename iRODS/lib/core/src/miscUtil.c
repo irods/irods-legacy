@@ -118,10 +118,10 @@ mkdirR (char *startDir, char *destDir, int mode)
 #else
 	if ((status = iRODSNt_stat(tmpPath, &statbuf)) >= 0) break;
 #endif
-#endif	/* USE_BOOST_FS */
         if (status >= 0) {
 	    break;
         }
+#endif	/* USE_BOOST_FS */
 
         /* Go backward */
 
