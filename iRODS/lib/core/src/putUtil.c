@@ -410,9 +410,9 @@ bulkOprInfo_t *bulkOprInfo)
 {
     int status = 0;
     int savedStatus = 0;
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
@@ -454,8 +454,13 @@ bulkOprInfo_t *bulkOprInfo)
     }
 
     conn = *myConn;
+#ifdef USE_BOOST_FS
+    path srcDirPath (srcDir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (srcDir);
     if (dirPtr == NULL) {
+#endif	/* USE_BOOST_FS */
 	rodsLog (LOG_ERROR,
         "putDirUtil: opendir local dir error for %s, errno = %d\n",
          srcDir, errno);
@@ -472,6 +477,14 @@ bulkOprInfo_t *bulkOprInfo)
         bulkFlag = bulkOprInfo->flags;
     }
 
+
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+	path p = itr->path();
+        snprintf (srcChildPath, MAX_NAME_LEN, "%s", 
+	  p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 || 
 	  strcmp (myDirent->d_name, "..") == 0) {
@@ -479,12 +492,12 @@ bulkOprInfo_t *bulkOprInfo)
 	}
         snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s", 
 	  srcDir, myDirent->d_name);
+#endif	/* USE_BOOST_FS */
 
         if (isPathSymlink (rodsArgs, srcChildPath) > 0) continue;
 #ifdef USE_BOOST_FS
-	path p (srcChildPath);
 	if (!exists (p)) {
-#else
+#else	/* USE_BOOST_FS */
 #ifndef windows_platform
         status = stat (srcChildPath, &statbuf);
 #else
@@ -492,11 +505,11 @@ bulkOprInfo_t *bulkOprInfo)
 #endif
 
         if (status != 0) {
+            closedir (dirPtr);
 #endif	/* USE_BOOST_FS */
             rodsLog (LOG_ERROR,
 	      "putDirUtil: stat error for %s, errno = %d\n", 
 	      srcChildPath, errno);
-            closedir (dirPtr);
             return (USER_INPUT_PATH_ERR);
         }
 
@@ -520,6 +533,9 @@ bulkOprInfo_t *bulkOprInfo)
             savedStatus = USER_INPUT_PATH_ERR;
             continue;
         }
+	path childPath = p.filename();
+        snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
+          targColl, childPath.c_str());
 #else	/* USE_BOOST_FS */
 	dataObjOprInp->createMode = statbuf.st_mode;
 	if (statbuf.st_mode & S_IFREG) {
@@ -534,10 +550,9 @@ bulkOprInfo_t *bulkOprInfo)
             savedStatus = USER_INPUT_PATH_ERR;
 	    continue;
         }
-#endif	/* USE_BOOST_FS */
         snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
           targColl, myDirent->d_name);
-
+#endif	/* USE_BOOST_FS */
 #if 0
         if (isPathSymlink (rodsArgs, srcChildPath) > 0) {
 	    if (childObjType == COLL_OBJ_T)
@@ -571,7 +586,9 @@ bulkOprInfo_t *bulkOprInfo)
 
 	if (status < 0) {
 	    /* restart failed */
+#ifndef USE_BOOST_FS
 	    closedir (dirPtr);
+#endif
 	    return (status);
 	} else if (status == 0) {
             if (bulkFlag == BULK_OPR_SMALL_FILES &&
@@ -626,7 +643,9 @@ bulkOprInfo_t *bulkOprInfo)
 		    }
 	        } else {
 		    /* don't continue with restart */
+#ifndef USE_BOOST_FS
 		    closedir (dirPtr);
+#endif
                     rodsLogError (LOG_ERROR, status,
                      "putDirUtil: put %s failed. status = %d",
                       srcChildPath, status);
@@ -644,7 +663,9 @@ bulkOprInfo_t *bulkOprInfo)
 	      rodsRestart, bulkOprInfo);
 
 	    if (rodsRestart->fd > 0 && status < 0) {
+#ifndef USE_BOOST_FS
 		closedir (dirPtr);
+#endif
 		return (status);
 	    }
         }
@@ -657,7 +678,9 @@ bulkOprInfo_t *bulkOprInfo)
         }
     }
 
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
 
     if (savedStatus < 0) {
         return (savedStatus);

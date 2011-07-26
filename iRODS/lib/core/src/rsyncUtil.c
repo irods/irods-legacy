@@ -573,9 +573,9 @@ dataObjInp_t *dataObjOprInp)
 {
     int status = 0;
     int savedStatus = 0;
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
@@ -603,8 +603,13 @@ dataObjInp_t *dataObjOprInp)
         return (USER_INPUT_OPTION_ERR);
     }
 
+#ifdef USE_BOOST_FS
+    path srcDirPath (srcDir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (srcDir);
     if (dirPtr == NULL) {
+#endif  /* USE_BOOST_FS */
         rodsLog (LOG_ERROR,
         "rsyncDirToCollUtil: opendir local dir error for %s, errno = %d\n",
          srcDir, errno);
@@ -620,6 +625,13 @@ dataObjInp_t *dataObjOprInp)
     myTargPath.objType = DATA_OBJ_T;
     mySrcPath.objType = LOCAL_FILE_T;
 
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -627,10 +639,13 @@ dataObjInp_t *dataObjOprInp)
         }
         snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
           srcDir, myDirent->d_name);
+#endif	/* USE_BOOST_FS */
 
         if (isPathSymlink (rodsArgs, mySrcPath.outPath) > 0) continue;
 #ifdef USE_BOOST_FS
+#if 0
         path p (mySrcPath.outPath);
+#endif
 	if (!exists(p)) {
 #else
 #ifndef windows_platform
@@ -640,18 +655,18 @@ dataObjInp_t *dataObjOprInp)
 #endif
 
         if (status != 0) {
+            closedir (dirPtr);
 #endif  /* USE_BOOST_FS */
             rodsLog (LOG_ERROR,
               "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
               mySrcPath.outPath, errno);
-            closedir (dirPtr);
             return (USER_INPUT_PATH_ERR);
         }
 	bzero (&myTargPath, sizeof (myTargPath));
-        snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
-          targColl, myDirent->d_name);
-
 #ifdef USE_BOOST_FS
+        path childPath = p.filename();
+        snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
+          targColl, childPath.c_str());
         if (is_symlink (p)) {
             path cp = read_symlink (p);
             snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
@@ -661,6 +676,8 @@ dataObjInp_t *dataObjOprInp)
 	dataObjOprInp->createMode = getPathStMode (p);
 	if (is_regular_file(p)) {
 #else
+        snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
+          targColl, myDirent->d_name);
 	dataObjOprInp->createMode = statbuf.st_mode;
         if ((statbuf.st_mode & S_IFREG) != 0) {     /* a file */
 #endif
@@ -734,8 +751,9 @@ dataObjInp_t *dataObjOprInp)
               mySrcPath.outPath, status);
         }
     }
-
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
 
     if (savedStatus < 0) {
         return (savedStatus);
