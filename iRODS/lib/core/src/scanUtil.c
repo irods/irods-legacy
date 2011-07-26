@@ -73,35 +73,44 @@ used for a mounted collection: abort!\n", inpPath);
 int 
 scanObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname)
 {
+#ifndef USE_BOOST_FS
 	DIR *dirPtr;
 	struct dirent *myDirent;
-#ifndef USE_BOOST_FS
 	struct stat sbuf;
 #endif
 	int status;
 	char fullPath[LONG_NAME_LEN] = "\0";
 	
+#ifndef USE_BOOST_FS
 	dirPtr = opendir (inpPath);
+#endif
 	/* check if it is a directory */
 #ifdef USE_BOOST_FS
-        path p (inpPath);
-        if (is_symlink (p)) {
+        path srcDirPath (inpPath);
+        if (is_symlink (srcDirPath)) {
             /* don't do anything if it is symlink */
 	    return 0;
-	} else if (is_directory(p)) {
+	} else if (is_directory(srcDirPath)) {
 #else	/* USE_BOOST_FS */
 	lstat(inpPath, &sbuf);
 	if ( S_ISDIR(sbuf.st_mode) == 1 ) {
-#endif	/* USE_BOOST_FS */
 		if ( dirPtr == NULL ) {
 			return (-1);
 		}
+#endif	/* USE_BOOST_FS */
 	}
 	else {
 		status = chkObjExist(conn, inpPath, hostname);
 		return (status);
 	}
 	
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path cp = itr->path();
+        snprintf (fullPath, MAX_NAME_LEN, "%s",
+          cp.c_str ());
+#else
 	while ( ( myDirent = readdir(dirPtr) ) != NULL ) {
         if ( strcmp(myDirent->d_name, ".") == 0 || strcmp(myDirent->d_name, "..") == 0 ) {
 			continue;
@@ -109,8 +118,8 @@ scanObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
         strcpy(fullPath, inpPath);
         strcat(fullPath, "/");
         strcat(fullPath, myDirent->d_name);
+#endif
 #ifdef USE_BOOST_FS
-        path cp (fullPath);
         if (is_symlink (cp)) {
             /* don't do anything if it is symlink */
             continue;
@@ -127,7 +136,9 @@ scanObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
 			status = chkObjExist(conn, fullPath, hostname);
         }
 	}
-   
+#ifndef USE_BOOST_FS
+   closedir (dirPtr);
+#endif
    return (status);
 	
 }

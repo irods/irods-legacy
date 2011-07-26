@@ -1792,9 +1792,9 @@ getDirSizeForProgStat (rodsArguments_t *rodsArgs, char *srcDir,
 operProgress_t *operProgress)
 {
     int status = 0;
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
@@ -1805,14 +1805,26 @@ operProgress_t *operProgress)
 
     if (isPathSymlink (rodsArgs, srcDir) > 0) return 0;
 
+#ifdef USE_BOOST_FS
+    path srcDirPath (srcDir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (srcDir);
     if (dirPtr == NULL) {
+#endif
         rodsLog (LOG_ERROR,
         "getDirSizeForProgStat: opendir local dir error for %s, errno = %d\n",
          srcDir, errno);
         return (USER_INPUT_PATH_ERR);
     }
 
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (srcChildPath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -1820,16 +1832,21 @@ operProgress_t *operProgress)
         }
         snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
           srcDir, myDirent->d_name);
+#endif
 
 	if (isPathSymlink (rodsArgs, srcChildPath) > 0) return 0;
 
 #ifdef USE_BOOST_FS
+#if 0
         path p (srcChildPath);
+#endif
         if (!exists(p)) {
             rodsLog (LOG_ERROR,
               "getDirSizeForProgStat: stat error for %s, errno = %d\n",
               srcChildPath, errno);
+#if 0
             closedir (dirPtr);
+#endif
             return (USER_INPUT_PATH_ERR);
         } else if (is_regular_file(p)) {
             operProgress->totalNumFiles++;
@@ -1866,6 +1883,10 @@ operProgress_t *operProgress)
 	}
 #endif	/* USE_BOOST_FS */
     }
+#ifndef USE_BOOST_FS
+    closedir (dirPtr);
+#endif
+
     return status;
 }
 
@@ -1959,9 +1980,9 @@ rmSubDir (char *mydir)
 {
     int status = 0;
     int savedStatus = 0;
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
@@ -1970,21 +1991,36 @@ rmSubDir (char *mydir)
 #endif	/* USE_BOOST_FS */
     char childPath[MAX_NAME_LEN];
 
+#ifdef USE_BOOST_FS
+    path srcDirPath (mydir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (mydir);
     if (dirPtr == NULL) {
+#endif
 	status = USER_INPUT_PATH_ERR - errno;
         rodsLogError (LOG_ERROR, status,
         "rmSubDir: opendir local dir error for %s", mydir);
         return status;
     }
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (childPath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
             continue;
 	}
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#endif
 #ifdef USE_BOOST_FS
+#if 0
         path p (childPath);
+#endif
 	if (!exists(p)) {
 #else	/* USE_BOOST_FS */
 #ifndef windows_platform
@@ -2023,7 +2059,9 @@ rmSubDir (char *mydir)
             continue;
 	}
     }
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
     return savedStatus;
 }
 
@@ -2032,9 +2070,9 @@ rmFilesInDir (char *mydir)
 {
     int status = 0;
     int savedStatus = 0;
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
@@ -2043,22 +2081,36 @@ rmFilesInDir (char *mydir)
 #endif	/* USE_BOOST_FS */
     char childPath[MAX_NAME_LEN];
 
+#ifdef USE_BOOST_FS
+    path srcDirPath (mydir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (mydir);
     if (dirPtr == NULL) {
+#endif
         status = USER_INPUT_PATH_ERR - errno;
         rodsLogError (LOG_ERROR, status,
         "rmFilesInDir: opendir local dir error for %s", mydir);
         return status;
     }
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (childPath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
             continue;
         }
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#endif
 #ifdef USE_BOOST_FS
+#if 0
 	path p (childPath);
-
+#endif
 	if (!exists(p)) {
             savedStatus = USER_INPUT_PATH_ERR - errno;
             rodsLogError (LOG_ERROR, savedStatus,
@@ -2089,7 +2141,9 @@ rmFilesInDir (char *mydir)
 	}
 #endif	/* USE_BOOST_FS */
     }
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
     return savedStatus;
 }
 int
@@ -2097,9 +2151,9 @@ getNumFilesInDir (char *mydir)
 {
     int status = 0;
     int savedStatus = 0;
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
 #ifndef windows_platform
     struct stat statbuf;
 #else
@@ -2109,22 +2163,36 @@ getNumFilesInDir (char *mydir)
     char childPath[MAX_NAME_LEN];
     int count = 0;
 
+#ifdef USE_BOOST_FS
+    path srcDirPath (mydir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (mydir);
     if (dirPtr == NULL) {
+#endif
         status = USER_INPUT_PATH_ERR - errno;
         rodsLogError (LOG_ERROR, status,
         "getNumFilesInDir: opendir local dir error for %s", mydir);
         return status;
     }
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (childPath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
             continue;
         }
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#endif
 #ifdef USE_BOOST_FS
+#if 0
 	path p (childPath);
-
+#endif
     if (!exists(p)) {
             savedStatus = USER_INPUT_PATH_ERR - errno;
             rodsLogError (LOG_ERROR, savedStatus,
@@ -2155,7 +2223,9 @@ getNumFilesInDir (char *mydir)
         }
 #endif	/* USE_BOOST_FS */
     }
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
     return count;
 }
 
