@@ -24,9 +24,6 @@ import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 public class GeneralFileSystemTest {
 
@@ -105,7 +102,7 @@ public class GeneralFileSystemTest {
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-		String testFileName = "testGetViaGenralRandomAccessFile.txt";
+		String testFileName = "testGetViaGeneralRandomAccessFile.txt";
 		int expectedFileLength = 1781;
 
 		// generate a file and put into irods
@@ -114,21 +111,16 @@ public class GeneralFileSystemTest {
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName,
 						expectedFileLength);
+		
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
 
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionRelativePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-		iputCommand.setForceOverride(true);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
-		GeneralFile file = FileFactory.newFile(irodsFileSystem, iputCommand
-				.getIrodsFileName()
+		GeneralFile file = FileFactory.newFile(irodsFileSystem, targetIrodsCollection
 				+ '/' + testFileName);
 
 		Assert.assertTrue("file I created does not exist according to irods",
@@ -173,21 +165,16 @@ public class GeneralFileSystemTest {
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName,
 						expectedFileLength);
+		
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(
+					testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
 
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionRelativePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-		iputCommand.setForceOverride(true);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
-		GeneralFile file = FileFactory.newFile(irodsFileSystem, iputCommand
-				.getIrodsFileName()
+		GeneralFile file = FileFactory.newFile(irodsFileSystem, targetIrodsCollection
 				+ '/' + testFileName);
 
 		Assert.assertTrue(file.exists());

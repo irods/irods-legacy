@@ -8,16 +8,11 @@ import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.grid.io.ResourceMetaData;
 import edu.sdsc.grid.io.StandardMetaData;
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaAddCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaCommand.MetaObjectType;
 
 import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.remoteexecute.RemoteExecuteServiceImpl;
@@ -72,34 +67,23 @@ public class IRODSCommandsQueryTest {
 
 		// generate a file and put into irods
 		String fullPathToTestFile = FileGenerator
-				.generateFileOfFixedLengthGivenName(testingProperties
-						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
-						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+			.generateFileOfFixedLengthGivenName(testingProperties
+				.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+				+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+		
+        String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+        LocalFile sourceFile = new LocalFile(fullPathToTestFile);
 
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionRelativePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-		iputCommand.setForceOverride(true);
-
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+        IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+        fileToPut.copyFrom(sourceFile, true);
 
 		// add metadata for this file
-
 		String meta1Attrib = "attrsingle1";
 		String meta1Value = "c";
-
-		ImetaAddCommand metaAddCommand = new ImetaAddCommand();
-		metaAddCommand.setAttribName(meta1Attrib);
-		metaAddCommand.setAttribValue(meta1Value);
-		metaAddCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
+		String []metaData = {meta1Attrib, meta1Value};
+		
+        fileToPut.modifyMetaData(metaData);
 
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[1];
@@ -135,18 +119,12 @@ public class IRODSCommandsQueryTest {
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
 
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionRelativePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-		iputCommand.setForceOverride(true);
-
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[1];
@@ -194,36 +172,20 @@ public class IRODSCommandsQueryTest {
 		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH
 				+ '/' + dir1, testFilePrefix1, testFileSuffix, 10, 20, 40);
 
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-
 		// make the put subdir
 		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH);
-		ImkdirCommand iMkdirCommand = new ImkdirCommand();
-		iMkdirCommand.setCollectionName(targetIrodsCollection);
-		invoker.invokeCommandAndGetResultAsString(iMkdirCommand);
+		LocalFile sourceFile = new LocalFile(absPath);
 
-		String localPath = scratchFileUtils
-				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH)
-				+ dir1;
-
-		// put the files by putting the collection
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setForceOverride(true);
-		iputCommand.setIrodsFileName(targetIrodsCollection);
-		iputCommand.setLocalFileName(localPath);
-		iputCommand.setRecursive(true);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + dir1);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// now add avu's to each
 		irodsTestSetupUtilities.addAVUsToEachFile(targetIrodsCollection + '/'
 				+ dir1, irodsFileSystem, avuAttrib, avuValue);
 
 		// make a second collection
-
 		absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH
 						+ '/' + dir2);
@@ -231,24 +193,15 @@ public class IRODSCommandsQueryTest {
 		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH
 				+ '/' + dir2, testFilePrefix2, testFileSuffix, 10, 20, 40);
 
-		localPath = scratchFileUtils
-				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH)
-				+ dir2;
 
 		// make the put subdir
 		targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH);
-		iMkdirCommand.setCollectionName(targetIrodsCollection);
-		invoker.invokeCommandAndGetResultAsString(iMkdirCommand);
+		sourceFile = new LocalFile(absPath);
 
-		// put the files by putting the collection
-		iputCommand = new IputCommand();
-		iputCommand.setForceOverride(true);
-		iputCommand.setIrodsFileName(targetIrodsCollection);
-		iputCommand.setLocalFileName(localPath);
-		iputCommand.setRecursive(true);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + dir2);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// now add avu's to each
 		irodsTestSetupUtilities.addAVUsToEachFile(targetIrodsCollection + '/'
@@ -288,44 +241,30 @@ public class IRODSCommandsQueryTest {
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+		
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
 
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionRelativePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-		iputCommand.setForceOverride(true);
-
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// add metadata for this file
 
 		String meta1Attrib = "twoavutest1";
 		String meta1Value = "c";
-
-		ImetaAddCommand metaAddCommand = new ImetaAddCommand();
-		metaAddCommand.setAttribName(meta1Attrib);
-		metaAddCommand.setAttribValue(meta1Value);
-		metaAddCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
+		String []metaData1 = {meta1Attrib, meta1Value};
+		
+        fileToPut.modifyMetaData(metaData1);
 
 		// add metadata for this file
 
 		String meta2Attrib = "twoavutest2";
 		String meta2Value = "d";
-
-		metaAddCommand = new ImetaAddCommand();
-		metaAddCommand.setAttribName(meta2Attrib);
-		metaAddCommand.setAttribValue(meta2Value);
-		metaAddCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
+		String []metaData2 = {meta2Attrib, meta2Value};
+		
+        fileToPut.modifyMetaData(metaData2);
 
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[2];
@@ -373,7 +312,16 @@ public class IRODSCommandsQueryTest {
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+		
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(
+					testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
 
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
+
+		/* Can remove this section when re-tested with newer IRODS (2.5.1+ release?)
 		IputCommand iputCommand = new IputCommand();
 		iputCommand.setLocalFileName(fullPathToTestFile);
 		iputCommand.setIrodsFileName(testingPropertiesHelper
@@ -385,6 +333,7 @@ public class IRODSCommandsQueryTest {
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		*/
 		
 		MetaDataCondition[] condition = new MetaDataCondition[1];
 		String fileNames[] = new String[2];
@@ -431,7 +380,16 @@ public class IRODSCommandsQueryTest {
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+		
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
 
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
+		
+		/* Can remove this section when re-tested with newer IRODS (2.5.1+ release?)
 		IputCommand iputCommand = new IputCommand();
 		iputCommand.setLocalFileName(fullPathToTestFile);
 		iputCommand.setIrodsFileName(testingPropertiesHelper
@@ -443,12 +401,17 @@ public class IRODSCommandsQueryTest {
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
+		*/
+		
 		// add metadata for this file
 
 		String meta1Attrib = "queryAVUWithBetween";
 		String meta1Value = "3";
-
+		String []metaData = {meta1Attrib, meta1Value};
+		
+        fileToPut.modifyMetaData(metaData);
+        
+        /* Can remove this section when re-tested with newer IRODS (2.5.1+ release?)
 		ImetaAddCommand metaAddCommand = new ImetaAddCommand();
 		metaAddCommand.setAttribName(meta1Attrib);
 		metaAddCommand.setAttribValue(meta1Value);
@@ -456,7 +419,8 @@ public class IRODSCommandsQueryTest {
 		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
 				+ testFileName);
 		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
-		
+		*/
+        
 		MetaDataCondition[] condition = new MetaDataCondition[1];
 		condition[0] = MetaDataSet.newCondition(meta1Attrib,
 				MetaDataCondition.BETWEEN, "1", "5");
@@ -486,7 +450,7 @@ public class IRODSCommandsQueryTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		String testFileName = "&queryMetadataForFileWithLeadingAmpInName";
-		  String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+		String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
 	                IRODS_TEST_SUBDIR_PATH);
 
 
@@ -496,15 +460,9 @@ public class IRODSCommandsQueryTest {
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
 
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(targetIrodsCollection);
-		iputCommand.setForceOverride(true);
-
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		MetaDataCondition conditions[] = {
 				MetaDataSet
@@ -535,7 +493,7 @@ public class IRODSCommandsQueryTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		String testFileName = "&&queryMetadataForFileWithTwoLeadingAmpInName";
-		  String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+		String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
 	                IRODS_TEST_SUBDIR_PATH);
 
 
@@ -544,7 +502,12 @@ public class IRODSCommandsQueryTest {
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
-
+		
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
+		
+		/* Can remove this section when re-tested with newer IRODS (2.5.1+ release?)
 		IputCommand iputCommand = new IputCommand();
 		iputCommand.setLocalFileName(fullPathToTestFile);
 		iputCommand.setIrodsFileName(targetIrodsCollection);
@@ -554,7 +517,8 @@ public class IRODSCommandsQueryTest {
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
+		*/
+		
 		MetaDataCondition conditions[] = {
 				MetaDataSet
 						.newCondition(StandardMetaData.DIRECTORY_NAME,
@@ -583,7 +547,7 @@ public class IRODSCommandsQueryTest {
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		String testFileName = "&queryMetadataForFileWithLeadingAmpInName";
-		  String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+		String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
 	                IRODS_TEST_SUBDIR_PATH);
 
 		MetaDataCondition conditions[] = {
@@ -616,31 +580,20 @@ public class IRODSCommandsQueryTest {
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+		
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
 
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionRelativePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-		iputCommand.setForceOverride(true);
-
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// add metadata for this file
-
 		String meta1Attrib = "queryFileAndDirectoryAndAVU";
 		String meta1Value = "5";
-
-		ImetaAddCommand metaAddCommand = new ImetaAddCommand();
-		metaAddCommand.setAttribName(meta1Attrib);
-		metaAddCommand.setAttribValue(meta1Value);
-		metaAddCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
+		String []metaData = {meta1Attrib, meta1Value};
+		
+        fileToPut.modifyMetaData(metaData);
 
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[2];

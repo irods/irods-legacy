@@ -61,9 +61,6 @@ public class IRODSCommandsDeleteBigTest {
                 genFileName = testFileNamePrefix + String.valueOf(i)
                                 + testFileExtension;
                 FileGenerator.generateFileOfFixedLengthGivenName(absPath + "/", genFileName, 1);
-                //FileGenerator.generateFileOfFixedLengthGivenName(testingProperties
-                				//.getProperty(GENERATED_FILE_DIRECTORY_KEY)
-                                //+ "/", genFileName, 1);
         }
 		
 		IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);

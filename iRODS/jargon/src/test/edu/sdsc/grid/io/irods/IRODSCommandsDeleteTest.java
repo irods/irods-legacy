@@ -252,37 +252,6 @@ public class IRODSCommandsDeleteTest {
 
 		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, deleteCollectionAbsPath);
 		fileToPut.copyFrom(sourceFile, true);
-		/*
-		// create collection to zap
-		String deleteCollectionAbsPath = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, deleteCollectionSubdir);
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		ImkdirCommand imkdrCommand = new ImkdirCommand();
-		imkdrCommand.setCollectionName(deleteCollectionAbsPath);
-		invoker.invokeCommandAndGetResultAsString(imkdrCommand);
-
-		IputCommand iputCommand = new IputCommand();
-		String genFileName = "";
-		String fullPathToTestFile = "";
-
-		// generate a number of files in the subdir
-		for (int i = 0; i < numberOfTestFiles; i++) {
-			genFileName = testFileNamePrefix + String.valueOf(i)
-					+ testFileExtension;
-			fullPathToTestFile = FileGenerator
-					.generateFileOfFixedLengthGivenName(testingProperties
-							.getProperty(GENERATED_FILE_DIRECTORY_KEY)
-							+ "/", genFileName, 1);
-
-			iputCommand.setLocalFileName(fullPathToTestFile);
-			iputCommand.setIrodsFileName(deleteCollectionAbsPath);
-			iputCommand.setForceOverride(true);
-			invoker.invokeCommandAndGetResultAsString(iputCommand);
-		}
-		*/
 
 		// now try and delete the collection
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
@@ -377,38 +346,6 @@ public class IRODSCommandsDeleteTest {
 
 		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, deleteCollectionAbsPath);
 		fileToPut.copyFrom(sourceFile, true);
-		/*
-
-		// create collection to zap
-		String deleteCollectionAbsPath = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, deleteCollectionSubdir);
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		ImkdirCommand imkdrCommand = new ImkdirCommand();
-		imkdrCommand.setCollectionName(deleteCollectionAbsPath);
-		invoker.invokeCommandAndGetResultAsString(imkdrCommand);
-
-		IputCommand iputCommand = new IputCommand();
-		String genFileName = "";
-		String fullPathToTestFile = "";
-
-		// generate a number of files in the subdir
-		for (int i = 0; i < numberOfTestFiles; i++) {
-			genFileName = testFileNamePrefix + String.valueOf(i)
-					+ testFileExtension;
-			fullPathToTestFile = FileGenerator
-					.generateFileOfFixedLengthGivenName(testingProperties
-							.getProperty(GENERATED_FILE_DIRECTORY_KEY)
-							+ "/", genFileName, 1);
-
-			iputCommand.setLocalFileName(fullPathToTestFile);
-			iputCommand.setIrodsFileName(deleteCollectionAbsPath);
-			iputCommand.setForceOverride(true);
-			invoker.invokeCommandAndGetResultAsString(iputCommand);
-		}
-		*/
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, deleteCollectionSubdir));
 
@@ -463,38 +400,6 @@ public class IRODSCommandsDeleteTest {
 
 		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, deleteCollectionAbsPath);
 		fileToPut.copyFrom(sourceFile, true);
-		/*
-
-		// create collection to zap
-		String deleteCollectionAbsPath = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, deleteCollectionSubdir);
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		ImkdirCommand imkdrCommand = new ImkdirCommand();
-		imkdrCommand.setCollectionName(deleteCollectionAbsPath);
-		invoker.invokeCommandAndGetResultAsString(imkdrCommand);
-
-		IputCommand iputCommand = new IputCommand();
-		String genFileName = "";
-		String fullPathToTestFile = "";
-
-		// generate a number of files in the subdir
-		for (int i = 0; i < numberOfTestFiles; i++) {
-			genFileName = testFileNamePrefix + String.valueOf(i)
-					+ testFileExtension;
-			fullPathToTestFile = FileGenerator
-					.generateFileOfFixedLengthGivenName(testingProperties
-							.getProperty(GENERATED_FILE_DIRECTORY_KEY)
-							+ "/", genFileName, 1);
-
-			iputCommand.setLocalFileName(fullPathToTestFile);
-			iputCommand.setIrodsFileName(deleteCollectionAbsPath);
-			iputCommand.setForceOverride(true);
-			invoker.invokeCommandAndGetResultAsString(iputCommand);
-		}
-		*/
 
 		// now try and delete the collection
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,

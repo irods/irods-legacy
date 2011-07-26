@@ -7,10 +7,6 @@ import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -79,27 +75,12 @@ public class IRODSCommandsMiscTest {
 				1);
 
 		// put scratch file into irods in the right place on the first resource
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IputCommand iputCommand = new IputCommand();
+        String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+        LocalFile sourceFile = new LocalFile(absPath + testFileName);
 
-		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH);
-
-		StringBuilder fileNameAndPath = new StringBuilder();
-		fileNameAndPath.append(absPath);
-
-		fileNameAndPath.append(testFileName);
-
-		iputCommand.setLocalFileName(fileNameAndPath.toString());
-		iputCommand.setIrodsFileName(targetIrodsCollection);
-		iputCommand.setIrodsResource(testingProperties
-				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+        IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+        fileToPut.copyFrom(sourceFile, true);
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
@@ -127,27 +108,12 @@ public class IRODSCommandsMiscTest {
 				1);
 
 		// put scratch file into irods in the right place on the first resource
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IputCommand iputCommand = new IputCommand();
-
 		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH);
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPath + testFileName);
 
-		StringBuilder fileNameAndPath = new StringBuilder();
-		fileNameAndPath.append(absPath);
-
-		fileNameAndPath.append(testFileName);
-
-		iputCommand.setLocalFileName(fileNameAndPath.toString());
-		iputCommand.setIrodsFileName(targetIrodsCollection);
-		iputCommand.setIrodsResource(testingProperties
-				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
@@ -178,6 +144,7 @@ public class IRODSCommandsMiscTest {
 						testingProperties, IRODS_TEST_SUBDIR_PATH);
 
 		// put scratch file into irods in the right place on the first resource
+		/*
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		ImkdirCommand mkdirCommand = new ImkdirCommand();
@@ -186,9 +153,13 @@ public class IRODSCommandsMiscTest {
 
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(mkdirCommand);
+		*/
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testOrigDirectory);
+		
+		// create the directory this way instead of using icommands		
+		irodsFileSystem.commands.mkdir(irodsFile, false);
 
 		IRODSFile newIrodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testNewDirectory);
@@ -226,6 +197,13 @@ public class IRODSCommandsMiscTest {
 				.generateFileOfFixedLengthGivenName(absPath, testFileName, 1);
 
 		// put scratch file into irods in the right place on the first resource
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(scratchFileName);
+
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
+    	/*
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IputCommand iputCommand = new IputCommand();
@@ -241,6 +219,7 @@ public class IRODSCommandsMiscTest {
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		String putResult = invoker
 				.invokeCommandAndGetResultAsString(iputCommand);
+		*/
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
@@ -269,28 +248,21 @@ public class IRODSCommandsMiscTest {
 		String localFileName = FileGenerator
 				.generateFileOfFixedLengthGivenName(absPath, testFileName, 1);
 
-		LocalFileSystem localFileSystem = new LocalFileSystem();
-		LocalFile localFile = new LocalFile(localFileName);
+		//LocalFileSystem localFileSystem = new LocalFileSystem();
+		//LocalFile localFile = new LocalFile(localFileName);
 
 		// put scratch file into irods in the right place on the first resource
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IputCommand iputCommand = new IputCommand();
+		IRODSAccount testAccount = testingPropertiesHelper
+			.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
 		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH);
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(localFileName);
 
-		iputCommand.setLocalFileName(localFileName);
-		iputCommand.setIrodsFileName(targetIrodsCollection);
-		iputCommand.setForceOverride(true);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
-		IRODSAccount testAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
 
