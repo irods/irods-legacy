@@ -75,9 +75,11 @@ int msiAdmShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmShowDVM(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmShowFNM(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmAppendToTopOfCoreIRB(msParam_t *bufP, ruleExecInfo_t *rei);
+#ifndef RULE_ENGINE_N
 int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei);
 int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam, 
 			msParam_t *fnmFilesParam,  ruleExecInfo_t *rei);
+#endif
 int msiGetObjType(msParam_t *objNameP, msParam_t *objTypeP,
 	      ruleExecInfo_t *rei);
 int msiAssociateKeyValuePairsToObj(msParam_t *mDP, msParam_t* objP,  msParam_t* typP,
@@ -186,10 +188,12 @@ int msiDataObjAutoMove(msParam_t *inpParam1,
 int
 msiGetContInxFromGenQueryOut(msParam_t* genQueryOutParam, msParam_t* continueInx, ruleExecInfo_t *rei);
 
+#ifndef RULE_ENGINE_N
 int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei);
 int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei);
 int msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei);
 int msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei);
+#endif
 int writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei);
 int readXMsg(msParam_t* inStreamId, msParam_t* inCondRead, 
 	msParam_t *outMsgNum, msParam_t *outSeqNum,
@@ -259,8 +263,10 @@ microsdef_t MicrosTable[] = {
   {"msiAdmShowDVM",1,(funcPtr) msiAdmShowDVM},
   {"msiAdmShowFNM",1,(funcPtr) msiAdmShowFNM},
   {"msiAdmAppendToTopOfCoreIRB",1,(funcPtr) msiAdmAppendToTopOfCoreIRB},
+#ifndef RULE_ENGINE_N
   {"msiAdmClearAppRuleStruct",0,(funcPtr) msiAdmClearAppRuleStruct},
   {"msiAdmAddAppRuleStruct",3,(funcPtr) msiAdmAddAppRuleStruct},
+#endif
   {"msiGetObjType",2,(funcPtr) msiGetObjType},
   {"msiAssociateKeyValuePairsToObj",3,(funcPtr) msiAssociateKeyValuePairsToObj},
   {"msiExtractTemplateMDFromBuf",3,(funcPtr) msiExtractTemplateMDFromBuf},
@@ -369,10 +375,12 @@ microsdef_t MicrosTable[] = {
   {"msiGetContInxFromGenQueryOut",2,(funcPtr) msiGetContInxFromGenQueryOut},
   {"msiSetACL",4,(funcPtr) msiSetACL},
   {"msiSetRescQuotaPolicy",1,(funcPtr) msiSetRescQuotaPolicy},
+#ifndef RULE_ENGINE_N
   {"msiAdmReadRulesFromFileIntoStruct",2, (funcPtr) msiAdmReadRulesFromFileIntoStruct},
   {"msiAdmInsertRulesFromStructIntoDB",2, (funcPtr) msiAdmInsertRulesFromStructIntoDB},
   {"msiGetRulesFromDBIntoStruct",3, (funcPtr) msiGetRulesFromDBIntoStruct},
   {"msiAdmWriteRulesFromStructIntoFile",2, (funcPtr) msiAdmWriteRulesFromStructIntoFile},
+#endif
   {"writeXMsg",3, (funcPtr) writeXMsg},
   {"readXMsg",8, (funcPtr) readXMsg},
   {"msiSetReplComment", 4, (funcPtr) msiSetReplComment},

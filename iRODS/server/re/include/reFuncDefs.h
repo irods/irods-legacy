@@ -10,9 +10,15 @@
 #define FREE_MS_PARAM	0x1
 #define FREE_DOINP	0x2
 
+#ifdef RULE_ENGINE_N
+int initRuleStruct(int processType, char *ruleSet, char *dvmSet, char *fnmSet);
+
+int readRuleStructFromFile(int processType, char *ruleBaseName, ruleStruct_t *inRuleStrct);
+#else
 int initRuleStruct(char *ruleSet, char *dvmSet, char *fnmSet);
 
 int readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct);
+#endif
 
 int clearRuleStruct(ruleStruct_t *inRuleStrct);
 

@@ -13,6 +13,7 @@
 #include "rsIcatOpr.h"
 #include <syslog.h>
 #include "miscServerFunct.h"
+#include "reconstants.h"
 
 extern int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei);
 
@@ -119,7 +120,11 @@ main(int argc, char **argv)
 
     daemonize (runMode, logFd);
 
+#ifdef RULE_ENGINE_N
+    status = initAgent (RULE_ENGINE_INIT_CACHE, &rsComm);
+#else
     status = initAgent (&rsComm);
+#endif
     if (status < 0) {
         cleanupAndExit (status);
     }
@@ -289,8 +294,13 @@ chkAndResetRule (rsComm_t *rsComm)
 	CoreIrbTimeStamp = mtime;
 	rei.rsComm = rsComm;
 	msiAdmClearAppRuleStruct (&rei);
+#ifdef RULE_ENGINE_N
+	/* The shared memory cache may have already been updated, do not force reload */
+	status = initRuleEngine(RULE_ENGINE_TRY_CACHE, reRuleStr, reFuncMapStr, reVariableMapStr);
+#else
 	clearCoreRule ();
 	status = initRuleEngine(reRuleStr, reFuncMapStr, reVariableMapStr);
+#endif
         if (status < 0) {
             rodsLog (LOG_ERROR,
               "chkAndResetRule: initRuleEngine error, status = %d", status);

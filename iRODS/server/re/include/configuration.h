@@ -138,7 +138,7 @@ int unlinkFuncDescIndex();
 int clearResources(int resources);
 int clearRuleIndex(ruleStruct_t *inRuleStruct);
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct);
-int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct);
+int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleStruct);
 int createRuleIndex(ruleStruct_t *inRuleStruct);
 int availableRules();
 void removeRuleFromExtIndex(char *ruleName, int i);

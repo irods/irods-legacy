@@ -567,6 +567,7 @@ int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei)
  * \sa msiAdmClearAppRuleStruct, msiAdmShowIRB, msiAdmShowDVM, msiAdmShowFNM
  * \bug  no known bugs
 **/
+#ifndef RULE_ENGINE_N
 int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam, 
   msParam_t *fnmFilesParam, ruleExecInfo_t *rei)
 {
@@ -596,6 +597,7 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
   return(0);
   
 }
+#endif
 
 /**
  * \fn msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
@@ -644,6 +646,7 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
  * \sa msiAdmInsertRulesFromStructIntoDB, msiGetRulesFromDBIntoStruct, msiAdmWriteRulesFromStructIntoFile
  * \bug  no known bugs
 **/
+#ifndef RULE_ENGINE_N
 int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
 {
 
@@ -683,7 +686,7 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
     outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
   return(0);
 }
-
+#endif
 
 /**
  * \fn msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)

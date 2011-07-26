@@ -1403,7 +1403,7 @@ Res *smsi_msiAdmAddAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecInfo
 		  return newErrorRes(r, i);
 
 	  if (strlen(paramsr[0]->text) > 0) {
-	    i = loadRuleFromCacheOrFile(paramsr[0]->text, &appRuleStrct);
+	    i = loadRuleFromCacheOrFile(RULE_ENGINE_TRY_CACHE, paramsr[0]->text, &appRuleStrct);
 	    if (i < 0)
 	  	  return newErrorRes(r, i);
 	  }
@@ -1419,7 +1419,7 @@ Res *smsi_msiAdmAddAppRuleStruct(Node **paramsr, int n, Node *node, ruleExecInfo
 	  }
 	  return newIntRes(r, 0);
 #else
-	  i = loadRuleFromCacheOrFile(paramsr[0]->text, &appRuleStrct);
+	  i = loadRuleFromCacheOrFile(RULE_ENGINE_TRY_CACHE, paramsr[0]->text, &appRuleStrct);
 	  if(i<0) {
 		  return newErrorRes(r, i);
 	  } else {

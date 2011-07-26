@@ -237,7 +237,7 @@ SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
 endif
 
 ifdef RULE_ENGINE_N
-CFLAGS +=       -DRULE_ENGINE -DRULE_ENGINE_N
+CFLAGS +=       -DRULE_ENGINE -DRULE_ENGINE_N -DCACHE_ENABLE
 
 ifeq ($(OS_platform), osx_platform)
 # osx_platform does not support the POSIX realtime extension, but the shared memory functions are supported 

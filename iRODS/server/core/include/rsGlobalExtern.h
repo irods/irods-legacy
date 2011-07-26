@@ -59,8 +59,13 @@ extern structFileDesc_t StructFileDesc[];
 extern tarSubFileDesc_t TarSubFileDesc[];
 #endif
 
+#ifdef RULE_ENGINE_N
+int
+initRuleEngine(int processType, char *ruleSet, char *dvmSet, char* fnmSet);
+#else
 int
 initRuleEngine(char *ruleSet, char *dvmSet, char* fnmSet);
+#endif
 int clearCoreRule ();
 
 extern char localSID[];

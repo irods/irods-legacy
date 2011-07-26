@@ -590,7 +590,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
 }
 
 int
-initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
+initRuleStruct(int processType, char *irbSet, char *dvmSet, char *fnmSet)
 {
   int i;
   char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
@@ -603,7 +603,7 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   while (strlen(r2) > 0) {
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
     if (i == 0)
-      i = readRuleStructFromFile(r1, &coreRuleStrct);
+      i = readRuleStructFromFile(processType, r1, &coreRuleStrct);
     if (i != 0)
       return(i);
     strcpy(r2,r3);
@@ -955,10 +955,10 @@ readMsrvcStructFromDB(char *moduleName, char *versionStr, msrvcStruct_t *inMsrvc
 }
 
 int
-readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
+readRuleStructFromFile(int processType, char *ruleBaseName, ruleStruct_t *inRuleStrct)
 {
    
-   return loadRuleFromCacheOrFile(ruleBaseName, inRuleStrct);
+   return loadRuleFromCacheOrFile(processType, ruleBaseName, inRuleStrct);
 }
 
 int

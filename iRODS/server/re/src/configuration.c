@@ -296,7 +296,7 @@ int createRuleIndex(ruleStruct_t *inRuleStruct) {
 	return 0;
 
 }
-int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
+int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleStruct) {
     char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
     strcpy(r2,irbSet);
     int res = 0;
@@ -330,7 +330,7 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
     int update = 0;
     unsigned char *buf = NULL;
 	/* try to find shared memory cache */
-    if(!isServer && inRuleStruct == &coreRuleStrct) {
+    if(processType == RULE_ENGINE_TRY_CACHE && inRuleStruct == &coreRuleStrct) {
     	buf = prepareNonServerSharedMemory();
     	if(buf != NULL) {
             cache = restoreCache(buf);
@@ -399,11 +399,11 @@ int loadRuleFromCacheOrFile(char *irbSet, ruleStruct_t *inRuleStruct) {
 	time_type_set(ruleEngineConfig.timestamp, timestamp);
 
 #ifdef CACHE_ENABLE
-	if((isServer || update) && inRuleStruct == &coreRuleStrct) {
+	if((processType == RULE_ENGINE_INIT_CACHE || update) && inRuleStruct == &coreRuleStrct) {
 		unsigned char *shared = prepareServerSharedMemory();
 
 		if(shared != NULL) {
-			updateCache(shared, SHMMAX, &ruleEngineConfig, isServer);
+			updateCache(shared, SHMMAX, &ruleEngineConfig, processType == RULE_ENGINE_INIT_CACHE);
 			detachSharedMemory();
 		}
 	}

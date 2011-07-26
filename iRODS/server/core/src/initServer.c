@@ -1279,9 +1279,13 @@ setExecArg (char *commandArgv, char *av[])
 
     return (0);
 }
-
+#ifdef RULE_ENGINE_N
+int
+initAgent (int processType, rsComm_t *rsComm)
+#else
 int
 initAgent (rsComm_t *rsComm)
+#endif
 {
     int status;
     rsComm_t myComm;
@@ -1312,7 +1316,7 @@ initAgent (rsComm_t *rsComm)
     initTarSubFileDesc ();
 #endif
 
-    status = initRuleEngine(reRuleStr, reFuncMapStr, reVariableMapStr);
+    status = initRuleEngine(processType, reRuleStr, reFuncMapStr, reVariableMapStr);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "initAgent: initRuleEngine error, status = %d", status);

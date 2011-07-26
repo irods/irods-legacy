@@ -4,6 +4,7 @@
  */
 
 // JMC #include <pthread.h>
+#include "reconstants.h"
 #include "irodsXmsgServer.h"
 #include "xmsgLib.h"
 #include "rsGlobal.h"
@@ -140,7 +141,11 @@ xmsgServerMain ()
         return status;
     }
 
+#ifdef RULE_ENGINE_N
+    status = initAgent (RULE_ENGINE_NO_CACHE, &rsComm);
+#else
     status = initAgent (&rsComm);
+#endif
 
     if (status < 0) {
         rodsLog (LOG_ERROR, "xmsgServerMain: initServer error. status = %d",
