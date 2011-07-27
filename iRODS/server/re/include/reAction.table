@@ -190,8 +190,6 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
 int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei);
 int msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei);
 int msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei);
-<<<<<<< .mine
-
 int msiAdmReadDVMapsFromFileIntoStruct(msParam_t *inDvmFileNameParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei);
 int msiAdmInsertDVMapsFromStructIntoDB(msParam_t *inDvmBaseNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei);
 int msiGetDVMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei);
@@ -206,10 +204,8 @@ int msiAdmReadMSrvcsFromFileIntoStruct(msParam_t *inMsrvcFileNameParam, msParam_
 int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei);
 int msiGetMSrvcsFromDBIntoStruct(msParam_t *inStatus, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei);
 int msiAdmWriteMSrvcsFromStructIntoFile(msParam_t *inMsrvcFileNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei);
-
-=======
 #endif
->>>>>>> .r4199
+
 int writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei);
 int readXMsg(msParam_t* inStreamId, msParam_t* inCondRead, 
 	msParam_t *outMsgNum, msParam_t *outSeqNum,
