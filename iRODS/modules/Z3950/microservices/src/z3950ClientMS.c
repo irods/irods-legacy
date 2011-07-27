@@ -59,10 +59,9 @@ msiz3950Submit(msParam_t *serverName,msParam_t *query, msParam_t *recordSyntax, 
 {
 
   const char *rec;
-  char outStr[MAX_NAME_LEN];
-  const char *sName = serverName->inOutStruct ; 
-  const char *zquery = query->inOutStruct;  
-  const char *rSyntax = recordSyntax->inOutStruct;
+  char *sName = serverName->inOutStruct ; 
+  char *zquery = query->inOutStruct;  
+  char *rSyntax = recordSyntax->inOutStruct;
 
   ZOOM_connection z = ZOOM_connection_new (sName, 0);   // 0 denotes port number
     ZOOM_resultset r;
@@ -73,9 +72,11 @@ msiz3950Submit(msParam_t *serverName,msParam_t *query, msParam_t *recordSyntax, 
 
     rec =  ZOOM_record_get (ZOOM_resultset_record (r, 0), "render", 0);
 
-    snprintf (outStr, MAX_NAME_LEN, "Here is the record: \n %s", rec);
-    fillStrInMsParam (outParam, outStr);
-    rei->status = 0;
+    /*
+      snprintf (outStr, MAX_NAME_LEN, "Here is the record: \n %s", rec);
+      fillStrInMsParam (outParam, outStr);
+    */
+    fillStrInMsParam (outParam, (char *)rec);
 
   ZOOM_connection_destroy(z);
 

@@ -25,12 +25,12 @@ MSIncDir =	$(modulesDir)/$(myModule)/microservices/include
 #
 # Source files
 #
-MYYAZ  = /usr/local
+MYYAZ  = $(modulesDir)/$(myModule)/yaz
 
 
 OBJECTS = $(MSObjDir)/z3950ClientMS.o
 INCLUDE_FLAGS =	-I$(MSIncDir) -I$(MYYAZ)/include
-LIBS =  -L$(MYYAZ)/lib -lyaz 
+LIBS =  -L$(MYYAZ)/src/.libs -lyaz 
 
 
 
@@ -89,17 +89,10 @@ rules:
 clean:
 	@echo "Clean $(myModule) module..."
 	@rm -f $(OBJECTS)
-	
-
-
 
 # Show compile flags
 print_cflags:
 	@echo "Compile flags:"
-	
-
-
-
 
 #
 # Compilation targets
