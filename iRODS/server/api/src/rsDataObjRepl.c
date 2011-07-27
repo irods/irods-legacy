@@ -1065,13 +1065,15 @@ l3DataStageSync (rsComm_t *rsComm, int l1descInx)
     memset (&dataBBuf, 0, sizeof (bytesBuf_t));
 
     srcL1descInx = L1desc[l1descInx].srcL1descInx;
-    if (L1desc[srcL1descInx].dataSize < 0) {
+    if (L1desc[srcL1descInx].dataSize < 0 && 
+	L1desc[srcL1descInx].dataSize != UNKNOWN_FILE_SZ) {
 	rodsLog (LOG_ERROR,
 	  "l3DataStageSync: dataSize %lld for %s is negative",
 	  L1desc[srcL1descInx].dataSize, 
 	  L1desc[srcL1descInx].dataObjInfo->objPath); 
 	return (SYS_COPY_LEN_ERR);
-    } else if (L1desc[srcL1descInx].dataSize > 0) {
+    } else if (L1desc[srcL1descInx].dataSize > 0 || 
+	       L1desc[srcL1descInx].dataSize == UNKNOWN_FILE_SZ) {
 	if (L1desc[l1descInx].stageFlag == SYNC_DEST) {
 	    /* dest a DO_STAGE type, sync */
             status = l3FileSync (rsComm, srcL1descInx, l1descInx);

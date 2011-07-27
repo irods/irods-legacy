@@ -119,15 +119,16 @@ _rsGeneralRowInsert(rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
 
     if (strcmp(generalRowInsertInp->tableName,"msrvcTable") == 0) {
       status = chlInsMsrvcTable(rsComm,
-			      generalRowInsertInp->arg1,
-			      generalRowInsertInp->arg2,
-			      generalRowInsertInp->arg3,
-			      generalRowInsertInp->arg4,
-			      generalRowInsertInp->arg5,
-			      generalRowInsertInp->arg6,
-			      generalRowInsertInp->arg7,
-			      generalRowInsertInp->arg8,
-			      generalRowInsertInp->arg9);
+				generalRowInsertInp->arg1,
+				generalRowInsertInp->arg2,
+				generalRowInsertInp->arg3,
+				generalRowInsertInp->arg4,
+				generalRowInsertInp->arg5,
+				generalRowInsertInp->arg6,
+				generalRowInsertInp->arg7,
+				generalRowInsertInp->arg8,
+				generalRowInsertInp->arg9,
+				generalRowInsertInp->arg10);
       return(status);
     }
     return(CAT_INVALID_ARGUMENT);

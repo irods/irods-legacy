@@ -13,7 +13,7 @@ extern xmsgQue_t XmsgQue;
 int
 rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
 {
-    int status;
+  int status, i;
     ticketMsgStruct_t *ticketMsgStruct = NULL;
     irodsXmsg_t *irodsXmsg;
     char *miscInfo;
@@ -39,12 +39,22 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
     miscInfo = sendXmsgInp->sendXmsgInfo.miscInfo;
     if (miscInfo != NULL && strlen(miscInfo) > 0) {
       if(!strcmp(miscInfo,"CLEAR_STREAM")) {
-	clearAllXMessages(ticketMsgStruct);
+	i = clearAllXMessages(ticketMsgStruct);
+	return(i);
       }
       else if (!strcmp(miscInfo,"DROP_STREAM")) {
-	clearAllXMessages(ticketMsgStruct);
-	rmTicketMsgStructFromHQue (ticketMsgStruct,
-				   (ticketHashQue_t *) ticketMsgStruct->ticketHashQue);
+	if(sendXmsgInp->ticket.rcvTicket > 5) {
+	  i = clearAllXMessages(ticketMsgStruct);
+	  if (i < 0) return (i);
+	  i = rmTicketMsgStructFromHQue (ticketMsgStruct,
+					 (ticketHashQue_t *) ticketMsgStruct->ticketHashQue);
+	  return(i);
+	}
+      }
+      else if (!strcmp(miscInfo,"ERASE_MESSAGE")) {
+	/* msgNumber actually is the sequence Number in the queue*/
+	i = clearOneXMessage(ticketMsgStruct, sendXmsgInp->sendXmsgInfo.msgNumber);
+	return(i);
       }
     }
 
