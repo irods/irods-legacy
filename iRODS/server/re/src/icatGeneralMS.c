@@ -873,7 +873,7 @@ msiRollback(ruleExecInfo_t *rei)
 **/
 int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName, 
       msParam_t *pathName, ruleExecInfo_t *rei) {
-	char *acl, *path, *recursiveFlg, *user;
+	char *acl, *path, *recursiveFlg, *user, uname[NAME_LEN], *zone;
 	int recFlg, rc;
 	modAccessControlInp_t modAccessControlInp;
 	rsComm_t *rsComm;
@@ -936,8 +936,16 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 	rsComm = rei->rsComm;
 	modAccessControlInp.recursiveFlag = recFlg;
 	modAccessControlInp.accessLevel = acl;
-	modAccessControlInp.userName = user;
-	modAccessControlInp.zone = rei->uoic->rodsZone;
+	if ( strchr(user, '#') == NULL ) {
+		modAccessControlInp.userName = user;
+		modAccessControlInp.zone = rei->uoic->rodsZone;
+	}
+	else {
+		zone = strchr(user, '#') + 1;
+		strncpy(uname, user, strlen(user) - strlen(zone) - 1);
+		modAccessControlInp.userName = uname;
+		modAccessControlInp.zone = zone;
+	}
 	modAccessControlInp.path = path;
 	rc = rsModAccessControl(rsComm, &modAccessControlInp);
 	if ( rc < 0 ) {
