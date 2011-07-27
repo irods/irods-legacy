@@ -538,7 +538,7 @@ showRules(inStruct Sentries)
     fprintf(stdout, "<CENTER> <B><FONT COLOR=#0000FF>[%s]</FONT></B></CENTER>\n",ruleSet);
     fflush(stdout);
 
-    initRuleStruct(ruleSet,"core", "core");
+    initRuleStruct(NULL, ruleSet,"core", "core");
     fprintf(stdout, "<TABLE>\n");
     for( j = 0 ; j < coreRuleStrct.MaxNumOfRules; j++) {
       getRule(j+1000 , ruleBase, ruleHead, ruleCondition,ruleAction,ruleRecovery, MAX_RULE_LENGTH);
@@ -740,7 +740,7 @@ performAction(inStruct Sentries)
     strcpy(rei.ruleSet,ruleSet);
     /*    fprintf(stdout,"<PRE>\n");fflush(stdout);*/
     ht1 = gethrtime();
-    initRuleStruct( ruleSet, "core", "core");
+    initRuleStruct( NULL, ruleSet, "core", "core");
     ht2 = gethrtime();
     /***    i = applyRule(action, args, 0, &rei, SAVE_REI); ***/
     i = applyRuleArgPA(action, args, 0, NULL,&rei, SAVE_REI); 

@@ -1645,6 +1645,7 @@ int msiAdmReadMSrvcsFromFileIntoStruct(msParam_t *inMsrvcFileNameParam, msParam_
  * \bug  no known bugs
 **/
 int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei)
+
 {
 
   msrvcStruct_t *coreMsrvcStruct;
@@ -1655,16 +1656,13 @@ int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_
 
   RE_TEST_MACRO ("Loopback on msiAdmInsertMSrvcsFromStructIntoDB");
 
-  if (inMsrvcBaseNameParam == NULL || inCoreMsrvcStruct == NULL ||
-      strcmp (inMsrvcBaseNameParam->type,STR_MS_T) != 0 ||
-      strcmp (inCoreMsrvcStruct->type,MsrvcStruct_MS_T) != 0 ||
-      inMsrvcBaseNameParam->inOutStruct == NULL ||
-      inCoreMsrvcStruct->inOutStruct == NULL ||
-      strlen((char *) inMsrvcBaseNameParam->inOutStruct) == 0 )
+  if ( inCoreMsrvcStruct == NULL ||
+       strcmp (inCoreMsrvcStruct->type,MsrvcStruct_MS_T) != 0 ||
+       inCoreMsrvcStruct->inOutStruct == NULL)
     return(PARAOPR_EMPTY_IN_STRUCT_ERR);
 
   coreMsrvcStruct = (msrvcStruct_t *) inCoreMsrvcStruct->inOutStruct;
-  i = insertMSrvcsIntoDB((char *) inMsrvcBaseNameParam->inOutStruct, coreMsrvcStruct, rei);
+  i = insertMSrvcsIntoDB( coreMsrvcStruct, rei);
   return(i);
     
 }
@@ -1712,24 +1710,14 @@ int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_
  * \bug  no known bugs
 **/
 int
-msiGetMSrvcsFromDBIntoStruct(msParam_t *inMsrvcBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
+msiGetMSrvcsFromDBIntoStruct(msParam_t *inStatus, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
 {
     
-  int i;
+  int i, stat;
   msrvcStruct_t *coreMsrvcStrct;
 
   RE_TEST_MACRO ("Loopback on msiGetMSrvcsFromDBIntoStruct");
 
-  if (inMsrvcBaseNameParam == NULL ||
-      strcmp (inMsrvcBaseNameParam->type,STR_MS_T) != 0 ||
-      inMsrvcBaseNameParam->inOutStruct == NULL ||
-      strlen((char *) inMsrvcBaseNameParam->inOutStruct) == 0 )
-    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
-  if (inVersionParam == NULL ||
-      strcmp (inVersionParam->type,STR_MS_T) != 0 ||
-      inVersionParam->inOutStruct == NULL ||
-      strlen((char *) inVersionParam->inOutStruct) == 0 )
-    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
   if (outCoreMsrvcStruct->type != NULL &&
       strcmp (outCoreMsrvcStruct->type,MsrvcStruct_MS_T) == 0 &&
       outCoreMsrvcStruct->inOutStruct != NULL) {
@@ -1739,7 +1727,21 @@ msiGetMSrvcsFromDBIntoStruct(msParam_t *inMsrvcBaseNameParam, msParam_t *inVersi
     coreMsrvcStrct = (msrvcStruct_t *) malloc (sizeof(msrvcStruct_t));
     coreMsrvcStrct->MaxNumOfMsrvcs = 0;
   }
-  i = readMsrvcStructFromDB((char*) inMsrvcBaseNameParam->inOutStruct, (char*) inVersionParam->inOutStruct,  coreMsrvcStrct, rei);
+  if (inStatus != NULL && inStatus->type != NULL && inStatus->inOutStruct != NULL) {
+    if (strcmp (inStatus->type, INT_MS_T) == 0) {
+      stat = *(int *)inStatus->inOutStruct;
+    }
+    else if (strcmp (inStatus->type, STR_MS_T) == 0) {
+      stat = atoi((char *) inStatus->inOutStruct);
+    }
+    else {
+      return(USER_PARAM_TYPE_ERR);
+    }
+  }
+  else {
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  }
+  i = readMsrvcStructFromDB( stat, coreMsrvcStrct, rei);
   if (i != 0) {
     if (strcmp (outCoreMsrvcStruct->type,MsrvcStruct_MS_T) != 0 )
       free(coreMsrvcStrct);

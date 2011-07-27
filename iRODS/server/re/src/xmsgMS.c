@@ -18,6 +18,9 @@
 #define CAST_PTR_INT
 #endif
 
+static  rcComm_t *xmsgServerConn = NULL;
+static   rodsEnv myRodsXmsgEnv;
+
 /**
  * \fn msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
  *
@@ -654,30 +657,34 @@ int _writeXMsg(int streamId, char *hdr, char *msg)
   xmsgTicketInfo_t xmsgTicketInfo;
   sendXmsgInp_t sendXmsgInp;
   rcComm_t *conn;
-  rodsEnv myRodsEnv;
   rErrMsg_t errMsg;
   char myHostName[MAX_NAME_LEN];
 
 
-
+  if (xmsgServerConn == NULL) {
+    i = getRodsEnv (&myRodsXmsgEnv);
+    if (i < 0) {
+      rodsLog (LOG_ERROR, "_writeXMsg: getRodsEnv failed:%i",i);
+      return(i);
+    }
+    conn = rcConnectXmsg (&myRodsXmsgEnv, &errMsg);
+    if (conn == NULL) {
+      rodsLog (LOG_ERROR, "_writeXMsg: rcConnectXmsg failed:%i:%s",errMsg.status,errMsg.msg);
+      return(errMsg.status);
+    }
+    i = clientLogin(conn);
+    if (i != 0) {
+      rodsLog (LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", i);
+      rcDisconnect(conn);
+      return(i);
+    }
+    xmsgServerConn = conn;
+  }
+  else {
+    conn = xmsgServerConn;
+  }
   myHostName[0] = '\0';
   gethostname (myHostName, MAX_NAME_LEN);
-  i = getRodsEnv (&myRodsEnv);
-  if (i < 0) {
-    rodsLog (LOG_ERROR, "_writeXMsg: getRodsEnv failed:%i",i);
-    return(i);
-  }
-  conn = rcConnectXmsg (&myRodsEnv, &errMsg);
-  if (conn == NULL) {
-    rodsLog (LOG_ERROR, "_writeXMsg: rcConnectXmsg failed:%i:%s",errMsg.status,errMsg.msg);
-    return(errMsg.status);
-  }
-  i = clientLogin(conn);
-  if (i != 0) {
-    rodsLog (LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", i);
-    rcDisconnect(conn);
-    return(i);
-  }
 
   memset (&xmsgTicketInfo, 0, sizeof (xmsgTicketInfo));
   memset (&sendXmsgInp, 0, sizeof (sendXmsgInp));
@@ -691,7 +698,9 @@ int _writeXMsg(int streamId, char *hdr, char *msg)
   snprintf(sendXmsgInp.sendAddr, NAME_LEN, "%s:%i", myHostName, getpid ());
   sendXmsgInp.sendXmsgInfo.msg = msg;
   i = rcSendXmsg (conn, &sendXmsgInp);
-  rcDisconnect(conn);
+  if (i < 0)
+    rodsLog (LOG_NOTICE,"_writeXmsg: Unable to send message to stream  %i\n", streamId);
+  /*   rcDisconnect(conn); */
   return(i);
 }
 
@@ -702,33 +711,38 @@ int _readXMsg(int streamId, char *condRead, int *msgNum, int *seqNum,
   rcvXmsgInp_t rcvXmsgInp;
   rcvXmsgOut_t *rcvXmsgOut = NULL;
   rcComm_t *conn;
-  rodsEnv myRodsEnv;
   rErrMsg_t errMsg;
 
-  i = getRodsEnv (&myRodsEnv);
-  if (i < 0) {
-    rodsLog (LOG_ERROR, "_writeXMsg: getRodsEnv failed:%i",i);
-    return(i);
+  if (xmsgServerConn == NULL) {
+    i = getRodsEnv (&myRodsXmsgEnv);
+    if (i < 0) {
+      rodsLog (LOG_ERROR, "_readXMsg: getRodsEnv failed:%i",i);
+      return(i);
+    }
+    conn = rcConnectXmsg (&myRodsXmsgEnv, &errMsg);
+    if (conn == NULL) {
+      rodsLog (LOG_ERROR, "_readXMsg: rcConnectXmsg failed:%i:%s",errMsg.status,errMsg.msg);
+      return(errMsg.status);
+    }
+    i = clientLogin(conn);
+    if (i != 0) {
+      rodsLog (LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", i);
+      rcDisconnect(conn);
+      return(i);
+    }
+    xmsgServerConn = conn;
   }
-  conn = rcConnectXmsg (&myRodsEnv, &errMsg);
-  if (conn == NULL) {
-    rodsLog (LOG_ERROR, "_writeXMsg: rcConnectXmsg failed:%i:%s",errMsg.status,errMsg.msg);
-    return(errMsg.status);
+  else {
+    conn = xmsgServerConn;
   }
-  i = clientLogin(conn);
-  if (i != 0) {
-    rodsLog (LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", i);
-    rcDisconnect(conn);
-    return(i);
-  }
-
   memset (&rcvXmsgInp, 0, sizeof (rcvXmsgInp));
   rcvXmsgInp.rcvTicket = streamId;
   rcvXmsgInp.msgNumber = 0;
-  strncpy(rcvXmsgInp.msgCondition, condRead, NAME_LEN);
+  strncpy(rcvXmsgInp.msgCondition, condRead, MAX_NAME_LEN);
   i = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
   if (i < 0) {
-    rcDisconnect(conn);
+    /*  rcDisconnect(conn); */
+    rodsLog (LOG_NOTICE,"_writeXmsg: Unable to send message to stream  %i\n", streamId);
     return(i);
   }
   *msgNum = rcvXmsgOut->msgNumber;
@@ -737,6 +751,6 @@ int _readXMsg(int streamId, char *condRead, int *msgNum, int *seqNum,
   *msg = strdup(rcvXmsgOut->msg);
   *user = strdup(rcvXmsgOut->sendUserName);
   *addr = strdup(rcvXmsgOut->sendAddr);
-  rcDisconnect(conn);
+  /*  rcDisconnect(conn);*/
   return(i);
 }

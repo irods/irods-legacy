@@ -1316,7 +1316,11 @@ initAgent (rsComm_t *rsComm)
     initTarSubFileDesc ();
 #endif
 
+#ifdef RULE_ENGINE_N
+    status = initRuleEngine(rsComm, reRuleStr, reFuncMapStr, reVariableMapStr);
+#else
     status = initRuleEngine(processType, reRuleStr, reFuncMapStr, reVariableMapStr);
+#endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "initAgent: initRuleEngine error, status = %d", status);
@@ -1404,6 +1408,9 @@ cleanupAndExit (int status)
 #ifdef RODS_CAT
     disconnectRcat (ThisComm);
 #endif
+
+    /* added by RAJA April 12, 2011 */
+    finalzeRuleEngine(ThisComm);
 
     if (InitialState == INITIAL_DONE) {
 	/* close all opened descriptors */

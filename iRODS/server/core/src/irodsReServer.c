@@ -299,7 +299,7 @@ chkAndResetRule (rsComm_t *rsComm)
 	status = initRuleEngine(RULE_ENGINE_TRY_CACHE, reRuleStr, reFuncMapStr, reVariableMapStr);
 #else
 	clearCoreRule ();
-	status = initRuleEngine(reRuleStr, reFuncMapStr, reVariableMapStr);
+	status = initRuleEngine(NULL, reRuleStr, reFuncMapStr, reVariableMapStr);
 #endif
         if (status < 0) {
             rodsLog (LOG_ERROR,

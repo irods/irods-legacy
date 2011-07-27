@@ -27,6 +27,7 @@
 #ifdef DDN_WOS
 #include "wosFileDriver.h"
 #endif
+#include "msoFileDriver.h"
 
 // =-=-=-=-=-=-=-
 // JMC - moving from intNoSupport to no-op fcns with matching signatures for g++
@@ -89,6 +90,11 @@ fileDriver_t FileDriverTable[] = {
 #else
     {WOS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
+    {MSO_FILE_TYPE, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+     intNoSupport, msoFileUnlink, msoFileStat, intNoSupport, longNoSupport,
+    intNoSupport, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    msoFileGetFsFreeSpace, intNoSupport, msoStageToCache, msoSyncToArch},
     {NON_BLOCKING_FILE_TYPE,unixFileCreate,unixFileOpen,nbFileRead,nbFileWrite,
     unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
     unixFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,

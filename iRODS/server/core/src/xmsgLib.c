@@ -197,13 +197,19 @@ ticketMsgStruct_t *ticketMsgStruct)
 	     xmsg->sendUserName,
 	     xmsg->sendAddr);
     ***/
+    /* changed by RAJA April 15, 20111
     return (0);
+    ******************************/
+    return (xmsg->seqNumber);
 }
 
 int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond) 
 {
   int i;
-  char condStr[NAME_LEN * 2], res[NAME_LEN * 2];
+  char condStr[MAX_NAME_LEN * 2], res[MAX_NAME_LEN * 2];
+
+  if (msgCond == NULL || strlen(msgCond) == 0)
+    return(0);
 
   strcpy(condStr,msgCond);
 
@@ -281,7 +287,10 @@ int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg)
     } 
 
     while (tmpIrodsXmsg != NULL) {
-      if ((i = checkMsgCondition(tmpIrodsXmsg, msgCond)) == 0 ) break;
+      /*      if ((i = checkMsgCondition(tmpIrodsXmsg, msgCond)) == 0 ) break; */
+      i = checkMsgCondition(tmpIrodsXmsg, msgCond);
+      if (i == 0)
+	break;
       tmpIrodsXmsg = tmpIrodsXmsg->tnext;
     }
 
@@ -852,7 +861,7 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
     sendXmsgInfo = irodsXmsg->sendXmsgInfo;
     ticketMsgStruct = (ticketMsgStruct_t*)irodsXmsg->ticketMsgStruct;
 
-    /*    rodsLog (LOG_ERROR,
+    /* rodsLog (LOG_NOTICE,
 	     "_rsRcvXmsg: SEQNum=%d, numRcv=%d", irodsXmsg->seqNumber,
 	     sendXmsgInfo->numRcv); */
     sendXmsgInfo = irodsXmsg->sendXmsgInfo;
@@ -903,6 +912,30 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
     #endif
 #endif
     return (0);
+}
+
+int
+clearOneXMessage(ticketMsgStruct_t *ticketMsgStruct, int seqNum) 
+{
+
+  
+  irodsXmsg_t *tmpIrodsXmsg;
+
+  tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
+  while (tmpIrodsXmsg != NULL) {
+    if (tmpIrodsXmsg->seqNumber == seqNum) {
+      rmXmsgFromXmsgQue (tmpIrodsXmsg, &XmsgQue);
+      rmXmsgFromXmsgTcketQue (tmpIrodsXmsg,&ticketMsgStruct->xmsgQue);
+      clearSendXmsgInfo (tmpIrodsXmsg->sendXmsgInfo);
+      free(tmpIrodsXmsg->sendXmsgInfo);
+      free (tmpIrodsXmsg);
+      return(0);
+    }
+    tmpIrodsXmsg = tmpIrodsXmsg->tnext;
+  }
+
+
+  return(0);
 }
 
 int

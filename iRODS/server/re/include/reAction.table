@@ -6,28 +6,21 @@ typedef struct {
 } microsdef_t;
 
 
-#ifndef RULE_ENGINE_N
+int print_hello(ruleExecInfo_t *c);
+int print_hello_arg(msParam_t* xs, ruleExecInfo_t *rei );
 int whileExec(msParam_t* condition, msParam_t* whileBody,
 	      msParam_t* recoverWhileBody, ruleExecInfo_t *rei);
 int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step, 
 	    msParam_t* forBody, msParam_t* recoverForBody, ruleExecInfo_t *rei);
-int forEachExec(msParam_t* list, msParam_t* setOfWFS, msParam_t* recoverSetOfWFS,
-	      ruleExecInfo_t *rei);
-int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
-int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
-int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
-int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
-	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei);
-int breakExec(ruleExecInfo_t *rei);
-#endif
-
-int print_hello(ruleExecInfo_t *c);
-int print_hello_arg(msParam_t* xs, ruleExecInfo_t *rei );
 int delayExec(msParam_t* condition, msParam_t* workflow, 
 	      msParam_t* recoverWorkFlow, ruleExecInfo_t *rei);
 int remoteExec(msParam_t* hostName, msParam_t* condition, msParam_t* workflow, 
 	      msParam_t* recoverWorkFlow, ruleExecInfo_t *rei);
+int forEachExec(msParam_t* list, msParam_t* setOfWFS, msParam_t* recoverSetOfWFS,
+	      ruleExecInfo_t *rei);
 int msiSleep(msParam_t* sec, msParam_t* microsec, ruleExecInfo_t *rei);
+int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
+int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
 int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei);
 int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei);
 int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei);
@@ -37,13 +30,16 @@ int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_
 int msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei);
 int msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei);
-int msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei);
 
 int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei);
 int msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei);
 int msiPrintKeyValPair(msParam_t* where, msParam_t* inKVPair,  ruleExecInfo_t *rei);
 int msiGetValByKey(msParam_t* inKVPair,  msParam_t* inKey, msParam_t* outVal,  ruleExecInfo_t *rei);
 int msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei);
+int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
+int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
+	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei);
+int breakExec(ruleExecInfo_t *rei);
 int msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, 
 	msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei);
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
@@ -53,7 +49,7 @@ int msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
 int msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei);
 int msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei);
-int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *op_param, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
+int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
 int msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei);
 
 int msiVacuum(ruleExecInfo_t *rei);
@@ -62,6 +58,7 @@ int msiDeleteUnusedAVUs(ruleExecInfo_t *rei);
 int msiGoodFailure(ruleExecInfo_t *rei);
 int msiRegisterData(ruleExecInfo_t *rei);
 int msiCheckPermission(msParam_t *perm, ruleExecInfo_t *rei);
+int msiCheckAccess(msParam_t *objName, msParam_t *oper,  ruleExecInfo_t *rei);
 int msiCheckOwner(ruleExecInfo_t *rei);
 int msiCreateUser(ruleExecInfo_t *rei);
 int msiCreateCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_t *rei);
@@ -193,7 +190,26 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
 int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei);
 int msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei);
 int msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei);
+<<<<<<< .mine
+
+int msiAdmReadDVMapsFromFileIntoStruct(msParam_t *inDvmFileNameParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei);
+int msiAdmInsertDVMapsFromStructIntoDB(msParam_t *inDvmBaseNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei);
+int msiGetDVMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei);
+int msiAdmWriteDVMapsFromStructIntoFile(msParam_t *inDvmFileNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei);
+
+int msiAdmReadFNMapsFromFileIntoStruct(msParam_t *inDvmFileNameParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei);
+int msiAdmInsertFNMapsFromStructIntoDB(msParam_t *inDvmBaseNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei);
+int msiGetFNMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei);
+int msiAdmWriteFNMapsFromStructIntoFile(msParam_t *inDvmFileNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei);
+
+int msiAdmReadMSrvcsFromFileIntoStruct(msParam_t *inMsrvcFileNameParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei);
+int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei);
+int msiGetMSrvcsFromDBIntoStruct(msParam_t *inStatus, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei);
+int msiAdmWriteMSrvcsFromStructIntoFile(msParam_t *inMsrvcFileNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei);
+
+=======
 #endif
+>>>>>>> .r4199
 int writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei);
 int readXMsg(msParam_t* inStreamId, msParam_t* inCondRead, 
 	msParam_t *outMsgNum, msParam_t *outSeqNum,
@@ -204,7 +220,6 @@ int msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inp
 int
 msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei);
 int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei);
-int msiDoSomething(msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName, 
                msParam_t *options, 
                msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -224,6 +239,7 @@ microsdef_t MicrosTable[] = {
   {"msiGoodFailure", 0, (funcPtr) msiGoodFailure},
   {"msiSetResource", 1,(funcPtr)  msiSetResource},
   {"msiCheckPermission", 1,(funcPtr)  msiCheckPermission},
+  {"msiCheckAccess", 3,(funcPtr)  msiCheckAccess},
   {"msiCheckOwner", 0, (funcPtr) msiCheckOwner},
   {"msiCreateUser", 0, (funcPtr) msiCreateUser},
   {"msiCreateCollByAdmin",2, (funcPtr) msiCreateCollByAdmin},
@@ -289,19 +305,14 @@ microsdef_t MicrosTable[] = {
   {"msiNoChkFilePathPerm",0,(funcPtr) msiNoChkFilePathPerm},
   {"msiNoTrashCan",0,(funcPtr) msiNoTrashCan},
   {"msiSetPublicUserOpr",1,(funcPtr) msiSetPublicUserOpr},
-#ifndef RULE_ENGINE_N
   {"whileExec",3,(funcPtr) whileExec},
   {"forExec",5,(funcPtr) forExec},
-  {"forEachExec",3,(funcPtr) forEachExec},
-  {"writeString",2,(funcPtr) writeString},
-  {"writeLine",2,(funcPtr) writeLine},
-  {"assign",2,(funcPtr) assign},
-  {"ifExec",5,(funcPtr) ifExec},
-  {"break",0,(funcPtr) breakExec},
-#endif
   {"delayExec",3,(funcPtr) delayExec},
   {"remoteExec",4,(funcPtr) remoteExec},
+  {"forEachExec",3,(funcPtr) forEachExec},
   {"msiSleep",2,(funcPtr) msiSleep},
+  {"writeString",2,(funcPtr) writeString},
+  {"writeLine",2,(funcPtr) writeLine},
   {"writeBytesBuf",2,(funcPtr) writeBytesBuf},
   {"writePosInt",2,(funcPtr) writePosInt},
   {"writeKeyValPairs",3,(funcPtr) writeKeyValPairs},
@@ -311,11 +322,13 @@ microsdef_t MicrosTable[] = {
   {"msiStrToBytesBuf", 2, (funcPtr) msiStrToBytesBuf},
   {"msiApplyDCMetadataTemplate", 2, (funcPtr) msiApplyDCMetadataTemplate},
   {"msiListEnabledMS", 1, (funcPtr) msiListEnabledMS},
-  {"msiServerBackup", 2, (funcPtr) msiServerBackup},
   {"msiSendStdoutAsEmail",2,(funcPtr) msiSendStdoutAsEmail},
   {"msiPrintKeyValPair",2,(funcPtr) msiPrintKeyValPair},
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},
   {"msiAddKeyVal",3,(funcPtr) msiAddKeyVal},
+  {"assign",2,(funcPtr) assign},
+  {"ifExec",5,(funcPtr) ifExec},
+  {"break",0,(funcPtr) breakExec},
   {"applyAllRules",3,(funcPtr) msiApplyAllRules},
   {"msiExecStrCondQuery",2,(funcPtr) msiExecStrCondQuery},
   {"msiExecStrCondQueryWithOptions",4,(funcPtr) msiExecStrCondQueryWithOptions},
@@ -380,6 +393,18 @@ microsdef_t MicrosTable[] = {
   {"msiAdmInsertRulesFromStructIntoDB",2, (funcPtr) msiAdmInsertRulesFromStructIntoDB},
   {"msiGetRulesFromDBIntoStruct",3, (funcPtr) msiGetRulesFromDBIntoStruct},
   {"msiAdmWriteRulesFromStructIntoFile",2, (funcPtr) msiAdmWriteRulesFromStructIntoFile},
+  {"msiAdmReadDVMapsFromFileIntoStruct",2, (funcPtr) msiAdmReadDVMapsFromFileIntoStruct},
+  {"msiAdmInsertDVMapsFromStructIntoDB",2, (funcPtr) msiAdmInsertDVMapsFromStructIntoDB},
+  {"msiGetDVMapsFromDBIntoStruct",3, (funcPtr) msiGetDVMapsFromDBIntoStruct},
+  {"msiAdmWriteDVMapsFromStructIntoFile",2, (funcPtr) msiAdmWriteDVMapsFromStructIntoFile},
+  {"msiAdmReadFNMapsFromFileIntoStruct",2, (funcPtr) msiAdmReadFNMapsFromFileIntoStruct},
+  {"msiAdmInsertFNMapsFromStructIntoDB",2, (funcPtr) msiAdmInsertFNMapsFromStructIntoDB},
+  {"msiGetFNMapsFromDBIntoStruct",3, (funcPtr) msiGetFNMapsFromDBIntoStruct},
+  {"msiAdmWriteFNMapsFromStructIntoFile",2, (funcPtr) msiAdmWriteFNMapsFromStructIntoFile},
+  {"msiAdmReadMSrvcsFromFileIntoStruct",2, (funcPtr) msiAdmReadMSrvcsFromFileIntoStruct},
+  {"msiAdmInsertMSrvcsFromStructIntoDB",1, (funcPtr) msiAdmInsertMSrvcsFromStructIntoDB},
+  {"msiGetMSrvcsFromDBIntoStruct",2, (funcPtr) msiGetMSrvcsFromDBIntoStruct},
+  {"msiAdmWriteMSrvcsFromStructIntoFile",2, (funcPtr) msiAdmWriteMSrvcsFromStructIntoFile},
 #endif
   {"writeXMsg",3, (funcPtr) writeXMsg},
   {"readXMsg",8, (funcPtr) readXMsg},
@@ -389,10 +414,8 @@ microsdef_t MicrosTable[] = {
   {"msiStrchop",2,(funcPtr) msiStrchop},
   {"msiSubstr",4,(funcPtr) msiSubstr},
   {"msiCutBufferInHalf",1,(funcPtr) msiCutBufferInHalf},
-  {"msiDoSomething", 2, (funcPtr) msiDoSomething},  
   {"msiDbrCommit", 1, (funcPtr) msiDbrCommit},
   {"msiDbrRollback", 1, (funcPtr) msiDbrRollback},
   {"msiDboExec",10,(funcPtr) msiDboExec},
   {"msiExit",2,(funcPtr) msiExit},
   {"msiSysMetaModify",2,(funcPtr) msiSysMetaModify},
-

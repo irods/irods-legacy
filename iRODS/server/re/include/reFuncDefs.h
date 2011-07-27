@@ -15,8 +15,7 @@ int initRuleStruct(int processType, char *ruleSet, char *dvmSet, char *fnmSet);
 
 int readRuleStructFromFile(int processType, char *ruleBaseName, ruleStruct_t *inRuleStrct);
 #else
-int initRuleStruct(char *ruleSet, char *dvmSet, char *fnmSet);
-
+int initRuleStruct(rsComm_t *svrComm, char *ruleSet, char *dvmSet, char *fnmSet);
 int readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct);
 #endif
 
@@ -307,10 +306,9 @@ int writeFNMapsIntoFile(char * inFileName, fnmapStruct_t *myFNMapStruct,
 			ruleExecInfo_t *rei);
 int readFNMapStructFromDB(char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmStrct,
 			  ruleExecInfo_t *rei);
-int insertMSrvcsIntoDB(char * baseName, msrvcStruct_t *coreFNMStruct,
+int insertMSrvcsIntoDB(msrvcStruct_t *inMsrvcStruct,
 		   ruleExecInfo_t *rei);
-int readMsrvcStructFromDB(char *moduleName, char *versionStr, msrvcStruct_t *inMsrvcStrct,
-			  ruleExecInfo_t *rei);
+int readMsrvcStructFromDB(int inStatus, msrvcStruct_t *outMsrvcStrct, ruleExecInfo_t *rei);
 int readMsrvcStructFromFile(char *msrvcFileName, msrvcStruct_t* inMsrvcStruct);
 int writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
 		    ruleExecInfo_t *rei);
@@ -319,6 +317,13 @@ int writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
 int _writeXMsg(int streamId, char *hdr, char *msg);
 int _readXMsg(int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr, char **msg,char **user, char **addr);
 int reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei);
+int initializeReDebug(rsComm_t *svrComm, int flag);
+
+
+int _applyRule(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag);
+int _applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
+		   ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag);
+int _execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei,int reiSaveFlag);
 
 
 #endif  /* RE_FUNCDEFS_H */

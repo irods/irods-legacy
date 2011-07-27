@@ -392,7 +392,7 @@ executeRuleRecoveryNew(char *ruleRecovery, msParamArray_t *inMsParamArray, ruleE
        if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
 	 rodsLog (LOG_NOTICE,"***RollingBack\n");
   }
-  if (GlobalREDebugFlag)
+  if (GlobalREAuditFlag)
     reDebug("  RuleRecovery", -2, ruleRecovery,inMsParamArray,rei);
 
   return(executeRuleActionNew(ruleRecovery, inMsParamArray,  rei, reiSaveFlag));
@@ -1218,7 +1218,7 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
   /* #endif  */ 
 
 
-  if (GlobalREDebugFlag) {
+  if (GlobalREAuditFlag) {
     makeActionFromMParam(tmpActStr,action, (msParam_t **) myArgv,numOfStrArgs, MAX_ACTION_SIZE);
     reDebug("    ExecMicroSrvc", -4, tmpActStr, inMsParamArray,rei);
   }

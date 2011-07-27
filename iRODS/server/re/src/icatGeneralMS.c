@@ -691,6 +691,89 @@ int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
 
 
 /**
+ * \fn msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation, msParam_t * outResult, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice checks the access permission to perform a given operation
+ *
+ * \module core
+ *
+ * \since 3.0
+ *
+ * \author  Arcot Rajasekar
+ * \date  	July 2011
+ *
+ *
+ * \note	This microservice checks the authorization permission for an object to perform angiven  operation. 
+ *
+ * \usage
+ *  
+ * \param[in] inObjName - name of Object. A param of type STR_MS_T
+ * \param[in] inOperation - type of Operation that will be performed. A param of type STR_MS_T. 
+ * \param[out] outResult - result of the operation. 0 for failure and 1 for success. a param of type INT_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
+int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation, 
+		   msParam_t * outResult, ruleExecInfo_t *rei)
+
+{
+  char *objName, *oper;
+  char objType[MAX_NAME_LEN];
+  int i;
+  char *user;
+  char *zone;
+ 
+  RE_TEST_MACRO ("  Calling msiCheckAccess");
+
+  if (inObjName == NULL || inObjName->inOutStruct == NULL ||
+      inObjName->type == NULL || strcmp(inObjName->type, STR_MS_T) != 0 )
+    return (USER_PARAM_TYPE_ERR);
+
+  if (inOperation == NULL || inOperation->inOutStruct == NULL ||
+      inOperation->type == NULL || strcmp(inOperation->type, STR_MS_T) != 0 )
+    return (USER_PARAM_TYPE_ERR);
+
+  if (rei == NULL || rei->rsComm == NULL) 
+    return (SYS_INTERNAL_NULL_INPUT_ERR);
+
+  if (strlen(rei->rsComm->clientUser.userName) == 0 ||
+      strlen(rei->rsComm->clientUser.rodsZone) == 0)
+    return (SYS_INTERNAL_NULL_INPUT_ERR);
+
+  oper = (char *) inOperation->inOutStruct;
+  objName = (char *) inObjName->inOutStruct; 
+  user = rei->rsComm->clientUser.userName;
+  zone = rei->rsComm->clientUser.rodsZone;
+
+  i = getObjType(rei->rsComm, objName, objType);
+  if (i < 0)
+    return(i);
+
+  i = checkPermissionByObjType(rei->rsComm, objName, objType, user, zone, oper);
+  if (i < 0)
+    return(i);
+  fillIntInMsParam (outResult, i);
+
+  return(0);
+
+}
+
+
+/**
  * \fn msiCommit (ruleExecInfo_t *rei)
  *
  * \brief This microservice commits pending database transactions,

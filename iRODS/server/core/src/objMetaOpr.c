@@ -321,3 +321,200 @@ removeAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
   return(0);
 }
 
+int
+getTokenId(rsComm_t *rsComm, char *tokenNameSpace, char *tokenName)
+{
+
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char tmpStr[MAX_NAME_LEN];
+  char tmpStr2[MAX_NAME_LEN];
+  int status;
+  
+  memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+  snprintf (tmpStr, NAME_LEN, "='%s'", tokenNameSpace);
+  snprintf (tmpStr2, NAME_LEN, "='%s'", tokenName);
+  addInxVal (&genQueryInp.sqlCondInp, COL_TOKEN_NAMESPACE, tmpStr);
+  addInxVal (&genQueryInp.sqlCondInp, COL_TOKEN_NAME, tmpStr2);
+  addInxIval (&genQueryInp.selectInp, COL_TOKEN_ID, 1);
+  genQueryInp.maxRows = 2;
+  status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+  clearGenQueryInp (&genQueryInp);
+  if (status >= 0) {
+    sqlResult_t *tokenIdRes;
+
+    if ((tokenIdRes = getSqlResultByInx (genQueryOut, COL_TOKEN_ID)) ==
+	NULL) {
+      rodsLog (LOG_ERROR,
+	       "getTokenId: getSqlResultByInx for COL_TOKEN_ID failed");
+      freeGenQueryOut (&genQueryOut);
+      return (UNMATCHED_KEY_OR_INDEX);
+    }
+    status = atoi(tokenIdRes->value);
+    freeGenQueryOut (&genQueryOut);
+  }
+  return(status);
+}
+
+int
+getUserId(rsComm_t *rsComm, char *userName, char *zoneName)
+{
+
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char tmpStr[MAX_NAME_LEN];
+  char tmpStr2[MAX_NAME_LEN];
+  int status;
+  
+  memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+  snprintf (tmpStr, NAME_LEN, "='%s'", userName);
+  snprintf (tmpStr2, NAME_LEN, "='%s'", zoneName);
+  addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, tmpStr);
+  addInxVal (&genQueryInp.sqlCondInp, COL_USER_ZONE, tmpStr2);
+  addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
+  genQueryInp.maxRows = 2;
+  status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+  clearGenQueryInp (&genQueryInp);
+  if (status >= 0) {
+    sqlResult_t *userIdRes;
+
+    if ((userIdRes = getSqlResultByInx (genQueryOut, COL_USER_ID)) ==
+	NULL) {
+      rodsLog (LOG_ERROR,
+	       "getUserId: getSqlResultByInx for COL_USER_ID failed");
+      freeGenQueryOut (&genQueryOut);
+      return (UNMATCHED_KEY_OR_INDEX);
+    }
+    status = atoi(userIdRes->value);
+    freeGenQueryOut (&genQueryOut);
+  }
+  return(status);
+}
+
+
+int
+checkPermitForDataObject(rsComm_t *rsComm, char *objName, int userId, int operId)
+{
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char t1[NAME_LEN];
+  char t11[NAME_LEN];
+  char t2[NAME_LEN];
+  char t3[NAME_LEN];
+  char logicalEndName[MAX_NAME_LEN];
+  char logicalParentDirName[MAX_NAME_LEN];
+  int status;
+
+  status = splitPathByKey(objName,
+			  logicalParentDirName, logicalEndName, '/');
+  snprintf (t1, MAX_NAME_LEN, " = '%s'", logicalEndName);
+  snprintf (t11, MAX_NAME_LEN, " = '%s'", logicalParentDirName);
+  snprintf (t2, MAX_NAME_LEN, " = '%i'", userId);
+  snprintf (t3, MAX_NAME_LEN, " >= '%i' ", operId); 
+
+  memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+  addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+  addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, t1);
+  addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, t11);
+  addInxVal (&genQueryInp.sqlCondInp, COL_DATA_ACCESS_USER_ID, t2);
+  addInxVal (&genQueryInp.sqlCondInp, COL_DATA_ACCESS_TYPE, t3);
+  genQueryInp.maxRows = 2;
+  status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+  clearGenQueryInp (&genQueryInp);
+  if (status >= 0) {
+    freeGenQueryOut (&genQueryOut);
+    return(1);
+  }
+  else
+    return(0);
+}
+
+int
+checkPermitForCollection(rsComm_t *rsComm, char *objName, int userId, int operId)
+{
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char t1[NAME_LEN];
+  char t2[NAME_LEN];
+  char t4[NAME_LEN];
+  int status;
+
+  snprintf (t1, MAX_NAME_LEN, " = '%s'", objName);
+  snprintf (t2, MAX_NAME_LEN, " = '%i'", userId);
+  snprintf (t4, MAX_NAME_LEN, " >= '%i' ", operId); 
+
+  memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+  addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
+  addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, t1);
+  addInxVal (&genQueryInp.sqlCondInp, COL_COLL_ACCESS_USER_ID, t2);
+  addInxVal (&genQueryInp.sqlCondInp, COL_COLL_ACCESS_TYPE, t4);
+  genQueryInp.maxRows = 2;
+  status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+  clearGenQueryInp (&genQueryInp);
+  if (status >= 0) {
+    freeGenQueryOut (&genQueryOut);
+    return(1);
+  }
+  else
+    return(0);
+}
+
+int
+checkPermitForResource(rsComm_t *rsComm, char *objName, int userId, int operId)
+{
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char t1[NAME_LEN];
+  char t2[NAME_LEN];
+  char t4[NAME_LEN];
+  int status;
+
+  snprintf (t1, MAX_NAME_LEN, " = '%s'", objName);
+  snprintf (t2, MAX_NAME_LEN, " = '%i'", userId);
+  snprintf (t4, MAX_NAME_LEN, " >= '%i' ", operId); 
+
+  memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+  addInxIval (&genQueryInp.selectInp, COL_R_RESC_ID, 1);
+  addInxVal (&genQueryInp.sqlCondInp, COL_R_RESC_NAME, t1);
+  addInxVal (&genQueryInp.sqlCondInp, COL_RESC_ACCESS_USER_ID, t2);
+  addInxVal (&genQueryInp.sqlCondInp, COL_RESC_ACCESS_TYPE, t4);
+  genQueryInp.maxRows = 2;
+  status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+  clearGenQueryInp (&genQueryInp);
+  if (status >= 0) {
+    freeGenQueryOut (&genQueryOut);
+    return(1);
+  }
+  else
+    return(0);
+}
+
+
+int
+checkPermissionByObjType(rsComm_t *rsComm, char *objName, char *objType, char *user, char *zone, char *oper)
+{
+  int i;
+  int operId;
+  int userId;
+  operId = getTokenId(rsComm, "access_type", oper);
+  if (operId < 0)
+    return(operId);
+
+  userId = getUserId(rsComm, user, zone);
+  if (userId < 0)
+    return(userId);
+
+  if (!strcmp(objType,"-d"))
+    i = checkPermitForDataObject(rsComm, objName, userId, operId);
+  else  if (!strcmp(objType,"-c"))
+    i = checkPermitForCollection(rsComm, objName, userId, operId);
+  else  if (!strcmp(objType,"-r"))
+    i = checkPermitForResource(rsComm, objName, userId, operId);
+  /*
+  else  if (!strcmp(objType,"-m"))
+    i = checkPermitForMetadata(rsComm, objName, userId, operId);
+  */
+  else
+    i = INVALID_OBJECT_TYPE;
+  return(i);
+}

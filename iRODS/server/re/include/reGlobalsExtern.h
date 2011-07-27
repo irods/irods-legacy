@@ -155,6 +155,12 @@ extern  msrvcStruct_t appMsrvcStruct;
 extern int reTestFlag;
 extern int reLoopBackFlag;
 extern int GlobalREDebugFlag;
+extern int GlobalREAuditFlag;
+extern char *reDebugStackFull[REDEBUG_STACK_SIZE_FULL];
+extern char *reDebugStackCurr[REDEBUG_STACK_SIZE_CURR];
+extern int reDebugStackFullPtr;
+extern int reDebugStackCurrPtr;
+
 extern char tmpStr[];
 extern strArray_t delayStack;
 extern strArray_t msParamStack;

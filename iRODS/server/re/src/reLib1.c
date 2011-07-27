@@ -329,8 +329,48 @@ finalizeMsParamNew(char *inAction,char *ruleHead,
 
 
 /** this was applyRulePA and got changed to applyRule ***/
+
 int
 applyRule(char *inAction, msParamArray_t *inMsParamArray,
+	   ruleExecInfo_t *rei, int reiSaveFlag)
+{
+  int i, ii;
+
+  if (strlen (rei->ruleName) == 0) {
+    strncpy (rei->ruleName, inAction, NAME_LEN);
+    rei->ruleName[NAME_LEN - 1] = '\0';
+  }
+
+  if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
+    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
+    return(i);
+  }
+
+  if (strstr(inAction,"|") != NULL) { /* seems to be multiple actions */
+    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
+    return(i);
+  }
+
+  if (GlobalAllRuleExecFlag != 0) {
+    ii = GlobalAllRuleExecFlag;
+    i = applyAllRules(inAction, inMsParamArray, rei, reiSaveFlag, GlobalAllRuleExecFlag);
+    GlobalAllRuleExecFlag = ii;
+    return(i);
+  }
+
+  if (GlobalREAuditFlag) 
+    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei); 
+
+  i = _applyRule(inAction, inMsParamArray, rei, reiSaveFlag);
+
+  if (GlobalREAuditFlag) 
+    reDebug("DoneApplyRule", -1, inAction,inMsParamArray,rei); 
+
+  return(i);
+}
+
+int
+_applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag)
 {
   int ruleInx, argc,i, status;
@@ -346,37 +386,14 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
   /*funcPtr myFunc = NULL;*/
   /*int actionInx;*/
   /*int numOfStrArgs;*/
-  int ii;
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   char action[MAX_ACTION_SIZE];  
   msParamArray_t *outMsParamArray;
 
-  if (strlen (rei->ruleName) == 0) {
-    strncpy (rei->ruleName, inAction, NAME_LEN);
-    rei->ruleName[NAME_LEN - 1] = '\0';
-  }
-  if (GlobalAllRuleExecFlag != 0) {
-    ii = GlobalAllRuleExecFlag;
-    i = applyAllRules(inAction, inMsParamArray, rei, reiSaveFlag, GlobalAllRuleExecFlag);
-    GlobalAllRuleExecFlag = ii;
-    return(i);
-  }
 
   ruleInx = -1; /* new rule */
 
-  if (GlobalREDebugFlag) 
-    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei); 
 
-
-  if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
-    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
-    return(i);
-  }
-
-  if (strstr(inAction,"|") != NULL) { /* seems to be multiple actions */
-    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
-    return(i);
-  }
 
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
@@ -393,13 +410,10 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     i = executeMicroServiceNew(inAction,inMsParamArray,rei);
     return(i);
   }
-  /**** not needed ** 
-  if (GlobalREDebugFlag) 
-    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei); 
-  *****/
+
   while (i == 0) {
     getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
-    if (GlobalREDebugFlag) 
+    if (GlobalREAuditFlag) 
       reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei); 
 
     i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
@@ -497,6 +511,44 @@ int
 applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag)
 {
+  int i;
+
+  if (strlen (rei->ruleName) == 0) {
+    strncpy (rei->ruleName, inAction, NAME_LEN);
+    rei->ruleName[NAME_LEN - 1] = '\0';
+  }
+
+  GlobalAllRuleExecFlag = allRuleExecFlag;
+
+
+  if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
+    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+    return(i);
+  }
+
+  if (strstr(inAction,"|") != NULL) { /* seems to be multiple actions */
+    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+    return(i);
+  }
+
+
+  if (GlobalREAuditFlag) 
+    reDebug("ApplyAllRules", -1, inAction,inMsParamArray,rei); 
+
+  i = _applyAllRules(inAction, inMsParamArray, rei, reiSaveFlag, allRuleExecFlag);
+
+  if (GlobalREAuditFlag) 
+    reDebug("DoneApplyAllRules", -1, inAction,inMsParamArray,rei); 
+
+  return(i);
+}
+
+int
+_applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
+	  ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag)
+{
   int ruleInx, argc,i, status;
   /*char *nextRule;*/
   char ruleCondition[MAX_RULE_LENGTH * 3];
@@ -521,15 +573,6 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   GlobalAllRuleExecFlag = allRuleExecFlag;
 
-  if (GlobalREDebugFlag) 
-    reDebug("ApplyAllRules", -1, inAction,inMsParamArray,rei); 
-
-  if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
-    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
-    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
-    return(i);
-  }
-
   i = parseAction(inAction,action,args, &argc);
   if (i != 0) {
     if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
@@ -551,7 +594,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   while (i == 0) {
     getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
-    if (GlobalREDebugFlag) 
+    if (GlobalREAuditFlag) 
       reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei); 
 
     if (outMsParamArray == NULL) {
@@ -682,6 +725,31 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 
 {
   int i;
+
+  if (strstr(ruleDef, "|") == NULL && strstr(ruleDef, "##") == NULL) {
+    i = applyRule(ruleDef, inMsParamArray, rei,1);
+    return(i);
+  }
+
+  if (GlobalREAuditFlag)
+    reDebug("ExecMyRule", -1, ruleDef,inMsParamArray,rei);
+
+  i = _execMyRuleWithSaveFlag(ruleDef, inMsParamArray, rei, reiSaveFlag);
+
+  if (GlobalREAuditFlag)
+    reDebug("DoneExecMyRule", -1, ruleDef, inMsParamArray,rei);
+
+  return(i);
+}
+
+
+
+int
+_execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
+	  ruleExecInfo_t *rei,int reiSaveFlag)
+
+{
+  int i;
   char *inAction;
   char *ruleBase;
   char *ruleHead;
@@ -701,11 +769,6 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 
   rstrcpy(buf, ruleDef, MAX_RULE_LENGTH);
   
-  if (strstr(buf,"|") == NULL) {
-    status = applyRule(ruleDef, inMsParamArray, rei,1);
-    return(status);
-  }
-
 
   rSplitStr(buf, l1, MAX_RULE_LENGTH, l0, MAX_RULE_LENGTH, '|');
   inAction = strdup(l1);  /** action **/
@@ -732,8 +795,6 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
   /*
   rodsLog(LOG_NOTICE,"PPP:%s::%s::%s::%s\n",inAction,ruleCondition,ruleAction,ruleRecovery);
   */
-  if (GlobalREDebugFlag)
-    reDebug("ExecMyRule", -1, inAction,inMsParamArray,rei);
 
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
@@ -774,7 +835,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 }
 
 int
-initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
+initRuleStruct(rsComm_t *svrComm, char *irbSet, char *dvmSet, char *fnmSet)
 {
   int i;
   char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
@@ -834,6 +895,12 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   if (getenv(GLOBALREDEBUGFLAG) != NULL) {
     GlobalREDebugFlag = atoi(getenv(GLOBALREDEBUGFLAG));
   }
+  if (getenv(GLOBALREAUDITFLAG) != NULL) {
+    GlobalREAuditFlag = atoi(getenv(GLOBALREAUDITFLAG));
+  }
+  if (GlobalREAuditFlag == 0 ) {
+    GlobalREAuditFlag = GlobalREDebugFlag;
+  }
   delayStack.size = NAME_LEN;
   delayStack.len = 0;
   delayStack.value = NULL;
@@ -841,6 +908,8 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   msParamStack.size = NAME_LEN;
   msParamStack.len = 0;
   msParamStack.value = NULL;
+
+  initializeReDebug(svrComm, GlobalREDebugFlag); 
 
 
   return(0);
@@ -854,7 +923,7 @@ readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleS
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut = NULL;
   char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
-  sqlResult_t *r[6];
+  sqlResult_t *r[8];
   memset(&genQueryInp, 0, sizeof(genQueryInp));
   genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -863,13 +932,14 @@ readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleS
   snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
   addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_VERSION, condstr2);
   
-  addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_PRIORITY, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_PRIORITY, ORDER_BY);
   addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_BASE_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_EVENT, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_CONDITION, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_BODY, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_RECOVERY, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_ID, 1);
   l = inRuleStrct->MaxNumOfRules;
   status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
   while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
@@ -879,6 +949,7 @@ readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleS
     r[3] = getSqlResultByInx (genQueryOut, COL_RULE_CONDITION);
     r[4] = getSqlResultByInx (genQueryOut, COL_RULE_BODY);
     r[5] = getSqlResultByInx (genQueryOut, COL_RULE_RECOVERY);
+    r[6] = getSqlResultByInx (genQueryOut, COL_RULE_ID);
     for (i = 0; i<genQueryOut->rowCnt; i++) {
       inRuleStrct->ruleBase[l] = strdup(&r[0]->value[r[0]->len * i]);
       inRuleStrct->action[l]   = strdup(&r[1]->value[r[1]->len * i]);
@@ -886,6 +957,7 @@ readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleS
       inRuleStrct->ruleCondition[l] = strdup(&r[3]->value[r[3]->len * i]);
       inRuleStrct->ruleAction[l]    = strdup(&r[4]->value[r[4]->len * i]);
       inRuleStrct->ruleRecovery[l]  = strdup(&r[5]->value[r[5]->len * i]);
+      inRuleStrct->ruleId[l] = atol(&r[6]->value[r[6]->len * i]);
       l++;
     }
     genQueryInp.continueInx =  genQueryOut->continueInx;
@@ -909,7 +981,7 @@ readDVMapStructFromDB(char *dvmBaseName, char *versionStr, rulevardef_t *inDvmSt
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut = NULL;
   char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
-  sqlResult_t *r[3];
+  sqlResult_t *r[5];
   memset(&genQueryInp, 0, sizeof(genQueryInp));
   genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -921,17 +993,19 @@ readDVMapStructFromDB(char *dvmBaseName, char *versionStr, rulevardef_t *inDvmSt
   addInxIval(&genQueryInp.selectInp, COL_DVM_EXT_VAR_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_DVM_CONDITION, 1);
   addInxIval(&genQueryInp.selectInp, COL_DVM_INT_MAP_PATH, 1);
-
+  addInxIval(&genQueryInp.selectInp, COL_DVM_ID, ORDER_BY);
   l = inDvmStrct->MaxNumOfDVars;
   status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
   while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
     r[0] = getSqlResultByInx (genQueryOut, COL_DVM_EXT_VAR_NAME);
     r[1] = getSqlResultByInx (genQueryOut, COL_DVM_CONDITION);
     r[2] = getSqlResultByInx (genQueryOut, COL_DVM_INT_MAP_PATH);
+    r[3] = getSqlResultByInx (genQueryOut, COL_DVM_ID);
     for (i = 0; i<genQueryOut->rowCnt; i++) {
       inDvmStrct->varName[l]   = strdup(&r[0]->value[r[0]->len * i]);
       inDvmStrct->action[l] = strdup(&r[1]->value[r[1]->len * i]);
       inDvmStrct->var2CMap[l] = strdup(&r[2]->value[r[2]->len * i]);
+      inDvmStrct->varId[l] = atol(&r[3]->value[r[3]->len * i]);
       l++;
     }
     genQueryInp.continueInx =  genQueryOut->continueInx;
@@ -956,7 +1030,7 @@ readFNMapStructFromDB(char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmS
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut = NULL;
   char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
-  sqlResult_t *r[3];
+  sqlResult_t *r[5];
   memset(&genQueryInp, 0, sizeof(genQueryInp));
   genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -967,15 +1041,18 @@ readFNMapStructFromDB(char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmS
   
   addInxIval(&genQueryInp.selectInp, COL_FNM_EXT_FUNC_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_FNM_INT_FUNC_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_FNM_ID, ORDER_BY);
 
   l = inFnmStrct->MaxNumOfFMaps;
   status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
   while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
     r[0] = getSqlResultByInx (genQueryOut, COL_FNM_EXT_FUNC_NAME);
     r[1] = getSqlResultByInx (genQueryOut, COL_FNM_INT_FUNC_NAME);
+    r[2] = getSqlResultByInx (genQueryOut, COL_FNM_ID);
     for (i = 0; i<genQueryOut->rowCnt; i++) {
       inFnmStrct->funcName[l]   = strdup(&r[0]->value[r[0]->len * i]);
-      inFnmStrct->func2CMap[l] = strdup(&r[2]->value[r[1]->len * i]);
+      inFnmStrct->func2CMap[l] = strdup(&r[1]->value[r[1]->len * i]);
+      inFnmStrct->fmapId[l] = atol(&r[2]->value[r[2]->len * i]);
       l++;
     }
     genQueryInp.continueInx =  genQueryOut->continueInx;
@@ -994,21 +1071,19 @@ readFNMapStructFromDB(char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmS
 
 
 int
-readMsrvcStructFromDB(char *moduleName, char *versionStr, msrvcStruct_t *inMsrvcStrct, ruleExecInfo_t *rei)
+readMsrvcStructFromDB(int inStatus, msrvcStruct_t *inMsrvcStrct, ruleExecInfo_t *rei)
 {
   int i,l,status;
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut = NULL;
-  char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
-  sqlResult_t *r[6];
+  sqlResult_t *r[10];
   memset(&genQueryInp, 0, sizeof(genQueryInp));
   genQueryInp.maxRows = MAX_SQL_ROWS;
+  char condstr[MAX_NAME_LEN];
 
-  snprintf(condstr, MAX_NAME_LEN, "= '%s'", moduleName);
-  addInxVal(&genQueryInp.sqlCondInp, COL_MSRVC_MODULE_NAME, condstr);
-  snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
-  addInxVal(&genQueryInp.sqlCondInp, COL_MSRVC_VERSION, condstr2);
-  
+  snprintf(condstr, MAX_NAME_LEN, "= '%i'", inStatus);
+  addInxVal(&genQueryInp.sqlCondInp, COL_MSRVC_STATUS, condstr);
+
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_MODULE_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_SIGNATURE, 1);
@@ -1018,8 +1093,8 @@ readMsrvcStructFromDB(char *moduleName, char *versionStr, msrvcStruct_t *inMsrvc
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_LANGUAGE, 1);
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_TYPE_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_MSRVC_STATUS, 1);
-  addInxIval(&genQueryInp.selectInp, COL_MSRVC_ID, 1);
-
+  addInxIval(&genQueryInp.selectInp, COL_MSRVC_ID, ORDER_BY);
+  
   l = inMsrvcStrct->MaxNumOfMsrvcs;
   status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
   while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
@@ -1349,7 +1424,6 @@ findNextRule (char *action,  int *ruleInx)
   int i;
    i = *ruleInx;
    i++;
-
    if (i < 0)
      i = 0;
    if (i < 1000) {
@@ -1639,7 +1713,7 @@ insertFNMapsIntoDB(char * baseName, fnmapStruct_t *coreFNMStruct,
 
 
 int
-insertMSrvcsIntoDB(char * baseName, msrvcStruct_t *coreMsrvcStruct,
+insertMSrvcsIntoDB(msrvcStruct_t *coreMsrvcStruct,
 		  ruleExecInfo_t *rei)
 {
 
@@ -1647,13 +1721,13 @@ insertMSrvcsIntoDB(char * baseName, msrvcStruct_t *coreMsrvcStruct,
   int rc1, i;
   endTransactionInp_t endTransactionInp;
   char myTime[100];
-
+  char myStatus[100]; 
   memset (&endTransactionInp, 0, sizeof (endTransactionInp_t));
   getNowStr(myTime);
 
   for (i = 0; i < coreMsrvcStruct->MaxNumOfMsrvcs; i++) {
     generalRowInsertInp.tableName = "msrvcTable";
-    generalRowInsertInp.arg1 = baseName;
+    generalRowInsertInp.arg1 = coreMsrvcStruct->moduleName[i];
     generalRowInsertInp.arg2 = coreMsrvcStruct->msrvcName[i];
     generalRowInsertInp.arg3 = coreMsrvcStruct->msrvcSignature[i];
     generalRowInsertInp.arg4 = coreMsrvcStruct->msrvcVersion[i];
@@ -1661,8 +1735,9 @@ insertMSrvcsIntoDB(char * baseName, msrvcStruct_t *coreMsrvcStruct,
     generalRowInsertInp.arg6 = coreMsrvcStruct->msrvcLocation[i];
     generalRowInsertInp.arg7 = coreMsrvcStruct->msrvcLanguage[i];
     generalRowInsertInp.arg8 = coreMsrvcStruct->msrvcTypeName[i];
-    snprintf(myTime,100, "%s|%ld", myTime,coreMsrvcStruct->msrvcStatus[i]);
-    generalRowInsertInp.arg9 = myTime;
+    snprintf(myStatus,100, "%ld", coreMsrvcStruct->msrvcStatus[i]);
+    generalRowInsertInp.arg9 = myStatus;
+    generalRowInsertInp.arg10 = myTime;
 
 
     rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
@@ -1831,39 +1906,13 @@ writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
   return(0);
 }
 
-
-/************** moved to stringOpr.c
-void *
-mymalloc(char *file,int line, int x)
+int
+finalzeRuleEngine(rsComm_t *rsComm)
 {
-    void *p;
-        p = malloc(x);
-        rodsLog(LOG_NOTICE, "MYMALLOC: %s:%i:%i=%x",file,line,x,p);
-       return(p);
+  if ( GlobalREDebugFlag > 5 ) {
+    _writeXMsg(GlobalREDebugFlag, "idbug", "PROCESS END");
+  }
+  return(0);
 }
 
-void *
-mycalloc(char *file,int line, int x, int y)
-{
-    void *p;
-    p = malloc(x * y );
-    bzero(p, x * y);
-    rodsLog(LOG_NOTICE, "MYCALLOC: %s:%i:%i:%i=%x",file,line,x,y,p);
-       return(p);
-}
 
-void
-myfree(char *file,int line, void* p)
-{
-      rodsLog(LOG_NOTICE, "MYFREE: %s:%i=%x",file,line, p);
-        free(p);
-}
-void *
-mystrdup(char *file,int line, char *x)
-{
-    void *p;
-        p = strdup(x);
-        rodsLog(LOG_NOTICE, "MYSTRDUP: %s:%i=%d",file,line,p);
-       return(p);
-}
-moved to stringOpr.c *****/

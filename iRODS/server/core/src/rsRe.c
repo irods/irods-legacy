@@ -54,12 +54,12 @@ clearCoreRule ()
 #else
 /* initialize the Rule Engine if it hasn't been done yet */
 int 
-initRuleEngine(char *ruleSet, char *dvmSet, char* fnmSet) {
+initRuleEngine(rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet) {
    int status;
    if (strcmp(ruleSet, ruleSetInitialized)==0) {
       return(0); /* already done */
    }
-   status = initRuleStruct(ruleSet, dvmSet, fnmSet);
+   status = initRuleStruct(svrComm, ruleSet, dvmSet, fnmSet);
    if (status == 0) {
       rstrcpy(ruleSetInitialized, ruleSet, NAME_LEN);
    }

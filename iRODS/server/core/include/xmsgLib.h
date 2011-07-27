@@ -70,6 +70,7 @@ int
 _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut);
 
 int clearAllXMessages(ticketMsgStruct_t *ticketMsgStruct);
+int clearOneXMessage(ticketMsgStruct_t *ticketMsgStruct, int seqNum);
 
 int addXmsgToQues(irodsXmsg_t *irodsXmsg,  ticketMsgStruct_t *ticketMsgStruct); 
 #endif	/* XMSG_LIB_H */

@@ -27,6 +27,7 @@
 #define RETESTFLAG        "RETESTFLAG"
 #define RELOOPBACKFLAG        "RELOOPBACKFLAG"
 #define GLOBALREDEBUGFLAG  "GLOBALREDEBUGFLAG"
+#define GLOBALREAUDITFLAG  "GLOBALREAUDITFLAG"
 /** Flags for testing the Rule Execution **/
 #define LOG_TEST_1             1
 #define HTML_TEST_1            2
@@ -36,6 +37,16 @@
 #define LOOP_BACK_1            1
 #define LOG_TEST_2            10
 
+#define REDEBUG_NEXT   1
+#define REDEBUG_CONTINUE 2
+#define REDEBUG_STOP 3
+#define REDEBUG_STEP 4
+#define REDEBUG_WAIT 5
+#define REDEBUG_CONTINUE_VERBOSE 6
+
+
+#define REDEBUG_STACK_SIZE_FULL 2000
+#define REDEBUG_STACK_SIZE_CURR 1000
 
 /** Flags for testing the Rule Execution **/
 
