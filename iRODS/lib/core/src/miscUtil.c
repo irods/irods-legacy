@@ -2029,6 +2029,7 @@ rmSubDir (char *mydir)
         status = iRODSNt_stat(childPath, &statbuf);
 #endif
         if (status != 0) {
+	    closedir (dirPtr);
 #endif	/* USE_BOOST_FS */
 	    savedStatus = USER_INPUT_PATH_ERR - errno;
             rodsLogError (LOG_ERROR, savedStatus,
