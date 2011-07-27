@@ -21,9 +21,6 @@ import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 public class IRODSCommandsGetTest {
 	private static Properties testingProperties = new Properties();
@@ -222,7 +219,6 @@ public class IRODSCommandsGetTest {
 
 	@Test
 	public void testGetDataObjectWithConnectionRerouting() throws Exception {
-
 		String useDistribResources = testingProperties
         	.getProperty("test.option.distributed.resources");
 
@@ -253,6 +249,15 @@ public class IRODSCommandsGetTest {
 				1);
 
 		// put scratch file into irods in the right place on the first resource
+		String targetIrodsCollection = testingPropertiesHelper
+    		.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPath + testFileName);
+
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.setResource(testingProperties
+                .getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		fileToPut.copyFrom(sourceFile, true);
+		/*
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
         	.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IputCommand iputCommand = new IputCommand();
@@ -275,8 +280,7 @@ public class IRODSCommandsGetTest {
 
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
-
+		*/
 		StringBuilder uriPath = new StringBuilder();
 		uriPath.append(IRODS_TEST_SUBDIR_PATH);
 		uriPath.append('/');
@@ -336,6 +340,15 @@ public class IRODSCommandsGetTest {
 				1);
 
 		// put scratch file into irods in the right place on the first resource
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPath + testFileName);
+
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
+		fileToPut.setResource(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		fileToPut.copyFrom(sourceFile, true);
+		/*
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IputCommand iputCommand = new IputCommand();
@@ -358,7 +371,7 @@ public class IRODSCommandsGetTest {
 
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
+		*/
 		StringBuilder uriPath = new StringBuilder();
 		uriPath.append(IRODS_TEST_SUBDIR_PATH);
 		uriPath.append('/');
@@ -413,6 +426,15 @@ public class IRODSCommandsGetTest {
 				+ "/" + testSubdir, testFilePrefix, testFileSuffix, 20, 10, 20);
 
 		// put scratch file into irods in the right place on the first resource
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(localAbsPath);
+
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testSubdir);
+		fileToPut.setResource(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_TERTIARY_RESOURCE_KEY));
+		fileToPut.copyFrom(sourceFile, true);
+		/*
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IputCommand iputCommand = new IputCommand();
@@ -432,7 +454,7 @@ public class IRODSCommandsGetTest {
 
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
+		*/
 		StringBuilder uriPath = new StringBuilder();
 		uriPath.append(IRODS_TEST_SUBDIR_PATH);
 		uriPath.append('/');

@@ -14,22 +14,20 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import edu.sdsc.grid.io.GeneralMetaData;
 import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataField;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.grid.io.StandardMetaData;
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaListCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaRemoveCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaCommand.MetaObjectType;
 
 /**
  * Tests for manipulating AVU's via the IRODSFile
@@ -73,62 +71,48 @@ public class IRODSFileAVUTest {
 		String testFileName = "testAddAvu.txt";
 		String expectedAttribName = "testattrib1";
 		String expectedAttribValue = "testvalue1";
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 
 		// generate testing file
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		String absPathToFile = FileGenerator
 				.generateFileOfFixedLengthGivenName(absPath, testFileName, 20);
-
-		IputCommand iputCommand = new IputCommand();
-
-		iputCommand.setLocalFileName(absPathToFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
+		
+		// put in irods
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties));
+		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPathToFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
-		// open the file and add an AVU
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
-				testingPropertiesHelper
-						.buildIRODSAccountFromTestProperties(testingProperties));
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
-				.getIrodsFileName()
+		// add metadata
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection
 				+ '/' + testFileName);
 		String[] metaData = { expectedAttribName, expectedAttribValue };
 		irodsFile.modifyMetaData(metaData);
-		irodsFileSystem.close();
 
 		// verify the metadata was added
 		// now get back the avu data and make sure it's there
-		ImetaListCommand imetaList = new ImetaListCommand();
-		imetaList.setAttribName(expectedAttribName);
-		imetaList.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		imetaList.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		String metaValues = invoker
-				.invokeCommandAndGetResultAsString(imetaList);
+		String metaValues = new String();
+		MetaDataRecordList[] lists = irodsFile.query(new String[] {
+				expectedAttribName });
+		if(lists != null && lists.length > 0) {
+			metaValues = lists[0].toString();
+		}
+		
 		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
 		Assert.assertTrue("did not find expected attrib value", metaValues
 				.indexOf(expectedAttribValue) > -1);
 
 		// clean up avu
-
-		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
-		imetaRemoveCommand.setAttribName(expectedAttribName);
-		imetaRemoveCommand.setAttribValue(expectedAttribValue);
-		imetaRemoveCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		imetaRemoveCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
-
+		irodsFile.deleteMetaData(metaData);
+		irodsFileSystem.close();
+		
 	}
 
 	@Test
@@ -137,48 +121,47 @@ public class IRODSFileAVUTest {
 		String expectedAttribName = "testattrib1";
 		String expectedAttribValue = "testvalue1";
 		String expectedUnits = "units1";
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 
 		// generate testing file
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		String absPathToFile = FileGenerator
 				.generateFileOfFixedLengthGivenName(absPath, testFileName, 20);
-
-		IputCommand iputCommand = new IputCommand();
-
-		iputCommand.setLocalFileName(absPathToFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
+		
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties));
+		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPathToFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// open the file and add an AVU
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
-				testingPropertiesHelper
-						.buildIRODSAccountFromTestProperties(testingProperties));
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
-				.getIrodsFileName()
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection
 				+ '/' + testFileName);
 		String[] metaData = { expectedAttribName, expectedAttribValue,
 				expectedUnits };
 		irodsFile.modifyMetaData(metaData);
-		irodsFileSystem.close();
 
 		// verify the metadata was added
 		// now get back the avu data and make sure it's there
-		ImetaListCommand imetaList = new ImetaListCommand();
-		imetaList.setAttribName(expectedAttribName);
-		imetaList.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		imetaList.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		String metaValues = invoker
-				.invokeCommandAndGetResultAsString(imetaList);
+		String metaValues = new String();
+		MetaDataCondition[] dataObjectCondition = new MetaDataCondition[1];
+		dataObjectCondition[0] = MetaDataSet.newCondition(expectedAttribName,
+				MetaDataCondition.EQUAL, expectedAttribValue);
+		String[] selectFieldNames = { IRODSMetaDataSet.META_DATA_ATTR_NAME,
+				IRODSMetaDataSet.META_DATA_ATTR_VALUE, IRODSMetaDataSet.META_DATA_ATTR_UNITS,
+				StandardMetaData.FILE_NAME, };
+		MetaDataSelect selects[] = MetaDataSet.newSelection(selectFieldNames);
+		MetaDataRecordList[] lists = irodsFile.query(dataObjectCondition,
+				selects);
+	
+		if(lists != null && lists.length > 0) {
+			metaValues = lists[0].toString();
+		}
+
 		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
 		Assert.assertTrue("did not find expected attrib value", metaValues
@@ -187,13 +170,8 @@ public class IRODSFileAVUTest {
 				.indexOf(expectedUnits) > -1);
 
 		// clean up avu
-		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
-		imetaRemoveCommand.setAttribName(expectedAttribName);
-		imetaRemoveCommand.setAttribValue(expectedAttribValue);
-		imetaRemoveCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		imetaRemoveCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+		irodsFile.deleteMetaData(metaData);
+		irodsFileSystem.close();
 
 	}
 	
@@ -203,64 +181,57 @@ public class IRODSFileAVUTest {
 		String expectedAttribName = "testattrib1";
 		String expectedAttribValue = "";
 		String expectedUnits = "";
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 
 		// generate testing file
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		String absPathToFile = FileGenerator
-				.generateFileOfFixedLengthGivenName(absPath, testFileName, 20);
+				.generateFileOfFixedLengthGivenName(absPath, testFileName, 20);		
 
-		IputCommand iputCommand = new IputCommand();
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper
+			.buildIRODSAccountFromTestProperties(testingProperties));
+		String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPathToFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
-		iputCommand.setLocalFileName(absPathToFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
 
 		// open the file and add an AVU
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
-				testingPropertiesHelper
-						.buildIRODSAccountFromTestProperties(testingProperties));
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
-				.getIrodsFileName()
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection
 				+ '/' + testFileName);
 		String[] metaData = { expectedAttribName, expectedAttribValue,
 				expectedUnits };
 		irodsFile.modifyMetaData(metaData);
-		irodsFileSystem.close();
 
 		// verify the metadata was added
 		// now get back the avu data and make sure it's there
-		ImetaListCommand imetaList = new ImetaListCommand();
-		imetaList.setAttribName(expectedAttribName);
-		imetaList.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		imetaList.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		String metaValues = invoker
-				.invokeCommandAndGetResultAsString(imetaList);
+		String metaValues = new String();
+		MetaDataCondition[] dataObjectCondition = new MetaDataCondition[1];
+		dataObjectCondition[0] = MetaDataSet.newCondition(expectedAttribName,
+				MetaDataCondition.EQUAL, expectedAttribValue);
+		String[] selectFieldNames = { IRODSMetaDataSet.META_DATA_ATTR_NAME,
+				IRODSMetaDataSet.META_DATA_ATTR_VALUE, IRODSMetaDataSet.META_DATA_ATTR_UNITS,
+				StandardMetaData.FILE_NAME, };
+		MetaDataSelect selects[] = MetaDataSet.newSelection(selectFieldNames);
+		MetaDataRecordList[] lists = irodsFile.query(dataObjectCondition,
+				selects);
+	
+		if(lists != null && lists.length > 0) {
+			metaValues = lists[0].toString();
+		}
+
 		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
 		Assert.assertTrue("did not find expected attrib value", metaValues
 				.indexOf(expectedAttribValue) > -1);
 		Assert.assertTrue("did not find expected units", metaValues
 				.indexOf(expectedUnits) > -1);
-
 		// clean up avu
-		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
-		imetaRemoveCommand.setAttribName(expectedAttribName);
-		imetaRemoveCommand.setAttribValue(expectedAttribValue);
-		imetaRemoveCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		imetaRemoveCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
-
+		irodsFile.deleteMetaData(metaData);
+		irodsFileSystem.close();
 	}
 
 	@Test
@@ -273,26 +244,22 @@ public class IRODSFileAVUTest {
 		String expectedAttribName2 = "testattrib2";
 		String expectedAttribValue2 = "testvalue2";
 		String expectedUnits2 = "units2";
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 
 		// generate testing file
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		String absPathToFile = FileGenerator
 				.generateFileOfFixedLengthGivenName(absPath, testFileName, 20);
-
-		IputCommand iputCommand = new IputCommand();
-
-		iputCommand.setLocalFileName(absPathToFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
+		
+		IRODSFileSystem irodsFileSystem1 = new IRODSFileSystem(testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties));
+		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+					testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPathToFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem1,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		boolean threwException = false;
 		IRODSFileSystem irodsFileSystem = null;
@@ -301,8 +268,7 @@ public class IRODSFileAVUTest {
 			// open the file and add two AVU's
 			irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper
 					.buildIRODSAccountFromTestProperties(testingProperties));
-			IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
-					.getIrodsFileName()
+			IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection
 					+ '/' + testFileName);
 			String[] metaData = { expectedAttribName, expectedAttribValue,
 					expectedUnits, expectedAttribName2, expectedAttribValue2,
@@ -330,48 +296,47 @@ public class IRODSFileAVUTest {
 		String expectedAttribName = "testattrib1";
 		String expectedAttribValue = "testvalue1";
 		String expectedUnits = "units1";
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 
 		// generate testing file
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		String absPathToFile = FileGenerator
 				.generateFileOfFixedLengthGivenName(absPath, testFileName, 20);
-
-		IputCommand iputCommand = new IputCommand();
-
-		iputCommand.setLocalFileName(absPathToFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
+		
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties));
+		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPathToFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// open the file and add an AVU
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
-				testingPropertiesHelper
-						.buildIRODSAccountFromTestProperties(testingProperties));
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
-				.getIrodsFileName()
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection
 				+ '/' + testFileName);
 		String[] metaData = { expectedAttribName, expectedAttribValue,
 				expectedUnits, "bogus" };
 		irodsFile.modifyMetaData(metaData);
-		irodsFileSystem.close();
 
 		// verify the metadata was added
 		// now get back the avu data and make sure it's there
-		ImetaListCommand imetaList = new ImetaListCommand();
-		imetaList.setAttribName(expectedAttribName);
-		imetaList.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		imetaList.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		String metaValues = invoker
-				.invokeCommandAndGetResultAsString(imetaList);
+		String metaValues = new String();
+		MetaDataCondition[] dataObjectCondition = new MetaDataCondition[1];
+		dataObjectCondition[0] = MetaDataSet.newCondition(expectedAttribName,
+				MetaDataCondition.EQUAL, expectedAttribValue);
+		String[] selectFieldNames = { IRODSMetaDataSet.META_DATA_ATTR_NAME,
+				IRODSMetaDataSet.META_DATA_ATTR_VALUE, IRODSMetaDataSet.META_DATA_ATTR_UNITS,
+				StandardMetaData.FILE_NAME, };
+		MetaDataSelect selects[] = MetaDataSet.newSelection(selectFieldNames);
+		MetaDataRecordList[] lists = irodsFile.query(dataObjectCondition,
+				selects);
+	
+		if(lists != null && lists.length > 0) {
+			metaValues = lists[0].toString();
+		}
+
 		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
 		Assert.assertTrue("did not find expected attrib value", metaValues
@@ -380,14 +345,8 @@ public class IRODSFileAVUTest {
 				.indexOf(expectedUnits) > -1);
 
 		// clean up avu
-
-		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
-		imetaRemoveCommand.setAttribName(expectedAttribName);
-		imetaRemoveCommand.setAttribValue(expectedAttribValue);
-		imetaRemoveCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
-		imetaRemoveCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
-				+ testFileName);
-		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+		irodsFile.deleteMetaData(metaData);
+		irodsFileSystem.close();
 
 	}
 
@@ -403,15 +362,25 @@ public class IRODSFileAVUTest {
 		String expectedAttribValue = "Jack*****Luis";
 
 		String expectedAttribValue2 = "Tom*****John";
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 
 		// generate testing file
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		String absPathToFile = FileGenerator
 				.generateFileOfFixedLengthGivenName(absPath, testFileName, 2);
-
+		
+		IRODSFileSystem irodsFileSystem1 = new IRODSFileSystem(testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties));
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(absPathToFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem1,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
+		/* This section can be removed if test is ever reactivated and re-tested
+		 * These changes made in response to tracker item [#359] take wrapped
+		 * icommands out of unit tests
 		IputCommand iputCommand = new IputCommand();
 
 		iputCommand.setLocalFileName(absPathToFile);
@@ -423,15 +392,14 @@ public class IRODSFileAVUTest {
 
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
-
+		*/
 		boolean threwException = false;
 		IRODSFileSystem irodsFileSystem = null;
 
 		// open the file and add two AVU's
 		irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties));
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
-				.getIrodsFileName()
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection
 				+ '/' + testFileName);
 		
 		// first modify
@@ -444,11 +412,31 @@ public class IRODSFileAVUTest {
 		String[] metaData2 = { expectedAttribName, expectedAttribValue2, null };
 		irodsFile.modifyMetaData(metaData2);
 		
-		
+		/* This section can be removed if test is ever reactivated and re-tested
+		 * These changes made in response to tracker item [#359] take wrapped
+		 * icommands out of unit tests
 		irodsFileSystem.close();
+		*/
 		
 		// verify the metadata was added
 		// now get back the avu data and make sure it's there
+		String metaValues = new String();
+		MetaDataCondition[] dataObjectCondition = new MetaDataCondition[1];
+		dataObjectCondition[0] = MetaDataSet.newCondition(expectedAttribName,
+				MetaDataCondition.EQUAL, expectedAttribValue);
+		String[] selectFieldNames = { IRODSMetaDataSet.META_DATA_ATTR_NAME,
+				IRODSMetaDataSet.META_DATA_ATTR_VALUE, IRODSMetaDataSet.META_DATA_ATTR_UNITS,
+				StandardMetaData.FILE_NAME, };
+		MetaDataSelect selects[] = MetaDataSet.newSelection(selectFieldNames);
+		MetaDataRecordList[] lists = irodsFile.query(dataObjectCondition,
+				selects);
+	
+		if(lists != null && lists.length > 0) {
+			metaValues = lists[0].toString();
+		}
+		/* This section can be removed if test is ever reactivated and re-tested
+		 * These changes made in response to tracker item [#359] take wrapped
+		 * icommands out of unit tests
 		ImetaListCommand imetaList = new ImetaListCommand();
 		imetaList.setAttribName(expectedAttribName);
 		imetaList.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
@@ -456,6 +444,7 @@ public class IRODSFileAVUTest {
 				+ testFileName);
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
+		*/
 		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
 		Assert.assertTrue("did not find expected attrib value as the second, updated value", metaValues
@@ -463,6 +452,8 @@ public class IRODSFileAVUTest {
 		
 		Assert.assertTrue("found a duplicate AVU with the value from the first 'set'", metaValues
 				.indexOf(expectedAttribValue) == -1);
+		
+		irodsFileSystem.close();
 
 	}
 	
@@ -483,18 +474,16 @@ public class IRODSFileAVUTest {
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
-
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionRelativePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-		iputCommand.setForceOverride(true);
-
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		IRODSFileSystem irodsFileSystem1 = new IRODSFileSystem(testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties));
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem1,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// add metadata for this file
 
@@ -503,7 +492,7 @@ public class IRODSFileAVUTest {
 		String meta2Attrib = "attrsingle2";
 		String meta2Value = "6";
 
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,iputCommand.getIrodsFileName() + "/" + testFileName);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
 		
 		// first modify
 		
@@ -554,18 +543,16 @@ public class IRODSFileAVUTest {
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
 						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
-
-		IputCommand iputCommand = new IputCommand();
-		iputCommand.setLocalFileName(fullPathToTestFile);
-		iputCommand.setIrodsFileName(testingPropertiesHelper
-				.buildIRODSCollectionRelativePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH));
-		iputCommand.setForceOverride(true);
-
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		IRODSFileSystem irodsFileSystem1 = new IRODSFileSystem(testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties));
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+		LocalFile sourceFile = new LocalFile(fullPathToTestFile);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem1,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 
 		// add metadata for this file
 
@@ -573,7 +560,7 @@ public class IRODSFileAVUTest {
 		String metaValue = "5";
 		
 
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,iputCommand.getIrodsFileName() + "/" + testFileName);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + "/" + testFileName);
 		
 		// first modify
 		
