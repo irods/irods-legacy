@@ -15,11 +15,13 @@ printIxmsgHelp(char *cmd) {
   printf("usage: %s t \n" , cmd);
   printf("usage: %s d -t ticketNum \n" , cmd);
   printf("usage: %s c -t ticketNum \n" , cmd);
+  printf("usage: %s c -t ticketNum -s sequenceNum \n" , cmd);
   printf("    s: send messages. If no ticketNum is given, 1 is used \n");
   printf("    r: receive messages. If no ticketNum is given, 1 is used \n");
   printf("    t: create new message stream and get a new ticketNum \n");
   printf("    d: drop message Stream \n");
   printf("    c: clear message Stream \n");
+  printf("    e: erase a message \n");
   printReleaseInfo("ixmsg"); 
   exit(1);
 }
@@ -268,15 +270,38 @@ main(int argc, char **argv)
       printf("Ticket Flag       = %i\n",outXmsgTicketInfo->flag);
       free (outXmsgTicketInfo);
     }
-    else if (!strcmp(cmd, "c")) {
-      fprintf(stderr,"option not supported now. \n");
-      fprintf(stderr,"For now, kill and restart XmsgServer. \n");
-      exit(9);
-    }
-    else if (!strcmp(cmd, "d")) {
-      fprintf(stderr,"option not supported now. \n");
-      fprintf(stderr,"For now, kill and restart XmsgServer. \n");
-      exit(9);
+    else if (!strcmp(cmd, "c") || !strcmp(cmd, "d") || !strcmp(cmd, "e") ) {
+      memset (&sendXmsgInp, 0, sizeof (sendXmsgInp));
+      xmsgTicketInfo.sendTicket = tNum;
+      xmsgTicketInfo.rcvTicket = tNum;
+      xmsgTicketInfo.flag = 1;
+      sendXmsgInp.ticket = xmsgTicketInfo;
+      snprintf(sendXmsgInp.sendAddr, NAME_LEN, "%s:%i", myHostName, getpid ());
+      sendXmsgInp.sendXmsgInfo.numRcv = rNum;
+      if (!strcmp(cmd, "e")) {
+	sendXmsgInp.sendXmsgInfo.msgNumber = sNum;
+      } 
+      else {
+	sendXmsgInp.sendXmsgInfo.msgNumber = mNum;
+      }
+      strcpy(sendXmsgInp.sendXmsgInfo.msgType, msgHdr);
+      sendXmsgInp.sendXmsgInfo.msg = msgBuf;
+      if (!strcmp(cmd, "c")) {
+	sendXmsgInp.sendXmsgInfo.miscInfo = strdup("CLEAR_STREAM");
+      }
+      if (!strcmp(cmd, "e")) {
+        sendXmsgInp.sendXmsgInfo.miscInfo = strdup("ERASE_MESSAGE");
+      }
+      else {
+        sendXmsgInp.sendXmsgInfo.miscInfo = strdup("DROP_STREAM");
+      }
+      status = sendIxmsg(&conn, &sendXmsgInp);
+      if (connectFlag == 1) {
+	rcDisconnect(conn);
+      }
+      if (status < 0)
+	exit(8);
+      exit(0);
     }
     else {
       fprintf(stderr,"wrong option. Check with -h\n");
