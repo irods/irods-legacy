@@ -153,6 +153,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
 		     char *msrvcLocation, 
 		     char *msrvcLanguage, 
 		     char *msrvcTypeName, 
+		     char *msrvcStatus,
 		     char *myTime); 
 int chlVersionDvmBase(rsComm_t *rsComm,
 		  char *baseName, char *myTime);
