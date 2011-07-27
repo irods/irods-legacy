@@ -992,22 +992,34 @@ dataObjInfo_t *dataObjInfo)
 int
 chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
 {
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
     struct stat statbuf;
 #endif
     char subfilePath[MAX_NAME_LEN];
     int savedStatus = 1;
     int status = 0;
 
+#ifdef USE_BOOST_FS
+    path srcDirPath (dirPath);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (dirPath);
     if (dirPtr == NULL) {
+#endif
         rodsLog (LOG_ERROR,
         "chkOrphanDir: opendir error for %s, errno = %d",
          dirPath, errno);
         return (UNIX_FILE_OPENDIR_ERR - errno);
     }
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (subfilePath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -1015,9 +1027,9 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
         }
         snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
           dirPath, myDirent->d_name);
+#endif
 
 #ifdef USE_BOOST_FS
-        path p (subfilePath);
         if (!exists (p)) {
 #else
         status = stat (subfilePath, &statbuf);
@@ -1045,13 +1057,17 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
 	}
 	if (status == 0) {
 	     /* not orphan */
+#ifndef USE_BOOST_FS
 	    closedir (dirPtr);
+#endif
 	    return status;    
 	} else if (status < 0) {
 	    savedStatus = status;
 	}
     }
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
     return savedStatus;
 }
 

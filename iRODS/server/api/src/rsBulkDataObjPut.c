@@ -279,9 +279,9 @@ char *rescGroupName, char *collection, char *phyBunDir, int flags,
 genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles, 
 genQueryOut_t *attriArray)
 {
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
     struct stat statbuf;
 #endif
     char subfilePath[MAX_NAME_LEN];
@@ -292,14 +292,26 @@ genQueryOut_t *attriArray)
     int st_mode;
     rodsLong_t st_size;
 
+#ifdef USE_BOOST_FS
+    path srcDirPath (phyBunDir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (phyBunDir);
     if (dirPtr == NULL) {
+#endif
         rodsLog (LOG_ERROR,
         "regUnbunphySubfiles: opendir error for %s, errno = %d",
          phyBunDir, errno);
         return (UNIX_FILE_OPENDIR_ERR - errno);
     }
     bzero (&dataObjInp, sizeof (dataObjInp));
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (subfilePath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -307,9 +319,9 @@ genQueryOut_t *attriArray)
         }
         snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
           phyBunDir, myDirent->d_name);
+#endif
 
 #ifdef USE_BOOST_FS
-        path p (subfilePath);
 	if (!exists (p)) {
 #else
         status = stat (subfilePath, &statbuf);
@@ -324,11 +336,14 @@ genQueryOut_t *attriArray)
             continue;
         }
 
-        snprintf (subObjPath, MAX_NAME_LEN, "%s/%s",
-          collection, myDirent->d_name);
 #ifdef USE_BOOST_FS
+        path childPath = p.filename();
+        snprintf (subObjPath, MAX_NAME_LEN, "%s/%s",
+          collection, childPath.c_str());
 	if (is_directory (p)) {
 #else
+        snprintf (subObjPath, MAX_NAME_LEN, "%s/%s",
+          collection, myDirent->d_name);
        if ((statbuf.st_mode & S_IFDIR) != 0) {
 #endif
             status = rsMkCollR (rsComm, "/", subObjPath);
@@ -372,7 +387,9 @@ genQueryOut_t *attriArray)
             }
         }
     }
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
     rmdir (phyBunDir);
     return savedStatus;
 }

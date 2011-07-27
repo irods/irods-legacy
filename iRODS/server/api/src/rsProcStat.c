@@ -154,10 +154,10 @@ genQueryOut_t **procStatOut)
 {
     int numProc, status;
     procLog_t procLog;
-    DIR *dirPtr;
-    struct dirent *myDirent;
     char childPath[MAX_NAME_LEN];
 #ifndef USE_BOOST_FS
+    DIR *dirPtr;
+    struct dirent *myDirent;
 #ifndef windows_platform
     struct stat statbuf;
 #else
@@ -185,13 +185,27 @@ genQueryOut_t **procStatOut)
     }
 
     /* loop through the directory */
+#ifdef USE_BOOST_FS
+    path srcDirPath (ProcLogDir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (ProcLogDir);
     if (dirPtr == NULL) {
+#endif
         status = USER_INPUT_PATH_ERR - errno;
         rodsLogError (LOG_ERROR, status,
         "localProcStat: opendir local dir error for %s", ProcLogDir);
         return status;
     }
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+	path cp = p.filename();
+	if (!isdigit (*cp.c_str())) continue;   /* not a pid */
+        snprintf (childPath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -200,22 +214,23 @@ genQueryOut_t **procStatOut)
 	if (!isdigit (*myDirent->d_name)) continue;   /* not a pid */
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", ProcLogDir, 
 	  myDirent->d_name);
+#endif
 #ifdef USE_BOOST_FS
-        path p (childPath);
+	if (!exists (p)) {
 #else
 #ifndef windows_platform
         status = stat (childPath, &statbuf);
 #else
         status = iRODSNt_stat(childPath, &statbuf);
 #endif
-#endif  /* USE_BOOST_FS */
         if (status != 0) {
+#endif  /* USE_BOOST_FS */
             rodsLogError (LOG_ERROR, status,
               "localProcStat: stat error for %s", childPath);
             continue;
         }
 #ifdef USE_BOOST_FS
-	if (is_directory(p)) {
+	if (is_regular_file(p)) {
 #else
         if (statbuf.st_mode & S_IFREG) {
 #endif
@@ -224,7 +239,11 @@ genQueryOut_t **procStatOut)
                   "localProcStat: proc count %d exceeded", numProc);
 		break;
 	    }
+#ifdef USE_BOOST_FS
+	    procLog.pid = atoi (cp.c_str());
+#else
 	    procLog.pid = atoi (myDirent->d_name);
+#endif
 	    if (readProcLog (procLog.pid, &procLog) < 0) continue;
 	    status = addProcToProcStatOut (&procLog, *procStatOut);
 	    if (status < 0) continue;
@@ -233,7 +252,9 @@ genQueryOut_t **procStatOut)
             continue;
         }
     }
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
     return 0;
 }
 

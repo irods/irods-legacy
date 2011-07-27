@@ -104,9 +104,9 @@ int
 regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
 int rmBunCopyFlag)
 {
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
     struct stat statbuf;
 #endif  /* USE_BOOST_FS */
     char subfilePath[MAX_NAME_LEN];
@@ -117,9 +117,13 @@ int rmBunCopyFlag)
 
     dataObjInfo_t *dataObjInfoHead = NULL; 
     dataObjInfo_t *bunDataObjInfo= NULL; 	/* the copy in BUNDLE_RESC */
-
+#ifdef USE_BOOST_FS
+    path srcDirPath (phyBunDir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
     dirPtr = opendir (phyBunDir);
     if (dirPtr == NULL) {
+#endif
         rodsLog (LOG_ERROR,
         "regUnbunphySubfiles: opendir error for %s, errno = %d",
          phyBunDir, errno);
@@ -131,6 +135,13 @@ int rmBunCopyFlag)
         addKeyVal (&dataObjUnlinkInp.condInput, IRODS_ADMIN_KW, "");
     }
 
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (subfilePath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -138,30 +149,38 @@ int rmBunCopyFlag)
         }
         snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
           phyBunDir, myDirent->d_name);
+#endif
 
 #ifdef USE_BOOST_FS
+#if 0
         path p (subfilePath);
+#endif
 	if (!exists(p)) {
 #else
         status = stat (subfilePath, &statbuf);
         if (status != 0) {
+            closedir (dirPtr);
 #endif
             rodsLog (LOG_ERROR,
               "regUnbunphySubfiles: stat error for %s, errno = %d",
               subfilePath, errno);
-            closedir (dirPtr);
             return (UNIX_FILE_STAT_ERR - errno);
         }
 
 #ifdef USE_BOOST_FS
-	if (is_regular_file(p)) continue;
+	if (!is_regular_file(p)) continue;
+
+        path childPath = p.filename();
+        /* do the registration */
+        addKeyVal (&dataObjInp.condInput, QUERY_BY_DATA_ID_KW,
+          (char *) childPath.c_str ());
 #else
         if ((statbuf.st_mode & S_IFREG) == 0) continue;
-#endif
 
 	/* do the registration */
 	addKeyVal (&dataObjInp.condInput, QUERY_BY_DATA_ID_KW, 
 	  myDirent->d_name);
+#endif
 	status = getDataObjInfo (rsComm, &dataObjInp, &dataObjInfoHead,
 	  NULL, 1);
        if (status < 0) {
@@ -216,7 +235,9 @@ int rmBunCopyFlag)
 
     }
     clearKeyVal (&dataObjInp.condInput);
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
     if (status >= 0 && savedStatus < 0) {
 	return savedStatus;
     } else {
@@ -381,18 +402,30 @@ rodsServerHost_t *rodsServerHost)
 int
 rmLinkedFilesInUnixDir (char *phyBunDir)
 {
+#ifndef USE_BOOST_FS
     DIR *dirPtr;
     struct dirent *myDirent;
-#ifndef USE_BOOST_FS
     struct stat statbuf;
 #endif
     char subfilePath[MAX_NAME_LEN];
     int status;
     int linkCnt;
 
+#ifdef USE_BOOST_FS
+    path srcDirPath (phyBunDir);
+    if (!exists(srcDirPath) || !is_directory(srcDirPath)) return 0;
+#else
     dirPtr = opendir (phyBunDir);
     if (dirPtr == NULL) return 0;
+#endif
 
+#ifdef USE_BOOST_FS
+    directory_iterator end_itr; // default construction yields past-the-end
+    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+        path p = itr->path();
+        snprintf (subfilePath, MAX_NAME_LEN, "%s",
+          p.c_str ());
+#else
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -400,8 +433,8 @@ rmLinkedFilesInUnixDir (char *phyBunDir)
         }
         snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
           phyBunDir, myDirent->d_name);
+#endif
 #ifdef USE_BOOST_FS
-        path p (subfilePath);
 	if (!exists (p)) {
             continue;
         }
@@ -422,7 +455,7 @@ rmLinkedFilesInUnixDir (char *phyBunDir)
 	        unlink (subfilePath);
 	    } else {
         	rodsLog (LOG_ERROR,
-        	  "rmLinkedFilesInUnixDir: st_nlink if %s is only %d",
+        	  "rmLinkedFilesInUnixDir: st_nlink of %s is only %d",
         	  subfilePath, linkCnt);
 	    }
 	} else {	/* a directory */
@@ -431,7 +464,9 @@ rmLinkedFilesInUnixDir (char *phyBunDir)
             rmdir (subfilePath);
 	}
     }
+#ifndef USE_BOOST_FS
     closedir (dirPtr);
+#endif
     return 0;
 }
 
