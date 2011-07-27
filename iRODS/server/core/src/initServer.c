@@ -1317,9 +1317,9 @@ initAgent (rsComm_t *rsComm)
 #endif
 
 #ifdef RULE_ENGINE_N
-    status = initRuleEngine(rsComm, reRuleStr, reFuncMapStr, reVariableMapStr);
-#else
     status = initRuleEngine(processType, reRuleStr, reFuncMapStr, reVariableMapStr);
+#else
+    status = initRuleEngine(rsComm, reRuleStr, reFuncMapStr, reVariableMapStr);
 #endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
