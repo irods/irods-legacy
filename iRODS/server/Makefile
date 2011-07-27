@@ -73,6 +73,7 @@ SVR_DRIVERS_OBJS = \
 		$(svrDriversObjDir)/structFileDriver.o \
 		$(svrDriversObjDir)/fileDriver.o \
 		$(svrDriversObjDir)/unixFileDriver.o \
+		$(svrDriversObjDir)/msoFileDriver.o \
 		$(svrDriversObjDir)/univMSSDriver.o
 
 ifdef HAAW_STRUCT_FILE
