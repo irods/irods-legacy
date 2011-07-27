@@ -49,7 +49,7 @@
 #include <netinet/tcp.h>
 #endif
 
-#define HEADER_TYPE_LEN 32 /* changed by Raja to 32 from 16 */
+#define HEADER_TYPE_LEN 128 /* changed by Raja to 128 from 16 */
 #define TIME_LEN        32
 #define NAME_LEN        64
 #define LONG_NAME_LEN	256

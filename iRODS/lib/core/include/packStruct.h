@@ -125,7 +125,7 @@ packTypeLookup (char *typeName);
 void *alignAddrToBoundary (void *ptr, int boundary);
 void *alignInt(void *ptr);
 void *alignDouble (void *ptr);
-void *alignAddr (void *ptr);
+void *ialignAddr (void *ptr);
 int
 initPackedOutput (packedOutput_t *packedOutput, int len);
 int
@@ -259,7 +259,7 @@ int
 unpackXmlStringToOutPtr (void **inPtr, void **outPtr, int maxStrLen,
 packItem_t *myPackedItem);
 int
-parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable);
+iparseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable);
 int
 resolveStrInItem (packItem_t *myPackedItem, packInstructArray_t *myPackTable);
 int

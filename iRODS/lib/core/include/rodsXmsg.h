@@ -94,7 +94,7 @@ typedef struct RcvXmsgInp {
     uint rcvTicket;
     uint msgNumber;
     uint seqNumber;
-    char msgCondition[NAME_LEN];
+    char msgCondition[MAX_NAME_LEN];
 } rcvXmsgInp_t;
 
 typedef struct RcvXmsgOut {

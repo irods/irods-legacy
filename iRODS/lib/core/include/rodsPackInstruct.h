@@ -107,7 +107,7 @@
 #define SendXmsgInfo_PI "int msgNumber; str msgType[HEADER_TYPE_LEN]; int numRcv; int flag; str *msg; int numDel; str *delAddress[numDel]; int *delPort(numDel); str *miscInfo;"
 #define GetXmsgTicketInp_PI "int expireTime; int flag;"
 #define SendXmsgInp_PI "struct XmsgTicketInfo_PI; str sendAddr[NAME_LEN]; struct SendXmsgInfo_PI;"
-#define RcvXmsgInp_PI "int rcvTicket; int msgNumber; int seqNumber; str msgCondition[NAME_LEN];"
+#define RcvXmsgInp_PI "int rcvTicket; int msgNumber; int seqNumber; str msgCondition[MAX_NAME_LEN];"
 #define RcvXmsgOut_PI "str msgType[HEADER_TYPE_LEN]; str sendUserName[NAME_LEN]; str sendAddr[NAME_LEN]; int msgNumber; int seqNumber; str *msg;"
 /* XXXXX start of HDF5 PI */
 #define h5error_PI "str major[MAX_ERROR_SIZE]; str minor[MAX_ERROR_SIZE];"

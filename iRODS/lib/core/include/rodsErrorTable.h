@@ -197,6 +197,7 @@
 #define BULK_OPR_MISMATCH_FOR_RESTART	-357000
 #define OBJ_PATH_DOES_NOT_EXIST		-358000
 
+
 /* 500,000 to 800,000 - file driver error */
 #define FILE_INDEX_LOOKUP_ERR		-500000 
 #define UNIX_FILE_OPEN_ERR		-510000 
@@ -514,6 +515,11 @@
 #define  MAX_NUM_OF_ACTION_IN_RULE_EXCEEDED   -1111000
 #define MSRVC_FILE_READ_ERROR                 -1112000
 #define MSRVC_VERSION_MISMATCH                -1113000
+#define MICRO_SERVICE_OBJECT_TYPE_UNDEFINED   -1114000
+#define MSO_OBJ_GET_FAILED                    -1115000
+#define REMOTE_IRODS_CONNECT_ERR              -1116000
+#define REMOTE_SRB_CONNECT_ERR                -1117000
+
 /* 1,600,000 to 1,700,000  - PHP scripting error */
 #define PHP_EXEC_SCRIPT_ERR                   -1600000
 #define PHP_REQUEST_STARTUP_ERR               -1601000

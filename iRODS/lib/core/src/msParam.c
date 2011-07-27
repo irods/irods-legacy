@@ -294,109 +294,129 @@ fillBufLenInMsParam (msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf)
     return (0);
 }
 
+
 int
 printMsParam (msParamArray_t *outParamArray) 
+{
+
+  char buf[10000];
+  int i,j;
+  msParam_t *msParam;
+
+  if (outParamArray == NULL) {
+    return (0);
+  }
+
+  for (i = 0; i < outParamArray->len; i++) {
+    msParam = outParamArray->msParam[i];
+    j = writeMsParam(buf, 10000,  msParam);
+    if (j < 0)
+      return(j);
+    printf(buf);
+  }
+  return(0);
+}
+
+
+int
+writeMsParam (char *buf, int len, msParam_t *msParam) 
 {
     int i,j;
     keyValPair_t *kVPairs;
     tagStruct_t *tagValues;
 
-    if (outParamArray == NULL) {
-	return (0);
-    }
-    for (i = 0; i < outParamArray->len; i++) {
-	msParam_t *msParam;
+    buf[0]= '\0';
 
-	/**** RAJA MOdified to simplify June 1 2010 ****/
-	msParam = outParamArray->msParam[i];
-        if (msParam->label != NULL && 
-	    msParam->type != NULL && 
-	    msParam->inOutStruct != NULL) {
-	  if (strcmp (msParam->type, STR_MS_T) == 0)
-	    printf("%s: %s\n",msParam->label, (char *) msParam->inOutStruct);
-	  else  if (strcmp (msParam->type, INT_MS_T) == 0)
-	    printf("%s: %i\n",msParam->label,*(int *) msParam->inOutStruct);
-	  else if (strcmp (msParam->type, KeyValPair_MS_T) == 0 ) {
-	    kVPairs = (keyValPair_t *)msParam->inOutStruct;
-	    printf ("KVpairs %s: %i\n", msParam->label, kVPairs->len);
-	    for (j = 0; j < kVPairs->len; j++) {
-	      printf ("       %s = %s\n",kVPairs->keyWord[j],
-		      kVPairs->value[j]);
-	    }
-	  }
-	  else if (strcmp (msParam->type, TagStruct_MS_T) == 0 ) {
-	    tagValues = (tagStruct_t *) msParam->inOutStruct;
-	    printf ("Tags %s: %i\n", msParam->label, tagValues->len);
-	    for (j = 0; j < tagValues->len; j++) {
-	      printf ("       AttName = %s\n", tagValues->keyWord[j]);
-	      printf ("       PreTag  = %s\n", tagValues->preTag[j]);
-	      printf ("       PostTag = %s\n", tagValues->postTag[j]);
-	    }
-	  }
-	  else if (strcmp (msParam->type, ExecCmdOut_MS_T) == 0) {
-	    execCmdOut_t *execCmdOut;
-	    execCmdOut = (execCmdOut_t *) msParam->inOutStruct;
-	    if (execCmdOut->stdoutBuf.buf != NULL) 
-	      printf ("STDOUT = %s",(char *) execCmdOut->stdoutBuf.buf);
-	    if (execCmdOut->stderrBuf.buf != NULL) 
-	      printf ("STRERR = %s", (char *) execCmdOut->stderrBuf.buf);
-	  }
+
+    if (msParam->label != NULL && 
+	msParam->type != NULL && 
+	msParam->inOutStruct != NULL) {
+      if (strcmp (msParam->type, STR_MS_T) == 0)
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "%s: %s\n",msParam->label, (char *) msParam->inOutStruct);
+      else  if (strcmp (msParam->type, INT_MS_T) == 0)
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "%s: %i\n",msParam->label,*(int *) msParam->inOutStruct);
+      else if (strcmp (msParam->type, KeyValPair_MS_T) == 0 ) {
+	kVPairs = (keyValPair_t *)msParam->inOutStruct;
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "KVpairs %s: %i\n", msParam->label, kVPairs->len);
+	for (j = 0; j < kVPairs->len; j++) {
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       %s = %s\n",kVPairs->keyWord[j],
+		  kVPairs->value[j]);
 	}
-	/**** RAJA MOdified to simplify June 1 2010 ****/
+      }
+      else if (strcmp (msParam->type, TagStruct_MS_T) == 0 ) {
+	tagValues = (tagStruct_t *) msParam->inOutStruct;
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "Tags %s: %i\n", msParam->label, tagValues->len);
+	for (j = 0; j < tagValues->len; j++) {
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       AttName = %s\n", tagValues->keyWord[j]);
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       PreTag  = %s\n", tagValues->preTag[j]);
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       PostTag = %s\n", tagValues->postTag[j]);
+	}
+      }
+      else if (strcmp (msParam->type, ExecCmdOut_MS_T) == 0) {
+	execCmdOut_t *execCmdOut;
+	execCmdOut = (execCmdOut_t *) msParam->inOutStruct;
+	if (execCmdOut->stdoutBuf.buf != NULL) 
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "STDOUT = %s",(char *) execCmdOut->stdoutBuf.buf);
+	if (execCmdOut->stderrBuf.buf != NULL) 
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "STRERR = %s", (char *) execCmdOut->stderrBuf.buf);
+      }
+    }
+
+    /**** RAJA MOdified to simplify June 1 2010 ****/
 #if 0
-	msParam = outParamArray->msParam[i];
-
-        printf ("  output index: %d\n", i);
-	if (msParam->label != NULL) {
-            printf ("    label: %s\n", msParam->label); 
-	}
-	if (msParam->type != NULL) {
-            printf ("    type: %s\n", msParam->type); 
-	}
-	if (msParam->inOutStruct != NULL) {
-	    if (strcmp (msParam->type, STR_MS_T) == 0) {
-	        /* print the string */
-	        printf ("    str content: %s\n", (char *) msParam->inOutStruct);  
-	    } else if (strcmp (msParam->type, INT_MS_T) == 0) {
-               /* print the int */
-                printf ("    int content: %d\n", *(int *) msParam->inOutStruct);
-	    } else if (strcmp (msParam->type, KeyValPair_MS_T) == 0 ) {
-	      kVPairs = (keyValPair_t *)msParam->inOutStruct;
-	      printf ("      num of kv pairs: %i\n", kVPairs->len);
-	      for (j = 0; j < kVPairs->len; j++) {
-		printf ("       %s = %s\n",kVPairs->keyWord[j],
-			                   kVPairs->value[j]);
-	      }
-	    } else if (strcmp (msParam->type, TagStruct_MS_T) == 0 ) {
-	      tagValues = (tagStruct_t *) msParam->inOutStruct;
-	      printf ("      num of tags : %i\n", tagValues->len);
-	      for (j = 0; j < tagValues->len; j++) {
-		printf ("       AttName = %s\n", tagValues->keyWord[j]);
-		printf ("       PreTag  = %s\n", tagValues->preTag[j]);
-		printf ("       PostTag = %s\n", tagValues->postTag[j]);
-	      }
-	    } else if (strcmp (msParam->type, ExecCmdOut_MS_T) == 0) {
-		execCmdOut_t *execCmdOut;
-		execCmdOut = (execCmdOut_t *) msParam->inOutStruct;
-		printf ("       status = %d\n", execCmdOut->status);
-        	if (execCmdOut->stdoutBuf.buf != NULL) {
-                    printf ("       stdout = %s", 
-		      (char *) execCmdOut->stdoutBuf.buf);
-                }
-                if (execCmdOut->stderrBuf.buf != NULL) {
-                    fprintf (stderr, "       strerr = %s", 
-		      (char *) execCmdOut->stderrBuf.buf);
-                }
-	    }
-	}
-#endif
-	if (msParam->inpOutBuf != NULL) {
-	    printf ("    outBuf: buf length = %d\n", msParam->inpOutBuf->len);
-	}
-
+    msParam = outParamArray->msParam[i];
+    
+    snprintf(&buf[strlen(buf)], len - strlen(buf), "  output index: %d\n", i);
+    if (msParam->label != NULL) {
+      snprintf(&buf[strlen(buf)], len - strlen(buf), "    label: %s\n", msParam->label); 
     }
+    if (msParam->type != NULL) {
+      snprintf(&buf[strlen(buf)], len - strlen(buf), "    type: %s\n", msParam->type); 
+    }
+    if (msParam->inOutStruct != NULL) {
+      if (strcmp (msParam->type, STR_MS_T) == 0) {
+	/* print the string */
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "    str content: %s\n", (char *) msParam->inOutStruct);  
+      } else if (strcmp (msParam->type, INT_MS_T) == 0) {
+	/* print the int */
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "    int content: %d\n", *(int *) msParam->inOutStruct);
+      } else if (strcmp (msParam->type, KeyValPair_MS_T) == 0 ) {
+	kVPairs = (keyValPair_t *)msParam->inOutStruct;
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "      num of kv pairs: %i\n", kVPairs->len);
+	for (j = 0; j < kVPairs->len; j++) {
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       %s = %s\n",kVPairs->keyWord[j],
+		  kVPairs->value[j]);
+	}
+      } else if (strcmp (msParam->type, TagStruct_MS_T) == 0 ) {
+	tagValues = (tagStruct_t *) msParam->inOutStruct;
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "      num of tags : %i\n", tagValues->len);
+	for (j = 0; j < tagValues->len; j++) {
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       AttName = %s\n", tagValues->keyWord[j]);
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       PreTag  = %s\n", tagValues->preTag[j]);
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       PostTag = %s\n", tagValues->postTag[j]);
+	}
+      } else if (strcmp (msParam->type, ExecCmdOut_MS_T) == 0) {
+	execCmdOut_t *execCmdOut;
+	execCmdOut = (execCmdOut_t *) msParam->inOutStruct;
+	snprintf(&buf[strlen(buf)], len - strlen(buf), "       status = %d\n", execCmdOut->status);
+	if (execCmdOut->stdoutBuf.buf != NULL) {
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       stdout = %s", 
+		  (char *) execCmdOut->stdoutBuf.buf);
+	}
+	if (execCmdOut->stderrBuf.buf != NULL) {
+	  snprintf(&buf[strlen(buf)], len - strlen(buf), "       strerr = %s", 
+		   (char *) execCmdOut->stderrBuf.buf);
+	}
+      }
+    }
+#endif
+    if (msParam->inpOutBuf != NULL) {
+      snprintf(&buf[strlen(buf)], len - strlen(buf), "    outBuf: buf length = %d\n", msParam->inpOutBuf->len);
+    }
+    
     return (0);
 }
+
 
 msParam_t *
 getMsParamByLabel (msParamArray_t *msParamArray, char *label)

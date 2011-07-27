@@ -31,6 +31,7 @@ typedef struct {
    char *arg7;
    char *arg8;
    char *arg9;
+  char *arg10;
 } generalRowInsertInp_t;
     
 #define generalRowInsertInp_PI "str *tableName; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7;  str *arg8;  str *arg9;"

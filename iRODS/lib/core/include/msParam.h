@@ -152,6 +152,8 @@ trimMsParamArray (msParamArray_t *msParamArray, char *outParamDesc);
 int
 printMsParam (msParamArray_t *msParamArray);
 int
+writeMsParam (char *buf, int len, msParam_t *msParam);
+int
 clearMsParamArray (msParamArray_t *msParamArray, int freeStruct);
 int 
 fillIntInMsParam (msParam_t *msParam, int myInt);

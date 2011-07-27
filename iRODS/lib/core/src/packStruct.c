@@ -362,7 +362,7 @@ alignDouble (void *ptr)
 
 /* align pointer address in a struct */
 
-void *alignAddr (void *ptr)
+void *ialignAddr (void *ptr)
 {
 #ifdef ADDR_64BITS
         return (alignDouble (ptr));
@@ -403,7 +403,7 @@ packInstructArray_t *myPackTable, packOpr_t packOpr)
 {
     int status;
 
-    status = parseDependent (myPackedItem, myPackTable);
+    status = iparseDependent (myPackedItem, myPackTable);
     if (status < 0) {
         return status;
     }
@@ -419,7 +419,7 @@ packInstructArray_t *myPackTable, packOpr_t packOpr)
     if (myPackedItem->pointerType > 0) {
 	if (packOpr == PACK_OPR) {
 	    /* align the address */
-	    *inPtr = alignAddr (*inPtr);
+	    *inPtr = ialignAddr (*inPtr);
 	    if (*inPtr != NULL) {
 	        myPackedItem->pointer = (**(void ***)inPtr);
 	        /* advance the pointer */
@@ -433,7 +433,7 @@ packInstructArray_t *myPackTable, packOpr_t packOpr)
 }
 
 int 
-parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
+iparseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
 {
     int status;
 
@@ -2806,7 +2806,7 @@ addPointerToPackedOut (packedOutput_t *packedOutput, int len, void *pointer)
 
 
     extendPackedOutput (packedOutput, sizeof (void *), &outPtr);
-    outPtr = alignAddr (outPtr);
+    outPtr = ialignAddr (outPtr);
     tmpPtr = (void **) outPtr;
 
     if (pointer != NULL) {

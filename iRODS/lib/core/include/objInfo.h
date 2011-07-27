@@ -274,6 +274,7 @@ typedef enum {
     S3_FILE_TYPE,
     UNIV_MSS_FILE_TYPE,
     WOS_FILE_TYPE,
+    MSO_FILE_TYPE,
     NON_BLOCKING_FILE_TYPE
 } fileDriverType_t;
 
