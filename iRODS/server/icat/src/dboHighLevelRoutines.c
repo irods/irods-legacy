@@ -829,7 +829,9 @@ getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL, char *dboFormat) {
    bytesRead = rsDataObjRead (rsComm, &dataObjReadInp, readBuf);
    if (bytesRead < 0) return(bytesRead);
    
+
    cp1 = (char*)readBuf->buf;
+
    while (*cp1 == '!' || *cp1 == '#') {
       cp1++;
       while (*cp1 != '\n') cp1++;

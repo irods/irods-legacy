@@ -441,9 +441,9 @@ icatGeneralQuerySetup() {
   sColumn(COL_DVM_ID,           "R_RULE_DVM", "dvm_id");
   sColumn(COL_DVM_VERSION,      "R_RULE_DVM", "dvm_version");
   sColumn(COL_DVM_BASE_NAME,    "R_RULE_DVM", "dvm_base_name");
-  sColumn(COL_DVM_EXT_VAR_NAME, "R_RULE_DVM", "dvm_name");
+  sColumn(COL_DVM_EXT_VAR_NAME, "R_RULE_DVM", "dvm_ext_var_name");
   sColumn(COL_DVM_CONDITION,    "R_RULE_DVM", "dvm_condition");
-  sColumn(COL_DVM_INT_MAP_PATH, "R_RULE_DVM", "dvm_name");
+  sColumn(COL_DVM_INT_MAP_PATH, "R_RULE_DVM", "dvm_int_map_path");
   sColumn(COL_DVM_STATUS,       "R_RULE_DVM", "dvm_status");
   sColumn(COL_DVM_OWNER_NAME,   "R_RULE_DVM", "dvm_owner_name");
   sColumn(COL_DVM_OWNER_ZONE,   "R_RULE_DVM", "dvm_owner_zone");

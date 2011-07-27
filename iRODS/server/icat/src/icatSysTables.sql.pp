@@ -306,16 +306,6 @@ create table R_MICROSRVC_VER
    modify_ts varchar(32)
  );
 
-create table R_RULE_MSRVC_MAP  
-(
-  msrvc_id INT64TYPE, 
-  msrvc_map_base_name varchar(250) not null, 
-  msrvc_map_owner_name varchar (250) not null,
-  msrvc_map_owner_zone varchar (250) not null, 
-  create_ts varchar(32), 
-  modify_ts varchar(32)
-);
-
 create table R_RULE_EXEC
  (
    rule_exec_id        INT64TYPE not null,
