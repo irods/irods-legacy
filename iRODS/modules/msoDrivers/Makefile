@@ -11,6 +11,9 @@ endif
 # uncomment if SRB MSO is needed, but change  pathnames 
 #MSOSRB = 1
 
+# uncomment if SRB MSO is needed, but change  pathnames 
+#MSOHTTP = 1
+
 
 include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk
@@ -60,7 +63,6 @@ IRODS_MSO_OBJS= $(MSObjDir)/msoIrodsMS.o
 SRB_MSO_OBJS= $(MSObjDir)/msoSrbMS.o
 
 OBJECTS =	$(TEST_MSO_OBJS) 
-OBJECTS +=  $(HTTP_MSO_OBJS) 
 OBJECTS +=  $(Z3950_MSO_OBJS) 
 OBJECTS +=  $(DBO_MSO_OBJS) 
 OBJECTS +=  $(SLINK_MSO_OBJS) 
@@ -68,7 +70,9 @@ OBJECTS +=  $(IRODS_MSO_OBJS)
 ifdef MSOSRB
 OBJECTS +=  $(SRB_MSO_OBJS) 
 endif
-
+ifdef MSOHTTP
+OBJECTS +=  $(HTTP_MSO_OBJS) 
+endif
 
 
 
@@ -86,7 +90,9 @@ INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES)
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(MODULE_CFLAGS)
 
+ifdef MSOHTTP
 HTTPLIBS = -lcurl
+endif
 ifdef MSOSRB
 SRBLIBS =  -L$(MySrbPath)/obj -lSrbClient
 endif
