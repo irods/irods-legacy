@@ -60,12 +60,9 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #define MAX_PASSWORDS 40
 /* TEMP_PASSWORD_TIME is the number of seconds the temp, one-time
    password can be used.  chlCheckAuth also checks for this column
-   to be < 1900 to differentiate the row from regular passwords.
-   1800 is 30 minutes which will be utilized by iDrop and iDrop-lite
-   which disconnect when idle to reduce the number of open 
-   connections and active agents.
+   to be < 1000 to differentiate the row from regular passwords.
 */
-#define TEMP_PASSWORD_TIME 1800
+#define TEMP_PASSWORD_TIME 10
 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
@@ -1443,7 +1440,8 @@ int chlRegResc(rsComm_t *rsComm,
       return(CAT_INVALID_RESOURCE_NET_ADDR);
    }
 
-   if (strcmp(rescInfo->rescType, "database") !=0) {
+   if ((strcmp(rescInfo->rescType, "database") !=0) &&
+       (strcmp(rescInfo->rescType, "mso") !=0) ) {
       if (strlen(rescInfo->rescVaultPath)<1) {
 	 return(CAT_INVALID_RESOURCE_VAULT_PATH);
       }
@@ -2952,7 +2950,7 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
       }
       rstrcat(outBuf, "\n", maxOutBuf);
       if (rowSize==0) rowSize=strlen(outBuf);
-      if ((int)strlen(outBuf)+rowSize+20 > maxOutBuf) {
+      if (strlen(outBuf)+rowSize+20 > maxOutBuf) {
 	 return(0); /* success so far, but more rows available */
       }
    }
@@ -3245,10 +3243,6 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    char myUserZone[MAX_NAME_LEN];
    char userName2[NAME_LEN+2];
    char userZone[NAME_LEN+2];
-#if defined(OS_AUTH)
-   int doOsAuthentication = 0;
-   char *os_auth_flag;
-#endif
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth");
 
@@ -3273,19 +3267,6 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	    (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
 	    (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
 
-#if defined(OS_AUTH)
-   /* check for the OS_AUTH_FLAG token in the username to see if
-    * we should run the OS level authentication. Make sure and
-    * strip it from the username string so other operations 
-    * don't fail parsing the format.
-   */
-   os_auth_flag = strstr(username, OS_AUTH_FLAG);
-   if (os_auth_flag) {
-       *os_auth_flag = 0;
-       doOsAuthentication = 1;
-   }
-#endif
-   
    status = parseUserName(username, userName2, userZone);
    if (userZone[0]=='\0') {
       status = getLocalZone();
@@ -3296,14 +3277,6 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       strncpy(myUserZone, userZone, MAX_NAME_LEN);
    }
 
-#if defined(OS_AUTH)
-   if (doOsAuthentication) {
-       if ((status = osauthVerifyResponse(challenge, userName2, response))) {
-           return status;
-       }
-       goto checkLevel;
-   }
-#endif
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
 
@@ -3335,8 +3308,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
 
       MD5Init (&context);
-      MD5Update (&context, (unsigned char*)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
-      MD5Final ((unsigned char*)digest, &context);
+      MD5Update (&context, md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
+      MD5Final (digest, &context);
 
       for (i=0;i<RESPONSE_LEN;i++) {
 	 if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't end
@@ -3370,7 +3343,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    expireTime=atoll(goodPwExpiry);
    getNowStr(myTime);
    nowTime=atoll(myTime);
-   if (expireTime < 1900) {
+   if (expireTime < 1000) {
 
       /* in the form used by temporary, one-time passwords */
 
@@ -3578,7 +3551,7 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    strncat(md5Buf, password, 100);
 
    MD5Init (&context);
-   MD5Update (&context, (unsigned char*)md5Buf, 100);
+   MD5Update (&context, md5Buf, 100);
    MD5Final (digest, &context);
 
    md5ToStr(digest, newPw);
@@ -8339,7 +8312,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
                      char *moduleName, char *msrvcName,
                      char *msrvcSignature,  char *msrvcVersion,
                      char *msrvcHost, char *msrvcLocation,
-                     char *msrvcLanguage,  char *msrvcTypeName,
+                     char *msrvcLanguage,  char *msrvcTypeName, char *msrvcStatus,
                      char *myTime) 
 {
    int status;
@@ -8408,6 +8381,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
      cllBindVars[i++]=msrvcLocation;
      cllBindVars[i++]=msrvcLanguage;
      cllBindVars[i++]=msrvcTypeName;
+     cllBindVars[i++]=msrvcStatus;
      cllBindVars[i++]=rsComm->clientUser.userName;
      cllBindVars[i++]=rsComm->clientUser.rodsZone;
      cllBindVars[i++]=myTime;
@@ -8415,7 +8389,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
      cllBindVarCount=i;
      if (logSQL) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 3");
      status =  cmlExecuteNoAnswerSql(
-       "insert into R_MICROSRVC_VER(msrvc_id, msrvc_version, msrvc_host, msrvc_location, msrvc_language, msrvc_type_name, msrvc_owner_name, msrvc_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?)", 
+       "insert into R_MICROSRVC_VER(msrvc_id, msrvc_version, msrvc_host, msrvc_location, msrvc_language, msrvc_type_name, msrvc_status, msrvc_owner_name, msrvc_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?)", 
        &icss);
      if (status != 0) {
        rodsLog(LOG_NOTICE,
@@ -8861,7 +8835,7 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
 	 if (debug) printf("attriTextLen=%d\n",attriTextLen);
 	 totalLen = attriTextLen * specificQueryInp.maxRows;
 	 for (j=0;j<numOfCols;j++) {
-	    tResult = (char*)malloc(totalLen);
+	    tResult = malloc(totalLen);
 	    if (tResult==NULL) return(SYS_MALLOC_ERR);
 	    memset(tResult, 0, totalLen);
 	    result->sqlResult[j].attriInx = 0; 
@@ -8889,7 +8863,7 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
 	 for (j=0;j<numOfCols;j++) {
 	    char *cp1, *cp2;
 	    int k;
-	    tResult = (char*)malloc(totalLen);
+	    tResult = malloc(totalLen);
 	    if (tResult==NULL) return(SYS_MALLOC_ERR);
 	    memset(tResult, 0, totalLen);
 	    cp1 = result->sqlResult[j].value;
@@ -8921,4 +8895,5 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
    result->continueInx=statementNum+1;  /* the statementnumber but
 					   always >0 */
    return(0);
+
 }
