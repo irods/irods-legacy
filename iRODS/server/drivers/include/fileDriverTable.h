@@ -192,6 +192,19 @@ fileDriver_t FileDriverTable[] = {
 #else
     {WOS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
+    {MSO_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
+     noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, noSupportFsFileStat, noSupportFsFileFstat,
+     noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod,
+     noSupportFsFileRmdir, noSupportFsFileOpendir, noSupportFsFileClosedir, noSupportFsFileReaddir,
+     noSupportFsFileStage, noSupportFsFileRename, noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate,
+     msoStageToCache, msoSyncToArch},
+    {NON_BLOCKING_FILE_TYPE,unixFileCreate,unixFileOpen,nbFileRead,nbFileWrite,
+     unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
+     unixFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
+     unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
+     unixFileGetFsFreeSpace, unixFileTruncate, noSupportFsFileStageToCache,
+      noSupportFsFileSyncToArch},
+
 };
 
 
