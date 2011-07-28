@@ -8,6 +8,10 @@ ifndef buildDir
 buildDir = $(CURDIR)/../..
 endif
 
+# uncomment if SRB MSO is needed, but change  pathnames 
+#MSOSRB = 1
+
+
 include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
@@ -40,7 +44,9 @@ slinkSrcDir= $(MSSrcDir)/slink
 irodsSrcDir= $(MSSrcDir)/irods
 srbSrcDir= $(MSSrcDir)/srb
 
+ifdef MSOSRB
 MySrbPath = /data1/sheauc/SRB3_5_0
+endif
 
 #
 # Object  files
@@ -59,8 +65,9 @@ OBJECTS +=  $(Z3950_MSO_OBJS)
 OBJECTS +=  $(DBO_MSO_OBJS) 
 OBJECTS +=  $(SLINK_MSO_OBJS) 
 OBJECTS +=  $(IRODS_MSO_OBJS)
-#OBJECTS +=  $(SRB_MSO_OBJS) 
-
+ifdef MSOSRB
+OBJECTS +=  $(SRB_MSO_OBJS) 
+endif
 
 
 
@@ -80,8 +87,9 @@ CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(MODULE_CFLAGS)
 
 HTTPLIBS = -lcurl
+ifdef MSOSRB
 SRBLIBS =  -L$(MySrbPath)/obj -lSrbClient
-
+endif
 
 
 
