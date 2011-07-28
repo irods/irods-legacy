@@ -7,6 +7,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
+#include "objMetaOpr.h"
 
 /** \mainpage iRODS Documentation
 

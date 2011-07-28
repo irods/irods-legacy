@@ -101,8 +101,8 @@ msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
   /*  coerce input to local variables */
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  mode  = atoi(inFileMode->inOutStruct);
-  flags = atoi(inFileFlags->inOutStruct);
+  mode  = atoi((char *) inFileMode->inOutStruct);
+  flags = atoi((char *) inFileFlags->inOutStruct);
   reqStr = strdup((char *) inRequestPath->inOutStruct);
 
 
@@ -232,7 +232,7 @@ msiobjput_http(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   /*  coerce input to local variables */
   reqStr = (char *) inMSOPath->inOutStruct;
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  dataSize  = atol(inFileSize->inOutStruct);
+  dataSize  = atol((char *) inFileSize->inOutStruct);
 
 
 

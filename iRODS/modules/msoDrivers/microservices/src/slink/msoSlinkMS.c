@@ -11,13 +11,18 @@
  *
  */
 
-#include "reDataObjOpr.h"
-#include "apiHeaderAll.h"
-#include "rsApiHandler.h"
-#include "collection.h"
 #include "msoDriversMS.h"
 
-  
+extern int rsDataObjWrite (rsComm_t *rsComm, 
+			   openedDataObjInp_t *dataObjWriteInp,
+			   bytesBuf_t *dataObjWriteInpBBuf);
+extern int rsDataObjRead (rsComm_t *rsComm, 
+			  openedDataObjInp_t *dataObjReadInp,
+			  bytesBuf_t *dataObjReadOutBBuf);  
+extern int rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
+extern int rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp);
+extern int rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
+
 
 /**
  * \fn int msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
@@ -116,8 +121,8 @@ msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
 
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  mode  = atoi(inFileMode->inOutStruct);
-  flags = atoi(inFileFlags->inOutStruct);
+  mode  = atoi((char *) inFileMode->inOutStruct);
+  flags = atoi((char *) inFileFlags->inOutStruct);
   rsComm = rei->rsComm;
 
   /* Do the processing */
@@ -268,7 +273,7 @@ msiobjput_slink(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   }
 
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  dataSize  = atol(inFileSize->inOutStruct);
+  dataSize  = atol((char *) inFileSize->inOutStruct);
   rsComm = rei->rsComm;
 
   /* Read the cache and Do the upload*/

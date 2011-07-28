@@ -49,7 +49,7 @@ int msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
 int msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei);
 int msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei);
-int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
+int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *coperator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
 int msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei);
 
 int msiVacuum(ruleExecInfo_t *rei);
@@ -58,7 +58,8 @@ int msiDeleteUnusedAVUs(ruleExecInfo_t *rei);
 int msiGoodFailure(ruleExecInfo_t *rei);
 int msiRegisterData(ruleExecInfo_t *rei);
 int msiCheckPermission(msParam_t *perm, ruleExecInfo_t *rei);
-int msiCheckAccess(msParam_t *objName, msParam_t *oper,  ruleExecInfo_t *rei);
+int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation,
+                   msParam_t * outResult, ruleExecInfo_t *rei);
 int msiCheckOwner(ruleExecInfo_t *rei);
 int msiCreateUser(ruleExecInfo_t *rei);
 int msiCreateCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_t *rei);
@@ -201,7 +202,7 @@ int msiGetFNMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVer
 int msiAdmWriteFNMapsFromStructIntoFile(msParam_t *inDvmFileNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei);
 
 int msiAdmReadMSrvcsFromFileIntoStruct(msParam_t *inMsrvcFileNameParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei);
-int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei);
+int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei);
 int msiGetMSrvcsFromDBIntoStruct(msParam_t *inStatus, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei);
 int msiAdmWriteMSrvcsFromStructIntoFile(msParam_t *inMsrvcFileNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei);
 #endif

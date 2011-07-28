@@ -6,9 +6,9 @@
 char *breakPoints[100];
 int breakPointsInx = 0;
 char myHostName[MAX_NAME_LEN];
-int myPid;
 char waitHdr[HEADER_TYPE_LEN];
 char waitMsg[MAX_NAME_LEN];
+int myPID;
 
 int
 checkRuleCondition(char *action, char *incond, char *args[MAX_NUM_OF_ARGS_IN_ACTION], 
@@ -659,7 +659,7 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
 
   s=0;
   m=0;
-  myPid = (int) getpid();
+  myPID = (int) getpid();
   myHostName[0] = '\0';
   gethostname (myHostName, MAX_NAME_LEN);
   sprintf(condRead, "(*XUSER  == %s@%s) && (*XHDR == STARTDEBUG)",
@@ -688,9 +688,9 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
 
     rodsLog (LOG_NOTICE,"reDebugInitialization: Got Debug StreamId:%i\n",GlobalREDebugFlag);
     snprintf(waitMsg, MAX_NAME_LEN, "PROCESS BEGIN at %s:%i. Client connected from %s at port %i\n", 
-	     myHostName, myPid, svrComm->clientAddr,ntohs(svrComm->localAddr.sin_port));
+	     myHostName, myPID, svrComm->clientAddr,ntohs(svrComm->localAddr.sin_port));
     _writeXMsg(GlobalREDebugFlag, "idbug", waitMsg);
-    snprintf(waitMsg, MAX_NAME_LEN, "%s:%i is waiting\n", myHostName, myPid);  }
+    snprintf(waitMsg, MAX_NAME_LEN, "%s:%i is waiting\n", myHostName, myPID);  }
   return(0);
 }
 
@@ -1128,7 +1128,7 @@ reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArr
     m = mNum;
     /* what should be the condition */
     sprintf(condRead, "(*XSEQNUM >= %d) && (*XADDR != %s:%i) && (*XUSER  == %s@%s) && ((*XHDR == CMSG:ALL) %%%% (*XHDR == CMSG:%s:%i))",
-	    s, myHostName, myPid, svrComm->clientUser.userName, svrComm->clientUser.rodsZone, myHostName, myPid);
+	    s, myHostName, myPID, svrComm->clientUser.userName, svrComm->clientUser.rodsZone, myHostName, myPID);
 
     /*
     sprintf(condRead, "(*XSEQNUM >= %d)  && ((*XHDR == CMSG:ALL) %%%% (*XHDR == CMSG:%s:%i))",

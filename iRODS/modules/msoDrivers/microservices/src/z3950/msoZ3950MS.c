@@ -149,8 +149,8 @@ msiobjget_z3950(msParam_t*  inRequestPath, msParam_t* inFileMode,
   /*  coerce input to local variables */
   reqStr = (char *) inRequestPath->inOutStruct;
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  mode  = atoi(inFileMode->inOutStruct);
-  flags = atoi(inFileFlags->inOutStruct);
+  mode  = atoi((char *) inFileMode->inOutStruct);
+  flags = atoi((char *) inFileFlags->inOutStruct);
 
   /* Do the processing */
 
@@ -313,7 +313,7 @@ msiobjput_z3950(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   /*  coerce input to local variables */
   reqStr = (char *) inMSOPath->inOutStruct;
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  dataSize  = atol(inFileSize->inOutStruct);
+  dataSize  = atol((char *) inFileSize->inOutStruct);
 
 
 

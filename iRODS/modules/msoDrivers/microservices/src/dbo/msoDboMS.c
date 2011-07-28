@@ -14,7 +14,8 @@
 #include "rsApiHandler.h"
 #include "msoDriversMS.h"
 #include "dboHighLevelRoutines.h"
-  
+
+
 #define LOCAL_BUFFER_SIZE 1000000 /* check dboHighLevelRoutines.c */
 
 
@@ -66,7 +67,7 @@ msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode,
 	       msParam_t* inFileFlags, msParam_t* inCacheFilename,  
 	       ruleExecInfo_t* rei )
 {
-
+#if defined(DBR)
   char *locStr, *fileStr;
   int mode, flags;
   char *cacheFilename; 
@@ -110,8 +111,8 @@ msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
 
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  mode  = atoi(inFileMode->inOutStruct);
-  flags = atoi(inFileFlags->inOutStruct);
+  mode  = atoi((char *) inFileMode->inOutStruct);
+  flags = atoi((char *) inFileFlags->inOutStruct);
   rsComm = rei->rsComm;
 
   /* Do the processing */
@@ -126,7 +127,7 @@ msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode,
     args[i] = NULL;
   }
   /*printf("MM:locStr=%s,fileStr=%s\n", locStr, fileStr);*/
-  i = dboExecute(rsComm, locStr, fileStr, NULL, 0, outBuf, LOCAL_BUFFER_SIZE,
+  i = dboExecute(rsComm, locStr, fileStr, (char *) NULL, 0, outBuf, LOCAL_BUFFER_SIZE,
 		 args);
   if (i < 0) {
     free(outBuf);
@@ -162,6 +163,9 @@ msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode,
   free(str);
   /*return */
   return(0);
+#else
+  return(DBR_NOT_COMPILED_IN);
+#endif
 }
 
 
@@ -213,7 +217,7 @@ int
 msiobjput_dbo(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  
 	       msParam_t*  inFileSize, ruleExecInfo_t* rei )
 {
-
+#if defined(DBR)
   char *reqStr;
   char *cacheFilename;
   rodsLong_t dataSize;
@@ -245,7 +249,7 @@ msiobjput_dbo(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   /*  coerce input to local variables */
   reqStr = (char *) inMSOPath->inOutStruct;
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  dataSize  = atol(inFileSize->inOutStruct);
+  dataSize  = atol((char *) inFileSize->inOutStruct);
 
 
 
@@ -271,5 +275,9 @@ msiobjput_dbo(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   rodsLog(LOG_NOTICE,"MSO_DBO file contains: %s\n",myBuf);
   free(myBuf);
   return(0);
+#else
+  return(DBR_NOT_COMPILED_IN);
+#endif
+
 }
 

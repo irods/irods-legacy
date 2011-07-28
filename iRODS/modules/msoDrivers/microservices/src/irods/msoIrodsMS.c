@@ -195,8 +195,8 @@ msiobjget_irods(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
 
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  mode  = atoi(inFileMode->inOutStruct);
-  flags = atoi(inFileFlags->inOutStruct);
+  mode  = atoi((char *) inFileMode->inOutStruct);
+  flags = atoi((char *) inFileFlags->inOutStruct);
   rsComm = rei->rsComm;
 
   /* Do the processing */
@@ -369,7 +369,7 @@ msiobjput_irods(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   }
 
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  dataSize  = atol(inFileSize->inOutStruct);
+  dataSize  = atol((char *) inFileSize->inOutStruct);
   rsComm = rei->rsComm;
 
   i = connectToRemoteiRODS((char *) inMSOPath->inOutStruct, &rcComm);

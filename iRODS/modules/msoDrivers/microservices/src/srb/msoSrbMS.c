@@ -196,8 +196,8 @@ msiobjget_srb(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
 
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  mode  = atoi(inFileMode->inOutStruct);
-  flags = atoi(inFileFlags->inOutStruct);
+  mode  = atoi((char *) inFileMode->inOutStruct);
+  flags = atoi((char *) inFileFlags->inOutStruct);
 
   /* Do the processing */
 
@@ -353,7 +353,7 @@ msiobjput_srb(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   }
 
   cacheFilename = (char *) inCacheFilename->inOutStruct;
-  dataSize  = atol(inFileSize->inOutStruct);
+  dataSize  = atol((char *) inFileSize->inOutStruct);
 
   i = connectToRemotesrb((char *) inMSOPath->inOutStruct, &rcComm);
   if (i < 0) {

@@ -361,7 +361,11 @@ int processUserInput(char *buf)
 }
 
 void
-signalIdbugExit ()
+#if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(linux_platform) || defined(osx_platform)
+signalIdbugExit(int sig)
+#else
+  signalIdbugExit ()
+#endif
 {
   cleanUpAndExit ();
 }

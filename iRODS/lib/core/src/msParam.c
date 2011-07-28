@@ -321,7 +321,7 @@ printMsParam (msParamArray_t *outParamArray)
 int
 writeMsParam (char *buf, int len, msParam_t *msParam) 
 {
-    int i,j;
+    int j;
     keyValPair_t *kVPairs;
     tagStruct_t *tagValues;
 

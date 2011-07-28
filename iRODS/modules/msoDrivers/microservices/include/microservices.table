@@ -12,5 +12,7 @@
 { "msiobjput_slink",		3,		(funcPtr) msiobjput_slink },
 { "msiobjget_irods",		4,		(funcPtr) msiobjget_irods },
 { "msiobjput_irods",		3,		(funcPtr) msiobjput_irods },
+/*
 { "msiobjget_srb",		4,		(funcPtr) msiobjget_srb },
 { "msiobjput_srb",		3,		(funcPtr) msiobjput_srb },
+*/

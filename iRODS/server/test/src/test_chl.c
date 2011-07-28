@@ -787,7 +787,7 @@ testInsMsrvcTable(rsComm_t *rsComm, char *arg1, char *arg2, char *arg3,
    rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
    status = chlInsMsrvcTable(rsComm, arg1, arg2, arg3, arg4,
-			     arg5, arg6, arg7, arg8, arg9);
+			     arg5, arg6, arg7, arg8, arg9,"0");
 
    return(status);
 }
