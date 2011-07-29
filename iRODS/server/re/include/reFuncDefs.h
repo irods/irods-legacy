@@ -11,7 +11,7 @@
 #define FREE_DOINP	0x2
 
 #ifdef RULE_ENGINE_N
-int initRuleStruct(int processType, char *ruleSet, char *dvmSet, char *fnmSet);
+int initRuleStruct(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char *fnmSet);
 
 int readRuleStructFromFile(int processType, char *ruleBaseName, ruleStruct_t *inRuleStrct);
 #else

@@ -296,7 +296,7 @@ chkAndResetRule (rsComm_t *rsComm)
 	msiAdmClearAppRuleStruct (&rei);
 #ifdef RULE_ENGINE_N
 	/* The shared memory cache may have already been updated, do not force reload */
-	status = initRuleEngine(RULE_ENGINE_TRY_CACHE, reRuleStr, reFuncMapStr, reVariableMapStr);
+	status = initRuleEngine(RULE_ENGINE_TRY_CACHE, NULL, reRuleStr, reFuncMapStr, reVariableMapStr);
 #else
 	clearCoreRule ();
 	status = initRuleEngine(NULL, reRuleStr, reFuncMapStr, reVariableMapStr);

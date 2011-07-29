@@ -14,12 +14,12 @@ static char ruleSetInitialized[NAME_LEN]="";
 /* initialize the Rule Engine if it hasn't been done yet */
 #ifdef RULE_ENGINE_N
 int 
-initRuleEngine(int processType, char *ruleSet, char *dvmSet, char* fnmSet) {
+initRuleEngine(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet) {
    int status;
    if (strcmp(ruleSet, ruleSetInitialized)==0) {
       return(0); /* already done */
    }
-   status = initRuleStruct(processType, ruleSet, dvmSet, fnmSet);
+   status = initRuleStruct(processType, svrComm, ruleSet, dvmSet, fnmSet);
    if (status == 0) {
       rstrcpy(ruleSetInitialized, ruleSet, NAME_LEN);
    }

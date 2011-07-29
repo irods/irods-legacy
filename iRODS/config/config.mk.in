@@ -68,11 +68,12 @@ endif
 #
 # Configure the rule engine server
 #
-# RULE_ENGINE defines whether the Rule Engine is enabled. 
+# RULE_ENGINE and RULE_ENGINE_N define whether one of the Rule Engines is enabled. 
+# The former enables version 2.5, while the latter enables version 3.0.
 # Enable this normally unless you are debugging some 
 # particular module and dont want the rule engine to mess up the flow.
-#RULE_ENGINE_N=1
-RULE_ENGINE=1
+RULE_ENGINE_N=1
+#RULE_ENGINE=1
 
 
 

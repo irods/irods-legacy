@@ -60,7 +60,7 @@ extern tarSubFileDesc_t TarSubFileDesc[];
 #endif
 
 #ifdef RULE_ENGINE_N
-int initRuleEngine(int processType, char *ruleSet, char *dvmSet, char* fnmSet);
+int initRuleEngine(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet);
 #else
 int initRuleEngine(rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet);
 #endif

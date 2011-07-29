@@ -201,6 +201,7 @@ endif
 
 # re
 ifdef RULE_ENGINE
+ifndef RULE_ENGINE_N
 CFLAGS +=       -DRULE_ENGINE
 
 SVR_RE_OBJS =	\
@@ -235,6 +236,7 @@ SVR_RE_OBJS =	\
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
+endif
 endif
 
 ifdef RULE_ENGINE_N

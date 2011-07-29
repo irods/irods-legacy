@@ -378,7 +378,9 @@ main(int argc, char **argv) {
         exit(10);
 
 	}
-	rstrcpy (execMyRuleInp.myRule, "@external\n", META_STR_LEN);
+	if(rulegen) {
+		rstrcpy (execMyRuleInp.myRule, "@external\n", META_STR_LEN);
+	}
 	while ((len = getLine (fptr, buf, META_STR_LEN)) > 0) {
 	    if (myRodsArgs.longOption == True)
 	    	puts(buf);

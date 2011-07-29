@@ -1317,7 +1317,7 @@ initAgent (rsComm_t *rsComm)
 #endif
 
 #ifdef RULE_ENGINE_N
-    status = initRuleEngine(processType, reRuleStr, reFuncMapStr, reVariableMapStr);
+    status = initRuleEngine(processType, rsComm, reRuleStr, reFuncMapStr, reVariableMapStr);
 #else
     status = initRuleEngine(rsComm, reRuleStr, reFuncMapStr, reVariableMapStr);
 #endif
