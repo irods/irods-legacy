@@ -9,7 +9,7 @@
 void usage ();
 
 int
-parseMsInputParam (int argc, char **argv, int optInd, 
+parseMsInputParam (int argc, char **argv, int optInd, int ruleGen,
 		   execMyRuleInp_t *execMyRuleInp, char *inBuf);
 
 int startsWith(char *str, char *prefix) {
@@ -272,6 +272,7 @@ main(int argc, char **argv) {
     execMyRuleInp_t execMyRuleInp;
     msParamArray_t *outParamArray = NULL;
     msParamArray_t msParamArray;
+    int rulegen;
 
     int connFlag = 0;
     char saveFile[MAX_NAME_LEN];
@@ -367,7 +368,6 @@ main(int argc, char **argv) {
         exit(10);
 
     }
-	int rulegen;
 	if(strcmp(fileType, ".r") == 0) {
 		rulegen = 1;
 	} else if(strcmp(fileType, ".ir") == 0 || strcmp(fileType, ".irb") == 0) {
@@ -413,7 +413,7 @@ main(int argc, char **argv) {
 	    		}
 	    	}
 	    	inpParamN = extractVarNames(inpParamNames, buf);
-	    	parseMsInputParam (argc, argv, optind, &execMyRuleInp, buf);
+	    	parseMsInputParam (argc, argv, optind, rulegen, &execMyRuleInp, buf);
 	    } else if (gotRule == 2) {
 	    	if(rulegen) {
 	    		if(convertListToMultiString(buf, 0)!=0) {
@@ -456,7 +456,7 @@ main(int argc, char **argv) {
             exit (3);
         }
 	rstrcpy (execMyRuleInp.myRule, argv[optind], META_STR_LEN);
-	parseMsInputParam (0,NULL, 0, &execMyRuleInp, argv[optind + 1]);
+	parseMsInputParam (0,NULL, 0, 1, &execMyRuleInp, argv[optind + 1]);
 	if (strcmp (argv[optind + 2], "null") != 0) {
             rstrcpy (execMyRuleInp.outParamDesc, argv[optind + 2], 
 	      LONG_NAME_LEN);
@@ -616,7 +616,7 @@ splitMultiStr (char *strInput, strArray_t *strArray)
 
 
 int
-parseMsInputParam (int argc, char **argv, int optInd, 
+parseMsInputParam (int argc, char **argv, int optInd, int ruleGen,
 		   execMyRuleInp_t *execMyRuleInp, char *inBuf)
 {
     strArray_t strArray;
@@ -741,12 +741,20 @@ parseMsInputParam (int argc, char **argv, int optInd,
 		 if you have to use '$' in the first letter add a '\'  before that
 	      */
 	      tmpPtr++;
+		char *param = strdup (tmpPtr);
+		if(!ruleGen)
+		trimQuotes(param);
+
 	      addMsParam (execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
-			  strdup (tmpPtr), NULL);
+			  param, NULL);
 	    }
 	    else {
+                char *param = strdup (tmpPtr);
+		if(!ruleGen)
+                trimQuotes(param);
+
 	      addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,
-			  strdup(tmpPtr), NULL);
+			  param, NULL);
 	    }
 	} else {
 	    rodsLog (LOG_ERROR,
