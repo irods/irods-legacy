@@ -70,6 +70,8 @@ endif
 #
 # RULE_ENGINE and RULE_ENGINE_N define whether one of the Rule Engines is enabled. 
 # The former enables version 2.5, while the latter enables version 3.0.
+# Version 2.5 may not support all features that are supported by version 3.0.
+# 
 # Enable this normally unless you are debugging some 
 # particular module and dont want the rule engine to mess up the flow.
 RULE_ENGINE_N=1
