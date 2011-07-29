@@ -230,7 +230,7 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
     return(0);
   else 
     return(1);
-#elif
+#else
   i  = replaceMsParams(condStr, &XMsgMsParamArray);
   if(i!=0) {
 	  return(0);
