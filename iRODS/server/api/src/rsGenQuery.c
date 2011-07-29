@@ -103,18 +103,21 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 	  rei.uoic = &rsComm->clientUser;
 	  rei.uoip = &rsComm->proxyUser;
        }
-       /*       if (getRuleEngineStatus() == UNINITIALIZED) { 
+#ifdef RULE_ENGINE_N
+       if (getRuleEngineStatus() == UNINITIALIZED) { 
           /* Skip the call to run acAclPolicy if the Rule Engine
              hasn't been initialized yet, which happens for a couple
              initial queries made by the agent when starting up.  The
              new RE logs these types of errors and so this avoids that.
-          * /
+          */
           status = -1;
        }
-       else { */
+       else 
+#endif
+       {
           status = applyRule ("acAclPolicy", NULL, &rei, NO_SAVE_REI);
           ruleResult = rei.status;
-	  /* }*/
+       }
        if (status==0) {
 	  ruleExecuted=1; /* No need to retry next time since it
                              succeeded.  Since this is called at
