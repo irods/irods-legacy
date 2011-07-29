@@ -60,9 +60,12 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #define MAX_PASSWORDS 40
 /* TEMP_PASSWORD_TIME is the number of seconds the temp, one-time
    password can be used.  chlCheckAuth also checks for this column
-   to be < 1000 to differentiate the row from regular passwords.
+   to be < 1900 to differentiate the row from regular passwords.
+   1800 is 30 minutes which will be utilized by iDrop and iDrop-lite
+   which disconnect when idle to reduce the number of open 
+   connections and active agents.
 */
-#define TEMP_PASSWORD_TIME 10
+#define TEMP_PASSWORD_TIME 1800
 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
@@ -3243,6 +3246,10 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    char myUserZone[MAX_NAME_LEN];
    char userName2[NAME_LEN+2];
    char userZone[NAME_LEN+2];
+#if defined(OS_AUTH)
+   int doOsAuthentication = 0;
+   char *os_auth_flag;
+#endif
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth");
 
@@ -3266,6 +3273,18 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	    (unsigned char)md5Buf[10],(unsigned char)md5Buf[11],
 	    (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
 	    (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
+#if defined(OS_AUTH)
+   /* check for the OS_AUTH_FLAG token in the username to see if
+    * we should run the OS level authentication. Make sure and
+    * strip it from the username string so other operations 
+    * don't fail parsing the format.
+   */
+   os_auth_flag = strstr(username, OS_AUTH_FLAG);
+   if (os_auth_flag) {
+       *os_auth_flag = 0;
+       doOsAuthentication = 1;
+   }
+#endif
 
    status = parseUserName(username, userName2, userZone);
    if (userZone[0]=='\0') {
@@ -3277,6 +3296,14 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       strncpy(myUserZone, userZone, MAX_NAME_LEN);
    }
 
+#if defined(OS_AUTH)
+   if (doOsAuthentication) {
+       if ((status = osauthVerifyResponse(challenge, userName2, response))) {
+           return status;
+       }
+       goto checkLevel;
+   }
+#endif
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
 
@@ -3343,7 +3370,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    expireTime=atoll(goodPwExpiry);
    getNowStr(myTime);
    nowTime=atoll(myTime);
-   if (expireTime < 1000) {
+   if (expireTime < 1900) {
 
       /* in the form used by temporary, one-time passwords */
 
