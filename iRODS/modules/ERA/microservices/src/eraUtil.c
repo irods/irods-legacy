@@ -62,7 +62,7 @@ appendFormattedStrToBBuf(bytesBuf_t *dest, size_t size, const char *format, ...)
 		dest->len=2*(index+size);
 		tmpPtr=(char *)malloc(dest->len);
 		memset(tmpPtr, '\0', dest->len);
-		strcpy(tmpPtr, (char*)dest->buf);
+		strncpy(tmpPtr, (char*)dest->buf, dest->len);
 		free(dest->buf);
 		dest->buf=tmpPtr;
 	}
@@ -1952,12 +1952,15 @@ getObjectByFilePath(char *filePath, char *rescName, char *objPath, rsComm_t *rsC
 	/* Query */
 	status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
-	/* Extract results */
-	dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
-	collName = getSqlResultByInx (genQueryOut, COL_COLL_NAME);
+	if (status >= 0)
+	{
+		/* Extract results */
+		dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
+		collName = getSqlResultByInx (genQueryOut, COL_COLL_NAME);
 
-	/* Print out what we want */
-	snprintf(objPath, MAX_NAME_LEN, "%s/%s", collName->value, dataName->value);
+		/* Print out what we want */
+		snprintf(objPath, MAX_NAME_LEN, "%s/%s", collName->value, dataName->value);
+	}
 
 	return (status);
 }

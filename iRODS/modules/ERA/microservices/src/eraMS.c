@@ -2722,7 +2722,13 @@ msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *statu
 		colon[0]='\0';
 
 		/* get iRods path of infected object */
-		getObjectByFilePath(lineStart, resource, infectedObjPath, rei->rsComm);
+		rei->status = getObjectByFilePath(lineStart, resource, infectedObjPath, rei->rsComm);
+		if (rei->status < 0)
+		{
+			rodsLog (LOG_ERROR, "msiFlagInfectedObjs: getObjectByFilePath error for %s. status = %d",
+					lineStart, rei->status);
+			return (rei->status);
+		}
 
 		/* init modAVU input */
 		memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
