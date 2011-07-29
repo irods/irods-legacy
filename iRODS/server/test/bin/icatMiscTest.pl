@@ -266,7 +266,7 @@ runCmd(0, "test_chl versionrulebase a");
 runCmd(0, "test_chl versiondvmbase a");
 runCmd(0, "test_chl versionfnmbase a");
 runCmd(0, "test_chl insfnmtable a b c d");
-runCmd(0, "test_chl insmsrvctable a b c d e f g h i");
+runCmd(0, "test_chl insmsrvctable a b c d e f g h 1");
 runCmd(0, "test_chl insdvmtable a b c d");
 
 # clean up
