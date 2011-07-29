@@ -224,13 +224,19 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
   if(strcmp(condStr, "") == 0) {
 	  return 0;
   }
-  i  = replaceMsParams(condStr, &XMsgMsParamArray);
+#ifdef RULE_ENGINE_N
   i =  computeExpression(condStr, NULL, 0, res);
   if (strcmp(res, "true") == 0)
     return(0);
   else 
     return(1);
-
+#elif
+  i  = replaceMsParams(condStr, &XMsgMsParamArray);
+  if(i!=0) {
+	  return(0);
+  }
+  return computeExpression(condStr, NULL, 0, res);
+#endif
 
 }
 
