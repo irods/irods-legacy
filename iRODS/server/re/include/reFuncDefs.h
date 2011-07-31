@@ -14,9 +14,13 @@
 int initRuleStruct(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char *fnmSet);
 
 int readRuleStructFromFile(int processType, char *ruleBaseName, ruleStruct_t *inRuleStrct);
+int computeExpression( char *expr, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, char *res);
+
 #else
 int initRuleStruct(rsComm_t *svrComm, char *ruleSet, char *dvmSet, char *fnmSet);
 int readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct);
+int computeExpression( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, char *res);
+
 #endif
 
 int clearRuleStruct(ruleStruct_t *inRuleStrct);
@@ -55,8 +59,6 @@ int checkRuleHead(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int arg
 
 int checkRuleCondition(char *action, char *incond, char *args[MAX_NUM_OF_ARGS_IN_ACTION], 
 		   int argc, ruleExecInfo_t *rei, int reiSaveFlag);
-
-int computeExpression( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, char *res);
 
 int replaceVariables(char *action, char *inStr, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 		   ruleExecInfo_t *rei );
@@ -316,7 +318,12 @@ int writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
 
 int _writeXMsg(int streamId, char *hdr, char *msg);
 int _readXMsg(int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr, char **msg,char **user, char **addr);
+#ifdef RULE_ENGINE_N
+typedef struct env Env;
+int reDebug(char *callLabel, int flag, char *actionStr, Env *env, ruleExecInfo_t *rei);
+#else
 int reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei);
+#endif
 int initializeReDebug(rsComm_t *svrComm, int flag);
 
 

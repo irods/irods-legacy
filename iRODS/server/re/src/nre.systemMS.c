@@ -68,9 +68,9 @@ fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedRe
  * \bug  no known bugs
 **/
 
-int evaluateExpression(char *expr, char *eaVal, ruleExecInfo_t *rei) {
-    return computeExpression(expr, rei, 0, eaVal);
-}
+#define evaluateExpression(expr, eaVal, rei) \
+    computeExpression(expr, NULL,rei, 0, eaVal)
+
 #if 0
 int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
 {

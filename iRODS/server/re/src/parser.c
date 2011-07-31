@@ -1692,7 +1692,7 @@ void actionsToString(char **p, int *s, int indent, Node *na, Node *nr) {
 	for(i=0;i<n;i++) {
 		indentToString(p, s, indent+1);
 		termToString(p, s, indent+1, MIN_PREC, na->subtrees[i]);
-		if(i<nr->degree && (getNodeType(nr->subtrees[i])!=N_APPLICATION || strcmp(nr->subtrees[i]->subtrees[0]->text, "nop")!=0)) {
+		if(nr!=NULL && i<nr->degree && (getNodeType(nr->subtrees[i])!=N_APPLICATION || strcmp(nr->subtrees[i]->subtrees[0]->text, "nop")!=0)) {
 			PRINT(p, s, "%s", ":::");
 			termToString(p, s, indent+1, MIN_PREC, nr->subtrees[i]);
 		}
@@ -1881,6 +1881,33 @@ void ruleToString(char *buf, int size, RuleDesc *rd) {
 
 	}
 
+}
+
+void functionApplicationToString(char *buf, int size, char *fn, Node **args, int n) {
+	char **p = &buf;
+	int *s = &size;
+	PRINT(p, s, "%s(", fn);
+	int i;
+	char *res;
+	for(i=0;i<n;i++) {
+		switch(getNodeType(args[i])) {
+		case N_VAL:
+			res = convertResToString(args[i]);
+			PRINT(p, s, "%s", res);
+			free(res);
+			break;
+		case N_ACTIONS:
+			actionsToString(p, s, 0, args[i], NULL);
+			break;
+		default:
+			termToString(p, s, 0, MIN_PREC, args[i]);
+		}
+		if(i != n-1) {
+			PRINT(p, s, "%s", ", ");
+		}
+	}
+	PRINT(p, s, "%s", ")");
+	return;
 }
 
 void printTreeDeref(Node *n, int indent, Hashtable *var_types, Region *r) {
@@ -2451,7 +2478,7 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     TTEXT("?");
                     CASCADE(newSimpType(T_DYNAMIC, context->region));
             OR(type)
-                    TTEXT("integer");
+                    TTEXT2("integer", "int");
                     CASCADE(newSimpType(T_INT, context->region));
             OR(type)
                     TTEXT("double");

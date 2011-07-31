@@ -205,7 +205,6 @@ ticketMsgStruct_t *ticketMsgStruct)
 
 int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond) 
 {
-  int i;
   char condStr[MAX_NAME_LEN * 2], res[MAX_NAME_LEN * 2];
 
   if (msgCond == NULL || strlen(msgCond) == 0)
@@ -225,17 +224,13 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
 	  return 0;
   }
 #ifdef RULE_ENGINE_N
-  i =  computeExpression(condStr, NULL, 0, res);
-  if (strcmp(res, "true") == 0)
-    return(0);
-  else 
-    return(1);
+  return !computeExpression(condStr, &XMsgMsParamArray, NULL, 0, res);
 #else
-  i  = replaceMsParams(condStr, &XMsgMsParamArray);
+  int i = replaceMsParams(condStr, &XMsgMsParamArray);
   if(i!=0) {
-	  return(0);
+	  return 1;
   }
-  return computeExpression(condStr, NULL, 0, res);
+  return !computeExpression(condStr, NULL, 0, res);
 #endif
 
 }

@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "reHelpers1.h"
+#include "index.h"
 
 char *breakPoints[100];
 int breakPointsInx = 0;
@@ -162,7 +163,7 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
   myPID = (int) getpid();
   myHostName[0] = '\0';
   gethostname (myHostName, MAX_NAME_LEN);
-  sprintf(condRead, "(*XUSER  == %s@%s) && (*XHDR == STARTDEBUG)",
+  sprintf(condRead, "(*XUSER  == \"%s@%s\") && (*XHDR == \"STARTDEBUG\")",
 	  svrComm->clientUser.userName, svrComm->clientUser.rodsZone);
   status = _readXMsg(GlobalREDebugFlag, condRead, &m, &s, &readhdr, &readmsg, &user, &addr);
   if (status >= 0) {
@@ -198,7 +199,7 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
 int processXMsg(int streamId, int *msgNum, int *seqNum, 
 		char * readhdr, char *readmsg, 
 		char *callLabel, int flag, char *hdr, char *actionStr, char *seActionStr,
-		msParamArray_t *inMsParamArray, int curStat, ruleExecInfo_t *rei)
+		Env *env, int curStat, ruleExecInfo_t *rei)
 {
 
   char cmd;
@@ -206,7 +207,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
   char mymsg[MAX_NAME_LEN];
   char *outStr = NULL;
   char *ptr;
-  msParam_t *mP;
+  Res *mP;
   int i,n;
   int iLevel, wCnt;
   int  ruleInx = -1;
@@ -257,12 +258,13 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
       mymsg[0] = '\n';
       mymsg[1] = '\0';
       if (rei != NULL  && rei->msParamArray != NULL ) {
-	if ((mP = getMsParamByLabel (rei->msParamArray, ptr)) == NULL) {
+	if ((mP = (Res *)lookupFromEnv(env, ptr)) == NULL) {
 	  snprintf(mymsg, MAX_NAME_LEN - 1 , "Parameter %s not found\n",ptr);
 	  _writeXMsg(streamId, myhdr, mymsg);
 	}
 	else {
-	  writeMsParam (mymsg, MAX_NAME_LEN, mP);
+	  char *res = convertResToString(mP);
+	  snprintf(mymsg, MAX_NAME_LEN, "%s", res);
 	  _writeXMsg(streamId, myhdr, mymsg);
 	}
       }
@@ -329,40 +331,33 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
       trimWS(ptr);
       mymsg[0] = '\n';
       mymsg[1] = '\0';
-      snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",ptr);
-      while ((n = findNextRule (ptr, &ruleInx)) >= 0) {
-	getRule(ruleInx, ruleBase, ruleHead, ruleCondition,ruleAction,ruleRecovery, MAX_RULE_LENGTH);
-	n = 0;
-	n = getActionRecoveryList(ruleAction,ruleRecovery,actionArray,recoveryArray);
-	if (strlen(ruleCondition) != 0) 
-	  snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "\n  %i: %s.%s\n      IF (%s) {\n",ruleInx, ruleBase, ruleHead,ruleCondition);
-	else 
-	  snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "\n  %i: %s.%s\n      {\n",ruleInx, ruleBase, ruleHead);
-	for (i = 0; i < n; i++) {
-	  if (strlen(actionArray[i]) < 20) {
-	    if (recoveryArray[i] == NULL || 
-		strlen(recoveryArray[i]) == 0 || 
-		!strcmp(recoveryArray[i],"nop") || 
-		!strcmp(recoveryArray[i],"null")) 
-	      snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "        %-20.20s\n",actionArray[i]);
-	    else
-	      snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "        %-20.20s[%s]\n",actionArray[i],recoveryArray[i]);
-	  }
-	  else {
-	    if (recoveryArray[i] == NULL || 
-		strlen(recoveryArray[i]) == 0 || 
-		!strcmp(recoveryArray[i],"nop") || 
-		!strcmp(recoveryArray[i],"null")) 
-	      snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "        %s\n",actionArray[i]);
-	    else
-	      snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "        %s       [%s]\n",actionArray[i],recoveryArray[i]);
-	  }
-
-	}
-	snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "      }\n");
+      snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s\n",ptr);
+      RuleIndexListNode *node;
+      int found = 0;
+      while (findNextRule2 (ptr, ruleInx, &node) != NO_MORE_RULES_ERR) {
+    	  found = 1;
+    	  if(node->secondaryIndex) {
+    		  n = node->condIndex->valIndex->len;
+    		  int i;
+    		  for(i=0;i<n;i++) {
+    			  Bucket *b = node->condIndex->valIndex->buckets[i];
+    			  while(b!=NULL) {
+    	    		  RuleDesc *rd = getRuleDesc(*(int *)b->value);
+    	    		  char buf[MAX_RULE_LEN];
+    	    		  ruleToString(buf, MAX_RULE_LEN, rd);
+    	    		  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "%i: %s\n%s\n", node->ruleIndex, rd->node->base, buf);
+    	    		  b = b->next;
+    			  }
+    		  }
+    	  } else {
+    		  RuleDesc *rd = getRuleDesc(node->ruleIndex);
+    		  char buf[MAX_RULE_LEN];
+    		  ruleToString(buf, MAX_RULE_LEN, rd);
+    		  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "\n  %i: %s\n%s\n", node->ruleIndex, rd->node->base, buf);
+    	  }
       }
-      if (ruleInx == -1) {
-	snprintf(mymsg, MAX_NAME_LEN,"\n  Rule %s not found\n", ptr);
+      if (!found) {
+    	  snprintf(mymsg, MAX_NAME_LEN,"Rule %s not found\n", ptr);
       }
       _writeXMsg(streamId, myhdr, mymsg);
       return(REDEBUG_WAIT);
@@ -427,7 +422,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 int
 processBreakPoint(int streamId, int *msgNum, int *seqNum,
 		  char *callLabel, int flag, char *hdr, char *actionStr, char *seActionStr,
-		  msParamArray_t *inMsParamArray, int curStat, ruleExecInfo_t *rei)
+		  Env *env, int curStat, ruleExecInfo_t *rei)
 {
 
   int i;
@@ -539,7 +534,7 @@ int cleanUpDebug(int streamId) {
 }
 
 int
-reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei)
+reDebug(char *callLabel, int flag, char *actionStr, Env *env, ruleExecInfo_t *rei)
 {
   int i, m, s, status, sleepT, j;
   int processedBreakPoint = 0;
@@ -629,7 +624,7 @@ reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArr
     s = sNum;
     m = mNum;
     /* what should be the condition */
-    sprintf(condRead, "(*XSEQNUM >= %d) && (*XADDR != %s:%i) && (*XUSER  == %s@%s) && ((*XHDR == CMSG:ALL) %%%% (*XHDR == CMSG:%s:%i))",
+    sprintf(condRead, "(*XSEQNUM >= %d) && (*XADDR != \"%s:%i\") && (*XUSER  == \"%s@%s\") && ((*XHDR == \"CMSG:ALL\") %%%% (*XHDR == \"CMSG:%s:%i\"))",
 	    s, myHostName, myPID, svrComm->clientUser.userName, svrComm->clientUser.rodsZone, myHostName, myPID);
 
     /*
@@ -645,7 +640,7 @@ reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArr
       rodsLog (LOG_NOTICE,"Getting XMsg:%i:%s:%s\n", s,readhdr, readmsg);
       curStat = processXMsg(GlobalREDebugFlag, &m, &s, readhdr, readmsg,
 			    callLabel, flag, hdr,  actionStr, seActionStr, 
-			    inMsParamArray, curStat, rei);
+			    env, curStat, rei);
       if (readhdr != NULL)
 	free(readhdr);
       if (readmsg != NULL)
@@ -665,7 +660,7 @@ reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArr
 	  break;
 	curStat = processBreakPoint(GlobalREDebugFlag, &m, &s, 
 				   callLabel, flag, hdr,  actionStr, seActionStr,
-				   inMsParamArray, curStat, rei);
+				   env, curStat, rei);
 	processedBreakPoint = 1;
 	if (curStat == REDEBUG_WAIT) {
 	  sendWaitXMsg(GlobalREDebugFlag);
@@ -683,7 +678,7 @@ reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArr
 	rodsLog(LOG_NOTICE, "Calling 2: %s,%p",actionStr, &actionStr);
 	curStat = processBreakPoint(GlobalREDebugFlag, &m, &s, 
 				    callLabel, flag, hdr,  actionStr, seActionStr,
-				    inMsParamArray, curStat, rei);
+				    env, curStat, rei);
 	processedBreakPoint = 1;
 	if (curStat == REDEBUG_WAIT) {
 	  sendWaitXMsg(GlobalREDebugFlag);

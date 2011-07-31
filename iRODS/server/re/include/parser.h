@@ -352,6 +352,7 @@ void indentToString(char **p, int *s, int indent);
 void termToString(char **p, int *s, int indent, int prec, Node *n);
 void patternToString(char **p, int *s, int indent, int prec, Node *n);
 void typeToStringParser(char **p, int *s, int indent, int lifted, Node *n);
+void functionApplicationToString(char *buf, int size, char *fn, Node **args, int n);
 
 char *nextRuleSection(char *expr, char* section);
 char *parseFunctionParameters(char *e, char *args[], int *argc);

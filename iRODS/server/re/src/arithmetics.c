@@ -589,6 +589,12 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     }
 
 
+	if (GlobalREDebugFlag > 0) {
+		char tmpActStr[MAX_ACTION_SIZE];
+		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, fn, args, n);
+		reDebug("    ExecAction", -4, tmpActStr, env,rei);
+    }
+
     if(fd!=NULL) {
         switch(getNodeType(fd)) {
             case N_FD_DECONSTRUCTOR:
@@ -1105,7 +1111,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 					first = 0;
 				}
 
-				if (GlobalREDebugFlag)
+				if (GlobalREDebugFlag > 0)
 					reDebug("  GotRule", ruleInx, ruleName, NULL, rei); /* pass in NULL for inMsParamArray for now */
 		#ifndef DEBUG
 				if (reTestFlag > 0) {
@@ -1316,13 +1322,13 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
     	RE_ERROR2(getNodeType(v) != N_VAL || (TYPE(v) != T_INT && TYPE(v) != T_DOUBLE), "pattern mismatch value is not an integer.");
     	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
     	CASCADE_N_ERROR(res);
-    	RE_ERROR2(RES_INT_VAL(res) != (TYPE(v) == T_INT ? RES_INT_VAL(v) : RES_DOUBLE_VAL(v)) , "pattern mismatch integer.");
+    	RE_ERROR2(atoi(res->text) != (TYPE(v) == T_INT ? RES_INT_VAL(v) : RES_DOUBLE_VAL(v)) , "pattern mismatch integer.");
 		return newIntRes(r, 0);
     case TK_DOUBLE:
     	RE_ERROR2(getNodeType(v) != N_VAL || (TYPE(v) != T_DOUBLE && TYPE(v) != T_INT), "pattern mismatch value is not a double.");
     	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
     	CASCADE_N_ERROR(res);
-    	RE_ERROR2(RES_DOUBLE_VAL(res) != (TYPE(v) == T_DOUBLE ? RES_DOUBLE_VAL(v) : RES_INT_VAL(v)), "pattern mismatch integer.");
+    	RE_ERROR2(atof(res->text) != (TYPE(v) == T_DOUBLE ? RES_DOUBLE_VAL(v) : RES_INT_VAL(v)), "pattern mismatch integer.");
 		return newIntRes(r, 0);
     default:
     	RE_ERROR2(1, "malformatted pattern error");

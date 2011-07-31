@@ -10,6 +10,7 @@
 #include "index.h"
 #include "rules.h"
 #include "cache.h"
+#include "locks.h"
 #include "functions.h"
 #include "configuration.h"
 
@@ -410,7 +411,7 @@ int processReturnRes(Res *res) {
 
 	return ret;
 }
-int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char *res) {
+int computeExpression(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag, char *res) {
 	#ifdef DEBUG
 	writeToTmp("entry.log", "computeExpression: ");
 	writeToTmp("entry.log", inAction);
@@ -419,7 +420,7 @@ int computeExpression(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag, char
 
 	Region *r = make_region(0, NULL);
 
-	Res *res0 = parseAndComputeExpressionAdapter(inAction, NULL, rei, reiSaveFlag, r);
+	Res *res0 = parseAndComputeExpressionAdapter(inAction, inMsParamArray, rei, reiSaveFlag, r);
 	int ret;
 	char *res1 = convertResToString(res0);
 	snprintf(res, MAX_COND_LEN, "%s", res1);
@@ -442,8 +443,8 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     writeToTmp("entry.log", inAction);
     writeToTmp("entry.log", "\n");
     #endif
-    if (GlobalREAuditFlag)
-        reDebug("ApplyRule", -1, inAction,inMsParamArray,rei);
+    if (GlobalREAuditFlag > 0)
+        reDebug("ApplyRule", -1, inAction,NULL,rei);
 
 	Region *r = make_region(0, NULL);
 
@@ -485,8 +486,8 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     /* set global flag */
     GlobalAllRuleExecFlag = allRuleExecFlag;
 
-    if (GlobalREAuditFlag)
-        reDebug("ApplyAllRules", -1, inAction,inMsParamArray,rei);
+    if (GlobalREAuditFlag > 0)
+        reDebug("ApplyAllRules", -1, inAction,NULL,rei);
 
     int ret = applyRule(inAction, inMsParamArray, rei, reiSaveFlag);
     /* restore global flag */

@@ -17,11 +17,15 @@ char * getAttrNameFromAttrId(int id);
  * convert string value to Res
  */
 void convertStrValue(Res *res, char *val, Region *r) {
-    int len = (strlen(val)+1)*sizeof(char);
-    res->text = (char*)region_alloc(r, len);
-    memcpy(res->text, val, len);
-    RES_STRING_STR_LEN(res) = strlen(val);
-    res->exprType = newSimpType(T_STRING, r);
+	if(val == NULL) {
+		res->text = NULL;
+	} else {
+		int len = (strlen(val)+1)*sizeof(char);
+		res->text = (char*)region_alloc(r, len);
+		memcpy(res->text, val, len);
+		RES_STRING_STR_LEN(res) = strlen(val);
+	}
+	res->exprType = newSimpType(T_STRING, r);
 }
 /**
  * convert int value to Res
@@ -327,7 +331,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             var->type = strdup(INT_MS_T);
             break;
         case T_STRING: /* string */
-            var->inOutStruct = strdup(res->text);
+            var->inOutStruct = res->text == NULL? NULL : strdup(res->text);
             var->type = strdup(STR_MS_T);
             break;
         case T_DATETIME: /* date time */
@@ -513,6 +517,8 @@ int updateMsParamArrayToEnvAndFreeNonIRODSType(msParamArray_t *var, Env *env, rE
 /************* Res to String *********************/
 char* convertResToString(Res *res0) {
     char *res;
+    char *type;
+    int j;
 	switch (getNodeType(res0)) {
 
 	case N_ERROR:
@@ -539,7 +545,8 @@ char* convertResToString(Res *res0) {
                 return res;
             case T_IRODS:
                 res = (char *)malloc(sizeof(char)*1024);
-				if(strcmp(res0->exprType->text, KeyValPair_MS_T)==0) {
+                type = res0->exprType->text;
+				if(strcmp(type, KeyValPair_MS_T)==0) {
 					keyValPair_t *kvp = (keyValPair_t *) RES_UNINTER_STRUCT(res0);
 					snprintf(res, 1024, "KeyValue[%d]:", kvp->len);
 					int i;
@@ -547,10 +554,44 @@ char* convertResToString(Res *res0) {
 						snprintf(res + strlen(res), 1024 - strlen(res), "%s=%s;", kvp->keyWord[i],kvp->value[i]);
 					}
 
+				} else if (strcmp(type, BUF_LEN_MS_T) == 0 ) {
+				    snprintf(res + strlen(res), 1024 - strlen(res),"%d",*(int*)res0->param->inOutStruct);
+				} else if (strcmp(type, DataObjInp_MS_T) == 0) {
+				    dataObjInp_t dataObjInp, *myDataObjInp;
+				    j = parseMspForDataObjInp (res0->param, &dataObjInp, &myDataObjInp, 0);
+				    if (j < 0)
+				    	snprintf(res + strlen(res), 1024 - strlen(res), "<error>");
+				    else
+				    	snprintf(res + strlen(res), 1024 - strlen(res), "%s",(char *) myDataObjInp->objPath);
+				} else if (strcmp(type, CollInp_MS_T ) == 0) {
+				    collInp_t collCreateInp, *myCollCreateInp;
+				    j = parseMspForCollInp (res0->param, &collCreateInp, &myCollCreateInp, 0);
+				    if (j < 0)
+				    	snprintf(res + strlen(res), 1024 - strlen(res), "<error>");
+				    else
+				    	snprintf(res + strlen(res), 1024 - strlen(res), "%s", myCollCreateInp->collName);
+				} else if (strcmp(type,  DataObjCopyInp_MS_T) == 0) {
+				    dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
+				    j = parseMspForDataObjCopyInp (res0->param, &dataObjCopyInp, &myDataObjCopyInp);
+				    if (j < 0)
+				    	snprintf(res + strlen(res), 1024 - strlen(res), "<error>");
+				    else
+				    	snprintf (res + strlen(res), 1024 - strlen(res), "COPY(%s,%s)",
+				    			myDataObjCopyInp->srcDataObjInp.objPath, myDataObjCopyInp->destDataObjInp.objPath);
+				} else if (strcmp(type,  DataObjReadInp_MS_T) == 0
+					   || strcmp(type, DataObjCloseInp_MS_T) == 0
+					   || strcmp(type, DataObjWriteInp_MS_T) == 0 ) {
+				    openedDataObjInp_t  *myDataObjReadInp;
+				    myDataObjReadInp = (openedDataObjInp_t  *) res0->param->inOutStruct;
+				    snprintf (res + strlen(res), 1024 - strlen(res), "OPEN(%d)",myDataObjReadInp->len);
+				} else if (strcmp(type, ExecCmd_MS_T  ) == 0) {
+				      execCmd_t *execCmd;
+				      execCmd = (execCmd_t *)  res0->param->inOutStruct;
+				      snprintf(res + strlen(res), 1024 - strlen(res), "%s", execCmd->cmd);
 				} else {
 					snprintf(res, 1024, "<value>");
 				}
-			return res;
+				return res;
             case T_BOOL:
                 res = strdup(RES_BOOL_VAL(res0)?"true":"false");
                 return res;
