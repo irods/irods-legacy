@@ -23,10 +23,10 @@ ExprType *getFullyBoundedVar(Region *r);
  * return 0 to len-1 index of the parameter with type error
  *        -1 success
  */
-int typeParameters(ExprType** paramTypes, int len, Node** subtrees, Env* funcDesc, Hashtable *symbol_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
+int typeParameters(ExprType** paramTypes, int len, Node** subtrees, int dynamictyping, Env* funcDesc, Hashtable *symbol_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
 	int i;
 	for(i=0;i<len;i++) {
-		paramTypes[i] = dereference(typeExpression3(subtrees[i], funcDesc, symbol_type_table, typingConstraints, errmsg, errnode, r), symbol_type_table, r);
+		paramTypes[i] = dereference(typeExpression3(subtrees[i], dynamictyping, funcDesc, symbol_type_table, typingConstraints, errmsg, errnode, r), symbol_type_table, r);
 		if(getNodeType(paramTypes[i]) == T_ERROR) {
 			return i;
 		}
@@ -599,7 +599,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
     return ret;
 }
 
-ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
+ExprType* typeFunction3(Node* node, int dynamictyping, Env* funcDesc, Hashtable* var_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
     /*printTree(node, 0); */
     int i;
     char *localErrorMsg;
@@ -633,9 +633,9 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
             collType = newCollType(elemType, r);
         }
         arg->subtrees[0]->exprType = collType;
-        res3 = typeExpression3(arg->subtrees[1],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
+        res3 = typeExpression3(arg->subtrees[1], dynamictyping, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
         RE_ERROR2(getNodeType(res3) == T_ERROR, "foreach loop type error");
-        res3 = typeExpression3(arg->subtrees[2],funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
+        res3 = typeExpression3(arg->subtrees[2], dynamictyping, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
         RE_ERROR2(getNodeType(res3) == T_ERROR, "foreach recovery type error");
         setIOType(arg->subtrees[0], IO_TYPE_EXPRESSION);
         for(i = 1;i<3;i++) {
@@ -650,10 +650,10 @@ ExprType* typeFunction3(Node* node, Env* funcDesc, Hashtable* var_type_table, Li
         updateInHashTable(var_type_table, varname, collType); /* restore type of collection variable */
         return res3;
     } else {
-    	ExprType *fnType = typeExpression3(fn, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
+    	ExprType *fnType = typeExpression3(fn, dynamictyping, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
     	if(getNodeType(fnType) == T_ERROR) return fnType;
     	N_TUPLE_CONSTRUCT_TUPLE(arg) = 1; /* arg must be a N_TUPLE node */
-		ExprType *argType = typeExpression3(arg, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
+		ExprType *argType = typeExpression3(arg, dynamictyping, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
 		if(getNodeType(argType) == T_ERROR) return argType;
 
 		ExprType *fType = getNodeType(fnType) == T_CONS && strcmp(fnType->text, FUNC) == 0 ? fnType : unifyWith(fnType, newFuncType(newTVar(r), newTVar(r), r), var_type_table, r);
@@ -771,12 +771,75 @@ int typeFuncParam(Node *param, Node *paramType, Node *formalParamType, Hashtable
             return 0;
 }
 
-ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
+ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
     ExprType *res;
     ExprType **components;
     ExprType* t = NULL;
 	int i;
 	expr->option |= OPTION_TYPED;
+	if(dynamictyping) {
+		switch(getNodeType(expr)) {
+		case TK_TEXT:
+			if(strcmp(expr->text,"nop")==0) {
+				return expr->exprType = newFuncType(newTupleType(0, NULL, r), newSimpType(T_INT, r), r);
+			} else {
+				/* not a variable, evaluate as a function */
+				FunctionDesc *fDesc;
+
+				if(funcDesc != NULL && (fDesc = (FunctionDesc*)lookupFromEnv(funcDesc, expr->text))!=NULL && fDesc->exprType!=NULL) {
+					return expr->exprType = dupType(fDesc->exprType, r);
+				} else {
+					ExprType *paramType = newSimpType(T_DYNAMIC, r);
+					setIOType(paramType, IO_TYPE_DYNAMIC);
+					ExprType *fType = newFuncType(newUnaryType(T_TUPLE, paramType, r), newSimpType(T_DYNAMIC, r), r);
+					setVararg(fType, OPTION_VARARG_STAR);
+					return expr->exprType = fType;
+				}
+			}
+		case N_TUPLE:
+			components = (ExprType **) region_alloc(r, sizeof(ExprType *) * expr->degree);
+			for(i=0;i<expr->degree;i++) {
+				components[i] = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+				if(getNodeType(components[i]) == T_ERROR) {
+					return expr->exprType = components[i];
+				}
+			}
+			if(N_TUPLE_CONSTRUCT_TUPLE(expr) || expr->degree != 1) {
+				return expr->exprType = newTupleType(expr->degree, components, r);
+			} else {
+				return expr->exprType = components[0];
+			}
+
+		case N_APPLICATION:
+			/* try to type as a function */
+			/* the exprType is used to store the type of the return value */
+			return expr->exprType = typeFunction3(expr, dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+		case N_ACTIONS:
+			if(expr->degree == 0) {
+				/* type of empty action sequence == T_INT */
+				return expr->exprType = newSimpType(T_INT, r);
+			}
+			for(i=0;i<expr->degree;i++) {
+				/*printf("typing action in actions"); */
+				res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+				/*printVarTypeEnvToStdOut(varTypes); */
+				if(getNodeType(res) == T_ERROR) {
+					return expr->exprType = res;
+				}
+			}
+			return expr->exprType = res;
+		case N_ACTIONS_RECOVERY:
+			res = typeExpression3(expr->subtrees[0], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+			if(getNodeType(res) == T_ERROR) {
+				return expr->exprType = res;
+			}
+			res = typeExpression3(expr->subtrees[1], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+			return expr->exprType = res;
+		default:
+			return expr->exprType = newSimpType(T_DYNAMIC, r);
+
+		}
+	} else {
 	switch(getNodeType(expr)) {
 		case TK_INT:
             return expr->exprType = newSimpType(T_INT,r);
@@ -812,7 +875,7 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
         case N_TUPLE:
             components = (ExprType **) region_alloc(r, sizeof(ExprType *) * expr->degree);
             for(i=0;i<expr->degree;i++) {
-                components[i] = typeExpression3(expr->subtrees[i], funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+                components[i] = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
                 if(getNodeType(components[i]) == T_ERROR) {
                 	return expr->exprType = components[i];
                 }
@@ -826,7 +889,7 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
 		case N_APPLICATION:
 			/* try to type as a function */
 			/* the exprType is used to store the type of the return value */
-			return expr->exprType = typeFunction3(expr, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+			return expr->exprType = typeFunction3(expr, dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
 		case N_ACTIONS:
 			if(expr->degree == 0) {
 				/* type of empty action sequence == T_INT */
@@ -834,7 +897,7 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
 			}
 			for(i=0;i<expr->degree;i++) {
 				/*printf("typing action in actions"); */
-				res = typeExpression3(expr->subtrees[i], funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+				res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
 				/*printVarTypeEnvToStdOut(varTypes); */
 				if(getNodeType(res) == T_ERROR) {
 					return expr->exprType = res;
@@ -842,11 +905,11 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
 			}
 			return expr->exprType = res;
 		case N_ACTIONS_RECOVERY:
-			res = typeExpression3(expr->subtrees[0], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+			res = typeExpression3(expr->subtrees[0], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
 			if(getNodeType(res) == T_ERROR) {
 				return expr->exprType = res;
 			}
-			res = typeExpression3(expr->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+			res = typeExpression3(expr->subtrees[1], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
 			return expr->exprType = res;
         default:
 			break;
@@ -857,6 +920,7 @@ ExprType* typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *
 	generateErrMsg(errbuf0, NODE_EXPR_POS(expr), expr->base, errbuf);
     addRErrorMsg(errmsg, -1, errbuf);
 	return expr->exprType = newSimpType(T_ERROR,r);
+	}
 }
 /*
  * This process is based on a few assumptions:

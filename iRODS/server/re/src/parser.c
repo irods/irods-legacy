@@ -44,7 +44,7 @@ Op new_ops[num_ops] = {
 PARSER_FUNC_PROTO2(Term, int rulegen, int prec);
 PARSER_FUNC_PROTO2(Actions, int rulegen, int backwardCompatible);
 PARSER_FUNC_PROTO1(Value, int rulegen);
-PARSER_FUNC_PROTO(StringExpression);
+PARSER_FUNC_PROTO1(StringExpression, Token *tk);
 PARSER_FUNC_PROTO(RuleName);
 PARSER_FUNC_PROTO(TermBackwardCompatible);
 PARSER_FUNC_PROTO1(TermSystemBackwardCompatible, int lev);
@@ -304,6 +304,15 @@ void pushback(Pointer *e, Token *token, ParserContext *context) {
         return;
     }
 	DEC_MOD(context->tqp, 1024);
+}
+
+void syncTokenQueue(Pointer *e, ParserContext *context) {
+	if(context->tqp == context->tqtop) {
+		return;
+	}
+	Token *nextToken = &context->tokenQueue[context->tqp];
+	seekInFile(e, nextToken->exprloc);
+	context->tqtop = context->tqp;
 }
 
 int eol(char ch) {
@@ -750,7 +759,11 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
         TTEXT(",");
         NT2(Term, 0, MIN_PREC);
         TTEXT(")");
-        BUILD_APP_NODE("assign", &start, 2);
+        if(level == 1) {
+        	BUILD_APP_NODE("assignStr", &start, 2);
+        } else {
+            BUILD_APP_NODE("assign", &start, 2);
+        }
     OR(func)
         TTEXT("forExec");
         TTEXT("(");
@@ -812,13 +825,25 @@ PARSER_FUNC_END(ValueBackwardCompatible)
 
 
 PARSER_FUNC_BEGIN(ActionArgumentBackwardCompatible)
+	int rulegen = 0;
 	Token strtoken;
-    nextActionArgumentStringBackwardCompatible(e, &strtoken);
-    if(strtoken.type != TK_STRING) {
-        BUILD_NODE(N_ERROR, "reached the end of stream while parsing an action argument", FPOS,0,0);
-    } else {
-        NT(StringExpression);
-    }
+    TRY(var)
+    	Label vpos = *FPOS;
+    	TTYPE(TK_LOCAL_VAR);
+    	char *vn = cpStringExt(token->text, context->region);
+    	TTEXT2(",", ")");
+    	PUSHBACK;
+    	BUILD_NODE(TK_VAR, vn, &vpos, 0, 0);
+	OR(var)
+    	syncTokenQueue(e, context);
+
+		nextActionArgumentStringBackwardCompatible(e, &strtoken);
+		if(strtoken.type != TK_STRING) {
+			BUILD_NODE(N_ERROR, "reached the end of stream while parsing an action argument", FPOS,0,0);
+		} else {
+			NT1(StringExpression, &strtoken);
+		}
+    END_TRY(var)
 PARSER_FUNC_END(ActionArgumentBackwardCompatible)
 
 PARSER_FUNC_BEGIN2(Term, int rulegen, int prec)
@@ -871,10 +896,15 @@ PARSER_FUNC_BEGIN2(Term, int rulegen, int prec)
     }
 PARSER_FUNC_END(Term)
 
-PARSER_FUNC_BEGIN(StringExpression)
+PARSER_FUNC_BEGIN1(StringExpression, Token *tk)
     int rulegen = 0;
-    TTYPE(TK_STRING);
-    Token *strToken = token;
+	Token *strToken = NULL;
+	if(tk == NULL) {
+		TTYPE(TK_STRING);
+		strToken = token;
+	} else {
+		strToken = tk;
+	}
     int i = 0, k = 0;
     pos.base = e->base;
     long startLoc = strToken->exprloc;
@@ -899,7 +929,7 @@ PARSER_FUNC_BEGIN(StringExpression)
         st[noi]=ve;
         noi++;
     }
-    char sbuf[MAX_COND_LEN];
+    char sbuf[MAX_RULE_LEN];
     char delim[1];
     delim[0] = '\0';
     strncpy(sbuf, str+st[0], end[0]-st[0]);
@@ -1181,7 +1211,7 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         TTYPE(TK_DOUBLE);
         BUILD_NODE(TK_DOUBLE, token->text, &start, 0, 0);
     OR(value)
-        NT(StringExpression);
+        NT1(StringExpression, NULL);
     END_TRY(value)
 PARSER_FUNC_END(Value)
 
@@ -1255,6 +1285,36 @@ int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char 
                         }
                         mode -= 2;
 		}
+		ch = nextChar(e);
+		value ++;
+	}
+	return -1;
+}
+int nextStringParsed(Pointer *e, char *value, char* deliml, char *delimr, char *delim, int consumeDelim, int vars[]) {
+	int mode=0; /* level */
+	int nov = 0;
+	char* value0=value;
+	char ch = lookAhead(e, 0);
+	while(ch!=-1) {
+		*value = ch;
+        if(strchr(deliml, ch)!=NULL) {
+        	mode ++;
+        } else if(mode > 0 && strchr(delimr, ch)!=NULL) {
+			mode --;
+		} else if(mode == 0 && strchr(delim, ch)) {
+            if(consumeDelim) {
+                value[1]='\0';
+                trimquotes(value0);
+                nextChar(e);
+            } else {
+                value[0]='\0';
+            }
+            vars[nov] = -1;
+            return nov;
+        } else if((ch =='*' || ch=='$') &&
+                isalpha(lookAhead(e, 1))) {
+            vars[nov++] = value - value0 - 1;
+        }
 		ch = nextChar(e);
 		value ++;
 	}
@@ -2293,7 +2353,7 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
             nextStringBase(e, token->text, "\'", 1, '\\', token->vars);
             skipWhitespace(e);
         } else {
-            nextStringBase(e, token->text, ",)", 0, '\\', token->vars);
+            nextStringParsed(e, token->text, "(", ")", ",)", 0, token->vars);
             /* remove trailing ws */
             int l0;
             l0 = strlen(token->text);
@@ -2678,7 +2738,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 	pushRule(ruleSet, newRuleDesc(RK_UNPARSED, nodes[0], r));
                 } else */ if(strcmp(node->text, "INDUCT") == 0) {
                     int k;
-                    pushRule(ruleSet, newRuleDesc(RK_DATA, nodes[0], r));
+                    pushRule(ruleSet, newRuleDesc(RK_DATA, nodes[0], 0, r));
                     for(k=1;k<n;k++) {
                         if(lookupFromEnv(funcDescIndex, nodes[k]->subtrees[0]->text)!=NULL) {
                             generateErrMsg("parseRuleSet: redefinition of constructor.", NODE_EXPR_POS(nodes[k]->subtrees[0]), nodes[k]->subtrees[0]->base, errbuf);
@@ -2686,7 +2746,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                             return -1;
                         }
                         insertIntoHashTable(funcDescIndex->current, nodes[k]->subtrees[0]->text, newConstructorFD2(nodes[k]->subtrees[1], r));
-                        pushRule(ruleSet, newRuleDesc(RK_CONSTRUCTOR, nodes[k], r));
+                        pushRule(ruleSet, newRuleDesc(RK_CONSTRUCTOR, nodes[k], 0, r));
                     }
                 } else if(strcmp(node->text, "CONSTR") == 0) {
 					if(lookupFromEnv(funcDescIndex, nodes[0]->subtrees[0]->text)!=NULL) {
@@ -2695,7 +2755,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
 						return -1;
 					}
 					insertIntoHashTable(funcDescIndex->current, nodes[0]->subtrees[0]->text, newConstructorFD2(nodes[0]->subtrees[1], r));
-					pushRule(ruleSet, newRuleDesc(RK_CONSTRUCTOR, nodes[0], r));
+					pushRule(ruleSet, newRuleDesc(RK_CONSTRUCTOR, nodes[0], 0, r));
                 } else if(strcmp(node->text, "EXTERN") == 0) {
                 	FunctionDesc *fd;
 					if((fd = (FunctionDesc *) lookupFromEnv(funcDescIndex, nodes[0]->subtrees[0]->text))!=NULL) {
@@ -2704,17 +2764,20 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
 						return -1;
 					}
 					insertIntoHashTable(funcDescIndex->current, nodes[0]->subtrees[0]->text, newExternalFD(nodes[0]->subtrees[1], r));
-					pushRule(ruleSet,  newRuleDesc(RK_EXTERN, nodes[0], r));
+					pushRule(ruleSet,  newRuleDesc(RK_EXTERN, nodes[0], 0, r));
                 } else {
+                	int notyping;
                     if(strcmp(node->text, "REL")==0) {
                         rk = RK_REL;
+                        notyping = backwardCompatible;
                     } else if(strcmp(node->text, "FUNC")==0) {
                         rk = RK_FUNC;
+                        notyping = 0;
                     }
                     int k;
                     for(k=0;k<n;k++) {
                         Node *node = nodes[k];
-                        pushRule(ruleSet, newRuleDesc(rk, node, r));
+                        pushRule(ruleSet, newRuleDesc(rk, node, notyping, r));
             /*        printf("%s\n", node->subtrees[0]->text);
                     printTree(node, 0); */
                     }

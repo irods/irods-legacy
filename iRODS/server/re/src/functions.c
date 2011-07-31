@@ -267,6 +267,9 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
     Res *res = newRes(r);
     char* varName = ((Node *)subtrees[0])->text;
         Res* orig = evaluateVar3(varName, ((Node *)subtrees[0]), rei, reiSaveFlag, env, errmsg, r);
+        if(getNodeType(orig) == N_ERROR) {
+                	return orig;
+        }
         if(TYPE(orig) != T_CONS &&
            (TYPE(orig) != T_IRODS || (
                 strcmp(orig->exprType->text, StrArray_MS_T) != 0 &&
@@ -681,6 +684,7 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		}
                 return res;
 }
+
 Res *smsi_double(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
                 char errbuf[ERR_MSG_LEN];
                 Res *val = params[0], *res = newRes(r);
@@ -1673,6 +1677,20 @@ Res *smsi_getstderr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
     return ret;
 }
 
+Res *smsi_assignStr(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res *val = evaluateExpression3((Node *)subtrees[1], 0, 1, rei, reiSaveFlag,  env, errmsg,r);
+    if(getNodeType(val) == N_ERROR) {
+        return val;
+    }
+    if(TYPE(val) == T_INT || TYPE(val) == T_DOUBLE || TYPE(val) == T_BOOL) {
+    	CASCADE_N_ERROR(val = smsi_str(&val, 1, node, rei, reiSaveFlag, env, errmsg, r));
+    }
+    Res *ret = matchPattern(subtrees[0], val, env, rei, reiSaveFlag, errmsg, r);
+
+    return ret;
+
+}
+
 /* utilities */
 int fileConcatenate(char *file1, char *file2, char *file3) {
 	char buf[1024];
@@ -1778,6 +1796,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "succeed", newFunctionFD("->integer", smsi_succeed, r));
     insertIntoHashTable(ft, "fail", newFunctionFD("integer ?->integer", smsi_fail, r));
     insertIntoHashTable(ft, "assign", newFunctionFD("e 0 * e f 0->integer", smsi_assign, r));
+    insertIntoHashTable(ft, "assignStr", newFunctionFD("e ? * e ?->integer", smsi_assignStr, r));
     insertIntoHashTable(ft, "lmsg", newFunctionFD("string->integer", smsi_lmsg, r));
     insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
     insertIntoHashTable(ft, "listcorerules", newFunctionFD("->list string", smsi_listcorerules, r));

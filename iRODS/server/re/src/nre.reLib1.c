@@ -600,6 +600,9 @@ initRuleStruct(int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, c
   appRuleStrct.MaxNumOfRules = 0;
   GlobalAllRuleExecFlag = 0;
 
+  if(processType == RULE_ENGINE_INIT_CACHE) {
+    resetMutex(NULL);
+  }   
   while (strlen(r2) > 0) {
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
     if (i == 0)

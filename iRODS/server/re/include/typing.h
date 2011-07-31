@@ -13,7 +13,7 @@ typedef enum satisfiability {
     TAUTOLOGY = 1, CONTINGENCY = 2, ABSURDITY = 4
 } Satisfiability;
 
-ExprType * typeExpression3(Node *expr, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t* errmsg, Node **errnode, Region *r);
+ExprType * typeExpression3(Node *expr, int notyping, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t* errmsg, Node **errnode, Region *r);
 int typeFuncParam(Node *param, Node *paramType, Node *formalParamType, Hashtable *var_type_table, List *typingConstraints, rError_t *errmsg, Region *r);
 void postProcessActions(Node *expr, Env *systemFunctionTables, rError_t *errmsg, Node **errnode, Region *r);
 void postProcessCoercion(Node *expr, Hashtable *varTypes, rError_t* errmsg, Node **errnode, Region *r);

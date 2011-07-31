@@ -350,13 +350,14 @@ FunctionDesc *newRuleIndexListFD(RuleIndexList *ruleIndexList, ExprType *type, R
     return desc;
 }
 
-RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r) {
+RuleDesc *newRuleDesc(RuleType rk, Node *n, int dynamictyping, Region *r) {
     RuleDesc *rd = (RuleDesc *) region_alloc(r, sizeof(RuleDesc));
     memset(rd, 0, sizeof(RuleDesc));
     rd->id = -1;
     rd->node = n;
     rd->type = NULL;
     rd->ruleType = rk;
+    rd->dynamictyping = dynamictyping;
     return rd;
 }
 

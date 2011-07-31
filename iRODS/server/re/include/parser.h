@@ -365,6 +365,8 @@ void clearBuffer(Pointer *p);
 void seekInFile(Pointer *p, unsigned long x);
 void nextChars(Pointer *p, int len);
 
+void syncTokenQueue(Pointer *e, ParserContext *context);
+
 int dupLine(Pointer *p, Label * start, int n, char *buf);
 int dupString(Pointer *p, Label * start, int n, char *buf);
 

@@ -232,7 +232,7 @@ error:
 
 /* parse and compute a rule */
 int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
-	if(overflow(rule, MAX_COND_LEN)) {
+	if(overflow(rule, MAX_RULE_LEN)) {
 		addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
 		return BUFFER_OVERFLOW;
 	}
@@ -303,13 +303,13 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     int recclearDelayed = ruleEngineConfig.clearDelayed;
     ruleEngineConfig.clearDelayed = 0;
 
-    if(overflow(actionName, MAX_COND_LEN)) {
+    if(overflow(actionName, MAX_NAME_LEN)) {
             addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
             return newErrorRes(r, BUFFER_OVERFLOW);
     }
     int k;
     for(k=0;k<paramsCount;k++) {
-        if(overflow(params[k], MAX_COND_LEN)) {
+        if(overflow(params[k], MAX_RULE_LEN)) {
             addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
             return newErrorRes(r, BUFFER_OVERFLOW);
         }
@@ -360,12 +360,13 @@ ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typ
 			addRErrorMsg(errmsg, -1, ERR_MSG_SEP);
             char buf[ERR_MSG_LEN];
             Node *node = rule->node;
+            int dynamictyping = rule->dynamictyping;
 #if 0
             int arity = RULE_NODE_NUM_PARAMS(node); /* subtrees[0] = param list */
             Node *type = node->subtrees[0]->subtrees[1]; /* subtrees[1] = return type */
 #endif
 
-            ExprType *resType = typeExpression3(node->subtrees[1], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+            ExprType *resType = typeExpression3(node->subtrees[1], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             /*printf("Type %d\n",resType->t); */
             RE_ERROR(getNodeType(resType) == T_ERROR);
             if(getNodeType(resType) != T_BOOL && getNodeType(resType) != T_VAR && getNodeType(resType) != T_DYNAMIC) {
@@ -376,9 +377,9 @@ ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typ
                 addRErrorMsg(errmsg, TYPE_ERROR, buf);
                 RE_ERROR(1);
             }
-            resType = typeExpression3(node->subtrees[2], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+            resType = typeExpression3(node->subtrees[2], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             RE_ERROR(getNodeType(resType) == T_ERROR);
-            resType = typeExpression3(node->subtrees[3], funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
+            resType = typeExpression3(node->subtrees[3], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
             RE_ERROR(getNodeType(resType) == T_ERROR);
             /* printVarTypeEnvToStdOut(varTypes); */
             RE_ERROR(solveConstraints(typingConstraints, varTypes, errmsg, errnode, r) == ABSURDITY);
@@ -487,7 +488,7 @@ Res* computeNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rEr
     if((node->option & OPTION_TYPED) == 0) {
         /*printTree(node, 0); */
         List *typingConstraints = newList(r);
-        resType = typeExpression3(node, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
+        resType = typeExpression3(node, 0, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
         if(getNodeType(resType) == T_ERROR) {
             addRErrorMsg(errmsg, -1, "type error: in rule");
@@ -533,7 +534,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
     snprintf(buf, 1024, "parseAndComputeExpression: %s\n", expr);
     writeToTmp("entry.log", buf);
 #endif
-    if(overflow(expr, MAX_COND_LEN)) {
+    if(overflow(expr, MAX_RULE_LEN)) {
             addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
             return newErrorRes(r, BUFFER_OVERFLOW);
     }

@@ -38,6 +38,7 @@ RE_STRUCT_BEGIN(RuleDesc)
   	MK_VAL(RuleType, ruleType)
   	MK_PTR(Node, node)
   	MK_PTR(Node, type)
+	MK_VAL(int, dynamictyping)
 RE_STRUCT_END(RuleDesc)
 
 RE_STRUCT_BEGIN(RuleSet)

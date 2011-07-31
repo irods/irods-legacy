@@ -777,7 +777,7 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
 {
 	char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
 	char buf2[ERR_MSG_LEN];
-	char action[MAX_COND_LEN];
+	char action[MAX_NAME_LEN];
 	strcpy(action, actionName);
 	mapExternalFuncToInternalProc2(action);
 
@@ -1038,7 +1038,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
     int  inited = 0;
     ruleExecInfo_t  *saveRei;
     int reTryWithoutRecovery = 0;
-    char ruleName[MAX_COND_LEN];
+    char ruleName[MAX_NAME_LEN];
     int applyAllRule = applyAllRuleInp | GlobalAllRuleExecFlag;
 
     #ifdef DEBUG
@@ -1253,7 +1253,10 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
     char errbuf[ERR_MSG_LEN];
     char *localErrorMsg = NULL;
     Node *p = pattern, *v = val;
-    if(getNodeType(pattern) == N_APPLICATION) {
+    Res *res;
+    char *varName;
+    switch (getNodeType(pattern)) {
+    case N_APPLICATION:
         char matcherName[MAX_NAME_LEN];
         matcherName[0]='~';
         strcpy(matcherName+1, pattern->subtrees[0]->text);
@@ -1272,10 +1275,10 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 			memcpy(tupleComp, v->subtrees, sizeof(Res *) * v->degree);
 			v = newTupleRes(v->degree, tupleComp ,r);
         }
-		Res *res = matchPattern(p->subtrees[1], v, env, rei, reiSaveFlag, errmsg, r);
+		res = matchPattern(p->subtrees[1], v, env, rei, reiSaveFlag, errmsg, r);
         return res;
-    } else if(getNodeType(pattern) == TK_VAR) {
-        char *varName = pattern->text;
+    case TK_VAR:
+        varName = pattern->text;
         if(lookupFromEnv(env, varName)==NULL) {
             /* new variable */
             if(insertIntoHashTable(env->current, varName, val) == 0) {
@@ -1288,7 +1291,7 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
         }
         return newIntRes(r, 0);
 
-    } else if (getNodeType(pattern) == N_TUPLE) {
+    case N_TUPLE:
     	RE_ERROR2(getNodeType(v) != N_TUPLE, "pattern mismatch value is not a tuple.");
     	RE_ERROR2(p->degree != v->degree, "pattern mismatch arity");
 		int i;
@@ -1299,8 +1302,31 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 			}
 		}
 		return newIntRes(r, 0);
+    case TK_STRING:
+    	RE_ERROR2(getNodeType(v) != N_VAL || TYPE(v) != T_STRING, "pattern mismatch value is not a string.");
+    	RE_ERROR2(strcmp(pattern->text, v->text)!=0 , "pattern mismatch string.");
+		return newIntRes(r, 0);
+    case TK_BOOL:
+    	RE_ERROR2(getNodeType(v) != N_VAL || TYPE(v) != T_BOOL, "pattern mismatch value is not a boolean.");
+    	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
+    	CASCADE_N_ERROR(res);
+    	RE_ERROR2(RES_BOOL_VAL(res) != RES_BOOL_VAL(v) , "pattern mismatch boolean.");
+		return newIntRes(r, 0);
+    case TK_INT:
+    	RE_ERROR2(getNodeType(v) != N_VAL || (TYPE(v) != T_INT && TYPE(v) != T_DOUBLE), "pattern mismatch value is not an integer.");
+    	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
+    	CASCADE_N_ERROR(res);
+    	RE_ERROR2(RES_INT_VAL(res) != (TYPE(v) == T_INT ? RES_INT_VAL(v) : RES_DOUBLE_VAL(v)) , "pattern mismatch integer.");
+		return newIntRes(r, 0);
+    case TK_DOUBLE:
+    	RE_ERROR2(getNodeType(v) != N_VAL || (TYPE(v) != T_DOUBLE && TYPE(v) != T_INT), "pattern mismatch value is not a double.");
+    	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
+    	CASCADE_N_ERROR(res);
+    	RE_ERROR2(RES_DOUBLE_VAL(res) != (TYPE(v) == T_DOUBLE ? RES_DOUBLE_VAL(v) : RES_INT_VAL(v)), "pattern mismatch integer.");
+		return newIntRes(r, 0);
+    default:
+    	RE_ERROR2(1, "malformatted pattern error");
     }
-    RE_ERROR2(1, "malformatted pattern error");
     error:
         generateErrMsg(localErrorMsg,NODE_EXPR_POS(pattern), pattern->base, errbuf);
         addRErrorMsg(errmsg, PATTERN_NOT_MATCHED, errbuf);

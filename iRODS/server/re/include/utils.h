@@ -21,6 +21,9 @@
 
 #define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }
 #define CASCADE_NULL(x) if((x)==NULL) return NULL;
+#define CASCADE_N_ERROR(x) {Res *ret = x; if(getNodeType(ret) == N_ERROR) { \
+        return ret; \
+    }}
 
 extern int tvarNumber;
 

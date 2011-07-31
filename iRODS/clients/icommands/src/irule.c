@@ -338,8 +338,21 @@ main(int argc, char **argv) {
 	    myargv[1] = saveFile;
 	    myargc = 2;
 	    myoptind = 0;
-	    snprintf(saveFile,MAX_NAME_LEN,"/tmp/tmpiruleFile.%i.%i.ir",
-	      (unsigned int) time(0),getpid());
+	    char *fileType = strrchr(myRodsArgs.fileString, '.');
+	    if(fileType == NULL) {
+	        printf (
+	          "Unsupported input file type\n");
+	        exit(10);
+
+	    }
+		int rulegen;
+		if(strcmp(fileType, ".r") == 0) {
+			rulegen = 1;
+		} else if(strcmp(fileType, ".ir") == 0 || strcmp(fileType, ".irb") == 0) {
+			rulegen = 0;
+		}
+	    snprintf(saveFile,MAX_NAME_LEN,"/tmp/tmpiruleFile.%i.%i.%s",
+	      (unsigned int) time(0),getpid(), rulegen?"r":"ir");
 	    status = parseCmdLinePath (myargc,myargv,myoptind,&myEnv,
 		       UNKNOWN_OBJ_T, UNKNOWN_FILE_T, 0, &rodsPathInp);
 	    status = getUtil (&conn, &myEnv, &myRodsArgs, &rodsPathInp);

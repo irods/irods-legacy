@@ -589,30 +589,30 @@ char* convertResToString(Res *res0) {
 
 /******************* print functions **********************/
 void printMsParamArray(msParamArray_t *msParamArray, char *buf2) {
-    char buf3[MAX_COND_LEN];
+    char buf3[MAX_NAME_LEN];
     sprintf(buf2, "len: %d\n", msParamArray->len);
     int i;
     for(i=0;i<msParamArray->len;i++) {
         msParam_t *mP = msParamArray->msParam[i];
-        if(i!=0)strncat(buf2, ",", MAX_COND_LEN);
-        strncat(buf2, mP->label, MAX_COND_LEN);
-        strncat(buf2, "=", MAX_COND_LEN);
+        if(i!=0)strncat(buf2, ",", MAX_NAME_LEN - strlen(buf2));
+        strncat(buf2, mP->label, MAX_NAME_LEN - strlen(buf2));
+        strncat(buf2, "=", MAX_NAME_LEN - strlen(buf2));
         if(mP->inOutStruct == NULL) {
-            strncat(buf2, "<null>", MAX_COND_LEN);
+            strncat(buf2, "<null>", MAX_NAME_LEN - strlen(buf2));
         } else {
             if (strcmp(mP->type, DOUBLE_MS_T) == 0) { /* if the parameter is an integer */
-                snprintf(buf3, MAX_COND_LEN, "%f:",*(double *)mP->inOutStruct);
+                snprintf(buf3, MAX_NAME_LEN, "%f:",*(double *)mP->inOutStruct);
             } else if (strcmp(mP->type, INT_MS_T) == 0) { /* if the parameter is an integer */
-                snprintf(buf3, MAX_COND_LEN, "%d:",*(int *)mP->inOutStruct);
+                snprintf(buf3, MAX_NAME_LEN, "%d:",*(int *)mP->inOutStruct);
             } else if (strcmp(mP->type, STR_MS_T) == 0) { /* if the parameter is a string */
-                snprintf(buf3, MAX_COND_LEN, "%s:",(char *)mP->inOutStruct);
+                snprintf(buf3, MAX_NAME_LEN, "%s:",(char *)mP->inOutStruct);
             } else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
-                snprintf(buf3, MAX_COND_LEN, "%ld:",*(time_t *)mP->inOutStruct);
+                snprintf(buf3, MAX_NAME_LEN, "%ld:",*(time_t *)mP->inOutStruct);
             } else {
-                snprintf(buf3, MAX_COND_LEN, "<value>:");
+                snprintf(buf3, MAX_NAME_LEN, "<value>:");
             }
-            strncat(buf2, buf3, MAX_COND_LEN);
-            strncat(buf2, mP->type, MAX_COND_LEN);
+            strncat(buf2, buf3, MAX_NAME_LEN - strlen(buf2));
+            strncat(buf2, mP->type, MAX_NAME_LEN - strlen(buf2));
         }
     }
     return;
@@ -627,16 +627,16 @@ void printHashtable(Hashtable *env, char* buf2) {
         struct bucket *b = env->buckets[i];
         while (b != NULL) {
             Res *res = (Res *) b->value;
-            if (k != 0)strncat(buf2, "\n", MAX_COND_LEN);
-            strncat(buf2, b->key, MAX_COND_LEN);
-            strncat(buf2, "=", MAX_COND_LEN);
+            if (k != 0)strncat(buf2, "\n", MAX_NAME_LEN - strlen(buf2));
+            strncat(buf2, b->key, MAX_NAME_LEN - strlen(buf2));
+            strncat(buf2, "=", MAX_NAME_LEN - strlen(buf2));
             if (res == NULL) {
-                strncat(buf2, "<null>", MAX_COND_LEN);
+                strncat(buf2, "<null>", MAX_NAME_LEN - strlen(buf2));
             } else {
                 char *buf4 = convertResToString(res);
-                strncat(buf2, buf4, MAX_COND_LEN);
-                strncat(buf2, ":", MAX_COND_LEN);
-                strncat(buf2, res->exprType == NULL? "<null>" : typeToString(res->exprType, NULL, typeNameBuf, 128), MAX_COND_LEN);
+                strncat(buf2, buf4, MAX_NAME_LEN - strlen(buf2));
+                strncat(buf2, ":", MAX_NAME_LEN - strlen(buf2));
+                strncat(buf2, res->exprType == NULL? "<null>" : typeToString(res->exprType, NULL, typeNameBuf, 128), MAX_NAME_LEN - strlen(buf2));
                 free(buf4);
             }
             k++;

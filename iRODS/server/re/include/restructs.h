@@ -243,6 +243,7 @@ typedef struct {
     Node *type;
     Node *node;
     RuleType ruleType;
+    int dynamictyping;
 } RuleDesc;
 
 typedef RuleDesc *RuleDescPtr;
@@ -327,6 +328,6 @@ Node *createStringNode(char *t, Label * exprloc, Region *r);
 Node *createErrorNode(char *error, Label * exprloc, Region *r);
 
 RuleSet *newRuleSet(Region *r);
-RuleDesc *newRuleDesc(RuleType rk, Node *n, Region *r);
+RuleDesc *newRuleDesc(RuleType rk, Node *n, int dynamictyping, Region *r);
 
 #endif

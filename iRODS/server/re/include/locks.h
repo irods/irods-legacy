@@ -1,11 +1,12 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef LOCKS_H
-#define LOCKS_H
+#ifndef RULEENGINELOCKS_H
+#define RULEENGINELOCKS_H
 #ifdef USE_BOOST
 #include <boost/interprocess/sync/named_mutex.hpp>
 #include <boost/interprocess/creation_tags.hpp>
+#include <boost/interprocess/exceptions.hpp>
 #else
 #include <semaphore.h>
 #include <sys/types.h>
@@ -22,5 +23,6 @@ typedef sem_t mutex_type;
 
 void unlockMutex(mutex_type **mutex);
 int lockMutex(mutex_type **mutex);
+void resetMutex(mutex_type **mutex);
 
 #endif
