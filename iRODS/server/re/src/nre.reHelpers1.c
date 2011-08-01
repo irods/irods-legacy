@@ -181,8 +181,11 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
     /* initialize reDebug stack space*/
     for (i = 0; i < REDEBUG_STACK_SIZE_FULL; i++) 
       reDebugStackFull[i] = NULL;
-    for (i = 0; i < REDEBUG_STACK_SIZE_CURR; i++)
-      reDebugStackCurr[i] = NULL;
+    for (i = 0; i < REDEBUG_STACK_SIZE_CURR; i++) {
+      reDebugStackCurr[i][0] = NULL;
+      reDebugStackCurr[i][1] = NULL;
+      reDebugStackCurr[i][2] = NULL;
+    }
     reDebugStackFullPtr = 0;
     reDebugStackCurrPtr = 0;
     snprintf(waitHdr,HEADER_TYPE_LEN - 1,   "idbug:");
@@ -361,38 +364,43 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
       wCnt = atoi(ptr);
 
     i = reDebugStackCurrPtr - 1;
-    while (wCnt > 0 && reDebugStackCurr[i] != NULL) {
-      snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
-      _writeXMsg(streamId,  myhdr, reDebugStackCurr[i] );
-      if (strstr(reDebugStackCurr[i] , "ApplyRule") != NULL)
-	iLevel++;
-      wCnt--;
-      i--;
-      if (i < 0) 
-	i = REDEBUG_STACK_SIZE_CURR - 1;
+    while (i >=0 && wCnt > 0 && reDebugStackCurr[i][0] != NULL) {
+    	if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL || strstr(reDebugStackCurr[i][0] , "ExecMicroSrvc") != NULL) {
+    		snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
+    		char *msg = (char *) malloc(strlen(reDebugStackCurr[i][0]) + strlen(reDebugStackCurr[i][1]) + strlen(reDebugStackCurr[i][2])+4);
+    		sprintf(msg, "%s:%s: %s", reDebugStackCurr[i][0], reDebugStackCurr[i][1], reDebugStackCurr[i][2]);
+    		_writeXMsg(streamId,  myhdr, msg);
+    		free(msg);
+    		if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL)
+    			iLevel++;
+    		wCnt--;
+    	}
+		i--;
     }
     return(REDEBUG_WAIT);
     break;
   case 'W': /* where are you now in FULL stack*/
-    wCnt = 20;
-    iLevel = 0;
-    ptr = (char *)(readmsg + 1);
-    trimWS(ptr);
-    if (strlen(ptr) > 0)
-      wCnt = atoi(ptr);
+	    wCnt = 20;
+	    iLevel = 0;
+	    ptr = (char *)(readmsg + 1);
+	    trimWS(ptr);
+	    if (strlen(ptr) > 0)
+	      wCnt = atoi(ptr);
 
-    i = reDebugStackFullPtr - 1;
-    while (wCnt > 0 && reDebugStackFull[i] != NULL) {
-      snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Step %4i",iLevel);
-      _writeXMsg(streamId,  myhdr, reDebugStackFull[i] );
-      iLevel++;
-      wCnt--;
-      i--;
-      if (i < 0) 
-	i = REDEBUG_STACK_SIZE_CURR - 1;
-    }
-    return(REDEBUG_WAIT);
-    break;
+	    i = reDebugStackCurrPtr - 1;
+	    while (i >=0 && wCnt > 0 && reDebugStackCurr[i][0] != NULL) {
+	    	snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
+	    	char *msg = (char *) malloc(strlen(reDebugStackCurr[i][0]) + strlen(reDebugStackCurr[i][1]) + strlen(reDebugStackCurr[i][2])+4);
+	    	sprintf(msg, "%s:%s: %s", reDebugStackCurr[i][0], reDebugStackCurr[i][1], reDebugStackCurr[i][2]);
+	    	_writeXMsg(streamId,  myhdr, msg);
+	    	free(msg);
+	    	if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL)
+	    		iLevel++;
+	    	wCnt--;
+	    	i--;
+	    }
+	    return(REDEBUG_WAIT);
+	    break;
   default:
     snprintf(mymsg, MAX_NAME_LEN, "Unknown Action: %s.", readmsg );
     _writeXMsg(streamId, myhdr, mymsg);
@@ -433,15 +441,15 @@ processBreakPoint(int streamId, int *msgNum, int *seqNum,
 
 
 int
-storeInStack(char *hdr, char* step)
+storeInStack(char *hdr, char *action, char* step)
 {
-  char *stackStr;
+  /* char *stackStr;
   char *stackStr2;
-  char *s;
+  char *s; */
   int i;
 
 
-  stackStr = (char *) malloc(strlen(hdr) + strlen(step) + 5);
+  /*stackStr = (char *) malloc(strlen(hdr) + strlen(step) + 5);
   sprintf(stackStr,"%s: %s\n", hdr, step);
 
 
@@ -455,41 +463,43 @@ storeInStack(char *hdr, char* step)
   if (reDebugStackFull[i] != NULL) {
     free(reDebugStackFull[i]);
     reDebugStackFull[i] = NULL;
-  }
+  }*/
 
-  if (strstr(hdr,"Done") == hdr) { /* Pop the stack */
-    s = (char *) hdr + 4;
-    i = reDebugStackCurrPtr - 1;
-    if (i < 0)
-      i = REDEBUG_STACK_SIZE_CURR - 1;
-    while (reDebugStackCurr[i] != NULL && strstr(reDebugStackCurr[i] , s) != reDebugStackCurr[i]) {
+  if (strcmp(action,"Done") == 0) { /* Pop the stack */
+      i = reDebugStackCurrPtr - 1;
+      /* if (i < 0)
+    	  i = REDEBUG_STACK_SIZE_CURR - 1; */
+      while (i >= 0 && reDebugStackCurr[i] != NULL && strcmp(reDebugStackCurr[i][0] , hdr) != 0) {
+    	  free(reDebugStackCurr[i][0]);
+    	  free(reDebugStackCurr[i][1]);
+    	  free(reDebugStackCurr[i][2]);
+    	  reDebugStackCurr[i][0] = NULL;
+    	  reDebugStackCurr[i][1] = NULL;
+    	  reDebugStackCurr[i][2] = NULL;
+    	  i = i - 1;
+    	  /*if (i < 0)
+    		  i = REDEBUG_STACK_SIZE_CURR - 1; */
+      }
+      /*if (reDebugStackCurr[i] != NULL) {
       free(reDebugStackCurr[i]);
       reDebugStackCurr[i] = NULL;
-      i = i - 1;
-      if (i < 0)
-	i = REDEBUG_STACK_SIZE_CURR - 1;
-    }
-    if (reDebugStackCurr[i] != NULL) {
-      free(reDebugStackCurr[i]);
-      reDebugStackCurr[i] = NULL;
-    }
-    reDebugStackCurrPtr = i;
-    return(0);
-  }
+      }*/
+      reDebugStackCurrPtr = i;
+      return(0);
+  } else {
 
-  stackStr2 = strdup(stackStr);
-  i = reDebugStackCurrPtr;
-  if (reDebugStackCurr[i] != NULL) {
-    free(reDebugStackCurr[i]);
+	  i = reDebugStackCurrPtr;
+	  /*if (reDebugStackCurr[i] != NULL) {
+		  free(reDebugStackCurr[i]);
+	  }*/
+	  if(i < REDEBUG_STACK_SIZE_CURR) {
+		  reDebugStackCurr[i][0] = strdup(hdr);
+		  reDebugStackCurr[i][1] = strdup(action);
+		  reDebugStackCurr[i][2] = strdup(step);
+		  reDebugStackCurrPtr = i + 1;
+	  }
+	  return(0);
   }
-  reDebugStackCurr[i] = stackStr2;
-  reDebugStackCurrPtr = (i + 1 ) % REDEBUG_STACK_SIZE_CURR;
-  i = reDebugStackCurrPtr;
-  if (reDebugStackCurr[i] != NULL) {
-    free(reDebugStackCurr[i]);
-    reDebugStackCurr[i] = NULL;
-  }
-  return(0);
 }
 
 
@@ -501,8 +511,12 @@ int cleanUpDebug(int streamId) {
   int i;
   for (i = 0 ; i < REDEBUG_STACK_SIZE_CURR; i++) {
     if (reDebugStackCurr[i] != NULL) {
-      free(reDebugStackCurr[i]);
-      reDebugStackCurr[i] = NULL;
+      free(reDebugStackCurr[i][0]);
+      free(reDebugStackCurr[i][1]);
+      free(reDebugStackCurr[i][2]);
+      reDebugStackCurr[i][0] = NULL;
+      reDebugStackCurr[i][1] = NULL;
+      reDebugStackCurr[i][2] = NULL;
     }
   }
   for (i = 0 ; i < REDEBUG_STACK_SIZE_FULL; i++) {
@@ -518,7 +532,7 @@ int cleanUpDebug(int streamId) {
 }
 
 int
-reDebug(char *callLabel, int flag, char *actionStr, Env *env, ruleExecInfo_t *rei)
+reDebug(char *callLabel, int flag, char *action, char *actionStr, Env *env, ruleExecInfo_t *rei)
 {
   int i, m, s, status, sleepT, j;
   int processedBreakPoint = 0;
@@ -596,13 +610,16 @@ reDebug(char *callLabel, int flag, char *actionStr, Env *env, ruleExecInfo_t *re
   /* Send current position for debugging */
   if ( GlobalREDebugFlag > 5 ) {
     if (curStat != REDEBUG_CONTINUE) {
-      snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
-      i = _writeXMsg(GlobalREDebugFlag, hdr, actionStr);
+    	char *buf = (char *)malloc(strlen(action)+strlen(actionStr)+2);
+    	sprintf(buf, "%s:%s", action, actionStr);
+    	snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
+    	i = _writeXMsg(GlobalREDebugFlag, hdr, buf);
+    	free(buf);
     }
   }
 
   /* store in stack */
-  storeInStack(callLabel, actionStr);
+  storeInStack(callLabel, action, actionStr);
 
   while ( GlobalREDebugFlag > 5 ) {
     s = sNum;

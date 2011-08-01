@@ -458,7 +458,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     writeToTmp("entry.log", "\n");
     #endif
     if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, inAction,NULL,rei);
+        reDebug("ApplyRule", -1, "", inAction,NULL,rei);
 
 	Region *r = make_region(0, NULL);
 
@@ -477,6 +477,8 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	}
 	ret = processReturnRes(res);
     region_free(r);
+    if (GlobalREAuditFlag > 0)
+        reDebug("ApplyRule", -1, "Done", inAction,NULL,rei);
 
     return ret;
 
@@ -501,9 +503,12 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     GlobalAllRuleExecFlag = allRuleExecFlag;
 
     if (GlobalREAuditFlag > 0)
-        reDebug("ApplyAllRules", -1, inAction,NULL,rei);
+        reDebug("ApplyAllRules", -1, "", inAction,NULL,rei);
 
     int ret = applyRule(inAction, inMsParamArray, rei, reiSaveFlag);
+    if (GlobalREAuditFlag > 0)
+        reDebug("ApplyAllRules", -1, "Done", inAction,NULL,rei);
+
     /* restore global flag */
     GlobalAllRuleExecFlag = tempFlag;
     return ret;
@@ -591,6 +596,9 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
 	    rodsLog (LOG_NOTICE,"+Executing MyRule for Action:%s\n",action);
     }
 #endif
+    if (GlobalREAuditFlag)
+        reDebug("ExecMyRule", -1, "", ruleDef,NULL,rei);
+
     char *outParamNames[MAX_PARAMS_LEN];
     int n = extractVarNames(outParamNames, outParamsDesc);
     appendOutputToInput(inMsParamArray, outParamNames, n);
@@ -601,6 +609,9 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
     if (status < 0) {
       rodsLog (LOG_NOTICE,"execMyRule %s Failed with status %i",ruleDef, status);
     }
+
+    if (GlobalREAuditFlag)
+        reDebug("ExecMyRule", -1, "Done", ruleDef,NULL,rei);
     return(status);
 }
 

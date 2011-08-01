@@ -320,7 +320,7 @@ int _writeXMsg(int streamId, char *hdr, char *msg);
 int _readXMsg(int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr, char **msg,char **user, char **addr);
 #ifdef RULE_ENGINE_N
 typedef struct env Env;
-int reDebug(char *callLabel, int flag, char *actionStr, Env *env, ruleExecInfo_t *rei);
+int reDebug(char *callLabel, int flag, char *action, char *actionStr, Env *env, ruleExecInfo_t *rei);
 #else
 int reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei);
 #endif

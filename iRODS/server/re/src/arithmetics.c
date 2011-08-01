@@ -592,7 +592,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 	if (GlobalREDebugFlag > 0) {
 		char tmpActStr[MAX_ACTION_SIZE];
 		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, fn, args, n);
-		reDebug("    ExecAction", -4, tmpActStr, env,rei);
+		reDebug("  ExecAction", -4, "", tmpActStr, env,rei);
     }
 
     if(fd!=NULL) {
@@ -619,6 +619,12 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
         }
     } else {
         res = execMicroService3(fn, args, n, node, nEnv, rei, errmsg, newRegion);
+    }
+
+	if (GlobalREDebugFlag > 0) {
+		char tmpActStr[MAX_ACTION_SIZE];
+		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, fn, args, n);
+		reDebug("  ExecAction", -4, "Done", tmpActStr, env,rei);
     }
 
     if(getNodeType(res)==N_ERROR) {
@@ -884,6 +890,11 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
             RETURN;
         }
 
+	if (GlobalREDebugFlag > 0) {
+		char tmpActStr[MAX_ACTION_SIZE];
+		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, msName, args, nargs);
+		reDebug("    ExecMicroSrvc", -4, "", tmpActStr, env,rei);
+	}
 
 	if (numOfStrArgs == 0)
 		ii = (*(int (*)(ruleExecInfo_t *))myFunc) (rei) ;
@@ -1112,7 +1123,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 				}
 
 				if (GlobalREDebugFlag > 0)
-					reDebug("  GotRule", ruleInx, ruleName, NULL, rei); /* pass in NULL for inMsParamArray for now */
+					reDebug("  GotRule", ruleInx, "", ruleName, NULL, rei); /* pass in NULL for inMsParamArray for now */
 		#ifndef DEBUG
 				if (reTestFlag > 0) {
 					if (reTestFlag == COMMAND_TEST_1)

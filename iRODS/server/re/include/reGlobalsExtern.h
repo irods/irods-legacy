@@ -157,7 +157,11 @@ extern int reLoopBackFlag;
 extern int GlobalREDebugFlag;
 extern int GlobalREAuditFlag;
 extern char *reDebugStackFull[REDEBUG_STACK_SIZE_FULL];
+#ifdef RULE_ENGINE_N
+extern char *reDebugStackCurr[REDEBUG_STACK_SIZE_CURR][3];
+#else
 extern char *reDebugStackCurr[REDEBUG_STACK_SIZE_CURR];
+#endif
 extern int reDebugStackFullPtr;
 extern int reDebugStackCurrPtr;
 
