@@ -2,8 +2,8 @@
  */
 
 
-#ifndef REDEFINITIONS_H
-#define REDEFINITIONS_H
+#ifndef RESTRUCTS_H
+#define RESTRUCTS_H
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -426,7 +426,21 @@ int computeExpression(char *inAction, msParamArray_t *inMsParamArray, ruleExecIn
 	snprintf(res, MAX_COND_LEN, "%s", res1);
 	free(res1);
 
-	ret = processReturnRes(res0);
+	if(getNodeType(res0) == N_ERROR) {
+		ret = RES_ERR_CODE(res0);
+	} else {
+		switch(TYPE(res0)) {
+        case T_INT:
+            ret = RES_INT_VAL(res0);
+            break;
+        case T_BOOL:
+        	ret = !RES_BOOL_VAL(res0);
+        	break;
+        default:
+            ret = 0; /* other types */
+            break;
+		}
+	}
     region_free(r);
 
     return ret;

@@ -931,7 +931,8 @@ int isPattern(Node *pattern) {
                 return 0;
         }
         return 1;
-    } else if(getNodeType(pattern) == TK_TEXT || getNodeType(pattern) == TK_VAR) {
+    } else if(getNodeType(pattern) == TK_TEXT || getNodeType(pattern) == TK_VAR || getNodeType(pattern) == TK_STRING
+   		 || getNodeType(pattern) == TK_BOOL || getNodeType(pattern) == TK_INT || getNodeType(pattern) == TK_DOUBLE) {
         return 1;
     } else {
         return 0;

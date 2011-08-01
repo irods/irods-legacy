@@ -224,7 +224,7 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
 	  return 0;
   }
 #ifdef RULE_ENGINE_N
-  return !computeExpression(condStr, &XMsgMsParamArray, NULL, 0, res);
+  return !(computeExpression(condStr, &XMsgMsParamArray, NULL, 0, res) == 0);
 #else
   int i = replaceMsParams(condStr, &XMsgMsParamArray);
   if(i!=0) {

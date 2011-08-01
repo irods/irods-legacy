@@ -207,17 +207,20 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
   char mymsg[MAX_NAME_LEN];
   char *outStr = NULL;
   char *ptr;
-  Res *mP;
+/*  Res *mP; */
   int i,n;
   int iLevel, wCnt;
-  int  ruleInx = -1;
-  char ruleCondition[MAX_RULE_LENGTH];
-  char ruleAction[MAX_RULE_LENGTH];
+  int  ruleInx = 0;
+  Region *r;
+  Res *res;
+  rError_t errmsg;
+  int found;
+/*  char ruleAction[MAX_RULE_LENGTH];
   char ruleRecovery[MAX_RULE_LENGTH];
   char ruleHead[MAX_ACTION_SIZE];
   char ruleBase[MAX_ACTION_SIZE];
   char *actionArray[MAX_ACTION_IN_RULE];
-  char *recoveryArray[MAX_ACTION_IN_RULE];
+  char *recoveryArray[MAX_ACTION_IN_RULE];*/
 
   snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
   cmd = readmsg[0];
@@ -250,50 +253,24 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
     return(REDEBUG_WAIT);
     break;
   case 'e': /* examine * and $ variables */
-  case 'p': /* print * and $ variables */
-    ptr = (char *)(readmsg + 1);
-    trimWS(ptr);
-    snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Printing %s\n",ptr);
-    if (*ptr == '*') {
-      mymsg[0] = '\n';
-      mymsg[1] = '\0';
-      if (rei != NULL  && rei->msParamArray != NULL ) {
-	if ((mP = (Res *)lookupFromEnv(env, ptr)) == NULL) {
-	  snprintf(mymsg, MAX_NAME_LEN - 1 , "Parameter %s not found\n",ptr);
-	  _writeXMsg(streamId, myhdr, mymsg);
-	}
-	else {
-	  char *res = convertResToString(mP);
-	  snprintf(mymsg, MAX_NAME_LEN, "%s", res);
-	  _writeXMsg(streamId, myhdr, mymsg);
-	}
-      }
-      else {
-        snprintf(mymsg, MAX_NAME_LEN, "MsParamArray is Empty\n");
-	_writeXMsg(streamId, myhdr, mymsg);
-      }
+  case 'p': /* print an expression */
+	    ptr = (char *)(readmsg + 1);
+	    trimWS(ptr);
+	    snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Printing %s\n",ptr);
+	    r = make_region(0, NULL);
+	    errmsg.len = 0;
+	    errmsg.errMsg = NULL;
+	    res = parseAndComputeExpression(ptr, env, rei, 0, &errmsg, r);
+	    outStr = convertResToString(res);
+    	snprintf(mymsg, MAX_NAME_LEN, "%s\n", outStr);
+    	free(outStr);
+	    if(getNodeType(res) == N_ERROR) {
+	    	errMsgToString(&errmsg, mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg));
+	    }
+    	freeRErrorContent(&errmsg);
+	    _writeXMsg(streamId, myhdr, mymsg);
 
       return(REDEBUG_WAIT);
-    }
-    else  if (*ptr == '$') {
-      ptr++;
-      i = getSessionVarValue ("", ptr, rei, &outStr);
-      if (outStr != NULL) {
-	snprintf(mymsg, MAX_NAME_LEN , "\nVariable $%s = %s\n", ptr, outStr);
-	free(outStr);
-      }
-      else {
-	snprintf(mymsg, MAX_NAME_LEN , "\nVariable $%s not found\n", ptr);
-      }
-      _writeXMsg(streamId, myhdr, mymsg);
-      return(REDEBUG_WAIT);
-    }
-    else {
-      snprintf(mymsg, MAX_NAME_LEN, "Unknown Parameter Type");
-      _writeXMsg(streamId, myhdr, mymsg);
-      return(REDEBUG_WAIT);
-    }
-    break;
   case 'l': /* list rule and * and $ variables */
     ptr = (char *)(readmsg + 1);
     trimWS(ptr);
@@ -301,18 +278,25 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
     if (*ptr == '*') {
       mymsg[0] = '\n';
       mymsg[1] = '\0';
-      if (rei != NULL  && rei->msParamArray != NULL ) {
-	
-	for (i = 0;  i < rei->msParamArray->len; i++) {
-	  if (rei->msParamArray->msParam[i]->type != NULL)
-	    snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "%s of type %s\n", 
-		     rei->msParamArray->msParam[i]->label, rei->msParamArray->msParam[i]->type);
-	  else
-	    snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "%s of type NULL \n", rei->msParamArray->msParam[i]->label);
-	}
+	  Env *cenv = env;
+	  found = 0;
+	  while(cenv!=NULL) {
+		  int n = cenv->current->len;
+		  int i;
+		  for(i = 0;i<n;i++) {
+			  Bucket *b = cenv->current->buckets[i];
+			  while(b!=NULL) {
+				  found = 1;
+				  char typeString[128];
+				  typeToString(((Res *)b->value)->exprType, NULL, typeString, 128);
+				  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "%s of type %s\n", b->key, typeString);
+				  b = b->next;
+			  }
+		  }
+		  cenv = cenv->previous;
       }
-      else {
-	snprintf(mymsg, MAX_NAME_LEN, "\n MsParamArray is Empty\n");
+      if (!found) {
+    	  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "<empty>\n");
       }
       _writeXMsg(streamId, myhdr, mymsg);
       return(REDEBUG_WAIT);
@@ -329,11 +313,10 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
     else if (*ptr == 'r') {
       ptr ++;
       trimWS(ptr);
-      mymsg[0] = '\n';
-      mymsg[1] = '\0';
-      snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s\n",ptr);
+      mymsg[0] = '\0';
+      snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",ptr);
       RuleIndexListNode *node;
-      int found = 0;
+      found = 0;
       while (findNextRule2 (ptr, ruleInx, &node) != NO_MORE_RULES_ERR) {
     	  found = 1;
     	  if(node->secondaryIndex) {
@@ -345,7 +328,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
     	    		  RuleDesc *rd = getRuleDesc(*(int *)b->value);
     	    		  char buf[MAX_RULE_LEN];
     	    		  ruleToString(buf, MAX_RULE_LEN, rd);
-    	    		  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "%i: %s\n%s\n", node->ruleIndex, rd->node->base, buf);
+    	    		  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "%i: %s\n%s\n", node->ruleIndex, rd->node->base[0] == 's'? "<source>":rd->node->base + 1, buf);
     	    		  b = b->next;
     			  }
     		  }
@@ -353,8 +336,9 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
     		  RuleDesc *rd = getRuleDesc(node->ruleIndex);
     		  char buf[MAX_RULE_LEN];
     		  ruleToString(buf, MAX_RULE_LEN, rd);
-    		  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "\n  %i: %s\n%s\n", node->ruleIndex, rd->node->base, buf);
+    		  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "\n  %i: %s\n%s\n", node->ruleIndex, rd->node->base[0] == 's'? "<source>":rd->node->base + 1, buf);
     	  }
+    	  ruleInx ++;
       }
       if (!found) {
     	  snprintf(mymsg, MAX_NAME_LEN,"Rule %s not found\n", ptr);

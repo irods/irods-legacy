@@ -269,8 +269,7 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
         Res* orig = evaluateVar3(varName, ((Node *)subtrees[0]), rei, reiSaveFlag, env, errmsg, r);
         if(getNodeType(orig) == N_ERROR) {
                 	return orig;
-        }
-        if(TYPE(orig) != T_CONS &&
+                }if(TYPE(orig) != T_CONS &&
            (TYPE(orig) != T_IRODS || (
                 strcmp(orig->exprType->text, StrArray_MS_T) != 0 &&
                 strcmp(orig->exprType->text, IntArray_MS_T) != 0 &&
