@@ -9,7 +9,7 @@
 #
 # This shell script runs the 'irodsctl' Perl script.
 #
-IRODS_HOME="/data1/sekar/iRODS/iRODS_Jun10/iRODS"
+IRODS_HOME=""
 
 if [ "$IRODS_HOME" = "" ]; then
 	# Try using the current directory
