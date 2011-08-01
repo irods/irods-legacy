@@ -101,20 +101,24 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
      */
     if(force || getIOType(expr) == IO_TYPE_INPUT ) {
 		switch(getNodeType(expr)) {
+			case TK_BOOL:
+				res->exprType = newSimpType(T_BOOL, r);
+				RES_BOOL_VAL_LVAL(res) = strcmp(expr->text, "true")==0?1:0;
+				break;
 			case TK_INT:
 				res->exprType = newSimpType(T_INT,r);
 				RES_INT_VAL_LVAL(res)=atoi(expr->text);
-							break;
+				break;
 			case TK_DOUBLE:
 				res->exprType = newSimpType(T_DOUBLE,r);
 				RES_DOUBLE_VAL_LVAL(res)=atof(expr->text);
-							break;
+				break;
 			case TK_STRING:
 				res = newStringRes(r, expr->text);
-							break;
+				break;
 			case TK_VAR:
-					res = evaluateVar3(expr->text, expr, rei, reiSaveFlag,  env, errmsg,r);
-					break;
+				res = evaluateVar3(expr->text, expr, rei, reiSaveFlag,  env, errmsg,r);
+				break;
 			case TK_TEXT:
 					fd = (FunctionDesc *)lookupFromEnv(ruleEngineConfig.extFuncDescIndex, expr->text);
 					if(fd!=NULL && fd->exprType != NULL) {

@@ -840,7 +840,9 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
 
 		}
 	} else {
-	switch(getNodeType(expr)) {
+		switch(getNodeType(expr)) {
+		case TK_BOOL:
+			return expr->exprType = newSimpType(T_BOOL, r);
 		case TK_INT:
             return expr->exprType = newSimpType(T_INT,r);
         case TK_DOUBLE:
@@ -913,13 +915,13 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
 			return expr->exprType = res;
         default:
 			break;
-	}
-	*errnode = expr;
-    char errbuf[ERR_MSG_LEN], errbuf0[ERR_MSG_LEN];
-	snprintf(errbuf0, ERR_MSG_LEN, "error: unsupported ast node %d", getNodeType(expr));
-	generateErrMsg(errbuf0, NODE_EXPR_POS(expr), expr->base, errbuf);
-    addRErrorMsg(errmsg, -1, errbuf);
-	return expr->exprType = newSimpType(T_ERROR,r);
+		}
+		*errnode = expr;
+		char errbuf[ERR_MSG_LEN], errbuf0[ERR_MSG_LEN];
+		snprintf(errbuf0, ERR_MSG_LEN, "error: unsupported ast node %d", getNodeType(expr));
+		generateErrMsg(errbuf0, NODE_EXPR_POS(expr), expr->base, errbuf);
+		addRErrorMsg(errmsg, -1, errbuf);
+		return expr->exprType = newSimpType(T_ERROR,r);
 	}
 }
 /*

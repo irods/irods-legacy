@@ -388,7 +388,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             rk = "FUNC";
 		END_TRY(ruleType);
         if(strcmp(rk, "FUNC")==0) {
-            BUILD_APP_NODE("true", FPOS, 0);
+            BUILD_NODE(TK_BOOL, "true", FPOS, 0, 0);
             NT(FuncExpr);
             NT(Metadata);
             OPTIONAL_BEGIN(semicolon)
@@ -430,7 +430,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
                     OR(rulePackUncond)
                         TTEXT("or");
                     END_TRY(rulePackUncond)
-                    BUILD_APP_NODE("true", FPOS, 0);
+                    BUILD_NODE(TK_BOOL, "true", FPOS, 0, 0);
                     TTEXT("{");
                     NT2(Actions, 1, 0);
                     TTEXT("}");
@@ -444,7 +444,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
                     DONE(rule);
                 OR(rulePack)
                     ABORT(numberOfRules != 0);
-                	BUILD_APP_NODE("true", FPOS, 0);
+                	BUILD_NODE(TK_BOOL, "true", FPOS, 0, 0);
                     NT2(Actions, 1, 0);
                     TTEXT("}");
                     NT(Metadata);
@@ -461,7 +461,7 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
             TRY(ruleCond)
                 /* empty condition */
                 TTEXT("|");
-            	BUILD_APP_NODE("true", &pos, 0);
+            	BUILD_NODE(TK_BOOL, "true", FPOS, 0, 0);
             OR(ruleCond)
                 NT2(Term, 0, MIN_PREC);
                 TTEXT("|");
@@ -965,6 +965,9 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
     OR(value)
         TTYPE(TK_SESSION_VAR);
         BUILD_NODE(TK_VAR, token->text, &pos,0,0);
+	OR(value)
+		TTEXT2("true", "false");
+		BUILD_NODE(TK_BOOL, token->text, &pos,0,0);
     OR(value)
         TTEXT("(");
         TRY(tuple)
@@ -1834,9 +1837,8 @@ void ruleToString(char *buf, int size, RuleDesc *rd) {
 			}
 
 			PRINT(p, s, "%s", " ");
-			if(getNodeType(subt) != N_APPLICATION ||
-					getNodeType(subt->subtrees[0]) != TK_TEXT ||
-					strcmp(subt->subtrees[0]->text, "true") != 0) {
+			if(getNodeType(subt) != TK_BOOL ||
+					strcmp(subt->text, "true") != 0) {
 				PRINT(p, s, "%s", "{\n");
 				indentToString(p, s, 1);
 				PRINT(p, s, "%s", "on ");

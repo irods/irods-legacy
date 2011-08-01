@@ -1800,8 +1800,8 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
     insertIntoHashTable(ft, "listcorerules", newFunctionFD("->list string", smsi_listcorerules, r));
     insertIntoHashTable(ft, "listapprules", newFunctionFD("->list string", smsi_listapprules, r));
-    insertIntoHashTable(ft, "true", newFunctionFD("boolean", smsi_true, r));
-    insertIntoHashTable(ft, "false", newFunctionFD("boolean", smsi_false, r));
+    /*insertIntoHashTable(ft, "true", newFunctionFD("boolean", smsi_true, r));
+    insertIntoHashTable(ft, "false", newFunctionFD("boolean", smsi_false, r));*/
     insertIntoHashTable(ft, "time", newFunctionFD("->time", smsi_time, r));
     insertIntoHashTable(ft, "timestr", newFunctionFD("time->string", smsi_timestr, r));
     insertIntoHashTable(ft, "str", newFunctionFD("?->string", smsi_str, r));
