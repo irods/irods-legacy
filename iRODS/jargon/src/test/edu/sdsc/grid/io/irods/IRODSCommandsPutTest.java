@@ -136,6 +136,34 @@ public class IRODSCommandsPutTest {
 		assertionHelper.assertIrodsFileOrCollectionExists(targetIrodsFile);
 	}
 
+	
+	/*
+	 * Bug [#385] createNewFile generates protocol header
+	 */
+	@Test
+	public void testCreateNewFileDdiExtension() throws Exception {
+		// generate a local scratch file
+		String testFileName = "testCreateNewFileDdiExtension.ddi";
+		
+		
+		String targetIrodsFile = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsFile);
+		irodsFile.createNewFile();
+
+		irodsFileSystem.close();
+
+		assertionHelper.assertIrodsFileOrCollectionExists(targetIrodsFile);
+	}
+
+	
+	
+	
 	@Test(expected = IRODSException.class)
 	public void testPutNoOverwriteFileInIRODS() throws Exception {
 		// generate a local scratch file
