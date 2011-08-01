@@ -11,6 +11,11 @@
 #
 IRODS_HOME=""
 
+if [ ! -e $IRODS_HOME ]; then
+	# If configured but not correct now, try logic below
+	IRODS_HOME=""
+fi
+
 if [ "$IRODS_HOME" = "" ]; then
 	# Try using the current directory
 	IRODS_HOME=`pwd`
