@@ -18,8 +18,8 @@
 #define MAX_IFUSE_DESC   512
 #define MAX_READ_CACHE_SIZE   (1024*1024)	/* 1 mb */
 #define MAX_NEWLY_CREATED_CACHE_SIZE   (4*1024*1024)	/* 4 mb */
-#define HIGH_NUM_CONN	3	/* high water mark */
-#define MAX_NUM_CONN	5
+#define HIGH_NUM_CONN	5	/* high water mark */
+#define MAX_NUM_CONN	10
 #define NUM_NEWLY_CREATED_SLOT	5
 #define MAX_NEWLY_CREATED_TIME	5	/* in sec */
 
