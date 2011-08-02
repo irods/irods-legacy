@@ -12,12 +12,12 @@
  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "H5Ipublic.h"
 #include "h5Attribute.h"
 #include "h5Dataset.h"
 #include "h5File.h"
 #include "h5Group.h"
 #include <assert.h>
-#include <malloc.h>
 #include <stdio.h>
 
 /* Reclaim the memory space set by malloc during the server operation */

@@ -4,7 +4,6 @@
 #include "h5Object.h"
 #include "h5Group.h"
 #include "h5String.h"
-#include <malloc.h>
 #include <assert.h>
 
 int clH5Group_read_attribute(rcComm_t *conn, H5Group* ing)

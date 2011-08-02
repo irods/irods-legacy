@@ -15,7 +15,7 @@
 
 #include "h5File.h"
 #include "hdf5.h"
-#include <malloc.h>
+#include "h5Dataset.h"
 #include <assert.h>
 
 /* retrieve the file structure and store it in the root group */
@@ -247,7 +247,7 @@ int H5File_depth_first(H5Group* parent)
             g->objID[1] = objno1[i];
             g->parent = parent;
             /* break the loop */
-            if (!H5File_has_loop(g, g->objID))
+            if (!H5File_has_loop(g, (const long unsigned int*)g->objID))
                 ret_value = H5File_depth_first( g );
             gidx++;
         } else if (obj_type == H5G_DATASET)

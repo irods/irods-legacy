@@ -14,9 +14,9 @@
 # Set hdf5Dir to the top-level directory of the
 # hdf5 installation.
 # hdf5Dir is the hdf5 install directory
-hdf5Dir = /data/mwan/hdf5/hdf5-1.8.0/hdf5
+hdf5Dir = /Users/antoine/workspace/hdf5-1.8.0/hdf5
 # szlibDir=/home/srb/ext_lib/szip
-# zlibDir=/home/srb/ext_lib/zlib
+zlibDir= /opt/local
 
 ifndef buildDir
 buildDir = $(CURDIR)/../..

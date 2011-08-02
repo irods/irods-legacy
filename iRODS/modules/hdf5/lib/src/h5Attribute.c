@@ -18,7 +18,6 @@
 #include "h5String.h"
 #include "hdf5.h"
 #include <assert.h>
-#include <malloc.h>
 
 int H5Attribute_value_to_string(H5Attribute *a, hid_t tid, hid_t sid);
 
@@ -200,7 +199,7 @@ int H5Attribute_value_to_string(H5Attribute *a, hid_t tid, hid_t sid)
     vp = (unsigned char *)a->value;
     a->value = (char **)malloc(a->space.npoints*sizeof(char *));
     assert(a->value);
-    strs = a->value;
+    strs = (char**)a->value;
 
     offset = 0;
     tsize = H5Tget_size(tid);

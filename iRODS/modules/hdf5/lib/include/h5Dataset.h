@@ -84,6 +84,7 @@ void H5Dataset_freeBuffer(void *value, H5Dataspace space, H5Datatype type,
 int nvalue);
 
 /* Define operation functions needed and implemented only on the server side */
+int H5Dataset_init(H5Dataset *d);
 int H5Dataset_create(H5Dataset* d);
 int H5Dataset_delete(H5Dataset* d);
 int H5Dataset_write(H5Dataset* d);

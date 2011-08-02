@@ -13,10 +13,11 @@
  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "h5File.h"
 #include "h5Group.h"
 #include "hdf5.h"
 #include <assert.h>
-#include <malloc.h>
+
 
 
 /*------------------------------------------------------------------------------

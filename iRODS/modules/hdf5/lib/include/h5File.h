@@ -83,6 +83,7 @@ void H5File_dtor(H5File* f);
 int H5File_open(H5File* inf, H5File *outf);
 int H5File_close(H5File* f, H5File *outf);
 int H5File_create(H5File* f);
+int H5File_read_attribute(hid_t loc_id, H5Attribute *attrs);
 
 /* definition for flag in clH5File_open */
 #define LOCAL_H5_OPEN	0x1	/* open the H5File at the server locally */

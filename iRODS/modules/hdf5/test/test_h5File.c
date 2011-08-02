@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 #include <time.h>
 
 #define PRINT_ALL 1
@@ -119,7 +118,7 @@ int main(int argc, char* argv[])
     for (i=0; i<f->root->ndatasets; i++)
     {
         d = (H5Dataset *) &f->root->datasets[i];
-        d->type.order =get_machine_endian();
+        d->type.order = (H5Datatype_order_t)get_machine_endian();
     } 
 
 #ifdef PRINT_ALL
@@ -170,7 +169,7 @@ int main(int argc, char* argv[])
 
        time_t t2=time(NULL);
        printf("HDF5 time on read: %d seconds\n", d->time);
-       printf("Total time on read: %d seconds\n", t2-t1);
+       printf("Total time on read: %ld seconds\n", t2-t1);
 
 /* .... d goes to the client */
         print_dataset(d);
@@ -331,7 +330,7 @@ int print_dataset(const H5Dataset *d)
                     else if (d->type.size == 4)
                         printf("%u\t", *((unsigned int*)(pv+i*4)));
                     else if (d->type.size == 8)
-                        printf("%u\t", *((unsigned long long*)(pv+i*8)));
+                        printf("%llu\t", *((unsigned long long*)(pv+i*8)));
                 }
                 else 
                 {
@@ -342,7 +341,7 @@ int print_dataset(const H5Dataset *d)
                     else if (d->type.size == 4)
                         printf("%d\t", *((int*)(pv+i*4)));
                     else if (d->type.size == 8)
-                        printf("%d\t", *((long long*)(pv+i*8)));
+                        printf("%lld\t", *((long long*)(pv+i*8)));
                 }
             } else if (d->type.tclass == H5DATATYPE_FLOAT)
             {
@@ -408,7 +407,7 @@ int print_attribute(const H5Attribute *a)
                     else if (a->type.size == 4)
                         printf("%u\t", *((unsigned int*)(pv+i*4)));
                     else if (a->type.size == 8)
-                        printf("%u\t", *((unsigned long long*)(pv+i*8)));
+                        printf("%llu\t", *((unsigned long long*)(pv+i*8)));
                 }
                 else
                 {
@@ -419,7 +418,7 @@ int print_attribute(const H5Attribute *a)
                     else if (a->type.size == 4)
                         printf("%d\t", *((int*)(pv+i*4)));
                     else if (a->type.size == 8)
-                        printf("%d\t", *((long long*)(pv+i*8)));
+                        printf("%lld\t", *((long long*)(pv+i*8)));
                 }
             } else if (a->type.tclass == H5DATATYPE_FLOAT)
             {

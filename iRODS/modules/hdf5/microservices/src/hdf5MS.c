@@ -19,6 +19,7 @@
 
 #include "hdf5MS.h"
 #include "objMetaOpr.h"
+#include "dataObjOpr.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
 
@@ -71,7 +72,7 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
     int inpFlag;
     int l1descInx;
     dataObjInp_t dataObjInp;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *dataObjInfo, *tmpDataObjInfo;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
@@ -96,11 +97,11 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
     }
 
     if (strcmp (inpH5FileParam->type, h5File_MS_T) == 0) {
-        inf = inpH5FileParam->inOutStruct;
+        inf = (H5File*)inpH5FileParam->inOutStruct;
     } else {
         rei->status = USER_PARAM_TYPE_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiH5File_open: input rei or rsComm is NULL");
+          "msiH5File_open: inpH5FileParam must be h5File_MS_T");
         return (rei->status);
     }     
 
@@ -158,7 +159,7 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
     }
 
     if (remoteFlag == LOCAL_HOST) {
-	outf = malloc (sizeof (H5File));
+	outf = (H5File*)malloc (sizeof (H5File));
         /* replace iRODS file with local file */
         if (inf->filename != NULL) {
             free (inf->filename);
@@ -243,7 +244,7 @@ ruleExecInfo_t *rei)
     rsComm_t *rsComm;
     H5File *inf = 0;
     H5File *outf;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *dataObjInfo;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
@@ -267,7 +268,7 @@ ruleExecInfo_t *rei)
     }
 
     if (strcmp (inpH5FileParam->type, h5File_MS_T) == 0) {
-        inf = inpH5FileParam->inOutStruct;
+        inf = (H5File*)inpH5FileParam->inOutStruct;
     } else {
         rei->status = USER_PARAM_TYPE_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -291,7 +292,7 @@ ruleExecInfo_t *rei)
       &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        outf = malloc (sizeof (H5File));
+        outf = (H5File*)malloc (sizeof (H5File));
 	/* switch the fid */
 	inf->fid = L1desc[l1descInx].l3descInx;
         rei->status = H5File_close (inf, outf);
@@ -387,7 +388,7 @@ ruleExecInfo_t *rei)
     }
 
     if (strcmp (inpH5DatasetParam->type, h5Dataset_MS_T) == 0) {
-        ind = inpH5DatasetParam->inOutStruct;
+        ind = (H5Dataset*)inpH5DatasetParam->inOutStruct;
     } else {
         rei->status = USER_PARAM_TYPE_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -410,7 +411,7 @@ ruleExecInfo_t *rei)
       &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-	outd = malloc (sizeof (H5Dataset));
+	outd = (H5Dataset*)malloc (sizeof (H5Dataset));
 #if 0
         /* switch the fid */
         ind->fid = L1desc[l1descInx].l3descInx;
@@ -499,7 +500,7 @@ msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5Datas
     }
 
     if (strcmp (inpH5DatasetParam->type, h5Dataset_MS_T) == 0) {
-        ind = inpH5DatasetParam->inOutStruct;
+        ind = (H5Dataset*)inpH5DatasetParam->inOutStruct;
     } else {
         rei->status = USER_PARAM_TYPE_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -522,7 +523,7 @@ msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5Datas
       &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-	outd = malloc (sizeof (H5Dataset));
+	outd = (H5Dataset*)malloc (sizeof (H5Dataset));
 #if 0
         /* switch the fid */
         ind->fid = L1desc[l1descInx].l3descInx;
@@ -616,7 +617,7 @@ msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
     if (strcmp (inpH5GroupParam->type, h5Dataset_MS_T) == 0) {
 #endif
     if (strcmp (inpH5GroupParam->type, h5Group_MS_T) == 0) {
-        ing = inpH5GroupParam->inOutStruct;
+        ing = (H5Group*)inpH5GroupParam->inOutStruct;
     } else {
         rei->status = USER_PARAM_TYPE_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -640,7 +641,7 @@ msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
       &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-	outg = malloc (sizeof (H5Group));
+	outg = (H5Group*)malloc (sizeof (H5Group));
 #if 0
         /* switch the fid */
         ing->fid = L1desc[l1descInx].l3descInx;

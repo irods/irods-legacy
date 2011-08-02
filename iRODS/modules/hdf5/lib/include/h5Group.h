@@ -19,6 +19,7 @@
 
 /* defines the basic structure for H5Group object */
 
+#include "H5Ipublic.h"
 #include "h5Dataset.h"
 #include "h5Object.h"
 

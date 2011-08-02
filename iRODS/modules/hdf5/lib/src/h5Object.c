@@ -32,6 +32,12 @@ typedef struct H5E_t {
 H5E_t  H5E_stack_g[1];
 #define H5E_get_my_stack()	(H5E_stack_g+0)
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Get the description of the current major error */
 const char* getMajorError()
 {
@@ -44,7 +50,7 @@ const char* getMinorError()
     return H5Eget_minor(getMinorErrorNumber());
 }
 
-int getMajorErrorNumber()
+H5E_major_t getMajorErrorNumber()
 {
     H5E_t	*estack = H5E_get_my_stack ();
     H5E_error_t *err_desc;
@@ -54,10 +60,10 @@ int getMajorErrorNumber()
         err_desc = estack->slot+0;
         maj_num = err_desc->maj_num;
     }
-    return (int) maj_num;
+    return maj_num;
 }
 
-int getMinorErrorNumber()
+H5E_minor_t getMinorErrorNumber()
 {
     H5E_t	*estack = H5E_get_my_stack ();
     H5E_error_t *err_desc;
@@ -67,7 +73,7 @@ int getMinorErrorNumber()
         err_desc = estack->slot+0;
         min_num = err_desc->min_num;
     }
-    return (int) min_num;
+    return min_num;
 }
 
 

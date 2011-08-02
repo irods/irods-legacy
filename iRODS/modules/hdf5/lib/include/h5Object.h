@@ -13,6 +13,8 @@
  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "H5Epublic.h"
+
 #ifndef _H5OBJECT_H
 #define _H5OBJECT_H
 
@@ -83,8 +85,8 @@ extern "C" {
 
 const char* getMajorError(void);
 const char* getMinorError(void);
-int getMinorErrorNumber(void);
-int getMajorErrorNumber(void);
+H5E_minor_t getMinorErrorNumber(void);
+H5E_major_t getMajorErrorNumber(void);
 
 #ifdef __cplusplus
 }

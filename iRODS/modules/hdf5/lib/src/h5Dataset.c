@@ -13,11 +13,11 @@
  * access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "h5File.h"
 #include "h5Dataset.h"
 #include "h5Object.h"
 #include "h5String.h"
 #include "hdf5.h"
-#include <malloc.h>
 #include <assert.h>
 #include <stdio.h>
 #include <time.h>
@@ -330,7 +330,7 @@ int H5Dataset_value_to_string(H5Dataset *d, hid_t tid, hid_t sid)
     vp = (unsigned char *)d->value;
     d->value = (char **)malloc(d->space.npoints*sizeof(char *));
     assert(d->value);
-    strs = d->value;
+    strs = (char**)d->value;
 
     offset = 0;
     tsize = H5Tget_size(tid);
@@ -486,7 +486,7 @@ void  H5Dataset_readPalette(H5Dataset *d, hid_t did)
             attr->value = (unsigned char *)malloc(3*256); 
             memset(attr->value, 0, 768);
             attr->nvalue = 768;
-            attr->name = malloc(20); 
+            attr->name = (char*)malloc(20);
             strcpy(attr->name, PALETTE_VALUE);
             H5Dread( pal_id, tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, attr->value);
         }

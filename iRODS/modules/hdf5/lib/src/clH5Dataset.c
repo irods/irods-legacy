@@ -3,7 +3,6 @@
 #include "h5Dataset.h"
 #include "h5Object.h"
 #include "h5String.h"
-#include <malloc.h>
 #include <assert.h>
 
 /*------------------------------------------------------------------------------

@@ -22,7 +22,6 @@
 #include "h5File.h"
 #include "h5Group.h"
 #include "h5Dataset.h"
-#include <malloc.h>
 #include <assert.h>
 
 #ifdef __cplusplus

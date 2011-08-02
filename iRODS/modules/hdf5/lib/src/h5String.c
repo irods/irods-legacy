@@ -15,9 +15,9 @@
 
 #include "h5String.h"
 #include "hdf5.h"
-#include <malloc.h>
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 /** allocate a new str with given length */
 void h5str_new(h5str_t *str, size_t len)
@@ -160,21 +160,21 @@ int h5str_sprintf(h5str_t *str, hid_t tid, void *ptr, const char* compound_delim
     } else if (H5Tequal(tid, H5T_NATIVE_LONG)) {
         this_str = (char*)malloc(23);
         memcpy(&tmp_long, ptr, sizeof(long));
-        sprintf(this_str, "%d", tmp_long);
+        sprintf(this_str, "%ld", tmp_long);
     } else if (H5Tequal(tid, H5T_NATIVE_ULONG))
     {
         this_str = (char*)malloc(23);
         memcpy(&tmp_ulong, ptr, sizeof(unsigned long));
-        sprintf(this_str, "%u", tmp_ulong);
+        sprintf(this_str, "%lu", tmp_ulong);
     } else if (H5Tequal(tid, H5T_NATIVE_LLONG)) {
         this_str = (char*)malloc(23);
         memcpy(&tmp_long_long, ptr, sizeof(long long));
-        sprintf(this_str, "%d", tmp_long_long);
+        sprintf(this_str, "%lld", tmp_long_long);
     } else if (H5Tequal(tid, H5T_NATIVE_ULLONG))
     {
         this_str = (char*)malloc(23);
         memcpy(&tmp_ulong_long, ptr, sizeof(unsigned long long));
-        sprintf(this_str, "%u", tmp_ulong_long);
+        sprintf(this_str, "%llu", tmp_ulong_long);
     } else if (H5Tequal(tid, H5T_NATIVE_FLOAT))
     {
         this_str = (char*)malloc(25);
@@ -187,7 +187,7 @@ int h5str_sprintf(h5str_t *str, hid_t tid, void *ptr, const char* compound_delim
     } else if (H5Tequal(tid, H5T_NATIVE_LDOUBLE)) {
         this_str = (char*)malloc(25);
         memcpy(&tmp_long_double, ptr, sizeof(long double));
-        sprintf(this_str, "%f", tmp_long_double);
+        sprintf(this_str, "%Lf", tmp_long_double);
     } else if (tclass == H5T_STRING)
     {
         char *tmp_str;

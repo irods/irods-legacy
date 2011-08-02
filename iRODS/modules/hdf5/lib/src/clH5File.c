@@ -1,7 +1,6 @@
 /* clH5File.c
  */
 #include "h5File.h"
-#include <malloc.h>
 #include <assert.h>
 
 /*------------------------------------------------------------------------------
@@ -81,7 +80,7 @@ int _clH5File_open(rcComm_t *conn, H5File* inf,  H5File** outf, int flag)
         *outf = (H5File*) outMsParam->inOutStruct;
         clearMsParamArray (outParamArray, 0);
         /* XXXX free outParamArray */
-        free (outParamArray);
+    //    free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);

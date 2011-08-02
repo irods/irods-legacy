@@ -60,6 +60,7 @@ void H5Attribute_ctor(H5Attribute *a);
 void H5Attribute_dtor(H5Attribute* a);
 
 /* Define operation functions needed and implemented only on the server side */
+int H5Attribute_init(H5Attribute *a, hid_t aid);
 int H5Attribute_create(H5Attribute* a);
 int H5Attribute_delete(H5Attribute* a);
 int H5Attribute_write(H5Attribute* a);
