@@ -12,6 +12,7 @@
  */
 
 #include "msoDriversMS.h"
+#include <strings.h>
 
 extern int rsDataObjWrite (rsComm_t *rsComm, 
 			   openedDataObjInp_t *dataObjWriteInp,

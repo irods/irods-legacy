@@ -14,6 +14,7 @@
 
 #include "rodsClient.h"
 #include "msoDriversMS.h"
+#include <strings.h>
 
 int
 connectToRemoteiRODS(char * inStr, rcComm_t **rcComm)
