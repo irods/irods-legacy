@@ -7,7 +7,6 @@ rcDataObjFsync (rcComm_t *conn, openedDataObjInp_t *dataObjFsyncInp)
    rodsLog (LOG_NOTICE, "rcDataObjFsync calling procApiRequest");
    status = procApiRequest (conn, DATA_OBJ_FSYNC_AN, dataObjFsyncInp, NULL,
                             NULL, NULL);
-   rodsLog (LOG_NOTICE, "rcDataObjFsync done");
 
    return (status);
 }
