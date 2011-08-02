@@ -320,6 +320,8 @@ int processUserInput(char *buf)
   case ' ':
     break;
   case 'n': /* next */
+  case 's': /* step in */
+  case 'f': /* step out */
   case 'd': /* discontinue. stop now */
   case 'w': /* where */
   case 'W': /* where */
@@ -332,12 +334,11 @@ int processUserInput(char *buf)
   case 'e': /* print *,$ parameters */
   case 'p': /* print *,$ parameters */
   case 'l': /* list  $ * variables*/
-    if (buf[1] == ' ') {
+    if (strchr(buf, ' ') == NULL) {
+    	fprintf(stderr,"Error: Unknown Option\n");
+    } else {
       localStatus = 1;
       sendIDebugCommand(buf,hdr);
-    }
-    else {
-      fprintf(stderr,"Error: Unknown Option\n");
     }
     break;
   case 'q': /* quit debugging */

@@ -548,9 +548,9 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
     rulegen = isRuleGenSyntax(expr);
 
     if(rulegen) {
-    	node = parseTermRuleGen(e, rulegen, pc, errmsg, r);
+    	node = parseTermRuleGen(e, rulegen, pc);
     } else {
-    	node= parseActionsRuleGen(e, rulegen, pc, errmsg, r);
+    	node= parseActionsRuleGen(e, rulegen, pc);
     }
     if(node==NULL) {
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");

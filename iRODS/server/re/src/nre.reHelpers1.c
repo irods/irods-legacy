@@ -2,10 +2,21 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "reHelpers1.h"
-#include "index.h"
 
-char *breakPoints[100];
+#include "index.h"
+#include "parser.h"
+#include "filesystem.h"
+#include "configuration.h"
+
+struct Breakpoint {
+	char *actionName;
+	char *base;
+	rodsLong_t start;
+	rodsLong_t finish; /* exclusive */
+} breakPoints[100];
+
 int breakPointsInx = 0;
+
 char myHostName[MAX_NAME_LEN];
 char waitHdr[HEADER_TYPE_LEN];
 char waitMsg[MAX_NAME_LEN];
@@ -186,6 +197,8 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
       reDebugStackCurr[i][1] = NULL;
       reDebugStackCurr[i][2] = NULL;
     }
+    memset(breakPoints, 0, sizeof(struct Breakpoint) * 100);
+
     reDebugStackFullPtr = 0;
     reDebugStackCurrPtr = 0;
     snprintf(waitHdr,HEADER_TYPE_LEN - 1,   "idbug:");
@@ -201,219 +214,348 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
 
 int processXMsg(int streamId, int *msgNum, int *seqNum, 
 		char * readhdr, char *readmsg, 
-		char *callLabel, int flag, char *hdr, char *actionStr, char *seActionStr,
+		char *callLabel, Node *node,
 		Env *env, int curStat, ruleExecInfo_t *rei)
 {
 
-  char cmd;
   char myhdr[HEADER_TYPE_LEN];
   char mymsg[MAX_NAME_LEN];
   char *outStr = NULL;
   char *ptr;
-/*  Res *mP; */
   int i,n;
   int iLevel, wCnt;
   int  ruleInx = 0;
   Region *r;
-  Res *res;
-  rError_t errmsg;
-  int found;
-/*  char ruleAction[MAX_RULE_LENGTH];
-  char ruleRecovery[MAX_RULE_LENGTH];
-  char ruleHead[MAX_ACTION_SIZE];
-  char ruleBase[MAX_ACTION_SIZE];
-  char *actionArray[MAX_ACTION_IN_RULE];
-  char *recoveryArray[MAX_ACTION_IN_RULE];*/
+    Res *res;
+    rError_t errmsg;
+	errmsg.len = 0;
+	errmsg.errMsg = NULL;
+	r = make_region(0, NULL);
+	ParserContext *context = newParserContext(&errmsg, r);
+	Pointer *e = newPointer2(readmsg);
+	int rulegen = 1;
+    int found;
+    int graf, grdf;
+    int cmd;
+    snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
+    PARSER_BEGIN(DbgCmd)
+		TRY(DbgCmd)
+			TTEXT2("n", "next");
+			cmd = REDEBUG_STEP_OVER;
+		OR(DbgCmd)
+			TTEXT2("s", "step");
+			cmd = REDEBUG_NEXT;
+		OR(DbgCmd)
+			TTEXT2("f", "finish");
+			cmd = REDEBUG_STEP_OUT;
+		OR(DbgCmd)
+			TTEXT2("b", "break");
+			TRY(Param)
+				TTYPE(TK_TEXT);
+				char *fn = strdup(token->text);
+				int breakPointsInx2;
+				for(breakPointsInx2=0;breakPointsInx2<100;breakPointsInx2++) {
+					if(breakPoints[breakPointsInx2].actionName == NULL) {
+						break;
+					}
+				}
+				if(breakPointsInx2 == 100) {
+					_writeXMsg(streamId, myhdr, "Maximum Breakpoint Count reached. Breakpoint not set\n");
+					cmd = REDEBUG_WAIT;
+				} else {
+				breakPoints[breakPointsInx2].actionName = fn;
+				ptr = NULL;
+				TRY(loc)
+					TTYPE(TK_TEXT);
+					ptr = strdup(token->text);
+					TTEXT(":");
+					TTYPE(TK_INT);
+					breakPoints[breakPointsInx2].base = ptr;
+					rodsLong_t range[2];
+					char rulesFileName[MAX_NAME_LEN];
+					getRuleBasePath(ptr, rulesFileName);
 
-  snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
-  cmd = readmsg[0];
+					FILE *file;
+					/* char errbuf[ERR_MSG_LEN]; */
+					file = fopen(rulesFileName, "r");
+					if (file == NULL) {
+							return(RULES_FILE_READ_ERROR);
+					}
+					Pointer *p = newPointer(file, ptr);
 
-  switch(cmd) {
-  case 'n': /* next */
-    return(REDEBUG_NEXT);
-    break;
-  case 'd': /* discontinue. stop now */
-    return(REDEBUG_WAIT);
-    break;
-  case 'c': /* continue */
-    return(REDEBUG_CONTINUE);
-    break;
-  case 'C': /* continue */
-    return(REDEBUG_CONTINUE_VERBOSE);
-    break;
-  case 'b': /* break point */
-    if (breakPointsInx == 99) {
-      _writeXMsg(streamId, myhdr, "Maximum Breakpoint Count reached. Breakpoint not set\n");
-      return(REDEBUG_WAIT);
-    }
 
-    breakPoints[breakPointsInx] = strdup((char *)(readmsg + 1));
-    trimWS(breakPoints[breakPointsInx]);
-    snprintf(mymsg, MAX_NAME_LEN, "Breakpoint %i  set at %s\n", breakPointsInx,
-	   breakPoints[breakPointsInx]);
-    _writeXMsg(streamId, myhdr, mymsg);
-    breakPointsInx++;
-    return(REDEBUG_WAIT);
-    break;
-  case 'e': /* examine * and $ variables */
-  case 'p': /* print an expression */
-	    ptr = (char *)(readmsg + 1);
-	    trimWS(ptr);
-	    snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Printing %s\n",ptr);
-	    r = make_region(0, NULL);
-	    errmsg.len = 0;
-	    errmsg.errMsg = NULL;
-	    res = parseAndComputeExpression(ptr, env, rei, 0, &errmsg, r);
-	    outStr = convertResToString(res);
-    	snprintf(mymsg, MAX_NAME_LEN, "%s\n", outStr);
-    	free(outStr);
-	    if(getNodeType(res) == N_ERROR) {
-	    	errMsgToString(&errmsg, mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg));
-	    }
-    	freeRErrorContent(&errmsg);
-	    _writeXMsg(streamId, myhdr, mymsg);
+					if(getLineRange(p, atoi(token->text), range) == 0) {
+						breakPoints[breakPointsInx2].start = range[0];
+						breakPoints[breakPointsInx2].finish = range[1];
+					} else {
+						breakPoints[breakPointsInx2].base = NULL;
+					}
+					deletePointer(p);
+				OR(loc)
+					TTYPE(TK_INT);
+					if(node!=NULL) {
+						breakPoints[breakPointsInx2].base = strdup(node->base + 1);
+						rodsLong_t range[2];
+						Pointer *p = newPointer2(breakPoints[breakPointsInx2].base);
+						if(getLineRange(p, atoi(token->text), range) == 0) {
+							breakPoints[breakPointsInx2].start = range[0];
+							breakPoints[breakPointsInx2].finish = range[1];
+						} else {
+							breakPoints[breakPointsInx2].base = NULL;
+						}
+						deletePointer(p);
+					}
+				OR(loc)
+					/* breakPoints[breakPointsInx].base = NULL; */
+				END_TRY(loc)
 
-      return(REDEBUG_WAIT);
-  case 'l': /* list rule and * and $ variables */
-    ptr = (char *)(readmsg + 1);
-    trimWS(ptr);
-    snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",ptr);
-    if (*ptr == '*') {
-      mymsg[0] = '\n';
-      mymsg[1] = '\0';
-	  Env *cenv = env;
-	  found = 0;
-	  while(cenv!=NULL) {
-		  int n = cenv->current->len;
-		  int i;
-		  for(i = 0;i<n;i++) {
-			  Bucket *b = cenv->current->buckets[i];
-			  while(b!=NULL) {
-				  found = 1;
-				  char typeString[128];
-				  typeToString(((Res *)b->value)->exprType, NULL, typeString, 128);
-				  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "%s of type %s\n", b->key, typeString);
-				  b = b->next;
-			  }
-		  }
-		  cenv = cenv->previous;
-      }
-      if (!found) {
-    	  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "<empty>\n");
-      }
-      _writeXMsg(streamId, myhdr, mymsg);
-      return(REDEBUG_WAIT);
-    }
-    else  if (*ptr == '$') {
-      mymsg[0] = '\n';
-      mymsg[1] = '\0';
-      for (i= 0; i < coreRuleVarDef .MaxNumOfDVars; i++) {
-	snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "$%s\n", coreRuleVarDef.varName[i]);
-      }
-      _writeXMsg(streamId, myhdr, mymsg);
-      return(REDEBUG_WAIT);
-    }
-    else if (*ptr == 'r') {
-      ptr ++;
-      trimWS(ptr);
-      mymsg[0] = '\0';
-      snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",ptr);
-      RuleIndexListNode *node;
-      found = 0;
-      while (findNextRule2 (ptr, ruleInx, &node) != NO_MORE_RULES_ERR) {
-    	  found = 1;
-    	  if(node->secondaryIndex) {
-    		  n = node->condIndex->valIndex->len;
-    		  int i;
-    		  for(i=0;i<n;i++) {
-    			  Bucket *b = node->condIndex->valIndex->buckets[i];
-    			  while(b!=NULL) {
-    	    		  RuleDesc *rd = getRuleDesc(*(int *)b->value);
-    	    		  char buf[MAX_RULE_LEN];
-    	    		  ruleToString(buf, MAX_RULE_LEN, rd);
-    	    		  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "%i: %s\n%s\n", node->ruleIndex, rd->node->base[0] == 's'? "<source>":rd->node->base + 1, buf);
-    	    		  b = b->next;
-    			  }
-    		  }
-    	  } else {
-    		  RuleDesc *rd = getRuleDesc(node->ruleIndex);
-    		  char buf[MAX_RULE_LEN];
-    		  ruleToString(buf, MAX_RULE_LEN, rd);
-    		  snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "\n  %i: %s\n%s\n", node->ruleIndex, rd->node->base[0] == 's'? "<source>":rd->node->base + 1, buf);
-    	  }
-    	  ruleInx ++;
-      }
-      if (!found) {
-    	  snprintf(mymsg, MAX_NAME_LEN,"Rule %s not found\n", ptr);
-      }
-      _writeXMsg(streamId, myhdr, mymsg);
-      return(REDEBUG_WAIT);
-    }
-    else {
-      snprintf(mymsg, MAX_NAME_LEN, "Unknown Parameter Type");
-      _writeXMsg(streamId, myhdr, mymsg);
-      return(REDEBUG_WAIT);
-    }
-    break;
-  case 'w': /* where are you now in CURRENT stack*/
-    wCnt = 20;
-    iLevel = 0;
-    ptr = (char *)(readmsg + 1);
-    trimWS(ptr);
-    if (strlen(ptr) > 0)
-      wCnt = atoi(ptr);
+				if(ptr!=NULL && breakPoints[breakPointsInx2].base == NULL) {
+					free(ptr);
+				}
+				snprintf(mymsg, MAX_NAME_LEN, "Breakpoint %i  set at %s\n", breakPointsInx2,
+				   breakPoints[breakPointsInx2].actionName);
+				_writeXMsg(streamId, myhdr, mymsg);
+				if(breakPointsInx <= breakPointsInx2) {
+					breakPointsInx = breakPointsInx2 + 1;
+				}
+				cmd = REDEBUG_WAIT;
+				}
+			OR(Param)
+				_writeXMsg(streamId, myhdr, "Debugger command \'break\' requires at least one argument.\n");
+				cmd = REDEBUG_WAIT;
+			END_TRY(Param)
 
-    i = reDebugStackCurrPtr - 1;
-    while (i >=0 && wCnt > 0 && reDebugStackCurr[i][0] != NULL) {
-    	if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL || strstr(reDebugStackCurr[i][0] , "ExecMicroSrvc") != NULL) {
-    		snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
-    		char *msg = (char *) malloc(strlen(reDebugStackCurr[i][0]) + strlen(reDebugStackCurr[i][1]) + strlen(reDebugStackCurr[i][2])+4);
-    		sprintf(msg, "%s:%s: %s", reDebugStackCurr[i][0], reDebugStackCurr[i][1], reDebugStackCurr[i][2]);
-    		_writeXMsg(streamId,  myhdr, msg);
-    		free(msg);
-    		if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL)
-    			iLevel++;
-    		wCnt--;
-    	}
-		i--;
-    }
-    return(REDEBUG_WAIT);
-    break;
-  case 'W': /* where are you now in FULL stack*/
-	    wCnt = 20;
-	    iLevel = 0;
-	    ptr = (char *)(readmsg + 1);
-	    trimWS(ptr);
-	    if (strlen(ptr) > 0)
-	      wCnt = atoi(ptr);
+		OR(DbgCmd)
+			TTEXT2("w", "where");
+			wCnt = 20;
+			OPTIONAL_BEGIN(Param)
+				TTYPE(TK_INT);
+				wCnt = atoi(token->text);
+			OPTIONAL_END(Param)
+			iLevel = 0;
 
-	    i = reDebugStackCurrPtr - 1;
-	    while (i >=0 && wCnt > 0 && reDebugStackCurr[i][0] != NULL) {
-	    	snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
-	    	char *msg = (char *) malloc(strlen(reDebugStackCurr[i][0]) + strlen(reDebugStackCurr[i][1]) + strlen(reDebugStackCurr[i][2])+4);
-	    	sprintf(msg, "%s:%s: %s", reDebugStackCurr[i][0], reDebugStackCurr[i][1], reDebugStackCurr[i][2]);
-	    	_writeXMsg(streamId,  myhdr, msg);
-	    	free(msg);
-	    	if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL)
-	    		iLevel++;
-	    	wCnt--;
-	    	i--;
-	    }
-	    return(REDEBUG_WAIT);
-	    break;
-  default:
-    snprintf(mymsg, MAX_NAME_LEN, "Unknown Action: %s.", readmsg );
-    _writeXMsg(streamId, myhdr, mymsg);
-    return(REDEBUG_WAIT);
-    break;
+			i = reDebugStackCurrPtr - 1;
+			while (i >=0 && wCnt > 0 && reDebugStackCurr[i][0] != NULL) {
+				if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL || strstr(reDebugStackCurr[i][0] , "ExecMicroSrvc") != NULL || strstr(reDebugStackCurr[i][0] , "ExecRule") != NULL) {
+					snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
+					char *msg = (char *) malloc(strlen(reDebugStackCurr[i][0]) + strlen(reDebugStackCurr[i][1]) + strlen(reDebugStackCurr[i][2])+4);
+					sprintf(msg, "%s:%s: %s", reDebugStackCurr[i][0], reDebugStackCurr[i][1], reDebugStackCurr[i][2]);
+					_writeXMsg(streamId,  myhdr, msg);
+					free(msg);
+					if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL)
+						iLevel++;
+					wCnt--;
+				}
+				i--;
+			}
+		OR(DbgCmd)
+			TTEXT2("l", "list");
+			snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",token->text);
+			TRY(Param)
+				TTEXT2("r", "rule");
+				TRY(ParamParam)
+					TTYPE(TK_TEXT);
+					snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",token->text);
+					ptr = strdup(token->text);
 
-  }
-  return(curStat);
+					mymsg[0] = '\n';
+					mymsg[1] = '\0';
+					snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",ptr);
+					RuleIndexListNode *node;
+					found = 0;
+					while (findNextRule2 (ptr, ruleInx, &node) != NO_MORE_RULES_ERR) {
+						found = 1;
+						if(node->secondaryIndex) {
+							n = node->condIndex->valIndex->len;
+							int i;
+							for(i=0;i<n;i++) {
+								Bucket *b = node->condIndex->valIndex->buckets[i];
+								while(b!=NULL) {
+									RuleDesc *rd = getRuleDesc(*(int *)b->value);
+									char buf[MAX_RULE_LEN];
+									ruleToString(buf, MAX_RULE_LEN, rd);
+									snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "%i: %s\n%s\n", node->ruleIndex, rd->node->base[0] == 's'? "<source>":rd->node->base + 1, buf);
+									b = b->next;
+								}
+							}
+						} else {
+							RuleDesc *rd = getRuleDesc(node->ruleIndex);
+							char buf[MAX_RULE_LEN];
+							ruleToString(buf, MAX_RULE_LEN, rd);
+							snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "\n  %i: %s\n%s\n", node->ruleIndex, rd->node->base[0] == 's'? "<source>":rd->node->base + 1, buf);
+						}
+						ruleInx ++;
+					}
+					if (!found) {
+						snprintf(mymsg, MAX_NAME_LEN,"Rule %s not found\n", ptr);
+					}
+					_writeXMsg(streamId, myhdr, mymsg);
+						cmd = REDEBUG_WAIT;
+					OR(ParamParam)
+					_writeXMsg(streamId, myhdr, "Debugger command \'list rule\' requires one argument.\n");
+					cmd = REDEBUG_WAIT;
+					END_TRY(ParamParam)
+			OR(Param)
+				TTEXT2("b", "breakpoints");
+				snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",token->text);
+				mymsg[0] = '\n';
+				mymsg[1] = '\0';
+				for(i=0;i<breakPointsInx;i++) {
+					if(breakPoints[i].actionName!=NULL) {
+						snprintf(mymsg + strlen(mymsg),MAX_NAME_LEN - strlen(mymsg), "Breaking at BreakPoint %i:%s\n", i , breakPoints[i].actionName);
+					}
+				}
+				_writeXMsg(streamId, myhdr, mymsg);
+				cmd = REDEBUG_WAIT;
+			OR(Param)
+				TTEXT("*");
+				snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",token->text);
+				Env *cenv = env;
+				mymsg[0] = '\n';
+				mymsg[1] = '\0';
+				found = 0;
+				while(cenv!=NULL) {
+					n = cenv->current->size;
+					for(i = 0;i<n;i++) {
+						Bucket *b = cenv->current->buckets[i];
+						while(b!=NULL) {
+							if(b->key[0] == '*') { /* skip none * variables */
+								found = 1;
+								char typeString[128];
+								typeToString(((Res *)b->value)->exprType, NULL, typeString, 128);
+								snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "%s of type %s\n", b->key, typeString);
+							}
+							b = b->next;
+						}
+					}
+					cenv = cenv->previous;
+				}
+				if (!found) {
+					snprintf(mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg), "<empty>\n");
+				}
+				_writeXMsg(streamId, myhdr, mymsg);
+				cmd = REDEBUG_WAIT;
+			OR(Param)
+				syncTokenQueue(e, context);
+				skipWhitespace(e);
+				ABORT(lookAhead(e, 0) != '$');
+				snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",token->text);
+				mymsg[0] = '\n';
+				mymsg[1] = '\0';
+				for (i= 0; i < coreRuleVarDef .MaxNumOfDVars; i++) {
+					snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "$%s\n", coreRuleVarDef.varName[i]);
+				}
+				_writeXMsg(streamId, myhdr, mymsg);
+				cmd = REDEBUG_WAIT;
+			OR(Param)
+				TTYPE(TK_TEXT);
+				snprintf(mymsg, MAX_NAME_LEN, "Unknown Parameter Type");
+				_writeXMsg(streamId, myhdr, mymsg);
+				cmd = REDEBUG_WAIT;
+			OR(Param)
+				_writeXMsg(streamId, myhdr, "Debugger command \'list\' requires at least one argument.\n");
+				cmd = REDEBUG_WAIT;
+			END_TRY(Param)
+		OR(DbgCmd)
+			TTEXT2("c", "continue");
+			cmd = REDEBUG_STEP_CONTINUE;
+		OR(DbgCmd)
+			TTEXT2("C", "Continue");
+			cmd = REDEBUG_CONTINUE_VERBOSE;
+		OR(DbgCmd)
+			TTEXT2("del", "delete");
+			TRY(Param)
+				TTYPE(TK_INT);
+				n = atoi(token->text);
+				if(breakPoints[n].actionName!= NULL) {
+					free(breakPoints[n].actionName);
+					if(breakPoints[n].base != NULL) {
+						free(breakPoints[n].base);
+					}
+					breakPoints[n].actionName = NULL;
+					breakPoints[n].base = NULL;
+					snprintf(mymsg, MAX_NAME_LEN, "Breakpoint %i  deleted\n", n);
+				} else {
+					snprintf(mymsg, MAX_NAME_LEN, "Breakpoint %i  has not been defined\n", n);
+				}
+				_writeXMsg(streamId, myhdr, mymsg);
+				cmd = REDEBUG_WAIT;
+			OR(Param)
+				_writeXMsg(streamId, myhdr, "Debugger command \'delete\' requires one argument.\n");
+				cmd = REDEBUG_WAIT;
+			END_TRY(Param)
+		OR(DbgCmd)
+			TTEXT2("p", "print");
+			Node *n = parseTermRuleGen(e, 1, context);
+			if(getNodeType(n) == N_ERROR) {
+				errMsgToString(context->errmsg, mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg));
+			} else {
+				snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Printing ");
+				ptr = myhdr + strlen(myhdr);
+				i = HEADER_TYPE_LEN - 1 - strlen(myhdr);
+				termToString(&ptr, &i, 0, MIN_PREC, n);
+				snprintf(ptr, i, "\n");
+				if(env != NULL) {
+					graf = GlobalREAuditFlag;
+					GlobalREAuditFlag = 0;
+					grdf = GlobalREDebugFlag;
+					GlobalREDebugFlag = 0;
+					res = computeNode(n, env, rei, 0, &errmsg, r);
+					GlobalREAuditFlag = graf;
+					GlobalREDebugFlag = grdf;
+					outStr = convertResToString(res);
+					snprintf(mymsg, MAX_NAME_LEN, "%s\n", outStr);
+					free(outStr);
+					if(getNodeType(res) == N_ERROR) {
+						errMsgToString(&errmsg, mymsg + strlen(mymsg), MAX_NAME_LEN - strlen(mymsg));
+					}
+				} else {
+					snprintf(mymsg, MAX_NAME_LEN, "Runtime environment: <empty>\n");
+				}
+			}
+			_writeXMsg(streamId, myhdr, mymsg);
+
+			cmd = REDEBUG_WAIT;
+		OR(DbgCmd)
+			TTEXT2("W", "Where");
+			wCnt = 20;
+			OPTIONAL_BEGIN(Param)
+				TTYPE(TK_INT);
+				wCnt = atoi(token->text);
+			OPTIONAL_END(Param)
+			iLevel = 0;
+
+			i = reDebugStackCurrPtr - 1;
+			while (i >=0 && wCnt > 0 && reDebugStackCurr[i][0] != NULL) {
+				snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
+				char *msg = (char *) malloc(strlen(reDebugStackCurr[i][0]) + strlen(reDebugStackCurr[i][1]) + strlen(reDebugStackCurr[i][2])+4);
+				sprintf(msg, "%s:%s: %s", reDebugStackCurr[i][0], reDebugStackCurr[i][1], reDebugStackCurr[i][2]);
+				_writeXMsg(streamId,  myhdr, msg);
+				free(msg);
+				if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL)
+					iLevel++;
+				wCnt--;
+				i--;
+			}
+			cmd = REDEBUG_WAIT;
+		OR(DbgCmd)
+			TTEXT2("d", "discontinue");
+			cmd = REDEBUG_WAIT;
+		OR(DbgCmd)
+			snprintf(mymsg, MAX_NAME_LEN, "Unknown Action: %s", readmsg);
+			_writeXMsg(streamId, myhdr, mymsg);
+			cmd = REDEBUG_WAIT;
+		END_TRY(DbgCmd)
+    PARSER_END(DbgCmd)
+	freeRErrorContent(&errmsg);
+		region_free(r);
+		deletePointer(e);
+    return cmd;
 }
 
 int
 processBreakPoint(int streamId, int *msgNum, int *seqNum,
-		  char *callLabel, int flag, char *hdr, char *actionStr, char *seActionStr,
+		  char *callLabel, char *actionStr, Node *node,
 		  Env *env, int curStat, ruleExecInfo_t *rei)
 {
 
@@ -426,13 +568,24 @@ processBreakPoint(int streamId, int *msgNum, int *seqNum,
 
   if (breakPointsInx > 0) {
     for (i = 0; i < breakPointsInx; i++) {
-      if (strstr(actionStr, breakPoints[i]) ==  actionStr) {
-	snprintf(mymsg,MAX_NAME_LEN, "Breaking at BreakPoint %i:%s\n", i , breakPoints[i]);
-	_writeXMsg(streamId, myhdr, mymsg);
-	snprintf(mymsg,MAX_NAME_LEN, "with values: %s\n", seActionStr);
-	_writeXMsg(streamId, myhdr, mymsg);
-	curStat = REDEBUG_WAIT;
-	return(curStat);
+    	if (breakPoints[i].actionName!=NULL) {
+    		int len = strlen(breakPoints[i].actionName);
+
+       if(strncmp(actionStr, breakPoints[i].actionName, len) == 0 && !isalnum(actionStr[len])) {
+    	  if(breakPoints[i].base != NULL &&
+    		  (node == NULL || node->expr < breakPoints[i].start || node->expr >= breakPoints[i].finish ||
+    				  strcmp(node->base + 1, breakPoints[i].base)!=0)) {
+			  continue;
+    	  }
+    	  char buf[MAX_NAME_LEN];
+    	  snprintf(buf,MAX_NAME_LEN, "Breaking at BreakPoint %i:%s\n", i , breakPoints[i].actionName);
+    	  generateErrMsg(buf, node->expr, node->base, mymsg);
+    	  _writeXMsg(streamId, myhdr, mymsg);
+    	  snprintf(mymsg,MAX_NAME_LEN, "%s\n", actionStr);
+    	  _writeXMsg(streamId, myhdr, mymsg);
+    	  curStat = REDEBUG_WAIT;
+    	  return(curStat);
+       }
       }
     }
   }
@@ -532,7 +685,7 @@ int cleanUpDebug(int streamId) {
 }
 
 int
-reDebug(char *callLabel, int flag, char *action, char *actionStr, Env *env, ruleExecInfo_t *rei)
+reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, Env *env, ruleExecInfo_t *rei)
 {
   int i, m, s, status, sleepT, j;
   int processedBreakPoint = 0;
@@ -544,6 +697,8 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Env *env, rule
   static int mNum = 0;
   static int sNum = 0;
   static int curStat = 0; 
+  static int reDebugStackPtr = -1;
+  static char *reDebugAction = NULL;
   char condRead[MAX_NAME_LEN];
   char myActionStr[10][MAX_NAME_LEN + 10];
   int aNum = 0;
@@ -601,107 +756,111 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Env *env, rule
     }
   }
 
-  /* Write audit trail */
-  if (GlobalREAuditFlag == 3) {
-    i = _writeXMsg(GlobalREAuditFlag, hdr, actionStr);
-  }
+    /* Write audit trail */
+	if (GlobalREAuditFlag == 3) {
+		i = _writeXMsg(GlobalREAuditFlag, hdr, actionStr);
+	}
   
 
-  /* Send current position for debugging */
-  if ( GlobalREDebugFlag > 5 ) {
-    if (curStat != REDEBUG_CONTINUE) {
-    	char *buf = (char *)malloc(strlen(action)+strlen(actionStr)+2);
-    	sprintf(buf, "%s:%s", action, actionStr);
-    	snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
-    	i = _writeXMsg(GlobalREDebugFlag, hdr, buf);
-    	free(buf);
-    }
-  }
+    /* Send current position for debugging */
+    if ( GlobalREDebugFlag > 5 ) {
+		/* store in stack */
+		storeInStack(callLabel, action, actionStr);
 
-  /* store in stack */
-  storeInStack(callLabel, action, actionStr);
+		if (curStat == REDEBUG_CONTINUE && reDebugStackCurrPtr <= reDebugStackPtr && strcmp(action, reDebugAction) == 0) {
+			curStat = REDEBUG_WAIT;
+		}
+		if (curStat != REDEBUG_CONTINUE) {
+			char *buf = (char *)malloc(strlen(action)+strlen(actionStr)+2);
+			sprintf(buf, "%s:%s", action, actionStr);
+			snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
+			i = _writeXMsg(GlobalREDebugFlag, hdr, buf);
+			free(buf);
+		}
 
-  while ( GlobalREDebugFlag > 5 ) {
-    s = sNum;
-    m = mNum;
-    /* what should be the condition */
-    sprintf(condRead, "(*XSEQNUM >= %d) && (*XADDR != \"%s:%i\") && (*XUSER  == \"%s@%s\") && ((*XHDR == \"CMSG:ALL\") %%%% (*XHDR == \"CMSG:%s:%i\"))",
-	    s, myHostName, myPID, svrComm->clientUser.userName, svrComm->clientUser.rodsZone, myHostName, myPID);
+		while ( GlobalREDebugFlag > 5 ) {
+			s = sNum;
+			m = mNum;
+			/* what should be the condition */
+			sprintf(condRead, "(*XSEQNUM >= %d) && (*XADDR != \"%s:%i\") && (*XUSER  == \"%s@%s\") && ((*XHDR == \"CMSG:ALL\") %%%% (*XHDR == \"CMSG:%s:%i\"))",
+					s, myHostName, myPID, svrComm->clientUser.userName, svrComm->clientUser.rodsZone, myHostName, myPID);
 
-    /*
-    sprintf(condRead, "(*XSEQNUM >= %d)  && ((*XHDR == CMSG:ALL) %%%% (*XHDR == CMSG:%s:%i))",
-	    s,  myHostName, getpid());
-    */
-    status = _readXMsg(GlobalREDebugFlag, condRead, &m, &s, &readhdr, &readmsg, &user, &addr);
-    if (status == SYS_UNMATCHED_XMSG_TICKET) {
-      cleanUpDebug(GlobalREDebugFlag);
-      return(0);
-    }
-    if (status  >= 0) {
-      rodsLog (LOG_NOTICE,"Getting XMsg:%i:%s:%s\n", s,readhdr, readmsg);
-      curStat = processXMsg(GlobalREDebugFlag, &m, &s, readhdr, readmsg,
-			    callLabel, flag, hdr,  actionStr, seActionStr, 
-			    env, curStat, rei);
-      if (readhdr != NULL)
-	free(readhdr);
-      if (readmsg != NULL)
-	free(readmsg);
-      if (user != NULL)
-	free(user);
-      if (addr != NULL)
-	free(addr);
+			/*
+			sprintf(condRead, "(*XSEQNUM >= %d)  && ((*XHDR == CMSG:ALL) %%%% (*XHDR == CMSG:%s:%i))",
+				s,  myHostName, getpid());
+			*/
+			status = _readXMsg(GlobalREDebugFlag, condRead, &m, &s, &readhdr, &readmsg, &user, &addr);
+			if (status == SYS_UNMATCHED_XMSG_TICKET) {
+				cleanUpDebug(GlobalREDebugFlag);
+				return(0);
+			}
+			if (status  >= 0) {
+				rodsLog (LOG_NOTICE,"Getting XMsg:%i:%s:%s\n", s,readhdr, readmsg);
+				curStat = processXMsg(GlobalREDebugFlag, &m, &s, readhdr, readmsg,
+						callLabel,node,
+						env, curStat, rei);
+				if (readhdr != NULL)
+					free(readhdr);
+				if (readmsg != NULL)
+					free(readmsg);
+				if (user != NULL)
+					free(user);
+				if (addr != NULL)
+					free(addr);
 
-      mNum = m;
-      sNum = s + 1;
-      if (curStat == REDEBUG_WAIT) {
-	sendWaitXMsg(GlobalREDebugFlag);
-      }
-      if (curStat == REDEBUG_CONTINUE || curStat == REDEBUG_CONTINUE_VERBOSE) {
-	if (processedBreakPoint == 1)
-	  break;
-	curStat = processBreakPoint(GlobalREDebugFlag, &m, &s, 
-				   callLabel, flag, hdr,  actionStr, seActionStr,
-				   env, curStat, rei);
-	processedBreakPoint = 1;
-	if (curStat == REDEBUG_WAIT) {
-	  sendWaitXMsg(GlobalREDebugFlag);
-	  continue;
+				mNum = m;
+				sNum = s + 1;
+				if (curStat == REDEBUG_WAIT) {
+					sendWaitXMsg(GlobalREDebugFlag);
+				} else
+				if(curStat == REDEBUG_STEP_OVER) {
+					reDebugStackPtr = reDebugStackCurrPtr;
+					reDebugAction = "";
+					curStat = REDEBUG_CONTINUE;
+					break;
+				} else
+				if(curStat == REDEBUG_STEP_OUT) {
+					reDebugStackPtr = reDebugStackCurrPtr - 1;
+					reDebugAction = "Done";
+					curStat = REDEBUG_CONTINUE;
+					break;
+				} else
+				if(curStat == REDEBUG_STEP_CONTINUE) {
+					reDebugStackPtr = -1;
+					curStat = REDEBUG_CONTINUE;
+					break;
+				} else if (curStat == REDEBUG_NEXT )
+					break;
+			} else {
+				if (!(curStat == REDEBUG_CONTINUE || curStat == REDEBUG_CONTINUE_VERBOSE)) {
+
+					sleep(sleepT);
+					/* if (sleepT > 10) sleepT = 10;*/
+					waitCnt++;
+					if (waitCnt > 60) {
+						sendWaitXMsg(GlobalREDebugFlag);
+						waitCnt = 0;
+					}
+				}
+			}
+			if (curStat == REDEBUG_CONTINUE || curStat == REDEBUG_CONTINUE_VERBOSE) {
+				if (processedBreakPoint == 1)
+					break;
+				if(strcmp(action, "") != 0 || strstr(callLabel, "ExecAction")==NULL)
+					break;
+				curStat = processBreakPoint(GlobalREDebugFlag, &m, &s,
+					   callLabel, actionStr, node,
+					   env, curStat, rei);
+				processedBreakPoint = 1;
+				if (curStat == REDEBUG_WAIT) {
+					sendWaitXMsg(GlobalREDebugFlag);
+					continue;
+				} else
+					break;
+			}
+		}
 	}
-	else
-	  break;
-      }
-      else if (curStat == REDEBUG_NEXT || curStat == REDEBUG_STEP )
-	break;
-    }
-    else {
-      if (curStat == REDEBUG_CONTINUE || curStat == REDEBUG_CONTINUE_VERBOSE) {
-	
-	rodsLog(LOG_NOTICE, "Calling 2: %s,%p",actionStr, &actionStr);
-	curStat = processBreakPoint(GlobalREDebugFlag, &m, &s, 
-				    callLabel, flag, hdr,  actionStr, seActionStr,
-				    env, curStat, rei);
-	processedBreakPoint = 1;
-	if (curStat == REDEBUG_WAIT) {
-	  sendWaitXMsg(GlobalREDebugFlag);
-	  continue;
-	}
-	else
-	  break;
-      }
-      sleep(sleepT);
-      sleepT = 2 * sleepT;
-      /* if (sleepT > 10) sleepT = 10;*/
-      if (sleepT > 1){
-	sleepT = 1;
-	waitCnt++;
-	if (waitCnt > 60) {
-	  sendWaitXMsg(GlobalREDebugFlag);
-	  waitCnt = 0;
-	}
-      }
-    }
-  }
 
 
-  return(0);
+    return(0);
 }

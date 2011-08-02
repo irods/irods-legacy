@@ -120,7 +120,7 @@ void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context)
 void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context, p)
 #define PARSER_FUNC_PROTO2(l, p, q) \
 void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context, p, q)
-#define PARSER_FUNC_LOCAL(l) \
+#define PARSER_BEGIN(l) \
     Label start; \
     Label pos; \
     Token *token; (void)token; \
@@ -130,17 +130,19 @@ void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context, p, q)
 
 #define PARSER_FUNC_BEGIN(l) \
 PARSER_FUNC_PROTO(l) { \
-    PARSER_FUNC_LOCAL(l)
+    PARSER_BEGIN(l)
 #define PARSER_FUNC_BEGIN1(l, p) \
 PARSER_FUNC_PROTO1(l, p) { \
-    PARSER_FUNC_LOCAL(l)
+    PARSER_BEGIN(l)
 #define PARSER_FUNC_BEGIN2(l, p, q) \
 PARSER_FUNC_PROTO2(l, p, q) { \
-    PARSER_FUNC_LOCAL(l)
+    PARSER_BEGIN(l)
 
 #define PARSER_FUNC_END(l) \
-    } while(0); \
+    PARSER_END(l) \
 }
+#define PARSER_END(l) \
+	} while(0);
 
 #define SWAP \
 {\
@@ -312,6 +314,7 @@ int getUnaryPrecedence(Token* token);
 int isBinaryOp(Token *token);
 int getBinaryPrecedence(Token* token);
 void getCoor(Pointer *p, Label * errloc, int coor[2]);
+int getLineRange(Pointer *p, int line, rodsLong_t range[2]);
 
 /**
  * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will has type N_ERROR if the token does not match
@@ -325,9 +328,9 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rErro
  * Parse a rule, create a rule pack.
  * If error, either ret==NULL or ret->type=N_ERROR.
  */
-Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc, rError_t *errmsg, Region *r);
-Node *parseTermRuleGen(Pointer *expr, int rulegn, ParserContext *pc, rError_t *errmsg, Region *r);
-Node *parseActionsRuleGen(Pointer *expr, int rulegn, ParserContext *pc, rError_t *errmsg, Region *r);
+Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc);
+Node *parseTermRuleGen(Pointer *expr, int rulegn, ParserContext *pc);
+Node *parseActionsRuleGen(Pointer *expr, int rulegn, ParserContext *pc);
 void pushback(Pointer *e, Token *token, ParserContext *pc);
 void initPointer(Pointer *p, FILE* fp, char* ruleBaseName);
 void initPointer2(Pointer *p, char* buf);

@@ -458,7 +458,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     writeToTmp("entry.log", "\n");
     #endif
     if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "", inAction,NULL,rei);
+        reDebug("ApplyRule", -1, "", inAction,NULL,NULL,rei);
 
 	Region *r = make_region(0, NULL);
 
@@ -478,7 +478,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	ret = processReturnRes(res);
     region_free(r);
     if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "Done", inAction,NULL,rei);
+        reDebug("ApplyRule", -1, "Done", inAction,NULL,NULL,rei);
 
     return ret;
 
@@ -503,11 +503,11 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     GlobalAllRuleExecFlag = allRuleExecFlag;
 
     if (GlobalREAuditFlag > 0)
-        reDebug("ApplyAllRules", -1, "", inAction,NULL,rei);
+        reDebug("ApplyAllRules", -1, "", inAction,NULL, NULL,rei);
 
     int ret = applyRule(inAction, inMsParamArray, rei, reiSaveFlag);
     if (GlobalREAuditFlag > 0)
-        reDebug("ApplyAllRules", -1, "Done", inAction,NULL,rei);
+        reDebug("ApplyAllRules", -1, "Done", inAction,NULL,NULL,rei);
 
     /* restore global flag */
     GlobalAllRuleExecFlag = tempFlag;
@@ -563,11 +563,10 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
 
 {
     int status;
-  /* todo rule out rules with "|" that are not separators */
-  if (strstr(ruleDef,"|") == NULL && strstr(ruleDef,"{") == NULL) { /* not a rule */
+  /*if (strstr(ruleDef,"|") == NULL && strstr(ruleDef,"{") == NULL) {
     status = applyRule(ruleDef, inMsParamArray, rei,1);
     return(status);
-  }
+  }*/
 
   /*
   rodsLog(LOG_NOTICE,"PPP:%s::%s::%s::%s\n",inAction,ruleCondition,ruleAction,ruleRecovery);
@@ -597,7 +596,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
     }
 #endif
     if (GlobalREAuditFlag)
-        reDebug("ExecMyRule", -1, "", ruleDef,NULL,rei);
+        reDebug("ExecMyRule", -1, "", ruleDef,NULL, NULL,rei);
 
     char *outParamNames[MAX_PARAMS_LEN];
     int n = extractVarNames(outParamNames, outParamsDesc);
@@ -611,7 +610,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
     }
 
     if (GlobalREAuditFlag)
-        reDebug("ExecMyRule", -1, "Done", ruleDef,NULL,rei);
+        reDebug("ExecMyRule", -1, "Done", ruleDef,NULL, NULL,rei);
     return(status);
 }
 

@@ -2175,6 +2175,41 @@ void getCoor(Pointer *p, Label * errloc, int coor[2]) {
     seekInFile(p, pos.exprloc);
 }
 
+int getLineRange(Pointer *p, int line, rodsLong_t range[2]) {
+    Label pos;
+    getFPos(&pos, p);
+    seekInFile(p, 0);
+	Label l;
+    range[0] = range[1] = 0;
+    int i = 0;
+    char ch = lookAhead(p, 0);
+    while (i < line && ch != -1) {
+        if(ch=='\n') {
+            i++;
+        }
+        ch = nextChar(p);
+/*        if(ch == '\r') { skip \r
+            ch = nextChar(p);
+        } */
+    }
+    if(ch == -1) {
+    	return -1;
+    }
+    range[0] = getFPos(&l, p)->exprloc;
+    while (i == line && ch != -1) {
+        if(ch=='\n') {
+            i++;
+        }
+        ch = nextChar(p);
+/*        if(ch == '\r') { skip \r
+            ch = nextChar(p);
+        } */
+    }
+    range[1] = getFPos(&l, p)->exprloc;
+    seekInFile(p, pos.exprloc);
+    return 0;
+}
+
 Label *getFPos(Label *l, Pointer *p) {
     if(p->isFile) {
         l->exprloc = p->fpos/sizeof(char) + p->p;
@@ -2748,7 +2783,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
             }
             pushback(e, token, pc);
 
-            Node *node = parseRuleRuleGen(e, backwardCompatible, pc, errmsg, r);
+            Node *node = parseRuleRuleGen(e, backwardCompatible, pc);
             if(node==NULL) {
                 addRErrorMsg(errmsg, OUT_OF_MEMORY, "parseRuleSet: out of memory.");
                 return -1;
@@ -2857,40 +2892,40 @@ Node* parseTypingConstraintsFromString(char *string, Region *r) {
     deletePointer(p);
     return exprType;
 }
-Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc, rError_t *errmsg, Region *r) {
+Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc) {
     nextRuleGenRule(expr, pc, backwardCompatible);
     Node *rulePackNode = pc->nodeStack[0];
     if(pc->error) {
         if(pc->errnode!=NULL) {
             rulePackNode =pc->errnode;
         } else {
-            rulePackNode =createErrorNode("parser error", &pc->errloc, r);
+            rulePackNode =createErrorNode("parser error", &pc->errloc, pc->region);
         }
     }
     return rulePackNode;
 }
-Node *parseTermRuleGen(Pointer *expr, int rulegen, ParserContext *pc, rError_t *errmsg, Region *r) {
+Node *parseTermRuleGen(Pointer *expr, int rulegen, ParserContext *pc) {
     nextRuleGenTerm(expr, pc, rulegen, 0);
     Node *rulePackNode = pc->nodeStack[0];
         if(pc->error) {
         if(pc->errnode!=NULL) {
             rulePackNode =pc->errnode;
         } else {
-            rulePackNode =createErrorNode("parser error", &pc->errloc, r);
+            rulePackNode =createErrorNode("parser error", &pc->errloc, pc->region);
         }
     }
 
     return rulePackNode;
 
 }
-Node *parseActionsRuleGen(Pointer *expr, int rulegen, ParserContext *pc, rError_t *errmsg, Region *r) {
+Node *parseActionsRuleGen(Pointer *expr, int rulegen, ParserContext *pc) {
     nextRuleGenActions(expr, pc, rulegen, 0);
     Node *rulePackNode = pc->nodeStack[0];
-        if(pc->error) {
+	if(pc->error) {
         if(pc->errnode!=NULL) {
             rulePackNode =pc->errnode;
         } else {
-            rulePackNode =createErrorNode("parser error", &pc->errloc, r);
+            rulePackNode =createErrorNode("parser error", &pc->errloc, pc->region);
         }
     }
 
