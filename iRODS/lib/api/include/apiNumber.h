@@ -124,6 +124,7 @@
 #define DATA_OBJ_REPL_AN 		695
 #define DATA_OBJ_COPY_AN 		696
 #define DATA_OBJ_PHYMV_AN 		697
+#define DATA_OBJ_FSYNC_AN               698
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

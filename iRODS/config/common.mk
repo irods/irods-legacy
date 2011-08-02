@@ -29,12 +29,12 @@ SVR_INCLUDES =	-I$(svrCoreIncDir) -I$(svrReIncDir) -I$(svrIcatIncDir) \
 # change (in case it is needed); so 'gmake clean' shouldn't be needed
 configMk =	$(configDir)/config.mk
 platformMk =	$(configDir)/platform.mk
-DEPEND =	$(configMk) $(platformMk)
-REACTION_DEPEND = $(configMk) $(platformMk)
 
 ifndef IRODS_QUICK_BUILD
 # Depend upon configuration file changes and changes to any
 # of the include files
+DEPEND =	$(configMk) $(platformMk)
+REACTION_DEPEND = $(configMk) $(platformMk)
 DEPEND +=	$(wildcard $(libCoreIncDir)/*.h) \
 		$(wildcard $(libMd5IncDir)/*.h) \
 		$(wildcard $(libApiIncDir)/*.h) \
