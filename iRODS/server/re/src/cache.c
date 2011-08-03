@@ -175,23 +175,22 @@ void applyDiffToPointers(unsigned char *pointers, long pointersSize, long pointe
         }
 
 }
-void updateCache(unsigned char *shared, size_t size, Cache *cache, int forceReload) {
+int updateCache(unsigned char *shared, size_t size, Cache *cache, int processType) {
 	mutex_type *mutex;
 	time_type timestamp;
 	time_type_set(timestamp, cache->timestamp);
 
 	if(lockMutex(&mutex) != 0) {
-#ifdef DEBUG
-		printf("failed to update cache, lock mutex 1\n");
-#endif
-		return;
+		rodsLog(LOG_ERROR, "Failed to update cache, lock mutex 1.");
+		return -1;
 	}
-	if(forceReload || time_type_gt(timestamp, ((Cache *)shared)->updateTS)) {
+	if(processType == RULE_ENGINE_INIT_CACHE || processType == RULE_ENGINE_REFRESH_CACHE || time_type_gt(timestamp, ((Cache *)shared)->updateTS)) {
 		time_type_set(((Cache *)shared)->updateTS, timestamp);
 		unlockMutex(&mutex);
 
 		unsigned char *buf = (unsigned char *) malloc(size);
 		if(buf != NULL) {
+			int ret;
 			unsigned char *cacheBuf = buf;
 			Cache *cacheCopy = copyCache(&cacheBuf, size, cache);
 			if(cacheCopy != NULL) {
@@ -206,29 +205,40 @@ void updateCache(unsigned char *shared, size_t size, Cache *cache, int forceRelo
 				applyDiffToPointers(pointers, pointersSize, diff);
 
 				if(lockMutex(&mutex) != 0) {
-#ifdef DEBUG
-					printf("failed to update cache, lock mutex 2\n");
-#endif
+					rodsLog(LOG_ERROR, "Failed to update cache, lock mutex 2.");
 					free(buf);
-					return;
+					return -1;
 				}
-				if(forceReload || !time_type_gt(((Cache *)shared)->updateTS, timestamp)) {
+				if(processType == RULE_ENGINE_INIT_CACHE || processType == RULE_ENGINE_REFRESH_CACHE || !time_type_gt(((Cache *)shared)->updateTS, timestamp)) {
+
+					switch(processType) {
+					case RULE_ENGINE_INIT_CACHE:
+						cacheCopy->version = 0;
+					default:
+						cacheCopy->version = ((Cache *)shared)->version;
+						INC_MOD(cacheCopy->version, UINT_MAX);
+					}
 					/* copy data */
 					memcpy(shared, buf, cacheCopy->dataSize);
 					/* copy pointers */
 					memcpy(cacheCopy->pointers, pointers, pointersSize);
 				}
 				unlockMutex(&mutex);
+				ret = 0;
 			} else {
-				rodsLog(LOG_ERROR, "Error updating the cache\n");
+				rodsLog(LOG_ERROR, "Error updating cache.");
+				ret = -1;
 			}
 			free(buf);
+			return ret;
 		} else {
-			rodsLog(LOG_ERROR, "Cannot update the cache for out of memory error, let some other process update it later when memory is available\n");
+			rodsLog(LOG_ERROR, "Cannot update cache because of out of memory error, let some other process update it later when memory is available.");
+			return -1;
 		}
 	} else {
 		unlockMutex(&mutex);
-		rodsLog(LOG_DEBUG, "Cache has been updated by some other process\n");
+		rodsLog(LOG_DEBUG, "Cache has been updated by some other process.");
+		return 0;
 	}
 
 }

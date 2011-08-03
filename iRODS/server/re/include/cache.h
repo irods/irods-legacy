@@ -16,5 +16,5 @@ Cache *copyCache(unsigned char **buf, size_t size, Cache *c);
 Cache *restoreCache(unsigned char *buf);
 void applyDiff(unsigned char *pointers, long pointersSize, long diff, long pointerDiff);
 void applyDiffToPointers(unsigned char *pointers, long pointersSize, long pointerDiff);
-void updateCache(unsigned char *shared, size_t size, Cache *cache, int forceReload);
+int updateCache(unsigned char *shared, size_t size, Cache *cache, int processType);
 #endif

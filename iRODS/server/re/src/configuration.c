@@ -337,15 +337,11 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
 	        detachSharedMemory();
 
 	        if(cache == NULL) {
-#ifdef DEBUG
-	        	printf("failed to restore cache, load local copy\n");
-#endif
+	        	rodsLog(LOG_ERROR, "Failed to restore cache.");
 	        } else if(time_type_gt(timestamp, cache->timestamp)) {
 	        	 update = 1;
 	        	 free(cache->address);
-#ifdef DEBUG
-	        	 printf("rule file modified, force reload\n");
-#endif
+	        	 rodsLog(LOG_DEBUG, "Rule file modified, force refresh.");
 	        } else {
 
 	        cache->cacheStatus = INITIALIZED;
@@ -362,6 +358,8 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
             /* createRuleIndex(inRuleStruct); */
             RETURN;
 	        }
+    	} else {
+    		rodsLog(LOG_ERROR, "Cannot open shared memory.");
     	}
     }
 #endif
@@ -403,8 +401,13 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
 		unsigned char *shared = prepareServerSharedMemory();
 
 		if(shared != NULL) {
-			updateCache(shared, SHMMAX, &ruleEngineConfig, processType == RULE_ENGINE_INIT_CACHE);
+			int ret = updateCache(shared, SHMMAX, &ruleEngineConfig, processType);
 			detachSharedMemory();
+			if(ret != 0) {
+				removeSharedMemory();
+			}
+		} else {
+			rodsLog(LOG_ERROR, "Cannot open shared memory.");
 		}
 	}
 #endif
