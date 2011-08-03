@@ -11,7 +11,7 @@
 #include <semaphore.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <unistd.h>
 #endif
 #define SEM_NAME "irods_sem_re"
