@@ -322,6 +322,8 @@ int _readXMsg(int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr
 typedef struct env Env;
 typedef struct node Node;
 int reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, Env *env, ruleExecInfo_t *rei);
+void disableReDebugger(int state[2]);
+void enableReDebugger(int state[2]);
 #else
 int reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei);
 #endif

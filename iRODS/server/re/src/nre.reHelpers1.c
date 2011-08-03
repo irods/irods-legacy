@@ -17,6 +17,19 @@ struct Breakpoint {
 
 int breakPointsInx = 0;
 
+void disableReDebugger(int grdf[2]) {
+	  grdf[0] = GlobalREAuditFlag;
+	  grdf[1] = GlobalREDebugFlag;
+	  GlobalREAuditFlag = 0;
+	  GlobalREDebugFlag = 0;
+
+}
+
+void enableReDebugger(int grdf[2]) {
+	  GlobalREAuditFlag = grdf[0];
+	  GlobalREDebugFlag = grdf[1];
+
+}
 char myHostName[MAX_NAME_LEN];
 char waitHdr[HEADER_TYPE_LEN];
 char waitMsg[MAX_NAME_LEN];
@@ -235,7 +248,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 	Pointer *e = newPointer2(readmsg);
 	int rulegen = 1;
     int found;
-    int graf, grdf;
+    int grdf[2];
     int cmd;
     snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
     PARSER_BEGIN(DbgCmd)
@@ -496,13 +509,9 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				termToString(&ptr, &i, 0, MIN_PREC, n);
 				snprintf(ptr, i, "\n");
 				if(env != NULL) {
-					graf = GlobalREAuditFlag;
-					GlobalREAuditFlag = 0;
-					grdf = GlobalREDebugFlag;
-					GlobalREDebugFlag = 0;
+					disableReDebugger(grdf);
 					res = computeNode(n, env, rei, 0, &errmsg, r);
-					GlobalREAuditFlag = graf;
-					GlobalREDebugFlag = grdf;
+					enableReDebugger(grdf);
 					outStr = convertResToString(res);
 					snprintf(mymsg, MAX_NAME_LEN, "%s\n", outStr);
 					free(outStr);
@@ -711,7 +720,7 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
   snprintf(hdr, HEADER_TYPE_LEN - 1,   "iaudit:%s",callLabel);
   condRead[0] = '\0'; 
   rodsLog (LOG_NOTICE,"PPP:%s\n",hdr);
-  strcpy(seActionStr, actionStr);
+  snprintf(seActionStr, MAX_NAME_LEN + 10, "%s:%s", action, actionStr);
   if (GlobalREAuditFlag > 0) {
     if (flag == -4) {
       if (rei->uoic != NULL && rei->uoic->userName != NULL && rei->uoic->rodsZone != NULL) {
@@ -758,7 +767,7 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
 
     /* Write audit trail */
 	if (GlobalREAuditFlag == 3) {
-		i = _writeXMsg(GlobalREAuditFlag, hdr, actionStr);
+		i = _writeXMsg(GlobalREAuditFlag, hdr, seActionStr);
 	}
   
 

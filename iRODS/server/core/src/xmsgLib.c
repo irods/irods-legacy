@@ -223,15 +223,20 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
   if(strcmp(condStr, "") == 0) {
 	  return 0;
   }
+  int ret;
 #ifdef RULE_ENGINE_N
-  return !(computeExpression(condStr, &XMsgMsParamArray, NULL, 0, res) == 0);
+  int grdf[2];
+  disableReDebugger(grdf);
+  ret = !(computeExpression(condStr, &XMsgMsParamArray, NULL, 0, res) == 0);
+  enableReDebugger(grdf);
 #else
   int i = replaceMsParams(condStr, &XMsgMsParamArray);
   if(i!=0) {
 	  return 1;
   }
-  return !computeExpression(condStr, NULL, 0, res);
+  ret = !computeExpression(condStr, NULL, 0, res);
 #endif
+  return ret;
 
 }
 
