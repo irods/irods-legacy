@@ -206,7 +206,7 @@ getUptimeStr (uint startTime, uint curTime, char *outStr)
         min = min % 60;
     }
 
-    snprintf (outStr, NAME_LEN, "%d:%2d:%2d", hr, min, sec);
+    snprintf (outStr, NAME_LEN, "%d:%02d:%02d", hr, min, sec);
 
     return 0;
 }
