@@ -9,8 +9,8 @@
 
 #define DEFAULT_BLOCK_SIZE 1024
 /* the alignment in the region in bytes */
-#define ALIGNMENT 8
-#define roundToAlignment(x) ((x)%ALIGNMENT == 0?(x):(((x)/ALIGNMENT)+1)*ALIGNMENT)
+#define REGION_ALIGNMENT 8
+#define roundToAlignment(x) ((x)%REGION_ALIGNMENT == 0?(x):(((x)/REGION_ALIGNMENT)+1)*REGION_ALIGNMENT)
 /* the point the elem i of type t starting from p in the cache, aligned */
 #define CACHE_ELEM(t, p, i) (((t)p)+i)
 /* the size of an array of type t and length i in the cache, aligned */

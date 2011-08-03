@@ -648,7 +648,7 @@ void printMsParamArray(msParamArray_t *msParamArray, char *buf2) {
             } else if (strcmp(mP->type, STR_MS_T) == 0) { /* if the parameter is a string */
                 snprintf(buf3, MAX_NAME_LEN, "%s:",(char *)mP->inOutStruct);
             } else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
-                snprintf(buf3, MAX_NAME_LEN, "%ld:",*(time_t *)mP->inOutStruct);
+                snprintf(buf3, MAX_NAME_LEN, "%ld:",(long)*(time_t *)mP->inOutStruct);
             } else {
                 snprintf(buf3, MAX_NAME_LEN, "<value>:");
             }

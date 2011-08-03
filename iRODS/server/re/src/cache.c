@@ -14,7 +14,7 @@
 #include "restruct.templates.h"
 
 Cache *copyCache(unsigned char **p, size_t size, Cache *ptr) {
-	if(size%ALIGNMENT != 0) { /* size should be divisible by ALIGNMENT */
+	if(size%REGION_ALIGNMENT != 0) { /* size should be divisible by ALIGNMENT */
 		return NULL;
 	}
 

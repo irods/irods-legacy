@@ -742,7 +742,7 @@ int _readXMsg(int streamId, char *condRead, int *msgNum, int *seqNum,
   i = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
   if (i < 0) {
     /*  rcDisconnect(conn); */
-    rodsLog (LOG_NOTICE,"_writeXmsg: Unable to send message to stream  %i\n", streamId);
+    rodsLog (LOG_NOTICE,"_readXmsg: Unable to receive message from stream  %i\n", streamId);
     return(i);
   }
   *msgNum = rcvXmsgOut->msgNumber;

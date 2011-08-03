@@ -107,14 +107,14 @@ int isKeyword(char *text) {
 }
 
 void skipWhitespace(Pointer *expr) {
-	char ch;
+	int ch;
 	ch = lookAhead(expr, 0);
 	while (ch!=-1 && (ch==' ' || ch=='\t' || ch=='\r' || ch=='\n')) {
 		ch = nextChar(expr);
 	}
 }
 void skipComments(Pointer *e) {
-    char ch = lookAhead(e, 0);
+    int ch = lookAhead(e, 0);
     while(ch!='\n' && ch!=-1) {
         ch = nextChar(e);
     }
@@ -166,7 +166,7 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen) {
         Label pos;
         getFPos(&start, e);
         token->exprloc = start.exprloc;
-        char ch = lookAhead(e, 0);
+        int ch = lookAhead(e, 0);
         if (ch == -1) { /* reach the end of stream */
             token->type = TK_EOS;
             strcpy(token->text, "EOS");
@@ -1220,7 +1220,7 @@ PARSER_FUNC_END(Value)
 
 int nextStringBase2(Pointer *e, char *value, char* delim) {
 		nextChar(e);
-    	char ch = nextChar(e);
+    	int ch = nextChar(e);
     	while(ch!=-1) {
 			if(delim[0] == ch && delim[1] == lookAhead(e, 1)) {
 				if(delim[0] == delim[1]) {
@@ -1249,7 +1249,7 @@ int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char 
 	char* value0=value;
 	*value = lookAhead(e, 0);
 	value++;
-	char ch = nextChar(e);
+	int ch = nextChar(e);
 	while(ch!=-1) {
 		*value = ch;
 		switch(mode) {
@@ -1297,7 +1297,7 @@ int nextStringParsed(Pointer *e, char *value, char* deliml, char *delimr, char *
 	int mode=0; /* level */
 	int nov = 0;
 	char* value0=value;
-	char ch = lookAhead(e, 0);
+	int ch = lookAhead(e, 0);
 	while(ch!=-1) {
 		*value = ch;
         if(strchr(deliml, ch)!=NULL) {
@@ -2130,7 +2130,7 @@ int dupLine(Pointer *p, Label * start, int n, char *buf) {
     seekInFile(p, 0);
     int len = 0;
     int i = 0;
-    char ch = lookAhead(p, 0);
+    int ch = lookAhead(p, 0);
     while(ch != -1) {
         if(ch=='\n') {
             if(i<start->exprloc)
@@ -2182,7 +2182,7 @@ int getLineRange(Pointer *p, int line, rodsLong_t range[2]) {
 	Label l;
     range[0] = range[1] = 0;
     int i = 0;
-    char ch = lookAhead(p, 0);
+    int ch = lookAhead(p, 0);
     while (i < line && ch != -1) {
         if(ch=='\n') {
             i++;
@@ -2404,7 +2404,7 @@ char * nextRuleSection(char* buf, char* value) {
 
 void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
     skipWhitespace(e);
-    char ch = lookAhead(e, 0);
+    int ch = lookAhead(e, 0);
     if (ch==-1) { /* reach the end of stream */
         token->type = TK_EOS;
         strcpy(token->text,"EOS");
