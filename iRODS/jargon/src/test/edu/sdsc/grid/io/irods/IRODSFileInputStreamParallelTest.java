@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import edu.sdsc.grid.io.FileFactory;
 import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -74,22 +75,19 @@ public class IRODSFileInputStreamParallelTest {
         
         // put this test file into irods so I can 'get' it.
         // put scratch file into irods in the right place
-        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
-        IputCommand iputCommand = new IputCommand();
+        IRODSAccount testAccount = testingPropertiesHelper
+			.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+        String targetIrodsCollection = testingPropertiesHelper
+			.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH);
+        LocalFile sourceFile = new LocalFile(testFileFullPath);
 
-        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH);
+        IRODSFile fileToPut = new IRODSFile(irodsFileSystem,
+        		targetIrodsCollection + "/" + testFileName);
+        fileToPut.copyFrom(sourceFile, true);
 
-        iputCommand.setLocalFileName(testFileFullPath);
-        iputCommand.setIrodsFileName(targetIrodsCollection);
-        iputCommand.setForceOverride(true);
-        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-        invoker.invokeCommandAndGetResultAsString(iputCommand);
-        
        //Thread.sleep(3000);
-       
-        IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
         String irodsFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);        IRODSFile getFile = new IRODSFile(irodsFileSystem, irodsFileName);
         GeneralFile localFile = FileFactory.newFile(new URI("file:///" + getFileName));

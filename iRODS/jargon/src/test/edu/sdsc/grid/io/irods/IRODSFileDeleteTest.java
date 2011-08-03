@@ -11,17 +11,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IreplCommand;
 
 public class IRODSFileDeleteTest {
     private static Properties testingProperties = new Properties();
@@ -158,47 +153,41 @@ public class IRODSFileDeleteTest {
 				8);
 
 		// put scratch file into irods in the right place
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IputCommand iputCommand = new IputCommand();
+		IRODSAccount testAccount = testingPropertiesHelper
+			.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
 		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH);
+    		.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+    				IRODS_TEST_SUBDIR_PATH);
 
-		StringBuilder fileNameAndPath = new StringBuilder();
-		fileNameAndPath.append(absPath);
-
-		fileNameAndPath.append(testFileName);
-
-		iputCommand.setLocalFileName(fileNameAndPath.toString());
-		iputCommand.setIrodsFileName(targetIrodsCollection);
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
-		
+		LocalFile sourceFile = new LocalFile(absPath + "/" + testFileName);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem,
+    		targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
+    
 		String irodsObjectAbsolutePath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
 		
 		// replicate this file to the second resource
-		IreplCommand iReplCommand = new IreplCommand();
-		iReplCommand.setObjectToReplicate(irodsObjectAbsolutePath);
-		iReplCommand.setDestResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
-		invoker.invokeCommandAndGetResultAsString(iReplCommand);
+		fileToPut.replicate(testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
 		
-		// now delete using IRODSFile and make sure no replicas are left
-
-    	IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
-        
+		// now delete using IRODSFile and make sure no replicas are left   
     	IRODSFile delFile = new IRODSFile(irodsFileSystem, irodsObjectAbsolutePath);
     	Assert.assertTrue("the test file does not exist!", delFile.exists());
     	
     	delFile.delete(true);
     	
+    	boolean notFound = false;
+    	notFound = !fileToPut.exists();
+    	
     	irodsFileSystem.close();
     	
-    	// do an ils -L and make sure the the file is on neither resource    	
+    	
+    	// do an ils -L and make sure the the file is on neither resource 
+    	/*
+    	IrodsInvocationContext invocationContext = testingPropertiesHelper
+		.buildIRODSInvocationContextFromTestProperties(testingProperties);
+    	IcommandInvoker invoker = new IcommandInvoker(invocationContext);
     	IlsCommand ilsCommand = new IlsCommand();
     	ilsCommand.setIlsBasePath(irodsObjectAbsolutePath);
     	ilsCommand.setLongFormat(true);
@@ -213,7 +202,7 @@ public class IRODSFileDeleteTest {
     		Assert.assertTrue("was not the expected 'not found' condition", ice.getMessage().indexOf("does not exist") > -1);
     		notFound = true;
     	}
-
+		*/
     	Assert.assertTrue("found the deleted file with ils", notFound);
     	
 
@@ -234,47 +223,40 @@ public class IRODSFileDeleteTest {
 				8);
 
 		// put scratch file into irods in the right place
-		IrodsInvocationContext invocationContext = testingPropertiesHelper
-				.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IputCommand iputCommand = new IputCommand();
+		IRODSAccount testAccount = testingPropertiesHelper
+			.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
 		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH);
+			.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+				IRODS_TEST_SUBDIR_PATH);
 
-		StringBuilder fileNameAndPath = new StringBuilder();
-		fileNameAndPath.append(absPath);
-
-		fileNameAndPath.append(testFileName);
-
-		iputCommand.setLocalFileName(fileNameAndPath.toString());
-		iputCommand.setIrodsFileName(targetIrodsCollection);
-		iputCommand.setForceOverride(true);
-
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		LocalFile sourceFile = new LocalFile(absPath + "/" + testFileName);
+		IRODSFile fileToPut = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + "/" + testFileName);
+		fileToPut.copyFrom(sourceFile, true);
 		
 		String irodsObjectAbsolutePath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
 		
 		// replicate this file to the second resource
-		IreplCommand iReplCommand = new IreplCommand();
-		iReplCommand.setObjectToReplicate(irodsObjectAbsolutePath);
-		iReplCommand.setDestResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
-		invoker.invokeCommandAndGetResultAsString(iReplCommand);
+		fileToPut.replicate(testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
 		
-		// now delete using IRODSFile and make sure no replicas are left
-
-    	IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
-        
+		// now delete using IRODSFile and make sure no replicas are left  
     	IRODSFile delFile = new IRODSFile(irodsFileSystem, irodsObjectAbsolutePath);
     	Assert.assertTrue("the test file does not exist!", delFile.exists());
     	
     	delFile.delete(false);
     	
+    	boolean notFound = false;
+    	notFound = !fileToPut.exists();
+    	
     	irodsFileSystem.close();
     	
-    	// do an ils -L and make sure the the file is on neither resource    	
+    	// do an ils -L and make sure the the file is on neither resource
+    	/*
+    	IrodsInvocationContext invocationContext = testingPropertiesHelper
+		.buildIRODSInvocationContextFromTestProperties(testingProperties);
+    	IcommandInvoker invoker = new IcommandInvoker(invocationContext);
     	IlsCommand ilsCommand = new IlsCommand();
     	ilsCommand.setIlsBasePath(irodsObjectAbsolutePath);
     	ilsCommand.setLongFormat(true);
@@ -289,6 +271,7 @@ public class IRODSFileDeleteTest {
     		Assert.assertTrue("was not the expected 'not found' condition", ice.getMessage().indexOf("does not exist") > -1);
     		notFound = true;
     	}
+    	*/
 
     	Assert.assertTrue("found the deleted file with ils", notFound);
     	
