@@ -51,7 +51,7 @@ if ( $@ )
 }
 Net::FTP->import( );
 
-$version{"utils_platform.pl"} = "March 2010";
+$version{"utils_platform.pl"} = "August 2011";
 
 
 

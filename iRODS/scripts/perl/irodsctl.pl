@@ -22,7 +22,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-
+$version{"irodsctl.pl"} = "August 2011";
 
 
 
