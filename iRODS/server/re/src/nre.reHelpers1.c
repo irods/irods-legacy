@@ -473,9 +473,14 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",token->text);
 				mymsg[0] = '\n';
 				mymsg[1] = '\0';
+				Hashtable *vars = newHashTable(100);
 				for (i= 0; i < coreRuleVarDef .MaxNumOfDVars; i++) {
-					snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "$%s\n", coreRuleVarDef.varName[i]);
+						if(lookupFromHashTable(vars, coreRuleVarDef.varName[i])==NULL) {
+							snprintf(&mymsg[strlen(mymsg)], MAX_NAME_LEN - strlen(mymsg), "$%s\n", coreRuleVarDef.varName[i]);
+							insertIntoHashTable(vars, coreRuleVarDef.varName[i], coreRuleVarDef.varName[i]);
+						}
 				}
+				deleteHashTable(vars, NULL);
 				_writeXMsg(streamId, myhdr, mymsg);
 				cmd = REDEBUG_WAIT;
 			OR(Param)
