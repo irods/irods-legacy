@@ -11,6 +11,9 @@
 struct Breakpoint {
 	char *actionName;
 	char *base;
+	int pending;
+	int row;
+	int line;
 	rodsLong_t start;
 	rodsLong_t finish; /* exclusive */
 } breakPoints[100];
@@ -273,17 +276,20 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 					}
 				}
 				if(breakPointsInx2 == 100) {
-					_writeXMsg(streamId, myhdr, "Maximum Breakpoint Count reached. Breakpoint not set\n");
+					_writeXMsg(streamId, myhdr, "Maximum breakpoint count reached. Breakpoint not set.\n");
 					cmd = REDEBUG_WAIT;
 				} else {
 				breakPoints[breakPointsInx2].actionName = fn;
 				ptr = NULL;
 				TRY(loc)
 					TTYPE(TK_TEXT);
-					ptr = strdup(token->text);
+					ptr = (char *) malloc(sizeof(token->text) + 2);
+					ptr[0] = 'f';
+					strcpy(ptr+1, token->text);
 					TTEXT(":");
 					TTYPE(TK_INT);
 					breakPoints[breakPointsInx2].base = ptr;
+					breakPoints[breakPointsInx2].line = atoi(token->text);
 					rodsLong_t range[2];
 					char rulesFileName[MAX_NAME_LEN];
 					getRuleBasePath(ptr, rulesFileName);
@@ -297,26 +303,29 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 					Pointer *p = newPointer(file, ptr);
 
 
-					if(getLineRange(p, atoi(token->text), range) == 0) {
+					if(getLineRange(p, breakPoints[breakPointsInx2].line, range) == 0) {
 						breakPoints[breakPointsInx2].start = range[0];
 						breakPoints[breakPointsInx2].finish = range[1];
 					} else {
-						breakPoints[breakPointsInx2].base = NULL;
+						breakPoints[breakPointsInx2].actionName = NULL;
 					}
 					deletePointer(p);
 				OR(loc)
 					TTYPE(TK_INT);
 					if(node!=NULL) {
-						breakPoints[breakPointsInx2].base = strdup(node->base + 1);
+						breakPoints[breakPointsInx2].base = strdup(node->base);
+						breakPoints[breakPointsInx2].line = atoi(token->text);
 						rodsLong_t range[2];
 						Pointer *p = newPointer2(breakPoints[breakPointsInx2].base);
-						if(getLineRange(p, atoi(token->text), range) == 0) {
+						if(getLineRange(p, breakPoints[breakPointsInx2].line, range) == 0) {
 							breakPoints[breakPointsInx2].start = range[0];
 							breakPoints[breakPointsInx2].finish = range[1];
 						} else {
-							breakPoints[breakPointsInx2].base = NULL;
+							breakPoints[breakPointsInx2].actionName = NULL;
 						}
 						deletePointer(p);
+					} else {
+						breakPoints[breakPointsInx2].actionName = NULL;
 					}
 				OR(loc)
 					/* breakPoints[breakPointsInx].base = NULL; */
@@ -325,14 +334,21 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				if(ptr!=NULL && breakPoints[breakPointsInx2].base == NULL) {
 					free(ptr);
 				}
-				snprintf(mymsg, MAX_NAME_LEN, "Breakpoint %i  set at %s\n", breakPointsInx2,
-				   breakPoints[breakPointsInx2].actionName);
+				if(breakPoints[breakPointsInx2].actionName != NULL)
+					snprintf(mymsg, MAX_NAME_LEN, "Breakpoint %i  set at %s\n", breakPointsInx2,
+							breakPoints[breakPointsInx2].actionName);
+				else
+					snprintf(mymsg, MAX_NAME_LEN, "Cannot set breakpoint, source not available\n");
 				_writeXMsg(streamId, myhdr, mymsg);
 				if(breakPointsInx <= breakPointsInx2) {
 					breakPointsInx = breakPointsInx2 + 1;
 				}
 				cmd = REDEBUG_WAIT;
 				}
+			OR(Param)
+				NEXT_TOKEN;
+				_writeXMsg(streamId, myhdr, "Unknown parameter type.\n");
+				cmd = REDEBUG_WAIT;
 			OR(Param)
 				_writeXMsg(streamId, myhdr, "Debugger command \'break\' requires at least one argument.\n");
 				cmd = REDEBUG_WAIT;
@@ -363,12 +379,10 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 			}
 		OR(DbgCmd)
 			TTEXT2("l", "list");
-			snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",token->text);
 			TRY(Param)
 				TTEXT2("r", "rule");
 				TRY(ParamParam)
 					TTYPE(TK_TEXT);
-					snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s",token->text);
 					ptr = strdup(token->text);
 
 					mymsg[0] = '\n';
@@ -415,7 +429,11 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				mymsg[1] = '\0';
 				for(i=0;i<breakPointsInx;i++) {
 					if(breakPoints[i].actionName!=NULL) {
-						snprintf(mymsg + strlen(mymsg),MAX_NAME_LEN - strlen(mymsg), "Breaking at BreakPoint %i:%s\n", i , breakPoints[i].actionName);
+						if(breakPoints[i].base!=NULL) {
+							snprintf(mymsg + strlen(mymsg),MAX_NAME_LEN - strlen(mymsg), "Breaking at BreakPoint %i:%s %s:%d\n", i , breakPoints[i].actionName, breakPoints[i].base[0]=='s'?"<source>":breakPoints[i].base+1, breakPoints[i].line);
+						} else {
+							snprintf(mymsg + strlen(mymsg),MAX_NAME_LEN - strlen(mymsg), "Breaking at BreakPoint %i:%s\n", i , breakPoints[i].actionName);
+						}
 					}
 				}
 				_writeXMsg(streamId, myhdr, mymsg);
@@ -461,9 +479,8 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				_writeXMsg(streamId, myhdr, mymsg);
 				cmd = REDEBUG_WAIT;
 			OR(Param)
-				TTYPE(TK_TEXT);
-				snprintf(mymsg, MAX_NAME_LEN, "Unknown Parameter Type");
-				_writeXMsg(streamId, myhdr, mymsg);
+				NEXT_TOKEN;
+				_writeXMsg(streamId, myhdr, "Unknown parameter type.\n");
 				cmd = REDEBUG_WAIT;
 			OR(Param)
 				_writeXMsg(streamId, myhdr, "Debugger command \'list\' requires at least one argument.\n");
@@ -583,7 +600,7 @@ processBreakPoint(int streamId, int *msgNum, int *seqNum,
        if(strncmp(actionStr, breakPoints[i].actionName, len) == 0 && !isalnum(actionStr[len])) {
     	  if(breakPoints[i].base != NULL &&
     		  (node == NULL || node->expr < breakPoints[i].start || node->expr >= breakPoints[i].finish ||
-    				  strcmp(node->base + 1, breakPoints[i].base)!=0)) {
+    				  strcmp(node->base, breakPoints[i].base)!=0)) {
 			  continue;
     	  }
     	  char buf[MAX_NAME_LEN];
@@ -843,10 +860,15 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
 			} else {
 				if (!(curStat == REDEBUG_CONTINUE || curStat == REDEBUG_CONTINUE_VERBOSE)) {
 
+/*#if _POSIX_C_SOURCE >= 199309L
+					struct timespec time = {0, 100000000}, rem;
+					nanosleep(&time, &rem);
+					waitCnt+=10;
+#else*/
 					sleep(sleepT);
-					/* if (sleepT > 10) sleepT = 10;*/
-					waitCnt++;
-					if (waitCnt > 60) {
+					waitCnt+=100;
+/*#endif*/
+					if (waitCnt > 6000) {
 						sendWaitXMsg(GlobalREDebugFlag);
 						waitCnt = 0;
 					}
