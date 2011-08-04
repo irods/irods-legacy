@@ -475,7 +475,7 @@ main(int argc, char **argv) {
             printf("Use -h for help.\n");
             exit (3);
         }
-	rstrcpy (execMyRuleInp.myRule, argv[optind], META_STR_LEN);
+	snprintf (execMyRuleInp.myRule, META_STR_LEN, "@external rule { %s }", argv[optind]);
 	parseMsInputParam (0,NULL, 0, 1, &execMyRuleInp, argv[optind + 1]);
 	if (strcmp (argv[optind + 2], "null") != 0) {
             rstrcpy (execMyRuleInp.outParamDesc, argv[optind + 2], 
