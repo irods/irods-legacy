@@ -105,7 +105,7 @@ Res *smsi_matchExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
 		Res *pres = matchPattern(params[i]->subtrees[0], res, nEnv, rei, reiSaveFlag, errmsg, r);
 		if(getNodeType(pres) == N_ERROR) {
 			/*deleteEnv(nEnv, 1); */
-			addRErrorMsg(errmsg, -1, ERR_MSG_SEP);
+			addRErrorMsg(errmsg, PATTERN_NOT_MATCHED, ERR_MSG_SEP);
 			continue;
 		}
 		res = evaluateExpression3(params[i]->subtrees[1], 0,0, rei,reiSaveFlag,nEnv,errmsg,r);
@@ -204,21 +204,26 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
 
 }
 
+Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
+	if(TYPE(coll) != T_CONS &&
+		(TYPE(coll) != T_IRODS || (
+		strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
+		strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
+		strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0))) {
+		char errbuf[ERR_MSG_LEN];
+		snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
+		generateAndAddErrMsg(errbuf, node, DYNAMIC_TYPE_ERROR, errmsg);
+		return newErrorRes(r, DYNAMIC_TYPE_ERROR);
+	} else {
+		return coll;
+	}
+}
 Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
 {
     Res *res = newRes(r);
     char* varName = ((Node *)subtrees[0])->text;
 	Res* coll = evaluateExpression3(subtrees[1], 0, 1, rei, reiSaveFlag, env, errmsg, r);
-	if(TYPE(coll) != T_CONS &&
-	   (TYPE(coll) != T_IRODS || (
-			strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
-			strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
-			strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0))) {
-        char errbuf[ERR_MSG_LEN];
-        snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
-        generateAndAddErrMsg(errbuf, subtrees[0], -1, errmsg);
-        return newErrorRes(r, -1);
-	}
+	CASCADE_N_ERROR(collType(coll, subtrees[1], errmsg, r));
 	res = newIntRes(r, 0);
 	if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
 		int i;
@@ -267,18 +272,7 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
     Res *res = newRes(r);
     char* varName = ((Node *)subtrees[0])->text;
         Res* orig = evaluateVar3(varName, ((Node *)subtrees[0]), rei, reiSaveFlag, env, errmsg, r);
-        if(getNodeType(orig) == N_ERROR) {
-                	return orig;
-                }if(TYPE(orig) != T_CONS &&
-           (TYPE(orig) != T_IRODS || (
-                strcmp(orig->exprType->text, StrArray_MS_T) != 0 &&
-                strcmp(orig->exprType->text, IntArray_MS_T) != 0 &&
-                strcmp(orig->exprType->text, GenQueryOut_MS_T) != 0))) {
-            char errbuf[ERR_MSG_LEN];
-            snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(orig));
-            generateAndAddErrMsg(errbuf, subtrees[0], -1, errmsg);
-            return newErrorRes(r, -1);
-        }
+        CASCADE_N_ERROR(collType(orig, subtrees[0], errmsg, r));
         res = newIntRes(r, 0);
         if(TYPE(orig) == T_CONS && strcmp(orig->exprType->text, LIST) == 0) {
             int i;
@@ -458,8 +452,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(params[0]->degree > 0) {
                 return params[0]->subtrees[0];
             } else {
-                generateAndAddErrMsg("error: hd: empty list", node, -1, errmsg);
-                return newErrorRes(r, -1);
+                generateAndAddErrMsg("error: hd: empty list", node, RUNTIME_ERROR, errmsg);
+                return newErrorRes(r, RUNTIME_ERROR);
             }
 	}
         Res *smsi_tl(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -476,8 +470,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		}
                 return res;
             } else {
-            	generateAndAddErrMsg("error: tl: empty list", node, -1, errmsg);
-                return newErrorRes(r, -1);
+            	generateAndAddErrMsg("error: tl: empty list", node, RUNTIME_ERROR, errmsg);
+                return newErrorRes(r, RUNTIME_ERROR);
             }
 	}
         Res *smsi_cons(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -504,8 +498,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(0>index || index >= coll->degree) {
                 char errbuf[ERR_MSG_LEN];
                 snprintf(errbuf, ERR_MSG_LEN, "setelem: index out of bound %d", index);
-                generateAndAddErrMsg(errbuf, node, -1, errmsg);
-                return newErrorRes(r, -1);
+                generateAndAddErrMsg(errbuf, node, RUNTIME_ERROR, errmsg);
+                return newErrorRes(r, RUNTIME_ERROR);
             }
 
             /* allocate memory for elements */
@@ -554,8 +548,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(TYPE(params[0]) == T_CONS) {
                 if(index <0 || index >= params[0]->degree ) {
                     snprintf(errbuf, ERR_MSG_LEN, "error: index out of range %d.", index);
-                    addRErrorMsg(errmsg, -1, errbuf);
-                    return newErrorRes(r, -1);
+                    addRErrorMsg(errmsg, RUNTIME_ERROR, errbuf);
+                    return newErrorRes(r, RUNTIME_ERROR);
                 }
                 Res *res = params[0]->subtrees[index];
                 return res;
@@ -563,8 +557,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                 if(index <0 || index >= getCollectionSize(params[0]->exprType->text,
                         RES_UNINTER_STRUCT(params[0]), r) ) {
                     snprintf(errbuf, ERR_MSG_LEN, "error: index out of range %d. %s", index, ((Res *)params[0])->exprType->text);
-                    addRErrorMsg(errmsg, -1, errbuf);
-                    return newErrorRes(r, -1);
+                    addRErrorMsg(errmsg, RUNTIME_ERROR, errbuf);
+                    return newErrorRes(r, RUNTIME_ERROR);
                 }
                 Res *res2 = getValueFromCollection(params[0]->exprType->text,
                         RES_UNINTER_STRUCT(params[0]),
@@ -645,11 +639,11 @@ Res *smsi_arity(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 		Res *val = params[0];
 		RuleIndexListNode *ruleInxLstNode;
 		if(findNextRule2(val->text, 0, &ruleInxLstNode)<0) {
-			return newErrorRes(r, -1);
+			return newErrorRes(r, RUNTIME_ERROR);
 		}
 		int ri;
 		if(ruleInxLstNode->secondaryIndex) {
-			return newErrorRes(r, -1);
+			return newErrorRes(r, RUNTIME_ERROR);
 		} else {
 			ri = ruleInxLstNode->ruleIndex;
 		}
@@ -1650,8 +1644,8 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
 Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
     if(res == NULL) {
-    	generateAndAddErrMsg("ruleExecOut not set", node, -1, errmsg);
-    	return newErrorRes(r, -1);
+    	generateAndAddErrMsg("ruleExecOut not set", node, UNKNOWN_ERROR, errmsg);
+    	return newErrorRes(r, UNKNOWN_ERROR);
     }
 
     execCmdOut_t *out = (execCmdOut_t *)RES_UNINTER_STRUCT(res);
@@ -1665,8 +1659,8 @@ Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
 Res *smsi_getstderr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
     if(res == NULL) {
-    	generateAndAddErrMsg("ruleExecOut not set", node, -1, errmsg);
-    	return newErrorRes(r, -1);
+    	generateAndAddErrMsg("ruleExecOut not set", node, UNKNOWN_ERROR, errmsg);
+    	return newErrorRes(r, UNKNOWN_ERROR);
     }
 
     execCmdOut_t *out = (execCmdOut_t *)RES_UNINTER_STRUCT(res);

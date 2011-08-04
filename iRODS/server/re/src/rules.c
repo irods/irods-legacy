@@ -393,7 +393,7 @@ ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typ
 
         error:
             snprintf(buf, ERR_MSG_LEN, "type error: in rule %s", node->subtrees[0]->text);
-            addRErrorMsg(errmsg, -1, buf);
+            addRErrorMsg(errmsg, TYPE_ERROR, buf);
             return resType;
 
 }
@@ -491,8 +491,8 @@ Res* computeNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rEr
         resType = typeExpression3(node, 0, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
         if(getNodeType(resType) == T_ERROR) {
-            addRErrorMsg(errmsg, -1, "type error: in rule");
-            res = newErrorRes(r,-1);
+            addRErrorMsg(errmsg, TYPE_ERROR, "type error: in rule");
+            res = newErrorRes(r,TYPE_ERROR);
             RETURN;
         }
         postProcessCoercion(node, varTypes, errmsg, errnode, r);
@@ -541,8 +541,8 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
     Pointer *e = newPointer2(expr);
     ParserContext *pc = newParserContext(errmsg, r);
     if(e == NULL) {
-        addRErrorMsg(errmsg, -1, "error: can not create pointer.");
-        res = newErrorRes(r, -1);
+        addRErrorMsg(errmsg, UNKNOWN_ERROR, "error: can not create pointer.");
+        res = newErrorRes(r, UNKNOWN_ERROR);
         RETURN;
     }
     rulegen = isRuleGenSyntax(expr);

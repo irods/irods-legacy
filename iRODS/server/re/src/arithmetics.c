@@ -183,13 +183,13 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 
 			case N_ACTIONS:
 							generateErrMsg("error: evaluate actions using function evaluateExpression3, use function evaluateActions instead.", NODE_EXPR_POS(expr), expr->base, errbuf);
-							addRErrorMsg(errmsg, -1, errbuf);
-							res = newErrorRes(r, -1);
+							addRErrorMsg(errmsg, RUNTIME_ERROR, errbuf);
+							res = newErrorRes(r, RUNTIME_ERROR);
 							break;
 					default:
 							generateErrMsg("error: unsupported ast node type.", NODE_EXPR_POS(expr), expr->base, errbuf);
-							addRErrorMsg(errmsg, -1, errbuf);
-							res = newErrorRes(r, -1);
+							addRErrorMsg(errmsg, UNKNOWN_ERROR, errbuf);
+							res = newErrorRes(r, UNKNOWN_ERROR);
 							break;
 		}
     } else {
@@ -231,8 +231,8 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
         } else {
             if(TYPE(res)==T_UNSPECED) {
                 generateErrMsg("error: dynamic coercion from an uninitialized value", NODE_EXPR_POS(node), node->base, buf);
-                addRErrorMsg(errmsg, -1, buf);
-                return newErrorRes(r, -1);
+                addRErrorMsg(errmsg, RUNTIME_ERROR, buf);
+                return newErrorRes(r, RUNTIME_ERROR);
             }
             switch(getNodeType(coercion)) {
                 case T_DYNAMIC:
@@ -242,9 +242,9 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                         case T_DOUBLE:
                         case T_BOOL:
                             if((int)RES_DOUBLE_VAL(res)!=RES_DOUBLE_VAL(res)) {
-                                generateErrMsg("error: dynamic type conversion DOUBLE -> INT: the double is not an integer", NODE_EXPR_POS(node), node->base, buf);
-                                addRErrorMsg(errmsg, -1, buf);
-                                return newErrorRes(r, -1);
+                                generateErrMsg("error: dynamic type conversion DOUBLE -> INTEGER: the double is not an integer", NODE_EXPR_POS(node), node->base, buf);
+                                addRErrorMsg(errmsg, RUNTIME_ERROR, buf);
+                                return newErrorRes(r, RUNTIME_ERROR);
                             } else {
                                 return newIntRes(r, RES_INT_VAL(res));
                             }
@@ -291,8 +291,8 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                                 return newBoolRes(r, 0);
                             } else {
                                 generateErrMsg("error: dynamic type conversion  string -> bool: the string is not in {true, false}", NODE_EXPR_POS(node), node->base, buf);
-                                addRErrorMsg(errmsg, -1, buf);
-                                return newErrorRes(r, -1);
+                                addRErrorMsg(errmsg, RUNTIME_ERROR, buf);
+                                return newErrorRes(r, RUNTIME_ERROR);
                             }
                             break;
                         default:
@@ -403,8 +403,8 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
 	}
     char errbuf[ERR_MSG_LEN];
     generateErrMsg("error: unsupported ast node type.", NODE_EXPR_POS(expr), expr->base, errbuf);
-	addRErrorMsg(errmsg, -1, errbuf);
-	return newErrorRes(r, -1);
+	addRErrorMsg(errmsg, UNKNOWN_ERROR, errbuf);
+	return newErrorRes(r, UNKNOWN_ERROR);
 }
 
 Res *evaluateFunctionApplication(Node *func, Node *arg, int applyAll, Node *node, ruleExecInfo_t* rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -420,8 +420,8 @@ Res *evaluateFunctionApplication(Node *func, Node *arg, int applyAll, Node *node
             return res;
         default:
             generateErrMsg("unsupported function node type.", NODE_EXPR_POS(node), node->base, errbuf);
-            addRErrorMsg(errmsg, -1, errbuf);
-            return newErrorRes(r, -1);
+            addRErrorMsg(errmsg, UNKNOWN_ERROR, errbuf);
+            return newErrorRes(r, UNKNOWN_ERROR);
     }
 }
 
@@ -575,7 +575,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 		printf("%s\n", buf); */
 		Node *errnode;
 		if(!solveConstraints(localTypingConstraints, env->current, errmsg, &errnode, r)) {
-			res = newErrorRes(r, -1);
+			res = newErrorRes(r, RUNTIME_ERROR);
 			RETURN;
 		}
 		/*printVarTypeEnvToStdOut(localTVarEnv); */
@@ -617,8 +617,8 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
                 res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
                 break;
             default:
-            	res = newErrorRes(r, -1);
-                generateAndAddErrMsg("unsupported function descriptor type", node, -1, errmsg);
+            	res = newErrorRes(r, UNKNOWN_ERROR);
+                generateAndAddErrMsg("unsupported function descriptor type", node, UNKNOWN_ERROR, errmsg);
                 RETURN;
         }
     } else {
@@ -764,7 +764,7 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
                         default:
                             /* unsupported type error */
                             res = NULL;
-                            addRErrorMsg(errmsg, -1, "error: unsupported session variable type");
+                            addRErrorMsg(errmsg, UNKNOWN_ERROR, "error: unsupported session variable type");
                     }
                 }
                 free(varMap);
@@ -1009,8 +1009,8 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
         }
         if(TYPE(res) != T_STRING) {
             /* todo try coercion */
-            addRErrorMsg(errmsg, -1, "error: the lhs of indexed rule condition does not evaluate to a string");
-            status = newErrorRes(r, -1);
+            addRErrorMsg(errmsg, DYNAMIC_TYPE_ERROR, "error: the lhs of indexed rule condition does not evaluate to a string");
+            status = newErrorRes(r, DYNAMIC_TYPE_ERROR);
             RETURN;
         }
 

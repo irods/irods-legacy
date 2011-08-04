@@ -471,8 +471,8 @@ Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rE
     if (varName[0] == '$') {
         if(TYPE(val)!=T_STRING) {
             snprintf(errbuf, ERR_MSG_LEN, "error: assign a nonstring value to session variable %s.", varName);
-            addRErrorMsg(errmsg, -1, errbuf);
-            return newErrorRes(r, -1);
+            addRErrorMsg(errmsg, RUNTIME_ERROR, errbuf);
+            return newErrorRes(r, RUNTIME_ERROR);
             /* todo find the proper error code */
         }
         i = getVarMap("", varName, &varMap, 0);
@@ -840,7 +840,7 @@ void logErrMsg(rError_t *errmsg, rError_t *system) {
     writeToTmp("err.log", "end errlog\n");
 #endif
     if(system!=NULL) {
-    	rodsLogAndErrorMsg(LOG_ERROR, system,-1, "%s", errbuf);
+    	rodsLogAndErrorMsg(LOG_ERROR, system,UNKNOWN_ERROR, "%s", errbuf);
     } else {
     	rodsLog (LOG_ERROR, "%s", errbuf);
     }

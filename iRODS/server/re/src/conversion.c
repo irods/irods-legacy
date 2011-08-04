@@ -380,12 +380,12 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
                     default:
                         /* current there is no existing packing instructions for arbitrary collection */
                         /* report error */
-                        addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary collection type");
-                        return -1;
+                        addRErrorMsg(errmsg, UNKNOWN_ERROR, "no packing instruction for arbitrary collection type");
+                        return UNKNOWN_ERROR;
                 }
             } else {
-                addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary constructed type");
-                return -1;
+                addRErrorMsg(errmsg, UNKNOWN_ERROR, "no packing instruction for arbitrary constructed type");
+                return UNKNOWN_ERROR;
             }
             break;
         case T_IRODS:
@@ -399,8 +399,8 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             break;
         default:
             /*error */
-            addRErrorMsg(errmsg, -1, "no packing instruction for arbitrary type");
-            return -1;
+            addRErrorMsg(errmsg, UNKNOWN_ERROR, "no packing instruction for arbitrary type");
+            return UNKNOWN_ERROR;
     }
     return 0;
 }
