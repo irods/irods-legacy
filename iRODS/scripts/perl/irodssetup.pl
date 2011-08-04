@@ -18,7 +18,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodssetup.pl"} = "Feb 2011";
+$version{"irodssetup.pl"} = "Aug 2011";
 
 
 
@@ -175,10 +175,10 @@ if ( $thisUserID == 0 )
 
 
 if ( $isUpgrade ne "") {
-    printNotice("\nNote: When upgrading from 2.4.1 to 2.5, you should run\n");
-    printNotice("all-patch-v2.4.1tov2.5.sql via psql (for Postgres)\n");
-    printNotice("or via sqlplus (for Oracle)\n");
-    printNotice("or via mysql (for MySQL)\n");
+    printNotice("\nNote: When upgrading from 2.5 to 3.0, you should run\n");
+    printNotice("psg-patch-v2.5tov3.0.sql via psql (for Postgres)\n");
+    printNotice("or ora-patch-v2.5tov3.0.sql via sqlplus (for Oracle)\n");
+    printNotice("or mys-patch-v2.5tov3.0.sql via mysql (for MySQL)\n");
     printNotice("before running this script.\n");
     printNotice("If you have an older iRODS, you need to run the\n");
     printNotice("other patch scripts in sequence.\n\n");
