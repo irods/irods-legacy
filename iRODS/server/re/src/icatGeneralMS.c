@@ -1036,7 +1036,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 		rodsLog (LOG_NOTICE, "msiSetACL: ACL modifications has failed for user %s on object %s, error = %i\n", user, path, rc);
 	}
   
-	return (rei->status);
+	return (rc);
 }
 
 /**
