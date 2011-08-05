@@ -467,7 +467,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     if(inAction[strlen(inAction)-1]=='|') {
     	char *inActionCopy = strdup(inAction);
     	inActionCopy[strlen(inAction) - 1] = '\0';
-    	char *action = (char *) malloc(sizeof(inAction) * strlen(inAction) + 2);
+    	char *action = (char *) malloc(sizeof(char) * strlen(inAction) + 3);
     	sprintf(action, "{%s}", inActionCopy);
     	res = parseAndComputeExpressionAdapter(action, inMsParamArray, rei, reiSaveFlag, r);
     	free(action);
@@ -549,7 +549,9 @@ int extractVarNames(char **varNames, char *outBuf) {
 			*psrc = '%';
 			p = psrc+1;
 		} else if(*psrc == '\0') {
-			varNames[n++] = strdup(p);
+			if(strlen(p) != 0) {
+				varNames[n++] = strdup(p);
+			}
 			break;
 		}
 		psrc++;

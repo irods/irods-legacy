@@ -40,6 +40,7 @@ Cache ruleEngineConfig = {
     NULL, /* Region *coreRegion */
     NULL, /* Region *appRegion */
     NULL, /* Region *extRegion */
+    0, /* int tvarNumber */
     0, /* int clearDelayed */
     time_type_initializer, /* time_type timestamp */
     time_type_initializer, /* time_type updateTS */

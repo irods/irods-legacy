@@ -59,6 +59,7 @@ typedef struct {
     Region *coreRegion;
     Region *appRegion;
     Region *extRegion;
+    int tvarNumber; /* counter for tvar generator */
     int clearDelayed;
     time_type timestamp;
     time_type updateTS;

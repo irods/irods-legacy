@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "restructs.h"
 #include "conversion.h"
+#include "configuration.h"
 /* make a new type by substituting tvars with fresh tvars */
 ExprType *dupType(ExprType *ty, Region *r) {
     Hashtable *varTable = newHashTable2(100, r);
@@ -276,9 +277,6 @@ int unifyPrim(ExprType *type, TypeConstructor prim, Hashtable *typeVars, Region 
 }
 */
 
-/* counter for tvar generator */
-int tvarNumber = 0;
-
 /* utility function */
 char* getTVarName(int vid, char name[128]) {
     snprintf(name, 128, "?%d",vid);
@@ -295,7 +293,7 @@ char* getTVarNameRegionFromExprType(ExprType *tvar, Region *r) {
 
 
 int newTVarId() {
-    return tvarNumber ++;
+    return ruleEngineConfig.tvarNumber ++;
 }
 
 /* copy to new region

@@ -25,7 +25,6 @@
         return ret; \
     }}
 
-extern int tvarNumber;
 
 int newTVarId();
 
