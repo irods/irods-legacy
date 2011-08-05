@@ -216,6 +216,7 @@ int cmlGetOneRowFromSqlV2 (char *sql,
  Like cmlGetOneRowFromSql but uses bind variable array (via 
     cllExecSqlWithResult).
  */
+static
 int cmlGetOneRowFromSqlV3 (char *sql, 
 		   char *cVal[], 
 		   int cValSize[], 
@@ -502,7 +503,7 @@ int cmlCheckNameToken(char *nameSpace, char *tokenName, icatSessionStruct *icss)
   rodsLong_t iVal;
   int status;
 
-  if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckNameToken SQL 1 ");
+  if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckNameToken SQL 1 ");
   status = cmlGetIntegerValueFromSql (
   "select token_id from  R_TOKN_MAIN where token_namespace=? and token_name=?",
       &iVal, nameSpace, tokenName, 0, 0, 0, icss);
@@ -523,7 +524,7 @@ int cmlModifySingleTable (char *tableName,
   int i, l;
   char *rsql;
 
-  if (logSQL_CML) rodsLog(LOG_SQL, "cmlModifySingleTable SQL 1 ");
+  if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlModifySingleTable SQL 1 ");
 
   snprintf(tsql, MAX_SQL_SIZE, "update %s set ", tableName);
   l = strlen(tsql);
@@ -548,7 +549,7 @@ cmlGetNextSeqVal(icatSessionStruct *icss) {
    int status;
    rodsLong_t iVal;
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlGetNextSeqVal SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlGetNextSeqVal SQL 1 ");
 
    nextStr[0]='\0';
 
@@ -580,7 +581,7 @@ cmlGetCurrentSeqVal(icatSessionStruct *icss) {
    int status;
    rodsLong_t iVal;
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlGetCurrentSeqVal SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlGetCurrentSeqVal SQL 1 ");
 
    nextStr[0]='\0';
 
@@ -612,7 +613,7 @@ cmlGetNextSeqStr(char *seqStr, int maxSeqStrLen, icatSessionStruct *icss) {
    char sql[STR_LEN];
    int status;
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlGetNextSeqStr SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlGetNextSeqStr SQL 1 ");
 
    nextStr[0]='\0';
    cllNextValueString("R_ObjectID", nextStr, STR_LEN);
@@ -685,7 +686,7 @@ cmlCheckResc( char *rescName, char *userName, char *userZone, char *accessLevel,
    int status;
    rodsLong_t iVal;
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckResc SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckResc SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
   	        "select resc_id from R_RESC_MAIN RM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where RM.resc_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = RM.resc_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
@@ -694,7 +695,7 @@ cmlCheckResc( char *rescName, char *userName, char *userZone, char *accessLevel,
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
 
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckResc SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckResc SQL 2 ");
 
       status = cmlGetIntegerValueFromSql(
 		 "select resc_id from R_RESC_MAIN where resc_name=?",
@@ -721,7 +722,7 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
    int status;
    rodsLong_t iVal;
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDir SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDir SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
   	        "select coll_id from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
@@ -730,7 +731,7 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
 
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDir SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDir SQL 2 ");
 
       status = cmlGetIntegerValueFromSql(
 		 "select coll_id from R_COLL_MAIN where coll_name=?",
@@ -770,7 +771,7 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
    cValSize[1] = MAX_INTEGER_SIZE;
 
    *inheritFlag = 0;
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 ");
 
    status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss);
    if (status == 2) {
@@ -786,7 +787,7 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
 
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 2 ");
 
       status = cmlGetIntegerValueFromSql(
 		 "select coll_id from R_COLL_MAIN where coll_name=?",
@@ -813,7 +814,7 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
    int status;
    rodsLong_t iVal;
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirId SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirId SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
   	        "select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = ? and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
@@ -822,7 +823,7 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
 
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirId SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirId SQL 2 ");
 
       status = cmlGetIntegerValueFromSql(
 		 "select coll_id from R_COLL_MAIN where coll_id=?",
@@ -846,7 +847,7 @@ cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
    int status; 
    rodsLong_t iVal; 
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirOwn SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirOwn SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
 	    "select coll_id from R_COLL_MAIN where coll_name=? and coll_owner_name=? and coll_owner_zone=?",
@@ -869,7 +870,7 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
    int status;
    rodsLong_t iVal; 
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
   	        "select data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
@@ -879,7 +880,7 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
    if (status) { 
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 2 ");
 
       status = cmlGetIntegerValueFromSql(
          "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
@@ -905,7 +906,7 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
    rodsLong_t iVal, collId;
    char collIdStr[MAX_NAME_LEN];
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOwn SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDataObjOwn SQL 1 ");
    status = cmlGetIntegerValueFromSql(
 	    "select coll_id from R_COLL_MAIN where coll_name=?",
 	    &iVal, dirName, 0, 0, 0, 0, icss);
@@ -913,7 +914,7 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
    collId = iVal;
    snprintf(collIdStr, MAX_NAME_LEN, "%lld", collId);
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOwn SQL 2 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDataObjOwn SQL 2 ");
    status = cmlGetIntegerValueFromSql(
 	         "select data_id from R_DATA_MAIN where data_name=? and coll_id=? and data_owner_name=? and data_owner_zone=?",
 		 &iVal, dataName, collIdStr, userName, userZone, 0, icss);
@@ -934,7 +935,7 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
    int status;
    rodsLong_t iVal; 
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjId SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDataObjId SQL 1 ");
 
    iVal=0;
    status = cmlGetIntegerValueFromSql(
@@ -963,7 +964,7 @@ int cmlCheckGroupAdminAccess(char *userName, char *userZone,
    char sVal[MAX_NAME_LEN];
    rodsLong_t iVal;
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 1 ");
 
    status = cmlGetStringValueFromSql(
       "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='groupadmin'",
@@ -971,7 +972,7 @@ int cmlCheckGroupAdminAccess(char *userName, char *userZone,
    if (status==CAT_NO_ROWS_FOUND) return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    if (status) return(status);
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 2 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 2 ");
 
    status = cmlGetIntegerValueFromSql(
       "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
@@ -1000,7 +1001,7 @@ cmlAudit1(int actionId, char *clientUser, char *zone, char *targetUser,
 
    if (auditEnabled==0) return(0);
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit1 SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlAudit1 SQL 1 ");
 
    getNowStr(myTime);
 
@@ -1042,7 +1043,7 @@ cmlAudit2(int actionId, char *dataId, char *userName, char *zoneName,
 
    if (auditEnabled==0) return(0);
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit2 SQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlAudit2 SQL 1 ");
 
    getNowStr(myTime);
 
@@ -1099,7 +1100,7 @@ cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName,
          (just in case) but I'm removing the rodsLog call so the ICAT
          test suite does not require it to be tested.
       */
-      /*      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAu---dit3 S--QL 1 "); */
+      /*      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlAu---dit3 S--QL 1 "); */
       cllBindVars[0]=dataId;
       cllBindVars[1]=userName;
       cllBindVars[2]=actionIdStr;
@@ -1111,7 +1112,7 @@ cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName,
 				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from R_USER_MAIN where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)", icss);
    }
    else {
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit3 SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlAudit3 SQL 2 ");
       cllBindVars[0]=dataId;
       cllBindVars[1]=userName;
       cllBindVars[2]=zoneName;
@@ -1167,7 +1168,7 @@ cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName,
          test suite does not require it to be tested.
       */
       /*   
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlA---udit4 S--QL 1 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlA---udit4 S--QL 1 ");
       */
       snprintf(mySQL, MAX_SQL_SIZE, 
 	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from R_USER_MAIN where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)",
@@ -1185,7 +1186,7 @@ cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName,
       status = cmlExecuteNoAnswerSql(mySQL,icss);
    }
    else {
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit4 SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlAudit4 SQL 2 ");
       snprintf(mySQL, MAX_SQL_SIZE, 
 	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)",
 	       sql);
