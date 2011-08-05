@@ -925,8 +925,16 @@ msiRollback(ruleExecInfo_t *rei)
  * \note This microservice modifies the access rights on a given iRODS object or
 	 collection. For the collections, the modification can be recursive and the
 	 inheritence bit can be changed as well.
+	 For admin mode, add MOD_ADMIN_MODE_PREFIX to the access level string,
+	 e.g: msiSetACL("default", "admin:read", "rods", *path)
  *
- * \usage msiSetACL(recursiveFlag, accessLevel, userName, pathName)
+ * \usage	msiSetACL(recursiveFlag, accessLevel, userName, pathName)
+ * 			As seen in clients/icommands/test/setACL.r:
+ * 			setACL {
+ * 				msiSetACL("default", "read", "bob", *path)
+ * 			}
+ * 			INPUT *path="/demo/home/rods/test/driver.txt"
+ * 			OUTPUT ruleExecOut
  * 
  * \param[in] recursiveFlag - a STR_MS_T, either "default" or "recursive".  "recursive"
  *    is only relevant if set with accessLevel set to "inherit".
@@ -969,7 +977,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 		 pathName == NULL ) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 							"msiSetACL: one of the input parameter is NULL");
-		return (rei->status);
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
 	}
   
 	recFlg = 0; /* non recursive mode */
@@ -984,7 +992,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 							"msiSetACL: Unsupported input recursiveFlag type %i",
 							recursiveFlag->type);
-		return (rei->status);
+		return (USER_PARAM_TYPE_ERR);
 	}
 	
 	if ( strcmp (accessLevel->type, STR_MS_T) == 0 ) {
@@ -994,7 +1002,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 							"msiSetACL: Unsupported input accessLevel type %s",
 							accessLevel->type);
-		return (rei->status);
+		return (USER_PARAM_TYPE_ERR);
 	}
   
 	if ( strcmp (userName->type, STR_MS_T) == 0 ) {
@@ -1004,7 +1012,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 							"msiSetACL: Unsupported input userName type %s",
 							userName->type);
-		return (rei->status);
+		return (USER_PARAM_TYPE_ERR);
 	}
 	
 	if ( strcmp (pathName->type, STR_MS_T) == 0 ) {
@@ -1014,7 +1022,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 							"msiSetACL: Unsupported input pathName type %s",
 							pathName->type);
-		return (rei->status);
+		return (USER_PARAM_TYPE_ERR);
 	}
 	
 	rsComm = rei->rsComm;
