@@ -1703,7 +1703,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    if (dataIx<0 && collIx<0) return(CAT_INVALID_ARGUMENT);
 
    if (dataIx>=0) {
-      if (continueFlag==0) {
+      if (continueFlag==1) {
          if (strcmp(prevDataId, 
                 icss->stmtPtr[statementNum]->resultValue[dataIx])==0) {
 	    if (strcmp(prevUser, genQueryInp.condInput.value[userIx])==0) {
