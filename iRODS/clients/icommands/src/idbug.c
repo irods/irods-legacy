@@ -29,20 +29,22 @@ int
 printCommandSummary() {
   printf("Command Prompt Summary:\n");
   printf(" Each of the commands can be appended with the string ' for all' or ' for <num>'\n");
-  printf("  then the message is sent to all irodsAgents involeved with this debugging session or to just only one\n");
+  printf("  then the message is sent to all irodsAgents involved with this debugging session or to just only one\n");
   printf("  <num> is the index number of the host-address:pid of the irodsAgent and is given by command prompt 'a'\n\n");
-  printf("  a : list all iRODS aents host-address:pid involed currently in the session\n");
-  printf("  n : execute next rule/micro-service\n");
-  printf("  c[ <num>] : continue running rules/micro-services for <num> steps. Otherwise forever \n");
-  printf("  C[ <num>] : same as 'c' but with steps shown \n");
-  printf("  d : discontinue. stop at next rule/micro-service. Useful in 'c' mode\n");
-  printf("  b <br> : set breakpoint at a rule/micro-service\n");
-  printf("  l <name> : list rule, or $- or *-variables\n");
-  printf("  e <name> : examine $- or *-variable\n");
-  printf("  p <name> : same as 'e'\n");
-  printf("  w[ <num>]: where. display <num> layers of  current rule/micro-service call stack. Otherwise display default number of steps.\n");
-  printf("  W[ <num>]: display <num> layers of full  rule/micro-service call stack\n");
-  printf("  q : cleanup and quit\n");
+  printf("  a : list all iRODS agents host-address:pid involved currently in the session.\n");
+  printf("  n|next : execute next action.\n");
+  printf("  s|step : step into next action.\n");
+  printf("  f|finish : step out of the current action.\n");
+  printf("  c|continue : continue running rules/micro-services.\n");
+  printf("  C|Continue : same as 'c' but with steps shown.\n");
+  printf("  d|discontinue : discontinue. stop at next rule/micro-service. Useful in 'c' mode.\n");
+  printf("  b|break <action> [<qualifier>] : set breakpoint at a rule/micro-service.\n");
+  printf("  del|delete <num> : delete breakpoint <num>.\n");
+  printf("  l|list (r|rule <name>)|<name> : list rule, $-variables, *-variables, or breakpoints.\n");
+  printf("  p|print <expression> : print expression.\n");
+  printf("  w|where [<num>] : display <num> layers of rule/micro-service call stack. If <num> is not specified, display default number of steps.\n");
+  printf("  W|Where [<num>] : display <num> layers of full rule/micro-service call stack. If <num> is not specified, display default number of steps.\n");
+  printf("  q : cleanup and quit.\n");
   /*  hibernate (sleep X and then continue) Hibernate (sleep X every step)
       step (step/skip throuh a  rule) 
       Step (step/skip throuh a  rule in verbose mode) 
@@ -561,7 +563,7 @@ main(int argc, char **argv)
 	sleep(sleepSec);
 	sleepSec = 2 * sleepSec;
 	/* if (sleepSec > 10) sleepSec = 10; */
-	if (sleepSec > 1) sleepSec = 1; 
+	if (sleepSec > 1) sleepSec = 1;
       }
     }
 }
