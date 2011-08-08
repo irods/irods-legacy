@@ -41,7 +41,7 @@ the enabling flag to 'yes' in the file modules/webservices/info.txt
 2. Place    stockQuote.wsdl    in webservices/microservices/src/stockQuote
      this is obtained from the web services site
 3. cd  webservices/microservices/src/stockQuote
-4. setenv GSOAPDIR ../../../gsoap/soapcpp2
+4. setenv GSOAPDIR ../../../gsoap/gsoap
 5. $GSOAPDIR/wsdl/wsdl2h  -c -I$GSOAPDIR  -o stockQuoteMS_wsdl.h stockQuote.wsdl 
      this creates a file called  stockQuoteMS_wsdl.h
 6. $GSOAPDIR/src/soapcpp2 -c -w -x -C -n -pstockQuote  stockQuoteMS_wsdl.h

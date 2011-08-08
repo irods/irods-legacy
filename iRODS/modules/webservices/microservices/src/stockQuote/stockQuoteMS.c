@@ -78,14 +78,15 @@ msiGetQuote(msParam_t* inSymbolParam, msParam_t* outQuoteParam, ruleExecInfo_t* 
 
   soap_init(soap);
   soap_set_namespaces(soap, stockQuote_namespaces);  
-  if (soap_call___ns1__GetQuote(soap, NULL, NULL, &sym, &quote) == SOAP_OK) {
+  /*  if (soap_call___ns3__GetQuote(soap, NULL, NULL, &sym, &quote) == SOAP_OK) { */
+  if (soap_call___ns2__GetQuote(soap, NULL, NULL, &sym, &quote) == SOAP_OK)   { 
     fillMsParam( outQuoteParam, NULL,
 		 STR_MS_T, quote.GetQuoteResult, NULL );
     free (quote.GetQuoteResult);
     return(0);
   }
   else {
-    sprintf(response,"Error in execution of msiIp2location::%s\n",soap->buf);
+    sprintf(response,"Error in execution of stockQuote::%s\n",soap->buf);
     fillMsParam( outQuoteParam, NULL,
 		 STR_MS_T, response, NULL );
     return(0);
