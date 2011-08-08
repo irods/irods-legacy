@@ -37,7 +37,7 @@ int ttimestr(char* timestr, int n, char* timeformat, rodsLong_t* t) {
 	if(*timeformat==0) {
 		timeformat = defaultformat;
 	}
-	time_t t2 = (time_t) t;
+	time_t t2 = (time_t) *t;
 	struct tm tm = *localtime(&t2);
 	if (strftime(timestr, n, timeformat, &tm) == 0) {
 		return 0;

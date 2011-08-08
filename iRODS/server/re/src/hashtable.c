@@ -32,6 +32,8 @@ struct bucket *newBucket2(char* key, void* value, Region *r) {
  */
 Hashtable *newHashTable(int size) {
 	Hashtable *h = (Hashtable *)malloc(sizeof (Hashtable));
+	memset(h, 0, sizeof(Hashtable));
+
 	if(h==NULL) {
 		return NULL;
 	}
@@ -54,6 +56,8 @@ Hashtable *newHashTable(int size) {
 Hashtable *newHashTable2(int size, Region *r) {
 
 	Hashtable *h = (Hashtable *)region_alloc(r, sizeof (Hashtable));
+	memset(h, 0, sizeof(Hashtable));
+
 	if(h==NULL) {
 		return NULL;
 	}
@@ -91,7 +95,7 @@ int insertIntoHashTable(Hashtable *h, char* key, void *value) {
 					} while (b!=NULL);
 				}
 			}
-			*h = *h2;
+			memcpy(h, h2, sizeof(Hashtable));
 		}
 		struct bucket *b = newBucket2(cpStringExt(key, h->bucketRegion), value, h->bucketRegion);
 		if(b==NULL) {

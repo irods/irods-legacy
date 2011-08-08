@@ -52,6 +52,7 @@ extern "C" {
 #define RcvXmsgInp_MS_T         "RcvXmsgInp_PI"
 #define RcvXmsgOut_MS_T         "RcvXmsgOut_PI"
 #define StructFileExtAndRegInp_MS_T         "StructFileExtAndRegInp_PI"
+#define RuleSet_MS_T "RuleSet_PI"
 #define RuleStruct_MS_T         "RuleStruct_PI"
 #define DVMapStruct_MS_T        "DVMapStruct_PI"
 #define FNMapStruct_MS_T        "FNMapStruct_PI"

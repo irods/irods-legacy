@@ -347,7 +347,7 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     if(msParamArray!=NULL) {
         convertMsParamArrayToEnv(msParamArray, global, errmsg, r);
     }
-    Res *res = computeNode(node, env, rei, reiSaveFlag, errmsg,r);
+    Res *res = computeNode(node, NULL, env, rei, reiSaveFlag, errmsg,r);
     /* deleteEnv(env, 3); */
     if(recclearDelayed) {
     	clearDelayed();
@@ -477,29 +477,41 @@ ret:
     return res;
 }
 
-/* compute an expression or action given by an AST node */
-Res* computeNode(Node *node, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t* errmsg, Region *r) {
-    Hashtable *varTypes = newHashTable2(10, r);
-    Region *rNew = make_region(0, NULL);
-    ExprType *resType;
-    Node *en;
-    Node **errnode = &en;
-    Res* res;
+int typeNode(Node *node, Hashtable *varTypes, rError_t *errmsg, Node **errnode, Region *r)
+{
     if((node->option & OPTION_TYPED) == 0) {
         /*printTree(node, 0); */
         List *typingConstraints = newList(r);
-        resType = typeExpression3(node, 0, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
+        Res *resType = typeExpression3(node, 0, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
         if(getNodeType(resType) == T_ERROR) {
             addRErrorMsg(errmsg, TYPE_ERROR, "type error: in rule");
-            res = newErrorRes(r,TYPE_ERROR);
-            RETURN;
+            return TYPE_ERROR;
         }
         postProcessCoercion(node, varTypes, errmsg, errnode, r);
         postProcessActions(node, ruleEngineConfig.extFuncDescIndex, errmsg, errnode, r);
         /*    printTree(node, 0); */
         varTypes = NULL;
         node->option |= OPTION_TYPED;
+    }
+    return 0;
+}
+
+/* compute an expression or action given by an AST node */
+Res* computeNode(Node *node, Node *reco, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t* errmsg, Region *r) {
+    Hashtable *varTypes = newHashTable2(10, r);
+    Region *rNew = make_region(0, NULL);
+    Node *en;
+    Node **errnode = &en;
+    Res* res;
+    int errorcode;
+    if((errorcode = typeNode(node, varTypes, errmsg, errnode, r))!=0) {
+        res = newErrorRes(r,errorcode);
+        RETURN;
+    }
+    if(reco != NULL && (errorcode = typeNode(reco, varTypes, errmsg, errnode, r))!=0) {
+        res = newErrorRes(r,errorcode);
+        RETURN;
     }
     if(getNodeType(node) == N_ACTIONS) {
     	res = evaluateActions(node, NULL, rei, reiSaveFlag, env, errmsg, rNew);
@@ -528,7 +540,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
     Res *res = NULL;
     char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
     int rulegen;
-    Node *node = NULL;
+    Node *node = NULL, *recoNode = NULL;
 
 #ifdef DEBUG
     snprintf(buf, 1024, "parseAndComputeExpression: %s\n", expr);
@@ -550,7 +562,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
     if(rulegen) {
     	node = parseTermRuleGen(e, rulegen, pc);
     } else {
-    	node= parseActionsRuleGen(e, rulegen, pc);
+    	node= parseActionsRuleGen(e, rulegen, 1, pc);
     }
     if(node==NULL) {
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
@@ -564,18 +576,30 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
     } else {
         Token *token;
         token = nextTokenRuleGen(e, pc, 0);
-
+        if(strcmp(token->text, "|")==0) {
+        	recoNode = parseActionsRuleGen(e, rulegen, 1, pc);
+            if(node==NULL) {
+				addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
+				res = newErrorRes(r, OUT_OF_MEMORY);
+				RETURN;
+            } else if (getNodeType(node) == N_ERROR) {
+				generateErrMsg("error: syntax error",NODE_EXPR_POS(node), node->base, buf);
+				addRErrorMsg(errmsg, PARSER_ERROR, buf);
+				res = newErrorRes(r, PARSER_ERROR);
+				RETURN;
+            }
+            token = nextTokenRuleGen(e, pc, 0);
+        }
         if(token->type!=TK_EOS) {
             Label pos;
-            getFPos(&pos, e);
+            getFPos(&pos, e, pc);
             generateErrMsg("error: unparsed suffix",pos.exprloc, pos.base, buf);
             addRErrorMsg(errmsg, UNPARSED_SUFFIX, buf);
-/*            deletePointer(e); */
             res = newErrorRes(r, UNPARSED_SUFFIX);
             RETURN;
         }
     }
-	res = computeNode(node, env, rei, reiSaveFlag, errmsg,r);
+	res = computeNode(node, NULL, env, rei, reiSaveFlag, errmsg,r);
     ret:
     deleteParserContext(pc);
     deletePointer(e);

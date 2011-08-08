@@ -704,21 +704,10 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
 
   actionCall = inActionCall;
   /* Get Arguments */
-  if (strstr(actionCall,"##") == NULL && !strcmp(recoveryActionCall,"nop")) {
-    /* single call */
-    i = parseAction(actionCall,action,args, &argc);
-    if (i != 0)
-      return(i);
-    mapExternalFuncToInternalProc(action);
-    argc = 0;
-  }
-  else {
     actionCall = (char *) malloc(strlen(inActionCall) + strlen(recoveryActionCall) + 3);
     sprintf(actionCall,"%s|%s",inActionCall,recoveryActionCall);
-    args[0] = NULL;
     args[1] = NULL;
     argc = 0;
-  }
   /* Pack Rei and Args */
   i = packReiAndArg (rei->rsComm, rei, args, argc, &packedReiAndArgBBuf);
   if (i < 0) {

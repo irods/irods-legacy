@@ -43,12 +43,13 @@ Op new_ops[num_ops] = {
 };
 PARSER_FUNC_PROTO2(Term, int rulegen, int prec);
 PARSER_FUNC_PROTO2(Actions, int rulegen, int backwardCompatible);
+PARSER_FUNC_PROTO1(T, int rulegen);
 PARSER_FUNC_PROTO1(Value, int rulegen);
 PARSER_FUNC_PROTO1(StringExpression, Token *tk);
 PARSER_FUNC_PROTO(RuleName);
 PARSER_FUNC_PROTO(TermBackwardCompatible);
+PARSER_FUNC_PROTO1(ExprBackwardCompatible, int level);
 PARSER_FUNC_PROTO1(TermSystemBackwardCompatible, int lev);
-PARSER_FUNC_PROTO(ActionsBackwardCompatible);
 PARSER_FUNC_PROTO(ActionArgumentBackwardCompatible);
 PARSER_FUNC_PROTO(FuncExpr);
 PARSER_FUNC_PROTO(Type);
@@ -164,7 +165,7 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen) {
         skipWhitespace(e);
         Label start;
         Label pos;
-        getFPos(&start, e);
+        getFPos(&start, e, context);
         token->exprloc = start.exprloc;
         int ch = lookAhead(e, 0);
         if (ch == -1) { /* reach the end of stream */
@@ -463,15 +464,19 @@ PARSER_FUNC_BEGIN1(Rule, int backwardCompatible)
                 TTEXT("|");
             	BUILD_NODE(TK_BOOL, "true", FPOS, 0, 0);
             OR(ruleCond)
-                NT2(Term, 0, MIN_PREC);
+                if(backwardCompatible >= 0) {
+                	NT1(ExprBackwardCompatible, 0);
+                } else {
+                	NT2(Term, 0, MIN_PREC);
+                }
                 TTEXT("|");
                 BUILD_NODE(N_TUPLE, TUPLE, &pos, 1, 1);
             END_TRY(ruleCond)
 
 
-            NT2(Actions, 0, backwardCompatible);
+            NT2(Actions, 0, backwardCompatible >= 0? 1: 0);
             TTEXT("|");
-            NT2(Actions, 0, backwardCompatible);
+            NT2(Actions, 0, backwardCompatible>= 0? 1: 0);
             int n = 0;
             Label metadataStart = *FPOS;
             OPTIONAL_BEGIN(ruleId)
@@ -718,7 +723,11 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
     TRY(func)
         TTEXT("ifExec");
         TTEXT("(");
-        NT2(Term, 0, MIN_PREC);
+        if(level == 1) {
+        	NT1(ExprBackwardCompatible, 0);
+        } else {
+        	NT2(Term, 0, MIN_PREC);
+        }
         TTEXT(",");
         NT2(Actions, 0, level);
         TTEXT(",");
@@ -729,11 +738,14 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
         NT2(Actions, 0, level);
         TTEXT(")");
         BUILD_APP_NODE("if", &start, 5);
-
     OR(func)
         TTEXT("whileExec");
         TTEXT("(");
-        NT2(Term, 0, MIN_PREC);
+        if(level == 1) {
+        	NT1(ExprBackwardCompatible, 0);
+        } else {
+        	NT2(Term, 0, MIN_PREC);
+        }
         TTEXT(",");
         NT2(Actions, 0, level);
         TTEXT(",");
@@ -755,9 +767,18 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
     OR(func)
         TTEXT("assign");
         TTEXT("(");
-        NT2(Term, 0, MIN_PREC);
+        TTYPE(TK_LOCAL_VAR);
+        BUILD_NODE(TK_VAR, token->text, &pos, 0, 0);
         TTEXT(",");
-        NT2(Term, 0, MIN_PREC);
+        if(level == 1) {
+        	TRY(expr)
+        			NT1(ExprBackwardCompatible, 1);
+        	OR(expr)
+        			NT(ActionArgumentBackwardCompatible);
+        	END_TRY(expr)
+        } else {
+        	NT2(Term, 0, MIN_PREC);
+        }
         TTEXT(")");
         if(level == 1) {
         	BUILD_APP_NODE("assignStr", &start, 2);
@@ -781,8 +802,82 @@ PARSER_FUNC_BEGIN1(TermSystemBackwardCompatible, int level)
     OR(func)
         TTEXT("breakExec");
         BUILD_APP_NODE("break", &start, 0);
+	OR(func)
+		TTEXT("delayExec");
+    	TTEXT("(");
+    	NT(ActionArgumentBackwardCompatible)
+		TTEXT(",");
+        Token strtoken;
+        nextActionArgumentStringBackwardCompatible(e, &strtoken);
+		if(strtoken.type != TK_STRING) {
+			BUILD_NODE(N_ERROR, "reached the end of stream while parsing an action argument", FPOS,0,0);
+		} else {
+			BUILD_NODE(TK_STRING, strtoken.text, &pos, 0, 0);
+		}
+		TTEXT(",");
+        nextActionArgumentStringBackwardCompatible(e, &strtoken);
+		if(strtoken.type != TK_STRING) {
+			BUILD_NODE(N_ERROR, "reached the end of stream while parsing an action argument", FPOS,0,0);
+		} else {
+			BUILD_NODE(TK_STRING, strtoken.text, &pos, 0, 0);
+		}
+        TTEXT(")");
+		BUILD_APP_NODE("delayExec", &start, 3);
+	OR(func)
+		TTEXT("remoteExec");
+		TTEXT("(");
+
+        NT(ActionArgumentBackwardCompatible)TTEXT(",");
+        NT(ActionArgumentBackwardCompatible)TTEXT(",");
+        Token strtoken;
+        nextActionArgumentStringBackwardCompatible(e, &strtoken);
+		if(strtoken.type != TK_STRING) {
+			BUILD_NODE(N_ERROR, "reached the end of stream while parsing an action argument", FPOS,0,0);
+		} else {
+			BUILD_NODE(TK_STRING, strtoken.text, &pos, 0, 0);
+		}TTEXT(",");
+        nextActionArgumentStringBackwardCompatible(e, &strtoken);
+		if(strtoken.type != TK_STRING) {
+			BUILD_NODE(N_ERROR, "reached the end of stream while parsing an action argument", FPOS,0,0);
+		} else {
+			BUILD_NODE(TK_STRING, strtoken.text, &pos, 0, 0);
+		}
+        TTEXT(")");
+        BUILD_APP_NODE("remoteExec", &start, 4);
     END_TRY(func)
 PARSER_FUNC_END(TermSystemBackwardCompatible)
+
+PARSER_FUNC_BEGIN1(ExprBackwardCompatible, int level)
+	int rulegen =0;
+	TRY(func)
+    	ABORT(level == 1);
+    	NT(TermBackwardCompatible);
+    OR(func)
+    	TTEXT("(");
+    	NT1(ExprBackwardCompatible,   level);
+    	TTEXT(")");
+	OR(func)
+    	NT1(T, 0);
+	END_TRY(func)
+	OPTIONAL_BEGIN(term2)
+		TTYPE(TK_OP);
+		char *fn = cpStringExt(token->text, context->region);
+		ABORT(!isBinaryOp(token));
+		if(TOKEN_TEXT("like") || TOKEN_TEXT("not like") || TOKEN_TEXT("==") || TOKEN_TEXT("!=")) {
+			BUILD_APP_NODE("str", FPOS, 1);
+			NT(ActionArgumentBackwardCompatible);
+		} else if(TOKEN_TEXT("+") || TOKEN_TEXT("-") || TOKEN_TEXT("*") || TOKEN_TEXT("/") || TOKEN_TEXT("<") || TOKEN_TEXT("<=") || TOKEN_TEXT(">") || TOKEN_TEXT(">=")) {
+			BUILD_APP_NODE("double", FPOS, 1);
+			NT2(Term, rulegen, getBinaryPrecedence(token));
+			BUILD_APP_NODE("double", FPOS, 1);
+		} else {
+			BUILD_APP_NODE("str", FPOS, 1);
+			NT2(Term, rulegen, getBinaryPrecedence(token));
+			BUILD_APP_NODE("str", FPOS, 1);
+		}
+		BUILD_APP_NODE(fn, &start, 2);
+	OPTIONAL_END(term2)
+PARSER_FUNC_END(ExprBackwardCompatible)
 
 PARSER_FUNC_BEGIN(TermBackwardCompatible)
     int rulegen =0;
@@ -821,6 +916,7 @@ PARSER_FUNC_BEGIN(TermBackwardCompatible)
         BUILD_APP_NODE(fn, &start, 0);
 
     END_TRY(func)
+
 PARSER_FUNC_END(ValueBackwardCompatible)
 
 
@@ -831,7 +927,7 @@ PARSER_FUNC_BEGIN(ActionArgumentBackwardCompatible)
     	Label vpos = *FPOS;
     	TTYPE(TK_LOCAL_VAR);
     	char *vn = cpStringExt(token->text, context->region);
-    	TTEXT2(",", ")");
+    	TTEXT3(",", "|", ")");
     	PUSHBACK;
     	BUILD_NODE(TK_VAR, vn, &vpos, 0, 0);
 	OR(var)
@@ -958,13 +1054,25 @@ PARSER_FUNC_BEGIN1(StringExpression, Token *tk)
     }
 PARSER_FUNC_END(StringExpression)
 
+PARSER_FUNC_BEGIN1(T, int rulegen)
+	TRY(value)
+		TTYPE(TK_LOCAL_VAR);
+		BUILD_NODE(TK_VAR, token->text, &pos,0,0);
+	OR(value)
+		TTYPE(TK_SESSION_VAR);
+		BUILD_NODE(TK_VAR, token->text, &pos,0,0);
+	OR(value)
+		TTYPE(TK_INT);
+		BUILD_NODE(TK_INT, token->text, &start, 0, 0);
+	OR(value)
+		TTYPE(TK_DOUBLE);
+		BUILD_NODE(TK_DOUBLE, token->text, &start, 0, 0);
+	END_TRY(value)
+PARSER_FUNC_END(StringExpression)
+
 PARSER_FUNC_BEGIN1(Value, int rulegen)
     TRY(value)
-        TTYPE(TK_LOCAL_VAR);
-        BUILD_NODE(TK_VAR, token->text, &pos,0,0);
-    OR(value)
-        TTYPE(TK_SESSION_VAR);
-        BUILD_NODE(TK_VAR, token->text, &pos,0,0);
+    	NT1(T, rulegen);
 	OR(value)
 		TTEXT2("true", "false");
 		BUILD_NODE(TK_BOOL, token->text, &pos,0,0);
@@ -1208,12 +1316,6 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         	END_TRY(nullary)
         END_TRY(func)
     OR(value)
-        TTYPE(TK_INT);
-        BUILD_NODE(TK_INT, token->text, &start, 0, 0);
-    OR(value)
-        TTYPE(TK_DOUBLE);
-        BUILD_NODE(TK_DOUBLE, token->text, &start, 0, 0);
-    OR(value)
         NT1(StringExpression, NULL);
     END_TRY(value)
 PARSER_FUNC_END(Value)
@@ -1316,7 +1418,7 @@ int nextStringParsed(Pointer *e, char *value, char* deliml, char *delimr, char *
             return nov;
         } else if((ch =='*' || ch=='$') &&
                 isalpha(lookAhead(e, 1))) {
-            vars[nov++] = value - value0 - 1;
+            vars[nov++] = value - value0;
         }
 		ch = nextChar(e);
 		value ++;
@@ -2104,7 +2206,7 @@ void clearBuffer(Pointer *p) {
 int dupString(Pointer *p, Label * start, int n, char *buf) {
    if(p->isFile) {
 	Label curr;
-        getFPos(&curr, p);
+        getFPos(&curr, p, NULL);
 	seekInFile(p, start->exprloc);
         int len = 0;
         int ch;
@@ -2126,7 +2228,7 @@ int dupString(Pointer *p, Label * start, int n, char *buf) {
 
 int dupLine(Pointer *p, Label * start, int n, char *buf) {
     Label pos;
-    getFPos(&pos, p);
+    getFPos(&pos, p, NULL);
     seekInFile(p, 0);
     int len = 0;
     int i = 0;
@@ -2155,7 +2257,7 @@ int dupLine(Pointer *p, Label * start, int n, char *buf) {
 
 void getCoor(Pointer *p, Label * errloc, int coor[2]) {
     Label pos;
-    getFPos(&pos, p);
+    getFPos(&pos, p, NULL);
     seekInFile(p, 0);
     coor[0] = coor[1] = 0;
     int i;
@@ -2177,7 +2279,7 @@ void getCoor(Pointer *p, Label * errloc, int coor[2]) {
 
 int getLineRange(Pointer *p, int line, rodsLong_t range[2]) {
     Label pos;
-    getFPos(&pos, p);
+    getFPos(&pos, p, NULL);
     seekInFile(p, 0);
 	Label l;
     range[0] = range[1] = 0;
@@ -2195,7 +2297,7 @@ int getLineRange(Pointer *p, int line, rodsLong_t range[2]) {
     if(ch == -1) {
     	return -1;
     }
-    range[0] = getFPos(&l, p)->exprloc;
+    range[0] = getFPos(&l, p, NULL)->exprloc;
     while (i == line && ch != -1) {
         if(ch=='\n') {
             i++;
@@ -2205,17 +2307,21 @@ int getLineRange(Pointer *p, int line, rodsLong_t range[2]) {
             ch = nextChar(p);
         } */
     }
-    range[1] = getFPos(&l, p)->exprloc;
+    range[1] = getFPos(&l, p, NULL)->exprloc;
     seekInFile(p, pos.exprloc);
     return 0;
 }
 
-Label *getFPos(Label *l, Pointer *p) {
-    if(p->isFile) {
-        l->exprloc = p->fpos/sizeof(char) + p->p;
-    } else {
-        l->exprloc = p->strp;
-    }
+Label *getFPos(Label *l, Pointer *p, ParserContext *context) {
+	if(context == NULL || context->tqtop == context->tqp) {
+		if(p->isFile) {
+			l->exprloc = p->fpos/sizeof(char) + p->p;
+		} else {
+			l->exprloc = p->strp;
+		}
+	} else {
+		l->exprloc = context->tokenQueue[context->tqp].exprloc;
+	}
     l->base = p->base;
     return l;
 }
@@ -2404,6 +2510,8 @@ char * nextRuleSection(char* buf, char* value) {
 
 void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
     skipWhitespace(e);
+    Label start;
+    token->exprloc = getFPos(&start, e, NULL)->exprloc;
     int ch = lookAhead(e, 0);
     if (ch==-1) { /* reach the end of stream */
         token->type = TK_EOS;
@@ -2417,7 +2525,7 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
             nextStringBase(e, token->text, "\'", 1, '\\', token->vars);
             skipWhitespace(e);
         } else {
-            nextStringParsed(e, token->text, "(", ")", ",)", 0, token->vars);
+            nextStringParsed(e, token->text, "(", ")", ",|)", 0, token->vars);
             /* remove trailing ws */
             int l0;
             l0 = strlen(token->text);
@@ -2733,7 +2841,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
 
         int ret = 1;
         /* parser variables */
-        int backwardCompatible = 0;
+        int backwardCompatible = 0; /* 0 auto 1 true -1 false */
 
         while(ret == 1) {
         	pc->nodeStackTop = 0;
@@ -2755,13 +2863,15 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                         if(strcmp(token->text, "backwardCompatible")==0) {
                         	token = nextTokenRuleGen(e, pc, 1);
                             if(token->type == TK_TEXT) {
-                            if(strcmp(token->text, "true")==0) {
-                                backwardCompatible = 1;
-                            } else if(strcmp(token->text, "false")==0) {
-                                backwardCompatible = 0;
-                            } else {
-                                /* todo error handling */
-                            }
+								if(strcmp(token->text, "true")==0) {
+									backwardCompatible = 1;
+								} else if(strcmp(token->text, "false")==0) {
+									backwardCompatible = -1;
+								} else if(strcmp(token->text, "auto")==0) {
+									backwardCompatible = 0;
+								} else {
+									/* todo error handling */
+								}
                             } else {
                             	/* todo error handling */
                             }
@@ -2833,7 +2943,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 	int notyping;
                     if(strcmp(node->text, "REL")==0) {
                         rk = RK_REL;
-                        notyping = backwardCompatible;
+                        notyping = backwardCompatible >= 0 ? 1 : 0;
                     } else if(strcmp(node->text, "FUNC")==0) {
                         rk = RK_FUNC;
                         notyping = 0;
@@ -2918,8 +3028,8 @@ Node *parseTermRuleGen(Pointer *expr, int rulegen, ParserContext *pc) {
     return rulePackNode;
 
 }
-Node *parseActionsRuleGen(Pointer *expr, int rulegen, ParserContext *pc) {
-    nextRuleGenActions(expr, pc, rulegen, 0);
+Node *parseActionsRuleGen(Pointer *expr, int rulegen, int backwardCompatible, ParserContext *pc) {
+    nextRuleGenActions(expr, pc, rulegen, backwardCompatible);
     Node *rulePackNode = pc->nodeStack[0];
 	if(pc->error) {
         if(pc->errnode!=NULL) {

@@ -532,7 +532,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				snprintf(ptr, i, "\n");
 				if(env != NULL) {
 					disableReDebugger(grdf);
-					res = computeNode(n, env, rei, 0, &errmsg, r);
+					res = computeNode(n, NULL, regionRegionCpEnv(env, r, (RegionRegionCopyFuncType *) regionRegionCpNode), rei, 0, &errmsg, r);
 					enableReDebugger(grdf);
 					outStr = convertResToString(res);
 					snprintf(mymsg, MAX_NAME_LEN, "%s\n", outStr);

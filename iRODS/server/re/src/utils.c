@@ -1059,6 +1059,7 @@ void keyBuf(unsigned char *buf, int size, char *keyBuf) {
 			*(p++) = 'A' + (buf[i] & (unsigned char) 0xf);
 			*(p++) = 'A' + (buf[i] & (unsigned char) 0xf0);
 		}
+		*(p++) = '\0';
 	} else {
 		snprintf(keyBuf, KEY_SIZE, "pointer::%p", buf);
 

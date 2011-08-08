@@ -229,6 +229,8 @@ printMsParamNew (msParamArray_t *outParamArray, int output)
     			printf("%s = %s\n",msParam->label, (char *) msParam->inOutStruct);
     		else  if (strcmp (msParam->type, INT_MS_T) == 0)
     			printf("%s = %i\n",msParam->label,*(int *) msParam->inOutStruct);
+    		else  if (strcmp (msParam->type, DOUBLE_MS_T) == 0)
+    			printf("%s = %f\n",msParam->label,*(double *) msParam->inOutStruct);
     		else if (strcmp (msParam->type, KeyValPair_MS_T) == 0 ) {
     			kVPairs = (keyValPair_t *)msParam->inOutStruct;
     			printf ("KVpairs %s: %i\n", msParam->label, kVPairs->len);

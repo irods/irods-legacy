@@ -383,7 +383,7 @@ modExeInfoForRepeat(rsComm_t *rsComm, char *ruleExecId, char* pastTime,
       }
     }
     if (regParam->len > 0)
-      clearKeyVal (regParam); 
+      clearKeyVal (regParam);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -779,7 +779,7 @@ runRuleExec (reExecProc_t *reExecProc)
 int
 postProcRunRuleExec (rsComm_t *rsComm, reExecProc_t *reExecProc)
 {
-    int status;
+    int status = 0;
     int savedStatus = 0;
     ruleExecDelInp_t ruleExecDelInp;
     ruleExecSubmitInp_t *myRuleExecInp;

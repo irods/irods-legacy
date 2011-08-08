@@ -1,3 +1,4 @@
+@backwardCompatible false
 # iRODS Rule Base
 # Each rule consists of four parts separated by  |
 # The four parts are: name, conditions, function calls, and recovery.

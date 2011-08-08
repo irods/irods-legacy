@@ -83,7 +83,7 @@ typedef struct {
 #define TOKEN_TYPE(t) (token->type == (t))
 #define TOKEN_TEXT(str) (strcmp(token->text, (str))==0)
 #define PUSHBACK pushback(e, token, context)
-#define FPOS (context->tqp==context->tqtop? getFPos(&pos, e) : (pos.base = e->base, pos.exprloc=context->tokenQueue[context->tqp].exprloc, &pos))
+#define FPOS (getFPos(&pos, e, context))
 #define UPDATE_ERR_LOC if(FPOS->exprloc > context->errloc.exprloc) {context->errloc = *FPOS;}
 #define CASCADE(x) \
 {\
@@ -125,7 +125,7 @@ void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context, p, q)
     Label pos; \
     Token *token; (void)token; \
     skipWhitespace(e); \
-    getFPos(&start, (e)); \
+    getFPos(&start, (e), context); \
     do {
 
 #define PARSER_FUNC_BEGIN(l) \
@@ -178,6 +178,13 @@ PARSER_FUNC_PROTO2(l, p, q) { \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
         break; \
     }
+#define TTEXT3(x,y,z) \
+    NEXT_TOKEN; \
+    if(!((TOKEN_TYPE(TK_TEXT)||TOKEN_TYPE(TK_OP)||TOKEN_TYPE(TK_MISC_OP)) && (TOKEN_TEXT(x)||TOKEN_TEXT(y)||TOKEN_TEXT(z)))) { \
+        context->error = 1; \
+        if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
+        break; \
+    }
 #define TTEXT_LOOKAHEAD(x) \
     TTEXT(x); \
     PUSHBACK;
@@ -215,7 +222,7 @@ if(context->error==0) { \
     Label CONCAT(l,Start); \
     int CONCAT(l,Finish) = 0; \
     int CONCAT(l,TokenQueueP) = context->tqp; \
-    getFPos(&CONCAT(l,Start), e); \
+    getFPos(&CONCAT(l,Start), e, context); \
     context->stackTopStack[context->stackTopStackTop++] = context->nodeStackTop;
 
 #define CHOICE_END(l) \
@@ -330,7 +337,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rErro
  */
 Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc);
 Node *parseTermRuleGen(Pointer *expr, int rulegn, ParserContext *pc);
-Node *parseActionsRuleGen(Pointer *expr, int rulegn, ParserContext *pc);
+Node *parseActionsRuleGen(Pointer *expr, int rulegn, int backwardCompatible, ParserContext *pc);
 void pushback(Pointer *e, Token *token, ParserContext *pc);
 void initPointer(Pointer *p, FILE* fp, char* ruleBaseName);
 void initPointer2(Pointer *p, char* buf);
@@ -364,7 +371,7 @@ ExprType *parseFuncTypeFromString(char *string, Region *r);
 Node* parseTypingConstraintsFromString(char *string, Region *r);
 ExprType *parseType(Pointer *e, int prec, Env *vtable, int lifted, Region *r);
 
-Label *getFPos(Label *label, Pointer *p);
+Label *getFPos(Label *label, Pointer *p, ParserContext *context);
 void clearBuffer(Pointer *p);
 void seekInFile(Pointer *p, unsigned long x);
 void nextChars(Pointer *p, int len);

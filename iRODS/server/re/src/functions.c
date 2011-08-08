@@ -1121,6 +1121,7 @@ Res *smsi_delayExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
 
   int ret = convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
   if(ret!=0) {
+	  generateAndAddErrMsg("error converting Env to MsParamArray", node, ret, errmsg);
       return newErrorRes(r, ret);
   }
 
@@ -1158,6 +1159,7 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
   rei->msParamArray = newMsParamArray();
   int ret = convertEnvToMsParamArray(rei->msParamArray, env, errmsg, r);
   if(ret!=0) {
+	  generateAndAddErrMsg("error converting Env to MsParamArray", node, ret, errmsg);
       return newErrorRes(r, ret);
   }
   execMyRuleInp.inpParamArray = rei->msParamArray;
@@ -1543,7 +1545,7 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct(Node **paramsr, int n, Node *node, 
 	  return newErrorRes(r, OUT_OF_MEMORY);
   }
 
-  paramsr[1] = newUninterpretedRes(r, RuleStruct_MS_T, (void *) buf, NULL);
+  paramsr[1] = newUninterpretedRes(r, RuleSet_MS_T, (void *) buf, NULL);
 
   region_free(rsr);
   return newIntRes(r, 0);
@@ -1634,7 +1636,7 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
 	  return newErrorRes(r, OUT_OF_MEMORY);
   }
 
-  paramsr[2] = newUninterpretedRes(r, RuleStruct_MS_T, (void *) buf, NULL);
+  paramsr[2] = newUninterpretedRes(r, RuleSet_MS_T, (void *) buf, NULL);
 
   region_free(rsr);
   return newIntRes(r, 0);
@@ -1875,10 +1877,10 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmClearAppRuleStruct", newFunctionFD("->integer", smsi_msiAdmClearAppRuleStruct, r));
     insertIntoHashTable(ft, "msiAdmAppendToTopOfCoreRE", newFunctionFD("string->integer", smsi_msiAdmAppendToTopOfCoreRE, r));
     insertIntoHashTable(ft, "msiAdmChangeCoreRE", newFunctionFD("string->integer", smsi_msiAdmChangeCoreRE, r));
-    insertIntoHashTable(ft, "msiAdmInsertRulesFromStructIntoDB", newFunctionFD("string * `RuleStruct_PI` -> integer", smsi_msiAdmInsertRulesFromStructIntoDB, r));
-    insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionFD("string * d `RuleStruct_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
-    insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionFD("string * `RuleStruct_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
-    insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleStruct_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+    insertIntoHashTable(ft, "msiAdmInsertRulesFromStructIntoDB", newFunctionFD("string * `RuleSet_PI` -> integer", smsi_msiAdmInsertRulesFromStructIntoDB, r));
+    insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionFD("string * d `RuleSet_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
+    insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionFD("string * `RuleSet_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
+    insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
     insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double", (SmsiFuncTypePtr) NULL, r));
 
 

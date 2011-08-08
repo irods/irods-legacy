@@ -501,7 +501,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     char ioParam[MAX_FUNC_PARAMS];
     /* evaluation parameters and try to resolve remaining tvars with unification */
     for(i=0;i<n;i++) {
-        switch(getIOType(appArgs[i])) {
+        switch(getIOType(nodeArgs[i])) {
             case IO_TYPE_INPUT | IO_TYPE_OUTPUT: /* input/output */
                 ioParam[i] = 'p';
                 args[i] = evaluateExpression3(appArgs[i], applyAll, 0, rei, reiSaveFlag, env, errmsg, newRegion);

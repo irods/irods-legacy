@@ -422,16 +422,13 @@ int updateResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
 	return convertResToMsParam(var, res, errmsg);
 }
 int convertEnvToMsParamArray(msParamArray_t *var, Env *env, rError_t *errmsg, Region *r) {
+    int ret;
     if(env->previous!=NULL) {
-        if(convertEnvToMsParamArray(var, env->previous, errmsg, r)!=0) {
-            return -1;
+        if((ret = convertEnvToMsParamArray(var, env->previous, errmsg, r))!=0) {
+            return ret;
         }
     }
-    if(convertHashtableToMsParamArray(var, env->current, errmsg, r)==0) {
-        return 0;
-    } else {
-        return -1;
-    }
+	return convertHashtableToMsParamArray(var, env->current, errmsg, r);
 }
 
 int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t *errmsg, Region *r) {
