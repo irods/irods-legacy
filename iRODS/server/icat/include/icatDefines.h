@@ -33,7 +33,7 @@
    These, and their integer values, are defined in the R_TOKN_MAIN
    table.
 
-   Having a particular access permission, implies that the user has
+   Having a particular access permission implies that the user has
    all of the lower ones.  For example, if you have "own", you have
    all the rest.  And if you have "delete metadata", you have "modify
    metadata".  The ICAT code generates sql that asks, essentially, 
@@ -42,7 +42,7 @@
  */
 #define ACCESS_NULL                 "null"
 #define ACCESS_EXECUTE              "execute"
-#define ACCESS_READ_ANNOTATION      "read annoatation"
+#define ACCESS_READ_ANNOTATION      "read annotation"
 #define ACCESS_READ_SYSTEM_METADATA "read system metadata"
 #define ACCESS_READ_METADATA        "read metadata"
 #define ACCESS_READ_OBJECT          "read object"
