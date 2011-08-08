@@ -34,7 +34,7 @@ printCommandSummary() {
   printf("  a : list all iRODS agents host-address:pid involved currently in the session.\n");
   printf("  n|next : execute next action.\n");
   printf("  s|step : step into next action.\n");
-  printf("  f|finish : step out of the current action.\n");
+  printf("  f|finish : step out of current action.\n");
   printf("  c|continue : continue running rules/micro-services.\n");
   printf("  C|Continue : same as 'c' but with steps shown.\n");
   printf("  d|discontinue : discontinue. stop at next rule/micro-service. Useful in 'c' mode.\n");
