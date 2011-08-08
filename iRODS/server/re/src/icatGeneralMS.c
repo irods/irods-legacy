@@ -1034,6 +1034,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 	}
 	else {
 		zone = strchr(user, '#') + 1;
+		memset(uname, '\0', NAME_LEN);
 		strncpy(uname, user, strlen(user) - strlen(zone) - 1);
 		modAccessControlInp.userName = uname;
 		modAccessControlInp.zone = zone;
