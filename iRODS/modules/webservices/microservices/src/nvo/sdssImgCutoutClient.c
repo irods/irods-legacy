@@ -54,7 +54,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns2__Revisions(struct soap *soap, const ch
 	soap_get__ns1__RevisionsResponse(soap, ns1__RevisionsResponse, "ns1:RevisionsResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)
@@ -106,7 +106,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns2__GetJpeg(struct soap *soap, const char
 	soap_get__ns1__GetJpegResponse(soap, ns1__GetJpegResponse, "ns1:GetJpegResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)
@@ -158,7 +158,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns2__GetJpegQuery(struct soap *soap, const
 	soap_get__ns1__GetJpegQueryResponse(soap, ns1__GetJpegQueryResponse, "ns1:GetJpegQueryResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)
@@ -210,7 +210,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns2__DimeJpeg(struct soap *soap, const cha
 	soap_get__ns1__DimeJpegResponse(soap, ns1__DimeJpegResponse, "ns1:DimeJpegResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)
@@ -264,7 +264,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns3__Revisions(struct soap *soap, const ch
 	soap_get__ns1__RevisionsResponse(soap, ns1__RevisionsResponse, "ns1:RevisionsResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)
@@ -317,7 +317,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns3__GetJpeg(struct soap *soap, const char
 	soap_get__ns1__GetJpegResponse(soap, ns1__GetJpegResponse, "ns1:GetJpegResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)
@@ -369,7 +369,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns3__GetJpegQuery(struct soap *soap, const
 	soap_get__ns1__GetJpegQueryResponse(soap, ns1__GetJpegQueryResponse, "ns1:GetJpegQueryResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)
@@ -421,7 +421,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns3__DimeJpeg(struct soap *soap, const cha
 	soap_get__ns1__DimeJpegResponse(soap, ns1__DimeJpegResponse, "ns1:DimeJpegResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)

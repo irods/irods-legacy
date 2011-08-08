@@ -2424,14 +2424,14 @@ SOAP_FMAC3 struct ns1__ArrayOfString * SOAP_FMAC4 soap_in_ns1__ArrayOfString(str
 			{	char **p;
 				soap_new_block(soap);
 				for (a->__sizestring = 0; !soap_element_begin_in(soap, "ns1:string", 1, NULL); a->__sizestring++)
-				{	p = (char **)soap_push_block(soap, sizeof(char *));
+				  {	p = (char **)soap_push_block(soap,NULL, sizeof(char *));
 					*p = NULL;
 					soap_revert(soap);
 					if (!soap_in_string(soap, "ns1:string", p, "xsd:string"))
 						break;
 					soap_flag_string = 0;
 				}
-				a->string = (char **)soap_save_block(soap, NULL, 1);
+				a->string = (char **)soap_save_block(soap, NULL,NULL, 1);
 				if (!soap_flag_string && soap->error == SOAP_TAG_MISMATCH)
 					continue;
 			}

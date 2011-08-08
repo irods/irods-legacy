@@ -54,7 +54,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns1__ConversionRate(struct soap *soap, con
 	soap_get__ns1__ConversionRateResponse(soap, ns1__ConversionRateResponse, "ns1:ConversionRateResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)

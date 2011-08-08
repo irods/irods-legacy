@@ -54,7 +54,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns1__GetQuote(struct soap *soap, const cha
 	soap_get__ns1__GetQuoteResponse(soap, ns1__GetQuoteResponse, "ns1:GetQuoteResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)

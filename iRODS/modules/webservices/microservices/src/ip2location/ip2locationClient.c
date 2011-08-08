@@ -54,7 +54,7 @@ SOAP_FMAC5 int SOAP_FMAC6 soap_call___ns1__IP2Location(struct soap *soap, const 
 	soap_get__ns1__IP2LocationResponse(soap, ns1__IP2LocationResponse, "ns1:IP2LocationResponse", "");
 	if (soap->error)
 	{	if (soap->error == SOAP_TAG_MISMATCH && soap->level == 2)
-			return soap_recv_fault(soap);
+	    return soap_recv_fault(soap,1);
 		return soap_closesock(soap);
 	}
 	if (soap_body_end_in(soap)

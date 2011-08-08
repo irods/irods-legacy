@@ -2324,14 +2324,14 @@ SOAP_FMAC3 struct ns1__ArrayOfString * SOAP_FMAC4 soap_in_ns1__ArrayOfString(str
 			{	char **p;
 				soap_new_block(soap);
 				for (a->__sizestring = 0; !soap_element_begin_in(soap, "ns1:string", 1, NULL); a->__sizestring++)
-				{	p = (char **)soap_push_block(soap, sizeof(char *));
+				  {	p = (char **)soap_push_block(soap,NULL, sizeof(char *));
 					*p = NULL;
 					soap_revert(soap);
 					if (!soap_in_string(soap, "ns1:string", p, "xsd:string"))
 						break;
 					soap_flag_string = 0;
 				}
-				a->string = (char **)soap_save_block(soap, NULL, 1);
+				a->string = (char **)soap_save_block(soap, NULL,NULL, 1);
 				if (!soap_flag_string && soap->error == SOAP_TAG_MISMATCH)
 					continue;
 			}
@@ -2419,14 +2419,14 @@ SOAP_FMAC3 struct ns1__ArrayOfObjInfo * SOAP_FMAC4 soap_in_ns1__ArrayOfObjInfo(s
 			{	struct ns1__ObjInfo *p;
 				soap_new_block(soap);
 				for (a->__sizeObjInfo = 0; !soap_element_begin_in(soap, "ns1:ObjInfo", 1, NULL); a->__sizeObjInfo++)
-				{	p = (struct ns1__ObjInfo *)soap_push_block(soap, sizeof(struct ns1__ObjInfo));
+				  {	p = (struct ns1__ObjInfo *)soap_push_block(soap,NULL, sizeof(struct ns1__ObjInfo));
 					soap_default_ns1__ObjInfo(soap, p);
 					soap_revert(soap);
 					if (!soap_in_ns1__ObjInfo(soap, "ns1:ObjInfo", p, "ns1:ObjInfo"))
 						break;
 					soap_flag_ObjInfo = 0;
 				}
-				a->ObjInfo = (struct ns1__ObjInfo *)soap_save_block(soap, NULL, 1);
+				a->ObjInfo = (struct ns1__ObjInfo *)soap_save_block(soap, NULL,NULL, 1);
 				if (!soap_flag_ObjInfo && soap->error == SOAP_TAG_MISMATCH)
 					continue;
 			}
@@ -2678,14 +2678,14 @@ SOAP_FMAC3 struct ns1__ArrayOfMoreData * SOAP_FMAC4 soap_in_ns1__ArrayOfMoreData
 			{	struct ns1__MoreData *p;
 				soap_new_block(soap);
 				for (a->__sizeMoreData = 0; !soap_element_begin_in(soap, "ns1:MoreData", 1, NULL); a->__sizeMoreData++)
-				{	p = (struct ns1__MoreData *)soap_push_block(soap, sizeof(struct ns1__MoreData));
+				  {	p = (struct ns1__MoreData *)soap_push_block(soap,NULL, sizeof(struct ns1__MoreData));
 					soap_default_ns1__MoreData(soap, p);
 					soap_revert(soap);
 					if (!soap_in_ns1__MoreData(soap, "ns1:MoreData", p, "ns1:MoreData"))
 						break;
 					soap_flag_MoreData = 0;
 				}
-				a->MoreData = (struct ns1__MoreData *)soap_save_block(soap, NULL, 1);
+				a->MoreData = (struct ns1__MoreData *)soap_save_block(soap, NULL,NULL, 1);
 				if (!soap_flag_MoreData && soap->error == SOAP_TAG_MISMATCH)
 					continue;
 			}
@@ -2773,14 +2773,14 @@ SOAP_FMAC3 struct ns1__ArrayOfCrossID * SOAP_FMAC4 soap_in_ns1__ArrayOfCrossID(s
 			{	struct ns1__CrossID *p;
 				soap_new_block(soap);
 				for (a->__sizeCrossID = 0; !soap_element_begin_in(soap, "ns1:CrossID", 1, NULL); a->__sizeCrossID++)
-				{	p = (struct ns1__CrossID *)soap_push_block(soap, sizeof(struct ns1__CrossID));
+				  {	p = (struct ns1__CrossID *)soap_push_block(soap,NULL, sizeof(struct ns1__CrossID));
 					soap_default_ns1__CrossID(soap, p);
 					soap_revert(soap);
 					if (!soap_in_ns1__CrossID(soap, "ns1:CrossID", p, "ns1:CrossID"))
 						break;
 					soap_flag_CrossID = 0;
 				}
-				a->CrossID = (struct ns1__CrossID *)soap_save_block(soap, NULL, 1);
+				a->CrossID = (struct ns1__CrossID *)soap_save_block(soap, NULL,NULL, 1);
 				if (!soap_flag_CrossID && soap->error == SOAP_TAG_MISMATCH)
 					continue;
 			}

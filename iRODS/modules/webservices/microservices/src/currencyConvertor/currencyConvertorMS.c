@@ -265,8 +265,8 @@ msiConvertCurrency(msParam_t* inConvertFromParam, msParam_t* inConvertToParam,
   pair.FromCurrency = 138;
   pair.ToCurrency = 16;
   */
-  pair.FromCurrency = getIdFromCountryCodes((char *)inConvertFromParam->inOutStruct); 
-  pair.ToCurrency = getIdFromCountryCodes((char *)inConvertToParam->inOutStruct);
+  pair.FromCurrency = (ns1__Currency) getIdFromCountryCodes((char *)inConvertFromParam->inOutStruct); 
+  pair.ToCurrency = (ns1__Currency) getIdFromCountryCodes((char *)inConvertToParam->inOutStruct);
 
   if (soap_call___ns1__ConversionRate(soap, NULL, NULL, &pair, &rate) == SOAP_OK) {
     sprintf(response,"%f",rate.ConversionRateResult);

@@ -21,8 +21,8 @@ There are two steps in using the web-services in micro-services.
      cd ../../microservices/src/common
      touch env.h
      ../../../gsoap/gsoap/src/soapcpp2 -c -penv env.h
-     gcc -c -DWITH_NONAMESPACES envC.c
-     gcc -c -DWITH_NONAMESPACES stdsoap2.c
+     g++ -c -DWITH_NONAMESPACES envC.c
+     g++ -c -DWITH_NONAMESPACES stdsoap2.c
      cp envC.o stdsoap2.o ../../obj
 4. Enable this module by changing the "Enabled" option
    in iRODS/modules/webservices/info.txt to "yes" (instead of "no").
