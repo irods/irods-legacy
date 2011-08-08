@@ -345,7 +345,6 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    theVal = getValByKey(regParam, IRODS_ADMIN_KW);
    if (theVal != NULL) {
       adminMode=1; 
-      free(theVal); 
    }
 
    /* Set up the updateCols and updateVals arrays */
@@ -398,7 +397,6 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    theVal = getValByKey(regParam, "dataExpiry");
    if (theVal != NULL) {
       neededAccess = ACCESS_DELETE_OBJECT;
-      free(theVal);
    }
 
    if (dataObjInfo->dataId <= 0) {
@@ -754,7 +752,6 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
       theVal = getValByKey(condInput, IRODS_ADMIN_KW);
       if (theVal != NULL) {
 	 adminMode=1;
-	 free(theVal);
       }
    }
 
@@ -955,13 +952,11 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       theVal = getValByKey(condInput, IRODS_ADMIN_KW);
       if (theVal != NULL) {
 	 adminMode=1;
-	 free(theVal);
       }
       theVal = getValByKey(condInput, IRODS_ADMIN_RMTRASH_KW);
       if (theVal != NULL) {
 	 adminMode=1;
 	 trashMode=1;
-	 free(theVal);
       }
    }
 
@@ -1286,9 +1281,6 @@ int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
 	      "chlModRuleExecMeta cmlExecuteNoAnswerSql commit failure %d",
 	      status);
       return(status);
-   }
-   if (theVal != NULL) {
-      free(theVal);
    }
    return status;
 }
