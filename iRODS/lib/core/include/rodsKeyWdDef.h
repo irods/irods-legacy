@@ -96,6 +96,8 @@
 #define STREAM_STDOUT_KW	"streamStdout"   /* the stream stdout for 
 						  * execCmd */ 
 #define REG_REPL_KW		"regRepl"  /* register replica */
+#define AGE_KW			"age"  /* age of the file for itrim */
+#define DRYRUN_KW		"dryrun"  /* do a dry run */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

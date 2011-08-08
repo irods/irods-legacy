@@ -21,9 +21,9 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hMrvVn:N:S:";
+    optStr = "hMrvVn:N:S:Z";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
         printf("Use -h for help.\n");
@@ -87,7 +87,7 @@ usage ()
 {
 
    char *msgs[]={
-"Usage : itrim [-hMrvV] [-n replNum]|[-S srcResource] [-N numCopies] dataObj|collection ... ",
+"Usage : itrim [-hMrvV] [--age age_in_minutes] [--dryrun] [-n replNum]|[-S srcResource] [-N numCopies] dataObj|collection ... ",
 " ",
 "Trim down the number of replica of a file in iRODS by deleting some replicas.",
 "Nothing will be done if this is less than or equal to numCopies. The -n and",
@@ -97,16 +97,19 @@ usage ()
 "class copies.",
 " ",
 "Options are:",
-" -r  recursive - trim the whole subtree",
 " -M  admin - admin user uses this option to trim other users files", 
 " -n  replNum  - the replica number of the replica to be deleted",
 " -N  numCopies - minimum number of most current copies to keep. The default",
 "     value is 2.",
+" -r  recursive - trim the whole subtree",
 " -S  srcResource - specifies the resource of the replica to be deleted.",  
 "     If specified, only copies stored in this resource will be condidate",
 "     for the deletion.",
 " -v  verbose",
 " -V  Very verbose",
+"--age age_in_minutes - The minimum age of the copy in minutes for trimming.",
+"     i.e., the copy will not be trimmed if its age is less.",
+"--dryrun - Do a dry run. No copy will atually be trimmed.",
 " -h  this help",
 ""};
    int i;

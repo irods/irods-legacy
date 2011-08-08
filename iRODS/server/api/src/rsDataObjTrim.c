@@ -18,6 +18,8 @@
  * Input -
  *    rsComm_t *rsComm
  *    dataObjInp_t *dataObjInp - The trim input
+ * 
+ *  Returned val - return 1 if a copy is trimed. 0 if nothing trimed.
  */
 
 int
@@ -31,6 +33,9 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
+    int myTime = 0;
+    char *tmpStr;
+    int myAge;
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
       &dataObjInp->condInput);
@@ -68,14 +73,28 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (status);
     }
 
+    if ((tmpStr = getValByKey (&dataObjInp->condInput, AGE_KW)) != NULL) {
+        myAge = atoi (tmpStr);
+	/* age value is in minutes */
+        if (myAge > 0) myTime = time (0) - myAge * 60;
+    }
+
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-        status = dataObjUnlinkS (rsComm, dataObjInp, tmpDataObjInfo);
-        if (status < 0) {
-            if (retVal == 0) {
-                retVal = status;
-            }
-        }
+        if (myTime == 0 || atoi (tmpDataObjInfo->dataModify) <= myTime) {
+	    if (getValByKey (&dataObjInp->condInput, DRYRUN_KW) == NULL) {
+                status = dataObjUnlinkS (rsComm, dataObjInp, tmpDataObjInfo);
+                if (status < 0) {
+                    if (retVal == 0) {
+                        retVal = status;
+                    }
+                } else {
+	            retVal = 1;
+	        }
+	    } else {
+		retVal = 1;
+	    }
+	}
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 

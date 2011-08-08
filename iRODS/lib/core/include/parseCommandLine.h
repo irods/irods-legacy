@@ -20,6 +20,8 @@ extern "C" {
 #define False 0
 
 typedef struct {
+   int age;
+   int agevalue;
    int all;
    int accessControl;
    int admin;
@@ -30,6 +32,7 @@ typedef struct {
    int collection;
    char *collectionString;
    int dataObjects;
+   int dryrun;
    int echo;
    int force;
    int file;

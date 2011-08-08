@@ -129,6 +129,23 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->orphan=True;
             argv[i]="-Z";
          }
+         if (strcmp("--age", argv[i])==0) {  /* also -Y */
+            rodsArgs->age=True;
+            argv[i]="-Z";
+            if (i + 2 < argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--age option needs an iput file");
+                    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->agevalue=atoi(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+         if (strcmp("--dryrun", argv[i])==0) {
+            rodsArgs->dryrun=True;
+            argv[i]="-Z";
+         }
       }
    }
 

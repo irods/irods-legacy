@@ -9,6 +9,9 @@
 #include "miscUtil.h"
 #include "trimUtil.h"
 
+rodsLong_t TotalSizeTrimmed = 0;
+int TotalTrimmed = 0;
+
 int
 trimUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 rodsPathInp_t *rodsPathInp)
@@ -17,6 +20,7 @@ rodsPathInp_t *rodsPathInp)
     int status; 
     int savedStatus = 0;
     dataObjInp_t dataObjInp;
+    int collCnt = 0;
 
 
     if (rodsPathInp == NULL) {
@@ -25,6 +29,9 @@ rodsPathInp_t *rodsPathInp)
 
     initCondForTrim (myRodsEnv, myRodsArgs, &dataObjInp);
 
+    if (myRodsArgs->dryrun == True) {
+	printf ("====== This is a DRYRUN ======\n");
+    }
     for (i = 0; i < rodsPathInp->numSrc; i++) {
 	if (rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T) {
 	    getRodsObjType (conn, &rodsPathInp->srcPath[i]);
@@ -42,6 +49,7 @@ rodsPathInp_t *rodsPathInp)
 	    status = trimDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	     myRodsEnv, myRodsArgs, &dataObjInp);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
+	    collCnt ++;
 	    addKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = trimCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               myRodsEnv, myRodsArgs, &dataObjInp);
@@ -60,6 +68,10 @@ rodsPathInp_t *rodsPathInp)
 	    savedStatus = status;
 	} 
     }
+    if (collCnt > 0) {
+        printf ("Total size trimed = %-.3f MB. Number of files trimed = %d.\n",
+          (float) TotalSizeTrimmed/1048600.0, TotalTrimmed);
+    }
     if (savedStatus < 0) {
         return (savedStatus);
     } else if (status == CAT_NO_ROWS_FOUND) {
@@ -75,7 +87,6 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 dataObjInp_t *dataObjInp)
 {
     int status;
-    struct timeval startTime, endTime;
  
     if (srcPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -83,18 +94,18 @@ dataObjInp_t *dataObjInp)
         return (USER__NULL_INPUT_ERR);
     }
 
-    if (rodsArgs->verbose == True) {
-        (void) gettimeofday(&startTime, (struct timezone *)0);
-    }
-
     rstrcpy (dataObjInp->objPath, srcPath, MAX_NAME_LEN);
 
     status = rcDataObjTrim (conn, dataObjInp);
 
     if (status >= 0 && rodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTiming (conn, dataObjInp->objPath, conn->transStat.bytesWritten, 
-	  NULL, &startTime, &endTime);
+	char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+        splitPathByKey (srcPath, myDir, myFile, '/');
+	if (status > 0) {
+	    printf ("%s - a copy trimmed\n", myFile);
+	} else {
+	     printf ("%s - No copy trimmed\n", myFile);
+	}
     }
 
     return (status);
@@ -135,6 +146,15 @@ dataObjInp_t *dataObjInp)
     if (rodsArgs->srcResc == True) {
         addKeyVal (&dataObjInp->condInput, RESC_NAME_KW,
           rodsArgs->srcRescString);
+    }
+
+    if (rodsArgs->age == True) {
+        snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->agevalue);
+        addKeyVal (&dataObjInp->condInput, AGE_KW, tmpStr);
+    }
+
+    if (rodsArgs->dryrun == True) {
+        addKeyVal (&dataObjInp->condInput, DRYRUN_KW, "");
     }
 
     return (0);
@@ -207,7 +227,11 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
                 /* need to set global error here */
                 savedStatus = status;
                 status = 0;
-            }
+            } else if (status > 0) {
+		/* > 0 means the file got trimed */
+		TotalSizeTrimmed += collEnt.dataSize;
+		TotalTrimmed++;
+	    }
         } else if (collEnt.objType == COLL_OBJ_T) {
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjInp;
