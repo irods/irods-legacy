@@ -132,6 +132,12 @@ $GLOBUS_LOCATION = '';
 $GSI_INSTALL_TYPE = '';
 
 
+# NCCS Audit Extensions
+# $AUDIT_EXT is 1 if these Audit Extensions are selected.
+# See server/icat/auditExtensions for more information.
+$AUDIT_EXT = '';
+
+
 # Build configuration (optional)
 #	The iRODS configuration script automatically finds the C compiler,
 #	loader, archiver, and ranlib to use to build iRODS.  You can

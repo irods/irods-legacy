@@ -904,6 +904,40 @@ sub createDatabaseAndTables
 		printStatus( "    Skipped.  Tables already created.\n" );
 		printLog( "    Skipped.  Tables already created.\n" );
 	}
+
+	# Create the Audit Extension SQL items if requested.
+	if ($AUDIT_EXT == 1) {
+		printStatus( "Inserting Audit Extensions...\n" );
+		printLog( "Inserting Audit Extensions...\n" );
+		my $auditExtSqlFile = File::Spec->catfile( $serverAuditExtSql,
+				       "ext.sql" );
+		copyTemplateIfNeeded( $auditExtSqlFile );
+		my %variables = (
+		    "rodsbuild", $DATABASE_ADMIN_NAME );
+
+		($status,$output) = replaceVariablesInFile( $auditExtSqlFile,
+				    "simple", 0, %variables );
+		if ( $status == 0 )
+		{
+		    printError( "\nInstall problem:\n" );
+		    printError( "    Cannot create ext.sql file.\n" );
+		    printLog( "\nCannot create ext.sql file.\n" );
+		    cleanAndExit( 1 );
+		}
+
+		($status,$output) = execute_sql( $DB_NAME, $auditExtSqlFile );
+		if ( $status != 0 )
+		{
+		    # Stop if it failed.
+		    printError( "\nInstall problem:\n" );
+		    printError( "    Could not create the iCAT AuditExttables.\n" );
+		    printError( "        ", $output );
+		    printLog( "\nSQL failed:\n" );
+		    printLog( "    ", $output );
+		    cleanAndExit( 1 );
+		}
+		printLog( "        ", $output );
+	}
 }
 
 

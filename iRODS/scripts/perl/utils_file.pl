@@ -16,7 +16,7 @@
 use File::Spec;
 use File::Copy;
 
-$version{"utils_file.pl"} = "March 2010";
+$version{"utils_file.pl"} = "August 2011";
 
 
 
@@ -299,6 +299,22 @@ sub replaceVariablesInFile
 			}
 			print( FileOut $line );
 		}
+	}
+	elsif ( $syntax =~ /simple/i )
+	{
+		# Use simple syntax
+		#
+		# Just do it; simply replace the string
+		while( $line = <FileIn> )
+		{
+			foreach $name (keys %values)
+			{
+			        my $value = $values{$name};
+				$line =~ s/$name/$value/g; 
+				$fileChanged = 1;
+			}
+			print( FileOut $line );
+		}	    
 	}
 	else
 	{

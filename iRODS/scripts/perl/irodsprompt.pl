@@ -18,7 +18,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodsprompt.pl"} = "March 2010";
+$version{"irodsprompt.pl"} = "August 2011";
 
 
 
@@ -197,6 +197,9 @@ $gsiAuth		= 0;
 $globusLocation         = undef;
 $gsiInstallType         = undef;
 
+# Audit extension
+$auditExt               = 0;
+
 # Actions to take
 $installDataServer	= 1;				# Prompt.
 $installCatalogServer	= 1;				# Prompt.
@@ -298,6 +301,8 @@ if ( -e $irodsConfig )
 	$gsiAuth           = $GSI_AUTH;
 	$globusLocation    = $GLOBUS_LOCATION;
 	$gsiInstallType    = $GSI_INSTALL_TYPE;
+
+	$auditExt          = $AUDIT_EXT;
 
 	$databaseServerType      = $DATABASE_TYPE;
 	$databaseServerOdbcType  = $DATABASE_ODBC_TYPE;
@@ -799,6 +804,18 @@ sub promptForIrodsConfigurationPart2( )
 		    printError("Warning, $globusLocation/include/$gsiInstallType does not exist, build will fail.\n");
 		}
 	}
+
+	# NCCS Audit ?
+	printNotice(
+		"\n",
+		"NCCS Auditing extensions (SQL based) can be installed if\n",
+		"desired.  See the README.txt file in server/icat/auditExtensions\n",
+		"for more information on this.\n",
+		"\n" );
+	$auditExt = promptYesNo(
+		"Include the NCCS Auditing extensions",
+		(($auditExt == 1) ? "yes" : "no") );
+
 }
 
 
@@ -1725,6 +1742,15 @@ sub promptForConfirmation( )
 			"        gsiInstallType   $gsiInstallType\n\n");
 	}
 
+   # Audit Extension
+	if ($auditExt == 0) {
+		 printNotice(
+			"    NCCS Audit Extensions not selected\n\n");
+        } else {
+		 printNotice (
+			"    NCCS Audit Extensions will be enabled\n\n");
+	}
+
 	# Commands
 	printNotice(
 		"    Build iRODS command-line tools\n",
@@ -1786,6 +1812,8 @@ sub configureIrods( )
 		"GSI_AUTH",			$gsiAuth,
 		"GLOBUS_LOCATION",		$globusLocation,
 		"GSI_INSTALL_TYPE",		$gsiInstallType,
+
+		"AUDIT_EXT",			$auditExt,
 
 		"DATABASE_TYPE",		$databaseServerType,
 		"DATABASE_ODBC_TYPE",		((!defined($databaseServerOdbcType)) ? "" : $databaseServerOdbcType),
