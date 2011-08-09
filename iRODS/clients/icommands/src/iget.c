@@ -95,7 +95,7 @@ usage () {
 "[-R resource] [--lfrestart lfRestartFile] [--retries count]",
 "srcDataObj|srcCollection ... destLocalFile|destLocalDir",
 "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
-"[-R resource] [--lfrestart lfRestartFile]",
+"[-R resource] [--lfrestart lfRestartFile] [--retries count]",
 "srcDataObj|srcCollection",
 "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] [--lfrestart lfRestartFile]  [--retries count] srcDataObj ... -",
