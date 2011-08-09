@@ -62,7 +62,7 @@ msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode,
 	       msParam_t* inFileFlags, msParam_t* inCacheFilename,  
 	       ruleExecInfo_t* rei )
 {
-
+#if defined(MSO_HTTP)
   char *reqStr;
   int mode, flags;
   char *cacheFilename; 
@@ -149,6 +149,10 @@ msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
   /*return */
   return(0);
+#else
+  return(MICRO_SERVICE_OBJECT_TYPE_UNDEFINED);
+#endif /* MSO_HTTP */
+
 }
 
 
@@ -200,7 +204,7 @@ int
 msiobjput_http(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  
 	       msParam_t*  inFileSize, ruleExecInfo_t* rei )
 {
-
+#if defined(MSO_HTTP)
   char *reqStr;
   char *cacheFilename;
   rodsLong_t dataSize;
@@ -259,5 +263,8 @@ msiobjput_http(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   rodsLog(LOG_NOTICE,"MSO_HTTP file contains: %s\n",myBuf);
   free(myBuf);
   return(0);
+#else
+  return(MICRO_SERVICE_OBJECT_TYPE_UNDEFINED);
+#endif /* MSO_HTTP */
 }
 

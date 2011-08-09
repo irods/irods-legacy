@@ -64,7 +64,6 @@ msiobjget_irods(msParam_t*  inRequestPath, msParam_t* inFileMode,
 int
 msiobjput_irods(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
                msParam_t*  inFileSize, ruleExecInfo_t* rei );
-/***
 int
 msiobjget_srb(msParam_t*  inRequestPath, msParam_t* inFileMode,
                msParam_t* inFileFlags, msParam_t* inCacheFilename,
@@ -72,6 +71,6 @@ msiobjget_srb(msParam_t*  inRequestPath, msParam_t* inFileMode,
 int
 msiobjput_srb(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
                msParam_t*  inFileSize, ruleExecInfo_t* rei );
-***/
+
 
 #endif	/*  MSODRIVERSMS_H */

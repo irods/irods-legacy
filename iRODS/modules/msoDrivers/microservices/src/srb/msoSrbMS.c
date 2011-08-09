@@ -6,14 +6,24 @@
 /*** Copyright (c), University of North Carolina            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-
 #include "msoDriversMS.h"
-#include "srbmso.h"
 
+
+
+
+#if defined(MSO_SRB)
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+
+#include "srbmso.h"
 
 int
 connectToRemotesrb(char * inStr, srbConn **rcComm)
 {
+
   int  port;
   char *t, *s;  
   char *host = NULL;
@@ -89,6 +99,12 @@ connectToRemotesrb(char * inStr, srbConn **rcComm)
   }
   return(0);
 }  
+#ifdef  __cplusplus
+}
+#endif
+
+#endif /* MSO_SRB */
+
 
 /**
  * \fn int msiobjget_srb(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
@@ -137,7 +153,7 @@ msiobjget_srb(msParam_t*  inRequestPath, msParam_t* inFileMode,
 	       msParam_t* inFileFlags, msParam_t* inCacheFilename,  
 	       ruleExecInfo_t* rei )
 {
-
+#if defined(MSO_SRB)
   char *locStr;
   int mode, flags;
   char *cacheFilename; 
@@ -248,6 +264,9 @@ msiobjget_srb(msParam_t*  inRequestPath, msParam_t* inFileMode,
   i = srbObjClose (rcComm, objFD);
   clFinish(rcComm);
   return(i);
+#else
+  return(MICRO_SERVICE_OBJECT_TYPE_UNDEFINED);
+#endif /* MSO_SRB */
 
 }
 
@@ -300,7 +319,7 @@ int
 msiobjput_srb(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  
 	       msParam_t*  inFileSize, ruleExecInfo_t* rei )
 {
-
+#if defined(MSO_SRB)
   char *reqStr;
   char *str, *t;
   char *cacheFilename;
@@ -409,5 +428,9 @@ msiobjput_srb(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
   clFinish(rcComm);
 
   return(i);
+#else
+  return(MICRO_SERVICE_OBJECT_TYPE_UNDEFINED);
+#endif /* MSO_SRB */
 }
+
 
