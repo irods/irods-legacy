@@ -7,6 +7,8 @@
 # If an external function name has no mapping, then the name itself is
 # used as the internal function name.
 #
+msiobjget_https|msiobjget_http
+msiobjget_ftp|msiobjget_http
 acExtractMetadataForImageForRaja|acExtractMetadata
 openObj|msiDataObjOpen
 readObj|msiDataObjRead
