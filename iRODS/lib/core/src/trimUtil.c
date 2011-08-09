@@ -69,7 +69,8 @@ rodsPathInp_t *rodsPathInp)
 	} 
     }
     if (collCnt > 0) {
-        printf ("Total size trimed = %-.3f MB. Number of files trimed = %d.\n",
+        printf (
+          "Total size trimmed = %-.3f MB. Number of files trimmed = %d.\n",
           (float) TotalSizeTrimmed/1048600.0, TotalTrimmed);
     }
     if (savedStatus < 0) {
