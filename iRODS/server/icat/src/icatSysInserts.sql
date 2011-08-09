@@ -48,6 +48,7 @@ insert into R_TOKN_MAIN values ('resc_type',402,'windows file system','','','','
 insert into R_TOKN_MAIN values ('resc_type',403,'s3','','','','','1250100000','1250100000');
 insert into R_TOKN_MAIN values ('resc_type',404,'MSS universal driver','','','','','1250100000','1250100000');
 insert into R_TOKN_MAIN values ('resc_type',405,'database','','','','','1288631300','1288631300');
+insert into R_TOKN_MAIN values ('resc_type',406,'mso','','','','','1312910000','1312910000');
 
 insert into R_TOKN_MAIN values ('resc_class',500,'cache','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_class',501,'archive','','','','','1170000000','1170000000');
@@ -188,6 +189,7 @@ insert into R_TOKN_MAIN values ('data_type',1692,'DICOM header','','','','','117
 insert into R_TOKN_MAIN values ('data_type',1693,'XML Schema','text/xml','|.xsd|','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('data_type',1694,'tar bundle','','','','','1250100000','1250100000');
 insert into R_TOKN_MAIN values ('data_type',1695,'database object','text','','','','1288631300','1288631300');
+insert into R_TOKN_MAIN values ('data_type',1696,'mso','','','','','1312910000','1312910000');
 
 
 insert into R_TOKN_MAIN values ('action_type',1800,'generic','','','','','1170000000','1170000000');

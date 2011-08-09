@@ -57,3 +57,6 @@ create table R_MICROSRVC_VER
  );
 
 create index idx_data_main5 on R_DATA_MAIN (data_type_name);
+
+insert into R_TOKN_MAIN values ('resc_type',406,'mso','','','','','1312910000','1312910000');
+insert into R_TOKN_MAIN values ('data_type',1696,'mso','','','','','1312910000','1312910000');
