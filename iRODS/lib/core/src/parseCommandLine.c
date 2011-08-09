@@ -95,10 +95,15 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 	 if (strcmp("--retries", argv[i])==0) {  /* also -Y */
 	    rodsArgs->retries=True;
 	    argv[i]="-Z";
-	    if (i < argc) {
+            if (i + 2 < argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--retries option needs an iput file");
+                    return USER_INPUT_OPTION_ERR;
+               }
 	       rodsArgs->retriesValue=atoi(argv[i+1]);
-	       argv[i+1]="";
-	    }
+               argv[i+1]="-Z";
+            }
 	 }
 	 if (strcmp("--no-page", argv[i])==0) {
 	    rodsArgs->noPage=True;

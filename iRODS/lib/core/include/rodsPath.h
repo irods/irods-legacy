@@ -45,6 +45,7 @@ typedef struct RodsPathInp {
     rodsPath_t *destPath;
     rodsPath_t *targPath;	/* This is a target path for a
                                   * source/destination type command */
+    int resolved;
 } rodsPathInp_t;
 
 /* definition for flag in parseCmdLinePath */

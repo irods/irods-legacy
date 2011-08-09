@@ -114,6 +114,8 @@ int
 redirectConnToRescSvr (rcComm_t **conn, dataObjInp_t *dataObjInp, 
 rodsEnv *myEnv, int reconnFlag);
 int
+rcReconnect (rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag);
+int
 myReadTout (int sock, void *buf, int len, irodsDescType_t irodsDescType,
  int *bytesRead,  struct timeval *tv);
 int

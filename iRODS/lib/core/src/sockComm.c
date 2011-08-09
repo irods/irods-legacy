@@ -1557,8 +1557,6 @@ rodsEnv *myEnv, int reconnFlag)
 {
     int status;
     char *outHost = NULL;
-    rcComm_t *newConn = NULL;
-    rErrMsg_t errMsg;
 
     if (dataObjInp->oprType == PUT_OPR) {
         status = rcGetHostForPut (*conn, dataObjInp, &outHost);
@@ -1574,6 +1572,7 @@ rodsEnv *myEnv, int reconnFlag)
     if (status < 0 || outHost == NULL || strcmp (outHost, THIS_ADDRESS) == 0)
 	return status;
 
+#if 0
     newConn =  rcConnect (outHost, myEnv->rodsPort, myEnv->rodsUserName,
       myEnv->rodsZone, reconnFlag, &errMsg);
 
@@ -1587,6 +1586,36 @@ rodsEnv *myEnv, int reconnFlag)
 	*conn = newConn;
     }
     return 0;
+#else
+    status = rcReconnect (conn, outHost, myEnv, reconnFlag);
+    return status;
+#endif
+}
+
+int
+rcReconnect (rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag)
+{
+    int status;
+    rcComm_t *newConn = NULL;
+    rErrMsg_t errMsg;
+
+    bzero (&errMsg, sizeof (errMsg));
+
+    newConn =  rcConnect (newHost, myEnv->rodsPort, myEnv->rodsUserName,
+      myEnv->rodsZone, reconnFlag, &errMsg);
+
+    if (newConn != NULL) {
+        status = clientLogin(newConn);
+        if (status != 0) {
+           rcDisconnect(newConn);
+            return status;
+        }
+        rcDisconnect (*conn);
+        *conn = newConn;
+        return 0;
+    } else {
+	return errMsg.status;
+    }
 }
 
 int

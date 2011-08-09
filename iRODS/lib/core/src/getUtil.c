@@ -29,11 +29,14 @@ rodsPathInp_t *rodsPathInp)
 
     initCondForGet (conn, myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
 
-    status = resolveRodsTarget (conn, myRodsEnv, rodsPathInp, 1);
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "getUtil: resolveRodsTarget");
-        return (status);
+    if (rodsPathInp->resolved == False) {
+        status = resolveRodsTarget (conn, myRodsEnv, rodsPathInp, 1);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "getUtil: resolveRodsTarget");
+            return (status);
+	}
+	rodsPathInp->resolved = True;
     }
 
     /* initialize the progress struct */
@@ -97,10 +100,12 @@ rodsPathInp_t *rodsPathInp)
 	    status = getCollUtil (myConn, rodsPathInp->srcPath[i].outPath,
               targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
 	      &rodsRestart);
+#if 0
             if (rodsRestart.fd > 0 && status < 0) {
                 close (rodsRestart.fd);
                 return (status);
             }
+#endif
 	} else {
 	    /* should not be here */
 	    rodsLog (LOG_ERROR,
@@ -114,20 +119,50 @@ rodsPathInp_t *rodsPathInp)
              "getUtil: get error for %s", 
 	      targPath->outPath);
 	    savedStatus = status;
+	    break;
 	} 
     }
 
     if (rodsRestart.fd > 0) {
         close (rodsRestart.fd);
     }
-
     if (savedStatus < 0) {
-        return (savedStatus);
+        status = savedStatus;
     } else if (status == CAT_NO_ROWS_FOUND) {
-        return (0);
-    } else {
-        return (status);
+        status = 0;
     }
+
+    if (status < 0 && myRodsArgs->retries == True) {
+        int reconnFlag;
+        /* this is recursive. Only do it the first time */
+        myRodsArgs->retries = False;
+        if (myRodsArgs->reconnect == True) {
+            reconnFlag = RECONN_TIMEOUT;
+        } else {
+            reconnFlag = NO_RECONN;
+        }
+        while (myRodsArgs->retriesValue > 0) {
+            rErrMsg_t errMsg;
+            bzero (&errMsg, sizeof (errMsg));
+            status = rcReconnect (myConn, myRodsEnv->rodsHost, myRodsEnv,
+              reconnFlag);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                 "getUtil: rcReconnect error for %s", targPath->outPath);
+                return status;
+            }
+            status = getUtil (myConn,  myRodsEnv, myRodsArgs, rodsPathInp);
+            if (status >= 0) {
+                printf ("Retry put successful\n");
+                break;
+            } else {
+                rodsLogError (LOG_ERROR, status,
+                 "getUtil: retry getUtil error");
+            }
+            myRodsArgs->retriesValue--;
+        }
+    }
+    return status;
 }
 
 int
@@ -286,6 +321,10 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
             rodsArgs->restartFileString);
             return (status);
         }
+    } else if (rodsArgs->retries == True) {
+        rodsLog (LOG_ERROR,
+          "initCondForGet: --retries must be used with -X option");
+        return USER_INPUT_OPTION_ERR;
     }
 
     if (rodsArgs->lfrestart == True) {
