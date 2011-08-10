@@ -389,6 +389,7 @@ RuleIndexList *newRuleIndexList(char *ruleName, int ruleIndex, Region *r) {
 
 RuleIndexListNode *newRuleIndexListNode(int ruleIndex, RuleIndexListNode *prev, RuleIndexListNode *next, Region *r) {
     RuleIndexListNode *node = (RuleIndexListNode *)region_alloc(r, sizeof(RuleIndexListNode));
+    memset(node, 0, sizeof(RuleIndexListNode));
     node->ruleIndex = ruleIndex;
     node->secondaryIndex = 0;
     node->prev = prev;
@@ -399,6 +400,7 @@ RuleIndexListNode *newRuleIndexListNode(int ruleIndex, RuleIndexListNode *prev, 
 
 RuleIndexListNode *newRuleIndexListNode2(CondIndexVal *civ, RuleIndexListNode *prev, RuleIndexListNode *next, Region *r) {
     RuleIndexListNode *node = (RuleIndexListNode *)region_alloc(r, sizeof(RuleIndexListNode));
+    memset(node, 0, sizeof(RuleIndexListNode));
     node->condIndex = civ;
     node->secondaryIndex = 1;
     node->prev = prev;

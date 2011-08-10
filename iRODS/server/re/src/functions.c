@@ -25,7 +25,7 @@
 #define GC_BEGIN Region *_rnew = make_region(0, NULL), *_rnew2 = NULL;
 #define GC_REGION _rnew
 #define GC_ON(env) \
-if(_rnew->head != _rnew->active) {\
+if(region_size(_rnew) > DEFAULT_BLOCK_SIZE) {\
 _rnew2 = make_region(0, NULL); \
 cpEnv2((env), _rnew, _rnew2); \
 region_free(_rnew); \
@@ -156,7 +156,7 @@ Res *smsi_whileExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
 Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
     Res *init, *cond, *res, *step;
-    Region *rnew = make_region(0, r->label);
+    Region *rnew = make_region(0, NULL);
     init = evaluateExpression3((Node *)params[0], 0,1,rei,reiSaveFlag, env,errmsg,rnew);
     if(getNodeType(init) == N_ERROR) {
         res = init;
