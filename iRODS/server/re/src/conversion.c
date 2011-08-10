@@ -183,6 +183,7 @@ int convertMsParamToRes(msParam_t *mP, Res *res, rError_t *errmsg, Region *r) {
 		if(res->param==NULL) {
 			res->param = newMsParam(mP->type, mP->inOutStruct, mP->inpOutBuf, r);
 		} else {
+			res->param->type = cpStringExt(mP->type, r);
             RES_UNINTER_STRUCT(res) = mP->inOutStruct;
             RES_UNINTER_BUFFER(res) = mP->inpOutBuf;
         }
@@ -256,6 +257,7 @@ int convertMsParamToResAndFreeNonIRODSType(msParam_t *mP, Res *res, rError_t *er
 		if(res->param==NULL) {
 			res->param = newMsParam(mP->type, mP->inOutStruct, mP->inpOutBuf, r);
 		} else {
+			res->param->type = cpStringExt(mP->type, r);
             RES_UNINTER_STRUCT(res) = mP->inOutStruct;
             RES_UNINTER_BUFFER(res) = mP->inpOutBuf;
         }

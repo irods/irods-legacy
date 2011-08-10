@@ -693,7 +693,7 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   int i, argc;
   ruleExecSubmitInp_t *ruleSubmitInfo;
-  char action[MAX_ACTION_SIZE];
+  /* char action[MAX_ACTION_SIZE]; */
   char tmpStr[NAME_LEN];  
   bytesBuf_t *packedReiAndArgBBuf = NULL;
   char *ruleExecId;
