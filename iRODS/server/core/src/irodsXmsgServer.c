@@ -10,9 +10,9 @@
 #include "irodsXmsgServer.h"
 #include "xmsgLib.h"
 #include "rsGlobal.h"
-#ifdef  USE_BOOST
+#if defined(USE_BOOST) || defined(RUN_SERVER_AS_ROOT)
 #include "miscServerFunct.h"
-#endif /* USE_BOOST */
+#endif /* USE_BOOST || RUN_SERVER_AS_ROOT */
 
 int loopCnt=-1;  /* make it -1 to run infinitel */
 
