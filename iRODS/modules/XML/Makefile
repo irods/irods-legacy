@@ -39,11 +39,19 @@ INCLUDE_FLAGS =	-I$(MSIncDir)
 
 #
 # Include files and libraries for libxml2 and libxslt:
-# Until they are set up by the main configure script you can run 
-# xml2-config and xslt-config on your platform to get the values below.
+# Find correct flags for your platform by running xml2-config and xslt-config.
+# To find correct include flags for libxml2 and libxslt, run both of these:
+# 	xml2-config --cflags 
+#	xslt-config --cflags
+#
+# To find correct lib flags, run both of these:
+#	xml2-config --libs
+#	xslt-config --libs 
+#
+# Then set the values below accordingly for both libraries.
 #
 INCLUDE_FLAGS += -I/usr/include/libxml2
-LIBS =	-L/usr/lib -lxslt -lxml2 -lz -lpthread -licucore -lm	
+LIBS =	-L/usr/lib -lxslt -lxml2	
 
 
 
