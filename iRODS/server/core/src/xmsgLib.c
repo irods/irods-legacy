@@ -221,7 +221,7 @@ int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond)
   * (int *) XMsgMsParamArray.msParam[6]->inOutStruct = (int) irodsXmsg->sendTime;         /* *XTIME*/
 
   if(strcmp(condStr, "") == 0) {
-	  return 0;
+	return 0;
   }
   int ret;
 #ifdef RULE_ENGINE_N
@@ -929,7 +929,7 @@ clearOneXMessage(ticketMsgStruct_t *ticketMsgStruct, int seqNum)
 
   tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
   while (tmpIrodsXmsg != NULL) {
-    if (tmpIrodsXmsg->seqNumber == seqNum) {
+    if ((int) tmpIrodsXmsg->seqNumber == seqNum) {
       rmXmsgFromXmsgQue (tmpIrodsXmsg, &XmsgQue);
       rmXmsgFromXmsgTcketQue (tmpIrodsXmsg,&ticketMsgStruct->xmsgQue);
       clearSendXmsgInfo (tmpIrodsXmsg->sendXmsgInfo);
