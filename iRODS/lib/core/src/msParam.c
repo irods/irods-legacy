@@ -312,7 +312,7 @@ printMsParam (msParamArray_t *outParamArray)
     j = writeMsParam(buf, 10000,  msParam);
     if (j < 0)
       return(j);
-    printf(buf);
+    printf("%s", buf);
   }
   return(0);
 }

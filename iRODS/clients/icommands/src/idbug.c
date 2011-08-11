@@ -312,7 +312,7 @@ int processUserInput(char *buf)
     if ( sendAddrInx == 1)
       snprintf(hdr, 99, "CMSG:%s",sendAddr[0]);
     else
-      snprintf(hdr, 99, lastSent);
+      snprintf(hdr, 99, "%s", lastSent);
   }
   strcpy(lastSent,hdr);
 
