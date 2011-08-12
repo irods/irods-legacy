@@ -13,7 +13,9 @@
 
 #include "rsApiHandler.h"
 #include "msoDriversMS.h"
+#if defined(MSO_HTTP)
 #include <curl/curl.h>
+#endif
 
 /**
  * \fn int msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
