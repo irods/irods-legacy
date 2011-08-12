@@ -1,2 +1,2 @@
-/newZone/home/rods/d3,Schroeder,Wayne,DICE,schroeder@sdsc.edu,534-8393
-/newZone/home/rods/d4,Schroeder,Wayne,DICE,schroeder@sdsc.edu,534-8393
+/newZone/home/rods/d3,Schroeder,Wayne,DICE,wayne@diceresearch.org,534-8393
+/newZone/home/rods/d4,Schroeder,Wayne,DICE,wayne@diceresearch.org,534-8393
