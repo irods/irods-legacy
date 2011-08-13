@@ -15,7 +15,7 @@
 # emailing the notification to one or more accounts.
 #
 # This script should be rerun at the period at which you want to be
-# notified.  The trade-off is getting mulitple notifications versus
+# notified.  The trade-off is getting multiple notifications versus
 # some delays.  For example, if changes typically take 10 minutes or
 # so, you might run this once an hour so that you'll usually get just
 # one notification for a change set and within an hour of the update.
@@ -28,7 +28,7 @@
 # linux/unix commands are assumed to be available too (grep, echo,
 # date, mail, tail).
 #
-# You can use differant files is you want by changing these;
+# You can use different files is you want by changing these;
 $notifyConfig="notify.txt";
 $notifyData="data.txt";
 #
