@@ -22,6 +22,18 @@ struct region_error {
     void *obj; /* a generic point to an object which is the source of the error */
 };
 
+/* #define REGION_MALLOC */
+#ifdef REGION_MALLOC
+struct region_node {
+	size_t size;
+	void *ptr;
+	struct region_node *next;
+};
+
+typedef struct region {
+	struct region_node *head, *tail;
+} Region;
+#else
 struct region_node {
 	unsigned char *block; /* pointer to memory block */
 	size_t size; /* size of the memory block in bytes */
@@ -36,17 +48,17 @@ typedef struct region {
         jmp_buf *label;
         struct region_error error;
 } Region;
-
+#endif
 typedef struct region_desc {
     Region *region;
     size_t size;
     int del;
 } RegionDesc;
 
-#define IN_REGION(x,r) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->region == (r))
-#define SET_DELETE(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->del=1)
-#define DELETED(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->del)
-#define SIZE(x) (((RegionDesc *)(((unsigned char*)(x))-sizeof(RegionDesc)))->size)
+#define IN_REGION(x,r) (((RegionDesc *)(((unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->region == (r))
+#define SET_DELETE(x) (((RegionDesc *)(((unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->del=1)
+#define DELETED(x) (((RegionDesc *)(((unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->del)
+#define SIZE(x) (((RegionDesc *)(((unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->size)
 
 /* create a region with initial size is */
 /* if s == 0 then the initial size is DEFAULT_BLOCK_SIZE */
