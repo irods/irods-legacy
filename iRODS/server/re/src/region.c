@@ -2,7 +2,62 @@
  */
 #include "region.h"
 #include <string.h>
+#ifdef REGION_MALLOC
 
+Region *make_region(size_t is, jmp_buf *label) {
+	Region *r = (Region *)malloc(sizeof(Region));
+	if(r == NULL)
+		return NULL;
+	struct region_node *node = (struct region_node *)malloc(sizeof(struct region_node));
+	node->next = NULL;
+	node->ptr = NULL;
+	node->size = 0;
+	r->head = r->tail = node;
+	return r;
+}
+unsigned char *region_alloc_nodesc(Region *r, size_t s, size_t *alloc_size) {
+	*alloc_size =
+                s>DEFAULT_BLOCK_SIZE?
+                    s:
+                    roundToAlignment(s);
+	unsigned char *pointer = (unsigned char *)malloc(*alloc_size);
+	struct region_node *node = (struct region_node *)malloc(sizeof(struct region_node));
+	node->next = NULL;
+	node->ptr = pointer;
+	node->size = s;
+	r->tail->next = node;
+	r->tail = node;
+	return pointer;
+
+}
+void *region_alloc(Region *r, size_t size) {
+	size_t allocSize;
+    unsigned char *mem = region_alloc_nodesc(r, size + CACHE_SIZE(RegionDesc, 1), &allocSize);
+    ((RegionDesc *)mem)->region = r;
+    ((RegionDesc *)mem)->size = allocSize;
+    ((RegionDesc *)mem)->del = 0;
+    return mem + CACHE_SIZE(RegionDesc, 1);
+}
+void region_free(Region *r) {
+	while(r->head!=NULL) {
+		struct region_node *node = r->head;
+		r->head = node->next;
+		memset(node->ptr, 0, node->size);
+		if(node->ptr!=NULL) free(node->ptr);
+		free(node);
+	}
+	free(r);
+}
+size_t region_size(Region *r) {
+	size_t s = 0;
+	struct region_node *node = r->head;
+	while(node!=NULL) {
+		s += node->size;
+		node = node->next;
+	}
+	return s;
+}
+#else
 /* utility function */
 struct region_node *make_region_node(size_t is) {
 	struct region_node *node = (struct region_node *)malloc(sizeof(Region));
@@ -84,6 +139,7 @@ void region_free(Region *r) {
 	while(r->head!=NULL) {
 		struct region_node *node = r->head;
 		r->head = node->next;
+		/* memset(node->block, 0, node->size); */
 		free(node->block);
 		free(node);
 	}
@@ -99,6 +155,7 @@ size_t region_size(Region *r) {
 	}
 	return s;
 }
+#endif
 
 /* tests */
 void assert(int res) {
