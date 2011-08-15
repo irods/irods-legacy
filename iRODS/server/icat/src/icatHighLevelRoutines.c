@@ -443,8 +443,33 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       status = cmlCheckDataObjId(objIdString, rsComm->clientUser.userName,
 	      rsComm->clientUser.rodsZone, neededAccess, &icss);
       if (status != 0) {
-	 _rollback("chlModDataObjMeta");
-	 return(CAT_NO_ACCESS_PERMISSION);
+	 theVal = getValByKey(regParam, ACL_COLLECTION_KW);
+	 if (theVal != NULL && dataObjInfo->objPath != NULL &&
+	     upCols==1 && strcmp(updateCols[0],"data_path")==0) {
+	    int len, iVal;
+/*
+ In this case, the user is doing a 'imv' of a collection but one of
+ the sub-files is not owned by them.  We decided this should be
+ allowed and so we support it via this new ACL_COLLECTION_KW, checking
+ that the ACL_COLLECTION matches the beginning path of the object and
+ that the user has the appropriate access to that collection.
+ */
+	    len = strlen(theVal);
+	    if (strncmp(theVal, dataObjInfo->objPath, len) == 0) {
+
+	       iVal = cmlCheckDir(theVal,
+				 rsComm->clientUser.userName, 
+				 rsComm->clientUser.rodsZone,
+				 ACCESS_OWN, 
+				 &icss);
+	    }
+	    if (iVal > 0) status=0; /* Collection was found (id
+				     * returned) & user has access */
+	 }
+	 if (status) {
+	    _rollback("chlModDataObjMeta");
+	    return(CAT_NO_ACCESS_PERMISSION);
+	 }
       } 
    }
 
