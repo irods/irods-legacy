@@ -20,7 +20,7 @@
 /**
  * \fn int msiobjget_test(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
  *
- * \brief test for geting an object using micro-service drivers
+ * \brief Test for getting a microservice object file
  *
  * \module msoDrivers_test
  *
@@ -31,7 +31,7 @@
  *
  * \remark 
  *
- * \note test for  getting object using microservices
+ * \note Test for getting a microservice object file
  *
  * \usage None
  *
@@ -138,7 +138,7 @@ msiobjget_test(msParam_t*  inRequestPath, msParam_t* inFileMode,
 /**
  * \fn int msiobjput_test(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
  *
- * \brief Test for putting micro-service  object files
+ * \brief Test for putting a microservice object file
  *
  * \module msoDrivers_test
  *
@@ -149,7 +149,7 @@ msiobjget_test(msParam_t*  inRequestPath, msParam_t* inFileMode,
  *
  * \remark 
  *
- * \note test for getting object using microservices
+ * \note Test for putting a microservice object file
  *
  * \usage None
  *
