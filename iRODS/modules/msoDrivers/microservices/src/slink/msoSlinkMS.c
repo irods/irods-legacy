@@ -46,7 +46,7 @@ extern int rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
  * \param[in] inRequestPath - a STR_MS_T request string to external resource
  * \param[in] inFileMode - a STR_MS_T mode of cache file creation
  * \param[in] inFileFlags - a STR_MS_T flags for cache file creation
- * \param[in] inFilname - a STR_MS_T cache file name (full path)
+ * \param[in] inCacheFilename - a STR_MS_T cache file name (full path)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -183,7 +183,7 @@ msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
 
 /**
- * \fn int msiobjput_slink(msParam_t*  inMSOPath, msParam_t*  inCacheFileName,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
+ * \fn int msiobjput_slink(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
  *
  * \brief putting slink object using micro-service
  *
@@ -202,7 +202,7 @@ msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode,
  *
  * \param[in] inMSOPath - a STR_MS_T path string to external resource
  * \param[in] inCacheFilename - a STR_MS_T cache file containing data to be written out
- * \param[in] ineFileSize - a STR_MS_T size of inCacheFilename
+ * \param[in] inFileSize - a STR_MS_T size of inCacheFilename
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
