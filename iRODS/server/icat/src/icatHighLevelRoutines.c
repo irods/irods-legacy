@@ -58,14 +58,14 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #define AP_NULL "null"
 
 #define MAX_PASSWORDS 40
-/* TEMP_PASSWORD_TIME is the number of seconds the temp, one-time
+/* TEMP_PASSWORD_TIME is the number of seconds the temporary, one-time
    password can be used.  chlCheckAuth also checks for this column
-   to be < 1900 to differentiate the row from regular passwords.
-   1800 is 30 minutes which will be utilized by iDrop and iDrop-lite
-   which disconnect when idle to reduce the number of open 
-   connections and active agents.
-*/
-#define TEMP_PASSWORD_TIME 1800
+   to be < 1000 to differentiate the row from regular passwords.
+   This time, 120 seconds, should be long enough to give the iDrop and
+   iDrop-lite applets enough time to download and go through their
+   startup sequence.  iDrop and iDrop-lite disconnect when idle to
+   reduce the number of open connections and active agents.  */
+#define TEMP_PASSWORD_TIME 120
 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
@@ -3370,7 +3370,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    expireTime=atoll(goodPwExpiry);
    getNowStr(myTime);
    nowTime=atoll(myTime);
-   if (expireTime < 1900) {
+   if (expireTime < 1000) {
 
       /* in the form used by temporary, one-time passwords */
 
