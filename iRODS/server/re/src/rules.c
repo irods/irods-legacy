@@ -430,7 +430,7 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
 			char *ruleName = rule->node->subtrees[0]->text;
 			FunctionDesc *fd;
 			if((fd = (FunctionDesc *)lookupFromEnv(funcDesc, ruleName)) != NULL) {
-				if(getNodeType(fd) != N_FD_EXTERNAL) {
+				if(getNodeType(fd) != N_FD_EXTERNAL && getNodeType(fd) != N_FD_RULE_INDEX_LIST) {
 					char *err;
 					switch(getNodeType(fd)) {
 					case N_FD_CONSTRUCTOR:
