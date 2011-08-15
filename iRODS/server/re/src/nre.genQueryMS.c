@@ -1,5 +1,5 @@
 /**
- * @file	genQueryMS.c
+ * @file	nre.genQueryMS.c
  *
  */
 
