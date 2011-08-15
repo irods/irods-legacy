@@ -30,10 +30,11 @@
  * \author Wayne Schroeder
  * \date   2010-11-23
  *
- * \usage See the DBR page on the iRODS web site.
+ * \usage See the DBR page on the iRODS website.
  *
  * \param[in] dbrName - a STR_MS_T, name of the DBR being used
  * \param[in] dboName - a STR_MS_T, name of the DBO being used
+ * \param[in] dborName - a STR_MS_T, name of the DBOR being used
  * \param[in] options - a STR_MS_T, currently 'force' or not
  * \param[in] inpParam1 - Optional - STR_MS_T parameters to the DBO SQL.
  * \param[in] inpParam2 - Optional - STR_MS_T parameters to the DBO SQL.
@@ -105,9 +106,9 @@ msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
 
 
     myDborName = parseMspForStr(dborName);
-    if (myDboName == NULL) {
+    if (myDborName == NULL) {
 	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDboExec: input dboName is NULL");
+          "msiDboExec: input dborName is NULL");
         return (USER__NULL_INPUT_ERR);
     }
 
