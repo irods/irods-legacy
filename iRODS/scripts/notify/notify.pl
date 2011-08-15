@@ -28,7 +28,7 @@
 # linux/unix commands are assumed to be available too (grep, echo,
 # date, mail, tail).
 #
-# You can use different files is you want by changing these;
+# You can use different files if you want by changing these:
 $notifyConfig="notify.txt";
 $notifyData="data.txt";
 #
