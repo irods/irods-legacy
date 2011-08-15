@@ -261,7 +261,7 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
  *
  * 
  * \param[in] inBufferP - a msParam of type STR_MS_T which is key=value pairs separated by %-sign.
- * \param[out] outStrarrayP - a msParam of type StrArray_MS_T which is a structure of array of string.
+ * \param[out] outStrArrayP - a msParam of type StrArray_MS_T which is a structure of array of string.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
