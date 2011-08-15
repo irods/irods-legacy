@@ -213,7 +213,6 @@ acSetMultiReplPerResc { }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/mytest/*") {writeLine("serverLog","File Path is "++$filePath); } }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/mytest/*") {writeLine("serverLog","File Path is "++$filePath); msiSplitPath($filePath,*fileDir,*fileName); msiExecCmd("send.sh", "*fileDir *fileName", "null", "null","null",*Junk); writeLine("serverLog","After File Path is *fileDir *fileName"); } }
 #acPostProcForPut { ON(msiCheckOwner == 0) {msiWriteRodsLog("Username is $userNameClient",*Status);}}
-#acPostProcForPut { ON($objPath like "\*txt") {writeLine("serverLog","File $objPath"); } }
 acPostProcForPut { }
 acPostProcForCopy { }
 acPostProcForFilePathReg { }
@@ -337,8 +336,8 @@ acSetReServerNumProc {msiSetReServerNumProc("default"); }
 # 18) acPreProcForCollCreate - This is the PreProcessing rule for creating
 # a collection. Currently there is no function written specifically
 # for this rule.
-# acPreprocForCollCreate {writeLine("serverLog","TEST:acPreProcForCollCreate:"++$collName); }
-acPreprocForCollCreate { }
+# acPreProcForCollCreate {writeLine("serverLog","TEST:acPreProcForCollCreate:"++$collName); }
+acPreProcForCollCreate { }
 #
 # 19) acPostProcForCollCreate - This rule set the post-processing policy for
 # creating a collection.  Currently there is no function written specifically
