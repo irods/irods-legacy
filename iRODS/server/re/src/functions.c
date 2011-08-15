@@ -704,12 +704,33 @@ Res *smsi_int(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             RES_INT_VAL_LVAL(res) = atoi(val->text);
         } else if(TYPE(val) == T_DOUBLE) {
             res->exprType = newSimpType(T_INT, r);
-            RES_INT_VAL_LVAL(res) = (int)RES_DOUBLE_VAL_LVAL(val);
+            RES_INT_VAL_LVAL(res) = (int)RES_DOUBLE_VAL(val);
         } else if(TYPE(val) == T_INT) {
             res = val;
         } else {
             res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
             snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to integer.", typeName_Res(val));
+            generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
+        }
+        return res;
+}
+Res *smsi_bool(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+        char errbuf[ERR_MSG_LEN];
+        Res *val = params[0], *res = newRes(r);
+        res->exprType = newSimpType(T_BOOL, r);
+		if(TYPE(val) == T_BOOL) {
+			res = val;
+		} else if(TYPE(val) == T_STRING && (strcmp(val->text, "true")==0 || strcmp(val->text, "1") == 0)) {
+        		RES_BOOL_VAL_LVAL(res) = 1;
+		} else if(TYPE(val) == T_STRING && (strcmp(val->text, "false")==0 || strcmp(val->text, "0") == 0)) {
+        		RES_BOOL_VAL_LVAL(res) = 0;
+        } else if(TYPE(val) == T_DOUBLE) {
+            RES_BOOL_VAL_LVAL(res) = (int)RES_DOUBLE_VAL(val)?1:0;
+        } else if(TYPE(val) == T_INT) {
+            RES_BOOL_VAL_LVAL(res) = (int)RES_INT_VAL(val)?1:0;
+        } else {
+            res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
+            snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to boolean.", typeName_Res(val));
             generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
         }
         return res;
@@ -1130,7 +1151,11 @@ Res *smsi_delayExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
   deleteMsParamArray(rei->msParamArray);
   rei->msParamArray = tmp;
 
-  return newIntRes(r, i);
+  if(i < 0) {
+      return newErrorRes(r, i);
+  } else {
+      return newIntRes(r, i);
+  }
 }
 
 Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
@@ -1166,10 +1191,17 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
 
   i = rsExecMyRule (rei->rsComm, &execMyRuleInp,  &outParamArray);
 
+  if(outParamArray != NULL) {
+	  rei->msParamArray = outParamArray;
+  }
   updateMsParamArrayToEnvAndFreeNonIRODSType(rei->msParamArray, env, errmsg, r);
   deleteMsParamArray(rei->msParamArray);
   rei->msParamArray = NULL;
-  return newIntRes(r, i);
+  if(i<0) {
+      return newErrorRes(r, i);
+  } else {
+      return newIntRes(r, i);
+  }
 }
 int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r) {
   execCmdOut_t *myExecCmdOut;
@@ -1806,6 +1838,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "datetimef", newFunctionFD("string * string->time", smsi_datetime, r));
     insertIntoHashTable(ft, "double", newFunctionFD("f 0{string double time}->double", smsi_double, r));
     insertIntoHashTable(ft, "int", newFunctionFD("0{integer string double}->integer", smsi_int, r));
+    insertIntoHashTable(ft, "bool", newFunctionFD("0{boolean integer string double}->boolean", smsi_bool, r));
     insertIntoHashTable(ft, "list", newFunctionFD("forall X, X*->list X", smsi_list, r));
     /*insertIntoHashTable(ft, "tuple",
             newFunctionDescChain(newConstructorDesc("-> <>", r),

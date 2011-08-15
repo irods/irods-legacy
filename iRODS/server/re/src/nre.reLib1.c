@@ -524,6 +524,9 @@ execMyRule(char * ruleDef, msParamArray_t *inMsParamArray, char *outParamsDesc,
 void appendOutputToInput(msParamArray_t *inpParamArray, char **outParamNames, int outParamN) {
 	int i, k, repeat = 0;
 	for(i=0;i<outParamN;i++) {
+		if(strcmp(outParamNames[i], ALL_MS_PARAM_KW)==0) {
+			continue;
+		}
 		repeat = 0;
 		for(k=0;k<inpParamArray->len;k++) {
 			if(inpParamArray->msParam[k]->label!=NULL && strcmp(outParamNames[i], inpParamArray->msParam[k]->label) == 0) {

@@ -29,6 +29,7 @@ extern microsdef_t MicrosTable[];
 #define RE_ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
 extern int GlobalAllRuleExecFlag;
 extern int GlobalREDebugFlag;
+extern int GlobalREAuditFlag;
 
 /* utilities */
 int initializeEnv(Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, Hashtable *env, Region *r) {
@@ -593,7 +594,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     }
 
 
-	if (GlobalREDebugFlag > 0) {
+	if (GlobalREAuditFlag > 0) {
 		char tmpActStr[MAX_ACTION_SIZE];
 		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, fn, args, n);
 		reDebug("  ExecAction", -4, "", tmpActStr, node, env,rei);
@@ -625,7 +626,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
         res = execMicroService3(fn, args, n, node, nEnv, rei, errmsg, newRegion);
     }
 
-	if (GlobalREDebugFlag > 0) {
+	if (GlobalREAuditFlag > 0) {
 		char tmpActStr[MAX_ACTION_SIZE];
 		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, fn, args, n);
 		reDebug("  ExecAction", -4, "Done", tmpActStr, node, env,rei);
@@ -802,8 +803,7 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
 		/* no action (microservice) found, try to lookup a rule */
 		Res *actionRet = execRule(actionName, args, nargs, applyAllRule, env, rei, reiSaveFlag, errmsg, r);
 		if (getNodeType(actionRet) == N_ERROR && (
-                        RES_ERR_CODE(actionRet) == NO_RULE_FOUND_ERR ||
-                        RES_ERR_CODE(actionRet) == NO_MORE_RULES_ERR)) {
+                        RES_ERR_CODE(actionRet) == NO_RULE_FOUND_ERR)) {
 			snprintf(buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, availableRules());
                         generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf2);
                         addRErrorMsg(errmsg, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR, buf2);
@@ -894,7 +894,7 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
             RETURN;
         }
 
-	if (GlobalREDebugFlag > 0) {
+	if (GlobalREAuditFlag > 0) {
 		char tmpActStr[MAX_ACTION_SIZE];
 		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, msName, args, nargs);
 		reDebug("    ExecMicroSrvc", -4, "", tmpActStr, node, env,rei);
@@ -1084,7 +1084,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         #ifndef DEBUG
                     rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",ruleName, statusI);
         #endif
-                    statusRes = newErrorRes(r, NO_RULE_FOUND_ERR);
+                    statusRes = first ? newErrorRes(r, NO_RULE_FOUND_ERR) : statusRes;
                 } else { // apply all rules succeeds even when 0 rule is applied
                     success = 1;
                 }
@@ -1106,6 +1106,12 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 			}
 		}
 
+		if(!first) {
+			addRErrorMsg(errmsg, statusI, ERR_MSG_SEP);
+		} else {
+			first = 0;
+		}
+
 		if(ruleIndexListNode->secondaryIndex) {
         	statusRes = execRuleFromCondIndex(ruleName, args, argc, ruleIndexListNode->condIndex, env, rei, reiSaveFlag, errmsg, r);
         } else {
@@ -1120,13 +1126,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 					continue;
 				}
 
-				if(!first) {
-					addRErrorMsg(errmsg, statusI, ERR_MSG_SEP);
-				} else {
-					first = 0;
-				}
-
-				if (GlobalREDebugFlag > 0)
+				if (GlobalREAuditFlag > 0)
 					reDebug("  GotRule", ruleInx, "", ruleName, NULL, env, rei); /* pass in NULL for inMsParamArray for now */
 		#ifndef DEBUG
 				if (reTestFlag > 0) {
@@ -1195,7 +1195,7 @@ void copyFromEnv(Res **args, char **inParams, int inParamsCount, Hashtable *env,
  */
 Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r)
 {
-	if (GlobalREDebugFlag > 0)
+	if (GlobalREAuditFlag > 0)
 		reDebug("  ExecRule", -4, "", RULE_NAME(rule), NULL, env, rei); /* pass in NULL for inMsParamArray for now */
 	Node* ruleCondition = rule->subtrees[1];
 	Node* ruleAction = rule->subtrees[2];
@@ -1268,7 +1268,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
         cpEnv(global, r);
         /* deleteEnv(envNew, 2); */
         region_free(rNew);
-    	if (GlobalREDebugFlag > 0)
+    	if (GlobalREAuditFlag > 0)
     		reDebug("  ExecRule", -4, "Done", RULE_NAME(rule), NULL, env, rei); /* pass in NULL for inMsParamArray for now */
         return statusRes;
 

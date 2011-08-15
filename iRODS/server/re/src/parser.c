@@ -868,11 +868,15 @@ PARSER_FUNC_BEGIN1(ExprBackwardCompatible, int level)
 			NT(ActionArgumentBackwardCompatible);
 		} else if(TOKEN_TEXT("+") || TOKEN_TEXT("-") || TOKEN_TEXT("*") || TOKEN_TEXT("/") || TOKEN_TEXT("<") || TOKEN_TEXT("<=") || TOKEN_TEXT(">") || TOKEN_TEXT(">=")) {
 			BUILD_APP_NODE("double", FPOS, 1);
-			NT2(Term, rulegen, getBinaryPrecedence(token));
+			NT1(ExprBackwardCompatible, 1);
 			BUILD_APP_NODE("double", FPOS, 1);
+		} else if(TOKEN_TEXT("%%") || TOKEN_TEXT("&&")) {
+			BUILD_APP_NODE("bool", FPOS, 1);
+			NT1(ExprBackwardCompatible, 1);
+			BUILD_APP_NODE("bool", FPOS, 1);
 		} else {
 			BUILD_APP_NODE("str", FPOS, 1);
-			NT2(Term, rulegen, getBinaryPrecedence(token));
+			NT1(ExprBackwardCompatible, 1);
 			BUILD_APP_NODE("str", FPOS, 1);
 		}
 		BUILD_APP_NODE(fn, &start, 2);
