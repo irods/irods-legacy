@@ -706,7 +706,7 @@ fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag)
 
 int
 syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfoHead)
+dataObjInfo_t *dataObjInfoHead, char *acLCollection)
 {
     dataObjInfo_t *tmpDataObjInfo;
     int status;
@@ -714,7 +714,8 @@ dataObjInfo_t *dataObjInfoHead)
 
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-	status = syncDataObjPhyPathS (rsComm, dataObjInp, tmpDataObjInfo);
+	status = syncDataObjPhyPathS (rsComm, dataObjInp, tmpDataObjInfo,
+	 acLCollection);
 	if (status < 0) {
 	    savedStatus = status;
 	}
@@ -726,7 +727,7 @@ dataObjInfo_t *dataObjInfoHead)
 
 int
 syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfo)
+dataObjInfo_t *dataObjInfo, char *acLCollection)
 {
     int status, status1;
     fileRenameInp_t fileRenameInp;
@@ -815,6 +816,8 @@ dataObjInfo_t *dataObjInfo)
     /* register the change */
     memset (&regParam, 0, sizeof (regParam));
     addKeyVal (&regParam, FILE_PATH_KW, fileRenameInp.newFileName);
+    if (acLCollection != NULL)
+      addKeyVal (&regParam, ACL_COLLECTION_KW, acLCollection);
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
     status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
@@ -929,7 +932,8 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
             }
             rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);
 
-            status = syncDataObjPhyPathS (rsComm, NULL, &dataObjInfo);
+            status = syncDataObjPhyPathS (rsComm, NULL, &dataObjInfo,
+	      collection);
 	    if (status < 0) {
 		rodsLog (LOG_ERROR,
                   "syncCollPhyPath: syncDataObjPhyPathS error for %s,stat=%d",

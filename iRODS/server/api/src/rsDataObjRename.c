@@ -323,7 +323,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 		    tmpDataObjInfo = tmpDataObjInfo->next;
 	        }
 	        status = syncDataObjPhyPath (rsComm, destDataObjInp,
-		  dataObjInfoHead);
+		  dataObjInfoHead, NULL);
 		freeAllDataObjInfo (dataObjInfoHead);
 	    } else {
                 status = syncCollPhyPath (rsComm, destDataObjInp->objPath);

@@ -71,10 +71,10 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
 fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag);
 int
 syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfoHead);
+dataObjInfo_t *dataObjInfoHead, char *acLCollection);
 int
 syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfo);
+dataObjInfo_t *dataObjInfo, char *acLCollection);
 int
 syncCollPhyPath (rsComm_t *rsComm, char *collection);
 int

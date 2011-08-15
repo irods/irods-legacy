@@ -98,6 +98,8 @@
 #define REG_REPL_KW		"regRepl"  /* register replica */
 #define AGE_KW			"age"  /* age of the file for itrim */
 #define DRYRUN_KW		"dryrun"  /* do a dry run */
+#define ACL_COLLECTION_KW	"aclCollection"  /* the collection from which 
+						  * the ACL should be used */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 
