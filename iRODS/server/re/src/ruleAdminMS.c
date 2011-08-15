@@ -1680,7 +1680,7 @@ int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_
  * \author  Arcot Rajasekar
  * \date    2011
  * 
- * \remark Terrell Russell - msi documentation, 2011-03-05
+ * \remark Terrell Russell - reviewed msi documentation, 2011-08-15
  * 
  * \note This microservice requires iRODS administration privileges.
  *  
@@ -1689,7 +1689,7 @@ int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_
  * \usage
  *
  *
- * \param[in] inStatus - a msParam of type INT_MS_T or an integer stored in STR_MS_T, normally 1 if micro-service is available, 0 otherwise.
+ * \param[in] inStatus - a msParam of type INT_MS_T or an integer stored in STR_MS_T, normally 1 if microservice is available, 0 otherwise.
  * \param[out] outCoreMsrvcStruct - a msParam of type MsrvcStruct_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
