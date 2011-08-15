@@ -1669,7 +1669,7 @@ int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_
 
 
 /**
- * \fn msiGetMSrvcsFromDBIntoStruct(msParam_t *inMsrvcBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
+ * \fn msiGetMSrvcsFromDBIntoStruct(msParam_t *inStatus, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei)
  *
  * \brief  Populates a microservice structure with microservices from the given base name
  *
@@ -1689,9 +1689,8 @@ int msiAdmInsertMSrvcsFromStructIntoDB(msParam_t *inMsrvcBaseNameParam, msParam_
  * \usage
  *
  *
- * \param[in] inMsrvcBaseNameParam - a msParam of type STR_MS_T, the name of the base being queried
- * \param[in] inVersionParam - a msParam of type STR_MS_T, which is the version string of the base being queried (use 0 for current version)
- * \param[in] outCoreMsrvcStruct - a msParam of type RuleStruct_MS_T
+ * \param[in] inStatus - a msParam of type INT_MS_T or an integer stored in STR_MS_T, normally 1 if micro-service is available, 0 otherwise.
+ * \param[out] outCoreMsrvcStruct - a msParam of type MsrvcStruct_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -1778,7 +1777,7 @@ msiGetMSrvcsFromDBIntoStruct(msParam_t *inStatus, msParam_t *outCoreMsrvcStruct,
  *
  *
  * \param[in] inMsrvcFileNameParam - a msParam of type STR_MS_T, the name of the file to be written
- * \param[in] inCoreMsrvcStruct - a msParam of type RuleStruct_MS_T
+ * \param[in] inCoreMsrvcStruct - a msParam of type MsrvcStruct_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
