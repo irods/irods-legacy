@@ -482,18 +482,16 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
         char *buf = (char *) malloc(ERR_MSG_LEN*1024*sizeof(char));
         int res = 0;
 	if(inRuleStrct == &coreRuleStrct) {
-		if(readRuleSetFromFile(ruleBaseName,ruleEngineConfig.coreRuleSet,ruleEngineConfig.coreFuncDescIndex,&errloc,&errmsgBuf, ruleEngineConfig.coreRegion)==0) {
+		if((res = readRuleSetFromFile(ruleBaseName,ruleEngineConfig.coreRuleSet,ruleEngineConfig.coreFuncDescIndex,&errloc,&errmsgBuf, ruleEngineConfig.coreRegion))==0) {
 		} else {
 			errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
 			rodsLog(LOG_ERROR, "%s", buf);
-			res = -1;
 		}
 	} else if(inRuleStrct == &appRuleStrct) {
-		if(readRuleSetFromFile(ruleBaseName,ruleEngineConfig.appRuleSet, ruleEngineConfig.appFuncDescIndex,&errloc,&errmsgBuf, ruleEngineConfig.appRegion)==0) {
+		if(res = readRuleSetFromFile(ruleBaseName,ruleEngineConfig.appRuleSet, ruleEngineConfig.appFuncDescIndex,&errloc,&errmsgBuf, ruleEngineConfig.appRegion)==0) {
 		} else {
 			errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
 			rodsLog(LOG_ERROR, "%s", buf);
-			res = -1;
 		}
 	}
 	free(buf);

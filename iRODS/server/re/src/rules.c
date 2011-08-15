@@ -52,15 +52,15 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
     Pointer *e = newPointer(file, ruleBaseName);
     int ret = parseRuleSet(e, ruleSet, funcDesc, errloc, errmsg, r);
     deletePointer(e);
-    if(ret == -1) {
-        return -1;
+    if(ret < 0) {
+        return ret;
     }
 
 	Node *errnode;
 	ExprType *restype = typeRuleSet(ruleSet, errmsg, &errnode, r);
 	if(getNodeType(restype) == T_ERROR) {
 	    *errloc = NODE_EXPR_POS(errnode);
-	    return -1;
+	    return TYPE_ERROR;
 	}
 
 	return 0;
