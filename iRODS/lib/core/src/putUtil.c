@@ -99,12 +99,6 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
                   targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
 	          &bulkOprInp, &rodsRestart, NULL);
 	    }
-#if 0
-            if (rodsRestart.fd > 0 && status < 0) {
-                close (rodsRestart.fd);
-                return (status);
-            }
-#endif
 	} else {
 	    /* should not be here */
 	    rodsLog (LOG_ERROR,
@@ -648,24 +642,6 @@ bulkOprInfo_t *bulkOprInfo)
                 status = putFileUtil (conn, srcChildPath, targChildPath,
                   dataSize, myRodsEnv, rodsArgs, dataObjOprInp);
 	    }
-#if 0
-	    } else if (bulkOprInfo->flags == BULK_OPR_SMALL_FILES) {
-		if (statbuf.st_size <= MAX_BULK_OPR_FILE_SIZE) {
-                    status = bulkPutFileUtil (conn, srcChildPath, targChildPath,
-                      statbuf.st_size, statbuf.st_mode, myRodsEnv, rodsArgs, 
-		      bulkOprInp, bulkOprInfo);
-		} else {
-		    continue;
-		}
-	    } else if (bulkOprInfo->flags == BULK_OPR_LARGE_FILES) {
-		if (statbuf.st_size > MAX_BULK_OPR_FILE_SIZE) {
-                    status = putFileUtil (conn, srcChildPath, targChildPath,
-                      statbuf.st_size, myRodsEnv, rodsArgs, dataObjOprInp);
-		} else {
-		    continue;
-		}
-	    }
-#endif
 	    if (rodsRestart->fd > 0) {
 		if (status >= 0) {
 		    if (bulkFlag == BULK_OPR_SMALL_FILES) {
@@ -680,15 +656,6 @@ bulkOprInfo_t *bulkOprInfo)
 		        rodsRestart->curCnt ++;
 		        status = writeRestartFile (rodsRestart, targChildPath);
 		    }
-	        } else {
-		    /* don't continue with restart */
-#ifndef USE_BOOST_FS
-		    closedir (dirPtr);
-#endif
-                    rodsLogError (LOG_ERROR, status,
-                     "putDirUtil: put %s failed. status = %d",
-                      srcChildPath, status);
-		    return (status);
 		}
 	    }
         } else {      /* a directory */
@@ -701,23 +668,14 @@ bulkOprInfo_t *bulkOprInfo)
               myRodsEnv, rodsArgs, dataObjOprInp, bulkOprInp,
 	      rodsRestart, bulkOprInfo);
 
-	    if (rodsRestart->fd > 0 && status < 0) {
-#ifndef USE_BOOST_FS
-		closedir (dirPtr);
-#endif
-		return (status);
-	    }
         }
 
         if (status < 0) {
-            savedStatus = status;
 	    rodsLogError (LOG_ERROR, status,
 	     "putDirUtil: put %s failed. status = %d",
 	      srcChildPath, status); 
-#ifndef USE_BOOST_FS
-            closedir (dirPtr);
-#endif
-	    return status;
+            savedStatus = status;
+            if (rodsRestart->fd > 0) break;
         }
     }
 

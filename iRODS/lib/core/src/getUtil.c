@@ -440,24 +440,12 @@ rodsRestart_t *rodsRestart)
                 rodsLogError (LOG_ERROR, status,
                   "getCollUtil: getDataObjUtil failed for %s. status = %d",
                   srcChildPath, status);
-                if (rodsRestart->fd > 0) {
-                    break;
-                } else {
-                    savedStatus = status;
-                }
+                savedStatus = status;
+                if (rodsRestart->fd > 0) break;
             } else {
                 status = procAndWrriteRestartFile (rodsRestart, targChildPath);
             }
 	} else if (collEnt.objType == COLL_OBJ_T) {
-#if 0
-	    if (collEnt.collName[collLen] == '/') {
-                snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
-                  targDir, collEnt.collName + collLen + 1);
-	    } else {
-                snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
-                  targDir, collEnt.collName + collLen);
-	    }
-#else
             if ((status = splitPathByKey (
               collEnt.collName, parPath, childPath, '/')) < 0) {
                 rodsLogError (LOG_ERROR, status,
@@ -468,29 +456,24 @@ rodsRestart_t *rodsRestart)
             snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
               targDir, childPath);
 
-#endif
-
             mkdirR (targDir, targChildPath, 0750);
 
-#if 0
-            if (collEnt.specColl.collClass != NO_SPEC_COLL) {
-	    if (collHandle.rodsObjStat->specColl != NULL) {
-#endif
-                /* the child is a spec coll. need to drill down */
-                childDataObjInp = *dataObjOprInp;
-		if (collEnt.specColl.collClass != NO_SPEC_COLL)
-                    childDataObjInp.specColl = &collEnt.specColl;
-		else 
-		    childDataObjInp.specColl = NULL;
-                status = getCollUtil (myConn, collEnt.collName, targChildPath,
-                  myRodsEnv, rodsArgs, &childDataObjInp, rodsRestart);
-                if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-                    return (status);
-                }
-            }
-#if 0
+            /* the child is a spec coll. need to drill down */
+            childDataObjInp = *dataObjOprInp;
+            if (collEnt.specColl.collClass != NO_SPEC_COLL)
+                childDataObjInp.specColl = &collEnt.specColl;
+	    else 
+	        childDataObjInp.specColl = NULL;
+            status = getCollUtil (myConn, collEnt.collName, targChildPath,
+              myRodsEnv, rodsArgs, &childDataObjInp, rodsRestart);
+	    if (status < 0 && status != CAT_NO_ROWS_FOUND) {
+                rodsLogError (LOG_ERROR, status,
+                  "getCollUtil: getCollUtil failed for %s. status = %d",
+                  collEnt.collName, status);
+                savedStatus = status;
+                if (rodsRestart->fd > 0) break;
+	    }
         }
-#endif
     }
     rclCloseCollection (&collHandle);
 
