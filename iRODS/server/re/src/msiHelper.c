@@ -212,7 +212,6 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  * \brief Adds a key and value to existing msKeyValStr which is a  special 
  * kind of STR_MS_T which has the format -
  * keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
-.
  *
  * \module core
  *
