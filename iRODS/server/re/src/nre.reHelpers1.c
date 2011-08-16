@@ -741,7 +741,7 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
 
   snprintf(hdr, HEADER_TYPE_LEN - 1,   "iaudit:%s",callLabel);
   condRead[0] = '\0'; 
-  rodsLog (LOG_NOTICE,"PPP:%s\n",hdr);
+  /* rodsLog (LOG_NOTICE,"PPP:%s\n",hdr); */
   snprintf(seActionStr, MAX_NAME_LEN + 10, "%s:%s", action, actionStr);
   if (GlobalREAuditFlag > 0) {
     if (flag == -4) {
