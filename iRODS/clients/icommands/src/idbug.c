@@ -53,7 +53,7 @@ printCommandSummary() {
   return(0);
 }
 
-int  printIdbugHelp(char *cmd) {
+void  printIdbugHelp(char *cmd) {
   printf("idbug: icommand for rule debugging \n");
   printf("usage: %s [-h][-v n] [-c|C] \n" , cmd);
   printf("   -h : prints this  help message \n");
@@ -63,7 +63,6 @@ int  printIdbugHelp(char *cmd) {
 
   printCommandSummary();
   printReleaseInfo("idbug");
-  exit(1);
 }
 
 
@@ -419,6 +418,7 @@ main(int argc, char **argv)
       break;
     case 'h':
       printIdbugHelp(argv[0]);
+      exit(0);
       break;
     default:
       fprintf(stderr,"Error: Unknown Option\n");
