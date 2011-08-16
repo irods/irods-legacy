@@ -76,6 +76,7 @@ char *wildCardToRegex(char *buf) {
     			*(p++) = '[';
     			*(p++) = buf[i];
     			*(p++) = ']';
+    			break;
     	}
     }
     *(p++)='$';
@@ -311,16 +312,20 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                                strcmp(res->exprType->text, GenQueryOut_MS_T) == 0) {
                                 return res;
                             }
+                            break;
                         default:
                             break;
                     }
+                    break;
                 case T_DATETIME:
                     switch(TYPE(res)) {
                         case T_INT:
                             newDatetimeRes(r, (time_t) RES_INT_VAL(res));
+                            break;
                         default:
                             break;
                     }
+                    break;
                 default:
                     break;
             }
@@ -766,6 +771,7 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
                             /* unsupported type error */
                             res = NULL;
                             addRErrorMsg(errmsg, UNKNOWN_ERROR, "error: unsupported session variable type");
+                            break;
                     }
                 }
                 free(varMap);
@@ -1351,6 +1357,7 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 		return newIntRes(r, 0);
     default:
     	RE_ERROR2(1, "malformatted pattern error");
+    	break;
     }
     error:
         generateErrMsg(localErrorMsg,NODE_EXPR_POS(pattern), pattern->base, errbuf);

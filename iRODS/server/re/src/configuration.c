@@ -488,7 +488,7 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
 			rodsLog(LOG_ERROR, "%s", buf);
 		}
 	} else if(inRuleStrct == &appRuleStrct) {
-		if(res = readRuleSetFromFile(ruleBaseName,ruleEngineConfig.appRuleSet, ruleEngineConfig.appFuncDescIndex,&errloc,&errmsgBuf, ruleEngineConfig.appRegion)==0) {
+		if((res = readRuleSetFromFile(ruleBaseName,ruleEngineConfig.appRuleSet, ruleEngineConfig.appFuncDescIndex,&errloc,&errmsgBuf, ruleEngineConfig.appRegion))==0) {
 		} else {
 			errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN*1024);
 			rodsLog(LOG_ERROR, "%s", buf);
