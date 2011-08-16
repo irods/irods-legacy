@@ -510,7 +510,7 @@ main(int argc, char **argv) {
       }
     }
     if (myRodsArgs.verbose == True) {
-        printf ("rcExecMyRule: %s\n", execMyRuleInp.myRule + 10);
+        printf ("rcExecMyRule: %s\n", rulegen ? execMyRuleInp.myRule + 10 : execMyRuleInp.myRule);
 	printf ("outParamDesc: %s\n", execMyRuleInp.outParamDesc);
     }
 
