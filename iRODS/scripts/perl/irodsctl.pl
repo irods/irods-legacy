@@ -226,13 +226,13 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # enabled across the board.Make sure that the XmsgServer is also running.
 # REMEMBER This may generate lots and lots of messages!!!!
 # Please set the value to 3 only. It prints out rules and micro-services.
-$GLOBALREAUDITFLAG=3;
+# $GLOBALREAUDITFLAG=3;
 
 # GLOBALREDEBUGFLAG - turn this on if you want debugging to be
 # enabled across the board.Make sure that the XmsgServer is also running.
 # Please set the value to 4 only. You can interact with the debugger through
 # idbug
-$GLOBALREDEBUGFLAG=4;
+# $GLOBALREDEBUGFLAG=4;
 
 # $DefFileMode - the mode of the file created in the resource vault. 
 # The default value is 0600 (DEFAULT_FILE_MODE).
