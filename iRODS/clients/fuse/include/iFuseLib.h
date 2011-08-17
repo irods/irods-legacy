@@ -20,6 +20,7 @@
 #define MAX_NEWLY_CREATED_CACHE_SIZE   (4*1024*1024)	/* 4 mb */
 #define HIGH_NUM_CONN	5	/* high water mark */
 #define MAX_NUM_CONN	10
+
 #define NUM_NEWLY_CREATED_SLOT	5
 #define MAX_NEWLY_CREATED_TIME	5	/* in sec */
 
@@ -47,6 +48,18 @@ typedef enum {
     HAVE_READ_CACHE,
     HAVE_NEWLY_CREATED_CACHE,
 } readCacheState_t;
+
+typedef struct ConnReqWait {
+#ifdef USE_BOOST
+    boost::mutex* mutex;
+    boost::condition_variable cond;
+#else
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+#endif
+    int state;
+    struct ConnReqWait *next;
+} connReqWait_t;
 
 typedef struct IFuseDesc {
     iFuseConn_t *iFuseConn;    

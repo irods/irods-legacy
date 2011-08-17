@@ -44,6 +44,7 @@ char FuseCacheDir[MAX_NAME_LEN];
 iFuseDesc_t IFuseDesc[MAX_IFUSE_DESC];
 int IFuseDescInuseCnt = 0;
 iFuseConn_t *ConnHead = NULL;
+connReqWait_t *ConnReqWaitQue = NULL;
 rodsEnv MyRodsEnv;
 
 static int ConnManagerStarted = 0;
@@ -989,87 +990,135 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 {
     int status;
     iFuseConn_t *tmpIFuseConn;
-    int inuseCnt = 0;
+    int inuseCnt;
 
     *iFuseConn = NULL;
+
+    while (*iFuseConn == NULL) {
 #ifdef USE_BOOST
-    ConnLock.lock();
+        ConnLock.lock();
 #else
-    pthread_mutex_lock (&ConnLock);
+        pthread_mutex_lock (&ConnLock);
 #endif
+        /* get a free IFuseConn */
 
-    /* get a free IFuseConn */
-
-    tmpIFuseConn = ConnHead;
-    while (tmpIFuseConn != NULL) {
-	if (tmpIFuseConn->status == IRODS_FREE && 
-	  tmpIFuseConn->conn != NULL) {
-	    useFreeIFuseConn (tmpIFuseConn);
-	    *iFuseConn = tmpIFuseConn;
-	    return 0;
-	}
-	inuseCnt++;
-	tmpIFuseConn = tmpIFuseConn->next;
-    }
-    /* use one that is in use if MAX_NUM_CONN */
-    if (inuseCnt >= MAX_NUM_CONN) {
+	inuseCnt = 0;
         tmpIFuseConn = ConnHead;
         while (tmpIFuseConn != NULL) {
-	    if (tmpIFuseConn->inuseCnt == 0) { 
-                _useIFuseConn (tmpIFuseConn);
-                *iFuseConn = tmpIFuseConn;
-                return 0;
+	    if (tmpIFuseConn->status == IRODS_FREE && 
+	      tmpIFuseConn->conn != NULL) {
+	        useFreeIFuseConn (tmpIFuseConn);
+	        *iFuseConn = tmpIFuseConn;
+		return 0;;
+	    }
+	    inuseCnt++;
+	    tmpIFuseConn = tmpIFuseConn->next;
+        }
+        if (inuseCnt >= MAX_NUM_CONN) {
+	    connReqWait_t myConnReqWait, *tmpConnReqWait;
+	    /* find one that is not in use */
+            tmpIFuseConn = ConnHead;
+            while (tmpIFuseConn != NULL) {
+                if (tmpIFuseConn->inuseCnt == 0 && 
+	          tmpIFuseConn->pendingCnt == 0 && tmpIFuseConn->conn != NULL) {
+                    _useIFuseConn (tmpIFuseConn);
+                    *iFuseConn = tmpIFuseConn;
+                    return 0;
+                }
+                tmpIFuseConn = tmpIFuseConn->next;
             }
-            tmpIFuseConn = tmpIFuseConn->next;
-	}
-	/* well, just use the top */
-	tmpIFuseConn = ConnHead;
-        _useIFuseConn (tmpIFuseConn);
+	    /* have to wait */
+#ifndef USE_BOOST
+            struct timespec timeout;
+#endif
+	    bzero (&myConnReqWait, sizeof (myConnReqWait));
+#ifdef USE_BOOST
+            myConnReqWait.mutex = new boost::mutex;
+#else
+            pthread_mutex_init (&myConnReqWait.mutex, NULL);
+            pthread_cond_init (&myConnReqWait.cond, NULL);
+#endif
+	    /* queue it to the bottom */
+	    if (ConnReqWaitQue == NULL) {
+	        ConnReqWaitQue = &myConnReqWait;
+	    } else {
+	        tmpConnReqWait = ConnReqWaitQue;
+	        while (tmpConnReqWait->next != NULL) {
+		    tmpConnReqWait = tmpConnReqWait->next;
+	        }
+	        tmpConnReqWait->next = &myConnReqWait;
+	    }
+	    while (myConnReqWait.state == 0) {
+#ifdef USE_BOOST
+                boost::system_time const tt=boost::get_system_time() + 
+                  boost::posix_time::seconds(CONN_REQ_SLEEP_TIME);
+                ConnLock.unlock();
+                boost::unique_lock< boost::mutex > 
+		  boost_lock (*myConnReqWait.mutex);
+                myConnReqWait.cond.timed_wait (boost_lock, tt);
+#else
+                bzero (&timeout, sizeof (timeout));
+                timeout.tv_sec = time (0) + CONN_REQ_SLEEP_TIME;
+                pthread_mutex_unlock (&ConnLock);
+                pthread_mutex_lock (&myConnReqWait.mutex);
+                pthread_cond_timedwait (&myConnReqWait.cond, 
+		  &myConnReqWait.mutex, &timeout);
+                pthread_mutex_unlock (&myConnReqWait.mutex);
+#endif
+	    }
+#ifdef USE_BOOST
+            delete myConnReqWait.mutex;
+#else
+	    pthread_mutex_destroy (&myConnReqWait.mutex);
+#endif
+	    /* start from begining */
+	    continue;
+        }
+
+#ifdef USE_BOOST
+        ConnLock.unlock();
+#else
+        pthread_mutex_unlock (&ConnLock);
+#endif
+        /* get here when nothing free. make one */
+        tmpIFuseConn = (iFuseConn_t *) malloc (sizeof (iFuseConn_t));
+        if (tmpIFuseConn == NULL) {
+            return SYS_MALLOC_ERR;
+        }
+        bzero (tmpIFuseConn, sizeof (iFuseConn_t));
+
+
+#ifdef USE_BOOST
+        tmpIFuseConn->mutex = new boost::mutex;
+#else
+        pthread_mutex_init (&tmpIFuseConn->lock, NULL);
+#endif
+
+        status = ifuseConnect (tmpIFuseConn, myRodsEnv);
+        if (status < 0) return status;
+
+        useIFuseConn (tmpIFuseConn);
+
         *iFuseConn = tmpIFuseConn;
-        return 0;
-    }
+#ifdef USE_BOOST
+        ConnLock.lock();
+#else
+        pthread_mutex_lock (&ConnLock);
+#endif
+        /* queue it on top */
+        tmpIFuseConn->next = ConnHead;
+        ConnHead = tmpIFuseConn;
 
 #ifdef USE_BOOST
-    ConnLock.unlock();
+        ConnLock.unlock();
 #else
-    pthread_mutex_unlock (&ConnLock);
+        pthread_mutex_unlock (&ConnLock);
 #endif
-    /* nothing free. make one */
-    tmpIFuseConn = (iFuseConn_t *) malloc (sizeof (iFuseConn_t));
-    if (tmpIFuseConn == NULL) {
-        return SYS_MALLOC_ERR;
-    }
-    bzero (tmpIFuseConn, sizeof (iFuseConn_t));
+	break;
+    }	/* while *iFuseConn */
 
-
-#ifdef USE_BOOST
-    tmpIFuseConn->mutex = new boost::mutex;
-#else
-    pthread_mutex_init (&tmpIFuseConn->lock, NULL);
-#endif
-
-    status = ifuseConnect (tmpIFuseConn, myRodsEnv);
-    if (status < 0) return status;
-
-    useIFuseConn (tmpIFuseConn);
-
-    *iFuseConn = tmpIFuseConn;
-#ifdef USE_BOOST
-    ConnLock.lock();
-#else
-    pthread_mutex_lock (&ConnLock);
-#endif
-    /* queue it on top */
-    tmpIFuseConn->next = ConnHead;
-    ConnHead = tmpIFuseConn;
-
-#ifdef USE_BOOST
-    ConnLock.unlock();
-#else
-    pthread_mutex_unlock (&ConnLock);
-#endif
-
-    if (ConnManagerStarted < 5 && ++ConnManagerStarted == 5) {
+    if (ConnManagerStarted < HIGH_NUM_CONN && 
+      ++ConnManagerStarted == HIGH_NUM_CONN) {
 	/* don't do it the first time */
 
 #ifdef USE_BOOST
@@ -1082,8 +1131,6 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 	    ConnManagerStarted --;	/* try again */
 	}
     }
-
-
     return 0;
 }
 
@@ -1179,12 +1226,12 @@ ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
     rErrMsg_t errMsg;
 
     iFuseConn->conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->rodsPort,
-      myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 1, &errMsg);
+      myRodsEnv->rodsUserName, myRodsEnv->rodsZone, NO_RECONN, &errMsg);
 
     if (iFuseConn->conn == NULL) {
 	/* try one more */
         iFuseConn->conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->rodsPort,
-          myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 1, &errMsg);
+          myRodsEnv->rodsUserName, myRodsEnv->rodsZone, NO_RECONN, &errMsg);
 	if (iFuseConn->conn == NULL) {
             rodsLogError (LOG_ERROR, errMsg.status,
               "ifuseConnect: rcConnect failure %s", errMsg.msg);
@@ -1345,6 +1392,7 @@ connManager ()
 #ifndef USE_BOOST
     struct timespec timeout;
 #endif
+    int freeCnt = 0;
 
     while (1) {
 	int connCnt;
@@ -1360,6 +1408,7 @@ connManager ()
 	connCnt = 0;
 	prevIFuseConn = NULL;
         while (tmpIFuseConn != NULL) {
+	    if (tmpIFuseConn->status == IRODS_FREE) freeCnt ++;
 	    if (curTime - tmpIFuseConn->actTime > IFUSE_CONN_TIMEOUT) {
 		if (tmpIFuseConn->status == IRODS_FREE) {
 		    /* can be disconnected */
@@ -1367,9 +1416,7 @@ connManager ()
 		        rcDisconnect (tmpIFuseConn->conn);
 		    }
 #ifdef USE_BOOST
-#if 0	/* this seem to cause delete to fail */
-		    tmpIFuseConn->mutex->unlock();
-#endif
+		    /* don't unlock. it will cause delete to fail */
 		    delete tmpIFuseConn->mutex;
 #else
 		    pthread_mutex_unlock (&tmpIFuseConn->lock);
@@ -1391,6 +1438,9 @@ connManager ()
 	    prevIFuseConn = tmpIFuseConn;
 	    tmpIFuseConn = tmpIFuseConn->next;
 	}
+	if (MAX_NUM_CONN - connCnt > freeCnt) 
+            freeCnt = MAX_NUM_CONN - connCnt;
+
 	/* exceed high water mark for number of connection ? */
 	if (connCnt > HIGH_NUM_CONN) {
             tmpIFuseConn = ConnHead;
@@ -1402,9 +1452,7 @@ connManager ()
                         rcDisconnect (tmpIFuseConn->conn);
                     }
 #ifdef USE_BOOST
-#if 0	/* this seem to cause delete to fail */
-		    tmpIFuseConn->mutex->unlock();
-#endif
+		    /* don't unlock. it will cause delete to fail */
 		    delete tmpIFuseConn->mutex;
 #else
                     pthread_mutex_unlock (&tmpIFuseConn->lock);
@@ -1426,6 +1474,26 @@ connManager ()
                 tmpIFuseConn = tmpIFuseConn->next;
             }
 	}
+	/* wake up the ConnReqWaitQue if freeCnt > 0 */
+        while (freeCnt > 0  && ConnReqWaitQue != NULL) {
+            /* signal one in the wait queue */
+            connReqWait_t *myConnReqWait;
+            myConnReqWait = ConnReqWaitQue;
+	    myConnReqWait->state = 1;
+            ConnReqWaitQue = myConnReqWait->next;
+#ifdef USE_BOOST
+            ConnLock.unlock();
+            myConnReqWait->cond.notify_all( );
+            ConnLock.lock();
+#else
+            pthread_mutex_unlock (&ConnLock);
+            pthread_mutex_lock (&myConnReqWait->mutex);
+            pthread_cond_signal (& myConnReqWait->cond);
+            pthread_mutex_unlock (&myConnReqWait->mutex);
+            pthread_mutex_lock (&ConnLock);
+#endif
+            freeCnt--;
+        }
 #ifdef USE_BOOST
         ConnLock.unlock();
 #else

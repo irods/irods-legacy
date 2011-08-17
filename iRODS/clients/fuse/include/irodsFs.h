@@ -28,6 +28,7 @@
 
 #define IFUSE_CONN_TIMEOUT	120	/* 2 min connection timeout */
 #define CONN_MANAGER_SLEEP_TIME 60
+#define CONN_REQ_SLEEP_TIME 30
 
 typedef struct IFuseConn {
     rcComm_t *conn;    
