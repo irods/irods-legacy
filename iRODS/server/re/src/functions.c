@@ -1089,6 +1089,7 @@ Res *smsi_errorcode(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
                 break;
             default:
                 res = evaluateExpression3((Node *)paramsr[0], 0,1, rei,reiSaveFlag,env,errmsg,r);
+                break;
         }
         switch(getNodeType(res)) {
             case N_ERROR:
