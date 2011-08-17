@@ -27,7 +27,7 @@ acCreateDefaultCollections { acCreateUserZoneCollections; }
 acCreateUserZoneCollections { 
   acCreateCollByAdmin("/"++$rodsZoneProxy++"/home", $otherUserName);
   acCreateCollByAdmin("/"++$rodsZoneProxy++"/trash/home", $otherUserName); }
-#acCreateCollByAdmin {msiCreateCollByAdmin($ARG[0],$ARG[1]); }
+#acCreateCollByAdmin(*parColl, *childColl) {msiCreateCollByAdmin(*parColl,*childColl); }
 acCreateCollByAdmin(*parColl,*childColl) {
   msiCreateCollByAdmin(*parColl,*childColl); }
 #
@@ -45,7 +45,7 @@ acDeleteDefaultCollections {
 acDeleteUserZoneCollections {
   acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home",$otherUserName);
   acDeleteCollByAdmin("/"++$rodsZoneProxy++"/trash/home",$otherUserName); }
-#acDeleteCollByAdmin {msiDeleteCollByAdmin($ARG[0],$ARG[1]); }
+#acDeleteCollByAdmin(*parColl,*childColl) {msiDeleteCollByAdmin(*parColl,*childColl); }
 acDeleteCollByAdmin(*parColl,*childColl) {
   msiDeleteCollByAdmin(*parColl,*childColl); }
 #
@@ -56,7 +56,7 @@ acRenameLocalZone(*oldZone,*newZone) {
 #
 # The acGetUserByDN by default is a no-op but can be configured to do some
 # special handling of GSI DNs.  See rsGsiAuthRequest.c.
-#acGetUserByDN(*arg,*OUT) {msiExecCmd(t,"*arg","null","null","null",*OUT); }
+#acGetUserByDN(*arg,*OUT) {msiExecCmd("t","*arg","null","null","null",*OUT); }
 acGetUserByDN(*arg,*OUT) { }
 #
 # --------------------------------------------------------------------------
