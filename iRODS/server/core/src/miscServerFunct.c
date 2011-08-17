@@ -123,8 +123,7 @@ int oprType, portalOprOut_t **portalOprOut)
         /* streaming or udp - use only one thread */
         myDataObjPutOut->numThreads = 1;
     } else {
-        myDataObjPutOut->numThreads =
-          myDataObjPutOut->numThreads = getNumThreads (rsComm,
+        myDataObjPutOut->numThreads = getNumThreads (rsComm,
            dataOprInp->dataSize, dataOprInp->numThreads,
            &dataOprInp->condInput, 
            getValByKey (&dataOprInp->condInput, RESC_NAME_KW), NULL);
