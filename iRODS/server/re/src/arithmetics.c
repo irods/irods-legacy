@@ -1310,15 +1310,19 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
         return res;
     case TK_VAR:
         varName = pattern->text;
-        if(lookupFromEnv(env, varName)==NULL) {
-            /* new variable */
-            if(insertIntoHashTable(env->current, varName, val) == 0) {
-                snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
-                addRErrorMsg(errmsg, UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
-                return newErrorRes(r, UNABLE_TO_WRITE_LOCAL_VAR);
-            }
-        } else {
-                updateInEnv(env, varName, val);
+        if(varName[0] == '*') {
+        	if(lookupFromEnv(env, varName)==NULL) {
+        		/* new variable */
+				if(insertIntoHashTable(env->current, varName, val) == 0) {
+					snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
+					addRErrorMsg(errmsg, UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
+					return newErrorRes(r, UNABLE_TO_WRITE_LOCAL_VAR);
+				}
+			} else {
+				updateInEnv(env, varName, val);
+			}
+        } else if(varName[0] == '$') {
+        	return setVariableValue(varName, val, rei, env, errmsg, r);
         }
         return newIntRes(r, 0);
 

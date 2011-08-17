@@ -1113,6 +1113,7 @@ Res *smsi_errormsg(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int r
             default:
                 res = evaluateExpression3((Node *)paramsr[0], 0,1,rei,reiSaveFlag,env,errmsg,r);
                 paramsr[1] = newStringRes(r, errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024));
+                break;
     }
     freeRErrorContent(errmsg);
     free(errbuf);
@@ -1308,6 +1309,60 @@ Res *smsi_substr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int rei
     Res *retres = newStringRes(r, buf);
     free(buf);
     return retres;
+}
+
+Res *smsi_split(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res *strres = (Res *)paramsr[0];
+    Res *delimres = (Res *)paramsr[1];
+
+    char *buf = strdup(strres->text);
+    int len = strlen(buf);
+    int count = 0;
+    int trim = 1;
+    int i;
+    for(i=0;i<len;i++) {
+    	if(strchr(delimres->text, buf[i]) != NULL) {
+    		i++;
+    		while(i<len && strchr(delimres->text, buf[i]) != NULL) {
+    			i++;
+    		}
+    		if(!trim) {
+    			count++;
+    		}
+    	} else {
+    		trim = 0;
+    	}
+    }
+    if(!trim) {
+    	count ++;
+    }
+
+    Res *coll = newCollRes(count, newSimpType(T_STRING, r), r);
+
+    int j=0;
+    trim = 1;
+    char *bufStart = buf;
+    for(i=0;i<len;i++) {
+    	if(strchr(delimres->text, buf[i]) != NULL) {
+    		buf[i] = '\0';
+    		if(!trim) {
+    			coll->subtrees[j++] = newStringRes(r, bufStart);
+    		}
+    		i++;
+    		while(i<len && strchr(delimres->text, buf[i]) != NULL) {
+    			i++;
+    		}
+    		bufStart = buf + i;
+    	} else {
+    		trim = 0;
+    	}
+    }
+    if(j!=count) {
+		coll->subtrees[j++] = newStringRes(r, bufStart);
+    }
+
+    return coll;
+
 }
 
 Res *smsi_undefined(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -1899,6 +1954,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "trimr", newFunctionFD("string * string->string", smsi_trimr, r));
     insertIntoHashTable(ft, "strlen", newFunctionFD("string->integer", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionFD("string * integer * integer->string", smsi_substr, r));
+    insertIntoHashTable(ft, "split", newFunctionFD("string * string -> list string", smsi_split, r));
     insertIntoHashTable(ft, "unspeced", newFunctionFD("-> ?", smsi_undefined, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionFD("e ? ?->integer", smsi_msiAdmShowIRB, r));
     insertIntoHashTable(ft, "msiAdmShowCoreRE", newFunctionFD("e ? ?->integer", smsi_msiAdmShowCoreRE, r));

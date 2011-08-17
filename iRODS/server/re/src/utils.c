@@ -87,6 +87,7 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable) {
 
         default:
             newt = ty;
+            break;
     }
 	return newt;
 }
@@ -471,7 +472,6 @@ Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rE
             snprintf(errbuf, ERR_MSG_LEN, "error: assign a nonstring value to session variable %s.", varName);
             addRErrorMsg(errmsg, RUNTIME_ERROR, errbuf);
             return newErrorRes(r, RUNTIME_ERROR);
-            /* todo find the proper error code */
         }
         i = getVarMap("", varName, &varMap, 0);
         if (i < 0) {
