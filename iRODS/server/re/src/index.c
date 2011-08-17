@@ -71,6 +71,7 @@ int createCondIndex(Region *r) {
             while(currIndexNode!=NULL) {
                 Hashtable *processedStrs = newHashTable2(MAX_NUM_RULES * 2, r);
                 RuleIndexListNode *startIndexNode = currIndexNode;
+                RuleIndexListNode *finishIndexNode = NULL;
 				int groupCount = 0;
 				Node *condExp = NULL;
 				Node *params = NULL;
@@ -81,6 +82,7 @@ int createCondIndex(Region *r) {
 					if(!(
 							rd->ruleType == RK_REL
 				    )) {
+						finishIndexNode = currIndexNode;
 						currIndexNode = currIndexNode->next;
 						break;
 					}
@@ -96,12 +98,14 @@ int createCondIndex(Region *r) {
 							ruleCond->subtrees[1]->degree == 2 &&
 							getNodeType(ruleCond->subtrees[1]->subtrees[1]) == TK_STRING  /* with a string */
 					)) {
+						finishIndexNode = currIndexNode;
 						currIndexNode = currIndexNode->next;
 						break;
 					}
 					char *strVal = ruleCond->subtrees[1]->subtrees[1]->text;
 					if(lookupFromHashTable(processedStrs, strVal)!=NULL /* no repeated string */
 					) {
+						finishIndexNode = currIndexNode;
 						break;
 					}
 					int i;
@@ -115,9 +119,11 @@ int createCondIndex(Region *r) {
 							updateInHashTable(varMapping, params->subtrees[i]->text, ruleNode->subtrees[0]->subtrees[0]->subtrees[i]->text);
 						}
 						if(!eqExprNodeSyntacticVarMapping(condExp, ruleCond->subtrees[0], varMapping)) {
+							finishIndexNode = currIndexNode;
 							break;
 						}
 					} else {
+						finishIndexNode = currIndexNode;
 						break;
 					}
 
@@ -139,7 +145,7 @@ int createCondIndex(Region *r) {
 				CondIndexVal *civ = newCondIndexVal(condExp, params, groupHashtable, r);
 
 				RuleIndexListNode *instIndexNode = startIndexNode;
-				while(instIndexNode != currIndexNode) {
+				while(instIndexNode != finishIndexNode) {
 					int ri = instIndexNode->ruleIndex;
 					Node *ruleNode = getRuleDesc(ri)->node;
 					removeNodeFromRuleIndexList(ruleIndexList, instIndexNode);
