@@ -102,7 +102,8 @@ msiobjget_test(msParam_t*  inRequestPath, msParam_t* inFileMode,
   mode  = atoi((char*) inFileMode->inOutStruct);
   flags = atoi((char*) inFileFlags->inOutStruct);
 
-  /* Do the processing */
+  /* Do the accessing. In this case, we just create a string value */
+
   snprintf(str,199,"PID is %i. This is a test\n", getpid());
   objLen = strlen(str);
 
@@ -217,6 +218,9 @@ msiobjput_test(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
 
 
   /* Read the cache and Do the upload*/
+  /* In this case the file is read into myBuf and a 
+     log message is written to the iRODSLog. */
+
   srcFd = open (cacheFilename, O_RDONLY, 0);
   if (srcFd < 0) {
     status = UNIX_FILE_OPEN_ERR - errno;
