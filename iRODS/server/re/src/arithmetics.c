@@ -27,7 +27,6 @@ extern microsdef_t MicrosTable[];
 #define OUTOFMEMORY(x, res) if(x) {(res)->value.e = OUT_OF_MEMORY;TYPE(res) = RE_ERROR;return;}
 
 #define RE_ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
-extern int GlobalAllRuleExecFlag;
 extern int GlobalREDebugFlag;
 extern int GlobalREAuditFlag;
 
