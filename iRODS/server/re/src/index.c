@@ -19,10 +19,11 @@ Hashtable *coreRuleFuncMapDefIndex = NULL;
 Hashtable *appRuleFuncMapDefIndex = NULL;
 Hashtable *microsTableIndex = NULL;
 
-void clearIndex(Hashtable *ruleIndex)
+void clearIndex(Hashtable **ruleIndex)
 {
-	if (ruleIndex!=NULL) {
-		deleteHashTable(ruleIndex, free);
+	if (*ruleIndex!=NULL) {
+		deleteHashTable(*ruleIndex, free);
+		*ruleIndex = NULL;
 	}
 }
 /**
@@ -265,7 +266,7 @@ int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, Re
  */
 int createFuncMapDefIndex(rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex)
 {
-	clearIndex(*ruleIndex);
+	clearIndex(ruleIndex);
 	*ruleIndex = newHashTable(MAX_NUM_OF_DVARS*2);
 	if (*ruleIndex == NULL)
 		return 0;
@@ -288,7 +289,7 @@ int createFuncMapDefIndex(rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex)
  */
 int createMacorsIndex()
 {
-	clearIndex(microsTableIndex);
+	clearIndex(&microsTableIndex);
 	microsTableIndex = newHashTable(NumOfAction*2);
 	if (microsTableIndex == NULL)
 		return 0;

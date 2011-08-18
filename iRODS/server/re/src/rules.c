@@ -283,7 +283,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
     rd = ruleEngineConfig.extRuleSet->rules[tempLen];
 	node = rd->node;
 
-	res = execRuleNodeRes(node, NULL, 0, env, rei, reiSaveFlag, errmsg,r);
+	res = execRuleNodeRes(node, NULL, 0, GlobalAllRuleExecFlag, env, rei, reiSaveFlag, errmsg,r);
 	rescode = getNodeType(res)  ==  N_ERROR? RES_ERR_CODE(res):0;
 ret:
     /* remove rules from ext rule set */
@@ -514,7 +514,7 @@ Res* computeNode(Node *node, Node *reco, Env *env, ruleExecInfo_t *rei, int reiS
         RETURN;
     }
     if(getNodeType(node) == N_ACTIONS) {
-    	res = evaluateActions(node, NULL, rei, reiSaveFlag, env, errmsg, rNew);
+    	res = evaluateActions(node, NULL, GlobalAllRuleExecFlag, rei, reiSaveFlag, env, errmsg, rNew);
     } else {
     	res = evaluateExpression3(node, GlobalAllRuleExecFlag, 0, rei, reiSaveFlag, env, errmsg, rNew);
     }

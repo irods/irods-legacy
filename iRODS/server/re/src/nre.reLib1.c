@@ -500,7 +500,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     /* store global flag in a temp variables */
     int tempFlag = GlobalAllRuleExecFlag;
     /* set global flag */
-    GlobalAllRuleExecFlag = allRuleExecFlag;
+    GlobalAllRuleExecFlag = allRuleExecFlag == 1? 2 : 1;
 
     if (GlobalREAuditFlag > 0)
         reDebug("ApplyAllRules", -1, "", inAction,NULL, NULL,rei);
@@ -1063,9 +1063,9 @@ int clearFuncMapStruct( rulefmapdef_t* inRuleFuncMapDef)
   }
   inRuleFuncMapDef->MaxNumOfFMaps = 0;
 	if(inRuleFuncMapDef == &coreRuleFuncMapDef) {
-		clearIndex(coreRuleFuncMapDefIndex);
+		clearIndex(&coreRuleFuncMapDefIndex);
 	} else if(inRuleFuncMapDef == &appRuleFuncMapDef) {
-		clearIndex(appRuleFuncMapDefIndex);
+		clearIndex(&appRuleFuncMapDefIndex);
 	}
 
   return(0);

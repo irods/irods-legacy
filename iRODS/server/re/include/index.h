@@ -30,7 +30,7 @@ extern Hashtable *microsTableIndex;
 /* when a subset of rules are indexed rules, the condIndex */
 extern Hashtable *condIndex; /* char * -> CondIndexVal * */
 
-void clearIndex(Hashtable *ruleIndex);
+void clearIndex(Hashtable **ruleIndex);
 
 int createRuleStructIndex(ruleStruct_t *inRuleStrct, Hashtable *ruleIndex);
 int createRuleNodeIndex(RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, Region *r);

@@ -148,13 +148,13 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 							printf("start execing %s\n", oper1);
 							printEnvToStdOut(env);
 
-	*/			funcRes = evaluateExpression3(expr->subtrees[0], applyAll, 0, rei, reiSaveFlag, env, errmsg,r);
+	*/			funcRes = evaluateExpression3(expr->subtrees[0], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg,r);
 				if(getNodeType(funcRes)==N_ERROR) {
 					res = funcRes;
 					break;
 				}
 				/* printTree(expr->subtrees[1], 0); */
-				argRes = evaluateExpression3(expr->subtrees[1], applyAll, 0, rei, reiSaveFlag, env, errmsg,r);
+				argRes = evaluateExpression3(expr->subtrees[1], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg,r);
 				if(getNodeType(argRes)==N_ERROR) {
 					res = argRes;
 					break;
@@ -168,7 +168,7 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 			case N_TUPLE:
 				tupleComps = (Res **) region_alloc(r, sizeof(Res *) * expr->degree);
 				for(i=0;i<expr->degree;i++) {
-					res = tupleComps[i] = evaluateExpression3(expr->subtrees[i], applyAll, 0, rei, reiSaveFlag, env, errmsg, r);
+					res = tupleComps[i] = evaluateExpression3(expr->subtrees[i], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, r);
 					if(getNodeType(res) == N_ERROR) {
 						break;
 					}
@@ -180,7 +180,7 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 				}
 				break;
 			case N_ACTIONS_RECOVERY:
-							res = evaluateActions(expr->subtrees[0], expr->subtrees[1], rei, reiSaveFlag, env, errmsg, r);
+							res = evaluateActions(expr->subtrees[0], expr->subtrees[1], applyAll, rei, reiSaveFlag, env, errmsg, r);
 							break;
 
 			case N_ACTIONS:
@@ -339,7 +339,7 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
         }
 }
 
-Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
+Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
 /*
     printTree(expr, 0);
 */
@@ -357,7 +357,7 @@ Res* evaluateActions(Node *expr, Node *reco, ruleExecInfo_t *rei, int reiSaveFla
                     cutFlag = 1;
                     continue;
                 }
-                res = evaluateExpression3(nodei, 0, 0, rei, reiSaveFlag, env, errmsg,r);
+                res = evaluateExpression3(nodei, applyAll, 0, rei, reiSaveFlag, env, errmsg,r);
                 if(getNodeType(res) == N_ERROR) {
                     #ifndef DEBUG
                         sprintf(tmpStr,"executeRuleAction Failed for %s",nodei->text);
@@ -510,7 +510,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
         switch(getIOType(nodeArgs[i])) {
             case IO_TYPE_INPUT | IO_TYPE_OUTPUT: /* input/output */
                 ioParam[i] = 'p';
-                args[i] = evaluateExpression3(appArgs[i], applyAll, 0, rei, reiSaveFlag, env, errmsg, newRegion);
+                args[i] = evaluateExpression3(appArgs[i], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, newRegion);
                 if(getNodeType(args[i])==N_ERROR) {
                     res = (Res *)args[i];
                     RETURN;
@@ -534,7 +534,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 					}
             	} else {
             		ioParam[i] = 'i';
-            		args[i] = evaluateExpression3(appArgs[i], applyAll, 1, rei, reiSaveFlag, env, errmsg, newRegion);
+            		args[i] = evaluateExpression3(appArgs[i], applyAll > 1 ? applyAll : 0, 1, rei, reiSaveFlag, env, errmsg, newRegion);
 					if(getNodeType(args[i])==N_ERROR) {
 						res = (Res *)args[i];
 						RETURN;
@@ -985,7 +985,7 @@ ret:
     return res;
 }
 
-Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *civ, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
+Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *civ, int applyAll, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
             /*printTree(civ->condExp, 0); */
         Res *status;
         Env *envNew = newEnv(newHashTable2(10, r), globalEnv(env), env, r);
@@ -1041,7 +1041,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
 
         rule = rd->node;
 
-        status = execRuleNodeRes(rule, args, argc,  env, rei, reiSaveFlag, errmsg, r);
+        status = execRuleNodeRes(rule, args, argc,  applyAll > 1? applyAll : 0, env, rei, reiSaveFlag, errmsg, r);
 
         if (getNodeType(status) == N_ERROR) {
             rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",ruleName, RES_ERR_CODE(status));
@@ -1066,7 +1066,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
     ruleExecInfo_t  *saveRei;
     int reTryWithoutRecovery = 0;
     char ruleName[MAX_NAME_LEN];
-    int applyAllRule = applyAllRuleInp | GlobalAllRuleExecFlag;
+    int applyAllRule = applyAllRuleInp;
 
     #ifdef DEBUG
     char buf[1024];
@@ -1119,7 +1119,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 		}
 
 		if(ruleIndexListNode->secondaryIndex) {
-        	statusRes = execRuleFromCondIndex(ruleName, args, argc, ruleIndexListNode->condIndex, env, rei, reiSaveFlag, errmsg, r);
+        	statusRes = execRuleFromCondIndex(ruleName, args, argc, ruleIndexListNode->condIndex, applyAllRule, env, rei, reiSaveFlag, errmsg, r);
         } else {
 
         	RuleDesc *rd = getRuleDesc(ruleIndexListNode->ruleIndex);
@@ -1146,7 +1146,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 		#endif
 				/* printTree(rule, 0); */
 
-				statusRes = execRuleNodeRes(rule, args, argc,  env, rei, reiSaveFlag, errmsg, r);
+				statusRes = execRuleNodeRes(rule, args, argc,  applyAllRule > 1? applyAllRule : 0, env, rei, reiSaveFlag, errmsg, r);
 
 			}
         }
@@ -1199,7 +1199,7 @@ void copyFromEnv(Res **args, char **inParams, int inParamsCount, Hashtable *env,
  * execute a rule given by an AST node
  * create a new environment and intialize it with parameters
  */
-Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r)
+Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, int applyAll, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r)
 {
 	if (GlobalREAuditFlag > 0)
 		reDebug("  ExecRule", -4, "", RULE_NAME(rule), NULL, env, rei); /* pass in NULL for inMsParamArray for now */
@@ -1248,9 +1248,9 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, Env *env, ruleEx
 #endif
 #endif
             if(getNodeType(ruleAction) == N_ACTIONS) {
-                statusRes = evaluateActions(ruleAction, ruleRecovery, rei, reiSaveFlag,  envNew, errmsg,rNew);
+                statusRes = evaluateActions(ruleAction, ruleRecovery, applyAll, rei, reiSaveFlag,  envNew, errmsg,rNew);
             } else {
-                statusRes = evaluateExpression3(ruleAction, 0, 0, rei, reiSaveFlag, envNew, errmsg, rNew);
+                statusRes = evaluateExpression3(ruleAction, applyAll, 0, rei, reiSaveFlag, envNew, errmsg, rNew);
             }
             /* copy parameters */
             copyFromEnv(args, paramsNames, inParamsCount, envNew->current, r);

@@ -51,9 +51,9 @@ Res *smsi_ifExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
         return res;
     }
     if(RES_BOOL_VAL(res) == 0) {
-        return evaluateActions(wrapToActions(params[2],r), wrapToActions(params[4],r),rei, reiSaveFlag, env, errmsg, r);
+        return evaluateActions(wrapToActions(params[2],r), wrapToActions(params[4],r),0,rei, reiSaveFlag, env, errmsg, r);
     } else {
-        return evaluateActions(wrapToActions(params[1],r), wrapToActions(params[3],r),rei, reiSaveFlag, env, errmsg, r);
+        return evaluateActions(wrapToActions(params[1],r), wrapToActions(params[3],r),0,rei, reiSaveFlag, env, errmsg, r);
     }
 }
 
@@ -72,7 +72,7 @@ Res *smsi_if2Exec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
 Res *smsi_do(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
         switch(getNodeType(params[0])) {
             case N_ACTIONS:
-                return evaluateActions((Node *)params[0], NULL, rei, reiSaveFlag,env, errmsg, r);
+                return evaluateActions((Node *)params[0], NULL,0, rei, reiSaveFlag,env, errmsg, r);
             default:
                 return evaluateExpression3((Node *)params[0], 0, 1, rei,reiSaveFlag,env,errmsg,r);
         }
@@ -132,7 +132,7 @@ Res *smsi_whileExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
             res = newIntRes(r, 0);
             break;
         }
-        res = evaluateActions((Node *)params[1],(Node *)params[2], rei,reiSaveFlag, env,errmsg,GC_REGION);
+        res = evaluateActions((Node *)params[1],(Node *)params[2],0, rei,reiSaveFlag, env,errmsg,GC_REGION);
         if(getNodeType(res) == N_ERROR) {
             break;
         } else
@@ -177,7 +177,7 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
             res = newIntRes(r, 0);
             break;
         }
-        res = evaluateActions((Node *)params[3],(Node *)params[4], rei,reiSaveFlag, env,errmsg,rnew);
+        res = evaluateActions((Node *)params[3],(Node *)params[4], 0, rei,reiSaveFlag, env,errmsg,rnew);
         if(getNodeType(res) == N_ERROR) {
             break;
         } else
@@ -231,7 +231,7 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 		for(i=0;i<coll->degree;i++) {
 				elem = coll->subtrees[i];
 				setVariableValue(varName, elem, rei, env, errmsg, r);
-				res = evaluateActions(subtrees[2], subtrees[3], rei,reiSaveFlag, env,errmsg,r);
+				res = evaluateActions(subtrees[2], subtrees[3], 0, rei,reiSaveFlag, env,errmsg,r);
 				if(getNodeType(res) == N_ERROR) {
 					break;
 				} else
@@ -252,7 +252,7 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 		for(i=0;i<len;i++) {
 				elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, r);
 				setVariableValue(varName, elem, rei, env, errmsg, r);
-				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], rei,reiSaveFlag,  env,errmsg,r);
+				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], 0, rei,reiSaveFlag,  env,errmsg,r);
 				if(getNodeType(res) == N_ERROR) {
 						break;
 				}
@@ -280,7 +280,7 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
             for(i=0;i<orig->degree;i++) {
                     elem = orig->subtrees[i];
                     setVariableValue(varName, elem, rei, env, errmsg, r);
-                    res = evaluateActions(subtrees[1], subtrees[2], rei,reiSaveFlag, env,errmsg,r);
+                    res = evaluateActions(subtrees[1], subtrees[2], 0, rei,reiSaveFlag, env,errmsg,r);
                     if(getNodeType(res) == N_ERROR) {
                         break;
                     } else
@@ -301,7 +301,7 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
             for(i=0;i<len;i++) {
                     elem = getValueFromCollection(orig->exprType->text, RES_UNINTER_STRUCT(orig), i, r);
                     setVariableValue(varName, elem, rei, env, errmsg, r);
-                    res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], rei,reiSaveFlag,  env,errmsg,r);
+                    res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], 0, rei,reiSaveFlag,  env,errmsg,r);
                     if(getNodeType(res) == N_ERROR) {
                             break;
                     }
@@ -1085,7 +1085,7 @@ Res *smsi_errorcode(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
     Res *res;
     switch(getNodeType(paramsr[0])) {
             case N_ACTIONS:
-                res = evaluateActions((Node *)paramsr[0], (Node *)paramsr[1], rei, reiSaveFlag,  env, errmsg, r);
+                res = evaluateActions((Node *)paramsr[0], (Node *)paramsr[1], 0, rei, reiSaveFlag,  env, errmsg, r);
                 break;
             default:
                 res = evaluateExpression3((Node *)paramsr[0], 0,1, rei,reiSaveFlag,env,errmsg,r);
@@ -1108,7 +1108,7 @@ Res *smsi_errormsg(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int r
     Res *res;
     switch(getNodeType(paramsr[0])) {
             case N_ACTIONS:
-                res = evaluateActions((Node *)paramsr[0], (Node *)paramsr[1], rei, reiSaveFlag,  env, errmsg, r);
+                res = evaluateActions((Node *)paramsr[0], (Node *)paramsr[1], 0, rei, reiSaveFlag,  env, errmsg, r);
                 paramsr[2] = newStringRes(r, errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024));
                 break;
             default:
@@ -1774,6 +1774,25 @@ Res *smsi_assignStr(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int
 
 }
 
+extern int GlobalAllRuleExecFlag;
+Res *smsi_applyAllRules(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
+{
+  Res *res;
+  Node *action;
+  int reiSaveFlag2;
+  int allRuleExecFlag;
+
+  action = subtrees[0];
+  reiSaveFlag2 = RES_INT_VAL(subtrees[1]);
+  allRuleExecFlag = RES_INT_VAL(subtrees[2]);
+
+  res = evaluateExpression3(action, allRuleExecFlag == 1 ? 2 : 1, 1, rei, reiSaveFlag2, env, errmsg, r);
+
+  return res;
+
+}
+
+
 /* utilities */
 int fileConcatenate(char *file1, char *file2, char *file3) {
 	char buf[1024];
@@ -1854,9 +1873,10 @@ Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Re
 }
 
 void getSystemFunctions(Hashtable *ft, Region *r) {
-    insertIntoHashTable(ft, "do", newFunctionFD("e 0->?", smsi_do, r));
+    insertIntoHashTable(ft, "do", newFunctionFD("e ?->?", smsi_do, r));
     insertIntoHashTable(ft, "eval", newFunctionFD("string->?", smsi_eval, r));
     insertIntoHashTable(ft, "evalrule", newFunctionFD("string->?", smsi_evalrule, r));
+    insertIntoHashTable(ft, "applyAllRules", newFunctionFD("e ? * f 0{integer string } => integer * f 1{integer string} => integer->?", smsi_applyAllRules, r));
     insertIntoHashTable(ft, "errorcodea", newFunctionFD("a ? * a ?->integer", smsi_errorcode, r));
     insertIntoHashTable(ft, "errorcode", newFunctionFD("e ?->integer", smsi_errorcode, r));
     insertIntoHashTable(ft, "errormsga", newFunctionFD("a ? * a ? * o string->integer", smsi_errormsg, r));
