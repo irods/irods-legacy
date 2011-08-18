@@ -212,7 +212,6 @@ acSetMultiReplPerResc { }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/tg/*") {msiSysReplDataObj("nvoReplResc","null"); } }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/mytest/*") {writeLine("serverLog","File Path is "++$filePath); } }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/mytest/*") {writeLine("serverLog","File Path is "++$filePath); msiSplitPath($filePath,*fileDir,*fileName); msiExecCmd("send.sh", "*fileDir *fileName", "null", "null","null",*Junk); writeLine("serverLog","After File Path is *fileDir *fileName"); } }
-#acPostProcForPut { ON(msiCheckOwner == 0) {msiWriteRodsLog("Username is $userNameClient",*Status);}}
 #acPostProcForPut { ON($objPath like "\*txt") {writeLine("serverLog","File $objPath"); } }
 acPostProcForPut { }
 acPostProcForCopy { }
@@ -256,7 +255,6 @@ acSetNumThreads {msiSetNumThreads("default","16","default"); }
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
 #acDataDeletePolicy {ON($objPath like "/tempZone/home/rods/*") {msiDeleteDisallowed; } }
-#acDataDeletePolicy {ON(msiCheckPermission("own")==0) {msiWriteRodsLog("File deleted", *Status);}}
 acDataDeletePolicy { }
 #
 # 11) acPostProcForDelete - This rule set the post-processing policy for 
