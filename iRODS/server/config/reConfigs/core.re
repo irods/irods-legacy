@@ -76,7 +76,7 @@ acGetUserByDN(*arg,*OUT) { }
 # STRICT access control, the admin user is not restricted so various
 # microservices and queries will still be able to evaluate system-wide
 # information.  
-# Post irods 2.5, $userNameClient is available altho this
+# Post irods 2.5, $userNameClient is available although this
 # is only secure in a irods-password environment (not GSI), but you can
 # then have rules for specific users:
 #   acAclPolicy {ON($userNameClient == "quickshare") { } }
@@ -98,7 +98,7 @@ acAclPolicy { }
 # used by this rule:
 #    msiSetNoDirectRescInp(rescList) - sets a list of resources that cannot
 #      be used by a normal user directly. More than one resources can be 
-#      input using the character "%" as seperator. e.g., resc1%resc2%resc3.  
+#      input using the character "%" as separator. e.g., resc1%resc2%resc3.  
 #      This function is optional, but if used, should be the first function
 #      to execute because it screens the resource input. 
 #    msiSetDefaultResc(defaultRescList, optionStr) - sets the default resource.
@@ -120,10 +120,10 @@ acAclPolicy { }
 #        the RMS system must be switched on in order to pick up the load information
 #        for each server in the resource group list.
 #        The scheme "random" and "byRescClass" can be applied in sequence. e.g.,
-#        msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)
+#        msiSetRescSortScheme(random); msiSetRescSortScheme(byRescClass)
 #        will select randomly a cache class resource and put it on the
 #        top of the list.
-# acSetRescSchemeForCreate {msiSetNoDirectRescInp("xyz%demoResc8%abc"); msiSetDefaultResc("demoResc8","noForce"); msiSetRescSortScheme("default"); }
+# acSetRescSchemeForCreate {msiSetNoDirectRescInp("xyz%demoResc8%abc"); msiSetDefaultResc("demoResc8","null"); msiSetRescSortScheme("default"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","null"); msiSetRescSortScheme("random"); msiSetRescSortScheme("byRescClass"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc7%demoResc8","preferred"); }
 # acSetRescSchemeForCreate {ON($objPath like "/tempZone/home/rods/protected/*") {msiOprDisallowed;} }
@@ -138,7 +138,7 @@ acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","null"); }
 #    msiSetDataObjPreferredResc(preferredRescList) - set the preferred 
 #      resources of the opened object. The copy stored in this preferred 
 #      resource will be picked if it exists. More than one resources can be
-#      input using the character "%" as seperator. e.g., resc1%resc2%resc3.
+#      input using the character "%" as separator. e.g., resc1%resc2%resc3.
 #      The most preferred resource should be at the top of the list.
 #    msiSetDataObjAvoidResc(avoidResc) - set the resource to avoid when
 #      opening an object. The copy stored in this resource will not be picked
@@ -148,14 +148,14 @@ acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","null"); }
 #      supported. If "byRescClass" is set, data objects in the "cache" 
 #      resources will be placed ahead of of those in the "archive" resources. 
 #      The sorting schemes can also be chained. e.g.,
-#      msiSortDataObj(random)##msiSortDataObj(byRescClass) means that
+#      msiSortDataObj(random); msiSortDataObj(byRescClass) means that
 #      the data objects will be sorted randomly first and then separated
 #      by class. 
 #    msiStageDataObj(cacheResc) - stage a copy of the data object in the 
 #      cacheResc before opening the data object. 
 #    The $writeFlag session variable has been created to be used as a condition
-#    for differentiating between open for read ($writeFlag == 0) and 
-#    write ($writeFlag == 1). e.g. :
+#    for differentiating between open for read ($writeFlag == "0") and 
+#    write ($writeFlag == "1"). e.g. :
 # acPreprocForDataObjOpen {ON($writeFlag == "0") {msiStageDataObj("demoResc8"); } }
 # acPreprocForDataObjOpen {ON($writeFlag == "1") { } }
 # acPreprocForDataObjOpen {msiSortDataObj("random"); msiSetDataObjPreferredResc("xyz%demoResc8%abc"); msiStageDataObj("demoResc8"); }
@@ -205,7 +205,7 @@ acSetMultiReplPerResc { }
 # acPostProcForPut {msiSysChksumDataObj; }
 # acPostProcForPut {delay("<A></A>") {msiSysReplDataObj('demoResc8','all'); } }
 # acWriteLine(*A,*B) {writeLine(*A,*B); }
-# acPostProcForPut {delayExec("<PLUSET>1m</PLUSET>") {acWriteLine('serverLog','delayed by a minute message1'); acWriteLine('serverLog','delayed by a minute message2'); } }
+# acPostProcForPut {delay("<PLUSET>1m</PLUSET>") {acWriteLine('serverLog','delayed by a minute message1'); acWriteLine('serverLog','delayed by a minute message2'); } }
 # acPostProcForPut {ON($objPath like "/tempZone/home/rods/nvo/*") {delay("<PLUSET>1m</PLUSET>") {msiSysReplDataObj('nvoReplResc','null'); } } }
 # acPostProcForPut {msiSysReplDataObj("demoResc8","all"); }
 #acPostProcForPut {msiSetDataTypeFromExt; }
@@ -237,7 +237,7 @@ acPostProcForPhymv { }
 #        maxNumThr to a default value of 4. A value of 0 means no parallel
 #        I/O. This can be helpful to get around firewall issues.
 #    windowSize - the tcp window size in Bytes for the parallel transfer. 
-#      A value of 0 or "dafault" means a default size of 1,048,576 Bytes.
+#      A value of 0 or "default" means a default size of 1,048,576 Bytes.
 # The msiSetNumThreads function must be present or no thread will be used
 # for all transfer 
 # acSetNumThreads {msiSetNumThreads("16","4","default"); }
@@ -289,7 +289,7 @@ acTrashPolicy { }
 #    msiSetPublicUserOpr(oprList) - Sets a list of operations that can
 #      be performed by the user "public". Only 2 operations are allowed -
 #      "read" - read files; "query" - browse some system level metadata. More 
-#      than one operation can be input using the character "%" as seperator. 
+#      than one operation can be input using the character "%" as separator. 
 #      e.g., read%query.
 # acSetPublicUserPolicy {msiSetPublicUserOpr("read%query"); }
 acSetPublicUserPolicy { }
@@ -394,7 +394,7 @@ acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue) { }
 # 26) acPreProcForCreateUser - This rule set the pre-processing policy for
 # creating a new user.
 #
-#acPreProcForCreateUser {writeLine("serverLog","TEST:acPreProcForCreateUser") { }
+#acPreProcForCreateUser {writeLine("serverLog","TEST:acPreProcForCreateUser"); }
 #
 acPreProcForCreateUser { }
 # 27) acPostProcForCreateUser - This rule set the post-processing policy for
@@ -530,7 +530,7 @@ acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Pat
 acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path) { }
 #
 # 46) acPreProcForObjRename - This rule set the pre-processing policy for
-# renaming (logicaly moving) data and collections
+# renaming (logically moving) data and collections
 #
 #acPreProcForObjRename(*sourceObject,*destObject) {writeLine("serverLog","TEST:acPreProcForObjRename from *sourceObject to *destObject"); }
 acPreProcForObjRename(*sourceObject,*destObject) { }
@@ -539,8 +539,8 @@ acPreProcForObjRename(*sourceObject,*destObject) { }
 # renaming (logically moving) data and collections
 #
 #acPostProcForObjRename(*sourceObject,*destObject) {writeLine("serverLog","TEST:acPostProcForObjRename from *sourceObject to *destObject"); }
-# Testing to see if the allrules call gets the *variables.
-#acPostProcForObjRename(*sourceObject,*destObject) {applyAllRules("acPostProcForObjRenameALL(*sourceObject,*destObject)","0","0"); }
+# Testing to see if the applyAllRules call gets the *variables.
+#acPostProcForObjRename(*sourceObject,*destObject) {applyAllRules(acPostProcForObjRenameALL(*sourceObject,*destObject),"0","0"); }
 #acPostProcForObjRenameALL(*AA,*BB) {writeLine("serverLog","I was called! *AA *BB"); }
 #acPostProcForObjRenameALL(*AA,*BB) {writeLine("serverLog","DestObject: *AA"); }
 acPostProcForObjRename(*sourceObject,*destObject) { }
@@ -637,6 +637,6 @@ acGetIcatResults(*Action,*Condition,*GenQOut) {ON(*Action == "list") {msiMakeQue
 #
 #rules for purging a file which have expired
 #
-acPurgeFiles(*Condition) {ON((*Condition == "null") %% (*Condition == '')) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time'",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } } }
+acPurgeFiles(*Condition) {ON((*Condition == "null") %% (*Condition == "")) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time'",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } } }
 acPurgeFiles(*Condition) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time' AND *Condition",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } }
 acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*K, $sysUidClient); assign(*R,*K); assign($sysUidClient,*A); }
