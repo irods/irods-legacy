@@ -6141,11 +6141,14 @@ int chlModAccessControlResc(rsComm_t *rsComm, int recursiveFlag,
    char userIdStr[MAX_NAME_LEN];
    char myTime[50];
    rodsLong_t iVal;
+   int debug=0;
    
    strncpy(myAccessStr,accessLevel+strlen(MOD_RESC_PREFIX),LONG_NAME_LEN);
 
-   printf("accessLevel: %s\n", accessLevel);
-   printf("rescName: %s\n", rescName);
+   if (debug>0) {
+     printf("accessLevel: %s\n", accessLevel);
+     printf("rescName: %s\n", rescName);
+   }
 
    if (strcmp(myAccessStr, AP_NULL)==0) {myAccessLev=ACCESS_NULL; rmFlag=1;}
    else if (strcmp(myAccessStr,AP_READ)==0) {myAccessLev=ACCESS_READ_OBJECT;}
