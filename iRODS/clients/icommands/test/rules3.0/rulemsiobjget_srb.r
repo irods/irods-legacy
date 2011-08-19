@@ -7,7 +7,7 @@ myTestRule {
 #No output parameters
 #Output is the name of the file that was created
   msiSplitPath(*Path, *Coll, *File);
-  msiobjget_irods(*Request, *Mode, *Flags, *Path);
+  msiobjget_srb(*Request, *Mode, *Flags, *Path);
   msiExecStrCondQuery("SELECT DATA_NAME where DATA_NAME = '*File' and COLL_NAME = '*Coll'",*GenQOut);
   foreach(*GenQOut) {msiGetValByKey(*GenQOut, "DATA_NAME", *Filestore);
     writeLine("stdout","Created file *Filestore"); }
