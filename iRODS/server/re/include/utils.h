@@ -25,7 +25,8 @@
         return ret; \
     }}
 
-#define IS_TVAR_NAME(x) ((x)[0] != '?')
+#define IS_TVAR_NAME(x) ((x)[0] == '?')
+
 int newTVarId();
 
 char* getTVarName(int vid, char name[128]);
