@@ -45,7 +45,7 @@ int createRuleStructIndex(ruleStruct_t *inRuleStrct, Hashtable *ruleIndex)
 	}
 	return 1;
 }
-#define COND_INDEX_THRESHOLD 2
+
 int createCondIndex(Region *r) {
     /* generate rule condition index */
 	int i;
@@ -183,6 +183,7 @@ void insertIntoRuleIndexList(RuleIndexList *rd, RuleIndexListNode *prev, CondInd
 		if(prev->next == NULL) {
 			rd->tail = n;
 		}
+		prev->next = n;
 	}
 }
 void removeNodeFromRuleIndexList2(RuleIndexList *rd, int i) {

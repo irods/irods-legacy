@@ -9,7 +9,7 @@
 #include "reGlobalsExtern.h"
 #endif
 
-
+#define COND_INDEX_THRESHOLD 2
 
 char *convertRuleNameArityToKey(char *ruleName, int arity);
 RuleIndexList *newRuleIndexList(char *ruleName, int ruleIndex, Region *r);

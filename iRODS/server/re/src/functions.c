@@ -1327,7 +1327,7 @@ Res *smsi_split(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
     		while(i<len && strchr(delimres->text, buf[i]) != NULL) {
     			i++;
     		}
-    		if(!trim) {
+    		if(!trim && i<len) {
     			count++;
     		}
     	} else {

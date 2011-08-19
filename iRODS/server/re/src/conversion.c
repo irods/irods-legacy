@@ -437,7 +437,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 	int i;
 	for(i=0;i<env->size;i++) {
 		struct bucket *b = env->buckets[i];
-		while(b!=NULL) {
+		while(b!=NULL && !IS_TVAR_NAME(b->key)) {
 			Res *res = (Res *)b->value;
 			msParam_t *v = NULL;
 			int varindex;
