@@ -93,7 +93,7 @@ int clientLoginKrb(rcComm_t *Conn)
 {
    int status;
    krbAuthRequestOut_t *krbAuthReqOut;
-   char *myName;
+   char *myName=0;
    char *serverName;
    static int KRB_debug=0;
 
@@ -105,6 +105,9 @@ int clientLoginKrb(rcComm_t *Conn)
 
    if (KRB_debug) {
       printf("Client-side Name:%s\n",myName); 
+   }
+   if (myName != 0) {
+      free(myName);
    }
 
    status = rcKrbAuthRequest(Conn, &krbAuthReqOut);
