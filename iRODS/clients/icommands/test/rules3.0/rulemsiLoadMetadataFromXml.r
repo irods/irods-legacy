@@ -9,11 +9,14 @@ myTestRule {
 #
 #    This microservice requires libxml2.
 #
-#call the micro-service
+
+  # call the microservice
   msiLoadMetadataFromXml(*targetObj, *xmlObj);
-#write message to the log file
+
+  # write message to the log file
   writeLine("serverLog","Extracted metadata from *xmlObj and attached to *targetObj");
-#write message to stdout
+
+  # write message to stdout
   writeLine"stdout","Extracted metadata from *xmlObj and attached to *targetObj");
 }
 INPUT *xmlObj="tempZone/home/rods/XML/sample-processed.xml", *targetObj="/tempZone/home/rods/XML/xample.xml"

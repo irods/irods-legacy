@@ -20,11 +20,12 @@ myTestRule {
     msiCreateXmsgInp("1","1","1","TTTest*I","0","" ,"" ,"" ,*Tic,*MParam);
     msiSendXmsg(*Conn,*MParam);
     msiXmsgServerDisConnect(*Conn);
-# now read the message that was sent.  The read can be done from a remote server.      
-      msiXmsgServerConnect(*Conn1);
-      msiRcvXmsg(*Conn1,*Tic,"1",*MType,*MMsg,*MSender);
-      writeLine("stdout",*MMsg);
-      msiXmsgServerDisConnect(*Conn1);
+
+    # now read the message that was sent.  The read can be done from a remote server.
+    msiXmsgServerConnect(*Conn1);
+    msiRcvXmsg(*Conn1,*Tic,"1",*MType,*MMsg,*MSender);
+    writeLine("stdout",*MMsg);
+    msiXmsgServerDisConnect(*Conn1);
   }
 }
 INPUT *A=100, *Count=10 

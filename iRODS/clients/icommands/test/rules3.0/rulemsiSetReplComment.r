@@ -14,8 +14,7 @@ myTestRule {
    msiSplitPath(*SourceFile,*Coll,*File);
    msiMakeGenQuery("DATA_COMMENTS","DATA_NAME = '*File' AND COLL_NAME = '*Coll'",*GenQInp);
    msiExecGenQuery(*GenQInp,*GenQOut);
-   foreach(*GenQOut)
-  {
+   foreach(*GenQOut) {
      msiGetValByKey(*GenQOut,"DATA_COMMENTS",*com);
      writeLine("stdout","The comment retrieved from iCAT is *com");
    }

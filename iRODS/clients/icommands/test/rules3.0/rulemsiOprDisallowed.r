@@ -1,4 +1,5 @@
 acSetRescSchemeForCreate {
   ON ($objPath like "\*foo*") {
-  msiOprDisallowed; } 
+    msiOprDisallowed;
+  } 
 }

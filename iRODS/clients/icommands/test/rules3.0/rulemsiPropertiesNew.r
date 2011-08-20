@@ -1,11 +1,14 @@
 myTestRule {
 #Output parameter is:
 #  Property list to create
-#Create new property list
+
+  #Create new property list
   msiPropertiesNew(*KVpair);
-#Add property to list
+
+  #Add property to list
   msiPropertiesAdd(*KVpair,*Keyword,*Value);
-#Write out property list
+
+  #Write out property list
   writeLine("stdout","Property list is");
   msiPrintKeyValPair("stdout",*KVpair);
 }

@@ -1,7 +1,7 @@
 myTestRule {
 #Input parameters are:
 #  Optional format flag - human
-#  Optional printf formatting for human format, using six inputs (year,month,day,hour,minute,second)
+#  Optional snprintf formatting for human format, using six inputs (year,month,day,hour,minute,second)
 #Output parameter is:
 #Local system time
   msiGetFormattedSystemTime(*Out,"null","null");

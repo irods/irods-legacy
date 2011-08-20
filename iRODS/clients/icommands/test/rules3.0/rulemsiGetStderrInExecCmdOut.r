@@ -6,8 +6,10 @@ myTestRule {
 #  Buffer to hold the retrieved error message
 #Output from running the example is:
 #  Error message is
+  
   msiExecCmd(*Cmd,*ARG,"","","",*HELLO_OUT);
-# *HELLO_OUT holds the status, output and error messages
+  
+  # *HELLO_OUT holds the status, output and error messages
   msiGetStderrInExecCmdOut(*HELLO_OUT,*ErrorOut);
   writeLine("stdout","Error message is *ErrorOut");
 }

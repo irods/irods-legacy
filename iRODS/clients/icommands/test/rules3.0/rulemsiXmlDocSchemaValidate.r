@@ -8,11 +8,14 @@ myTestRule {
 #
 #      This microservice requires libxml2
 #
-#call the microservice
+
+  # call the microservice
   msiXmlDocSchemaValidate(*xmlObj, *xsdObj, *Status);
-#write information to stdout
+
+  # write information to stdout
   writeLine("stdout","Validated *xmlObj against *xsdObj");
-#write integer into stdout
+
+  # write integer into stdout
   writePosInt("stdout",*Status);
   writeLine("stdout",:"");
 }

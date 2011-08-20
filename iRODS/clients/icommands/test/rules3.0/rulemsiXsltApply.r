@@ -13,11 +13,14 @@ myTestRule {
 #Output parameters:
 #  outBuf	- buffer containing the transformed XML data
 #
-#call the micro-service
+
+  # call the micro-service
   msiXsltApply(*xsltObj, *xmlObj, *outBuf);
-#write the output buffer to stdout
+
+  # write the output buffer to stdout
   writeBytesBuf("stdout",*outBuf);
-#write output file
+
+  # write output file
   msiDataObjCreate(*Path,*OFlag,*D_FD);
   msiDataObjWrite(*D_FD,*outBuf,*W_len);
   msiDataObjClose(*D_FD,$Status1);

@@ -13,7 +13,7 @@ myTestRule {
 # writeLine: inString = Delayed exec 
   delay("<PLUSET>30s</PLUSET>") {
     writeLine("serverLog","Delayed exec");
-    }
+  }
   writeLine("stdout","exec");
 }
 INPUT null

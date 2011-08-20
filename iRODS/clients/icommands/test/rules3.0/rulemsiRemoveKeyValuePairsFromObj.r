@@ -5,15 +5,19 @@ myTestRule {
 #  Type of object (-d, -C)
 #Output from running the example is:
 #  Add metadata
+
   msiString2KeyValPair(*Str,*Keyval);
   msiAssociateKeyValuePairsToObj(*Keyval,*Path,"-d");
-#  List metadata
+
+  #  List metadata
   writeLine("stdout","List metadata on file");
   msiGetDataObjPSmeta(*Path,*Buf);
   writeBytesBuf("stdout",*Buf);
-#  Remove metadata
+
+  #  Remove metadata
   msiRemoveKeyValuePairsFromObj(*Keyval,*Path,"-d");
-#  List metadata remaining on file
+
+  #  List metadata remaining on file
   writeLine("stdout","list metadata after removing *Str");
   msiGetDataObjPSmeta(*Path,*Buf);
   writeBytesBuf("stdout",*Buf);

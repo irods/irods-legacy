@@ -4,15 +4,19 @@ integrityDataType {
 #  Data type that will be verified
 #Output is:
 #  List of all files in the collection that have a different data type
-#Verify that input path is a collection
+
+  #Verify that input path is a collection
   msiIsColl(*Coll,*Result, *Status);
   if(*Result == 0) {
     writeLine("stdout","Input path *Coll is not a collection");
-    fail;  }
-#Get object type number from input type
+    fail;
+  }
+
+  #Get object type number from input type
   *ContInxOld = 1;
   *Count = 0;
-#Loop over files in the collection
+
+  #Loop over files in the collection
   msiMakeGenQuery("DATA_NAME,DATA_TYPE_NAME","COLL_NAME = '*Coll'", *GenQInp);
   msiExecGenQuery(*GenQInp, *GenQOut);
   msiGetContInxFromGenQueryOut(*GenQOut,*ContInxNew);

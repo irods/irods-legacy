@@ -7,9 +7,11 @@ myTestRule {
 #  General query structure
 #Output from running the example is:
 #  List of files in collection /tempZone/home/rods
-# initial condition for query corresponds to "COLL_NAME like '/tempZone/home/rods/%%'"
+
+  # initial condition for query corresponds to "COLL_NAME like '/tempZone/home/rods/%%'"
   msiMakeGenQuery(*Select,"COLL_NAME like '/tempZone/home/rods/%%'",*GenQInp);
-# adding condition to query "DATA_NAME like rule%%"
+
+  # adding condition to query "DATA_NAME like rule%%"
   msiAddConditionToGenQuery(*Attribute,*Operator,*Value,*GenQInp);
   msiExecGenQuery(*GenQInp,*GenQOut);
   foreach(*GenQOut)

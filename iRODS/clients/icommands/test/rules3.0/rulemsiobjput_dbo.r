@@ -6,7 +6,9 @@ myTestRule {
 #No output parameters
   msiSplitPath(*Path, *Coll, *File);
   msiExecStrCondQuery("SELECT DATA_SIZE where DATA_NAME = '*File' and COLL_NAME = '*Coll'",*GenQOut);
-  foreach(*GenQOut) {msiGetValByKey(*GenQOut, "DATA_SIZE", *Size); }
+  foreach(*GenQOut) {
+    msiGetValByKey(*GenQOut, "DATA_SIZE", *Size);
+  }
   msiobjput_dbo(*Request, *Path, *Size);
 }
 INPUT *Request ="//dbo:dbr2:/tempzone/home/rods/dbotest/lt.pg", *Path = "/tempZone/home/rods/sub1/rodsfile"

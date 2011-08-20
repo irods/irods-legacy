@@ -6,7 +6,8 @@ myTestRule {
 #   Status of operation
 # Output from running the example is:
 #   Replicate collection /tempZone/home/rods/sub1 to location destRescName=testResc
-# Put a file in the collection
+
+  # Put a file in the collection
   msiDataObjPut(*Path,*Resource,"localPath=*LocalFile++++forceFlag=",*Status);
   msiSplitPath(*Path, *Coll, *File);
   msiCollRepl(*Coll, *RepResource, *status);

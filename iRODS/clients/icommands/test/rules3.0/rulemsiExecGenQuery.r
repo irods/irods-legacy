@@ -11,10 +11,8 @@ myTestRule {
   msiMakeGenQuery("DATA_ID, DATA_SIZE",*Condition,*GenQInp);
   msiExecGenQuery(*GenQInp, *GenQOut);
   msiGetContInxFromGenQueryOut(*GenQOut,*ContInxNew);
-  while(*ContInxOld > 0)
-  {
-    foreach(*GenQOut)
-    {
+  while(*ContInxOld > 0) {
+    foreach(*GenQOut) {
        msiGetValByKey(*GenQOut, "DATA_SIZE", *Fsize);
        *Size = *Size + double(*Fsize);
        *Count = *Count + 1;

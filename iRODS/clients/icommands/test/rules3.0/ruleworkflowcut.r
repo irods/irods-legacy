@@ -7,15 +7,15 @@ myTestRule {
 }
 
 print {
-    or {
-	writeLine("serverLog", "print 1");
-	cut;
-	fail;
-    }
-    or {
-	writeLine("serverLog", "print 2");
-        succeed;
-    }
+  or {
+    writeLine("serverLog", "print 1");
+    cut;
+    fail;
+  }
+  or {
+    writeLine("serverLog", "print 2");
+    succeed;
+  }
 }
 
 INPUT null

@@ -3,14 +3,18 @@ myTestRule {
 #  Property list
 #Output parameter is:
 #  String
-#Create property string
+
+  #Create property string
   msiString2KeyValPair(*Str,*KVpair);
-#Write out property list
+
+  #Write out property list
   writeLine("stdout","Initial property list is");
   msiPrintKeyValPair("stdout",*KVpair);
-#Convert to a string
+
+  #Convert to a string
   msiPropertiesToString(*KVpair,*Strout);
-#Write out string
+
+  #Write out string
   writeLine("stdout","Generated string");
   writeLine("stdout","*Strout");
 }

@@ -6,9 +6,11 @@ myTestRule {
 #  GenQuery structure
 #Output from running the example is:
 #  List of sizes of collections in /tempZone/home/rods
-# initial select is on COLL_NAME
+
+  # initial select is on COLL_NAME
   msiMakeGenQuery(*Select,"COLL_NAME like '/tempZone/home/rods/%%'",*GenQInp);
-# add select on sum(DATA_SIZE)
+
+  # add select on sum(DATA_SIZE)
   msiAddSelectFieldToGenQuery(*SelectAdd,*Function,*GenQInp);
   msiExecGenQuery(*GenQInp,*GenQOut);
   foreach(*GenQOut)

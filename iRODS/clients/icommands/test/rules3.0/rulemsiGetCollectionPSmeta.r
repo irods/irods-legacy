@@ -3,10 +3,12 @@ myTestRule {
 #  Path of collection
 #Output parameter is:
 #  Buffer holding the result
-#Add metadata to a collection
+
+  #Add metadata to a collection
   msiString2KeyValPair(*Keyvalstr, *Keyval);
   msiAssociateKeyValuePairsToObj(*Keyval,*Path,"-C");
-#Retrieve metadata for the collection
+  
+  #Retrieve metadata for the collection
   msiGetCollectionPSmeta(*Path,*Buf);
   writeBytesBuf("stdout",*Buf);
 }

@@ -6,7 +6,7 @@ myTestRule {
 #  Status
   *Work=``{
              msiDataObjChksum(*File,"ChksumAll",*chk);
-# convert from object structure to a string for printing
+             # convert from object structure to a string for printing
              msiGetObjectPath(*File,*obj,*status);
              writeLine("stdout",'Checksum for *obj is *chk');
           }``;

@@ -4,12 +4,15 @@ myTestRule {
 #  Keyword to find
 #Output parameter is:
 #  Value
-#Create key-value string
+
+  #Create key-value string
   msiString2KeyValPair(*Str,*KVpair);
-#Output property list
+
+  #Output property list
   writeLine("stdout","Property list is");
   msiPrintKeyValPair("stdout",*KVpair);
-#Extract property value
+
+  #Extract property value
   msiPropertiesGet(*KVpair,*Str1,*Val);
   writeLine("stdout","Properties list keyword *Str1 has value *Val");
 }

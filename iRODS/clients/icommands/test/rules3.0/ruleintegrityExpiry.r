@@ -4,16 +4,19 @@ integrityExpiry {
 #  Flag for "EXPIRED" or for "NOT EXPIRED"
 #Output is:
 #  List of all files in the collection that have either EXPIRED or NOT EXPIRED
-#Verify that input path is a collection
+
+  #Verify that input path is a collection
   msiIsColl(*Coll,*Result, *Status);
   if(*Result == 0) {
     writeLine("stdout","Input path *Coll is not a collection");
-    fail;  }
+    fail;
+  }
   *ContInxOld = 1;
   *Count = 0;
   *Counte = 0;
   msiGetIcatTime(*Time,"unix");
-#Loop over files in the collection
+
+  #Loop over files in the collection
   msiMakeGenQuery("DATA_ID,DATA_NAME,DATA_EXPIRY","COLL_NAME = '*Coll'", *GenQInp);
   msiExecGenQuery(*GenQInp, *GenQOut);
   msiGetContInxFromGenQueryOut(*GenQOut,*ContInxNew);

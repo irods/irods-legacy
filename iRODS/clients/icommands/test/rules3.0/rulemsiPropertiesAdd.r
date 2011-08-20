@@ -3,14 +3,18 @@ myTestRule {
 #  Property list
 #  Keyword to add
 #  Value to add
-#Create key-value string
+
+  #Create key-value string
   msiString2KeyValPair(*Str,*KVpair);
-#Write out string
+
+  #Write out string
   writeLine("stdout","Initial property list is");
   msiPrintKeyValPair("stdout",*KVpair);
-#Add to properties list
+
+  #Add to properties list
   msiPropertiesAdd(*KVpair,*Keyword,*Value);
-#Write out properties list
+
+  #Write out properties list
   writeLine("stdout","Changed property list is");
   msiPrintKeyValPair("stdout",*KVpair);
 }

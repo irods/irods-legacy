@@ -9,8 +9,10 @@ myTestRule {
   msiSplitPath(*Path, *Coll, *File);
   msiobjget_z3950(*Request, *Mode, *Flags, *Path);
   msiExecStrCondQuery("SELECT DATA_NAME where DATA_NAME = '*File' and COLL_NAME = '*Coll'",*GenQOut);
-  foreach(*GenQOut) {msiGetValByKey(*GenQOut, "DATA_NAME", *Filestore);
-    writeLine("stdout","Created file *Filestore"); }
+  foreach(*GenQOut) {
+    msiGetValByKey(*GenQOut, "DATA_NAME", *Filestore);
+    writeLine("stdout","Created file *Filestore");
+  }
 }
 INPUT *Request ="//z3950:z3950.loc.gov:7090/Voyager?query=@attr 1=1003 Marx&recordsyntax=USMARC", *Mode = "w", *Flags = "O_RDWR", *Path = "/tempZone/home/rods/sub1/rodsfile"
 OUTPUT ruleExecOut

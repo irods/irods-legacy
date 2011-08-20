@@ -4,16 +4,20 @@ myTestRule {
 #  Optional flag - not used 
 #Output parameter is:
 #  Status
-#Set an AVU
+
+  # Set an AVU
   msiFlagDataObjwithAVU(*Path,"State",*Status);
-#Retreive the AVUs
+
+  # Retreive the AVUs
   msiGetDataObjPSmeta(*Path,*Buf);
   writeLine("stdout","Metadata on *Path is:");
   writeBytesBuf("stdout",*Buf);
   writeLine("stdout","");
-#Delete the AVUs
+
+  # Delete the AVUs
   msiStripAVUs(*Path,"",*Status);
-#Verify the AVUs have been deleted
+
+  # Verify the AVUs have been deleted
   msiGetDataObjPSmeta(*Path,*Buf);
   writeLine("stdout","Metadata has been removed on *Path");
   writeBytesBuf("stdout",*Buf);

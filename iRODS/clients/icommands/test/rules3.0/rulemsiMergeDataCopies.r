@@ -16,13 +16,15 @@ myTestRule {
   msiSplitPath(*Path,*Coll,*Fileorig);
   writeLine("stdout","Collection *Master has initial files");
   msiExecStrCondQuery("SELECT DATA_NAME,DATA_ID where COLL_NAME = '*Master'",*QOut);
-  foreach (*QOut) {msiGetValByKey(*QOut,"DATA_NAME",*File);
+  foreach (*QOut) {
+    msiGetValByKey(*QOut,"DATA_NAME",*File);
     writeLine("stdout",*File);
   }
   msiMergeDataCopies(*Path,*Coll,*Master,*Status);
   writeLine("stdout","Collection *Master has files after merge");
   msiExecStrCondQuery("SELECT DATA_NAME,DATA_ID where COLL_NAME = '*Master'",*QOut);
-  foreach (*QOut) {msiGetValByKey(*QOut,"DATA_NAME",*File);
+  foreach (*QOut) {
+    msiGetValByKey(*QOut,"DATA_NAME",*File);
     writeLine("stdout",*File);
   }
 }

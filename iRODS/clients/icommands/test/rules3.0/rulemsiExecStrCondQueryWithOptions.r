@@ -9,13 +9,15 @@ myTestRule {
   msiMakeQuery(*Sel,*Cond,*QIn);
   msiExecStrCondQueryWithOptions(*QIn,"zeroOK","15",*QOut);
   foreach(*QOut) {msiPrintKeyValPair("stdout",*QOut);}
-# see if the result is the same from an alternate microservice
+
+  # see if the result is the same from an alternate microservice
   writeLine("stdout","Compare output with msiExecStrCondQuery results");
   msiExecStrCondQuery(*QIn,*QOut);
   *Count = 0;
   foreach(*QOut) {
-  *Count = *Count + 1;
-  if(*Count <= 15) {msiPrintKeyValPair("stdout",*QOut);} }
+    *Count = *Count + 1;
+    if(*Count <= 15) {msiPrintKeyValPair("stdout",*QOut);}
+  }
 }
 INPUT *Sel="DATA_NAME", *Cond="DATA_NAME like 'rule%%'"
 OUTPUT ruleExecOut

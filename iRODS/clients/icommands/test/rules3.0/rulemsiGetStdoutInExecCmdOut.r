@@ -6,7 +6,8 @@ myTestRule {
 #Output from executing the command is
 #  Output message is Hello World iRODS from irods
   msiExecCmd("hello",*ARG,"","","",*HELLO_OUT);
-# *HELLO_OUT holds the status, output and error messages
+
+  # *HELLO_OUT holds the status, output and error messages
   msiGetStdoutInExecCmdOut(*HELLO_OUT,*Out);
   writeLine("stdout","Output message is *Out");
 }
