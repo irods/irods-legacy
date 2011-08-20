@@ -15,4 +15,3 @@ myTestRule {
 }
 INPUT *Coll="/tempZone/home/rods/sub1"
 OUTPUT ruleExecOut
-OUTPUT ruleExecOut

@@ -1,4 +1,5 @@
 myTestRule {
+#Workflow operation to execute microservices at a remote location
 #Input parameters are:
 #  Host name where workflow is executed
 #  Delaycondition for executing the workflow

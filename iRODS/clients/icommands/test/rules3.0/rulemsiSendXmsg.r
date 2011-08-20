@@ -1,7 +1,7 @@
 myTestRule {
 #Input parameters are:
 #  Connection descriptor from msiXmsgServerConnect
-#  OutXmsgTIcketInfoParam from msiXmsgCreateStream 
+#  OutXmsgTicketInfoParam from msiXmsgCreateStream 
 #Output from running the example is:
 #  TTTest0
 #  TTTest1

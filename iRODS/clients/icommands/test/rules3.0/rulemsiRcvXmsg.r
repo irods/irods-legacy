@@ -1,7 +1,7 @@
 myTestRule {
 #Input parameters are:
 #  Connection descriptor from msiXmsgServerConnect
-#  OutXmsgTIcketInfoParam from msiXmsgCreateStream 
+#  OutXmsgTicketInfoParam from msiXmsgCreateStream 
 #  Message serial number
 #Output parameters are:
 #  Message type

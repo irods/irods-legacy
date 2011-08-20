@@ -1,4 +1,5 @@
 myTestRule {
+#Workflow operator to iterate through variable
 #Input parameters are:
 #  Loop initiation
 #  Loop termination

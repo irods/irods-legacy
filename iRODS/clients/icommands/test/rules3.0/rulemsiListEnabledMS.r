@@ -1,8 +1,8 @@
 myTestRule {
 #Output
-#  Buffer holding list of micro-services in form Key=Value
+#  Buffer holding list of microservices in form Key=Value
 #Output from running the example is:
-#    List of micro-services that are enabled
+#    List of microservices that are enabled
   msiListEnabledMS(*Buf);
   writeKeyValPairs("stdout",*Buf,":");
 }

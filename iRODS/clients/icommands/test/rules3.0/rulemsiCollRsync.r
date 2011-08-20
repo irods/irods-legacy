@@ -1,4 +1,4 @@
-myTestRule{
+myTestRule {
 # Input parameters are:
 #  Source collection path
 #  Target collection path

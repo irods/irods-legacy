@@ -1,5 +1,5 @@
 myTestRule {
-#Input Parameters are:
+#Input parameter is:
 #  String with %-separated key=value pair strings
 #Output parameter is:
 #  Key-value structure

@@ -1,7 +1,7 @@
 myTestRule {
-#Input Paramter is:
+#Input parameter is:
 #  Object name
-#Output Parameter is:
+#Output parameter is:
 #  Type
 #Output from running the example is:
 #  The type of object /tempZone/home/rods/sub1/foo3 is -d

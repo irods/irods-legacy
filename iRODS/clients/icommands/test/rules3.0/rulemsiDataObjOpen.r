@@ -2,7 +2,7 @@ myTestRule {
 # Input parameters are:
 #   File descriptor
 #   Optional length to read
-# Output Parameter is:
+# Output parameter is:
 #   Buffer holding the data read 
 # Output from running the example is:
 #  Open file /tempZone/home/rods/test/foo1, create file /tempZone/home/rods/test/foo4, copy 100 bytes starting at location 10

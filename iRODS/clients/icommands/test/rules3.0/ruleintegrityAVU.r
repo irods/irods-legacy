@@ -1,4 +1,4 @@
-myTestRule {
+integrityAVU {
 #Input parameter is:
 #  Name of collection that will be checked
 #  Attribute name whose presence will be verified

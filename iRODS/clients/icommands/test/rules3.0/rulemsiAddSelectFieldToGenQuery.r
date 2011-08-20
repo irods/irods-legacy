@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 #Input parameters are:
 #  Select field
 #  Function to apply to attribue

@@ -4,9 +4,9 @@ myTestRule {
 #  Resource where clamscan was run
 #Output parameter is:
 #  Status
-#Execute the clamscan utility "clamscan -ri VAULT_DIR"
+#Execute the clamscan (Clam AntiVirus) utility "clamscan -ri VAULT_DIR"
 #  Note that the *VaultPath is the physical path for *Resource on *Host
-#  Clamscan looks at the physical files in the iRODS vault
+#  clamscan looks at the physical files in the iRODS vault
   msiExecCmd("scanvault.py",*VaultPath,*Host,"null","null",*CmdOut);
 #Extract result of the scan of the files in the vault on the specified host
   msiGetStdoutInExecCmdOut(*CmdOut,*StdoutStr);

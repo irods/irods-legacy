@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 # Input parameters are:
 #   Collection that will be removed
 #   Flag controlling options in the form keyword=value

@@ -1,4 +1,4 @@
-myTestRule {
+integrityDataType {
 #Input parameter is:
 #  Name of collection that will be checked
 #  Data type that will be verified

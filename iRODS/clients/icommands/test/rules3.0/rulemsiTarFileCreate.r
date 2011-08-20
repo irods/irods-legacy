@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 # Input parameters are:
 #   Tar file path name that will be created
 #   Collection that will be turned into a tar file

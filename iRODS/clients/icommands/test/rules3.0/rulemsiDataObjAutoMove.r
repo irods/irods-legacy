@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 # Input parameters are:
 #   iRODS path of file to move
 #   Leading collection name to be truncated from that iRODS path

@@ -1,4 +1,5 @@
 myTestRule {
+#Workflow operation to loop until condition is false
 #Input parameter is
 #  Logical expression which evaluates to TRUE or FALSE
 #  Workflow that is executed, defined within brackets

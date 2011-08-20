@@ -1,4 +1,5 @@
-acPostProcForPut {ON($rescGroupName != "") 
-  {msiSysReplDataObj($rescGroupName,"all"); }
+acPostProcForPut {
+  ON($rescGroupName != "") {
+    msiSysReplDataObj($rescGroupName,"all");
+  }
 }
-

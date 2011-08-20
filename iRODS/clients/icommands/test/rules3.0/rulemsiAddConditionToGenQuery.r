@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 #Input parameters are:
 #  Attribute name
 #  Operator

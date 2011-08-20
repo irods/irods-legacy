@@ -1,5 +1,5 @@
 myTestRule {
-#Input parameters are:
+#Input parameter is:
 #  Original property list
 #Output parameter is:
 #  Cloned property list

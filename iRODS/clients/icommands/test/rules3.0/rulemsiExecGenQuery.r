@@ -4,7 +4,7 @@ myTestRule {
 #Output parameter is:
 #  Structure holding the query result
 #Output from running the example is:
-#  List of the number of files and size of files in collection /tempZone/home/rods
+#  List of the number of files and size of files in collection /tempZone/home/rods/large-coll
   *ContInxOld = 1;
   *Count = 0;
   *Size = 0;

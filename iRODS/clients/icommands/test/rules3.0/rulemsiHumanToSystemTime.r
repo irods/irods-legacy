@@ -1,5 +1,5 @@
 myTestRule {
-#Input parameters are:
+#Input parameter is:
 #  Date in human readable form
 #Output parameter is:
 #  Time stamp in seconds since epoch

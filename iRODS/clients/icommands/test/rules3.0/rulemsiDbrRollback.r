@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 # Input parameters are:
 #  Database resource name
 # Output from running the example is:

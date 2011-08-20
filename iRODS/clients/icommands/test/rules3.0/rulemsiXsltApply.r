@@ -1,10 +1,10 @@
 myTestRule {
 #Transform an XML file according to a provided XSL stylesheet
 #
-#This rule calls micro-service xsltApplyStylesheet from libsxlt to do the transformation
+#This rule calls microservice xsltApplyStylesheet from libsxlt to do the transformation
 #
 #Typical usage:
-#  Transform an XML file ot the AVU format required for micro-service msiLoadMetadataFromXML
+#  Transform an XML file to the AVU format required for microservice msiLoadMetadataFromXML
 #
 #Input parameters:
 #  xsltObj	- the XSL stylesheet file (an iRODS object)

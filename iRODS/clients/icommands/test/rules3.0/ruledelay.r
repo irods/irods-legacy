@@ -1,10 +1,11 @@
 myTestRule {
+#Workflow operator to execute a given workflow at a delayed specification
 #Input parameters are:
 #  Delay condition composed from tags
-#    EA    - host where the execution if performed
-#    ET    - Absolute time when execution is done
+#    EA     - host where the execution if performed
+#    ET     - Absolute time when execution is done
 #    PLUSET - Relative time for execution
-#    EF    - Execution frequency
+#    EF     - Execution frequency
 #    Workflow specified within brackets
 #Output from running the example is:
 #  exec

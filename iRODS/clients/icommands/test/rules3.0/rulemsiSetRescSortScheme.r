@@ -1,4 +1,5 @@
-acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","null");
+acSetRescSchemeForCreate {
+  msiSetDefaultResc("demoResc","null");
   msiSetRescSortScheme("random");
   msiSetRescSortScheme("byRescClass");
 }

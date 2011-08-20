@@ -5,6 +5,10 @@ myTestRule {
 #  Message
 #Output parameter is:
 #  Status
+#
+#   This microservice worked with Twitter's basic authentication, through Spring 2010
+#    - OAuth-based tweeting from iRODS is not yet implemented
+#
   msiTwitterPost(*Username, *Passwd, *Msg, *Status);
   writePosInt("stdout", *Status);
   writeLine("stdout", " is the status for twitter post");

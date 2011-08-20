@@ -1,6 +1,6 @@
 myTestRule {
 #Input parameters are:
-#  Time type (icat or unix returns time in seconds
+#  Time type (unix or human) in seconds
 #Output parameter is:
 #  Time value
   msiGetIcatTime(*Start,"unix");

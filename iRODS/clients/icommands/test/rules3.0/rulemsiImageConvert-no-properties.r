@@ -1,6 +1,6 @@
 myTestRule {
 # Input parameters:
-#	srcFile - iRODS image file that will be converted
+#	srcFile  - iRODS image file that will be converted
 #	destFile - iRODS image file that will be created and hold converted image
 #
 # Uses ImageMagick.

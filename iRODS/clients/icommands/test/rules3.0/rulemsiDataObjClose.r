@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 # Input parameters are:
 #   Path
 #   Flags specifying resource, and force option in format keyword=value

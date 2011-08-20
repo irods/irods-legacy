@@ -1,4 +1,4 @@
-myTestRule {
+integrityFileSize {
 #Input parameter is:
 #  Name of collection that will be checked
 #  Minimum file size allowed in collection

@@ -1,11 +1,11 @@
 myTestRule {
 # Input parameters:
 #  srcFile     - iRODS image file that will be converted
-#  srcOptions  - srcFile property options - OPTIONAL
-#              (only image format values are allowed if this parameter is used)
+#  srcOptions  - Optional srcFile property values
+#               (only image format values are allowed if this parameter is used)
 #  destFile    - iRODS image file that will be created to hold converted image
-#  destOptions - destFile properties string giving parameters for conversion - OPTIONAL
-#                (only file format and compression flags are allowed)
+#  destOptions - Optional destFile properties string giving parameters for conversion
+#               (only file format and compression flags are allowed)
 #
 # Uses ImageMagick.
 #

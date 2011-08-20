@@ -1,7 +1,7 @@
 myTestRule {
 #Input parameters are:
 #  Remote URL
-#  New File name within iRODS
+#  New filepath within iRODS
 #Output parameter is:
 #  Status
   msiFtpGet(*Target, *Destobj, *Status);

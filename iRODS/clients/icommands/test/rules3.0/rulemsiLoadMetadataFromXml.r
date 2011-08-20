@@ -1,13 +1,13 @@
 myTestRule {
-#Input parameters
+#Input parameters are:
 # targetObj	- iRODS target file that metadata will be attached to
-# xmlObj	- iRODS path to XML file that metadata is drawn from
+# xmlObj	  - iRODS path to XML file that metadata is drawn from
 #
 #    xmlObj is assumed to be in AVU-format
 #    This format is created by transforming the original XML file
 #    using an appropriate style sheet as shown in rulemsiXsltApply.r
 #
-#    This micro-service uses libxml2.
+#    This microservice requires libxml2.
 #
 #call the micro-service
   msiLoadMetadataFromXml(*targetObj, *xmlObj);

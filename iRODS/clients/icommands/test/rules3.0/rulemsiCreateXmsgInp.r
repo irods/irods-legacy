@@ -10,7 +10,7 @@ myTestRule {
 #  List of Host Addresses
 #  List of Ports
 #  Miscellaneous information
-#  outXmsgTIcketInforParam from msiXmsgCreateStream
+#  outXmsgTicketInfoParam from msiXmsgCreateStream
 #Output parameter is:
 #  Xmsg packet
  for (*I = 0 ; *I < *Count ; *I = *I + 1) 

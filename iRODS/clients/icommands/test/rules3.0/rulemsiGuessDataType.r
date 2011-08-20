@@ -1,5 +1,5 @@
 myTestRule {
-#Input parameters are:
+#Input parameter is:
 #  Path of object
 #Output parameters are:
 #  Data type

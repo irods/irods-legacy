@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 # Input parameters are:
 #   Collection that will be bundled into a tar file
 #   Resource where the tar file will be stored

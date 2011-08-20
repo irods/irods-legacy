@@ -9,7 +9,7 @@ myTestRule {
   msiMakeQuery(*Sel,*Cond,*QIn);
   msiExecStrCondQueryWithOptions(*QIn,"zeroOK","15",*QOut);
   foreach(*QOut) {msiPrintKeyValPair("stdout",*QOut);}
-# see if the result is the same from an alternate micro-service
+# see if the result is the same from an alternate microservice
   writeLine("stdout","Compare output with msiExecStrCondQuery results");
   msiExecStrCondQuery(*QIn,*QOut);
   *Count = 0;

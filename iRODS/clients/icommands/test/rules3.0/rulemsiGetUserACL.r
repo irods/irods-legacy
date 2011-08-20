@@ -1,5 +1,5 @@
 myTestRule {
-#Input parameters are:
+#Input parameter is:
 #  User name
 #Output parameters are:
 #  Buffer holding ACLs

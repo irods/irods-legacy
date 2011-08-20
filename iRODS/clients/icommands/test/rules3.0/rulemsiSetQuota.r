@@ -1,4 +1,4 @@
-myTestRule{
+myTestRule {
 #Input parameters are:
 #  Type of quota (user or group)
 #  User or group name

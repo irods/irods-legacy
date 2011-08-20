@@ -1,1 +1,1 @@
-acPostProcForPut {msiExtractNaraMetadata;)
+acPostProcForPut {msiExtractNaraMetadata;}

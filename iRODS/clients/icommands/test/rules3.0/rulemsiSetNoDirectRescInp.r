@@ -1,3 +1,5 @@
-acSetRescSchemeForCreate {msiSetNoDirectRescInp("testResc");
+acSetRescSchemeForCreate {
+  msiSetNoDirectRescInp("testResc");
   msiSetDefaultResc("demoResc","random");
-  msiSetRescSortScheme("byRescType"); }
+  msiSetRescSortScheme("byRescType");
+}

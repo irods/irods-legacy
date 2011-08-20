@@ -1,7 +1,7 @@
 myTestRule {
 #Input parameters are:
 #  Data Object path
-#  Optional flags in form keywork=value
+#  Optional flags in form keyword=value
 #    destRescName - the target resource for the replica
 #    backupRescName - specifies use of the resource for the backup mode
 #    rescName - the resource holding the source data

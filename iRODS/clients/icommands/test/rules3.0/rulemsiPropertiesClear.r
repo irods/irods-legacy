@@ -1,5 +1,5 @@
 myTestRule {
-#Input parameters are:
+#Input parameter is:
 #  Property list
 #Create key-value string
   msiString2KeyValPair(*Str,*KVpair);

@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 # Input parameters are:
 #   Tar file within iRODS that will have its files extracted
 #   Collection where the extracted files will be placed

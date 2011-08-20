@@ -1,4 +1,4 @@
-myTestRule {
+integrityAVUvalue {
 #Verify each file in a collection has a required attribute name and attribute value
 #Input parameter is:
 #  Name of collection that will be checked

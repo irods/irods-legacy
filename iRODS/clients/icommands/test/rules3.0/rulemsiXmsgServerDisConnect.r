@@ -1,5 +1,5 @@
 myTestRule {
-#Input parameters are:
+#Input parameter is:
 #  Connection descriptor from msiXmsgServerConnect
 #Output from running the example is:
 #  TTTest0

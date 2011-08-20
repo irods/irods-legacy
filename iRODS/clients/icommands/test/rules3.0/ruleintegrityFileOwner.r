@@ -1,4 +1,4 @@
-myTestRule {
+integrityFileOwner {
 #Input parameter is:
 #  Name of collection that will be checked
 #  Owner name that will be verified

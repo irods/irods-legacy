@@ -1,2 +1,4 @@
-acPreProcForDataObjOpen {msiSortDataObj("byRescClass");
- msiStageDataObj("demoResc"); }
+acPreProcForDataObjOpen {
+  msiSortDataObj("byRescClass");
+  msiStageDataObj("demoResc");
+}

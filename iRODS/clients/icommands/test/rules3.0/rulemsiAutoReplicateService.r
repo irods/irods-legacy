@@ -1,4 +1,4 @@
-myRuleTest {
+myTestRule {
 # Input parameters are:
 #  Collection that is being replicated
 #  Recursion flag, set to "true" if enabled

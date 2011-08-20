@@ -8,7 +8,7 @@ myTestRule {
 #Output from running the example is:
 #  string
     writeString(*Where, *StringIn);
-    writeLine(*Where,"");
+    writeLine(*Where,"cheese");
 }
 INPUT *Where="stdout", *StringIn="string"
 OUTPUT ruleExecOut

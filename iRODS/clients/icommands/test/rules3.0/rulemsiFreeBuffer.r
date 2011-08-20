@@ -1,6 +1,6 @@
 myTestRule {
 #Input parameter is:
-#  Buffer to free (can be variable buffer or stdout or stderr
+#  Buffer to free (can be variable buffer or stdout or stderr)
   msiDataObjOpen(*Flags,*F_desc);
   msiDataObjRead(*F_desc,*Len,*Buf);
   msiDataObjClose(*F_desc,*Status);

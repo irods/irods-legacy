@@ -1,1 +1,5 @@
-acPostProcForPut {ON($filePath like "\*.txt") {msiSysMetaModify("datatype","text"); } }
+acPostProcForPut {
+  ON($filePath like "\*.txt") {
+    msiSysMetaModify("datatype","text");
+  }
+}

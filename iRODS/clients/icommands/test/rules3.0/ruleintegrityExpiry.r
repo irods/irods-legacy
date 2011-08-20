@@ -1,4 +1,4 @@
-myTestRule {
+integrityExpiry {
 #Input parameter is:
 #  Name of collection that will be checked
 #  Flag for "EXPIRED" or for "NOT EXPIRED"

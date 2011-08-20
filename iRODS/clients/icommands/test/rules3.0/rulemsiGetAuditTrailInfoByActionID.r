@@ -8,7 +8,7 @@ myTestRule {
 #    2061   - delete collection
 #    2076   - modify user password
 #    2120   - modify access control on file
-#  Buffer name to be used by micro-service
+#  Buffer name to be used by microservice
 #Output parameter is:
 #  Status
   msiGetAuditTrailInfoByActionID(*Id,*Buf,*Status);
