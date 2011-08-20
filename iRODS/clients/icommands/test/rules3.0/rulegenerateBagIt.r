@@ -47,10 +47,8 @@ generateBagIt {
   msiMakeGenQuery("DATA_ID, DATA_NAME, COLL_NAME",*Condition,*GenQInp);
   msiExecGenQuery(*GenQInp, *GenQOut);
   msiGetContInxFromGenQueryOut(*GenQOut,*ContInxNew);
-  while(*ContInxOld > 0)
-  {
-    foreach(*GenQOut)
-    {
+  while(*ContInxOld > 0) {
+    foreach(*GenQOut) {
        msiGetValByKey(*GenQOut, "DATA_NAME", *Object);
        msiGetValByKey(*GenQOut, "COLL_NAME", *Coll);
        *FULLPATH = "*Coll" ++ "/" ++ "*Object";
@@ -93,14 +91,17 @@ generateBagIt {
     *Isize = int(*FILESIZE);
     if(*Isize > 1048576) {
       *PRINTSIZE = *Isize / 1048576;
-      *PRINTUNIT = "MB";    }
+      *PRINTUNIT = "MB";
+    }
     else {
       if(*Isize > 1024) {
         *PRINTSIZE = *Isize / 1024;
-        *PRINTUNIT = "KB";    }
+        *PRINTUNIT = "KB";
+      }
       else {
         *PRINTSIZE = *Isize;
-        *PRINTUNIT = "B"; }
+        *PRINTUNIT = "B";
+      }
     }
   }
 
