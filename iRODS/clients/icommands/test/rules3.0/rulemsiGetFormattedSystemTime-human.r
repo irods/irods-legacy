@@ -5,7 +5,7 @@ myTestRule {
 #    - the example below will print an ISO 8601 extended format datetimestamp
 #Output parameter is:
 #  Local system time
-  msiGetFormattedSystemTime(*Out,"human","%d-%d-%dT%d:%d:%d");
+  msiGetFormattedSystemTime(*Out,"human","%d-%02d-%02dT%02d:%02d:%02d");
   writeLine("stdout",*Out);
 }
 INPUT null 
