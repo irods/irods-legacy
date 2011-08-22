@@ -1060,7 +1060,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
 Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRuleInp, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r)
 {
     int ruleInx = 0, statusI;
-    Res *statusRes;
+    Res *statusRes = NULL;
     int  inited = 0;
     ruleExecInfo_t  *saveRei;
     int reTryWithoutRecovery = 0;
@@ -1084,16 +1084,14 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         statusI = findNextRule2(ruleName, ruleInx, &ruleIndexListNode);
 
         if (statusI != 0) {
-            if (statusI == NO_MORE_RULES_ERR) {
-                if(applyAllRule == 0) {
-        #ifndef DEBUG
-                    rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",ruleName, statusI);
-        #endif
-                    statusRes = first ? newErrorRes(r, NO_RULE_FOUND_ERR) : statusRes;
-                } else { // apply all rules succeeds even when 0 rule is applied
-                    success = 1;
-                }
-            }
+			if(applyAllRule == 0) {
+	#ifndef DEBUG
+				rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",ruleName, statusI);
+	#endif
+				statusRes = statusRes == NULL ? newErrorRes(r, NO_RULE_FOUND_ERR) : statusRes;
+			} else { // apply all rules succeeds even when 0 rule is applied
+				success = 1;
+			}
             break;
         }
 		if (reiSaveFlag == SAVE_REI) {
