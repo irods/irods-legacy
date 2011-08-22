@@ -1,4 +1,4 @@
-# N Queens Problem : Place N Queens on an N * N board so that no two queens attach each other.
+# N Queens Problem : Place N Queens on an N * N board so that no two queens attack each other.
 # The board is represented by a nested list. An empty square is represented by 0, a queen is represented by 1. 
 nqueens {
     *board = list(
