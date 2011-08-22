@@ -56,6 +56,8 @@ usage () {
 " iquest \"select sum(DATA_SIZE) where COLL_NAME like '/tempZone/home/rods%'\"",
 " iquest \"select sum(DATA_SIZE), RESC_NAME where COLL_NAME like '/tempZone/home/rods%'\"",
 " iquest \"select count(DATA_ID) where COLL_NAME like '/tempZone/home/rods%'\"",
+" iquest \"select RESC_NAME where RESC_CLASS_NAME IN ('bundle','archive')\"",
+" iquest \"select DATA_NAME,DATA_SIZE where DATA_SIZE BETWEEN '100000' '100200'\"",
 ""};
    int i;
    for (i=0;;i++) {
