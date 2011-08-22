@@ -1,4 +1,5 @@
 myTestRule {
+# This microservice is deprecated
 # Input parameters are:
 #   Collection that will be replicated, it must contain at least one file
 #   Target resource in keyword-value form

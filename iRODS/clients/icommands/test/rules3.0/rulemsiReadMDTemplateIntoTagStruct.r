@@ -1,6 +1,6 @@
 myTestRule {
-#Input parameters are:
-#  Tag Buffer
+#Input parameter is:
+#  Tag buffer
 #Output parameter is:
 #  Tag structure
 
