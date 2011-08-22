@@ -677,6 +677,10 @@ runCmd(0, "iadmin asq 'select user_name from R_USER_MAIN' testAlias");
 runCmd(0, "iquest --sql testAlias");
 runCmd(0, "iadmin rsq testAlias");
 
+# Queries with between and in
+runCmd(0, "iquest \"select RESC_NAME where RESC_CLASS_NAME IN ('bundle','archive')\"");
+runCmd(0, "iquest \"select USER_NAME where USER_ID between '10000' '10110'\"");
+
 # simple test to exercise the clean-up AVUs sql;
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none
 runCmd(1, "iadmin rum");

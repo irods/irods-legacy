@@ -82,6 +82,7 @@ sub testWithChar {
 	$option=0;
     }
     testOneFile($prefix . $testChar . "testFile", $option);
+    testOneFile($prefix . $testChar . "Quoteinfilename.txt", $option);
     testOneFile("te" . $testChar . "stFile", $option);
     testOneFile("testFile" . $testChar, $option);
     testOneFile($prefix . $testChar . "test" . $testChar . "File", $option);
