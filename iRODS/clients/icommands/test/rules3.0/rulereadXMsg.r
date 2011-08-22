@@ -19,7 +19,7 @@ myTestRule {
 #  Message Header is Test
 #  Message is Body of the message
 #  Sender is rods@tempZone
-#  Address is reagan-VirtualBox:4078
+#  Address is reagan-VirtualBox:4078 (this may change with each run)
   writeXMsg(*StreamID,*Header,*Message);
   # now read the message      
   readXMsg(*StreamID,*Condition,*MessageNum,*SequenceNum,*MsgHeader,*MsgMessage,*Sender,*Address);  
