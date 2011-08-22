@@ -2,10 +2,10 @@ myTestRule {
 #Input parameters are:
 #  Stream ID 
 #  Condition for reading a packet
-#    *XADDR != srbbrick14:20135   - form host:process-id
-#    *XUSER != rods@tempZone      - form user@zone
-#    *XHDR == header              - header of the message
-#    *XMISC == misc_infor         - miscellaneous message part
+#    *XADDR != "srbbrick14:20135"   - form host:process-id
+#    *XUSER != "rods@tempZone"      - form user@zone
+#    *XHDR == "header"              - header of the message
+#    *XMISC == "msic_infor"         - miscellaneous message part
 #    *XTIME                       - Unix time in seconds from Jan 1, 1968
 #Output parameters are:
 #  Message number
@@ -29,5 +29,5 @@ myTestRule {
   writeLine("stdout","Sender is *Sender");
   writeLine("stdout","Address is *Address");
 }
-INPUT *StreamID="1",*Header="Test",*Message="Body of the message",*Condition="\"\*XUSER\" == \"rods@tempZone\"",*MessageNum="1" 
+INPUT *StreamID="1",*Header="Test",*Message="Body of the message",*Condition=``*XUSER == "rods@tempZone"``,*MessageNum="1" 
 OUTPUT ruleExecOut

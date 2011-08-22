@@ -20,5 +20,5 @@ myTestRule {
   writeLine("stdout","Sender is *Sender");
   writeLine("stdout","Address is *Address");
 }
-INPUT *StreamID="1",*Header="Test",*Message="Body of the message",*Condition="\"\*XUSER\" == \"rods@tempZone\"",*MessageNum="1" 
+INPUT *StreamID="1",*Header="Test",*Message="Body of the message",*Condition=``*XUSER == "rods@tempZone"``,*MessageNum="1" 
 OUTPUT ruleExecOut
