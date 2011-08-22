@@ -1175,6 +1175,7 @@ insertWhere(char *condition, int option) {
    char *thisBindVar;
    char tmpStr[20];
    char myCondition[20];
+   char *condStart;
 
    if (option==1) { /* reinitialize */
       bindIx=0;
@@ -1182,15 +1183,18 @@ insertWhere(char *condition, int option) {
       return(0);
    }
 
+   condStart=condition;
+   while (*condStart==' ') {condStart++;}
+
    cp = strstr(condition, "in");
    if (cp == NULL) cp = strstr(condition, "IN");
-   if (cp != NULL) {
+   if (cp != NULL && cp==condStart) {
       return (addInClauseToWhereForIn(condition,0));
    }
 
    cp = strstr(condition, "between");
    if (cp == NULL) cp = strstr(condition, "BETWEEN");
-   if (cp != NULL) {
+   if (cp != NULL && cp==condStart) {
       return (addBetweenClauseToWhere(condition));
    }
 
