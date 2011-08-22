@@ -22,18 +22,7 @@
  * \author  Antoine de Torcy
  * \date   10/2007
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note None
- *
- * \usage
- *  
- *  As seen in modules/ERA/test/getATinfoByUserID.ir
- *  
- *  testrule||msiGetAuditTrailInfoByUserID(10009, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- *  null
- *  ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  * 
  * \param[in] inpParam1 - a msParam of type STR_MS_T
  * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
@@ -53,7 +42,6 @@
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -124,18 +112,7 @@ msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam
  * \author  Antoine de Torcy
  * \date   10/2007
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note None
- *
- * \usage
- * 
- *  As seen in modules/ERA/test/getATinfoByObjectID.ir
- * 
- *  testrule||msiGetAuditTrailInfoByObjectID(10474, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- *  null
- *  ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in] inpParam1 - a msParam of type STR_MS_T
  * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
@@ -155,7 +132,6 @@ msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -226,18 +202,7 @@ msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  * \author  Antoine de Torcy
  * \date   10/2007
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note None
- *
- * \usage
- * 
- *  As seen in modules/ERA/test/getATinfoByActionID.ir
- * 
- *  testrule||msiGetAuditTrailInfoByActionID(1000, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- *  null
- *  ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in] inpParam1 - a msParam of type STR_MS_T
  * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
@@ -257,7 +222,6 @@ msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -326,20 +290,9 @@ msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  * \since pre-2.1
  *
  * \author  Antoine de Torcy
- * \date   10/2007
+ * \date    2007-10
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- * 
- * \note None
- *
- * \usage
- *
- *  ~/iRODS/modules/ERA/test/getATinfoByKeywords.ir
- * 
- *  testrule||msiGetAuditTrailInfoByKeywords(de%use, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- *  null
- *  ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in] inpParam1 - a msParam of type STR_MS_T
  * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
@@ -359,7 +312,6 @@ msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -428,20 +380,9 @@ msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  * \since pre-2.1
  *
  * \author  Antoine de Torcy
- * \date   10/2007
+ * \date   2007-10
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note None
- *
- * \usage
- * 
- *  As seen in modules/ERA/test/getATinfoByTimeStamp.ir
- * 
- *  testrule||msiGetAuditTrailInfoByTimeStamp(01203636827, 01204678305, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- *  null
- *  ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in] inpParam1 - a msParam of type STR_MS_T
  * \param[in] inpParam2 - a msParam of type STR_MS_T
@@ -462,7 +403,6 @@ msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetAuditTrailInfoByTimeStamp(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -521,11 +461,3 @@ msiGetAuditTrailInfoByTimeStamp(msParam_t *inpParam1, msParam_t *inpParam2, msPa
 	return (rei->status);
 
 }
-
-
-
-
-
-
-
-

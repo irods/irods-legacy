@@ -20,13 +20,7 @@
  * \author Mike Wan 
  * \date  2009  
  *
- * \remark Terrell Russell - msi documentation, 2010-04-05
- * \remark Jewel Ward - msi documentation, 2010-06-09
- *
- * \note none  
- *
- * \usage 
- * myTestRule||msiExecCmd(hello,*ARG,null,null,null,*HELLO_OUT)##msiGetStdoutInExecCmdOut(*HELLO_OUT,*myout)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpExecCmdOut - a STR_MS_T which specifies the ExecCmdOut.
  * \param[out] outStr - a STR_MS_T to hold the retrieved stdout buffer.
@@ -45,7 +39,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiGetStdoutInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr,
@@ -71,17 +64,10 @@ ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author : Mike Wan 
+ * \author Mike Wan 
  * \date 2009   
  *
- * \remark Terrell Russell - msi documentation, 2010-04-05
- * \remark Jewel Ward - msi documentation, 2010-06-09
- *
- * \note none
- *
- * \usage 
- * myTestRule||msiExecCmd(hello,*ARG,null,null,null,*HELLO_OUT)##msiGetStderrInExecCmdOut(*HELLO_OUT,*myErrorOut)|nop
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpExecCmdOut - a STR_MS_T which specifies the ExecCmdOut.
  * \param[out] outStr - a STR_MS_T to hold the retrieved stderr buffer.
@@ -100,7 +86,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiGetStderrInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr,
@@ -138,14 +123,12 @@ ruleExecInfo_t *rei)
  * \author  Jean-Yves Nief
  * \date    2009-06-15
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called
  *        internally by the server since it interacts with the client through
  *        the normal client/server socket connection.
  *
- * \usage msiWriteRodsLog(message,null)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A STR_MS_T which specifies the message to log.
  * \param[out] outParam - An INT_MS_T containing the status.
@@ -164,7 +147,6 @@ ruleExecInfo_t *rei)
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int
 msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei)
@@ -220,14 +202,7 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  * \author Mike Wan  
  * \date   2010 
  *
- * \remark Terrell Russell - msi documentation, 2010-04-05
- * \remark Jewel Ward - msi documentation, 2010-06-09
- *
- * \note none 
- *
- * \usage 
- * myTestRule||msiAddKeyValToMspStr(destRescName,demoResc,*myMsKeyValStr)|nop
- * 
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] keyStr - a STR_MS_T key to be added to msKeyValStr.
  * \param[in] valStr - a STR_MS_T value to be added to msKeyValStr.
@@ -247,7 +222,6 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiAddKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, 
@@ -280,12 +254,7 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date   2010 
  *
- * \remark Terrell Russell - msi documentation, 2010-04-05
- *
- * \note  
- * myTestRule||msiSplitPath(*myPath,*collection,*dataName)|nop
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpPath - a STR_MS_T which specifies the pathname to split.
  * \param[out] outParentColl - a STR_MS_T to hold the returned parent path.
@@ -305,7 +274,6 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSplitPath (msParam_t *inpPath,  msParam_t *outParentColl, 
@@ -360,14 +328,7 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2009-06-15
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- * \remark Jewel Ward - msi documentation, 2010-06-09
- *
- * \note none 
- *
- * \usage 
- *  acPreprocForDataObjOpen||msiGetSessionVarValue(all,all)|nop
- *  mytestRule||msiGetSessionVarValue(objPath,client)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpVar - A STR_MS_T which specifies the name of the session
  *             variable to output. The input session variable should NOT start
@@ -392,7 +353,6 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t *rei)
@@ -491,12 +451,7 @@ msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
  * \author Mike Wan
  * \date   2010
  *
- * \remark none
- *
- * \note none
- *
- * \usage 
- * myTestRule||msiStrlen(*stringIn,*lengthOut)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] stringIn - a STR_MS_T which specifies the input string.
  * \param[out] lengthOut - a STR_MS_T to hold the returned string length.
@@ -515,7 +470,6 @@ msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei)
@@ -567,12 +521,7 @@ msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei)
  * \author Mike Wan
  * \date   2010
  *
- * \remark none
- *
- * \note none
- *
- * \usage
- * myTestRule||msiStrchop(*stringIn,*stringOut)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] stringIn - a STR_MS_T which specifies the input string.
  * \param[out] stringOut - a STR_MS_T to hold the string without the last char.
@@ -591,7 +540,6 @@ msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
@@ -645,12 +593,7 @@ msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
  * \author Mike Wan
  * \date   2010
  *
- * \remark none
- *
- * \note none
- *
- * \usage
- * myTestRule||msiSubstr(*stringIn,*offset,*length,*stringOut)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] stringIn - a STR_MS_T which specifies the input string.
  * \param[in] offset - a STR_MS_T which specifies the position of the 
@@ -676,7 +619,6 @@ msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSubstr (msParam_t *stringIn,  msParam_t *offset, msParam_t *length, 
@@ -776,14 +718,12 @@ msParam_t *stringOut, ruleExecInfo_t *rei)
  * \author  Jean-Yves Nief
  * \date    2010-11-22
  *
- * \remark Terrell Russell - msi documentation, 2010-12-13
- *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called
  *        internally by the server since it interacts with the client through
  *        the normal client/server socket connection.
  *
- * \usage msiExit(status,ErrorMsg)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A STR_MS_T which specifies the status error to add to the error stack.
  * \param[in] inpParam2 - A STR_MS_T which specifies the message to add to the error stack.
@@ -802,7 +742,6 @@ msParam_t *stringOut, ruleExecInfo_t *rei)
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int
 msiExit (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)

@@ -209,16 +209,7 @@ int getIdFromCountryCodes(char *incc) {
  * \author  Arcot Rajasekar
  * \date  May 2008
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note web-service based micro-service to convert from one currency to another
- *
- * \usage
- * 
- * As seen in clients/icommands/test/ruleTest28.ir
- *
- * testrule||msiConvertCurrency(*InCurr,*OutCurr,*Rate)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inConvertFromParam - a msParam of type STR_MS_T; 3-letter country code enumerated in  structure char *countryCodeNames[]
  * \param[in] inConvertToParam - a msParam of type STR_MS_T; 3-letter country code (same as above)
@@ -238,7 +229,6 @@ int getIdFromCountryCodes(char *incc) {
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiConvertCurrency(msParam_t* inConvertFromParam, msParam_t* inConvertToParam, 

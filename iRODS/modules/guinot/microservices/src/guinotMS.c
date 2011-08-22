@@ -42,7 +42,7 @@ getFormattedLocalTimeFromRodsTime(char *timeStrIn,
  * \fn msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,
  *          msParam_t* inpFormatParam, ruleExecInfo_t *rei)
  *
- * \brief This microservice returns the local system time
+ * \brief Returns the local system time
  *
  * \module guinot
  *
@@ -51,16 +51,10 @@ getFormattedLocalTimeFromRodsTime(char *timeStrIn,
  * \author  Romain Guinot
  * \date    2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
- * \note Default output format is system time in seconds, use 'human' as input 
+ * \note Default output format is system time in seconds. Use 'human' as input 
  *       parameter for human readable format.
  *
- * \usage
- * This will return system time in seconds:
- * testrule||msiGetFormattedSystemTime(*Out,null,null)##writeLine(stdout,*Out)|nop
- * null
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[out] outParam - a STR_MS_T containing the time
  * \param[in] inpParam - Optional - a STR_MS_T containing the desired output format (human)
@@ -80,7 +74,6 @@ getFormattedLocalTimeFromRodsTime(char *timeStrIn,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,

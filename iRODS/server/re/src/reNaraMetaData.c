@@ -9,21 +9,16 @@
 /**
  * \fn msiExtractNaraMetadata (ruleExecInfo_t *rei)
  *
- * \brief  This microservice extracts NARA style metadata from  local configuration file.
+ * \brief  This microservice extracts NARA style metadata from a local configuration file.
  *
  * \module core
  *
  * \since pre-2.1
  *
  * \author  DICE
- * \date 	2007
+ * \date    2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-25
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  This microservice extracts NARA style metadata from  local configuration file.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  * 
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -40,7 +35,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiExtractNaraMetadata (ruleExecInfo_t *rei)

@@ -53,7 +53,7 @@ This documentation is generated from the iRODS code.
 
   
  \subsection msiworkflow Workflow Microservices
-  - #nop, #null       - No action
+  - #nop              - No action
   - #cut              - Not to retry any other applicable rules for this action
   - #succeed          - Succeed immediately
   - #fail             - Fail immediately - recovery and retries are possible
@@ -100,14 +100,10 @@ This documentation is generated from the iRODS code.
   Can be called by client through irule.
   - #msiDataObjUnlink - Delete a data object
   - #msiDataObjRepl - Replicate a data object
-  - #msiDataObjReplWithOptions - Replicate a data object, with options
   - #msiDataObjCopy - Copy a data object
   - #msiDataObjGet - Get a data object
-  - #msiDataObjGetWithOptions - Get a data object, with options
   - #msiDataObjPut - Put a data object
-  - #msiDataObjPutWithOptions - Put a data object, with options
   - #msiDataObjChksum - Checksum a data object
-  - #msiDataObjChksumWithOptions - Checksum a data object, with options
   - #msiDataObjPhymv - Move a data object from one resource to another
   - #msiDataObjRename - Rename a data object 
   - #msiDataObjTrim - Trim the replicas of a data object
@@ -197,7 +193,7 @@ This documentation is generated from the iRODS code.
   - #msiAddKeyVal - Adds a new key and value to a keyValPair_t 
 
  \subsection msiotheruser Other User Microservices
-  - #msiExtractNaraMetadata - Extracts NARA style metadata from AVU triplets
+  - #msiExtractNaraMetadata - Extracts NARA style metadata from a local configuration file
   - #msiApplyDCMetadataTemplate - Adds Dublin Core Metadata fields to an object or collection
   - #msiRegisterData - Registers a new data object
   - #writeBytesBuf - Writes the buffer in an inOutStruct to stdout or stderr
@@ -293,19 +289,27 @@ This documentation is generated from the iRODS code.
   - #msiLoadMetadataFromXml - Loads AVU metadata from an XML file of AVU triplets
   - #msiXmlDocSchemaValidate - Validates an XML file against an XSD schema, both iRODS objects
   - #msiXsltApply - Returns the xml object after applying the xslt transformation, given an xml object and an xslt object
- 
+
+ \subsection msimsodrivers Microservice Object (MSO) Drivers
+  - #msiobjget_dbo    - Gets a DBO object
+  - #msiobjput_dbo    - Puts a DBO object
+  - #msiobjget_http   - Gets an HTTP/HTTPS/FTP object
+  - #msiobjput_http   - Puts an HTTP/HTTPS/FTP object
+  - #msiobjget_irods  - Gets an iRODS object
+  - #msiobjput_irods  - Puts an iRODS object
+  - #msiobjget_slink  - Gets an SLINK object
+  - #msiobjput_slink  - Puts an SLINK object
+  - #msiobjget_srb    - Gets an SRB object
+  - #msiobjput_srb    - Puts an SRB object
+  - #msiobjget_test   - Gets a test object
+  - #msiobjput_test   - Puts a test object
+  - #msiobjget_z3950  - Gets a Z39.50 object
+  - #msiobjput_z3950  - Puts a Z39.50 object
+
  \subsection msiimage Image
   - #msiImageConvert - Reads a source image file and write it out as a new image file in a chosen format
   - #msiImageGetProperties - Gets the properties of an image file
   - #msiImageScale - Reads a source image file, scale it up or down in size, and write it out as a new image file in a chosen format
-
- \subsection msiintegritychecks Integrity Checks
-  - #msiVerifyOwner - Checks if files in a given collection have a consistent owner
-  - #msiVerifyACL - Checks the ACL on a collection
-  - #msiVerifyExpiry - Checks whether files in a collection have expired or not expired
-  - #msiVerifyAVU - Performs operations on the AVU metadata on files in a given collection
-  - #msiVerifyDataType - Checks if files in a given collection are of a given data type(s)
-  - #msiVerifyFileSizeRange - Checks to see if file sizes are NOT within a certain range
 
  \subsection msihdf HDF
   - #msiH5File_open - Opens an HDF file
@@ -355,20 +359,9 @@ This documentation is generated from the iRODS code.
  * \since pre-2.1
  *
  * \author  DICE
- * \date  	2008
+ * \date    2008
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note	This function returns the system time for the iCAT server
- *
- * \usage
- * 
- *  As seen in server/config/reConfigs/core.irb
- * 
- * acPurgeFiles(*Condition)|(*Condition == null) %% (*Condition == '')|msiGetIcatTime(*Time,unix)##acGetIcatResults(remove,DATA_EXPIRY < '*Time',*List)##forEachExec(*List,msiDataObjUnlink(*List,*Status)##msiGetValByKey(*List,DATA_NAME,*D)##msiGetValByKey(*List,COLL_NAME,*E)##writeLine(stdout,Purged File *E\*D at *Time ),nop)|nop##nop
- * (note that the \* should be a forward slash * but to avoid a compiler
- *  warning about a / * (no blank) within a comment this was changed.)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[out] timeOutParam - a msParam of type STR_MS_T
  * \param[in] typeInParam - a msParam of type STR_MS_T
@@ -389,7 +382,6 @@ This documentation is generated from the iRODS code.
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiGetIcatTime(msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t *rei)
@@ -423,17 +415,14 @@ msiGetIcatTime(msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t 
  * \author  Wayne Schroeder
  * \date    December 2006
  *
- * \remark Jewel Ward - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed documentation, 2009-06-23
- *
  * \note The effect of this is that iCAT database gets vacuumed.
- *       This micro-service works with PostgreSQL only.
+ *       This microservice works with PostgreSQL only.
  *
- * \usage This is run via an 'iadmin' command (iadmin pv) via a rule
+ * \note This is run via an 'iadmin' command (iadmin pv) via a rule
  *    in the core.irb. It is not designed for general use in other
  *    situations (i.e. don't call this from other rules).
- *    The core.irb rule is:
- *    acVacuum(*arg1)||delayExec(*arg1,msiVacuum,nop)|nop
+ *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -450,7 +439,6 @@ msiGetIcatTime(msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t 
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiVacuum(ruleExecInfo_t *rei)
@@ -482,10 +470,11 @@ msiVacuum(ruleExecInfo_t *rei)
  * \author  Wayne Schroeder
  * \date    January 2010
  *
- * \note Causes the ICAT quota tables to be updated.
+ * \note Causes the iCAT quota tables to be updated.
  *
- * \usage This is run via an admin rule (see the Quotas page on the
- * irods web site).
+ * \note This is run via an admin rule
+ *
+ * \usage See clients/icommands/test/rules3.0/ and https://www.irods.org/index.php/Quotas
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -501,7 +490,6 @@ msiVacuum(ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiQuota(ruleExecInfo_t *rei)
@@ -527,21 +515,11 @@ msiQuota(ruleExecInfo_t *rei)
  * \since pre-2.1
  *
  * \author  DICE
- * \date	2008
+ * \date    2008
  *
- * \remark Jewel Ward - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-23
+ * \note  This microservice sets the resource as part of a workflow execution.
  *
- * \note	This microservice sets the resource as part of a workflow execution.
- *
- * \usage
- * 
- *  As seen in server/config/reConfigs/nvo.irb
- * 
- * acRegisterData|$objPath like /home/collections.nvo/2mass/fits-images\*|cut##acCheckDataType(fits image)##msiSetResource(nvo-image-resource)##msiRegisterData|nop
- * (note that the \* should be a forward slash * but to avoid a compiler
- * warning about a / * (no blank) within a comment this was changed.)
-
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xrescName - is a msParam of type STR_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -559,7 +537,6 @@ msiQuota(ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
 {
@@ -586,19 +563,9 @@ int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
  * \since pre-2.1
  *
  * \author  DICE
- * \date	2008
+ * \date    2008
  *
- * \remark Jewel Ward - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note	This microservice checks whether the user is the owner
- *
- * \usage
- * 
- *  As seen in server/config/reConfigs/core3.irb
- * 
- *  acDeleteData|msiCheckOwner|msiDeleteData|recover_msiDeleteData
- *
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -615,7 +582,6 @@ int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiCheckOwner(ruleExecInfo_t *rei)
 {
@@ -642,19 +608,9 @@ int msiCheckOwner(ruleExecInfo_t *rei)
  * \since pre-2.1
  *
  * \author  DICE
- * \date  	2008
+ * \date    2008
  *
- * \remark Jewel Ward - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note	This microservice checks the authorization permission (whether or not permission is granted).
- *
- * \usage
- * 
- * As seen in server/config/reConfigs/core3.irb
- * 
- *  acDeleteData|msiCheckPermission(delete)|msiDeleteData|recover_msiDeleteData
- *
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in] xperm - a msParam of type STR_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -672,7 +628,6 @@ int msiCheckOwner(ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
 {
@@ -701,12 +656,9 @@ int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
  * \since 3.0
  *
  * \author  Arcot Rajasekar
- * \date  	July 2011
+ * \date    July 2011
  *
- *
- * \note	This microservice checks the authorization permission for an object to perform angiven  operation. 
- *
- * \usage
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in] inObjName - name of Object. A param of type STR_MS_T
  * \param[in] inOperation - type of Operation that will be performed. A param of type STR_MS_T. 
@@ -726,11 +678,9 @@ int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation, 
-		   msParam_t * outResult, ruleExecInfo_t *rei)
-
+  msParam_t * outResult, ruleExecInfo_t *rei)
 {
   char *objName, *oper;
   char objType[MAX_NAME_LEN];
@@ -785,23 +735,15 @@ int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation,
  * \since pre-2.1
  *
  * \author Wayne Schroeder
- * \date June 2009 or so
+ * \date June 2009
  *
- * \remark Jewel Ward - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note This is used to commit changes (in any) into the ICAT
+ * \note This is used to commit changes (in any) into the iCAT
  * database as part of a rule and microservice chain.  See core.irb
- * for examples.  In other cases, ICAT updates and inserts are
- * automatically committed into the ICAT Database as part of the
+ * for examples.  In other cases, iCAT updates and inserts are
+ * automatically committed into the iCAT Database as part of the
  * normal operations (in the 'C' code).
  *
- * \usage 
- *
- * As seen in server/config/reConfigs/core.irb
- * 
- * acCreateUserF1|$otherUserName == anonymous|msiCreateUser##msiCommit|msiRollback##nop
- * 
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -810,7 +752,7 @@ int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation,
  * \DolVarDependence none
  * \DolVarModified  none
  * \iCatAttrDependence commits pending updates (if any)
- * \iCatAttrModified pending updates (if any) are committed into the ICAT db
+ * \iCatAttrModified pending updates (if any) are committed into the iCAT db
  * \sideeffect none
  *
  * \return integer
@@ -818,7 +760,6 @@ int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiCommit(ruleExecInfo_t *rei) {
@@ -851,21 +792,14 @@ msiCommit(ruleExecInfo_t *rei) {
  * \since pre-2.1
  *
  * \author Wayne Schroeder
- * \date June 2009 or so
+ * \date June 2009
  *
- * \remark Jewel Ward - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-23
- *
- * \note This is used to not-commit changes into the ICAT database as
+ * \note This is used to not-commit changes into the iCAT database as
  * part of a rule and microservice chain.  See core.irb for examples.
- * In other cases, ICAT updates and inserts are automatically
+ * In other cases, iCAT updates and inserts are automatically
  * rolled-back as part of the normal operations (in the 'C' code).
  *
- * \usage
- * 
- *  As seen in server/config/reConfigs/core.irb
- * 
- *  acCreateUserF1|$otherUserName == anonymous|msiCreateUser##msiCommit|msiRollback##nop
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -882,7 +816,6 @@ msiCommit(ruleExecInfo_t *rei) {
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRollback(ruleExecInfo_t *rei)
@@ -910,7 +843,7 @@ msiRollback(ruleExecInfo_t *rei)
 /**
  * \fn msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName, msParam_t *pathName, ruleExecInfo_t *rei)
  *
- * \brief   This micro-service changes the ACL for a given pathname,
+ * \brief   This microservice changes the ACL for a given pathname,
  *            either a collection or a data object.
  *
  * \module core
@@ -920,21 +853,13 @@ msiRollback(ruleExecInfo_t *rei)
  * \author  Jean-Yves Nief
  * \date    2010-02-11
  *
- * \remark Terrell Russell - msi documentation, 2010-04-05
- *
  * \note This microservice modifies the access rights on a given iRODS object or
-	 collection. For the collections, the modification can be recursive and the
-	 inheritence bit can be changed as well.
-	 For admin mode, add MOD_ADMIN_MODE_PREFIX to the access level string,
-	 e.g: msiSetACL("default", "admin:read", "rods", *path)
+ *    collection. For the collections, the modification can be recursive and the
+ *    inheritence bit can be changed as well.
+ *    For admin mode, add MOD_ADMIN_MODE_PREFIX to the access level string,
+ *    e.g: msiSetACL("default", "admin:read", "rods", *path)
  *
- * \usage	msiSetACL(recursiveFlag, accessLevel, userName, pathName)
- * 			As seen in clients/icommands/test/setACL.r:
- * 			setACL {
- * 				msiSetACL("default", "read", "bob", *path)
- * 			}
- * 			INPUT *path="/demo/home/rods/test/driver.txt"
- * 			OUTPUT ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  * 
  * \param[in] recursiveFlag - a STR_MS_T, either "default" or "recursive".  "recursive"
  *    is only relevant if set with accessLevel set to "inherit".
@@ -961,7 +886,6 @@ msiRollback(ruleExecInfo_t *rei)
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName, 
       msParam_t *pathName, ruleExecInfo_t *rei) {
@@ -1051,7 +975,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 /**
  * \fn msiDeleteUnusedAVUs (ruleExecInfo_t *rei)
  *
- * \brief   This function deletes unused AVUs from the iCAT.  See 'iadmin rum'.
+ * \brief   This microservice deletes unused AVUs from the iCAT.  See 'iadmin rum'.
  *
  * \module  core
  *
@@ -1060,14 +984,10 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
  * \author  Wayne Schroeder
  * \date    April 13, 2010
  *
- * \remark  Terrell Russell - reviewed msi documentation, 2010-04-20
- *
- * \note  This causes the unused AVUs to be removed from the ICAT.  
- *
- * \usage See 'iadmin help rum'.  Do not call this directly.
+ * \note See 'iadmin help rum'.  Do not call this directly.
  * 
- *  As seen in server/config/reConfigs/core.irb
- *  
+ * \usage See clients/icommands/test/rules3.0/
+ *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -1083,7 +1003,6 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDeleteUnusedAVUs(ruleExecInfo_t *rei)

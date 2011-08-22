@@ -22,9 +22,7 @@
 /**
  * \fn msiIp2location(msParam_t* inIpParam, msParam_t* inLocParam, msParam_t* outLocParam, ruleExecInfo_t* rei )
  *
- * \brief  This microservice returns host name and details given an IP address,
- *  using the web service provided by http://ws.fraudlabs.com/. It executes a web 
- *  service to convert an IP address to a location.
+ * \brief Web-service based microservice for converting IP address to hostname
  * 
  * \module webservices
  * 
@@ -33,18 +31,11 @@
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note web-service based micro-service for converting IP address to host name
+ * \brief  This microservice returns host name and details given an IP address,
+ *  using the web service provided by http://ws.fraudlabs.com/. It executes a web 
+ *  service to convert an IP address to a location.
  *
- * \usage
- *
- *  As seen in clients/icommands/test/ruleTest27.ir
- *
- *  myTestRule||msiIp2location(*IpAddr,*License,*B)|nop
- *  *IpAddr=$132.249.32.95%*License=$02-G34B-H86A
- *  *B
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inIpParam - This msParam is of type STR_MS_T inputs an ip-address.
  * \param[in] inLocParam - This msParam is of type STR_MS_T is a license string provided by http://ws.fraudlabs.com/
@@ -64,7 +55,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiIp2location(msParam_t* inIpParam, msParam_t* inLocParam, msParam_t* outLocParam, ruleExecInfo_t* rei )

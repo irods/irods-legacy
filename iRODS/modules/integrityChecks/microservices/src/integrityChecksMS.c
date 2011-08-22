@@ -13,6 +13,10 @@
  *
  * \brief This microservice checks if files in a given collection have a consistent owner.
  *
+ * \deprecated Since 3.0, the integrityChecks module microservices have been reproduced
+ *    using rules.  These microservices only handled 256 files per collection.
+ *    The example rules handle an arbitrary number of files.
+ *
  * \module integrityChecks
  *
  * \since pre-2.1
@@ -20,11 +24,7 @@
  * \author  Susan Lindsey
  * \date    August 2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-18
- *
- * \note a list of user-names is needed
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] collinp - a STR_MS_T containing the collection's name
  * \param[in] ownerinp - a STR_MS_T containing comma separated list of owner usernames
@@ -45,7 +45,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei)
@@ -176,6 +175,10 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
  *
  * \brief Check the ACL on a collection
  *
+ * \deprecated Since 3.0, the integrityChecks module microservices have been reproduced
+ *    using rules.  These microservices only handled 256 files per collection.
+ *    The example rules handle an arbitrary number of files.
+ *
  * \module integrityChecks
  *
  * \since pre-2.1
@@ -183,9 +186,8 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
  * \author  Susan Lindsey
  * \date    August 2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-30
- *
  * \note
+ * \code
  *    This function can perform three different checks, depending on flags set via input parameters:
  *    1. check that its ACL contains the same set of user-authorization pairs as others in its collection
  *    2. check that its ACL contains at least a given set of user-authorization pairs
@@ -196,8 +198,9 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
  *    1. collname=/sdscZone/home/rods%*User=rods%*Auth=own  
  *    2. collname=/sdscZone/home/rods  
  *    3. collname=/sdscZone/home/rods%*User=rods%*Auth=own*Notflag=1  
+ * \endcode
  *    
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] collinp - a STR_MS_T containing the collection's name
  * \param[in] userinp - Optional - a STR_MS_T containing comma separated list of owner usernames
@@ -220,7 +223,6 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msParam_t* notflaginp, 
@@ -387,6 +389,10 @@ msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msPara
  *
  * \brief This microservice checks whether files in a collection have expired or not expired.
  *
+ * \deprecated Since 3.0, the integrityChecks module microservices have been reproduced
+ *    using rules.  These microservices only handled 256 files per collection.
+ *    The example rules handle an arbitrary number of files.
+ *
  * \module integrityChecks
  *
  * \since pre-2.1
@@ -394,11 +400,7 @@ msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msPara
  * \author  Susan Lindsey
  * \date    September 2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-18
- *
- * \note none
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] collinp - a STR_MS_T containing the collection's name
  * \param[in] timeinp - a STR_MS_T containing a date
@@ -420,7 +422,6 @@ msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msPara
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei)
@@ -544,6 +545,10 @@ msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msP
  *
  * \brief This microservice performs operations on the AVU metadata on files in a given collection.
  *
+ * \deprecated Since 3.0, the integrityChecks module microservices have been reproduced
+ *    using rules.  These microservices only handled 256 files per collection.
+ *    The example rules handle an arbitrary number of files.
+ *
  * \module integrityChecks
  *
  * \since pre-2.1
@@ -551,11 +556,9 @@ msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msP
  * \author  Susan Lindsey
  * \date    August 2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-18
- *
  * \note See if all files in a collection match a given AVU.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] collinp - a STR_MS_T containing the collection's name
  * \param[in] avunameinp - a STR_MS_T containing the AVU name to check
@@ -578,7 +581,6 @@ msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msP
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp, msParam_t* avuattrsinp, 
@@ -754,6 +756,10 @@ msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp,
  *
  * \brief This microservice checks if files in a given collection are of a given data type(s).
  *
+ * \deprecated Since 3.0, the integrityChecks module microservices have been reproduced
+ *    using rules.  These microservices only handled 256 files per collection.
+ *    The example rules handle an arbitrary number of files.
+ *
  * \module integrityChecks
  *
  * \since pre-2.1
@@ -761,11 +767,7 @@ msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp,
  * \author  Susan Lindsey
  * \date    August 2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
- * \note a list of types is needed
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] collinp - a STR_MS_T containing the collection's name
  * \param[in] datatypeinp - a STR_MS_T containing the comma delimited datatype list
@@ -786,7 +788,6 @@ msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei)
@@ -877,6 +878,10 @@ msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout
  *
  * \brief This microservice checks to see if file sizes are NOT within a certain range.
  *
+ * \deprecated Since 3.0, the integrityChecks module microservices have been reproduced
+ *    using rules.  These microservices only handled 256 files per collection.
+ *    The example rules handle an arbitrary number of files.
+ *
  * \module integrityChecks
  *
  * \since pre-2.1
@@ -884,11 +889,7 @@ msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout
  * \author  Susan Lindsey
  * \date    August 2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
- * \note a file size range is needed
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] collinp - a STR_MS_T containing the collection's name
  * \param[in] minsizeinp - a STR_MS_T containing the lower limit on filesize
@@ -910,7 +911,6 @@ msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiVerifyFileSizeRange (msParam_t* collinp, msParam_t* minsizeinp, msParam_t* maxsizeinp, 

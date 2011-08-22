@@ -31,28 +31,13 @@ extern char *__loc1;
  * \author  Arcot Rajasekar
  * \date    2007-02-01
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
  * \note  The template buffer should contain triplets of the form:
  *  <PRETAG>re1</PRETAG>kw<POSTTAG>re2</POSTTAG>.
  *  re1 identifies the pre-string and re2 identifies the post-string and 
  *  any value between re1 and re2 in a metadata buffer can be 
  *  associated with keyword kw.
  *
- * \usage As seen in clients/icommands/test/ruleTest24.ir
- * # see onMicroServices.ppt for more info 
- * #*A is the tag file. 
- * # a sample copy for email (email.tag) this can be found in the icommands/test directory
- * #*B metadata file -  we are using sample.email  to mine the metadata 
- * #*C is the target object which gets the metadata  -  same as *B in this case
- *  mDExtract(*A,*B,*C) || openObj(*A,*T_FD)##readObj( *T_FD, 10000, *R1_BUF)##getTagsForKV( *R1_BUF, *TSP)##
- * closeObj(*T_FD,*J1)##openObj( *B, *M_FD)##readObj( *M_FD, 10000, *R2_BUF)##getKVPairsUsingTags( *R2_BUF, *TSP, *KVP)##
- * closeObj(*T_FD,*J1)##closeObj(*M_FD,*J2)##findObjType( *C, *OTYP)##ingestBulkMD( *KVP, *C, *OTYP)|nop
- * #
- * *A=/tempZone/home/rods/MDtest/email.tag%*B=/tempZone/home/rods/MDtest/sample.email%*C=/tempZone/home/rods/MDtest/
- * sample.email
- * *A%*B%*C%*D%*R1_BUF%*R2_BUF%*T_FD%*M_FD%*J1%*J2%*KVP%*OTYP
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] bufParam - a msParam of type BUF_LEN_MS_T
  * \param[out] tagParam - a return msParam of type TagStruct_MS_T
@@ -75,7 +60,6 @@ extern char *__loc1;
  * \pre none
  * \post none
  * \sa addTagStruct
- * \bug  no known bugs
 **/
 int
 msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExecInfo_t *rei)
@@ -231,19 +215,11 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
  * \author  Arcot Rajasekar
  * \date    2007-02-01
  *
- * \remark Jewel Ward - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
  * \note This performs some regular expression matching. Given a regular expression as a tag-value 't', it identifies the
  * corresponding string in the match string with a string that matches a sub-string value: '<t>.*</t>'.
  * The service is used for processing a tagged structure.
  *
- *
- * \usage
- * 
- *  As seen in clients/icommands/test/ruleTest29.ir
- * 
- * #testrule||msiGetQuote(*Symbol,*InStr)##msiGetTaggedValueFromString(*InTag,*InStr,*Val)##msiConvertCurrency(*InCurr,*OutCurr,*Rate)##assign(*A, *Val * *Rate)##writeLine(stdout,Last Value of *Symbol = USD *Val or *OutCurr *A)|nop
+ * \usage See clients/icommands/test/rules3.0/
  * 
  * \param[in] inTagParam - a msParam of type STR_MS_T
  * \param[in] inStrParam - a msParam of type STR_MS_T
@@ -263,7 +239,6 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
   msParam_t *outValueParam, ruleExecInfo_t *rei)
@@ -339,7 +314,7 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
  *  between them is associated with the keyword.
  *  A.l  <key,value> pairs found are stored in keyValPair_t structure.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] bufParam - a msParam of type BUF_MS_T
  * \param[in] tagParam - a msParam of type TagStruct_MS_T
@@ -362,7 +337,6 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
  * \pre none
  * \post none
  * \sa addKeyVal
- * \bug  no known bugs
 **/
 int
 msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam, 
@@ -483,8 +457,6 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
  * \author  Arcot Rajasekar
  * \date   2007-02-01
  * 
- * \remark Terrell Russell - msi documentation, 2009-06-13
- *
  * \note The object type is also needed:
  *  \li -d for data object
  *  \li -R for resource
@@ -492,10 +464,7 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
  *  \li -C for collection
  *  \li -u for user
  * 
- * \usage
- * testrule||msiString2KeyValPair(*A,*B)##msiAssociateKeyValuePairsToObj(*B,*C,*D)##writeLine(stdout,"")|nop
- * *A="foo=bar%foz=baz"%*C=/tempZone/testing/KVtest.txt%*D=-d
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  * 
  * \param[in] metadataParam - a msParam of type KeyValPair_MS_T
  * \param[in] objParam - a msParam of type STR_MS_T
@@ -516,7 +485,6 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
  * \pre none
  * \post none
  * \sa addAVUMetadataFromKVPairs
- * \bug  no known bugs
 **/
 int
 msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam, 
@@ -559,14 +527,7 @@ msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam,
  * \author  Arcot Rajasekar
  * \date    2007-02-01
  * 
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
- * \note This microservice gets an object's type from the iCAT.
- *
- * \usage
- * testrule||msiGetObjType(*A,*Status)|nop
- * *A=/tempZone/home/rods/test.txt
- * ruleExecOut%*Status
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] objParam  - a msParam of type STR_MS_T, the path of the iRODS object
  * \param[out] typeParam - a msParam of type STR_MS_T, will be set by this microservice
@@ -587,7 +548,6 @@ msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
@@ -629,8 +589,6 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
  * \author  Romain Guinot
  * \date    2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
  * \note The object type is also needed:
  *  \li -d for data object
  *  \li -R for resource
@@ -638,7 +596,7 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
  *  \li -C for collection
  *  \li -u for user
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] metadataParam - a msParam of type KeyValPair_MS_T
  * \param[in] objParam - a msParam of type STR_MS_T
@@ -660,7 +618,6 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
  * \pre none
  * \post none
  * \sa removeAVUMetadataFromKVPairs
- * \bug  no known bugs
 **/
 int
 msiRemoveKeyValuePairsFromObj(msParam_t *metadataParam, msParam_t* objParam,

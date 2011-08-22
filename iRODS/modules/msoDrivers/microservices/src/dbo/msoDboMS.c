@@ -21,9 +21,9 @@
 
 
 /**
- * \fn int msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
+ * \fn msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
  *
- * \brief geting an DBO object using micro-service drivers
+ * \brief Gets a DBO object using microservice drivers
  *
  * \module msoDrivers_dbo
  *
@@ -32,11 +32,7 @@
  * \author  Arcot Rajasekar
  * \date    2011
  *
- * \remark 
- *
- * \note getting iRODS DBO object using microservices
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inRequestPath - a STR_MS_T request string to external resource
  * \param[in] inFileMode - a STR_MS_T mode of cache file creation
@@ -57,7 +53,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 
@@ -173,9 +168,9 @@ msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
 
 /**
- * \fn int msiobjput_dbo(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
+ * \fn msiobjput_dbo(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
  *
- * \brief putting dbo object using micro-service
+ * \brief Puts a DBO object
  *
  * \module msoDrivers_dbo
  *
@@ -184,11 +179,7 @@ msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode,
  * \author  Arcot Rajasekar
  * \date    2011
  *
- * \remark 
- *
- * \note putting dbo object using microservices
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inMSOPath - a STR_MS_T path string to external resource
  * \param[in] inCacheFilename - a STR_MS_T cache file containing data to be written out
@@ -208,7 +199,6 @@ msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 

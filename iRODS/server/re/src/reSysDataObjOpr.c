@@ -31,16 +31,9 @@
  * \author  Mike Wan
  * \date    2006-11
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-15
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
  * \note This function is mandatory even no defaultResc is specified (null) and should be executed right after the screening function msiSetNoDirectRescInp.
  *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acSetRescSchemeForCreate||msiSetNoDirectRescInp(xyz%demoResc8%abc)##msiSetDefaultResc(demoResc8,noForce)##msiSetRescSortScheme(default)|nop##nop##nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xdefaultRescList - Required - a msParam of type STR_MS_T which is a list
  *    of %-delimited resourceNames. It is a resource to use if no resource is input.
@@ -64,7 +57,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, 
@@ -103,17 +95,7 @@ ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation 2009-06-15
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescType)|nop##nop##nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xsortScheme - The sorting scheme. Valid schemes are "default", "random" and
  *    "byRescType". The "byRescType" scheme will put the cache class of resource on the top
@@ -133,7 +115,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
@@ -183,16 +164,9 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  * \author  Mike Wan
  * \date    2006-11
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-16
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
  * \note This microservice is optional, but if used, should be the first function to execute because it screens the resource input.
  *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acSetRescSchemeForCreate||msiSetNoDirectRescInp(xyz%demoResc8%abc)##msiSetDefaultResc(demoResc8,noForce)##msiSetRescSortScheme(default)|nop##nop##nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xrescList - InpParam is a xrescList of type STR_MS_T which is a list of %-delimited resourceNames e.g., resc1%resc2%resc3.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -212,7 +186,6 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
@@ -283,19 +256,11 @@ msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-16
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
  * \note The copy stored in this preferred resource will be picked if it exists. More than
  * one resource can be input using the character "%" as separator.
  * e.g., resc1%resc2%resc3. The most preferred resource should be at the top of the list.
  *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
- * 
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xpreferredRescList - a msParam of type STR_MS_T, comma-delimited list of resources
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -313,7 +278,6 @@ msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int 
 msiSetDataObjPreferredResc (msParam_t *xpreferredRescList, ruleExecInfo_t *rei)
@@ -369,13 +333,7 @@ msiSetDataObjPreferredResc (msParam_t *xpreferredRescList, ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date 2007
  * 
- * \remark Terrell Russell, msi documentation 2009-06-30
- * \remark Jewel Ward, msi documentation 2010-06-10
- * 
- * \note none 
- *  
- * \usage 
- * acPreprocForDataObjOpen||msiSetDataObjAvoidResc(demoResc)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xavoidResc - a msParam of type STR_MS_T - the name of the resource to avoid
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -393,7 +351,6 @@ msiSetDataObjPreferredResc (msParam_t *xpreferredRescList, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
@@ -430,17 +387,7 @@ msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-16
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none 
- *  
- * \usage
- *
- *  As seen in server/config/reConfigs/core.irb.orig
- *
- * acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xsortScheme - input sorting scheme.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -458,7 +405,6 @@ msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
@@ -492,17 +438,7 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-16
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acPostProcForPut||msiSysChksumDataObj|nop 
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -519,7 +455,6 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSysChksumDataObj (ruleExecInfo_t *rei)
@@ -558,7 +493,7 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
  *
  * \brief This microservice checks if the filename has an extension
  *    (string following a period (.)) and if so, checks if the iCAT has a matching
- *    entry for it, and if so sets the dataObj data_type.
+ *    entry for it, and if so sets the dataObj data type.
  *
  * \module core
  *
@@ -567,14 +502,10 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
  * \author Wayne Schroeder
  * \date   2007-02-09
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
  * \note  Always returns success since it is only doing an attempt;
  *   that is, failure is common and not really a failure.
  *
- * \usage As seen in the core.irb
- *
- * #acPostProcForPut||msiSetDataTypeFromExt|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -591,7 +522,6 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetDataTypeFromExt (ruleExecInfo_t *rei)
@@ -677,17 +607,7 @@ msiSetDataTypeFromExt (ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-16
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none 
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
+ * \usage See clients/icommands/test/rules3.0/
  * 
  * \param[in] xcacheResc - The resource name in which to cache the object
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -705,7 +625,6 @@ msiSetDataTypeFromExt (ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
@@ -755,17 +674,13 @@ msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-16
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
  * \note The allFlag is only meaningful if the replResc is a resource group.
  *  In this case, setting allFlag to "all" means a copy will be made in all the
  *  resources in the resource group. A "null" input means a single copy will be made in
  *  one of the resources in the resource group.
  *  
- * \usage 
- * acPostProcForPut||msiSysReplDataObj(tgReplResc,null)|nop
-
+ * \usage See clients/icommands/test/rules3.0/
+ *
  * 
  * \param[in] xcacheResc - 
  * \param[in] xflag - 
@@ -784,7 +699,6 @@ msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSysReplDataObj (msParam_t *xcacheResc, msParam_t *xflag,
@@ -845,16 +759,9 @@ ruleExecInfo_t *rei)
  * \author Mike Wan 
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-16
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
  * \note The msiSetNumThreads function must be present or no thread will be used for all transfer.
  *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- *  acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
+ * \usage See clients/icommands/test/rules3.0/
  * 
  * \param[in] xsizePerThrInMbStr - The number of threads is computed
  *    using: numThreads = fileSizeInMb / sizePerThrInMb + 1 where sizePerThrInMb
@@ -878,7 +785,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetNumThreads (msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr, 
@@ -972,21 +878,7 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
  * \author Mike Wan
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-17
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation 2010-06-10
- * 
- * \note none
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acDataDeletePolicy|$objPath like /foo/bar\*|msiDeleteDisallowed|nop 
- * (the \ should be / but was changed to avoid a compiler warning about
- * a slash* in a comment.)
- *
- * This rule prevents the deletion of any data objects or collections beneath the collection /foo/bar/
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1003,7 +895,6 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDeleteDisallowed (ruleExecInfo_t *rei)
@@ -1024,20 +915,10 @@ msiDeleteDisallowed (ruleExecInfo_t *rei)
  * 
  * \since 2.3
  * 
- * \author
+ * \author 
  * \date 
  * 
- * \note 
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb
- *
- * acSetRescSchemeForCreate|$objPath like /foo/bar\*|msiOprDisallowed|nop 
- * (the \ should be / but was changed to avoid a compiler warning about
- * a slash* in a comment.)
- *
- * This rule prevents the creation of any data objects beneath the collection /foo/bar/
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1054,7 +935,6 @@ msiDeleteDisallowed (ruleExecInfo_t *rei)
  * \pre
  * \post
  * \sa
- * \bug  no known bugs
 **/
 int
 msiOprDisallowed (ruleExecInfo_t *rei)
@@ -1079,14 +959,7 @@ msiOprDisallowed (ruleExecInfo_t *rei)
  * \author Mike Wan
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-17
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none
- *  
- * \usage 
- * acSetMultiReplPerResc||msiSetMultiReplPerResc()|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1103,7 +976,6 @@ msiOprDisallowed (ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetMultiReplPerResc (ruleExecInfo_t *rei)
@@ -1124,16 +996,9 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
  * \author Mike Wan
  * \date 2007
  * 
- * \remark Ketan Palshikar - created msi documentation, 2009-06-17
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \warning WARNING - This function can create a security problem if used incorrectly.
+ * \warning This microservice can create a security problem if used incorrectly.
  *  
- * \note none 
- *  
- * \usage 
- * acNoChkFilePathPerm||msiNoChkFilePathPerm()|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1150,7 +1015,6 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiNoChkFilePathPerm (ruleExecInfo_t *rei)
@@ -1171,17 +1035,7 @@ msiNoChkFilePathPerm (ruleExecInfo_t *rei)
  * \author Mike Wan
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-17
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acTrashPolicy||msiNoTrashCan|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1198,7 +1052,6 @@ msiNoChkFilePathPerm (ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiNoTrashCan (ruleExecInfo_t *rei)
@@ -1220,17 +1073,7 @@ msiNoTrashCan (ruleExecInfo_t *rei)
  * \author Mike Wan
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-17
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xoprList - Only 2 operations are allowed - "read" - read files; 
  * "query" - browse some system level metadata. More than one operation can be
@@ -1250,7 +1093,6 @@ msiNoTrashCan (ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetPublicUserOpr (msParam_t *xoprList, ruleExecInfo_t *rei)
@@ -1362,17 +1204,7 @@ setApiPerm (int apiNumber, int proxyPerm, int clientPerm)
  * \author Mike Wan
  * \date 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-17
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acSetVaultPathPolicy||msiSetGraftPathScheme(no,2)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xaddUserName - This msParam specifies whether the userName should
  *      be added to the physical path. e.g. $vaultPath/$userName/$logicalPath.
@@ -1397,7 +1229,6 @@ setApiPerm (int apiNumber, int proxyPerm, int clientPerm)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetGraftPathScheme (msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
@@ -1474,17 +1305,7 @@ ruleExecInfo_t *rei)
  * \author - Mike Wan
  * \date - 2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-17
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10
- * 
- * \note none
- *  
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acSetVaultPathPolicy||msiSetRandomScheme|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1501,7 +1322,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetRandomScheme (ruleExecInfo_t *rei)
@@ -1547,14 +1367,7 @@ msiSetRandomScheme (ruleExecInfo_t *rei)
  * \author Mike Wan
  * \date 2007
  * 
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-06-10 
- * 
- * \note none
- *  
- * \usage 
- * acSetReServerNumProc||msiSetReServerNumProc(4)|nop
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xnumProc - a STR_MS_T representing number of processes
  *     - this value can be "default" or an integer
@@ -1573,7 +1386,6 @@ msiSetRandomScheme (ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
@@ -1610,15 +1422,7 @@ msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
  * \author  Mike Wan
  * \date    2010-02
  * 
- * \remark Terrell Russell - reviewed msi documentation, 2010-04-05
- * 
- * \note none
- *
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb
- *
- * acRescQuotaPolicy||msiSetRescQuotaPolicy(off)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xflag - Required - a msParam of type STR_MS_T. 
  *     \li "on" - enable Resource Quota enforcement
@@ -1638,7 +1442,6 @@ msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
@@ -1670,19 +1473,15 @@ msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  * \author  Thomas Ledoux (integrated by Wayne Schroeder)
  * \date    2010-04-30
  *
- * \note  Can be called by client through iRule
+ * \note  Can be called by client through irule
  *
- * \usage 
+ * \usage See clients/icommands/test/rules3.0/
  *
- * putComment||msiLog(*path,rien)##msiSetReplComment(null,*path,*num,*c)##msiMakeQuery("DATA_NAME,DATA_REPL_NUM, DATA_COMMENTS",*Condition,*Query)##msiExecStrCondQuery(*Query,*B)##forEachExec(*B,msiGetValByKey(*B,DATA_REPL_NUM,*N)##msiGetValByKey(*B,DATA_COMMENTS,*com)##writeLine(stdout,*N with *com),nop)||nop##nop##nop
- *  *num=$1%*c=$2%*name=$3%*path=/tempZone/home/rods/ *name%*Action=comment%*Condition=DATA_NAME = '*name'
- *  ruleExecOut
- *
- * \param[in]		inpParam1 - a INT with the id of the object (can be null if unknown, the next param will then be used)
- * \param[in]		inpParam2 - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path
- * \param[in]		inpParam3 - a INT which gives the replica number
- * \param[in]		inpParam4 - a STR_MS_T containing the comment
- * \param[in,out]	rei - The RuleExecInfo structure that is automatically
+ * \param[in] inpParam1 - a INT with the id of the object (can be null if unknown, the next param will then be used)
+ * \param[in] inpParam2 - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path
+ * \param[in] inpParam3 - a INT which gives the replica number
+ * \param[in] inpParam4 - a STR_MS_T containing the comment
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
@@ -1697,7 +1496,6 @@ msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -1790,15 +1588,7 @@ msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2,
  * \author  Mike Wan
  * \date    2010-07
  * 
- * \remark none
- * 
- * \note none
- *
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb
- *
- * acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(on)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xflag - Required - a msParam of type STR_MS_T. 
  *     \li "on" - enable execution of acPostProcForPut.
@@ -1818,7 +1608,6 @@ msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
@@ -1849,14 +1638,12 @@ msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  * \author  Jean-Yves Nief
  * \date    2011-01-05
  *
- * \remark Terrell Russell - reviewed msi documentation, 2011-01-06
- *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called
  *        internally by the server since it interacts with the client through
  *        the normal client/server socket connection.
  *
- * \usage msiSysMetaModify(sysMetadata,value)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] sysMetadata - A STR_MS_T which specifies the system metadata to be modified.
  *            Allowed values are: "datatype", "comment", "expirytime".
@@ -1876,7 +1663,6 @@ msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int
 msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)

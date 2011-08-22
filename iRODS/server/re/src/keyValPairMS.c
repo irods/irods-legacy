@@ -21,22 +21,7 @@
  * \author  Arcot Rajasekar
  * \date 2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note Given a list of KVPairs and a Key, this microservice gets the corresponding value.
- *
- * \usage
- *
- * As seen in clients/icommands/test/ruleTest22.ir
- *
- * myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,remoteExec(andal.sdsc.edu,null,msiDataObjChksum(*B,*Operation,*C),nop)
- * ##msiGetValByKey(*B,DATA_NAME,*D)##msiGetValByKey(*B,COLL_NAME,*E)##writeLine(stdout,CheckSum of *E\*D is *C),nop)|nop##nop
- * *Action=chksum%*Condition=COLL_NAME = '/tempZone/home/rods/loopTest'%*Operation=ChksumAll
- * *Action%*Condition%*Operation%*C%ruleExecOut
- * (note that the \ should be a forward slash but to avoid a compiler
- *  warning about a / * (no blank) within a comment this was changed.)
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inKVPair - This msParam is of type KeyValPair_PI which is a KeyValPair List.
  * \param[in] inKey - This msParam is of type STR_MS_T which is a key.
@@ -56,7 +41,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ruleExecInfo_t *rei)
 {
@@ -81,7 +65,7 @@ int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, rul
 /**
  * \fn msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *rei)
  *
- * \brief  prints out the ke-value structre to internal stdout buffer in rei.
+ * \brief  Prints key-value pairs to rei's stdout separated by " = "
  * 
  * \module core
  * 
@@ -90,20 +74,11 @@ int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, rul
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note Given a List of KVPairs, this microservice prints it to rei->ruleExecOut. It takes a row-structure from GenQueryOut_MS_T and prints it as a
- *         ColumnName=Value pair. The Rule uses the result (tabular) from execution of a iCAT query. The Micro-service msiExecStrCondQuery is used to 
- *         run the query:  SELECT DATA_NAME, DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE ‘foo%’.
- *         The result is printed using the msiPrintKeyValPair microservice, which prints each row as an attribute-value pair. A separator line is 
- *         printed after each row.
+ * \note #msiExecStrCondQuery is used to 
+ *         run the query:  "SELECT DATA_NAME, DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE 'foo%'".
+ *         The result is printed using #msiPrintKeyValPair, which prints each row as an attribute-value pair.
  *
- * \usage
- *
- * As seen in clients/icommands/test/ruleTest16.ir
- *
- * myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop##nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - a msParam of type STR_MS_T which is either stderr or stdout.
  * \param[in] inkvpair - a msParam of type KeyValPair_PI which is a KeyValPair list (structure).
@@ -122,7 +97,6 @@ int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, rul
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *rei)
 {
@@ -170,18 +144,7 @@ int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *re
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  same as brief
- *
- * \usage
- *
- * As seen in modules/ERA/test/computeChksumAndAddAVU.ir
- *
- * testrule||msiDataObjChksum(*objPath,null,*ChksumStr)##msiGetSystemTime(*Date, human)##msiString2KeyValPair(Checksum.*Date=*ChksumStr,*KVPair)##msiAssociateKeyValuePairsToObj(*KVPair,*objPath,-d)|nop
- * *objPath=/tempZone/home/antoine/tmp.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inBufferP - a msParam of type STR_MS_T which is key=value pairs separated by %-sign.
  * \param[out] outKeyValPairP - a msParam of type KeyValPair_MS_T which is a keyValuePair structure.
@@ -200,7 +163,6 @@ int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *re
  * \pre none
  * \post none
  * \sa msiStrArray2String
- * \bug  no known bugs
 **/
 int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei)
 {
@@ -253,12 +215,7 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
  * \author  Arcot Rajasekar
  * \date    2011-07
  * 
- * 
- * \note  same as brief
- *
- * \usage
- *
- *
+ * \usage See clients/icommands/test/rules3.0/
  * 
  * \param[in] inBufferP - a msParam of type STR_MS_T which is key=value pairs separated by %-sign.
  * \param[out] outStrArrayP - a msParam of type StrArray_MS_T which is a structure of array of string.
@@ -277,7 +234,6 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
  * \pre none
  * \post none
  * \sa msiStrArray2String
- * \bug  no known bugs
 **/
 int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecInfo_t *rei)
 {
@@ -316,12 +272,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-19
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- *
- * \note none
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inSAParam - a msParam of type strArr_MS_T which is an array of strings.
  * \param[out] outStr - a msParam of type STR_MS_T which a string with %-separators.
@@ -340,7 +291,6 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
  * \pre none
  * \post none
  * \sa msiString2KeyValPair
- * \bug  no known bugs
 **/
 int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei)
 {
@@ -376,22 +326,12 @@ int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *
  *
  * \module core
  *
- *
  * \author  Antoine de Torcy
  * \date    2009-09-03
  *
- * \remark Terrell Russell - reviewed msi documentation, 2009-12-17
+ * \note A new keyValPair_t is created if inKeyValPair is NULL.
  *
- *
- * \note This microservice adds a new key and value to a keyValPair_t. 
- *       A new keyValPair_t is created if inKeyValPair is NULL.
- *
- * \usage
- *
- * As seen in:
- *
- * flagCollWithTimestamp||msiGetSystemTime(*Time, human)##msiAddKeyVal(*KVP,"TIMESTAMP",*Time)
- * ##msiAssociateKeyValuePairsToObj(*KVP,*Collection,"-C")##writeLine(stdout, *Time)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] inKeyValPair - Optional - a KeyValPair_MS_T
  * \param[in] key - Required - A STR_MS_T containing the key
@@ -411,7 +351,6 @@ int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei)
 {

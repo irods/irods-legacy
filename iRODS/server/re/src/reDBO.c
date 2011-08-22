@@ -18,7 +18,7 @@
  *      msParam_t *options,
  *      msParam_t *inpParam1, msParam_t *inpParam2, 
  *      msParam_t *inpParam3, msParam_t *inpParam4, 
- *	msParam_t *inpParam5, msParam_t *inpParam6, 
+ *      msParam_t *inpParam5, msParam_t *inpParam6, 
  *      ruleExecInfo_t *rei)
  *
  * \brief Execute a database object on a DBR
@@ -30,7 +30,7 @@
  * \author Wayne Schroeder
  * \date   2010-11-23
  *
- * \usage See the DBR page on the iRODS website.
+ * \usage See clients/icommands/test/rules3.0/ and https://www.irods.org/index.php/DBR
  *
  * \param[in] dbrName - a STR_MS_T, name of the DBR being used
  * \param[in] dboName - a STR_MS_T, name of the DBO being used
@@ -57,7 +57,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
@@ -171,7 +170,7 @@ msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
  * \author Wayne Schroeder
  * \date   2010-11-23
  *
- * \usage See the DBR page on the iRODS web site.
+ * \usage See clients/icommands/test/rules3.0/ and https://www.irods.org/index.php/DBR
  *
  * \param[in] dbrName - a STR_MS_T, name of the DBR being used
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -189,7 +188,6 @@ msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei)
@@ -241,7 +239,7 @@ msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei)
  * \author Wayne Schroeder
  * \date   2010-11-23
  *
- * \usage See the DBR page on the iRODS web site.
+ * \usage See clients/icommands/test/rules3.0/ and https://www.irods.org/index.php/DBR
  *
  * \param[in] dbrName - a STR_MS_T, name of the DBR being used
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -259,7 +257,6 @@ msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDbrRollback(msParam_t *dbrName, ruleExecInfo_t *rei)

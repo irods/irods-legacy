@@ -33,35 +33,7 @@ static   rodsEnv myRodsXmsgEnv;
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-29
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note   This microservice connects to the XMessage Server as designate by iRODS Environment file/variable.
- *
- * \usage
- *
- * As seen in clients/icommands/rulegen/test3.r
- *
- * myTestRule
- * {
- * 	for (*I = 0 ; *I < *Count ; *I = *I + 1)
- *	{
- *	    	msiXmsgServerConnect(*Conn);
- *		msiXmsgCreateStream(*Conn,*A,*Tic);
- *		msiCreateXmsgInp(1,testMsg,1,"TTTest*I",0,"" ,"" ,"" ,*Tic,*MParam);
- *		msiSendXmsg(*Conn,*MParam);
- *		msiXmsgServerDisConnect(*Conn);
- *		remote ("andal.sdsc.edu" , "null")
- *		{
- *			msiXmsgServerConnect(*Conn1);
- *			msiRcvXmsg(*Conn1,*Tic,1,*MType,*MMsg,*MSender);
- *			writeLine(stdout,*MMsg);
- *			msiXmsgServerDisConnect(*Conn1);
- *		}
- *	}
- * }
- * INPUT *A=100 , *Count=10
- * OUTPUT "",ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[out] outConnParam - a msParam of type RcComm_MS_T which is a connection descriptor.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -79,7 +51,6 @@ static   rodsEnv myRodsXmsgEnv;
  * \pre needs the XMessage Server host name in .irodsEnv file
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
 {
@@ -127,35 +98,7 @@ int msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-29
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  A new message stream is created such that the proces (or any other process) can send messages.
- *
- * \usage
- *
- * As seen in clients/icommands/rulegen/test3.r
- *
- * myTestRule
- * {
- * 	for (*I = 0 ; *I < *Count ; *I = *I + 1)
- *	{
- *	    	msiXmsgServerConnect(*Conn);
- *		msiXmsgCreateStream(*Conn,*A,*Tic);
- *		msiCreateXmsgInp(1,testMsg,1,"TTTest*I",0,"" ,"" ,"" ,*Tic,*MParam);
- *		msiSendXmsg(*Conn,*MParam);
- *		msiXmsgServerDisConnect(*Conn);
- *		remote ("andal.sdsc.edu" , "null")
- *		{
- *			msiXmsgServerConnect(*Conn1);
- *			msiRcvXmsg(*Conn1,*Tic,1,*MType,*MMsg,*MSender);
- *			writeLine(stdout,*MMsg);
- *			msiXmsgServerDisConnect(*Conn1);
- *		}
- *	}
- * }
- * INPUT *A=100 , *Count=10
- * OUTPUT "",ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inConnParam - a msParam of type RcComm_MS_T which is a connection descriptor obtained by msiXmsgServerConnect.
  * \param[in] inGgetXmsgTicketInpParam - a msParam of type GetXmsgTicketInp_MS_T which is actually an integer giving expiration time.
@@ -175,7 +118,6 @@ int msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
  * \pre msiXmsgServerConnect should have been done earlier to get the inConnParam.
  * \post none
  * \sa msiXmsgServerConnect
- * \bug  no known bugs
 **/
 int msiXmsgCreateStream(msParam_t* inConnParam, 
 			msParam_t* inGgetXmsgTicketInpParam, 
@@ -234,35 +176,7 @@ int msiXmsgCreateStream(msParam_t* inConnParam,
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-29
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note Creates an Xmsg packet that can be sent using the msiSendXmsg micro-service.
- *
- * \usage
- *
- * As seen in clients/icommands/rulegen/test3.r
- *
- * myTestRule
- * {
- * 	for (*I = 0 ; *I < *Count ; *I = *I + 1)
- *	{
- *	    	msiXmsgServerConnect(*Conn);
- *		msiXmsgCreateStream(*Conn,*A,*Tic);
- *		msiCreateXmsgInp(1,testMsg,1,"TTTest*I",0,"" ,"" ,"" ,*Tic,*MParam);
- *		msiSendXmsg(*Conn,*MParam);
- *		msiXmsgServerDisConnect(*Conn);
- *		remote ("andal.sdsc.edu" , "null")
- *		{
- *			msiXmsgServerConnect(*Conn1);
- *			msiRcvXmsg(*Conn1,*Tic,1,*MType,*MMsg,*MSender);
- *			writeLine(stdout,*MMsg);
- *			msiXmsgServerDisConnect(*Conn1);
- *		}
- *	}
- * }
- * INPUT *A=100 , *Count=10
- * OUTPUT "",ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inMsgNumber - a msParam of type uint or STR_MS_T which is a message serial number.
  * \param[in] inMsgType - a msParam of type uint or STR_MS_T which is currently 0 (SINGLE_MSG_TICKET) or 1 (MULTI_MSG_TICKET).
@@ -289,7 +203,6 @@ int msiXmsgCreateStream(msParam_t* inConnParam,
  * \pre  none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiCreateXmsgInp(msParam_t* inMsgNumber,
 		      msParam_t* inMsgType,
@@ -365,35 +278,9 @@ int msiCreateXmsgInp(msParam_t* inMsgNumber,
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-29
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note Sends an Xmsg packet created by  msiCreateXmsgInp using the connection made by msiXmsgServerConnect 
+ * \note Sends an Xmsg packet created by #msiCreateXmsgInp using the connection made by #msiXmsgServerConnect 
  *
- * \usage
- *
- * As seen in clients/icommands/rulegen/test3.r
- *
- * myTestRule
- * {
- * 	for (*I = 0 ; *I < *Count ; *I = *I + 1)
- *	{
- *	    	msiXmsgServerConnect(*Conn);
- *		msiXmsgCreateStream(*Conn,*A,*Tic);
- *		msiCreateXmsgInp(1,testMsg,1,"TTTest*I",0,"" ,"" ,"" ,*Tic,*MParam);
- *		msiSendXmsg(*Conn,*MParam);
- *		msiXmsgServerDisConnect(*Conn);
- *		remote ("andal.sdsc.edu" , "null")
- *		{
- *			msiXmsgServerConnect(*Conn1);
- *			msiRcvXmsg(*Conn1,*Tic,1,*MType,*MMsg,*MSender);
- *			writeLine(stdout,*MMsg);
- *			msiXmsgServerDisConnect(*Conn1);
- *		}
- *	}
- * }
- * INPUT *A=100 , *Count=10
- * OUTPUT "",ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inConnParam - a msParam of type RcComm_MS_T which is a connection descriptor obtained by msiXmsgServerConnect.
  * \param[in] inSendXmsgInpParam - a msParam of type SendXmsgInp_MS_T outSendXmsgInpParam from inSendXmsgInpParam.
@@ -412,7 +299,6 @@ int msiCreateXmsgInp(msParam_t* inMsgNumber,
  * \pre msiXmsgServerConnect should've been done earlier to get the inConnParam.
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiSendXmsg(msParam_t* inConnParam, 
 		msParam_t* inSendXmsgInpParam,
@@ -463,35 +349,9 @@ int msiSendXmsg(msParam_t* inConnParam,
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-29
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  Receives an X message packet using the connection made by msiXmsgServerConnect.
+ * \note  Uses the connection made by #msiXmsgServerConnect.
  *
- * \usage
- *
- * As seen in clients/icommands/rulegen/test3.r
- *
- * myTestRule
- * {
- * 	for (*I = 0 ; *I < *Count ; *I = *I + 1)
- *	{
- *	    	msiXmsgServerConnect(*Conn);
- *		msiXmsgCreateStream(*Conn,*A,*Tic);
- *		msiCreateXmsgInp(1,testMsg,1,"TTTest*I",0,"" ,"" ,"" ,*Tic,*MParam);
- *		msiSendXmsg(*Conn,*MParam);
- *		msiXmsgServerDisConnect(*Conn);
- *		remote ("andal.sdsc.edu" , "null")
- *		{
- *			msiXmsgServerConnect(*Conn1);
- *			msiRcvXmsg(*Conn1,*Tic,1,*MType,*MMsg,*MSender);
- *			writeLine(stdout,*MMsg);
- *			msiXmsgServerDisConnect(*Conn1);
- *		}
- *	}
- * }
- * INPUT *A=100 , *Count=10
- * OUTPUT "",ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inConnParam - a msParam of type RcComm_MS_T which is a connection descriptor obtained by msiXmsgServerConnect.
  * \param[in] inTicketNumber - a msParam of type XmsgTicketInfo_MS_T or STR_MS_T or unit which is outXmsgTicketInfoParam from msiXmsgCreateStream or outXmsgTicketInfoParam->rcvTicket (a string which the sender passes to the receiver).
@@ -514,7 +374,6 @@ int msiSendXmsg(msParam_t* inConnParam,
  * \pre msiXmsgServerConnect should've been done earlier to get the inConnParam.
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiRcvXmsg(msParam_t* inConnParam, 
 	       msParam_t* inTicketNumber,
@@ -582,35 +441,7 @@ int msiRcvXmsg(msParam_t* inConnParam,
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-29
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  Disconnects a connection made by msiXmsgServerConnect
- *
- * \usage
- *
- * As seen in clients/icommands/rulegen/test3.r
- *
- * myTestRule
- * {
- * 	for (*I = 0 ; *I < *Count ; *I = *I + 1)
- *	{
- *	    	msiXmsgServerConnect(*Conn);
- *		msiXmsgCreateStream(*Conn,*A,*Tic);
- *		msiCreateXmsgInp(1,testMsg,1,"TTTest*I",0,"" ,"" ,"" ,*Tic,*MParam);
- *		msiSendXmsg(*Conn,*MParam);
- *		msiXmsgServerDisConnect(*Conn);
- *		remote ("andal.sdsc.edu" , "null")
- *		{
- *			msiXmsgServerConnect(*Conn1);
- *			msiRcvXmsg(*Conn1,*Tic,1,*MType,*MMsg,*MSender);
- *			writeLine(stdout,*MMsg);
- *			msiXmsgServerDisConnect(*Conn1);
- *		}
- *	}
- * }
- * INPUT *A=100 , *Count=10
- * OUTPUT "",ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inConnParam - a msParam of type RcComm_MS_T which is a connection descriptor obtained by msiXmsgServerConnect.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -628,7 +459,6 @@ int msiRcvXmsg(msParam_t* inConnParam,
  * \pre msiXmsgServerConnect should've been done earlier to get the inConnParam.
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiXmsgServerDisConnect(msParam_t* inConnParam, ruleExecInfo_t *rei)
 {

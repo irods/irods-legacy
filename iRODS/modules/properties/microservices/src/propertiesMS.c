@@ -36,11 +36,7 @@
  * \author  David R. Nadeau / University of California, San Diego
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
- * \note Create a new empty property list
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[out] listParam - a KeyValPair_MS_T, the newly created property list
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -58,7 +54,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiPropertiesNew( msParam_t *listParam, ruleExecInfo_t *rei )
@@ -83,11 +78,7 @@ msiPropertiesNew( msParam_t *listParam, ruleExecInfo_t *rei )
  * \author  David R. Nadeau / University of California, San Diego
  * \date     2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
- * \note Clear a property list
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] listParam - a KeyValPair_MS_T, the property list to clear
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -105,7 +96,6 @@ msiPropertiesNew( msParam_t *listParam, ruleExecInfo_t *rei )
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiPropertiesClear( msParam_t *listParam, ruleExecInfo_t *rei )
@@ -133,11 +123,7 @@ msiPropertiesClear( msParam_t *listParam, ruleExecInfo_t *rei )
  * \author  David R. Nadeau / University of California, San Diego
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
- * \note Clone a property list, returning a new property list
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] listParam - a KeyValPair_MS_T, the property list to clone
  * \param[out] cloneParam - a KeyValPair_MS_T, the returned clone (new property list)
@@ -156,7 +142,6 @@ msiPropertiesClear( msParam_t *listParam, ruleExecInfo_t *rei )
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t *rei )
@@ -178,8 +163,7 @@ msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t 
 /**
  * \fn msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
  *
- * \brief Add a property and value to a property list.  If the property is already
- *    in the list, its value is changed.  Otherwise the property is added.
+ * \brief Add a property and value to a property list.  
  *
  * \module properties
  *
@@ -190,9 +174,10 @@ msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t 
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note  Add a property and value to a property list.
+ * \note  If the property is already in the list, its value is changed.
+ *    Otherwise the property is added.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] listParam - a KeyValPair_MS_T, the property list to be added to
  * \param[in] keywordParam - a STR_MS_T, a keyword to add
@@ -212,7 +197,6 @@ msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t 
  * \pre none
  * \post none
  * \sa msiPropertiesSet
- * \bug  no known bugs
 **/
 int
 msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
@@ -246,11 +230,7 @@ msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \author  David R. Nadeau / University of California, San Diego
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
- * \note Remove a property from the list.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] listParam - a KeyValPair_MS_T, the property list to be removed from
  * \param[in] keywordParam - a STR_MS_T, a keyword to remove
@@ -269,7 +249,6 @@ msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam, ruleExecInfo_t *rei )
@@ -291,7 +270,7 @@ msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam, ruleExecInfo
 /**
  * \fn msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
  *
- * \brief Get the value of a property in a property list.  The property list is left unmodified.
+ * \brief Get the value of a property in a property list.
  *
  * \module properties
  *
@@ -300,11 +279,9 @@ msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam, ruleExecInfo
  * \author  David R. Nadeau / University of California, San Diego
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
+ * \note The property list is left unmodified.
  *
- * \note Get the value of a property in a property list
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] listParam - a KeyValPair_MS_T, the property list to be queried
  * \param[in] keywordParam - a STR_MS_T, a keyword to get
@@ -318,12 +295,12 @@ msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam, ruleExecInfo
  * \iCatAttrDependence none
  * \iCatAttrModified none
  * \sideeffect none
+ *
  * \return integer
  * \retval 0 on success
  * \pre  none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
@@ -348,8 +325,7 @@ msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
 /**
  * \fn msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
  *
- * \brief Set the value of a property in a property list.  If the property is already
- * in the list, its value is changed.  Otherwise the property is added. Same as {@link #msiPropertiesAdd}.
+ * \brief Set the value of a property in a property list.  
  *
  * \module properties
  *
@@ -358,11 +334,10 @@ msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \author  David R. Nadeau / University of California, San Diego
  * \date     2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
+ * \note  If the property is already
+ * in the list, its value is changed.  Otherwise the property is added. Same as {@link #msiPropertiesAdd}.
  *
- * \note  Set the value of a property in a property list
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] listParam - a KeyValPair_MS_T, the property list to set within
  * \param[in] keywordParam - a STR_MS_T, a keyword to set
@@ -382,7 +357,6 @@ msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \pre none
  * \post none
  * \sa msiPropertiesAdd
- * \bug  no known bugs
 **/
 int
 msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
@@ -393,8 +367,7 @@ msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
 /**
  * \fn msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* trueFalseParam, ruleExecInfo_t *rei )
  *
- * \brief Return true (integer 1) if the keyword has a property value in the property list,
- * and false (integer 0) otherwise.  The property list is unmodified.
+ * \brief check for a property in a list
  *
  * \module properties
  *
@@ -405,9 +378,10 @@ msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note check for a property in a list
+ * \note Return true (integer 1) if the keyword has a property value in the property list,
+ * and false (integer 0) otherwise.  The property list is unmodified.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] listParam - a KeyValPair_MS_T, the property list to look in
  * \param[in] keywordParam - a STR_MS_T, a keyword to set
@@ -427,7 +401,6 @@ msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \pre none
  * \post none
  * \sa  none
- * \bug  no known bugs
 **/
 int
 msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* trueFalseParam, ruleExecInfo_t *rei )
@@ -466,11 +439,9 @@ msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* t
  * \author  David R. Nadeau / University of California, San Diego
  * \date     2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
  * \note Convert a property list into a string buffer.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] listParam - a KeyValPair_MS_T, the property list
  * \param[out] stringParam - a STR_MS_T, a string buffer
@@ -489,7 +460,6 @@ msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* t
  * \pre none
  * \post none
  * \sa  none
- * \bug  no known bugs
 **/
 int
 msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam, ruleExecInfo_t *rei )
@@ -520,11 +490,7 @@ msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam, ruleExecInf
  * \author  David R. Nadeau / University of California, San Diego
  * \date     2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
- * \note Parse a string into a new property list.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] stringParam - a STR_MS_T, a string buffer
  * \param[out] listParam - a KeyValPair_MS_T, the property list with the strings added
@@ -543,7 +509,6 @@ msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam, ruleExecInf
  * \pre none
  * \post none
  * \sa  none
- * \bug  no known bugs
 **/
 int
 msiPropertiesFromString( msParam_t *stringParam, msParam_t* listParam, ruleExecInfo_t *rei )

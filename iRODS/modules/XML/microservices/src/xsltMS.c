@@ -24,21 +24,10 @@ extern int xmlLoadExtDtdDefaultValue;
  *
  * \since pre-2.1
  *
- * \author	Antoine de Torcy
- * \date	05/29/2008
+ * \author  Antoine de Torcy
+ * \date    2008/05/29
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-23
- *
- * \note None
- *
- * \usage
- * 
- * As seen in modules/XML/test/applyXslt.ir
- *
- * testrule||msiXsltApply(*xsltObjPath, *xmlObjPath, *BUF)##writeBytesBuf(stdout,*BUF)|nop
- * *xmlObjPath=/tempZone/home/antoine/AIP/XML/I0024590A_jpg.xml%*xsltObjPath=/tempZone/home/antoine/AIP/templates/AIPtoDIP.xsl
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xsltObj - a msParam of type DataObjInp_MS_T or STR_MS_T
  * \param[in] xmlObj - a msParam of type DataObjInp_MS_T or STR_MS_T
@@ -58,7 +47,6 @@ extern int xmlLoadExtDtdDefaultValue;
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleExecInfo_t *rei)
@@ -252,7 +240,4 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 	return (rei->status);
 }
-
-
-
 

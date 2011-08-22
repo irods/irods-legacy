@@ -18,9 +18,9 @@
 #endif
 
 /**
- * \fn int msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
+ * \fn msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
  *
- * \brief get an object from a http data source
+ * \brief Gets an object from an http/https/ftp data source
  *
  * \module msoDrivers_http
  *
@@ -29,11 +29,7 @@
  * \author  Arcot Rajasekar
  * \date    2011
  *
- * \remark 
- *
- * \note getting http/https/ftp object using microservices
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inRequestPath - a STR_MS_T request string to external resource
  * \param[in] inFileMode - a STR_MS_T mode of cache file creation
@@ -54,11 +50,7 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
-
-
-
 int 
 msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode, 
 	       msParam_t* inFileFlags, msParam_t* inCacheFilename,  
@@ -162,9 +154,9 @@ msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
 
 /**
- * \fn int msiobjput_http(msParam_t*  inMSOPath, msParam_t*  inCacheFileName,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
+ * \fn msiobjput_http(msParam_t*  inMSOPath, msParam_t*  inCacheFileName,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
  *
- * \brief Putting  Http object file
+ * \brief Puts an http/https/ftp object file
  *
  * \module msoDrivers_http
  *
@@ -173,11 +165,7 @@ msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode,
  * \author  Arcot Rajasekar
  * \date    2011
  *
- * \remark 
- *
- * \note micro-servive  puting object into  http/https/ftp servers
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inMSOPath - a STR_MS_T path string to external resource
  * \param[in] inCacheFilename - a STR_MS_T cache file containing data to be written out
@@ -197,11 +185,7 @@ msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
-
-
-
 int 
 msiobjput_http(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  
 	       msParam_t*  inFileSize, ruleExecInfo_t* rei )

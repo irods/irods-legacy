@@ -38,8 +38,6 @@
  * \author  David R. Nadeau / University of California, San Diego
  * \date     2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-30
- *
  * \note The source and destination image files may be specified as:
  *    \li A string file path
  *    \li An integer file descriptor for an open file
@@ -47,7 +45,7 @@
  *
  * \note The destination file will be created if needed.
  *
- * The source and destination files have optional property lists.
+ * \note The source and destination files have optional property lists.
  * The source property list may select the file format to use
  * and which image in a file to read (if the file contains multiple
  * images).  The destination property list may select the file
@@ -56,7 +54,7 @@
  * if they don't conflict with the output format and if the
  * output format supports them.
  *    
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] sourceParam - the source file
  * \param[in] sourceProp - the source properties
@@ -77,7 +75,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
@@ -190,15 +187,12 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
  * \author  David R. Nadeau / University of California, San Diego
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-30
- *
  * \note The source and destination image files may be specified as:
- *
  *    \li A string file path
  *    \li An integer file descriptor for an open file
  *    \li A data object
  *    
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] sourceParam - the source file
  * \param[in] sourceProp - the source properties
@@ -218,7 +212,6 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
@@ -319,17 +312,14 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
  * \author  David R. Nadeau / University of California, San Diego
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-30
- *
  * \note The source and destination image files may be specified as:
- *
  *    \li A string file path
  *    \li An integer file descriptor for an open file
  *    \li A data object
  *    
  * \note The destination file will be created if needed.
  *
- * The source and destination files have optional property lists.
+ * \note The source and destination files have optional property lists.
  * The source property list may select the file format to use
  * and which image in a file to read (if the file contains multiple
  * images).  The destination property list may select the file
@@ -340,7 +330,7 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
  *
  * \note The source image is scaled by the given X and Y scale factors.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] sourceParam - the source file
  * \param[in] sourceProp - the source properties
@@ -363,7 +353,6 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiImageScale( msParam_t* sourceParam, msParam_t* sourceProp,

@@ -286,14 +286,12 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
  * \author  Antoine de Torcy
  * \date    2011-05-25
  *
- *
  * \note  Copies server files to the local vault and registers them.
- *			Object (.o) files and binaries are not included.
+ *    Object (.o) files and binaries are not included.
  *
+ * \note Files are stored in the Vault under a directory of the format: hostname_timestamp
  *
- * \usage
- *
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] options - Optional - a STR_MS_T that contains one of more options in
  *      the format keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
@@ -314,7 +312,6 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)

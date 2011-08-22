@@ -24,17 +24,7 @@
  * \author  Mike Wan
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
- * \remark Jewel Ward - msi documentation, 2010-06-09
- *
- * \note none
- *
- * \usage 
- * As seen in test.irb
- *
- * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null
- *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
- *  *R_BUF\%*W_LEN
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -65,7 +55,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr, 
@@ -150,18 +139,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Mike Wan
  * \date    2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-07
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  Can be called by client through iRule
+ * \note  Can be called by client through irule
  *
- * \usage
- *
- * As seen in test.irb
- *
- * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
- *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
- *  *R_BUF\%*W_LEN
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as msKeyValStr.
  *  msKeyValStr -  This is the special msKeyValStr
@@ -194,7 +174,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjOpen (msParam_t *inpParam, msParam_t *outParam, 
@@ -272,18 +251,9 @@ ruleExecInfo_t *rei)
  * \author  Mike Wan
  * \date    2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-06
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  Can be called by client through iRule
+ * \note  Can be called by client through irule
  *
- * \usage
- *
- * As seen in test.irb
- *
- * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
- *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
- *  *R_BUF\%*W_LEN
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - inpParam is a msParam of type INT_MS_T or STR_MS_T.
  * \param[out] outParam - outParam is a msParam of type INT_MS_T.
@@ -302,7 +272,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -369,19 +338,9 @@ msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Mike Wan 
  * \date    2007
  * 
- * \remark Ketan Palshikar - created msi documentation, 2009-06-11
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * \remark Hao Xu - added support for INT_MS_T for offset
- * 
- * \note  Can be called by client through iRule
+ * \note  Can be called by client through irule
  *
- * \usage
- *
- * As seen in test.irb
- *
- * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
- *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
- *  *R_BUF\%*W_LEN
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a msParam of type DataObjLseekInp_MS_T or INT_MS_T or a STR_MS_T which would be the descriptor.
  * \param[in] inpParam2 - Optional - a msParam of type INT_MS_T or DOUBLE_MS_T or a STR_MS_T which would be the offset.
@@ -402,7 +361,6 @@ msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjLseek (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -533,18 +491,9 @@ ruleExecInfo_t *rei)
  * \author  Mike Wan
  * \date    2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-07
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  Can be called by client through iRule
+ * \note  Can be called by client through irule
  *
- * \usage
- *
- * As seen in test.irb
- *
- * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
- *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
- *  *R_BUF\%*W_LEN
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a msParam of type DataObjReadInp_MS_T or INT_MS_T or STR_MS_T which would be the descriptor.
  * \param[in] inpParam2 - Optional - a msParam of type INT_MS_T or STR_MS_T which would be the length.
@@ -564,7 +513,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -650,19 +598,9 @@ msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
  * \author  Mike Wan
  * \date    2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-12
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note Can be called by client through iRule
+ * \note Can be called by client through irule
  *
- * \usage
- *
- * As seen in test.irb
- *
- * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
- *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
- *  *R_BUF\%*W_LEN
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a msParam of type DataObjWriteInp_MS_T or INT_MS_T or a STR_MS_T which would be the descriptor.
  * \param[in] inpParam2 - Optional - a msParam of type BUF_LEN_MS_T or a STR_MS_T, the input is inpOutBuf and the length of the buffer in the BBuf.
@@ -683,7 +621,6 @@ msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjWrite (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -793,18 +730,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \author    Mike Wan
  * \date      2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-13
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  Can be called by client through iRule
+ * \note  Can be called by client through irule
  *
- * \usage
- *
- * As seen in test.irb
- *
- * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
- *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
- *  *R_BUF\%*W_LEN
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T which would be taken as msKeyValStr.
  *    msKeyValStr -  This is the special msKeyValStr
@@ -837,7 +765,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjUnlink (msParam_t *inpParam, msParam_t *outParam, 
@@ -911,22 +838,13 @@ ruleExecInfo_t *rei)
  * \author  Mike Wan
  * \date    2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  Can be called by client through iRule
+ * \note  Can be called by client through irule
  * 
  * \note The replica is physically stored in the ‘tgReplResc’ Resource. *Junk contains
  * the status of the operation. In the Rule, the resource is provided as part 
  * of the call instead of as an input through a *parameter.
  *
- * \usage
- *
- * As seen in clients/icommands/test/ruleInp3
- *
- * myTestRule||msiExecCmd(hello,x y x,null,null,null,*HELLO_OUT)##msiDataObjPut(*A,null,../bin/ils,*junk9)##msiCollCreate(*C,0,*junk10)##msiDataObj(*F,null,../bin/ils,*junk1)##msiDataObjChksum(*A,null,*CHKSUM)##msiDataObjPhymv(*A,demoResc7,null,null,null,*junk2)##msiDataObjRename(*A,*B,null,*junk3)##msiDataObjRepl(*B,demoLResc1,*junk4)##msiDataObjRepl(*B,demoLResc1,*junk5)##msiDataObjTrim(*B,demoResc8,null,null,null,*junk6)##msiRmColl(*C,forceFlag,*junk7)##msiPhyPathReg(*D,demoResc8,*E,null,*junk8)##msiObjStat(*D,*MY_STAT) 
- * *F=/tempZone/home/rods/dir1/foo4%*A=/tempZone/home/rods/foo4%*B=/tempZone/home/rods/foo5%*C=/tempZone/home/rods/dir1%*D=/tempZone/home/rods/foo6%*E=/scratch/slocal/mwan/srb/irods/RODS/clients/icommands/test/foo6
- * *CHKSUM%*MY_STAT%*HELLO_OUT
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or STR_MS_T which would be the obj Path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -952,11 +870,11 @@ ruleExecInfo_t *rei)
  *          \li "verifyChksum" - verify the transfer using checksum.
  *                This keyWd has no value.
  *          \li "rbudpTransfer" - use RBUDP (datagram) protocol for the 
- *		  data transfer. This keyWd has no value.
+ *                data transfer. This keyWd has no value.
  *          \li "rbudpSendRate" - Valid only if "rbudpTransfer" is on. This
- *		  is the send rate in kbits/sec. The default is 600,000.
+ *                is the send rate in kbits/sec. The default is 600,000.
  *          \li "rbudpPackSize" - Valid only if "rbudpTransfer" is on. This
- *		  is the packet size in bytes. The default is 8192.
+ *                is the packet size in bytes. The default is 8192.
  * \param[out] outParam - a msParam of type INT_MS_T which is a status of the operation.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -973,7 +891,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjRepl (msParam_t *inpParam1, msParam_t *msKeyValStr, 
@@ -1067,13 +984,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-02-12
  *
- * \remark Ketan Palshikar - msi documentation, 2009-06-11
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- *
- * \usage
- * testrule||msiDataObjPut(*A,null,../test/directory/testing.txt,*junk)|nop 
- * *A=/tempZone/home/rods/foo4
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a DataObjCopyInp_MS_T or
  *    DataObjInp_MS_T which is the source DataObjInp or
@@ -1112,7 +1023,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -1222,18 +1132,13 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
  * \author  Michael Wan
  * \date    2007-02-12
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called 
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.   
  *
- * \usage
- * testrule||msiDataObjPut(*A,null,../test/directory/testing.txt,*junk)|nop 
- * *A=/tempZone/home/rods/foo4
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
@@ -1272,7 +1177,6 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjPut (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -1381,15 +1285,13 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-02-12
  *
- * \remark Terrell Russell - msi documentation, 2009-06-20
- *
  * \note This call should only be used through the rcExecMyRule (irule) call  
  *  i.e., rule execution initiated by clients and should not be called  
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -1423,7 +1325,6 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjGet (msParam_t *inpParam1, msParam_t *msKeyValStr,
@@ -1516,6 +1417,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \brief This microservice requests the client to call a rcDataObjGet API
  *   as part of a workflow execution, with options.
  *
+ * \deprecated Since 2.2, #msiDataObjGet can take a parameter with key-values format which make this microservice obsolete.
+ *
  * \module core
  *
  * \since pre-2.1
@@ -1523,15 +1426,13 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan, modified by Romain GUINOT
  * \date    2007-02-12
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
- *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the client's local file path.
@@ -1552,7 +1453,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjGetWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -1644,9 +1544,7 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-04-02
  *
- * \remark Terrell Russell - msi documentation, 2009-09-10
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -1677,7 +1575,6 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjChksum (msParam_t *inpParam1, msParam_t *msKeyValStr, 
@@ -1765,10 +1662,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-04-02
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
- *
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the dest resourceName.
@@ -1791,7 +1685,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjPhymv (msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -1885,9 +1778,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-04-02
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A taObjCopyInp_MS_T or STR_MS_T which would be taken as the src dataObj path.
  * \param[in] inpParam2 - Optional - A DataObjInp_MS_T which is the destination
@@ -1910,7 +1801,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjRename (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -1976,11 +1866,11 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 
 /**
  * \fn msiDataObjTrim (msParam_t *inpParam1, msParam_t *inpParam2,
- * msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
- * msParam_t *outParam, ruleExecInfo_t *rei)
+ *      msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
+ *      msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \brief This microservice calls rsDataObjTrim to trim down the number
- * of replicas of a data object.
+ *          of replicas of a data object.
  *
  * \module core
  *
@@ -1989,9 +1879,7 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-04-02
  *
- * \remark Terrell Russell - msi documentation, 2009-06-11
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resourceName.
@@ -2014,7 +1902,6 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjTrim (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -2101,12 +1988,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-04-02
  *
- * \remark Terrell Russell - msi documentation, 2009-06-13
- *
- * \usage
- * testrule||msiCollCreate(*A,0,*junk)##writeLine(stdout,"")|nop
- * *A/tempZone/home/rods/dir1
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a CollInp_MS_T or a STR_MS_T which
  *    would be taken as dataObj path.
@@ -2128,7 +2010,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -2193,12 +2074,7 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  * \author  Michael Wan
  * \date    2007-04-02
  *
- * \remark Terrell Russell - msi documentation, 2009-06-11
- *
- * \usage
- * testrule||msiCollCreate(*A,0,*junk1)##msiRmColl(*A,forceFlag,*junk2)##writeLine(stdout,"")|nop
- * *A/tempZone/home/rods/dir1
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a CollInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - This is the special msKeyValStr
@@ -2228,7 +2104,6 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -2313,7 +2188,7 @@ msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
  *  rsDataObjRepl to recursively replicate the collection
  *  as part of a workflow execution.
  *
- * \deprecated The new microservice for replicating a collection is msiCollRepl 
+ * \deprecated The new microservice for replicating a collection is #msiCollRepl.
  *
  * \module core
  *
@@ -2322,9 +2197,7 @@ msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
  * \author  Sifang Lu
  * \date    2007-10-01
  *
- * \remark Terrell Russell - msi documentation, 2009-06-20
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] coll - Required - A CollInp_MS_T or a STR_MS_T which would be taken 
  *               as destination collection path.
@@ -2354,7 +2227,6 @@ msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
  * \pre
  * \post
  * \sa
- * \bug  no known bugs
 **/
 int
 msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
@@ -2521,21 +2393,16 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  * \author  Michael Wan
  * \date    2007-04-02
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
- * \usage
- * testrule||msiPhyPathReg(*D,demoResc8,*E,null,*junk)|nop
- * *D=/tempZone/home/rods/foo6%*E=/scratch/localfile/test.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken 
- *	as object path. The path can be a data object or a collection path.
+ *    as object path. The path can be a data object or a collection path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the dest resourceName.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the physical path to be registered.
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies whether the
- *	path to be registered is a directory. A keyword string "collection" 
- *	indicates the path is a directory. A "null" string indicates the path 
- *	is a file.  A "mountPoint" (MOUNT_POINT_STR) means mounting the file
+ *    path to be registered is a directory. A keyword string "collection" 
+ *    indicates the path is a directory. A "null" string indicates the path 
+ *    is a file.  A "mountPoint" (MOUNT_POINT_STR) means mounting the file
  *      directory given in inpParam3. A "linkPoint" (LINK_POINT_STR)
  *      means soft link the collection given in inpParam3.
  * \param[out] outParam - a INT_MS_T containing the status.
@@ -2554,7 +2421,6 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiPhyPathReg (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -2636,9 +2502,7 @@ ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-04-02
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[out] outParam - a RodsObjStat_MS_T containing the rodsObjStat_t struct of the object.
@@ -2657,7 +2521,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -2718,13 +2581,11 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-02-12
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
  * \note For now, this microservice should only be used for IRODS_TO_IRODS
  * mode because of the logistic difficulty with the microservice getting the 
  * checksum values of the local file. 
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the rsync mode 
@@ -2753,7 +2614,6 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjRsync (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -2888,9 +2748,7 @@ ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2010-04-27
  *
- *
- * \usage 
- * myTestRule||msiCollRsync(*srcColl,*destColl,null,IRODS_TO_IRODS,*junk8)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a STR_MS_T which specifies the source collection path.
  * \param[in] inpParam2 - a STR_MS_T which specifies the target collection path.
@@ -2914,7 +2772,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiCollRsync (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -3095,15 +2952,10 @@ char *srcColl, char *destColl)
  * \author  Michael Wan
  * \date    2007-05-08
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
- *
  * \note  This call does not require client interaction, which means
  *  it can be used through rcExecMyRule (irule) or internally by the server.
  *
- * \usage
- * testrule||msiExecCmd(hello_script,x y x,null,null,null,*HELLO_OUT)|nop
- * null
- * ruleExecOut 
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a ExecCmd_MS_T or
  *    a STR_MS_T which specify the command (cmd) to execute.
@@ -3134,7 +2986,6 @@ char *srcColl, char *destColl)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiExecCmd (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
@@ -3221,15 +3072,10 @@ ruleExecInfo_t *rei)
  * \author  Antoine de Torcy
  * \date    2008-08-19
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
  * \note  This call does not require client interaction, which means
  *  it can be used through rcExecMyRule (irule) or internally by the server.
  *
- * \usage
- * testrule||msiCollRepl(*A, *B, *status)|nop
- * *A=/tempZone/home/rods/testcoll%*B=destRescName=newResc
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] collection - A CollInp_MS_T or a STR_MS_T with the irods path of the 
  *      collection to replicate.
@@ -3271,7 +3117,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiCollRepl (msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status, 
@@ -3359,6 +3204,8 @@ ruleExecInfo_t *rei)
  * \brief This microservice requests the client to call a rcDataObjPut API
  *   as part of a workflow execution, with options.
  *
+ * \deprecated Since 2.2, #msiDataObjPut can take a parameter with key-values format which make this microservice obsolete.
+ *
  * \module core
  *
  * \since pre-2.1
@@ -3366,12 +3213,10 @@ ruleExecInfo_t *rei)
  * \author  Romain Guinot
  * \date    2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
- *
- * \note	This microservice requests the client to call a rcDataObjPut API
+ * \note  This microservice requests the client to call a rcDataObjPut API
  *   as part of a workflow execution, with options.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
@@ -3397,7 +3242,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjPutWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -3492,7 +3336,7 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \brief This microservice is the same as msiDataObjRepl, but with more input options.
  *
- * \deprecated since 2.2, msiDataObjRepl can take a parameter with key-values format which make this micro-service obsolete.
+ * \deprecated Since 2.2, #msiDataObjRepl can take a parameter with key-values format which make this microservice obsolete.
  *
  * \module core
  *
@@ -3501,11 +3345,9 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Thomas Ledoux
  * \date    2009-03-24
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
+ * \note  Can be called by client through irule
  *
- * \note  Can be called by client through iRule
- *
- * \usage example at https://www.irods.org/index.php/Resource_Groups_UC1
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or STR_MS_T which would be the obj Path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
@@ -3527,7 +3369,6 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -3604,7 +3445,7 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  * \brief This microservice calls rsDataObjChksum to checksum the iput data
  *    object as part of a workflow execution, with options.
  *
- * \deprecated since 2.2, msiDataObjChksum can take a parameter with key-values format which make this micro-service obsolete.
+ * \deprecated Since 2.2, #msiDataObjChksum can take a parameter with key-values format which make this microservice obsolete.
  *
  * \module core
  *
@@ -3613,11 +3454,9 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  * \author  Thomas Ledoux
  * \date    2009-03-24
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
+ * \note  Can be called by client through irule
  *
- * \note  Can be called by client through iRule
- *
- * \usage example at https://www.irods.org/index.php/Resource_Groups_UC1
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies "verifyChksum"
@@ -3640,7 +3479,6 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
@@ -3729,13 +3567,11 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  * \author  Jean-Yves Nief
  * \date    2009-06-15
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note  This microservice calls rsStructFileExtAndReg to extract a tar 
  *        file (inpParam1) into a target collection (inpParam2).  The content of 
  *        the target collection is stored on the physical resource (inpParam3).
  *
- * \usage msiTarFileExtract(tarFilePathName, outputCollection, targetResource, returnCode)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or
  *              a STR_MS_T which would be taken as dataObj path.
@@ -3757,7 +3593,6 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int 
 msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei) 
@@ -3867,13 +3702,11 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  * \author  Jean-Yves Nief
  * \date    2009-06-15
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note  This microservice calls rsStructFileBundle to create a tar file 
  *        (inpParam1) from a target collection (inpParam2). The content of the 
  *        target collection is stored on the physical resource (inpParam3).
  *
- * \usage msiTarFileCreate(tarFilePathName,collNameTobeTarred,targetResource,status)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - A STR_MS_T which specifies the target collection.
@@ -3895,7 +3728,6 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int 
 msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *inpParam4, ruleExecInfo_t *rei) 
@@ -3984,14 +3816,12 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  * \author  Jean-Yves Nief
  * \date    2009-06-15
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note  This microservice calls rsPhyBundleColl to bundle files in a 
  *        collection into a number of tar files to make it more efficient to 
  *        store these files on tape. This microservice has the same functionality
  *        as the iphybun command.
  *
- * \usage msiPhyBundleColl(inputCollName,targetResource,status)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as the collection for the phybun.
  * \param[in] inpParam2 - optional - a STR_MS_T which specifies the target resource.
@@ -4011,7 +3841,6 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int 
 msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)

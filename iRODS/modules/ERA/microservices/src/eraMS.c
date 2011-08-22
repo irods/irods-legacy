@@ -26,17 +26,10 @@
  * \author  Antoine de Torcy
  * \date    2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
  * \note This microservice copies a collection and its contents recursively.
  *    Collection and data object metadata AVUs are also copied over to the new objects and collections.
  *
- * \usage
- * As seen in modules/ERA/test/recursiveCollCopy.ir
- * 
- * testrule||msiRecursiveCollCopy(*DestColl,*SourceColl,*Status)|nop
- * *SourceColl=/tempZone/home/testuser%*DestColl=/tempZone/home/antoine/copy/testuser
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the destination collection.
  * \param[in] inpParam2 - A CollInp_MS_T or a STR_MS_T with the irods path of the source collection.
@@ -56,7 +49,6 @@
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiRecursiveCollCopy(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -125,15 +117,10 @@ msiRecursiveCollCopy(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outP
  * \author  Antoine de Torcy
  * \date    2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-15
- *
  * \note This microservice copies metadata triplets from one iRODS object to another.
  *    The source and destination can be a data object or a collection, independently.
  *
- * \usage
- * testrule||msiCopyAVUMetadata(*A, *B, *Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- * *A=/tempZone/rods/test1.txt%*B=/tempZone/rods/test2.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A STR_MS_T with the irods path of the source object.
  * \param[in] inpParam2 - A STR_MS_T with the irods path of the destination object.
@@ -153,7 +140,6 @@ msiRecursiveCollCopy(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outP
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -205,20 +191,12 @@ msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPar
  * \author  Antoine de Torcy
  * \date    2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-15
- *
  * \note This microservice recursively exports user-defined metadata attributes (AVUs) for
  *    a collection and all collections and data objects in this collection.
  *    The output is written to a bytesBuf_t buffer in pipe separated format, one
- *    line per attribute as in the example below:
- *      /tempZone/home/testuser/myFile|myAttr|myVal|myUnits
+ *    line per attribute.
  *
- * \usage
- * As seen in modules/ERA/test/exportRecursiveCollMeta.ir
- * 
- * testrule||msiExportRecursiveCollMeta(*Source_Path, *BUF)##writeBytesBuf(stdout,*BUF)|nop
- * *Source_Path=/tempZone/home/rods
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
  * \param[out] outParam - A BUF_LEN_MS_T containing the results.
@@ -237,7 +215,6 @@ msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPar
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -409,9 +386,9 @@ msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
  *
  * \remark Terrell Russell - msi documentation, 2009-06-17
  *
- * \note This microservice retrieves the metadata AVU triplets for a data object and returns them as an XML file.
+ * \note Triplets are returned as an XML file.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
  * \param[out] outParam - A BUF_LEN_MS_T containing the results.
@@ -430,7 +407,6 @@ msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -579,12 +555,9 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Antoine de Torcy
  * \date    2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
+ * \note Similar to #msiGetDataObjAVUs except that the results are returned in a pipe separated format.
  *
- * \note This microservice retrieves the metadata AVU triplets for a data object.
- *    Similar to msiGetDataObjAVUs except that the results are returned in a pipe separated format.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
  * \param[out] outParam - A BUF_LEN_MS_T containing the results.
@@ -603,7 +576,6 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -664,11 +636,9 @@ msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *re
  * \author  Antoine de Torcy
  * \date    2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
+ * \note Returns the results in a pipe separated format.
  *
- * \note Retrieves metadata AVU triplets for a collection and returns the results in a pipe separated format.
- *
- * \usage  None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
  * \param[out] outParam - A BUF_LEN_MS_T containing the results.
@@ -687,7 +657,6 @@ msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *re
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -748,11 +717,9 @@ msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t 
  * \author  Antoine de Torcy
  * \date    2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
+ * \note The metadata file is read as a text file and must contain one AVU per line.
  *
- * \note This microservice parses an iRODS object (file) for new metadata AVUs and adds them to the iCAT.
- *    The metadata file is read as a text file and must contain one AVU per line.
- *
+ * \code
  *    See example file snippet below:
  *
  *    C-/tempZone/home/antoine/testColl |CollAttr000 |CollVal00 |CollUnits00
@@ -767,13 +734,9 @@ msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t 
  *    Units in AVUs are optional.
  *
  *    Lines starting with # won't be parsed.
+ *  \endcode
  *
- * \usage
- * As seen in modules/ERA/test/loadMetadata.ir
- * 
- * testrule||msiGetSystemTime(*Start_time, null)##msiLoadMetadataFromDataObj(*ObjPath,*Status)##msiGetSystemTime(*End_time, null)##msiGetDiffTime(*Start_time, *End_time, human, *Duration)##writeLine(stdout,"")##writeLine(stdout, *Duration)|nop
- * *ObjPath=/tempZone/home/narauser/tstColl.mdf
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the metadata file.
  * \param[out] outParam - An INT_MS_T containing the status.
@@ -792,7 +755,6 @@ msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t 
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiLoadMetadataFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -845,12 +807,9 @@ msiLoadMetadataFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
  * \author  Antoine de Torcy
  * \date   2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
+ * \note The results are returned as an XML file.
  *
- * \note This microservice gets the Archival Information Package of a data object.
- *    The results are returned as an XML file.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the iRODS path of the target object.
  * \param[out] outParam - A BUF_LEN_MS_T containing the results.
@@ -869,7 +828,6 @@ msiLoadMetadataFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1186,12 +1144,9 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Antoine de Torcy
  * \date    2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
+ * \note The results are returned in a pipe-separated format.
  *
- * \note Gets ACL (Access Control List) for a data object.
- *    The results are returned in a pipe-separated format.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
  * \param[out] outParam - A BUF_LEN_MS_T containing the results.
@@ -1210,7 +1165,6 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1269,15 +1223,9 @@ msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Antoine de Torcy
  * \date    2007-09-26
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
+ * \note The results are returned in a pipe-separated format.
  *
- * \note Gets ACL (Access Control List) for a data object.
- *    The results are returned in a pipe-separated format.
- *
- * \usage
- * testrule||msiGetCollectionACL(*objPath, null, *Status)##writeLine(stdout,"")|nop
- * *objPath=/tempZone/home/test.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
  * \param[in] inpParam2 - Optional - A STR_MS_T. Set it to "recursive" to perform the operation recursively. 
@@ -1297,7 +1245,6 @@ msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1354,18 +1301,9 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
  * \since pre-2.1
  *
  * \author  Antoine de Torcy
- * \date  2007
+ * \date    2007
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note None
- *
- * \usage	This microservice returns a given user account's information.
- * 
- * As seen in modules/ERA/test/getUserInfo.ir
- * 
- * testrule||msiGetUserInfo(*Username,*BUF,*Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a msParam of type STR_MS_T
  * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
@@ -1385,7 +1323,6 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetUserInfo(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1451,16 +1388,7 @@ msiGetUserInfo(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 * \author  Antoine de Torcy
 * \date  2007
 *
-* \remark Jewel Ward - msi documentation, 2009-06-18
-* \remark Terrell Russell - reviewed msi documentation, 2009-06-25
-*
-* \note This microservice creates new user accounts according to information in an iRODS object.
-*
-* \usage
-* 
-* As seen in modules/ERA/test/loadUserAccounts.ir
-*
-* testrule||msiCreateUserAccountsFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+* \usage See clients/icommands/test/rules3.0/
 *
 * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T
 * \param[out] outParam - a msParam of operation status INT_MS_T
@@ -1477,7 +1405,6 @@ msiGetUserInfo(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 * \pre None
 * \post None
 * \sa None
-* \bug  no known bugs
 **/
 int
 msiCreateUserAccountsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1535,20 +1462,9 @@ msiCreateUserAccountsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleE
  * \since pre-2.1
  *
  * \author  Antoine de Torcy
- * \date 	2007
+ * \date    2007
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note This microservice modifies existing user accounts according to information in an iRODS object.
- *
- * \usage
- * 
- * As seen in modules/ERA/test/modUserAccounts.ir
- *
- * testrule||msiLoadUserModsFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- * *ObjPath=/tempZone/home/rods/user_mods.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T
  * \param[out] outParam - a msParam of operation status INT_MS_T
@@ -1567,7 +1483,6 @@ msiCreateUserAccountsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleE
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiLoadUserModsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1625,18 +1540,9 @@ msiLoadUserModsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
  * \since pre-2.1
  *
  * \author  Antoine de Torcy
- * \date  	2007
+ * \date    2007
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note	This microservice parses an iRODS object for user accounts to delete.
- *
- * \usage
- * 
- * As seen in modules/ERA/test/deleteUserAccounts.ir
- *
- * testrule||msiDeleteUsersFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T
  * \param[out] outParam - a msParam of operation status INT_MS_T
@@ -1655,7 +1561,6 @@ msiLoadUserModsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiDeleteUsersFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1713,20 +1618,9 @@ msiDeleteUsersFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo
  * \since pre-2.1
  *
  * \author  Antoine de Torcy
- * \date	2007
+ * \date    2007
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note	This microservice parses an iRODS object for access permissions to update/create.
- *
- * \usage
- * 
- *  As seen in modules/ERA/test/addACL.ir
- * 
- *  testrule||msiLoadACLFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- *  *ObjPath=/tempZone/home/antoine/addACL.txt
- *  ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T
  * \param[out] outParam - status as a msParam of type INT_MS_T
@@ -1745,7 +1639,6 @@ msiDeleteUsersFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiLoadACLFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1798,16 +1691,7 @@ msiLoadACLFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *
  * \author  Antoine de Torcy
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
- * \note	This microservice returns the ACL of a given iRODS user.
- *
- * \usage
- * As seen in modules/ERA/test/getUserACL.ir
- *
- * testrule||msiGetUserACL(*Username,*BUF,*Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- * *Username=theusername
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A STR_MS_T containing the username
  * \param[in] inpParam2 - A BUF_LEN_MS_T containing the ACL results in pipe delimited form
@@ -1827,7 +1711,6 @@ msiLoadACLFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1893,16 +1776,7 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
  * \author  Antoine de Torcy
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
- * \note  This microservice sets the data_type_name attribute of a data object.
- *
- * \usage
- * As seen in modules/ERA/test/setDataTypeForObjPath.ir
- *
- * testrule||msiSetDataType(null,*objPath,Text,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- * *objPath=/tempZone/home/test/tmp.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A STR_MS_T containing the object ID
  * \param[in] inpParam2 - A STR_MS_T containing the object's iRODS path
@@ -1923,7 +1797,6 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -2014,16 +1887,7 @@ msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
  * \author  Antoine de Torcy
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
- * \note	This microservice guesses the data type of an object based on its file extension.
- *
- * \usage
- * As seen in modules/ERA/test/guessDataType.ir
- *
- * testrule||msiGuessDataType(*objPath,*dataType,*Status)##writeLine(stdout,*dataType)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- * *objPath=/tempZone/home/test/tmp.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A STR_MS_T containing the object's iRODS path
  * \param[in] inpParam2 - A STR_MS_T to be filled with the object's data type
@@ -2043,7 +1907,6 @@ msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -2146,9 +2009,8 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
  * \author  Antoine de Torcy
  * \date    2009-05-22
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note
+ * \code
  *   Takes an object, a current home collection and a master collection:
  *   1) If the object is an orphan (no corresponding object in the master collection) 
  *      it is moved to the master collection.
@@ -2160,8 +2022,9 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
  *      2b) If the checksums do not match, the object is flagged for manual check:
  *          It gets a new metadata attribute whose name is "CHECKSUM_MISMATCH" and
  *          whose value is the checksum of the master object.
+ * \endcode
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] objPath - A DataObjInp_MS_T or a STR_MS_T with the target object's path.
  * \param[in] currentColl - A CollInp_MS_T or a STR_MS_T with the current collection's path.
@@ -2182,7 +2045,6 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *masterColl, msParam_t *status, ruleExecInfo_t *rei)
@@ -2462,12 +2324,10 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
  * \author  Antoine de Torcy
  * \date    2009-11-05
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note  This microservice flags a data object by adding it an AVU.
  *        The attribute name is the flag and the value is 1. No unit.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] dataObj - A DataObjInp_MS_T or a STR_MS_T with the target object's path.
  * \param[in] flag - A STR_MS_T with the flag name.
@@ -2487,7 +2347,6 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ruleExecInfo_t *rei)
@@ -2573,11 +2432,10 @@ msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ru
  *
  * \note  Part of TPAP Accession Policy Demo
  *
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] scanResObj - A DataObjInp_MS_T or a STR_MS_T,
- * 		which should be clamscan's output stored in an iRODS object
+ *    which should be clamscan's output stored in an iRODS object
  * \param[in] scanResc - A STR_MS_T with the name of the resource where the scan took place.
  * \param[out] status - An INT_MS_T containing the operation status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -2595,7 +2453,6 @@ msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ru
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *status, ruleExecInfo_t *rei)
@@ -2768,16 +2625,9 @@ msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *statu
  * \author  Antoine de Torcy
  * \date    2010-11-17
  *
- *
  * \note  Only data objects are supported for now.
  *
- *
- * \usage As shown in modules/ERA/test/stripAVUs.ir
- *
- * remove dataObj AVUs||msiStripAVUs(*target, null, *status)##writePosInt(stdout,*status)##writeLine(stdout,"")|nop
- * *target=$1
- * ruleExecOut
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] target - A STR_MS_T with a data/collection path or user/resource name
  * \param[in] options - Optional - a STR_MS_T that contains one of more options in
@@ -2800,7 +2650,6 @@ msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *statu
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiStripAVUs(msParam_t *target, msParam_t *options, msParam_t *status, ruleExecInfo_t *rei)

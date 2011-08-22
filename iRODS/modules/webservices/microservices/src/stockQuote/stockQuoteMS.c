@@ -22,7 +22,7 @@
 /**
  * \fn msiGetQuote(msParam_t* inSymbolParam, msParam_t* outQuoteParam, ruleExecInfo_t* rei )
  *
- * \brief  This microservice returns stock quotation (delayed by web service) using web service provided by http://www.webserviceX.NET
+ * \brief  Returns stock quotation (delayed by web service) using web service provided by http://www.webserviceX.NET
  * 
  * \module webservices
  * 
@@ -31,18 +31,7 @@
  * \author   Arcot Rajasekar
  * \date     2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-25
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  web service micro-service to get stock quotation
- *
- * \usage
- *
- * As seen in clients/icommands/test/ruleTest26.ir
- *
- * myTestRule||msiGetQuote(*A,*B)|nop
- * *A=$ORCL
- * *A%*B
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inSymbolParam - a msParam of type STR_MS_T which is a stock symbol.
  * \param[out] outQuoteParam - a msParam of type STR_MS_T which is a stock quotation as a float printed onto string.
@@ -61,7 +50,6 @@
  * \pre none
  * \post none
  * \sa  none
- * \bug  no known bugs
 **/
 int
 msiGetQuote(msParam_t* inSymbolParam, msParam_t* outQuoteParam, ruleExecInfo_t* rei )

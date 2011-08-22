@@ -30,11 +30,7 @@ int _makeQuery( char *sel, char *cond, char **sql);
  * \author  Romain Guinot
  * \date    2007
  *
- * \remark Terrell Russell - msi documentation, 2009-09-10
- *
- * \note This function takes a given condition string and options, creates an iCAT query, executes it and returns the values.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] queryParam - a msParam of type GenQueryInp_MS_T
  * \param[in] zeroResultsIsOK - Optional - a msParam of type STR_MS_T - must equal "zeroOK"
@@ -55,7 +51,6 @@ int _makeQuery( char *sel, char *cond, char **sql);
  * \pre none
  * \post none
  * \sa  msiExecStrCondQuery
- * \bug  no known bugs
 **/
 int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
 				   msParam_t* zeroResultsIsOK,
@@ -134,16 +129,7 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
  * \author  Arcot Rajasekar
  * \date    2008
  *
- * \remark Terrell Russell - msi documentation, 2009-09-10
- *
- * \note	This function takes a given condition string, creates an iCAT query, executes it and returns the values.
- *
- * \usage
- * As seen in clients/icommands/test/ruleTest15.ir
- *
- * myTestRule||msiExecStrCondQuery(*A 'foo%' ,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop
- * *A=SELECT DATA_NAME , DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE  %*K=--------HAHAHAHAH-------------
- * *Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut%*K
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] queryParam - a msParam of type GenQueryInp_MS_T
  * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
@@ -162,7 +148,6 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
 {
@@ -215,19 +200,12 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
  *
  * \since pre-2.1
  *
- * \author	Arcot Rajasekar
- * \date	2008
- *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ * \author  Arcot Rajasekar
+ * \date    2008
  *
  * \note Takes a SQL-like iRODS query (no FROM clause) and returns a table structure. Use #msiGetMoreRows to get all rows.
  *
- * \usage
- * 
- *  As seen in clients/icommands/test/queryContinueExple.ir
- * 
- * continue test||assign(*ContInx, 1)##msiMakeGenQuery("DATA_NAME, COLL_NAME",*Condition,*GenQInp)##msiExecGenQuery(*GenQInp, *GenQOut)##whileExec(*ContInx > 0,msiGetMoreRows(*GenQInp,*GenQOut,*ContInx)##forEachExec(*GenQOut,msiGetValByKey(*GenQOut, "COLL_NAME",*DataObj)##writeString(stdout,*DataObj)##writeString(stdout,"/")##msiGetValByKey(*GenQOut, "DATA_NAME",*DataObj)##writeString(stdout,*DataObj)##writeLine(stdout,""), nop), nop)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] genQueryInParam - a msParam of type GenQueryInp_MS_T
  * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
@@ -246,7 +224,6 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
  * \pre none
  * \post none
  * \sa msiGetMoreRows and msiExecStrCondQuery
- * \bug  no known bugs
 **/
 int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
 {
@@ -279,48 +256,9 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
  * \author  Arcot Rajasekar
  * \date    2009-10
  *
- * \remark Terrell Russell - reviewed msi documentation, 2009-10-08
- *
  * \note The resulting continueInx can be used to determine whether there are remaining rows to retrieve from the generated query.
  *
- * \usage This example first prints out the returned values, then checks, and gets any remaining results.
- *
- *     <pre>
- *     GenQueryTest
- *     {
- *     # construct the query
- *       msiMakeGenQuery("DATA_NAME, COLL_NAME",*Condition,*GenQInp);
- *       msiExecGenQuery(*GenQInp, *GenQOut);
- *     # loop through the first result set
- *       foreach (*GenQOut)
- *       {
- *         msiGetValByKey(*GenQOut, "COLL_NAME",*DataObj);
- *         writeString(stdout,*DataObj);
- *         writeString(stdout,"/");
- *         msiGetValByKey(*GenQOut, "DATA_NAME",*DataObj);
- *         writeString(stdout,*DataObj);
- *         writeLine(stdout,"");
- *       }
- *     # determine if there are more results to be retrieved - get the continue index
- *       msiGetContInxFromGenQueryOut(*GenQOut, *ContInx);
- *       while (*ContInx > 0)
- *       {
- *     # get the next set of results and reset the continue index
- *         msiGetMoreRows(*GenQInp,*GenQOut,*ContInx);
- *         foreach (*GenQOut)
- *         {
- *           msiGetValByKey(*GenQOut, "COLL_NAME",*DataObj);
- *           writeString(stdout,*DataObj);
- *           writeString(stdout,"/");
- *           msiGetValByKey(*GenQOut, "DATA_NAME",*DataObj);
- *           writeString(stdout,*DataObj);
- *           writeLine(stdout,"");
- *         }
- *       }
- *     }
- *     INPUT *Condition= "COLL_NAME like '/trelboxzone/home/rods%%'"
- *     OUTPUT ruleExecOut
- *     </pre>
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] genQueryOutParam - Required - of type GenQueryOut_MS_T.
  * \param[out] continueInx - a INT_MS_T containing the new continuation index (after the query).
@@ -339,7 +277,6 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
  * \pre none
  * \post none
  * \sa msiExecGenQuery, msiGetMoreRows
- * \bug  no known bugs
 **/
 int
 msiGetContInxFromGenQueryOut(msParam_t* genQueryOutParam, msParam_t* continueInx, ruleExecInfo_t *rei)
@@ -391,11 +328,7 @@ _makeQuery( char *sel, char *cond, char **sql)
  * \author  Arcot Rajasekar
  * \date    2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
- *
- * \note	This microservice creates sql query from parameter list and conditions.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] selectListParam - a STR_MS_T containing the parameters.
  * \param[in] conditionsParam - a STR_MS_T containing the conditions.
@@ -415,7 +348,6 @@ _makeQuery( char *sel, char *cond, char **sql)
  * \pre none
  * \post none
  * \sa msiGetMoreRows and msiExecStrCondQuery
- * \bug  no known bugs
 **/
 int
 msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam, 
@@ -445,9 +377,7 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
  * \author  Antoine de Torcy
  * \date    2008-09-18
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
- * \note This microservice gets the next batch of rows for an open iCAT query. Likely to follow msiMakeGenQuery and msiExecGenQuery.
+ * \note This microservice gets the next batch of rows for an open iCAT query. Likely to follow #msiMakeGenQuery and #msiExecGenQuery.
  *
  * \usage None
  *
@@ -469,7 +399,6 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei)
@@ -563,12 +492,10 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
  * \author  Antoine de Torcy
  * \date    2008-09-19
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
  * \note This microservice sets up a genQueryInp_t data structure needed by calls to rsGenQuery().
- *    To be used before msiExecGenQuery and msiGetMoreRows.
+ *    To be used before #msiExecGenQuery and #msiGetMoreRows.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] selectListStr - Required - a STR_MS_T containing the parameters.
  * \param[in] condStr - Required - a STR_MS_T containing the conditions 
@@ -588,7 +515,6 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei)
@@ -678,9 +604,7 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
  * \author  Arcot Rajasekar
  * \date    2008
  *
- * \remark Terrell Russell - msi documentation, 2010-04-05
- *
- * \usage target buffer same as for writeString
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - Required - a STR_MS_T containing the parameters.
  * \param[in] genQueryInpParam - Required - a GenQueryInp_MS_T containing the parameters and conditions.
@@ -699,7 +623,6 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
  * \pre none
  * \post none
  * \sa writeString
- * \bug  no known bugs
 **/
 int
 msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei)
@@ -777,16 +700,14 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
  * \author  Antoine de Torcy
  * \date    2009-11-28
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note This microservice sets a select field in a genQueryInp_t, from two parameters.
  *       One is an iCAT attribute index given without its 'COL_' prefix.
  *       The second one is the optional SQL operator.
  *       A new genQueryInp_t is created if queryInput is NULL.
- *       Followed with msiExecGenQuery, msiAddSelectFieldToGenQuery allows to take the
+ *       Followed with #msiExecGenQuery, #msiAddSelectFieldToGenQuery allows to take the
  *       results of other microservices to build and execute queries within a rule.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] select - Required - A STR_MS_T with the select field.
  * \param[in] function - Optional - A STR_MS_T with the function. Valid values are [MIN|MAX|SUM|AVG|COUNT]
@@ -806,7 +727,6 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei)
@@ -895,19 +815,16 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
  *
  * \module core
  *
- *
  * \author  Antoine de Torcy
  * \date    2009-12-07
- *
- * \remark Terrell Russell - msi documentation, 2009-12-17
  *
  * \note This microservice adds a condition to an existing genQueryInp_t, from three parameters.
  *       One is an iCAT attribute index given without its 'COL_' prefix.
  *       The second one is the SQL operator. The third one is the value and may contain wildcards. 
- *       To be used with msiAddSelectFieldToGenQuery and msiExecGenQuery to build queries from the
+ *       To be used with #msiAddSelectFieldToGenQuery and #msiExecGenQuery to build queries from the
  *       results of other microservices or actions within an iRODS rule.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] attribute - Required - A STR_MS_T with the iCAT attribute name (see www.irods.org/index.php/icatAttributes).
  * \param[in] operator - Required - A STR_MS_T with the operator.
@@ -928,7 +845,6 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
@@ -1024,16 +940,13 @@ msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *
  *
  * \module core
  *
- *
  * \author  Antoine de Torcy
  * \date    2009-12-16
- *
- * \remark Terrell Russell - msi documentation, 2009-12-17
  *
  * \note This microservice writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T.
  *       The results can be formatted with an optional C-style format string the same way it is done in iquest.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] queryOut - Required - A GenQueryOut_MS_T.
  * \param[in] format - Optional - A STR_MS_T with a C-style format string, like in iquest.
@@ -1053,7 +966,6 @@ msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int 
 msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei)

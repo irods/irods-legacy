@@ -26,9 +26,9 @@ extern int rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 
 
 /**
- * \fn int msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
+ * \fn msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode, msParam_t* inFileFlags, msParam_t* inCacheFilename,  ruleExecInfo_t* rei )
  *
- * \brief geting an SLINK object using micro-service drivers
+ * \brief Gets an SLINK object
  *
  * \module msoDrivers_slink
  *
@@ -37,11 +37,7 @@ extern int rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
  * \author  Arcot Rajasekar
  * \date    2011
  *
- * \remark 
- *
- * \note getting slink IRODS object using microservices
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inRequestPath - a STR_MS_T request string to external resource
  * \param[in] inFileMode - a STR_MS_T mode of cache file creation
@@ -62,7 +58,6 @@ extern int rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 
@@ -183,9 +178,9 @@ msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
 
 /**
- * \fn int msiobjput_slink(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
+ * \fn msiobjput_slink(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  msParam_t*  inFileSize, ruleExecInfo_t* rei )
  *
- * \brief putting slink object using micro-service
+ * \brief Puts an SLINK object
  *
  * \module msoDrivers_slink
  *
@@ -194,11 +189,7 @@ msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode,
  * \author  Arcot Rajasekar
  * \date    2011
  *
- * \remark 
- *
- * \note putting slink  object using microservices
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inMSOPath - a STR_MS_T path string to external resource
  * \param[in] inCacheFilename - a STR_MS_T cache file containing data to be written out
@@ -218,7 +209,6 @@ msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 

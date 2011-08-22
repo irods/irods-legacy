@@ -33,12 +33,10 @@
  * \author Wayne Schroeder
  * \date   2008-05-12
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
  * \note This is being replaced with the new 'Database Resources'
- * feature, see that page on the iRODS web site.
+ * feature, see https://www.irods.org/index.php/RDA
  *
- * \usage See the RDA page on the iRODS web site.
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
  * \param[in] inpSQL -  a STR_MS_T which is the SQL
@@ -61,7 +59,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
@@ -171,12 +168,10 @@ msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
  * \author Wayne Schroeder
  * \date   2008-05-15
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
  * \note This is being replaced with the new 'Database Resources'
- * feature, see that page on the iRODS web site.
+ * feature, see https://www.irods.org/index.php/RDA
  *
- * \usage See the RDA page on the iRODS web site.
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
  * \param[in] inpSQL - a STR_MS_T which is the SQL
@@ -200,7 +195,6 @@ msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL, 
@@ -331,12 +325,10 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
  * \author Wayne Schroeder
  * \date   2008-06-03
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
  * \note This is being replaced with the new 'Database Resources'
- * feature, see that page on the iRODS web site.
+ * feature, see https://www.irods.org/index.php/RDA
  *
- * \usage See the RDA page on the iRODS web site.
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
  * \param[in] inpSQL - a STR_MS_T which is the SQL
@@ -359,7 +351,6 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
@@ -459,12 +450,10 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
  * \author Wayne Schroeder
  * \date   2008-06-03
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
  * \note This is being replaced with the new 'Database Resources'
- * feature, see that page on the iRODS web site.
+ * feature, see https://www.irods.org/index.php/RDA
  *
- * \usage See the RDA page on the iRODS web site.
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -481,7 +470,6 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRdaCommit(ruleExecInfo_t *rei)
@@ -520,12 +508,10 @@ msiRdaCommit(ruleExecInfo_t *rei)
  * \author Wayne Schroeder
  * \date   2008-08-05
  *
- * \remark Terrell Russell - msi documentation, 2009-06-22
- *
  * \note This is being replaced with the new 'Database Resources'
- * feature, see that page on the iRODS web site.
+ * feature, see https://www.irods.org/index.php/RDA
  *
- * \usage See the RDA page on the iRODS web site.
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -542,7 +528,6 @@ msiRdaCommit(ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRdaRollback(ruleExecInfo_t *rei)

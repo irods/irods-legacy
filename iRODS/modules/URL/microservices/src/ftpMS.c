@@ -84,17 +84,10 @@ static size_t createAndWriteToDataObj(void *buffer, size_t size, size_t nmemb, v
  * \author  Antoine de Torcy
  * \date    2008-09-24
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
  * \note This microservice uses libcurl to open an ftp session with a remote server and read from a remote file.
  *    The results are written to a newly created iRODS object, one block at a time until the whole file is read.
  *
- * \usage
- * As seen in modules/URL/test/ftpGet.ir
- *
- * testrule||msiFtpGet(*target, *destObj, *status)##writePosInt(stdout, *status)##writeLine(stdout, "")|nop
- * *target=$1%*destObj=$2
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] target - Required - a STR_MS_T containing the remote URL.
  * \param[in] destObj - Required - a DataObjInp_MS_T or a STR_MS_T which would be taken as the object's path.
@@ -114,7 +107,6 @@ static size_t createAndWriteToDataObj(void *buffer, size_t size, size_t nmemb, v
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExecInfo_t *rei)
 {
@@ -249,8 +241,6 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
  * \author  Antoine de Torcy
  * \date    2009-07-23
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note This microservice posts a message on twitter.com, aka a "tweet". 
  *       A valid twitter account name and password must be provided. 
  *       Special characters in the message can affect parsing of the POST form and 
@@ -259,14 +249,7 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
  *       passed unencrypted here, do not use this with a twitter account you do not
  *       wish to be compromised. Or if you do, change your password afterwards. 
  *
- * \usage
- *
- * As seen in:
- *
- *	Test Tweet||msiTwitterPost(*Username, *Passwd, *Msg, *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
- *	*Username=$1%*Passwd=$2%*Msg=Electronic Records Summer Camp is now open
- *	ruleExecOut
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] twittername - Required - a STR_MS_T containing the twitter username.
  * \param[in] twitterpass - Required - a STR_MS_T containing the twitter password.
@@ -287,7 +270,6 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *message, msParam_t *status, ruleExecInfo_t *rei)
 {

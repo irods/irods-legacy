@@ -67,21 +67,10 @@ myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
  *
  * \since pre-2.1
  *
- * \author	Antoine de Torcy
- * \date	05/29/2008  
+ * \author  Antoine de Torcy
+ * \date    2008/05/29
  *
- * \remark Jewel Ward - msi documentation, 2009-06-10
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
- * \note None
- *
- * \usage
- * 
- *  As seen in modules/XML/test/loadMetadataFromXml.ir
- * 
- *  testrule||msiLoadMetadataFromXml(*targetObjPath, *xmlObjPath)|nop
- *  *xmlObjPath=/tempZone/home/antoine/formattedDDI.xml%*targetObjPath=/tempZone/home/antoine/contact.txt
- *  ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *  
  * \param[in] targetObj - Optional - a msParam of type DataObjInp_MS_T or STR_MS_T
  * \param[in] xmlObj - a msParam of type DataObjInp_MS_T or STR_MS_T
@@ -100,7 +89,6 @@ myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 
 
@@ -340,22 +328,10 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
  * 
  * \since pre-2.1
  * 
- * \author	Antoine de Torcy
- * \date	05/29/2008
+ * \author  Antoine de Torcy
+ * \date    2008/05/29
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-29
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note None
- *
- * \usage
- *
- * As seen in modules/XML/test/xmlDocSchemaValidate.ir
- *
- * Validate XML Doc against XSD schema in iRODS||msiXmlDocSchemaValidate(*xmlObj, *xsdObj, *status)##writePosInt(stdout,*status)##writeLine(stdout,"")
- * ##writeBytesBuf(stdout,*status)|nop
- * *xmlObj=/tempZone/home/antoine/XML_tests/example.xml%*xsdObj=/tempZone/home/antoine/XML_tests/example.xsd
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xmlObj - a msParam of type DataObjInp_MS_T or STR_MS_T which is irods path of the XML object.
  * \param[in] xsdObj - a msParam of type DataObjInp_MS_T or STR_MS_T which is irods path of the XSD object.
@@ -375,7 +351,6 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int 
 msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status, ruleExecInfo_t *rei) 
@@ -644,12 +619,5 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 
 	return (rei->status);
 }
-
-
-
-
-
-
-
 
 

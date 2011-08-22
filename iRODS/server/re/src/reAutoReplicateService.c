@@ -193,8 +193,6 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
  * \author  Bing Zhu
  * \date    2009-07
  *
- * \remark Terrell Russell - msi documentation, 2009-09-21
- *
  * \note   This microservice is supposed to be run as a periodic service to check if a designated number of 
  * required good copies of dataset(s) from a selected collection is in the system. 
  *   \li For a registered copy, it checks if the copy still exits. If the local file is removed by the data
@@ -204,7 +202,7 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
  *   \li If a bad copy is detected, the copy is deleted.
  *   \li Finally, the service creates necessary replicas to meet the required number of copies.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xColl - a STR_MS_T containing the collection or object name
  * \param[in] xRecursive - a STR_MS_T determining whether should be run recursively
@@ -229,7 +227,6 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiAutoReplicateService(msParam_t *xColl, msParam_t *xRecursive, 
           msParam_t *xRequireNumReplicas, msParam_t *xRescGroup, 
@@ -680,12 +677,9 @@ static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath)
  * \author  Bing Zhu
  * \date    2009-07
  *
- * \remark Terrell Russell - msi documentation, 2009-09-21
+ * \note This microservice changes the ownership for the dataset(s) being moved.
  *
- * \note: The micro-service moves all dataset(s) in a collection to another user's collection and change the ownership
- * for the dataset(s) being moved.
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - a STR_MS_T containing the object name with path. It usually comes from query as "$objPat
  *                          like /zone/../%" in the deployed microservice
@@ -710,7 +704,6 @@ static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
                        msParam_t *inpParam4, msParam_t *inpParam5, ruleExecInfo_t *rei)

@@ -17,7 +17,7 @@
 /**
  * \fn writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  *
- * \brief  This microservice writes a given string followed by a new-line character into the target buffer in ruleExecOut Parameter.
+ * \brief  This microservice writes a given string and newline character into the given buffer.
  * 
  * \module core
  * 
@@ -26,25 +26,12 @@
  * \author  Arcot Rajasekar
  * \date    2008
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-24
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note   This micro-service takes a given buffer string and appends it to the back of the buffer
+ * \note   This microservice takes a given buffer string and appends it to the end of the buffer
  * (either stdout or stderr in ruleExecOut parameter) followed by a new line character. 
  * This may be extended later for writing into local log file 
  * or into an iRODS file also. The ruleExecOut is a system MS-parameter (*variable) that is automatically available.
  *
- * \usage
- *
- * As seen in clients/icommands/test/ruleInp5
- *
- * myTestRule||writeLine(stdout,alpha beta gamma)##writeLine(stdout,alpha beta gamma)##writeLine(stderr,Error:blah)|nop
- *
- * Also:
- *
- * myTestRule||assign(*A,0)##whileExec(*A < 20, writeLine(stdout, *A)##assign(*A, *A + 4), nop)|nop##nop
- * null
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut. Currently stdout and stderr.
  * \param[in] inString - a msParam of type STR_MS_T which is a string to be written into buffer.
@@ -63,7 +50,6 @@
  * \pre none
  * \post none
  * \sa writeString
- * \bug  no known bugs
 **/
 int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {
@@ -93,7 +79,7 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 /**
  * \fn writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  *
- * \brief  This microservice writes a given string into the target buffer in ruleExecOut parameter
+ * \brief  This microservice writes a given string into the target buffer
  *
  * \module core
  *
@@ -102,18 +88,11 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  * \author  Arcot Rajasekar
  * \date    2008
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-24
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note   This micro-service takes a given buffer string and appends it to the back of the buffer
+ * \note   This microservice takes a given buffer string and appends it to the end of the buffer
  * (either stdout or stderr in ruleExecOut parameter). This may be extended later for writing into local log file 
  * or into an iRODS file also. The ruleExecOut is a system MS-parameter (*variable) that is automatically available.
  *
- * \usage
- *
- * As seen in clients/icommands/test/ruleInp5
- *
- * myTestRule||writeString(stdout,alpha beta gamma)##writeString(stdout,alpha beta gamma)##writeString(stderr,Error:blah)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - where is a msParam of type STR_MS_T which is the buffer name in ruleExecOut. Currently stdout and stderr.
  * \param[in] inString - inString is a msParam of type STR_MS_T which is a string to be written into buffer
@@ -132,7 +111,6 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {
@@ -218,20 +196,9 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
  * \since pre-2.1
  * 
  * \author  Antoine de Torcy
- * \date	2007
+ * \date    2007
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-24
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  none
- *
- * \usage
- *
- * As seen in modules/integrityChecks/test/testwriteposint.ir
- *
- * msiTestWritePosInt||msiTestWritePosInt(*A)##writePosInt(stdout, *A)##writeLine(stdout,"xxx")|nop
- * null
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut.
  * \param[in] inInt - the integer to write
@@ -250,7 +217,6 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
 {
@@ -290,18 +256,7 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
  * \author  Antoine de Torcy
  * \date 2008
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-24
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  none
- *
- * \usage
- *
- * As seen in modules/integrityChecks/test/listACL.ir
- *
- * msiListCollACL||msiListCollACL(*Collection,*BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,"")|nop
- * *Collection=/homeZone/home/rods/bigcollection
- * ruleExecOut%*STATUS
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut. It can be stdout or stderr.
  * \param[in] inBuf - a msParam of type STR_MS_T - related to the status output
@@ -320,7 +275,6 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
 {
@@ -363,20 +317,9 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
  * \since 2.1
  * 
  * \author  Antoine de Torcy
- * \date 2009
+ * \date    2009
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-24
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  none
- *
- * \usage
- *
- * As seen in modules/integrityChecks/test/verifyDataType.ir
- *
- * msiCheckFileDatatypes||msiCheckFileDatatypes(*Collection,*Datatype,*Status)##writeKeyValPairs(stdout, *B, ": ")##writeLine(stdout,"")|nop
- * *A=/homeZone/home/rods%*B=generic,xml,kitten,mmCIF, ,
- * ruleExecOut%*STATUS
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut. It can be stdout or stderr.
  * \param[in] inKVPair - a msParam of type KeyValPair_MS_T
@@ -396,7 +339,6 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei)
 {
@@ -497,13 +439,9 @@ int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator
  * \author  Arcot Rajasekar
  * \date    2010
  * 
- * \note   This micro-service takes a given buffer string and sends it as a message packet to the XMsg Server 
+ * \note   This microservice takes a given buffer string and sends it as a message packet to the XMsg Server 
  *
- * \usage
- *
- * As seen in clients/icommands/test/ruleTest34.ir
- *
- * myTestRule||writeXMsg(*A,*B,*C)##readXMsg(*A,,*D,*E,*F,*G,*H,*J)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inStreamId - of type STR_MS_T or INT_MAS_T - the XMsg streamId number
  *    possibly generated by a  msiXmsgCreateStream micro-serice or a supported standard stream with ids 1 thru 5     
@@ -524,9 +462,7 @@ int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator
  * \pre none
  * \post none
  * \sa msiXmsgCreateStream, readXMsg
- * \bug  no known bugs
 **/
-
 int 
 writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei)
 {
@@ -567,11 +503,7 @@ writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInf
  * 
  * \note   Reads into buffer a message packet from the XMsg Server 
  *
- * \usage
- *
- * As seen in clients/icommands/test/ruleTest34.ir
- *
- * myTestRule||writeXMsg(*A,*B,*C)##readXMsg(*A,,*D,*E,*F,*G,*H,*J)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inStreamId - of type STR_MS_T or INT_MAS_T - the XMsg streamId number
  *    possibly generated by a msiXmsgCreateStream microservice or a supported standard stream with ids 1 thru 5     
@@ -598,7 +530,6 @@ writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInf
  * \pre none
  * \post none
  * \sa msiXmsgCreateStream, writeXMsg
- * \bug  no known bugs
 **/
 
 int
@@ -645,8 +576,4 @@ readXMsg(msParam_t* inStreamId, msParam_t *inCondRead,
   }
   return(i);
 }
-
-
- 
-
 

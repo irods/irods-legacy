@@ -406,20 +406,11 @@ int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
  * \author Jean-Yves Nief
  * \date 2007-09 
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-25
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
  * \note  This microservice controls access to the iRODS service
  *  based on the information in the host based access configuration file:
  *  HOST_ACCESS_CONTROL_FILE
  *
- * \usage
- *
- * As seen in server/config/reConfigs/core.irb.orig
- *
- * acChkHostAccessControl||msiCheckHostAccessControl|nop
- * null
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -436,7 +427,6 @@ int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
   char group[MAX_NAME_LEN], *hostclient, *result, *username;
@@ -498,8 +488,6 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
  * \author Jean-Yves Nief 
  * \date 2009-06
  * 
- * \remark Terrell Russell - msi documentation, 2010-04-04
- * 
  * \note  This microservice monitors the servers' activity and performance
  *    for CPU, network, memory and more.  It retrieves the list of servers
  *    to monitor from the MON_CFG_FILE if it exists, or the iCAT if the
@@ -509,7 +497,7 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
  *    in the OUTPUT_MON_PERF file and will also be put in the iCAT in the
  *    near future.
  *
- * \usage https://www.irods.org/index.php/Resource_Monitoring_System
+ * \usage See clients/icommands/test/rules3.0/ and https://www.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] verb - a msParam of type STR_MS_T defining verbose mode:
  *    \li "default" - not verbose
@@ -532,7 +520,6 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
  * \pre N/A
  * \post N/A
  * \sa N/A
- * \bug  no known bugs
 **/
 int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
   char buffer[MAX_NAME_LEN], line[MAX_VALUE], splchain[MAX_VALUE][MAX_NAME_LEN], *verbosity;
@@ -715,12 +702,10 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
  * \author Jean-Yves Nief
  * \date 2009-06
  * 
- * \remark Terrell Russell - msi documentation, 2010-04-05
- * 
  * \note  This microservice removes the servers' metrics older than the
  *    number of hours in "timespan".  
  *
- * \usage https://www.irods.org/index.php/Resource_Monitoring_System
+ * \usage See clients/icommands/test/rules3.0/ and https://www.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] inpParam1 - Required - a msParam of type STR_MS_T defining the timespan in hours.
  *    "default" is equal to 24 hours.
@@ -741,7 +726,6 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
  * \pre N/A
  * \post N/A
  * \sa  N/A
- * \bug  no known bugs
 **/
 int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei) {
   int elapseTime, defaultTimespan, rc;
@@ -832,8 +816,6 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  * \author Jean-Yves Nief
  * \date 2009-06 
  * 
- * \remark Terrell Russell - msi documentation, 2010-04-05
- * 
  * \note  The following values are loaded from R_LOAD_SERVER:
  *    \li cpu_used
  *    \li mem_used
@@ -848,7 +830,7 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  *        runq_wght*runq_load + disk_wght*disk_space + netin_wght*net_input +
  *        netout_wght*net_output
  *
- * \usage https://www.irods.org/index.php/Resource_Monitoring_System
+ * \usage See clients/icommands/test/rules3.0/ and https://www.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] cpu_wght - Required - a msParam of type STR_MS_T defining relative CPU weighting.
  * \param[in] mem_wght - Required - a msParam of type STR_MS_T defining relative memory weighting
@@ -872,7 +854,6 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  * \pre N/A
  * \post N/A
  * \sa  N/A
- * \bug  no known bugs
 **/
 int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_wght, msParam_t *runq_wght,
       msParam_t *disk_wght, msParam_t *netin_wght, msParam_t *netout_wght, 

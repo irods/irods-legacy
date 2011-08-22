@@ -29,17 +29,9 @@
  * \author Arcot Rajasekar 
  * \date    2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-30
- * \remark Jewel Ward - msi documentation, 2010-07-21
- *
  * \note  Use this only internally as data object information has to be in rei.
  *
- * \usage
- * As seen in modules/ERA/test/applyDCmetadata.ir
- * 
- * testrule||msiApplyDCMetadataTemplate(*objPath, *Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- * *objPath=/tempZone/home/antoine/NARA_MS.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -56,7 +48,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRegisterData(ruleExecInfo_t *rei)
@@ -239,16 +230,7 @@ msitest3 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
  * \author  Antoine de Torcy
  * \date    2008-04-04
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
- * \note	This microservice adds 15 empty Dublin Core Metadata fields to an object or collection.
- *
- * \usage
- * As seen in modules/ERA/test/applyDCmetadata.ir
- * 
- * testrule||msiApplyDCMetadataTemplate(*objPath, *Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
- * *objPath=/tempZone/home/antoine/NARA_MS.txt
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam - a STR_MS_T containing the target object's path
  * \param[out] outParam - an INT_MS_T containing the status
@@ -267,7 +249,6 @@ msitest3 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei)
@@ -325,7 +306,4 @@ msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInf
 
 	return(status);
 }
-
-
-
 

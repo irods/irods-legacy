@@ -21,8 +21,7 @@
 /**
  * \fn msiObjByName(msParam_t* inObjByNameParam, msParam_t* outRaParam, msParam_t* outDecParam, msParam_t* outTypParam, ruleExecInfo_t* rei )
  *
- * \brief  This microservice executes a web service to retrieve astronomy image by name. It returns position and type of an astronomical object given a 
- *         name from the NASA/IPAC Extragalactic Database (NED) using web service at http://voservices.net/NED/ws_v2_0/NED.asmx.
+ * \brief  This microservice executes a web service to retrieve astronomy image by name.
  *
  * \module webservices
  *
@@ -31,18 +30,11 @@
  * \author   Arcot Rajasekar
  * \date     2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-24
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  web-service based micro-service to get type and position of an astronomical object in   NED database given a name.
+ * \note  It returns position and type of an astronomical object given a 
+ *      name from the NASA/IPAC Extragalactic Database (NED) using web service at
+ *      http://voservices.net/NED/ws_v2_0/NED.asmx
  *
- * \usage
- *
- * As seen in clients/icommands/test/ruleTest30.ir
- *
- * myTestRule||msiObjByName(*objName,*RA,*DEC,*TYPE)|nop
- * *objName=$m100
- * *objName%*RA%*DEC%*TYPE
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inObjByNameParam - a msParam of type STR_MS_T which is an astronomical object name.
  * \param[out] outRaParam - a msParam of type STR_MS_T which is a Right Ascension as float as string.
@@ -63,7 +55,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiObjByName(msParam_t* inObjByNameParam, 

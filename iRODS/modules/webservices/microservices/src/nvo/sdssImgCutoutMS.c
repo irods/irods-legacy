@@ -33,18 +33,7 @@
  * \author  Arcot Rajasekar
  * \date    2008-05
  * 
- * \remark Ketan Palshikar - msi documentation, 2009-06-25
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
- * 
- * \note  web-service based micro-service to get image cut out given position frm SDSS database
- *
- * \usage
- *
- * As seen in clients/icommands/test/ruleTest31.ir
- *
- * myTestRule||msiSdssImgCutout_GetJpeg(*RA,*DEC,*Scale,*Width, *Height, *Opt, *OutImg)|nop
- * *RA=$185.72%*DEC=$15.82%*Scale=$0.396127%*Width=$64%*Height=$64%*Opt=$GPST
- * *RA%*DEC%*Scale%*Width%*Height%*Opt%*OutImg
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in] inRaParam - a msParam of type STR_MS_T which is a Right Ascemsion as float printed onto string.
  * \param[in] inDecParam - a msParam of type STR_MS_T which is a Declination as float printed onto string.
@@ -68,7 +57,6 @@
  * \pre none
  * \post none
  * \sa  none
- * \bug  no known bugs
 **/
 int
 msiSdssImgCutout_GetJpeg(msParam_t* inRaParam, 

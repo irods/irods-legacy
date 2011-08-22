@@ -23,19 +23,12 @@
  * \author  Antoine de Torcy
  * \date    2009-05-08
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
  * \note This microservice takes an iRODS path and returns the corresponding collection ID,
  *    or zero if the object is not a collection or does not exist.
  *    Avoid path names ending with '/' as they can be misparsed by lower level routines
  *    (eg: use /tempZone/home instead of /tempZone/home/).
  *
- * \usage
- * As seen in modules/ERA/test/isColl.ir
- * 
- * testrule||msiIsColl(*collPath, *collID, *Status)##writePosInt(stdout, *collID)##writeLine(stdout, "")|nop
- * *collPath=$1
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] targetPath - An msParam_t of any type whose inOutStruct is a string (the object's path).
  * \param[out] collId - an INT_MS_T containing the collection ID.
@@ -55,7 +48,6 @@
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecInfo_t *rei)
@@ -128,17 +120,10 @@ msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecI
  * \author  Antoine de Torcy
  * \date    2009-05-08
  *
- * \remark Terrell Russell - msi documentation, 2009-06-15
- *
  * \note This microservice takes an iRODS path and returns the corresponding object ID,
  *    or zero if the object is not a data object or does not exist.
  *
- * \usage
- * As seen in modules/ERA/test/isData.ir
- * 
- * testrule||msiIsData(*objPath, *objID, *Status)##writePosInt(stdout, *objID)##writeLine(stdout, "")|nop
- * *objPath=$1
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] targetPath - An msParam_t of any type whose inOutStruct is a string (the object's path).
  * \param[out] dataId - an INT_MS_T containing the data object ID.
@@ -158,7 +143,6 @@ msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecI
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecInfo_t *rei)
@@ -240,15 +224,7 @@ msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecI
  * \author  Antoine de Torcy
  * \date    2010-07-28
  *
- *
- * \note Returns a STR_MS_T with the object path from a DataObjInp_MS_T.
- *
- * \usage
- *
- * myRule||msiCollectionSpider(*Collection, *Objects, msiGetObjectPath(*Objects,*Path,*foo)##writeString(stdout,*Path)##writeLine(stdout,""), *Status)|nop
- * Collection=$1
- * ruleExecOut
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] object - A DataObjInp_MS_T, our object.
  * \param[out] path - a STR_MS_T with the object's path.
@@ -265,10 +241,9 @@ msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecI
  *
  * \return integer
  * \retval 0 on success
- * \pre None
- * \post None
- * \sa None
- * \bug  no known bugs
+ * \pre  none
+ * \post none
+ * \sa none
 **/
 int
 msiGetObjectPath(msParam_t *object, msParam_t *path, msParam_t *status, ruleExecInfo_t *rei)
@@ -318,18 +293,11 @@ msiGetObjectPath(msParam_t *object, msParam_t *path, msParam_t *status, ruleExec
  * \author  Antoine de Torcy
  * \date    2008-03-17
  *
- * \remark Terrell Russell - msi documentation, 2009-06-17
- *
  * \note This microservice returns the number of objects for each known data type in a collection, recursively.
  *    The results are written to a KeyValPair_MS_T, with a keyword for each data type plus "unknown" for objects
  *    of unknown data type, and the number of data objects of that type.
  *
- * \usage
- * As seen in modules/ERA/test/getCollectionContentsReport.ir
- * 
- * testrule||msiGetCollectionContentsReport(*collPath, *KVPairs, *Status)##writeKeyValPairs(stdout, *KVPairs, ": ")##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
- * *collPath=/tempZone/home/antoine
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
  * \param[out] inpParam2 (poorly named...) - A KeyValPair_MS_T containing the results.
@@ -349,7 +317,6 @@ msiGetObjectPath(msParam_t *object, msParam_t *path, msParam_t *status, ruleExec
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -491,18 +458,10 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  * \author  Antoine de Torcy
  * \date    2008-10-31
  *
- * \remark Terrell Russell - msi documentation, 2009-06-12
- *
  * \note This microservice returns the object count and total disk usage for all objects in a collection, recursively.
  *    The results are written to a KeyValPair_MS_T whose keyword strings are "Size" and "Object Count".
- *    
  *
- * \usage
- * As seen in modules/ERA/test/getCollSize.ir
- * 
- * testrule||msiGetCollectionSize(*collPath, *KVPairs, *Status)##writeKeyValPairs(stdout, *KVPairs, ": ")|nop
- * *collPath=$1
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] collPath - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
  * \param[out] outKVPairs - A KeyValPair_MS_T containing the results.
@@ -522,7 +481,6 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *status, ruleExecInfo_t *rei)
@@ -644,18 +602,11 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
  * \author  Antoine de Torcy
  * \date    2009-04-21
  *
- * \remark Terrell Russell - msi documentation, 2009-06-23
- *
  * \note This microservice creates a bundle for export from an iRODS collection on a target resource.
  *    Files in the collection are first replicated onto the target resource. If no resource
  *    is given the default resource will be used.
  *
- * \usage
- * As seen in modules/ERA/test/bundleCollection.ir
- * 
- * testrule||msiStructFileBundle(*collPath, *bundleObjPath, null, *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
- * *collPath=/tempZone/home/rods/testcoll%*bundleObjPath=/tempZone/home/rods/testcoll.tar
- * ruleExecOut
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] collection - A CollInp_MS_T or a STR_MS_T with the irods path of the collection to bundle.
  * \param[in] bundleObj - a DataObjInp_MS_T or a STR_MS_T with the bundle object's path.
@@ -676,7 +627,6 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *resource, msParam_t *status, ruleExecInfo_t *rei)
@@ -767,17 +717,11 @@ msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *reso
  * \author  Antoine de Torcy
  * \date    2009-05-09
  *
- * \remark Terrell Russell - msi documentation, 2009-09-10
- *
- * \note This microservice crawls an iRods collection recursively, and executes a sequence of
+ * \note This microservice crawls an iRODS collection recursively, and executes a sequence of
  *    microservices/actions for each data object. The data object can be passed as a
  *    DataObjInp_MS_T to this microservice sequence, through 'objects'.
  *
- * \usage
- * 
- *  As seen in modules/ERA/test/collectionSpider.ir
- * 
- * Collection Spider||msiCollectionSpider(*Collection, *Objects, msiIsData(*Objects, *dataID, *foo)##writePosInt(stdout, *dataID)##writeLine(stdout, ""), *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] collection - A CollInp_MS_T or a STR_MS_T with the iRODS path
  * \param[in] objects - Added for clarity. Only the label is required here.
@@ -798,7 +742,6 @@ msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *reso
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action, msParam_t *status, ruleExecInfo_t *rei)

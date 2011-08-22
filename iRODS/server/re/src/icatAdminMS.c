@@ -22,23 +22,16 @@
  * \author  Wayne Schroeder
  * \date  2008 or before
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage
- * 
- * As seen in server/config/reConfigs/core.irb
+ * \note From the irods wiki: https://www.irods.org/index.php/Rules
  *
- * acCreateUserF1||msiCreateUser##acCreateDefaultCollections##msiAddUserToGroup(public)##msiCommit|msiRollback##msiRollback##msiRollback##nop
- *
- * From the irods wiki: https://www.irods.org/index.php/Rules
- *
- * The "acCreateUser" rule, for example, calls "msiCreateUser". 
+ * \note The "acCreateUser" rule, for example, calls "msiCreateUser". 
  * If that succeeds it invokes the "acCreateDefaultCollections" rule (which calls other rules and msi routines). 
  * Then, if they all succeed, the "msiCommit" function is called to save persistent state information.
+ *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -51,11 +44,10 @@
  * \sideeffect none
  *
  * \return integer
- * \retval (i)
+ * \retval i
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiCreateUser(ruleExecInfo_t *rei)
 {
@@ -97,17 +89,10 @@ int msiCreateUser(ruleExecInfo_t *rei)
  * \author  Wayne Schroeder
  * \date  2008 or before
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage
- * 
- * As seen in server/config/reConfigs/core.irb
- *
- * acCreateCollByAdmin(*parColl,*childColl)||msiCreateCollByAdmin(*parColl,*childColl)|nop
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xparColl - a msParam of type STR_MS_T
  * \param[in] xchildName - a msParam of type STR_MS_T
@@ -126,7 +111,6 @@ int msiCreateUser(ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei)
 {
@@ -183,18 +167,10 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  * \author  Wayne Schroeder
  * \date  2008 or before
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage
- * 
- * As seen in server/config/reConfigs/core.irb
- *
- * acDeleteCollByAdmin(*parColl,*childColl)||msiDeleteCollByAdmin(*parColl,*childColl)|nop
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] xparColl - a msParam of type STR_MS_T
  * \param[in] xchildName - a msParam of type STR_MS_T
@@ -213,7 +189,6 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei)
 {
@@ -274,18 +249,10 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  * \author  Wayne Schroeder
  * \date  2008 or before
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage
- * 
- * As seen in server/config/reConfigs/core.irb
- *
- * acDeleteUserF1||acDeleteDefaultCollections##msiDeleteUser##msiCommit|msiRollback##msiRollback##nop
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -302,7 +269,6 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int 
 msiDeleteUser(ruleExecInfo_t *rei)
@@ -341,20 +307,12 @@ msiDeleteUser(ruleExecInfo_t *rei)
  * \since pre-2.1
  *
  * \author  Wayne Schroeder
- * \date  2008 or before
- *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ * \date  2008
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage
- * 
- * As seen in server/config/reConfigs/core.irb
- *
- * testrule||msiCreateUser##acCreateDefaultCollections##msiAddUserToGroup(public)##msiCommit|msiRollback##msiRollback##msiRollback##nop
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] msParam - a msParam of type STR_MS_T, the name of the group
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -372,7 +330,6 @@ msiDeleteUser(ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int 
 msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
@@ -418,19 +375,10 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
  * \author  Wayne Schroeder
  * \date  October 2008
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage
- * 
- * As seen in server/config/reConfigs/core.irb
- *
- * acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(\*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
- * (Note that the \ should be / but was changed to avoid a compiler warning
- *  about a slash * appearing in a comment.)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] oldName - a msParam of type STR_MS_T
  * \param[in] newName - a msParam of type STR_MS_T
@@ -449,7 +397,6 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRenameLocalZone(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
@@ -480,19 +427,10 @@ msiRenameLocalZone(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  * \author  Wayne Schroeder
  * \date  October 2008
  *
- * \remark Jewel Ward - msi documentation, 2009-06-18
- * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
- *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage
- * 
- * As seen in server/config/reConfigs/core.irb
- *
- * acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(\*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
- * (Note that the \ should be / but was changed to avoid a compiler warning
- *  about a slash * appearing in a comment.)
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] oldName - a msParam of type STR_MS_T
  * \param[in] newName - a msParam of type STR_MS_T
@@ -511,7 +449,6 @@ msiRenameLocalZone(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
@@ -544,14 +481,12 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  * \author  Wayne Schroeder
  * \date  March 2009
  *
- * \remark Terrell Russell - msi documentation, 2009-06-30
- *
  * \note Should not be used outside of the rules defined in core.irb.
  * Once set STRICT, strict mode remains in force (users can't call it in
  * another rule to change the mode back to non-strict).
  * See core.irb.
  *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] msParam - a msParam of type STR_MS_T - can have value 'STRICT'
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -569,7 +504,6 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei)
@@ -623,16 +557,15 @@ msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei)
  * \date    2011-07-07
  *
  *
- * \note	This microservice sets a disk usage quota for a given user or group.
- * 			If no resource name is provided the quota will apply across all resources.
+ * \note  This microservice sets a disk usage quota for a given user or group.
+ *          If no resource name is provided the quota will apply across all resources.
  *
- * \usage
- *
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] type - a STR_MS_T - Can be either "user" or "group"
  * \param[in] name - a STR_MS_T with the name of the user or group
  * \param[in] resource - Optional - a STR_MS_T with the name of the resource where
- * 				the quota will apply, or "total" for the quota to be system-wide.
+ *      the quota will apply, or "total" for the quota to be system-wide.
  * \param[in] value - an INT_MST_T or DOUBLE_MS_T or STR_MS_T with the quota (in bytes)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -649,7 +582,6 @@ msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei)
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
 msiSetQuota(msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *value, ruleExecInfo_t *rei)

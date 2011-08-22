@@ -36,11 +36,7 @@
  * \author uiuc.edu Mike Wan
  * \date  Feb 2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-18
- *
- * \note open an HDF5 file
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpH5FileParam - The input H5File to open. Must be h5File_MS_T.
  * \param[in] inpFlagParam - Input flag - INT_MS_T.
@@ -60,7 +56,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
@@ -212,11 +207,7 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  * \author uiuc.edu Mike Wan
  * \date  2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-18
- *
- * \note closes an HDF5 file
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpH5FileParam - The input H5File to close. Must be h5File_MS_T.
  * \param[out] outH5FileParam - the output H5File - Must be h5File_MS_T.
@@ -235,7 +226,6 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa msiH5File_open
- * \bug  no known bugs
 **/
 int
 msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outH5FileParam,
@@ -333,11 +323,7 @@ ruleExecInfo_t *rei)
  * \author uiuc.edu Mike Wan
  * \date  2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-18
- *
- * \note read a data object/objects from an opened HDF5 file 
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpH5DatasetParam - The input H5Dataset. Must be h5Dataset_MS_T.
  * \param[out] outH5DatasetParam - The output H5Dataset - Must be h5Dataset_MS_T.
@@ -356,7 +342,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiH5Dataset_read (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam,
@@ -446,11 +431,7 @@ ruleExecInfo_t *rei)
  * \author uiuc.edu Mike Wan
  * \date  2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-18
- *
- * \note read attributes of an element in an HDF5 file
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpH5DatasetParam - The input H5Dataset. Must be h5Dataset_MS_T.
  * \param[out] outH5DatasetParam - The output H5Dataset - Must be h5Dataset_MS_T.
@@ -469,7 +450,6 @@ ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
@@ -559,11 +539,7 @@ msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5Datas
  * \author uiuc.edu Mike wan
  * \date   2008
  *
- * \remark Terrell Russell - msi documentation, 2009-06-18
- *
- * \note read attributes for a group in an HDF5 file
- *
- * \usage None
+ * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpH5GroupParam - The input H5Group. Must be h5Dataset_MS_T.
  * \param[out] outH5GroupParam - The output H5Group - Must be h5Dataset_MS_T.
@@ -582,7 +558,6 @@ msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5Datas
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiH5Group_read_attribute (msParam_t *inpH5GroupParam, 

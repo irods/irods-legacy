@@ -26,11 +26,7 @@
  * \author  Rahul Deshmukh and Terrell Russell, SILS at UNC-Chapel Hill
  * \date    Summer 2010
  *
- * \remark Terrell Russell - msi documentation, 2010-12-03
- *
- * \note 
- *
- * \usage  See iRODS/modules/Z3950/z3950rule.ir
+ * \usage See clients/icommands/test/rules3.0/ 
  *
  * \param[in]       serverName    - a STR_MS_T containing the name of the Z39.50 server
  * \param[in]       query         - a STR_MS_T containing the input query to the Z39.50 server
@@ -51,7 +47,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int
