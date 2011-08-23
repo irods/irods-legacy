@@ -28,12 +28,17 @@
 # linux/unix commands are assumed to be available too (grep, echo,
 # date, mail, tail).
 #
-# You can use different files if you want by changing these:
-$notifyConfig="notify.txt";
-$notifyData="data.txt";
+# You can use different files if you want by changing these,
+# they are full path names so this can be easily run via cron:
+$notifyConfig="/home/schroeder/cron/notify.config";
+$notifyData="/home/schroeder/cron/data.txt";
+
+#For running from cron, path for iquest:
+$iquest="/home/schroeder/svn/trunk/iRODS/clients/icommands/bin/iquest";
+
 #
 $debug=0;
-$debugMail=1;
+$debugMail=0;
 #
 $collectionCount=0;
 @collections;
@@ -73,11 +78,16 @@ sub printCollections() {
 sub updateCollectionRecord($) {
     my ($collection) = @_;
 
-    my $command = "iquest \"%s\" \"select count(DATA_NAME) where COLL_NAME like \'$collection%\'\" ";
+    my $command = "$iquest \"%s\" \"select count(DATA_NAME) where COLL_NAME like \'$collection%\'\" ";
 
     if ($debug==1) { print $command . "\n"; }
     my $output = `$command`;
+    my $cmdStat=$?;
     if ($debug==1) { print "out:" . $output . ":\n"; }
+    if ($cmdStat != 0) {
+	print "command failed, exiting \n";
+	exit(1);
+    }
 
     chomp($output);
     $count=$output;
@@ -86,12 +96,17 @@ sub updateCollectionRecord($) {
 	return;
     }
 
-    my $command2 = "iquest \"%s\" \"select sum(DATA_SIZE) where COLL_NAME like \'$collection%\'\" ";
-
+    my $command2 = "$iquest \"%s\" \"select sum(DATA_SIZE) where COLL_NAME like \'$collection%\'\" ";
+    my $cmdStat=$?;
     if ($debug==1) { print $command2 . "\n"; }
 
     my $output2 = `$command2`;
+    my $cmdStat=$?;
     if ($debug==1) { print "out2:" . $output2 . ":\n"; }
+    if ($cmdStat != 0) {
+	print "command failed, exiting \n";
+	exit(1);
+    }
 
     chomp($output2);
     $size=$output2;
@@ -199,6 +214,9 @@ sub checkCollection($$) {
 	sendNotices($collection, $emailAddresses);
     }
 }
+
+$date = `date`;
+print "Running at $date";
 
 open (MYFILE, $notifyConfig);
 
