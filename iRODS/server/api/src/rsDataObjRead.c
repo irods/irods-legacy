@@ -89,7 +89,11 @@ bytesBuf_t *dataObjReadOutBBuf)
           L1desc[l1descInx].dataObjInfo->objPath);
 	if (i < 0)
 	  return(i);  
+#if 0	/* XXXXX This is used for msi changing the the return buffer but causes
+         * problem for normal read because len is the size of the buffer. 
+	 * it out for now */
 	bytesRead = dataObjReadOutBBuf->len;
+#endif
 	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
     }
 
