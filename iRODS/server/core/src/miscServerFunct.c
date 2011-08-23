@@ -862,13 +862,15 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
             bytesRead = myRead (srcFd, buf, toRead,
 		  SOCK_TYPE, NULL, NULL);
             if (bytesRead != toRead) {
-                rodsLog (LOG_NOTICE,
-                  "remToLocPartialCopy: toGet %lld, bytesRead %d",
-                  toGet, bytesRead);
 		if (bytesRead < 0) {
 		    myInput->status = bytesRead;
-		} else {
+		    rodsLogError (LOG_ERROR, bytesRead,
+                  "remToLocPartialCopy: copy error for %lld", bytesRead);
+		} else if ((myInput->flags & NO_CHK_COPY_LEN_FLAG) == 0) {
                     myInput->status = SYS_COPY_LEN_ERR - errno;
+                    rodsLog (LOG_ERROR,
+                      "remToLocPartialCopy: toGet %lld, bytesRead %d",
+                      toGet, bytesRead);
 		}
                 break;
             }
@@ -1044,6 +1046,10 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     }
 
    if (numThreads == 1) {
+        if (getValByKey (&dataOprInp->condInput,
+          NO_CHK_COPY_LEN_KW) != NULL) {
+            myInput[0].flags = NO_CHK_COPY_LEN_FLAG;
+        }
 	if (oprType == COPY_TO_LOCAL_OPR) {
             remToLocPartialCopy (&myInput[0]);
 	} else {
@@ -1224,6 +1230,10 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
       0, size0, offset0, 0);
 
     if (numThreads == 1) {
+	if (getValByKey (&dataOprInp->condInput,
+          NO_CHK_COPY_LEN_KW) != NULL) {
+	    myInput[0].flags = NO_CHK_COPY_LEN_FLAG;
+	}
         sameHostPartialCopy (&myInput[0]);
         return (myInput[0].status);
     } else {
@@ -1385,14 +1395,16 @@ sameHostPartialCopy (portalTransferInp_t *myInput)
          srcL3descInx, buf, toRead);
 
         if (bytesRead <= 0) {
-            rodsLog (LOG_NOTICE,
-              "sameHostPartialCopy: toCopy %lld, bytesRead %d",
-              toCopy, bytesRead);
-	    if (bytesRead < 0) {
-		myInput->status = bytesRead;
-	    } else {
+            if (bytesRead < 0) {
+                myInput->status = bytesRead;
+                rodsLogError (LOG_ERROR, bytesRead,
+              "sameHostPartialCopy: copy error for %lld", bytesRead);
+            } else if ((myInput->flags & NO_CHK_COPY_LEN_FLAG) == 0) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
-	    }
+                rodsLog (LOG_ERROR,
+                  "sameHostPartialCopy: toCopy %lld, bytesRead %d",
+                  toCopy, bytesRead);
+            }
             break;
         }
 
@@ -1498,13 +1510,15 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
               srcL3descInx, buf, toRead);
 
             if (bytesRead != toRead) {
-                rodsLog (LOG_NOTICE,
-                  "locToRemPartialCopy: toGet %lld, bytesRead %d",
-                  toGet, bytesRead);
                 if (bytesRead < 0) {
                     myInput->status = bytesRead;
-                } else {
+                    rodsLogError (LOG_ERROR, bytesRead,
+                  "locToRemPartialCopy: copy error for %lld", bytesRead);
+                } else if ((myInput->flags & NO_CHK_COPY_LEN_FLAG) == 0) {
                     myInput->status = SYS_COPY_LEN_ERR - errno;
+                    rodsLog (LOG_ERROR,
+                      "locToRemPartialCopy: toGet %lld, bytesRead %d",
+                      toGet, bytesRead);
                 }
                 break;
             }
@@ -2234,7 +2248,8 @@ singleRemToLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 	}
     }
     free (dataObjReadInpBBuf.buf);
-    if (dataSize <= 0 || totalWritten == dataSize) {
+    if (dataSize <= 0 || totalWritten == dataSize ||
+      getValByKey (&dataOprInp->condInput, NO_CHK_COPY_LEN_KW) != NULL) {
         return (0);
     } else {
         rodsLog (LOG_ERROR,
@@ -2290,7 +2305,8 @@ singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 	}
     }
     free (dataObjWriteInpBBuf.buf);
-    if (dataSize <= 0 || totalWritten == dataSize) {
+    if (dataSize <= 0 || totalWritten == dataSize || 
+      getValByKey (&dataOprInp->condInput, NO_CHK_COPY_LEN_KW) != NULL) {
         return (0);
     } else {
         rodsLog (LOG_ERROR,

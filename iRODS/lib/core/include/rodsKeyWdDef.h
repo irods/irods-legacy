@@ -100,6 +100,8 @@
 #define DRYRUN_KW		"dryrun"  /* do a dry run */
 #define ACL_COLLECTION_KW	"aclCollection"  /* the collection from which 
 						  * the ACL should be used */
+#define NO_CHK_COPY_LEN_KW	"noChkCopyLen"  /* Don't check the len 
+						  * when transfering  */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

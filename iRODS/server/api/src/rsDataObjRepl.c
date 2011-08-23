@@ -903,6 +903,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
     dataOprInp_t *dataOprInp;
     int srcRemoteFlag, destRemoteFlag;
 
+    bzero (&dataCopyInp, sizeof (dataCopyInp));
     dataOprInp = &dataCopyInp.dataOprInp;
     srcL1descInx = L1desc[l1descInx].srcL1descInx;
     destL1descInx = l1descInx;
@@ -928,9 +929,13 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
       FileDesc[destL3descInx].rodsServerHost) {
 	/* local zone same host copy */
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, SAME_HOST_COPY_OPR);
+	/* dataCopyInp.portalOprOut.numThreads is needed by rsDataCopy */
+	dataCopyInp.portalOprOut.numThreads = 
+          dataCopyInp.dataOprInp.numThreads;
 	if (srcRemoteFlag == LOCAL_HOST) {
 	    addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
 	}
+	    
     } else if ((srcRemoteFlag == LOCAL_HOST && destRemoteFlag != LOCAL_HOST) ||
       destRemoteFlag == REMOTE_ZONE_HOST) {
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_REM_OPR);
@@ -991,6 +996,16 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
 	}
     }
     /* rsDataCopy - does the physical data transfer */
+    if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput, 
+      NO_CHK_COPY_LEN_KW) != NULL) {
+	/* don't check the transfer len */
+	addKeyVal (&dataOprInp->condInput, NO_CHK_COPY_LEN_KW, "");
+	if (L1desc[l1descInx].dataObjInp->numThreads > 1) {
+	    L1desc[l1descInx].dataObjInp->numThreads = 
+	      L1desc[srcL1descInx].dataObjInp->numThreads =
+	      dataCopyInp.portalOprOut.numThreads = 1;
+	}
+    }
     status =  rsDataCopy (rsComm, &dataCopyInp);
 
     if (status >= 0 && portalOprOut != NULL && 
@@ -1029,8 +1044,12 @@ l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx)
 
     if (bytesRead < 0) {
 	return (bytesRead);
+    } else if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
+       NO_CHK_COPY_LEN_KW) != NULL) {
+	/* need to update size */
+	L1desc[l1descInx].dataSize = L1desc[l1descInx].dataObjInp->dataSize
+          = bytesRead;
     }
-
     bytesWritten = rsL3FilePutSingleBuf (rsComm, &l1descInx, &dataBBuf);
  
     L1desc[l1descInx].bytesWritten = bytesWritten;

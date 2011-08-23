@@ -266,6 +266,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
     int srcL1descInx;
     regReplica_t regReplicaInp;
+    int noChkCopyLenFlag;
 
 
     l1descInx = dataObjCloseInp->l1descInx;
@@ -317,6 +318,12 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         return (status);
     }
 
+    if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
+      NO_CHK_COPY_LEN_KW) != NULL) {
+	noChkCopyLenFlag = 1;
+    } else {
+	noChkCopyLenFlag = 0;
+    }
     if (L1desc[l1descInx].stageFlag == NO_STAGING) {
 	/* don't check for size if it is DO_STAGING type because the
 	 * fileStat call may not be supported */ 
@@ -331,7 +338,8 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
               L1desc[l1descInx].dataObjInfo->objPath, status);
             return (status);
         } else if (L1desc[l1descInx].dataSize > 0) { 
-            if (newSize != L1desc[l1descInx].dataSize) {
+            if (newSize != L1desc[l1descInx].dataSize && 
+	      noChkCopyLenFlag == 0) {
 	        rodsLog (LOG_NOTICE,
 	          "_rsDataObjClose: size in vault %lld != target size %lld",
 	            newSize, L1desc[l1descInx].dataSize);
@@ -344,7 +352,8 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	newSize = L1desc[l1descInx].dataSize;
     }
 
-    if (getRescClass (L1desc[l1descInx].dataObjInfo->rescInfo) != COMPOUND_CL) {
+    if (getRescClass (L1desc[l1descInx].dataObjInfo->rescInfo) != COMPOUND_CL &&
+      noChkCopyLenFlag == 0) {
         status = procChksumForClose (rsComm, l1descInx, &chksumStr);
         if (status < 0) return status;
     }

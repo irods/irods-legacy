@@ -146,6 +146,7 @@ typedef struct PortalOpr {
 
 /* definition for flags */
 #define STREAMING_FLAG		0x1
+#define NO_CHK_COPY_LEN_FLAG	0x2
 
 typedef struct TransferHeader {
     int oprType;
