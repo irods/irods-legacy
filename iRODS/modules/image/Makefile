@@ -34,12 +34,12 @@ MSIncDir =	$(modulesDir)/image/microservices/include
 #
 # Set IMAGEMAGICK to the top-level directory of the
 # ImageMagick installation.
-IMAGEMAGICK =	
+IMAGEMAGICK = /sw
 
 ifdef IMAGEMAGICK
 OBJECTS =	$(MSObjDir)/imageMS.o $(MSObjDir)/imageMSutil.o
-INCLUDE_FLAGS = -I$(MSIncDir) -I$(IMAGEMAGICK)/include
-LIBS =		-L$(IMAGEMAGICK)/lib -lMagick
+INCLUDE_FLAGS = -I$(MSIncDir) -I$(IMAGEMAGICK)/include -I$(IMAGEMAGICK)/include/ImageMagick -I$(buildDir)/lib/api/include
+LIBS =		-L$(IMAGEMAGICK)/lib -lMagick++ -lMagickCore -lMagickWand
 else
 OBJECTS =
 INCLUDE_FLAGS =

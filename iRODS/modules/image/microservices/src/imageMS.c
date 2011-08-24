@@ -22,7 +22,7 @@
 #include "imageMSutil.h"
 #include "rsApiHandler.h"
 #include "apiHeaderAll.h"
-
+#include "fileLseek.h"
 
 
 /**
@@ -73,7 +73,7 @@
  * \return integer
  * \retval 0 on success
  * \pre none
- * \post none
+ * \postnone
  * \sa none
 **/
 int
@@ -113,7 +113,7 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
 		sourceParam, &source )) < 0 )
 		return rei->status;	/* Error */
 
-	source.properties = mallocAndZero( sizeof( keyValPair_t ) );
+	source.properties = (keyValPair_t*)mallocAndZero( sizeof( keyValPair_t ) );
 	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageConvert:  source properties",
 		sourceProp, &(source.properties) )) < 0 )
 	{
@@ -128,7 +128,7 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
 		return rei->status;	/* Error */
 	}
 
-	destination.properties = mallocAndZero( sizeof( keyValPair_t ) );
+	destination.properties = (keyValPair_t*)mallocAndZero( sizeof( keyValPair_t ) );
 	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageConvert:  destination properties",
 		destProp, &(destination.properties) )) < 0 )
 	{
@@ -245,7 +245,7 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
 		sourceParam, &source )) < 0 )
 		return rei->status;	/* Error */
 
-	source.properties = mallocAndZero( sizeof( keyValPair_t ) );
+	source.properties = (keyValPair_t*)mallocAndZero( sizeof( keyValPair_t ) );
 	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageGetProperties:  source properties",
 		sourceProp, &(source.properties) )) < 0 )
 	{
@@ -395,7 +395,7 @@ msiImageScale( msParam_t* sourceParam, msParam_t* sourceProp,
 		sourceParam, &source )) < 0 )
 		return rei->status;	/* Error */
 
-	source.properties = mallocAndZero( sizeof( keyValPair_t ) );
+	source.properties = (keyValPair_t*)mallocAndZero( sizeof( keyValPair_t ) );
 	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageScale:  source properties",
 		sourceProp, &(source.properties) )) < 0 )
 	{
@@ -424,7 +424,7 @@ msiImageScale( msParam_t* sourceParam, msParam_t* sourceProp,
 		return rei->status;	/* Error */
 	}
 
-	destination.properties = mallocAndZero( sizeof( keyValPair_t ) );
+	destination.properties = (keyValPair_t*)mallocAndZero( sizeof( keyValPair_t ) );
 	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageScale:  destination properties",
 		destProp, &(destination.properties) )) < 0 )
 	{

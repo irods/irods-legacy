@@ -20,8 +20,11 @@
 #include "imageMSutil.h"
 #include "rsApiHandler.h"
 #include "apiHeaderAll.h"
-
-
+#include "dataObjOpen.h"
+#include "dataObjLseek.h"
+#include "dataObjClose.h"
+#include "fileLseek.h"
+#include "dataObjInpOut.h"
 
 
 
@@ -255,10 +258,10 @@ int
 _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	ImageFileParameter_t* file )
 {
-	fileLseekInp_t seekParam;
+/*	fileLseekInp_t seekParam;	*/
 	fileLseekOut_t* seekResult = NULL;
-	dataObjReadInp_t readParam;
-	dataObjCloseInp_t closeParam;
+/*	dataObjReadInp_t readParam;
+	dataObjCloseInp_t closeParam; */
 	dataObjInp_t openParam;
 
 	int fd = -1;
@@ -267,15 +270,23 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	bytesBuf_t data;
 	char* format = NULL;
 	int status;
+	
+	openedDataObjInp_t seekParam_of_another_color;
+	openedDataObjInp_t closeParam_of_another_color;
+	openedDataObjInp_t readParam_of_another_color;
 
 	ImageInfo* info       = NULL;
 	ExceptionInfo* errors = NULL;
 
 	memset( &openParam,  0, sizeof(dataObjInp_t) );
-	memset( &seekParam,  0, sizeof(fileLseekInp_t) );
+/*	memset( &seekParam,  0, sizeof(fileLseekInp_t) );
 	memset( &readParam,  0, sizeof(dataObjReadInp_t) );
-	memset( &closeParam, 0, sizeof(dataObjCloseInp_t) );
+	memset( &closeParam, 0, sizeof(dataObjCloseInp_t) ); */
 	memset( &data,       0, sizeof(bytesBuf_t) );
+	
+	memset( &seekParam_of_another_color, 0, sizeof(openedDataObjInp_t));
+	memset( &closeParam_of_another_color, 0, sizeof(openedDataObjInp_t));
+	memset( &readParam_of_another_color, 0, sizeof(openedDataObjInp_t));
 
 
 	/* If the file argument is a file path, */
@@ -324,10 +335,16 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 
 
 	/* Seek to the end of the file to get its size. */
-	seekParam.fileInx = fd;
+	/*seekParam.fileInx = fd;
 	seekParam.offset  = 0;
-	seekParam.whence  = SEEK_END;
-	status = rsDataObjLseek( rsComm, &seekParam, &seekResult );
+	seekParam.whence  = SEEK_END; */
+	
+	/* Put the same values into the structure that the function is expecting. */
+	seekParam_of_another_color.l1descInx = fd;
+	seekParam_of_another_color.offset = 0;
+	seekParam_of_another_color.whence = SEEK_END;
+	
+	status = rsDataObjLseek( rsComm, &seekParam_of_another_color, &seekResult );
 	if ( status < 0 )
 	{
 		rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,
@@ -337,17 +354,22 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 		/* Try to close the file we opened, ignoring errors. */
 		if ( fileWasOpened )
 		{
-			closeParam.l1descInx = fd;
-			rsDataObjClose( rsComm, &closeParam );
+		/*	closeParam.l1descInx = fd;	*/		
+			closeParam_of_another_color.l1descInx = fd;
+			rsDataObjClose( rsComm, &closeParam_of_another_color );
 		}
 		return status;
 	}
 	fileLength = seekResult->offset;
 
 	/* Reset to the start. */
-	seekParam.offset  = 0;
-	seekParam.whence  = SEEK_SET;
-	status = rsDataObjLseek( rsComm, &seekParam, &seekResult );
+	/*seekParam.offset  = 0;
+	seekParam.whence  = SEEK_SET; */
+	
+	seekParam_of_another_color.offset = 0;
+	seekParam_of_another_color.whence = SEEK_SET;
+	
+	status = rsDataObjLseek( rsComm, &seekParam_of_another_color, &seekResult );
 	if ( status < 0 )
 	{
 		rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,
@@ -357,21 +379,24 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 		/* Try to close the file we opened, ignoring errors.*/
 		if ( fileWasOpened )
 		{
-			closeParam.l1descInx = fd;
-			rsDataObjClose( rsComm, &closeParam );
+		/*	closeParam.l1descInx = fd;	*/
+			closeParam_of_another_color.l1descInx = fd;
+			rsDataObjClose( rsComm, &closeParam_of_another_color );
 		}
 		return status;
 	}
 
 
 	/* Read the file into a big buffer. */
-	readParam.l1descInx = fd;
-	readParam.len       = fileLength;
+/*	readParam.l1descInx = fd;
+	readParam.len       = fileLength;	*/
+	readParam_of_another_color.l1descInx = fd;
+	readParam_of_another_color.len       = fileLength;
 
 	data.len            = fileLength;
 	data.buf            = (void*)malloc( fileLength );
 
-	status = rsDataObjRead( rsComm, &readParam, &data );
+	status = rsDataObjRead( rsComm, &readParam_of_another_color, &data );
 	if ( status < 0 )
 	{
 		rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,
@@ -382,8 +407,9 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 		/* Try to close the file we opened, ignoring errors. */
 		if ( fileWasOpened )
 		{
-			closeParam.l1descInx = fd;
-			rsDataObjClose( rsComm, &closeParam );
+		/*	closeParam.l1descInx = fd;	*/
+			closeParam_of_another_color.l1descInx = fd;
+			rsDataObjClose( rsComm, &closeParam_of_another_color );
 		}
 		return status;
 	}
@@ -392,9 +418,9 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	/* Close the file we opened. */
 	if ( fileWasOpened )
 	{
-		closeParam.l1descInx = fd;
-
-		status = rsDataObjClose( rsComm, &closeParam );
+	/*	closeParam.l1descInx = fd;	*/
+		closeParam_of_another_color.l1descInx = fd;
+		status = rsDataObjClose( rsComm, &closeParam_of_another_color );
 		if ( status < 0 )
 		{
 			rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,
@@ -458,9 +484,13 @@ int
 _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 	ImageFileParameter_t* file )
 {
-	dataObjWriteInp_t writeParam;
-	dataObjCloseInp_t closeParam;
+/*	dataObjWriteInp_t writeParam;
+	dataObjCloseInp_t closeParam; */
 	dataObjInp_t openParam;
+
+	openedDataObjInp_t closeParam_of_another_color;
+	openedDataObjInp_t writeParam_of_another_color;
+
 
 	ImageInfo* info       = NULL;
 	ExceptionInfo* errors = NULL;
@@ -473,9 +503,11 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 	bytesBuf_t data;
 
 	memset( &openParam,   0, sizeof(dataObjInp_t) );
-	memset( &writeParam,  0, sizeof(dataObjWriteInp_t) );
-	memset( &closeParam,  0, sizeof(dataObjCloseInp_t) );
+/*	memset( &writeParam,  0, sizeof(dataObjWriteInp_t) );
+	memset( &closeParam,  0, sizeof(dataObjCloseInp_t) );	*/
 	memset( &data,        0, sizeof(bytesBuf_t) );
+	memset( &closeParam_of_another_color,  0, sizeof(openedDataObjInp_t) );
+	memset( &writeParam_of_another_color,  0, sizeof(openedDataObjInp_t) );
 
 
 
@@ -568,9 +600,9 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 
 
 	/* Write the buffer to the file */
-	writeParam.l1descInx = fd;
-	writeParam.len       = data.len;
-	status = rsDataObjWrite( rsComm, &writeParam, &data );
+	writeParam_of_another_color.l1descInx = fd;
+	writeParam_of_another_color.len       = data.len;
+	status = rsDataObjWrite( rsComm, &writeParam_of_another_color, &data );
 	if ( status < 0 )
 	{
 		rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,
@@ -585,8 +617,9 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 	/* Close the file if we opened it. */
 	if ( fileWasOpened )
 	{
-		closeParam.l1descInx = fd;
-		status = rsDataObjClose( rsComm, &closeParam );
+	/*	closeParam.l1descInx = fd;	*/
+		closeParam_of_another_color.l1descInx = fd;
+		status = rsDataObjClose( rsComm, &closeParam_of_another_color );
 		if ( status < 0 )
 		{
 			rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,

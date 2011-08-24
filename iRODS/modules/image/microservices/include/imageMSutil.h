@@ -11,6 +11,7 @@
 #define IMAGEMSUTIL_H
 
 
+#include "fileLseek.h"
 
 
 
@@ -49,6 +50,16 @@ int _ImageReadFile( rsComm_t* rsComm, char* messageBase, ImageFileParameter_t* f
 int _ImageWriteFile( rsComm_t* rsComm, char* messageBase, ImageFileParameter_t* file );
 char* _ImageGuessFormat( ImageFileParameter_t* file );
 int _ImageGetProperties( ImageFileParameter_t* file, keyValPair_t* list );
+int _ImageGetDouble( rsComm_t* rsComm, char* messageBase, msParam_t* param, double* result );
+
+
+
+int rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
+int rsDataObjLseek (rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp, fileLseekOut_t **dataObjLseekOut);
+int rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp);
+int rsDataObjWrite (rsComm_t *rsComm, openedDataObjInp_t *dataObjWriteInp, bytesBuf_t *dataObjWriteInpBBuf);
+int rsDataObjRead (rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp, bytesBuf_t *dataObjReadOutBBuf);
+
 
 
 #endif	/* IMAGEMSUTIL_H */
