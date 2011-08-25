@@ -1073,7 +1073,10 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
    RETCODE stat;
    int nCols, i;
    icatStmtStrct *myStatement;
-   int logGetRows=0;
+   int logGetRows=0; /* Another handy debug flag.  When set and if
+                        spLogSql is set, this function will log each
+                        time a row is gotten, the number of columns ,
+                        and the contents of the first column.  */
 
    myStatement=icss->stmtPtr[statementNumber];
    hstmt = myStatement->stmtPtr;
