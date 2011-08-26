@@ -1,5 +1,5 @@
 /**
- * @file msoTestMS.c
+ * @file msoHttpMS.c
  *
  */
 
@@ -7,7 +7,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /**
- * @file  msoTestMS.c
+ * @file  msoHttpMS.c
  *
  */
 
