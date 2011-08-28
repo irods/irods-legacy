@@ -1442,7 +1442,6 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     int status;
     char *value;
     int len;
-    int nextInx;
     char *replStatus, *dataId;
     int dataIdLen, replStatusLen;
     queryHandle_t *queryHandle = &collHandle->queryHandle;
@@ -1450,10 +1449,16 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     genQueryInp_t *genQueryInp = &collHandle->genQueryInp;
     dataObjSqlResult_t *dataObjSqlResult = &collHandle->dataObjSqlResult;
     rodsObjStat_t *rodsObjStat = collHandle->rodsObjStat;
+    static char prevdataId[NAME_LEN];
+    int selectedInx = -1;
 
     if (outCollEnt == NULL)
         return (USER__NULL_INPUT_ERR);
 
+    if (collHandle->rowInx == 0) {
+	/* first time. need to zero out static */
+	bzero (prevdataId, sizeof (prevdataId));
+    }
     memset (outCollEnt, 0, sizeof (collEnt_t));
     outCollEnt->objType = DATA_OBJ_T;
     if (collHandle->rowInx >= dataObjSqlResult->rowCnt) {
@@ -1493,69 +1498,72 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
 
     if (strlen (dataId) > 0 && (collHandle->flags & NO_TRIM_REPL_FG) == 0) {
         int i;
-        char *prevdataId = NULL;
         int gotCopy = 0;
 
         /* rsync type query ask for dataId. Others don't. Need to
          * screen out dup copies */
 
         for (i = collHandle->rowInx; i < dataObjSqlResult->rowCnt; i++) {
-            if (prevdataId != NULL) {
-                if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) {
-                    break;
-                }
-            } else {
-                prevdataId = &dataId[dataIdLen * i];
-                collHandle->rowInx = i;
-            }
-
-            if (gotCopy == 0 &&
-              atoi (&replStatus[replStatusLen * i]) > 0) {
-                collHandle->rowInx = i;
-                gotCopy = 1;
+	    if (selectedInx < 0) {
+		/* nothing selected yet. pick this if different */
+		if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) {
+		    rstrcpy (prevdataId, &dataId[dataIdLen * i], NAME_LEN);
+		    selectedInx = i;
+		}
+	    } else {
+		/* skip i to the next object */
+		if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) break;
+                if (gotCopy == 0 &&
+                  atoi (&replStatus[replStatusLen * i]) > 0) {
+                    /* pick a good copy */
+                    selectedInx = i;
+                    gotCopy = 1;
+		}
             }
         }
-        nextInx = i;
+	if (selectedInx < 0) return CAT_NO_ROWS_FOUND;
+	collHandle->rowInx = i;
     } else {
-        nextInx = (collHandle->rowInx) + 1;
+	selectedInx = collHandle->rowInx;
+	collHandle->rowInx++;
     }
 
     value = dataObjSqlResult->collName.value;
     len = dataObjSqlResult->collName.len;
-    outCollEnt->collName = &value[len * (collHandle->rowInx)];
+    outCollEnt->collName = &value[len * selectedInx];
 
     value = dataObjSqlResult->dataName.value;
     len = dataObjSqlResult->dataName.len;
-    outCollEnt->dataName = &value[len * (collHandle->rowInx)];
+    outCollEnt->dataName = &value[len * selectedInx];
 
     value = dataObjSqlResult->dataMode.value;
     len = dataObjSqlResult->dataMode.len;
-    outCollEnt->dataMode = atoi (&value[len * (collHandle->rowInx)]);
+    outCollEnt->dataMode = atoi (&value[len * selectedInx]);
 
     value = dataObjSqlResult->dataSize.value;
     len = dataObjSqlResult->dataSize.len;
-    outCollEnt->dataSize = strtoll (&value[len * (collHandle->rowInx)], 0, 0);
+    outCollEnt->dataSize = strtoll (&value[len * selectedInx], 0, 0);
 
     value = dataObjSqlResult->createTime.value;
     len = dataObjSqlResult->createTime.len;
-    outCollEnt->createTime = &value[len * (collHandle->rowInx)];
+    outCollEnt->createTime = &value[len * selectedInx];
 
     value = dataObjSqlResult->modifyTime.value;
     len = dataObjSqlResult->modifyTime.len;
-    outCollEnt->modifyTime = &value[len * (collHandle->rowInx)];
+    outCollEnt->modifyTime = &value[len * selectedInx];
 
-    outCollEnt->dataId = &dataId[dataIdLen * (collHandle->rowInx)];
+    outCollEnt->dataId = &dataId[dataIdLen * selectedInx];
 
     outCollEnt->replStatus = atoi (&replStatus[replStatusLen * 
-     (collHandle->rowInx)]);
+     selectedInx]);
 
     value = dataObjSqlResult->replNum.value;
     len = dataObjSqlResult->replNum.len;
-    outCollEnt->replNum = atoi (&value[len * (collHandle->rowInx)]);
+    outCollEnt->replNum = atoi (&value[len * selectedInx]);
 
     value = dataObjSqlResult->chksum.value;
     len = dataObjSqlResult->chksum.len;
-    outCollEnt->chksum = &value[len * (collHandle->rowInx)];
+    outCollEnt->chksum = &value[len * selectedInx];
 
     if (rodsObjStat->specColl != NULL) {
 	outCollEnt->specColl = *rodsObjStat->specColl;
@@ -1568,21 +1576,23 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     } else {
         value = dataObjSqlResult->resource.value;
         len = dataObjSqlResult->resource.len;
-        outCollEnt->resource = &value[len * (collHandle->rowInx)];
+        outCollEnt->resource = &value[len * selectedInx];
         value = dataObjSqlResult->ownerName.value;
         len = dataObjSqlResult->ownerName.len;
-        outCollEnt->ownerName = &value[len * (collHandle->rowInx)];
+        outCollEnt->ownerName = &value[len * selectedInx];
     }
 
     value = dataObjSqlResult->phyPath.value;
     len = dataObjSqlResult->phyPath.len;
-    outCollEnt->phyPath = &value[len * (collHandle->rowInx)];
+    outCollEnt->phyPath = &value[len * selectedInx];
 
     value = dataObjSqlResult->rescGrp.value;
     len = dataObjSqlResult->rescGrp.len;
-    outCollEnt->rescGrp = &value[len * (collHandle->rowInx)];
+    outCollEnt->rescGrp = &value[len * selectedInx];
 
+#if 0
     collHandle->rowInx = nextInx;
+#endif
     return (0);
 }
 
