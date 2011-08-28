@@ -105,6 +105,7 @@ typedef struct CollHandle {
     dataObjSqlResult_t dataObjSqlResult;
     collSqlResult_t collSqlResult;
     char linkedObjPath[MAX_NAME_LEN];
+    char prevdataId[NAME_LEN];
 } collHandle_t;
     
 /* the output of rclReadCollection */

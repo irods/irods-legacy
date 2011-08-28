@@ -1449,16 +1449,13 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     genQueryInp_t *genQueryInp = &collHandle->genQueryInp;
     dataObjSqlResult_t *dataObjSqlResult = &collHandle->dataObjSqlResult;
     rodsObjStat_t *rodsObjStat = collHandle->rodsObjStat;
-    static char prevdataId[NAME_LEN];
+    char *prevdataId;
     int selectedInx = -1;
 
     if (outCollEnt == NULL)
         return (USER__NULL_INPUT_ERR);
 
-    if (collHandle->rowInx == 0) {
-	/* first time. need to zero out static */
-	bzero (prevdataId, sizeof (prevdataId));
-    }
+    prevdataId = collHandle->prevdataId;
     memset (outCollEnt, 0, sizeof (collEnt_t));
     outCollEnt->objType = DATA_OBJ_T;
     if (collHandle->rowInx >= dataObjSqlResult->rowCnt) {
