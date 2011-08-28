@@ -1509,6 +1509,7 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
 		if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) {
 		    rstrcpy (prevdataId, &dataId[dataIdLen * i], NAME_LEN);
 		    selectedInx = i;
+		    if (atoi (&dataId[dataIdLen * i]) != 0) gotCopy = 1;
 		}
 	    } else {
 		/* skip i to the next object */
