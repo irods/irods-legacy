@@ -11,6 +11,7 @@
 #define FREE_DOINP	0x2
 
 #ifdef RULE_ENGINE_N
+#include "restructs.h"
 int initRuleStruct(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char *fnmSet);
 
 int readRuleStructFromFile(int processType, char *ruleBaseName, ruleStruct_t *inRuleStrct);
@@ -319,8 +320,6 @@ int writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
 int _writeXMsg(int streamId, char *hdr, char *msg);
 int _readXMsg(int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr, char **msg,char **user, char **addr);
 #ifdef RULE_ENGINE_N
-typedef struct env Env;
-typedef struct node Node;
 int reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, Env *env, ruleExecInfo_t *rei);
 void disableReDebugger(int state[2]);
 void enableReDebugger(int state[2]);
