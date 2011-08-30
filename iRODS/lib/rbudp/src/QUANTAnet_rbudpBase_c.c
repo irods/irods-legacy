@@ -314,7 +314,7 @@ void initErrorBitmap(rbudpBase_t *rbudpBase)
 	int i;
 	// the first byte is 0 if there is error.  1 if all done.
 	int startOfLastByte = rbudpBase->totalNumberOfPackets - (rbudpBase->sizeofErrorBitmap-2)*8;
-	char bits[8] = {0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080};
+	unsigned char bits[8] = {0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080};
 
 	/* The first byte is for judging all_done */
 	for (i=0;i<rbudpBase->sizeofErrorBitmap;i++)
@@ -356,7 +356,7 @@ int ptohseq(rbudpBase_t *rbudpBase, int origseq )
 void updateErrorBitmap(rbudpBase_t *rbudpBase, long long seq)
 {
 	long long index_in_list, offset_in_index;
-	char bits[8] = {0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080};
+	unsigned char bits[8] = {0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080};
 	if(rbudpBase->peerswap)
 	    seq = swab32(seq);
 	if(seq < 0 || (seq >> 3) >= rbudpBase->sizeofErrorBitmap-1) {
@@ -385,7 +385,7 @@ int updateHashTable(rbudpBase_t *rbudpBase)
 {
 int count = 0;
 int i,j;
-char bits[8] = {0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080};
+unsigned char bits[8] = {0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080};
 
 for (i=1;i<rbudpBase->sizeofErrorBitmap; i++)
 {

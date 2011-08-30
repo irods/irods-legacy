@@ -184,7 +184,6 @@ int getIDebugReply(rcvXmsgInp_t *rcvXmsgInp, rcvXmsgOut_t **rcvXmsgOut, int wait
     if (sleepNum < 10 )
       sleepNum++;
   }
-  return(0);
 }
 
 int

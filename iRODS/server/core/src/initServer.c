@@ -938,7 +938,6 @@ rodsServerHost_t **rodsServerHost)
         *rodsServerHost = myZoneInfo->slaveServerHost;
         return (myZoneInfo->slaveServerHost->localFlag);
     }
-    return 0;
 }
 
 int

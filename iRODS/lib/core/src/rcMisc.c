@@ -1238,7 +1238,7 @@ int maxRowCnt)
         int len;
 
 	if ((len = genQueryOut->sqlResult[i].len) <= 0) continue;
-	if ((tmpValue = (char *)malloc (totalRowCnt * len)) < 0) 
+	if ((tmpValue = (char *)malloc (totalRowCnt * len)) == 0) 
 	  return (SYS_MALLOC_ERR - errno);
         if (targGenQueryOut->sqlResult[i].value != NULL) {
 	    memcpy (tmpValue, targGenQueryOut->sqlResult[i].value, 
