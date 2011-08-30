@@ -1283,9 +1283,9 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
     Node *p = pattern, *v = val;
     Res *res;
     char *varName;
+    char matcherName[MAX_NAME_LEN];
     switch (getNodeType(pattern)) {
     case N_APPLICATION:
-        char matcherName[MAX_NAME_LEN];
         matcherName[0]='~';
         strcpy(matcherName+1, pattern->subtrees[0]->text);
         RuleIndexListNode *node;
