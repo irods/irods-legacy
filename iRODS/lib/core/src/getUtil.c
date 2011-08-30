@@ -153,7 +153,7 @@ rodsPathInp_t *rodsPathInp)
             }
             status = getUtil (myConn,  myRodsEnv, myRodsArgs, rodsPathInp);
             if (status >= 0) {
-                printf ("Retry put successful\n");
+                printf ("Retry get successful\n");
                 break;
             } else {
                 rodsLogError (LOG_ERROR, status,
