@@ -247,7 +247,7 @@ runCmd(0, "iput $F1 $D3D/$F1");
 runCmd(0, "iput $F1 $D3E/$F1");
 runCmd(0, "iput $F1 $D3E/$F2");
 runCmd(0, "ichmod -r read $U2 $D3");
-runCmd(0,"sleep .1");
+runCmd(0,"sleep 1");
 runCmd(0, "ils -Ar $D3 | grep $U2 | grep read | wc -l");
 $u2Lines = $cmdStdout;
 chomp($u2Lines);
@@ -647,23 +647,23 @@ runCmd(0, "iput $F1 $LD1S1");
 runCmd(0, "iput $F1 $LD1S2");
 # test that it sets all that it should
 runCmd(0, "ichmod -r read $U2 $LD1");
-runCmd(0,"sleep .1");
+runCmd(0,"sleep 1");
 runCmd(0, "ils -rA $LD1 $LD2 | grep read | wc -l", "4");
 runCmd(0, "ichmod -r null $U2 $LD1");
-runCmd(0,"sleep .1");
+runCmd(0,"sleep 1");
 runCmd(0, "ils -rA $LD1 $LD2 | grep read | wc -l", "0");
 # test that is doesn't set too many
 runCmd(0, "ichmod -r read $U2 $LD2");
-runCmd(0,"sleep .1");
+runCmd(0,"sleep 1");
 runCmd(0, "ils -rA $LD1 $LD2 | grep read | wc -l", "2");
 # for check that delete works in sql
 runCmd(0, "ichmod -r read $U2 $LD2");
 runCmd(0, "ichmod -r read $U2 $LD2");
-runCmd(0,"sleep .1");
+runCmd(0,"sleep 1");
 runCmd(0, "ils -rA $LD1 $LD2 | grep read | wc -l", "2");
 # check removing access
 runCmd(0, "ichmod -r null $U2 $LD2");
-runCmd(0,"sleep .1");
+runCmd(0,"sleep 1");
 runCmd(0, "ils -rA $LD1 $LD2 | grep read | wc -l", "0");
 # check removing the files
 runCmd(0, "irm -fr $LD1");
