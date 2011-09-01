@@ -40,7 +40,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"installPostgres.pl"} = "August 2011";
+$version{"installPostgres.pl"} = "September 2011";
 
 
 
