@@ -65,7 +65,7 @@ public class RuleTest {
 				testingPropertiesHelper
 						.buildIRODSAccountFromTestProperties(testingProperties));
 
-		String ruleString = "List Available MS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\n*A=hello\n ruleExecOut";
+		String ruleString = "ListAvailableMS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\n*A=hello\n ruleExecOut";
 		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
@@ -83,7 +83,7 @@ public class RuleTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
 				testingPropertiesHelper
 						.buildIRODSAccountFromTestProperties(testingProperties));
-		String ruleString = "List Available MS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\nnull\n ruleExecOut";
+		String ruleString = "ListAvailableMS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\nnull\n ruleExecOut";
 		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();

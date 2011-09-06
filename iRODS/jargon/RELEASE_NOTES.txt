@@ -1,18 +1,23 @@
 
-Jargon post 2.5 Release Notes
+Jargon 3.0 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 2/21/2011
-Release Version: Jargon 2.5.x 
+Date: 08/18.2011
+Release Version: Jargon 3.0.0-beta1
 ================================================================================================
 
 News
 
-This release is for the current 'classic' Jargon API, post the release of iRODS 2.5.  This is differentiated from the newer 'Jargon-core' libraries which are available in beta.  The new libraries may be used, and that use is encouraged, but please check in with the developers before proceeding.  For information on Jargon-core, go to the new GForge site, where you can check out the code, report and track issues, and find other information, including information on Maven artifacts available on the new RENCI Maven repository.
+This beta release is for the current 'classic' Jargon API, for release of iRODS 3.0.  This is differentiated from the newer 'Jargon-core' libraries which are now available and recommended.  
+
+This 'classic' version of the API is supported, and the API will remain stable, as there are many implementations that depend on it.  Most of the 'new development' and new features activity
+will be in Jargon-core.  To get the code, and for bug tracking and feature requests, please use the GForge page at: [[https://code.renci.org/gf/project/jargon/]]
+
+For information on Jargon-core, go to the new GForge site, where you can check out the code, report and track issues, and find other information, including information on Maven artifacts 
+available on the new RENCI Maven repository.
 
 GForge for Jargon-core is at:  [[https://code.renci.org/gf/project/jargon/]]
-
 
 There is a new GForge location for this Jargon 2.5 release.  The GForge project page for the 'classic' Jargon, which is called "Jargon-trunk' can be found at [[https://code.renci.org/gf/project/jargontrunk/]] Issue tracking, discussions, and feature requests are available.  Future releases of iRODS will include a move of the 'classic' Jargon code to git and Maven.  At this point the use of Bugzilla for Jargon issue tracking is deprecated.  As usual, issues can also be reported on the iRODS Chat group.
 
@@ -36,32 +41,35 @@ Features and Changes
 ********
 Switched to GForge bug numbering as of iRODS2.5
 ********
-
-*[#112] [iROD-Chat:5741] (Jargon) IRODSFile.setResource(...) is limited 300 resources
  
-*[#147] SQL incorrect for gen query associated with '<=' or '>=' or '<' or '>' comparisons
+*71 io exception on rule execution
+
+*112 IRODSFile.setResource(...) is limited 300 resources
  
-*[#156] [iROD-Chat:6033] Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
+*147 SQL incorrect for gen query associated with '<=' or '>=' or '<' or '>' comparisons
+ 
+*156 Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
 
-*[#157] adding Resource.modifyStatus()
+*157 adding Resource.modifyStatus()
 
-*[#176] put/get resource switching 
-  *reroute for get/put
-  *reroute for streams
+*176 put/get resource switching 
+  **reroute for get/put
+  ***reroute for streams
 
 *Addition of buffering capability for input streams for better performance
 
-*[#166] gen query 'in' support - in and between added
+*166 gen query 'in' support - in and between added
 
 *Added close and buffering of streams in IRODSCommands.irodsFunction() method.
 
 *canRead and canWrite methods were logging and ignoring io exceptions, these now throw JargonRuntimeException
 
+*removing jargon from iRODS distro, will distribute through GForge, and mirror the libraries in git
  
 ================================================================================================
 Outstanding Issues
 
-Please consult https://www.irods.org/bugzilla/buglist.cgi?query_format=specific&order=relevance+desc&bug_status=__open__&product=&content=jargon
+Please consult [[https://code.renci.org/gf/project/jargon/]]
 
 for the latest open bugs and Jargon feature requests
 
