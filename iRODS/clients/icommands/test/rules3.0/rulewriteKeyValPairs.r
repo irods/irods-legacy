@@ -12,4 +12,3 @@ myTestRule {
 }
 INPUT *Str="Tester=rods%Event=document", *Path="/tempZone/home/rods/sub1/foo1"
 OUTPUT ruleExecOut
-OUTPUT ruleExecOut

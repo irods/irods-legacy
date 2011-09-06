@@ -11,5 +11,5 @@ myTestRule {
   msiGetAuditTrailInfoByTimeStamp(*Start,*End,*Buf,*Status);
   writeBytesBuf("stdout",*Buf);
 }
-INPUT *Startdate="2011-06-09-00.00.00"
+INPUT *Startdate="2011-08-30.01:00:00"
 OUTPUT ruleExecOut
