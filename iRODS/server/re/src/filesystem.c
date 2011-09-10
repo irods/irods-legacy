@@ -2,6 +2,7 @@
  */
 
 #include <sys/stat.h>
+#include <errno.h>
 #include "debug.h"
 #include "utils.h"
 #include "datetime.h"
@@ -36,10 +37,8 @@ int getModifiedTime(char *fn, time_type *timestamp) {
 	struct stat filestat;
 
 	if(stat(fn, &filestat) == -1) {
-	#ifdef DEBUG
-		printf("error reading file stat %s\n", fn);
-	#endif
-		return FILE_STAT_ERROR;
+		rodsLog(LOG_ERROR, "error reading file stat %s\n", fn);
+		return FILE_STAT_ERROR - errno;
 	}
 	time_type_set(*timestamp, filestat.st_mtime);
 	return 0;

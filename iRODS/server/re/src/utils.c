@@ -830,8 +830,8 @@ int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str) {
 }
 
 void logErrMsg(rError_t *errmsg, rError_t *system) {
-    char errbuf[ERR_MSG_LEN*1024];
-    errMsgToString(errmsg, errbuf, ERR_MSG_LEN*1024);
+    char errbuf[ERR_MSG_LEN * 16];
+    errMsgToString(errmsg, errbuf, ERR_MSG_LEN * 16);
 #ifdef DEBUG
     writeToTmp("err.log", "begin errlog\n");
     writeToTmp("err.log", errbuf);
