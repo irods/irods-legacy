@@ -177,4 +177,4 @@ This documentation is generated from the iRODS code.
   - #rcGetRescQuota
   - #rcQuerySpecColl
 
-*/
+**/
