@@ -12,7 +12,7 @@
  * \fn rcDataObjCreateAndStat (rcComm_t *conn, dataObjInp_t *dataObjInp,
  * openStat_t **openStat)
  *
- * \brief Creates a data object in the iCAT. This API is the same as 
+ * \brief Create a data object in the iCAT. This API is the same as 
  *	the rcDataObjCreate API except an additional openStat_t struct 
  *	containing the stat of the just created object is returned.
  *

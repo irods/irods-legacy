@@ -13,7 +13,7 @@
 /**
  * \fn rcDataObjCreate (rcComm_t *conn, dataObjInp_t *dataObjInp)
  *
- * \brief Creates a data object in the iCAT.
+ * \brief Create a data object in the iCAT.
  *
  * \user client
  *
