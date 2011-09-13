@@ -1,3 +1,8 @@
+/**
+ * @file  rcDataObjCreate.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code.  */ 
@@ -10,42 +15,49 @@
  *
  * \brief Creates a data object in the iCAT.
  *
- * \module dataObjOpr
+ * \user client
+ *
+ * \category data object operations
  *
  * \since 1.0
  *
  * \author  Mike Wan
  * \date    2007
  *
- * \remark Mike Wan - C API documentation, 2011-09-12
+ * \remark none
  *
  * \note none
  *
  * \usage
- *
+ * Create a data object /myZone/home/john/myfile in myRescource:
+ * \n dataObjInp_t dataObjInp;
+ * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
+ * \n dataObjInp.createMode = 0750;
+ * \n dataObjInp.dataSize = 12345;
+ * \n addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, "myRescource");
+ * \n status = rcDataObjCreate (conn, &dataObjInp);
+ * \n if (status < 0) {
+ * \n       handle the error
+ * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
- * \param[in] dataObjInp - A dataObjInp_t data object input type. 
- *   Elements of dataObjInp_t used :
- *    \li "objPath" - the full path of the data objection.
- *    \li "forceFlag" - overwrite existing copy. This keyWd has
- *        no value. But the '=' character is still needed
- *    \li "createMode" - the file mode of the data object.
- *    \li "dataType" - the data type of the data object.
- *    \li "dataSize" - the size of the data object. This input is optional.
- * \param[out] outParam - a INT_MS_T containing the descriptor of the create.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
+ * \param[in] dataObjInp - Elements of dataObjInp_t used :
+ *    \li char \b objPath[MAX_NAME_LEN] - full path of the data objection.
+ *    \li int \b createMode - the file mode of the data object.
+ *    \li rodsLong_t \b dataSize - the size of the data object. 
+ *	Input 0 if not known.
+ *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
+ *    \n DATA_TYPE_KW - the data type of the data object.
+ *    \n DEST_RESC_NAME_KW - The resource to store this data object
+ *    \n FILE_PATH_KW - The physical file path for this data object if the
+ *             normal resource vault is not used.
+ *    \n FORCE_FLAG_KW - overwrite existing copy. This keyWd has no value
  *
  * \return integer
- * \retval 0 on success
+ * \retval an opened object descriptor on success
+
+ * \sideeffect none
  * \pre none
  * \post none
  * \sa none
