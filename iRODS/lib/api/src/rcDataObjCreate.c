@@ -43,7 +43,7 @@
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
  * \param[in] dataObjInp - Elements of dataObjInp_t used :
- *    \li char \b objPath[MAX_NAME_LEN] - full path of the data objection.
+ *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
  *    \li int \b createMode - the file mode of the data object.
  *    \li rodsLong_t \b dataSize - the size of the data object. 
  *	Input 0 if not known.

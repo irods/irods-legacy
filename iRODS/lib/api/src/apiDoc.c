@@ -177,4 +177,7 @@ This documentation is generated from the iRODS code.
   - #rcGetRescQuota
   - #rcQuerySpecColl
 
+\section inputDataStruct Input Data Structure
+  - #dataObjInp_t
+
 **/

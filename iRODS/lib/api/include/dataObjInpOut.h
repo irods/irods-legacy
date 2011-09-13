@@ -1,3 +1,8 @@
+/**
+ * @file  dataObjInpOut.h
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* dataObjInpOut.h - header file for generic dataObj type input/output struct. 
@@ -41,6 +46,33 @@ typedef struct {
     int windowSize;
     char hostAddr[LONG_NAME_LEN];
 } portList_t;
+
+/**
+ * \var dataObjInp_t
+ * \brief Input struct for Data object operation
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note 
+ * Elements of dataObjInp_t:
+ * \li char objPath[MAX_NAME_LEN] - full path of the data object.
+ * \li int createMode - the file mode of the data object.
+ * \li int openFlags - the flags for the I/O operation, 
+ * 	Valid flags are O_RDONLY, O_WRONLY, O_RDWR and O_TRUNC. 
+ *	Also used for specCollInx in rcQuerySpecColl. 
+ * \li rodsLong_t offset - the offset.
+ * \li rodsLong_t dataSize - the size of the data object.
+ * \li int numThreads - the number of threads to use.
+ * \li int oprType - the type of operation.
+ * \li specColl_t *specColl - a pointer to a specColl_t if this path is 
+ *	in a special collection (e.g. mounted collection). 
+ * \li keyValPair_t condInput -  keyword/value pair input. Valid keywords
+ *	depend on the API. 
+ *
+ * \sa none
+ * \bug  no known bugs
+ */
 
 typedef struct DataObjInp {
     char objPath[MAX_NAME_LEN];
