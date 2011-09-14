@@ -1,7 +1,7 @@
 myTestRule {
 #Input parameters are:
 #  inMSOPath - the string sent to the remote database object
-#  inCacheFileName - the full path of the cache file
+#  inCacheFilename - the full path of the cache file
 #  inFileSize - the size of the cache file
 #No output parameters
   msiSplitPath(*Path, *Coll, *File);

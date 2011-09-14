@@ -3,7 +3,7 @@ myTestRule {
 #  inRequestPath - the string sent to the remote URL
 #  inFileMode - the cache file creation mode
 #  inFileFlags - the access modes for the cache file
-#  inCacheFileName - the full path of the cache file
+#  inCacheFilename - the full path of the cache file
 #No output parameters
 #Output is the name of the file that was created
   msiSplitPath(*Path, *Coll, *File);
