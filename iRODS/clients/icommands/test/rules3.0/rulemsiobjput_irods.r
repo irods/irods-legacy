@@ -11,5 +11,5 @@ myTestRule {
   }
   msiobjput_irods(*Request, *Path, *Size);
 }
-INPUT *Request ="//irods:iren.renci.org:1247:anonymous@renci/renci/home/rods/README.txt", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="irods:iren.renci.org:1247:anonymous@renci/renci/home/rods/README.txt", *Path = "/tempZone/home/rods/sub1/rodsfile"
 OUTPUT ruleExecOut

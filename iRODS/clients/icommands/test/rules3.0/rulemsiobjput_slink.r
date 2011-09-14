@@ -11,5 +11,5 @@ myTestRule {
   }
   msiobjput_slink(*Request, *Path, *Size);
 }
-INPUT *Request ="//slink:/renci/home/rods/README.txt", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="slink:/renci/home/rods/README.txt", *Path = "/tempZone/home/rods/sub1/rodsfile"
 OUTPUT ruleExecOut

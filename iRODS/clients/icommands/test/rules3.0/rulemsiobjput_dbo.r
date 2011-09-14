@@ -11,5 +11,5 @@ myTestRule {
   }
   msiobjput_dbo(*Request, *Path, *Size);
 }
-INPUT *Request ="//dbo:dbr2:/tempzone/home/rods/dbotest/lt.pg", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="dbo:dbr2:/tempzone/home/rods/dbotest/lt.pg", *Path = "/tempZone/home/rods/sub1/rodsfile"
 OUTPUT ruleExecOut

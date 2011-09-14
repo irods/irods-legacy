@@ -14,5 +14,5 @@ myTestRule {
     writeLine("stdout","Created file *Filestore");
   }
 }
-INPUT *Request ="//slink:/renci/home/rods/README.txt", *Mode = "w", *Flags = "O_RDWR", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="slink:/renci/home/rods/README.txt", *Mode = "w", *Flags = "O_RDWR", *Path = "/tempZone/home/rods/sub1/rodsfile"
 OUTPUT ruleExecOut

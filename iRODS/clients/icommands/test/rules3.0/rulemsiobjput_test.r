@@ -11,5 +11,5 @@ myTestRule {
   }
   msiobjput_test(*Request, *Path, *Size);
 }
-INPUT *Request ="//test:Test string", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="test:Test string", *Path = "/tempZone/home/rods/sub1/rodsfile"
 OUTPUT ruleExecOut

@@ -11,5 +11,5 @@ myTestRule {
   }
   msiobjput_srb(*Request, *Path, *Size);
 }
-INPUT *Request ="//srb:srbbrick11.sdsc.edu:7676:testuser@sdsc:TESTUSER/UCHRI/home/srbAdmin.uchri/testdir/testFile", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="srb:srbbrick11.sdsc.edu:7676:testuser@sdsc:TESTUSER/UCHRI/home/srbAdmin.uchri/testdir/testFile", *Path = "/tempZone/home/rods/sub1/rodsfile"
 OUTPUT ruleExecOut
