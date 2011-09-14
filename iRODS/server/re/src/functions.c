@@ -1624,7 +1624,8 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct(Node **paramsr, int n, Node *node, 
   /* deleteEnv(rsEnv, 3); */
   if (i != 0) {
 	  region_free(rsr);
-    return newErrorRes(r, i);
+	  generateAndAddErrMsg("error reading rules from file.", node, i, errmsg);
+	  return newErrorRes(r, i);
   }
 
   Hashtable *objectMap = newHashTable2(100, rsr);
@@ -1661,7 +1662,7 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile(Node **paramsr, int n, Node *node, 
 	    rodsLog(LOG_NOTICE,
 		    "msiAdmWriteRulesFromStructToFile could not open rules file %s for writing\n",
 		    fileName);
-	    generateAndAddErrMsg("error opening file for writing", node, FILE_OPEN_ERR, errmsg);
+	    generateAndAddErrMsg("error opening file for writing.", node, FILE_OPEN_ERR, errmsg);
 	    return newErrorRes(r, FILE_OPEN_ERR);
 	  }
 
@@ -1715,7 +1716,8 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
   /*deleteEnv(rsEnv, 3); */
   if (i != 0) {
 	  region_free(rsr);
-    return newErrorRes(r, i);
+	  generateAndAddErrMsg("error retrieving rules from database.", node, i, errmsg);
+	  return newErrorRes(r, i);
   }
 
   Hashtable *objectMap = newHashTable2(100, rsr);
