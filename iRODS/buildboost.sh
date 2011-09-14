@@ -34,4 +34,4 @@ fi
 set -x
 cd $boostDir
 
-build_irods.sh
+./build_irods.sh
