@@ -332,6 +332,7 @@ Res *smsi_succeed(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int r
 Res *smsi_fail(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
 	Res *	res = newErrorRes(r, n == 0 ?FAIL_ACTION_ENCOUNTERED_ERR:RES_INT_VAL(subtrees[0]));
+	generateAndAddErrMsg("error: fail action encountered.", node, RES_ERR_CODE(res), errmsg);
         return res;
 }
 
