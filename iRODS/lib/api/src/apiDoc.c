@@ -179,5 +179,7 @@ This documentation is generated from the iRODS code.
 
 \section inputDataStruct Input Data Structure
   - #dataObjInp_t
+  - #openedDataObjInp_t
+  - #bytesBuf_t
 
 **/

@@ -1,3 +1,8 @@
+/**
+ * @file  rodsDef.h
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -195,9 +200,24 @@ typedef enum {
 
 #define DEF_IRODS_PROT	NATIVE_PROT
 
-/* general struct for a buffer of bytes */
+/**
+ * \var bytesBuf_t
+ * \brief  general struct to store a buffer of bytes
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note
+ * Elements of bytesBuf_t:
+ * \li int len - the length of the allocated buffer in buf or the length of
+ *        the data stored in buf depending on the application.
+ * \li void *buf - pointer to the buffer.
+ *
+ * \sa none
+ * \bug  no known bugs
+ */
 
-typedef struct {
+typedef struct BytesBuf {   /* have to add BytesBuf to get Doxygen working */
     int len;	/* len in bytes in buf */
     void *buf;
 } bytesBuf_t;
