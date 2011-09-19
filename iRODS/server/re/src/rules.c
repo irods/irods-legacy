@@ -168,7 +168,6 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     rei->msParamArray = NULL;
 
     rescode = parseAndComputeRule(rule, env, rei, reiSaveFlag, &errmsgBuf, r);
-    RE_ERROR(rescode < 0);
 
     if(orig==NULL) {
         rei->msParamArray = newMsParamArray();
@@ -177,6 +176,7 @@ int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExe
     }
     convertEnvToMsParamArray(rei->msParamArray, env, &errmsgBuf, r);
 
+    RE_ERROR(rescode < 0);
     freeRErrorContent(&errmsgBuf);
     /* deleteEnv(env, 3); */
 

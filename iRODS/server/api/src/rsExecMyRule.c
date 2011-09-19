@@ -60,17 +60,18 @@ msParamArray_t **outParamArray)
       reTestFlag = oldReTestFlag;
       reLoopBackFlag = oldReLoopBackFlag;
     }
+
+    trimMsParamArray (rei.msParamArray, execMyRuleInp->outParamDesc);
+
+    *outParamArray = rei.msParamArray;
+    rei.msParamArray = NULL;
+
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "rsExecMyRule : execMyRule error for %s, status = %d",     
           execMyRuleInp->myRule, status);
         return (status);
     }
-
-    trimMsParamArray (rei.msParamArray, execMyRuleInp->outParamDesc);
-    
-    *outParamArray = rei.msParamArray;
-    rei.msParamArray = NULL;
 
     return (status);
 }

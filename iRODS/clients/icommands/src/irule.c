@@ -405,7 +405,7 @@ main(int argc, char **argv) {
 	    if (myRodsArgs.longOption == True)
 	    	puts(buf);
 
-	    if (buf[0] == '#') {
+	    if (!rulegen && buf[0] == '#') {
 	    	continue;
 	    }
 
@@ -523,26 +523,16 @@ main(int argc, char **argv) {
     if (status < 0) {
       msParam_t *mP;
       execCmdOut_t *execCmdOut;
-      int i;
-      char *tmpPtr;
 
       rodsLogError (LOG_ERROR, status, "rcExecMyRule error. ");
       printErrorStack (conn->rError); 
       if ((mP = getMsParamByType (outParamArray, ExecCmdOut_MS_T)) != NULL) {
 	execCmdOut = (execCmdOut_t *) mP->inOutStruct;
 	if (execCmdOut->stdoutBuf.buf != NULL) {
-            tmpPtr = (char*)execCmdOut->stdoutBuf.buf;
-            for (i = 0; i < execCmdOut->stdoutBuf.len; i++) {
-                fputc ((int)(*tmpPtr), stdout);
-                tmpPtr++;
-            }
+		fprintf(stdout,"%s",(char *) execCmdOut->stdoutBuf.buf);
 	}
 	if (execCmdOut->stderrBuf.buf != NULL) {
-            tmpPtr = (char*)execCmdOut->stderrBuf.buf;
-            for (i = 0; i < execCmdOut->stderrBuf.len; i++) {
-                fputc ((int)(*tmpPtr), stderr);
-                tmpPtr++;
-            }
+		fprintf(stderr,"%s", (char *) execCmdOut->stderrBuf.buf);
 	}
       }
 	rcDisconnect(conn);
