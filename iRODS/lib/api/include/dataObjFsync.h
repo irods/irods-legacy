@@ -10,7 +10,7 @@
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_FSYNC rsDataObjFsync
 
-/** Perform the low-level file I/O operations.  Basically calls the
+/* Perform the low-level file I/O operations.  Basically calls the
  * rsFileFsync function with a bit of error checking.
  * @param rsComm Server connection handle.
  * @param l1descInx handle for the file in the file system driver.
@@ -18,7 +18,7 @@
 int
 l3Fsync (rsComm_t *rsComm, int l1descInx);
 
-/** Perform the low-level file I/O operations (by calling l3Fsync),
+/* Perform the low-level file I/O operations (by calling l3Fsync),
  * and update system metadata to reflect current reality.
  * @param rsComm Server connection handle.
  * @param dataObjFsyncInp descriptor of data object to be flushed.
@@ -27,7 +27,7 @@ l3Fsync (rsComm_t *rsComm, int l1descInx);
 int
 _rsDataObjFsync (rsComm_t *rsComm, openedDataObjInp_t *dataObjFsyncInp);
 
-/** Flush buffers used for writing this data object to disk (or
+/* Flush buffers used for writing this data object to disk (or
  * wherever their final destination may be, depending on the resource
  * type).
  * @param rsComm_t *rsComm Server connection handle.
@@ -45,7 +45,7 @@ rsDataObjFsync (rsComm_t *rsComm, openedDataObjInp_t *dataObjFsyncInp);
 extern "C" {
 #endif
 
-/** Flush buffers used for writing this data object to disk (or
+/* Flush buffers used for writing this data object to disk (or
  * wherever their final destination may be, depending on the resource
  * type).
  * @param rcComm_t *conn Client connection handle.

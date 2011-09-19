@@ -13,7 +13,7 @@
 /**
  * \fn rcDataObjOpen (rcComm_t *conn, dataObjInp_t *dataObjInp)
  *
- * \brief Open a data object.
+ * \brief Open a data object. This is equivalent to open of UNIX.
  *
  * \user client
  *
@@ -37,7 +37,7 @@
  * \n addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, "myRescource");
  * \n status = rcDataObjOpen (conn, &dataObjInp);
  * \n if (status < 0) {
- * \n       handle the error
+ * \n .... handle the error
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.

@@ -13,7 +13,7 @@
 /**
  * \fn rcDataObjCreate (rcComm_t *conn, dataObjInp_t *dataObjInp)
  *
- * \brief Create a data object in the iCAT.
+ * \brief Create a data object in the iCAT. This is equivalent to creat of UNIX.
  *
  * \user client
  *
@@ -38,7 +38,7 @@
  * \n addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, "myRescource");
  * \n status = rcDataObjCreate (conn, &dataObjInp);
  * \n if (status < 0) {
- * \n       handle the error
+ * \n .... handle the error
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.

@@ -14,6 +14,7 @@
  * bytesBuf_t *dataObjReadOutBBuf)
  *
  * \brief Read a chunk of data from an opened data object.
+ *    This is equivalent to read of UNIX.
  *
  * \user client
  *
@@ -40,13 +41,13 @@
  * \n dataObjInp.openFlags = O_RDONLY;
  * \n dataObjReadInp.l1descInx = rcDataObjOpen (conn, &dataObjInp);
  * \n if (dataObjReadInp.l1descInx < 0) {
- * \n       handle the error
+ * \n .... handle the error
  * \n }
  * \n bzero (&dataObjReadOutBBuf, sizeof (dataObjReadOutBBuf));
  * \n dataObjReadInp.len = 12345;
- * \n bytesRead = rcDataObjRead (conn, &dataObjReadInp,, &dataObjReadInpBBuf);
+ * \n bytesRead = rcDataObjRead (conn, &dataObjReadInp, &dataObjReadInpBBuf);
  * \n if (bytesRead < 0) {
- * \n       handle the error
+ * \n .... handle the error
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.

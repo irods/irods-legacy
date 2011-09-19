@@ -1,3 +1,8 @@
+/**
+ * @file  rcDataObjGet.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code.  */ 
@@ -7,6 +12,64 @@
 #include "rcPortalOpr.h"
 #include "apiHeaderAll.h"
 
+/**
+ * \fn rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp,
+ *   char *locFilePath)
+ *
+ * \brief Get (download) a data object from iRODS.
+ *
+ * \user client
+ *
+ * \category data object operations
+ *
+ * \since 1.0
+ *
+ * \author  Mike Wan
+ * \date    2007
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \usage
+ * Get (download) a data object /myZone/home/john/myfile:
+ * \n dataObjInp_t dataObjInp;
+ * \n char locFilePath[MAX_NAME_LEN];
+ * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
+ * \n rstrcpy (locFilePath, "./mylocalfile", MAX_NAME_LEN);
+ * \n dataObjInp.dataSize = 0;
+ * \n status = rcDataObjGet (conn, &dataObjInp, locFilePath);
+ * \n if (status < 0) {
+ * \n .... handle the error
+ * \n }
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] dataObjInp - Elements of dataObjInp_t used :
+ *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
+ *    \li rodsLong_t \b dataSize - the size of the data object.
+ *      Input 0 if not known.
+ *    \li int \b numThreads - the number of threads to use. Valid values are:
+ *      \n NO_THREADING (-1) - no multi-thread
+ *      \n 0 - the server will decide the number of threads.
+ *        (recommanded setting).
+ *      \n A positive integer - specifies the number of threads.
+ *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
+ *    \n RESC_NAME_KW - The resource of the data object to open.
+ *    \n REPL_NUM_KW - the replica number of the copy to open.
+ *    \n FORCE_FLAG_KW - overwrite existing local copy. This keyWd has no value
+ * \param[in] locFilePath - the path of the local file to download. This path
+ *           can be a relative path.
+ *
+ * \return integer
+ * \retval 0 on success
+
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
 
 int
 rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)

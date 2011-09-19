@@ -40,7 +40,7 @@
  * \n addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, "myRescource");
  * \n status = rcDataObjCreateAndStat (conn, &dataObjInp, &openStat);
  * \n if (status < 0) {
- * \n       handle the error
+ * \n .... handle the error
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
