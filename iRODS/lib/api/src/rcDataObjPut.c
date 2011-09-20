@@ -63,6 +63,21 @@
  *    \n FILE_PATH_KW - The physical file path for this data object if the
  *             normal resource vault is not used.
  *    \n FORCE_FLAG_KW - overwrite existing copy. This keyWd has no value
+ *    \n ALL_KW - upload to all resources in the resource group if the
+ *             input resource (via DEST_RESC_NAME_KW) is a resource group. 
+ *            This keyWd has no value.
+ *    \n REPL_NUM_KW - If the data object already exist, the replica number
+ *            of the copy to overwrite.
+ *    \n REG_CHKSUM_KW -  register the target checksum value after the copy.
+ *            The value is the md5 checksum value of the local file.
+ *    \n VERIFY_CHKSUM_KW - verify and register the target checksum value
+ *            after the copy. The value is the md5 checksum value of the 
+ ^	      local file.
+ *    \n RBUDP_TRANSFER_KW - use RBUDP for data transfer. This keyWd has no
+ *             value.
+ *    \n RBUDP_SEND_RATE_KW - the number of RBUDP packet to send per second
+ *          The default is 600000.
+ *    \n RBUDP_PACK_SIZE_KW - the size of RBUDP packet. The default is 8192.
  * \param[in] locFilePath - the path of the local file to upload. This path
  *           can be a relative path.
  *

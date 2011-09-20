@@ -182,5 +182,6 @@ This documentation is generated from the iRODS code.
   - #openedDataObjInp_t
   - #bytesBuf_t
   - #fileLseekInp_t
+  - #dataObjCopyInp_t
 
 **/

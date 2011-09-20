@@ -28,20 +28,27 @@
  * \note none
  *
  * \usage
- * Copy a data object /myZone/home/john/myfile in myRescource for write:
- * \n dataObjInp_t dataObjInp;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
- * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
- * \n dataObjInp.openFlags = O_WRONLY;
- * \n addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, "myRescource");
- * \n status = rcDataObjCopy (conn, &dataObjInp);
+ * Copy a data object /myZone/home/john/myfileA to /myZone/home/john/myfileB
+ *     and store in myRescource:
+ * \n dataObjCopyInp_t dataObjCopyInp;
+ * \n bzero (&dataObjCopyInp, sizeof (dataObjCopyInp));
+ * \n rstrcpy (dataObjCopyInp.destDataObjInp.objPath, 
+ *       "/myZone/home/john/myfileB", MAX_NAME_LEN);
+ * \n rstrcpy (dataObjCopyInp.srcDataObjInp.objPath, 
+ *      "/myZone/home/john/myfileA", MAX_NAME_LEN);
+ * \n addKeyVal (&dataObjCopyInp.destDataObjInp.condInput, DEST_RESC_NAME_KW, 
+ *      "myRescource");
+ * \n status = rcDataObjCopy (conn, &dataObjCopyInp);
  * \n if (status < 0) {
  * \n .... handle the error
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
  * \param[in] dataObjCopyInp_t - Elements of dataObjInp_t used :
- *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
+ *    \li char \b srcDataObjInp.objPath[MAX_NAME_LEN] - full path of the 
+ *         source data object.
+ *    \li char \b destDataObjInp.objPath[MAX_NAME_LEN] - full path of the 
+ *         target data object.
  *    \li int \b destDataObjInp.numThreads - the number of threads to use. 
  *        Valid values are:
  *      \n NO_THREADING (-1) - no multi-thread

@@ -57,7 +57,14 @@
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n RESC_NAME_KW - The resource of the data object to open.
  *    \n REPL_NUM_KW - the replica number of the copy to open.
- *    \n FORCE_FLAG_KW - overwrite existing local copy. This keyWd has no value
+ *    \n FORCE_FLAG_KW - overwrite existing local copy. This keyWd has no value.
+ *    \n VERIFY_CHKSUM_KW - verify the checksum value of the local file after 
+ *	     the download. This keyWd has no value.
+ *    \n RBUDP_TRANSFER_KW - use RBUDP for data transfer. This keyWd has no
+ *             value
+ *    \n RBUDP_SEND_RATE_KW - the number of RBUDP packet to send per second
+ *          The default is 600000.
+ *    \n RBUDP_PACK_SIZE_KW - the size of RBUDP packet. The default is 8192.
  * \param[in] locFilePath - the path of the local file to download. This path
  *           can be a relative path.
  *
