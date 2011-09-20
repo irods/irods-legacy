@@ -625,7 +625,7 @@ initRuleStruct(int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, c
   int i;
   char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
 
-  strcpy(r2,irbSet);
+  /*strcpy(r2,irbSet);*/
   coreRuleStrct.MaxNumOfRules = 0;
   appRuleStrct.MaxNumOfRules = 0;
   GlobalAllRuleExecFlag = 0;
@@ -633,14 +633,14 @@ initRuleStruct(int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, c
   if(processType == RULE_ENGINE_INIT_CACHE) {
     resetMutex(NULL);
   }   
-  while (strlen(r2) > 0) {
+  /*while (strlen(r2) > 0) {
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
-    if (i == 0)
-      i = readRuleStructFromFile(processType, r1, &coreRuleStrct);
+    if (i == 0)*/
+      i = readRuleStructFromFile(processType, irbSet, &coreRuleStrct);
     if (i != 0)
       return(i);
-    strcpy(r2,r3);
-  }
+    /*strcpy(r2,r3);
+  }*/
   strcpy(r2,dvmSet);
   coreRuleVarDef.MaxNumOfDVars = 0;
   appRuleVarDef.MaxNumOfDVars = 0;
