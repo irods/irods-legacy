@@ -44,7 +44,7 @@
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
- * \param[in] dataObjCopyInp_t - Elements of dataObjInp_t used :
+ * \param[in] dataObjCopyInp_t - Elements of dataObjCopyInp_t used :
  *    \li char \b srcDataObjInp.objPath[MAX_NAME_LEN] - full path of the 
  *         source data object.
  *    \li char \b destDataObjInp.objPath[MAX_NAME_LEN] - full path of the 
@@ -73,7 +73,7 @@
  *    \n RBUDP_PACK_SIZE_KW - the size of RBUDP packet. The default is 8192 
  *
  * \return integer
- * \retval an opened object descriptor on success
+ * \retval 0 on success
 
  * \sideeffect none
  * \pre none
