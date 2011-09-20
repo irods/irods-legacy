@@ -1,9 +1,90 @@
+/**
+ * @file  rcDataObjRsync.c
+ *
+ */
+
 /* This is script-generated code.  */ 
 /* See dataObjRsync.h for a description of this API call.*/
 
 #include "dataObjRsync.h"
 #include "dataObjPut.h"
 #include "dataObjGet.h"
+
+/**
+ * \fn rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
+ *
+ * \brief Synchronize an iRODS data object with a local file or with another
+ *        data object.
+ *
+ * \user client
+ *
+ * \category data object operations
+ *
+ * \since 1.0
+ *
+ * \author  Mike Wan
+ * \date    2007
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \usage
+ * Synchronize a data object /myZone/home/john/myfileA to another data object
+ *    /myZone/home/john/myfileB and put the new data object in
+ *    resource myRescource:
+ * \n dataObjInp_t dataObjInp;
+ * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfileA", MAX_NAME_LEN);
+ * \n addKeyVal (&dataObjInp.condInput, RSYNC_MODE_KW, IRODS_TO_IRODS);
+ * \n addKeyVal (&dataObjInp.condInput, RSYNC_DEST_PATH_KW, 
+ *      "/myZone/home/john/myfileB");
+ * \n addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, "myRescource");
+ * \n status = rcDataObjRsync (conn, &dataObjInp);
+ * \n if (status < 0) {
+* \n .... handle the error
+ * \n }
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] dataObjInp - Elements of dataObjInp_t used :
+ *    \li char \b objPath[MAX_NAME_LEN] - The path for the source. This can 
+ *          be the path for an iRODS data object or a local file path, 
+ *          depending on the mode.
+ *    \li int \b createMode - the file mode of the data object. Meaningful
+ *	    only for LOCAL_TO_IRODS mode.
+ *    \li rodsLong_t \b dataSize - the size of the data object.
+ *      Input 0 if not known.
+ *    \li int \b numThreads - the number of threads to use. Valid values are:
+ *      \n NO_THREADING (-1) - no multi-thread
+ *      \n 0 - the server will decide the number of threads.
+ *        (recommanded setting).
+ *      \n A positive integer - specifies the number of threads.
+ *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
+ *    \n RSYNC_MODE_KW - The mode of the Synchronization. Valid modes are:
+ *	 LOCAL_TO_IRODS - synchronize from a local file to a iRODS data object.
+ *	 IRODS_TO_LOCAL - synchronize from a iRODS data object to a local file.
+ *	 IRODS_TO_IRODS - synchronize from a iRODS data object to a 
+ *            iRODS data object..
+ *    \n RSYNC_DEST_PATH_KW - The target path. This can be the path for an 
+ *	      iRODS data object or a local file path, depending on the mode. 
+ *    \n RSYNC_CHKSUM_KW - The md5 checksum value of the local file. valid
+ *            only for LOCAL_TO_IRODS or IRODS_TO_LOCAL modes.
+ *    \n DEST_RESC_NAME_KW - The resource to store the new data object. 
+ *            Valid only for LOCAL_TO_IRODS or IRODS_TO_IRODS modes.
+ *    \n ALL_KW - replicate to all resources in the resource group if the
+ *             input resource (via DEST_RESC_NAME_KW) is a resource group.
+ *            This keyWd has no value. Valid only for LOCAL_TO_IRODS or 
+ *            IRODS_TO_IRODS modes.
+ *
+ * \return integer
+ * \retval 0 on success
+
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
 
 int
 rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp) 
