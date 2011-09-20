@@ -129,7 +129,8 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     status = _rsDataObjChksum (rsComm, dataObjInp, &dataObjChksumStr,
       &dataObjInfoHead);
 
-    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION) {
+    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && 
+      status != CAT_NO_ROWS_FOUND) {
 	/* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but 
 	 * cannot be registered. But the chksum value is OK.
 	 */
@@ -141,7 +142,8 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     freeAllDataObjInfo (dataObjInfoHead);
 
-    if (strcmp (dataObjChksumStr, fileChksumStr) == 0) {
+    if (dataObjChksumStr != NULL &&
+      strcmp (dataObjChksumStr, fileChksumStr) == 0) {
 	free (dataObjChksumStr);
 	return (0);
     }
@@ -193,7 +195,8 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     status = _rsDataObjChksum (rsComm, dataObjInp, &dataObjChksumStr,
       &dataObjInfoHead);
 
-    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION) {
+    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && 
+      status != CAT_NO_ROWS_FOUND) {
         /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but
          * cannot be registered. But the chksum value is OK.
          */
@@ -204,7 +207,8 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     freeAllDataObjInfo (dataObjInfoHead);
 
-    if (strcmp (dataObjChksumStr, fileChksumStr) == 0) {
+    if (dataObjChksumStr != NULL &&
+      strcmp (dataObjChksumStr, fileChksumStr) == 0) {
 	free (dataObjChksumStr);
 	return (0);
     }
