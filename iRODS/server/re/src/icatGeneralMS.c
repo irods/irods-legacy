@@ -13,11 +13,14 @@
 
 This documentation is generated from the iRODS code.
 
-\section mainpage Main Project Page
+\section overview Overview
  - http://www.irods.org
 
-\section msibyalphabet Microservices by Alphabet
- - <a href="globals.html">Full Alphabetical List</a>
+ - <a href="globals.html">Full Alphabetical List of Microservices</a>
+
+ - <a href="workflow.html">Workflow Microservices</a>
+ - #msiGoodFailure   - Useful when you want to fail but no recovery initiated
+ - #msiSleep         - Sleep
 
 \section msicore Core Microservices
 
@@ -50,26 +53,6 @@ This documentation is generated from the iRODS code.
   - #msiAdmInsertMSrvcsFromStructIntoDB - Writes a microservice structure into the current microservices base
   - #msiGetMSrvcsFromDBIntoStruct - Populates a microservice structure with microservices from the given base name
   - #msiAdmWriteMSrvcsFromStructIntoFile - Writes to file the microservices within a given microservice structure
-
-  
- \subsection msiworkflow Workflow Microservices
-  - #nop              - No action
-  - #cut              - Not to retry any other applicable rules for this action
-  - #succeed          - Succeed immediately
-  - #fail             - Fail immediately - recovery and retries are possible
-  - #msiGoodFailure   - Useful when you want to fail but no recovery initiated
-  - #msiSleep         - Sleep
-  - #whileExec        - While loop
-  - #forExec          - For loop with initial, step and end condition
-  - #forEachExec      - For loop iterating over a row of tables or a list
-  - #breakExec        - Breaks out of whileExec, forExec and forEachExec loops
-  - #writeString      - Writes a string to stdout buffer
-  - #writeLine        - Writes a line (with end-of-line) to stdout buffer
-  - #assign           - Assigns a value to a parameter
-  - #ifExec           - If-then-else conditional branch
-  - #delayExec        - Delays an execution of microservices or rules
-  - #remoteExec       - Invokes remote execution of microservices or rules
-  - #msiApplyAllRules - Applies all applicable rules when executing a given rule
 
  \subsection msihelper Helper Microservices
   Can be called by client through irule.
