@@ -68,7 +68,7 @@ keyValPair_t *condInput)
     sprintf(callCode, "%s", msoObjName+2);
     *t = ':';
     myMSICall = (char *) malloc(strlen(msoObjName) + strlen(cacheFilename) + 200);
-    sprintf(myMSICall, "msiobjget_%s(\"%s\",%i,%i,\"%s\")",callCode,msoObjName+2,mode,flags,cacheFilename);
+    sprintf(myMSICall, "msiobjget_%s(\"%s\",\"%i\",\"%i\",\"%s\")",callCode,msoObjName+2,mode,flags,cacheFilename);
 
 
 
@@ -151,7 +151,7 @@ char *cacheFilename,  rodsLong_t dataSize, keyValPair_t *condInput)
     sprintf(callCode, "%s", msoObjName+2);
     *t = ':';
     myMSICall = (char *) malloc(strlen(msoObjName) + strlen(cacheFilename) + 200);
-    sprintf(myMSICall, "msiobjput_%s(\"%s\",\"%s\",%lld)",callCode,msoObjName+2,cacheFilename,dataSize);
+    sprintf(myMSICall, "msiobjput_%s(\"%s\",\"%s\",\"%lld\")",callCode,msoObjName+2,cacheFilename,dataSize);
 
 
 
