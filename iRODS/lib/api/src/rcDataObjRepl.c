@@ -31,10 +31,8 @@
  * \usage
  * Replicate a data object /myZone/home/john/myfile to myRescource:
  * \n dataObjInp_t dataObjInp;
- * \n char locFilePath[MAX_NAME_LEN];
  * \n bzero (&dataObjInp, sizeof (dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
- * \n rstrcpy (locFilePath, "./mylocalfile", MAX_NAME_LEN);
  * \n addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, "myRescource");
  * \n status = rcDataObjRepl (conn, &dataObjInp);
  * \n if (status < 0) {

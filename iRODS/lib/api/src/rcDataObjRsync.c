@@ -47,11 +47,11 @@
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
  * \param[in] dataObjInp - Elements of dataObjInp_t used :
- *    \li char \b objPath[MAX_NAME_LEN] - The path for the source. This can 
- *          be the path for an iRODS data object or a local file path, 
- *          depending on the mode.
+ *    \li char \b objPath[MAX_NAME_LEN] - For LOCAL_TO_IRODS or 
+ *         IRODS_TO_LOCAL modes, this is the iRODS data object path.
+ *         For IRODS_TO_IRODS mode, this is the source path.
  *    \li int \b createMode - the file mode of the data object. Meaningful
- *	    only for LOCAL_TO_IRODS mode.
+ *	    only for LOCAL_TO_IRODS mode. 
  *    \li rodsLong_t \b dataSize - the size of the data object.
  *      Input 0 if not known.
  *    \li int \b numThreads - the number of threads to use. Valid values are:
@@ -65,8 +65,9 @@
  *	 IRODS_TO_LOCAL - synchronize from a iRODS data object to a local file.
  *	 IRODS_TO_IRODS - synchronize from a iRODS data object to a 
  *            iRODS data object..
- *    \n RSYNC_DEST_PATH_KW - The target path. This can be the path for an 
- *	      iRODS data object or a local file path, depending on the mode. 
+ *    \n RSYNC_DEST_PATH_KW - For LOCAL_TO_IRODS or IRODS_TO_LOCAL modes,
+ *         this is the local file path. For IRODS_TO_IRODS mode, this is 
+ *         the target path. 
  *    \n RSYNC_CHKSUM_KW - The md5 checksum value of the local file. valid
  *            only for LOCAL_TO_IRODS or IRODS_TO_LOCAL modes.
  *    \n DEST_RESC_NAME_KW - The resource to store the new data object. 
