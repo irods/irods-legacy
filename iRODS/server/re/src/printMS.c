@@ -15,6 +15,7 @@
 #endif
 
 /**
+ * \cond oldruleengine
  * \fn writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  *
  * \brief  This microservice writes a given string and newline character into the given buffer.
@@ -50,6 +51,7 @@
  * \pre none
  * \post none
  * \sa writeString
+ * \endcond
 **/
 int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {
@@ -77,6 +79,7 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 }
 
 /**
+ * \cond oldruleengine
  * \fn writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  *
  * \brief  This microservice writes a given string into the target buffer
@@ -111,6 +114,7 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
+ * \endcond
 **/
 int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {

@@ -521,6 +521,7 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
 #endif
 
 /**
+ * \cond oldruleengine
  * \fn delayExec(msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
  *
  * \brief  Execute a set of operations later when certain conditions are met. Can be used to perform 
@@ -589,6 +590,7 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
  * \pre none
  * \post none
  * \sa  none
+ * \endcond
 **/
 int delayExec(msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
 {
@@ -678,6 +680,7 @@ int recover_delayExec(msParam_t *actionCall, msParam_t *delayCondition,  ruleExe
 
 
 /**
+ * \cond oldruleengine
  * \fn remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
  *
  * \brief  A set of statements to be remotely executed
@@ -714,6 +717,7 @@ int recover_delayExec(msParam_t *actionCall, msParam_t *delayCondition,  ruleExe
  * \pre none
  * \post none
  * \sa  none
+ * \endcond
 **/
 int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
 {
@@ -1090,6 +1094,7 @@ msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
 }
 
 /**
+ * \cond oldruleengine
  * \fn msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei)
  *
  * \brief  This microservice executes all applicable rules for a given action name.
@@ -1131,6 +1136,7 @@ msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
+ * \endcond
 **/
 int
 msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, 
