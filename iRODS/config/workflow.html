@@ -6,7 +6,7 @@
 	<STYLE TYPE="text/css">
 	<!--
 		P.grammar { font-family: "Liberation Mono", "Courier New", Courier, monospace }
-		SPAN.grammer { font-family: "Liberation Mono", "Courier New", Courier, monospace; font-style: italic }
+		SPAN.grammar { font-family: "Liberation Mono", "Courier New", Courier, monospace; font-style: italic }
 		DD { margin-bottom: 0.2in }
 		DT { margin-bottom: 0.2in; font-weight: bold }
 	-->
@@ -18,30 +18,30 @@
 	<DT>Description:</DT><DD>
 	No action.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflownop.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflownop.r</DD></DL>
 <P CLASS="grammar">
 cut</P>
 <DL>
 	<DT>Description:</DT><DD>
 	Not to retry any other applicable rules for this action.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowcut.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowcut.r</DD></DL>
 <P CLASS="grammar">
 succeed</P>
 <DL>
 	<DT>Description:</DT><DD>
 	Succeed immediately.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowsucceed.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowsucceed.r</DD></DL>
 <P CLASS="grammar">
 fail</P>
 <DL>
 	<DT>Description:</DT><DD>
 	Fail immediately. Recovery and retries are possible.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowfail.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowfail.r</DD></DL>
 <P CLASS="grammar">
-errorcode(<SPAN class="grammer">action</SPAN>)</P>
+errorcode(<SPAN class="grammar">action</SPAN>)</P>
 <DL>
 	<DT>Description:</DT><DD>
 	This microservice traps the error code of an action. The rule engine
@@ -56,19 +56,19 @@ errorcode(<SPAN class="grammer">action</SPAN>)</P>
 	the value as a failure. In some applications, there is need for
 	capturing all possible return values as regular integers. The
 	“errorcode” microservice can be used to achieve this by putting
-	the action whose return value needs to be captured in <SPAN class="grammer">action</SPAN>.</DD><DT>
+	the action whose return value needs to be captured in <SPAN class="grammar">action</SPAN>.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowerrorcode.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowerrorcode.r</DD></DL>
 <P CLASS="grammar">
-applyAllRules(<SPAN class="grammer">action</SPAN>, <SPAN class="grammer">expr</SPAN>, <SPAN class="grammer">expr</SPAN>)</P>
+applyAllRules(<SPAN class="grammar">action</SPAN>, <SPAN class="grammar">expr</SPAN>, <SPAN class="grammar">expr</SPAN>)</P>
 <DL>
 	<DT>Description:</DT><DD>
-	This microservice executes all applicable rules for a given <SPAN class="grammer">action</SPAN>.
+	This microservice executes all applicable rules for a given <SPAN class="grammar">action</SPAN>.
 	Normal operations of the rule engine is to stop after a rule (one of
 	the alternates) completes successfully. But in some cases, one may
 	want the rule engine to try all alternatives and succeed in as many
 	as possible. Then by firing that rule under this microservice all
-	alternatives are tried. The first <SPAN class="grammer">expr</SPAN>
+	alternatives are tried. The first <SPAN class="grammar">expr</SPAN>
 	is a parameter of type string or integer which is 0 or 1, the value
 	used to check if the rei structure needs to be saved at every rule
 	invocation inside the execution. This helps to save time if the rei
@@ -81,52 +81,52 @@ applyAllRules(<SPAN class="grammer">action</SPAN>, <SPAN class="grammer">expr</S
 	</DD><DT>
 	Example Usage:</DT><DD>
 	As seen in
-	clients/icommands/test/rule3.0/ruleworkflowapplyAllRules.r</DD></DL>
+	clients/icommands/test/rules3.0/ruleworkflowapplyAllRules.r</DD></DL>
 <P CLASS="grammar">
-if ( <SPAN class="grammer">expr</SPAN> ) { <SPAN class="grammer">actions</SPAN> } else { <SPAN class="grammer">actions</SPAN> }</P>
+if ( <SPAN class="grammar">expr</SPAN> ) { <SPAN class="grammar">actions</SPAN> } else { <SPAN class="grammar">actions</SPAN> }</P>
 <DL>
 	<DT>Description:</DT><DD>
 	It is an if-then-else construct in the rule language. It executes an
 	if-then-else statement.</DD><DD>
-	The <SPAN class="grammer">expr</SPAN> is a
+	The <SPAN class="grammar">expr</SPAN> is a
 	conditional check. If the check is successful (true), the first
-	<SPAN class="grammer">actions</SPAN> will
-	be executed. If the check fails, then the second <SPAN class="grammer">actions</SPAN>
+	<SPAN class="grammar">actions</SPAN> will
+	be executed. If the check fails, then the second <SPAN class="grammar">actions</SPAN>
 	will be executed.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowif.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowif.r</DD></DL>
 <P CLASS="grammar">
-while ( <SPAN class="grammer">expr</SPAN> ) { <SPAN class="grammer">actions</SPAN> }</P>
+while ( <SPAN class="grammar">expr</SPAN> ) { <SPAN class="grammar">actions</SPAN> }</P>
 <DL>
 	<DT>Description:</DT><DD>
 	It is a while loop in the rule language. It executes a while loop.</DD><DD>
-	The <SPAN class="grammer">expr</SPAN> is a
-	condition that will be checked on each loop iteration. The <SPAN class="grammer">actions</SPAN>
+	The <SPAN class="grammar">expr</SPAN> is a
+	condition that will be checked on each loop iteration. The <SPAN class="grammar">actions</SPAN>
 	are the body of the while loop.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowwhile.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowwhile.r</DD></DL>
 <P CLASS="grammar">
-for ( <SPAN class="grammer">expr</SPAN>; <SPAN class="grammer">expr</SPAN>; <SPAN class="grammer">expr</SPAN> ) { <SPAN class="grammer">actions</SPAN> }</P>
+for ( <SPAN class="grammar">expr</SPAN>; <SPAN class="grammar">expr</SPAN>; <SPAN class="grammar">expr</SPAN> ) { <SPAN class="grammar">actions</SPAN> }</P>
 <DL>
 	<DT>Description:</DT><DD>
 	It is a for loop in rule language. It is similar to the for
 	construct in C</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowfor.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowfor.r</DD></DL>
 <P CLASS="grammar">
-foreach ( <SPAN class="grammer">var</SPAN> ) { <SPAN class="grammer">actions</SPAN> }</P>
+foreach ( <SPAN class="grammar">var</SPAN> ) { <SPAN class="grammar">actions</SPAN> }</P>
 <DL>
 	<DT>Description:</DT><DD>
 	Performs a loop over a list of items given in different forms.</DD><DD>
 	It is a for loop in C-type language looping over a list. It takes a
 	list (or a general query result), and for each item stored in the
-	variables, executes the actions of the foreach loop. The <SPAN class="grammer">var</SPAN>
+	variables, executes the actions of the foreach loop. The <SPAN class="grammar">var</SPAN>
 	specifies the variable that has the list (the same variable name is
 	used in the body of the loop to denote an item of the list!). The
-	<SPAN class="grammer">actions</SPAN> are
+	<SPAN class="grammar">actions</SPAN> are
 	the body of the foreach loop.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowforeach.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowforeach.r</DD></DL>
 <P CLASS="grammar">
 break</P>
 <DL>
@@ -134,17 +134,17 @@ break</P>
 	This microservice is used to break whileExec, forExec and
 	forEachExec loops.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowbreak.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowbreak.r</DD></DL>
 <P CLASS="grammar">
-<SPAN class="grammer">var</SPAN> = <SPAN class="grammer">expr</SPAN></P>
+<SPAN class="grammar">var</SPAN> = <SPAN class="grammar">expr</SPAN></P>
 <DL>
 	<DT>Description:</DT><DD>
 	This microservice assigns a value to a variable. It can be used to
 	assign values to * and $ variables.</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowassign.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowassign.r</DD></DL>
 <P CLASS="grammar">
-writeString(<SPAN class="grammer">expr</SPAN>, <SPAN class="grammer">expr</SPAN>)</P>
+writeString(<SPAN class="grammar">expr</SPAN>, <SPAN class="grammar">expr</SPAN>)</P>
 <DL>
 	<DT>Description:</DT><DD>
 	This microservice writes a given string and newline character into
@@ -153,18 +153,18 @@ writeString(<SPAN class="grammer">expr</SPAN>, <SPAN class="grammer">expr</SPAN>
 	ruleExecOut parameter) or a local log file. This may be extended
 	later for writing into an iRODS file, too. The ruleExecOut is a
 	system MS-parameter (*variable) that is automatically available. The
-	first <SPAN class="grammer">expr</SPAN> is
+	first <SPAN class="grammar">expr</SPAN> is
 	a parameter of type string which is the buffer name in ruleExecOut.
 	Currently, “stdout”,  “stderr”, and “serverLog” are
-	supported. The second <SPAN class="grammer">expr</SPAN>
+	supported. The second <SPAN class="grammar">expr</SPAN>
 	is a parameter of type string which is a string to be written into
 	buffer.</DD></DL>
 
 <DL>
 	<DT>Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/rulewriteString.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/rulewriteString.r</DD></DL>
 <P CLASS="grammar">
-writeLine(<SPAN class="grammer">expr</SPAN>, <SPAN class="grammer">expr</SPAN>)</P>
+writeLine(<SPAN class="grammar">expr</SPAN>, <SPAN class="grammar">expr</SPAN>)</P>
 <DL>
 	<DT>Description:</DT><DD>
 	This microservice writes a given string and newline character into
@@ -173,23 +173,23 @@ writeLine(<SPAN class="grammer">expr</SPAN>, <SPAN class="grammer">expr</SPAN>)<
 	ruleExecOut parameter) or a local log file followed by a new line
 	character. This may be extended later for writing into an iRODS
 	file, too. The ruleExecOut is a system MS-parameter (*variable) that
-	is automatically available. The first <SPAN class="grammer">expr</SPAN>
+	is automatically available. The first <SPAN class="grammar">expr</SPAN>
 	is a parameter of type string which is the buffer name in
 	ruleExecOut. Currently, “stdout”,  “stderr”, and “serverLog”
-	are supported. The second <SPAN class="grammer">expr</SPAN>
+	are supported. The second <SPAN class="grammar">expr</SPAN>
 	is a parameter of type string which is a string to be written into
 	buffer.</DD></DL>
 <DL>
 	<DT>Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/rulewriteLine.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/rulewriteLine.r</DD></DL>
 <P CLASS="grammar">
-delay ( <SPAN class="grammer">expr</SPAN> ) { <SPAN class="grammer">actions</SPAN> }</P>
+delay ( <SPAN class="grammar">expr</SPAN> ) { <SPAN class="grammar">actions</SPAN> }</P>
 <DL>
 	<DT>Description:</DT><DD>
 	Execute a set of operations later when certain conditions are met.
 	Can be used to perform periodic operations also.</DD><DD>
-	The <SPAN class="grammer">expr</SPAN> is a
-	delay condition. The <SPAN class="grammer">actions</SPAN>
+	The <SPAN class="grammar">expr</SPAN> is a
+	delay condition. The <SPAN class="grammar">actions</SPAN>
 	are a set of statements that will be delayed in execution until the
 	delay condition is true. The condition also supports repeating of
 	the body until success or until some other condition is satisfied.
@@ -247,23 +247,23 @@ delay ( <SPAN class="grammer">expr</SPAN> ) { <SPAN class="grammer">actions</SPA
 	means start after 1 minute and repeat every 20 minutes.</DD></UL>
 <DL>
 	<DT>Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowdelay.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowdelay.r</DD></DL>
 <P CLASS="grammar">
-remote ( <SPAN class="grammer">expr</SPAN>, <SPAN class="grammer">expr</SPAN> ) { <SPAN class="grammer">actions</SPAN> }</P>
+remote ( <SPAN class="grammar">expr</SPAN>, <SPAN class="grammar">expr</SPAN> ) { <SPAN class="grammar">actions</SPAN> }</P>
 <DL>
 	<DT>Description:</DT><DD>
 	A set of statements to be remotely executed.</DD><DD>
-	This mico-service takes a set of <SPAN class="grammer">actions</SPAN>
-	that need to be executed at a remote iRODS server. The first <SPAN class="grammer">expr</SPAN>
+	This mico-service takes a set of <SPAN class="grammar">actions</SPAN>
+	that need to be executed at a remote iRODS server. The first <SPAN class="grammar">expr</SPAN>
 	is a parameters of type string which is a host name of the server
-	where the body need to be executed. The second <SPAN class="grammer">expr</SPAN>
+	where the body need to be executed. The second <SPAN class="grammar">expr</SPAN>
 	is a parameter of type string which is a delay condition about when
 	to execute the body. If there is no delay condition, the execution
 	is done immediately and synchronously with the result returning back
 	from the call. 
 	</DD><DT>
 	Example Usage:</DT><DD>
-	As seen in clients/icommands/test/rule3.0/ruleworkflowremote.r</DD></DL>
+	As seen in clients/icommands/test/rules3.0/ruleworkflowremote.r</DD></DL>
 </BODY>
 </HTML>
 
