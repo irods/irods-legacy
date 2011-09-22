@@ -757,7 +757,7 @@ readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleEx
     	  } else if(strcmp(ruleRecovery+1, "FUNC") == 0) {
 			  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s = %s\n @(\"id\", \"%ld\")", ruleHead, ruleAction, ruleId);
     	  } else {
-    		  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s { on(%s) %s @(\"id\", \"%ld\") }\n", ruleHead, ruleCondition, ruleAction, ruleId);
+    		  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s { on %s %s @(\"id\", \"%ld\") }\n", ruleHead, ruleCondition, ruleAction, ruleId);
     	  }
       } else {
     	  snprintf(ruleStr, MAX_RULE_LEN * 4, "%s|%s|%s|%s", ruleHead, ruleCondition, ruleAction, ruleRecovery);

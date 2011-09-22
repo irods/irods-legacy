@@ -1822,8 +1822,10 @@ void metadataToString(char **p, int *s, int indent, Node *nm) {
 		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[0]);
 		PRINT(p, s, "%s", ", ");
 		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[1]);
-		PRINT(p, s, "%s", ", ");
-		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[2]);
+		if(nm->subtrees[i]->subtrees[2]->text != 0 && strlen(nm->subtrees[i]->subtrees[2]->text) != 0) {
+			PRINT(p, s, "%s", ", ");
+			termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[2]);
+		}
 		PRINT(p, s, "%s", ")\n");
 	}
 }
@@ -1956,10 +1958,14 @@ void ruleToString(char *buf, int size, RuleDesc *rd) {
 			}
 			actionsToString(p, s, indent, node->subtrees[2], node->subtrees[3]);
 			if(indent == 1) {
-				PRINT(p, s, "%s", "\n}");
+				PRINT(p, s, "%s", "\n");
+				indentToString(p, s, 1);
+				metadataToString(p, s, 0, node->subtrees[4]);
+				PRINT(p, s, "%s", "}\n");
+			} else {
+				PRINT(p, s, "%s", "\n");
+				metadataToString(p, s, 0, node->subtrees[4]);
 			}
-			PRINT(p, s, "%s", "\n");
-			metadataToString(p, s, 0, node->subtrees[4]);
 			break;
 	case RK_FUNC:
 		ruleNameToString(p, s, 0, node->subtrees[0]);
