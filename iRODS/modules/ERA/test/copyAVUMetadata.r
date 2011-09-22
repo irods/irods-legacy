@@ -1,4 +1,5 @@
 copyAVUMetadata {
+	msiStripAVUs(*destObj,"null",*junk);
 	msiCopyAVUMetadata(*srcObj,*destObj,*status);
 	writePosInt("stdout",*status);
 	writeLine("stdout","");
