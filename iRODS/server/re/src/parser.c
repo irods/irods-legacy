@@ -1822,10 +1822,8 @@ void metadataToString(char **p, int *s, int indent, Node *nm) {
 		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[0]);
 		PRINT(p, s, "%s", ", ");
 		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[1]);
-		if(nm->subtrees[i]->subtrees[2]->text != 0 && strlen(nm->subtrees[i]->subtrees[2]->text) != 0) {
-			PRINT(p, s, "%s", ", ");
-			termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[2]);
-		}
+		PRINT(p, s, "%s", ", ");
+		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[2]);
 		PRINT(p, s, "%s", ")\n");
 	}
 }
