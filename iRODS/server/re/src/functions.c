@@ -204,8 +204,15 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
 
 }
 
+Res *smsi_split(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
+
 Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
-	if(TYPE(coll) != T_CONS &&
+	if(TYPE(coll) == T_STRING) { /* backward compatible mode only */
+		Res *paramsr[2];
+		paramsr[0] = coll;
+		paramsr[1] = newStringRes(r, ",");
+		return smsi_split(paramsr, 2, node, NULL, 0, NULL, errmsg, r);
+	} else if(TYPE(coll) != T_CONS &&
 		(TYPE(coll) != T_IRODS || (
 		strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
 		strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
@@ -223,7 +230,7 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
     Res *res = newRes(r);
     char* varName = ((Node *)subtrees[0])->text;
 	Res* coll = evaluateExpression3(subtrees[1], 0, 1, rei, reiSaveFlag, env, errmsg, r);
-	CASCADE_N_ERROR(collType(coll, subtrees[1], errmsg, r));
+	CASCADE_N_ERROR(coll = collType(coll, subtrees[1], errmsg, r));
 	res = newIntRes(r, 0);
 	if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
 		int i;
@@ -272,13 +279,14 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
     Res *res = newRes(r);
     char* varName = ((Node *)subtrees[0])->text;
         Res* orig = evaluateVar3(varName, ((Node *)subtrees[0]), rei, reiSaveFlag, env, errmsg, r);
-        CASCADE_N_ERROR(collType(orig, subtrees[0], errmsg, r));
+        Res *coll;
+        CASCADE_N_ERROR(coll = collType(orig, subtrees[0], errmsg, r));
         res = newIntRes(r, 0);
-        if(TYPE(orig) == T_CONS && strcmp(orig->exprType->text, LIST) == 0) {
+        if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
             int i;
             Res* elem;
-            for(i=0;i<orig->degree;i++) {
-                    elem = orig->subtrees[i];
+            for(i=0;i<coll->degree;i++) {
+                    elem = coll->subtrees[i];
                     setVariableValue(varName, elem, rei, env, errmsg, r);
                     res = evaluateActions(subtrees[1], subtrees[2], 0, rei,reiSaveFlag, env,errmsg,r);
                     if(getNodeType(res) == N_ERROR) {
@@ -297,9 +305,9 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
         } else {
             int i;
             Res* elem;
-            int len = getCollectionSize(orig->exprType->text, RES_UNINTER_STRUCT(orig), r);
+            int len = getCollectionSize(coll->exprType->text, RES_UNINTER_STRUCT(coll), r);
             for(i=0;i<len;i++) {
-                    elem = getValueFromCollection(orig->exprType->text, RES_UNINTER_STRUCT(orig), i, r);
+                    elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, r);
                     setVariableValue(varName, elem, rei, env, errmsg, r);
                     res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], 0, rei,reiSaveFlag,  env,errmsg,r);
                     if(getNodeType(res) == N_ERROR) {
