@@ -524,7 +524,13 @@ main(int argc, char **argv) {
       msParam_t *mP;
       execCmdOut_t *execCmdOut;
 
-      rodsLogError (LOG_ERROR, status, "rcExecMyRule error. ");
+      if(!rulegen) {
+          rodsLogError (LOG_ERROR, status, "rcExecMyRule error. The rule engine is running under backward compatible mode. To run the rule(s) under normal mode, try renaming the file extension to \".r\". ");
+
+      } else {
+          rodsLogError (LOG_ERROR, status, "rcExecMyRule error. ");
+
+      }
       printErrorStack (conn->rError); 
       if ((mP = getMsParamByType (outParamArray, ExecCmdOut_MS_T)) != NULL) {
 	execCmdOut = (execCmdOut_t *) mP->inOutStruct;
