@@ -948,11 +948,13 @@ int isRecursive(Node *rule) {
 int invokedIn(char *fn, Node *expr) {
     int i;
     switch(getNodeType(expr)) {
-        case N_APPLICATION:
-            if(strcmp(expr->text, fn) == 0) {
+    	case TK_TEXT:
+    		if(strcmp(expr->text, fn) == 0) {
                 return 1;
             }
+    		break;
 
+    	case N_APPLICATION:
         case N_ACTIONS:
         case N_ACTIONS_RECOVERY:
             for(i=0;i<expr->degree;i++) {

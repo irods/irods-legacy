@@ -621,6 +621,7 @@ char* convertResToString(Res *res0) {
                 /*sprintf(res, "error: unsupported type %d", TYPE(res0)); */
                 return NULL;
 		}
+		break;
 		default:
 			res = (char *)malloc(sizeof(char)*128);
 			return typeToString(res0, NULL, res, 128);

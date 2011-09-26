@@ -214,6 +214,7 @@ int updateCache(unsigned char *shared, size_t size, Cache *cache, int processTyp
 					switch(processType) {
 					case RULE_ENGINE_INIT_CACHE:
 						cacheCopy->version = 0;
+						break;
 					default:
 						cacheCopy->version = ((Cache *)shared)->version;
 						INC_MOD(cacheCopy->version, UINT_MAX);
