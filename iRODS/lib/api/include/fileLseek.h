@@ -21,7 +21,30 @@
 
 #include "fileDriver.h"
 
-typedef struct {
+/**
+ * \var fileLseekInp_t
+ * \brief Input struct for rcDataObjLseek and rsFileLseek operations
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note
+ * Elements of fileLseekInp_t:
+ * \li int fileInx - the opened file descriptor from
+ *      rcFileOpen or rcFileCreate.
+ * \li rodsLong_t offset - the roffset
+ * \li int whence - Similar to lseek of UNIX. Valid values are:
+ *        \n SEEK_SET - The offset is set to offset bytes.
+ *        \n SEEK_CUR - The offset is set to its current location plus
+ *             offset bytes.
+ *        \n SEEK_END - The offset is set to the size of the file plus
+ *             offset bytes.
+ *
+ * \sa none
+ * \bug  no known bugs
+ */
+
+typedef struct FileLseekInp {
     int fileInx;
     rodsLong_t offset; 
     int whence;

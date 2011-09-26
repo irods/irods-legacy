@@ -16,7 +16,7 @@ This documentation is generated from the iRODS code.
 \section sortedAPI iRODS C APIs by Alphabet
  - <a href="globals.html">Full Alphabetical List</a>
 
-\section clientAPI iRODS Client C APIs - can be called by iRODS clients
+\section clientAPI iRODS Client C APIs - Normally called by iRODS clients
 
  \subsection dataObjOpr Data Object Operations
   - #rcDataObjCreate
@@ -101,7 +101,7 @@ This documentation is generated from the iRODS code.
   - #rcProcStat
   - #rcGetMiscSvrInfo
 
-\section serverAPI iRODS Server C APIs - normally called by iRODS servers (server-server)
+\section serverAPI iRODS Server C APIs - Normally called by iRODS servers (server-server)
 
 \subsection dataTransferOpr Low Level Data Transfer Operations
   - #rcDataCopy
