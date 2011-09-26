@@ -385,7 +385,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   }
   /* RAJA ADDED Jul 14, 2008 to get back the changed args */
 #endif
-  if(i!=0) {
+  if(i<0) {
     logErrMsg(&errmsgBuf, &rei->rsComm->rError);
   }
   freeRErrorContent(&errmsgBuf);
