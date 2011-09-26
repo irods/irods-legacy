@@ -637,7 +637,7 @@ initRuleStruct(int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, c
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
     if (i == 0)*/
       i = readRuleStructFromFile(processType, irbSet, &coreRuleStrct);
-    if (i != 0)
+    if (i < 0)
       return(i);
     /*strcpy(r2,r3);
   }*/
@@ -649,7 +649,7 @@ initRuleStruct(int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, c
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
     if (i == 0)
       i = readDVarStructFromFile(r1, &coreRuleVarDef);
-    if (i != 0)
+    if (i < 0)
       return(i);
     strcpy(r2,r3);
   }
@@ -661,7 +661,7 @@ initRuleStruct(int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, c
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
     if (i == 0)
       i = readFuncMapStructFromFile(r1, &coreRuleFuncMapDef);
-    if (i != 0)
+    if (i < 0)
       return(i);
     strcpy(r2,r3);
   }
