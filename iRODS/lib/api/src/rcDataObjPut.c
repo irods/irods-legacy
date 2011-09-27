@@ -72,7 +72,7 @@
  *            The value is the md5 checksum value of the local file.
  *    \n VERIFY_CHKSUM_KW - verify and register the target checksum value
  *            after the copy. The value is the md5 checksum value of the 
- ^	      local file.
+ *	      local file.
  *    \n RBUDP_TRANSFER_KW - use RBUDP for data transfer. This keyWd has no
  *             value.
  *    \n RBUDP_SEND_RATE_KW - the number of RBUDP packet to send per second

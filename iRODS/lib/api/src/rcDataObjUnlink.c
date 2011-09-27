@@ -43,6 +43,8 @@
  * \param[in] conn - A rcComm_t connection handle to the server.
  * \param[in] dataObjInp - Elements of dataObjInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
+ *    \li char \b oprType - 0 normally.When set to UNREG_OPR, the data object
+ *         is unregistered but the physical file is not deleted.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n FORCE_FLAG_KW - delete the data object. If it is not set, the data
  *         object is moved to trash. This keyWd has no value.

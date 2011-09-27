@@ -145,6 +145,25 @@ typedef struct DataOprInp {
     keyValPair_t condInput;
 } dataOprInp_t;
 
+/**
+ * \var collInp_t
+ * \brief Input struct for collection operation
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note
+ * Elements of collInp_t:
+ * \li char collName[MAX_NAME_LEN] - full path of the collection.
+ * \li int flags - Flags. Used only by rcOpenCollection.
+ * \li int oprType - operation type. not used.
+ * \li keyValPair_t condInput -  keyword/value pair input. Valid keywords
+ *      depend on the API.
+ *
+ * \sa none
+ * \bug  no known bugs
+ */
+
 typedef struct CollInp {
     char collName[MAX_NAME_LEN];
     int flags;

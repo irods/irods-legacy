@@ -46,14 +46,14 @@ This documentation is generated from the iRODS code.
  \subsection collectionOpr Collection Operations
   - #rcCollCreate
   - #rcRmColl
-  - #rclOpenCollection
-  - #rclReadCollection
-  - #rclCloseCollection
+  - #rcOpenCollection
+  - #rcReadCollection
+  - #rcCloseCollection
   - #rcCollRepl
   - #rcPhyBundleColl
   - #rcSyncMountedColl
 
-\subsection clientIcatOpr Client iCat Operations
+\subsection clientIcatOpr Client iCat metadata Operations
   - #rcGenQuery
   - #rcSimpleQuery
   - #rcSpecificQuery
@@ -183,5 +183,6 @@ This documentation is generated from the iRODS code.
   - #bytesBuf_t
   - #fileLseekInp_t
   - #dataObjCopyInp_t
+  - #collInp_t
 
 **/
