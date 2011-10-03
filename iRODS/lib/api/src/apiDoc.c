@@ -80,8 +80,6 @@ This documentation is generated from the iRODS code.
 
 \subsection clientRuleOpr Client Rule Operations
   - #rcExecMyRule
-  - #rcStreamClose
-  - #rcStreamRead
 
 \subsection batchExecOpr Batch (delayed exec) Request Operations
   - #rcRuleExecDel
@@ -95,9 +93,10 @@ This documentation is generated from the iRODS code.
 
 \subsection miscClientOpr Misc Client Operations
   - #rcExecCmd
+  - #rcStreamRead
+  - #rcStreamClose
   - #rcGetHostForGet
   - #rcGetHostForPut
-  - #rcOprComplete
   - #rcProcStat
   - #rcGetMiscSvrInfo
 
@@ -109,6 +108,7 @@ This documentation is generated from the iRODS code.
   - #rcDataPut
   - #rcL3FileGetSingleBuf
   - #rcL3FilePutSingleBuf
+  - #rcOprComplete
 
 \subsection fileLevelOpr Low Level File Driver Operations
   - #rcFileChksum

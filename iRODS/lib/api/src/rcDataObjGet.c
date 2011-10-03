@@ -32,7 +32,7 @@
  * \note none
  *
  * \usage
- * Get (download) a data object /myZone/home/john/myfile:
+ * Get (download) the data object /myZone/home/john/myfile:
  * \n dataObjInp_t dataObjInp;
  * \n char locFilePath[MAX_NAME_LEN];
  * \n bzero (&dataObjInp, sizeof (dataObjInp));

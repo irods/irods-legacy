@@ -19,7 +19,7 @@
  *
  * \user client
  *
- * \category data object operations
+ * \category rule operations
  *
  * \since 1.0
  *
@@ -50,7 +50,7 @@
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
- * \param[in] collCreateInp - Elements of collInp_t used :
+ * \param[in] execMyRuleInp - Elements of execMyRuleInp_t used :
  *    \li char \b myRule[META_STR_LEN] - The string representing the rule to 
  *       be executed..
  *    \li rodsHostAddr_t \b addr - The address to execute the rule. Can be
@@ -61,6 +61,7 @@
  *       the form of array of msParam.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n "looptest" - Just a test.
+ * \param[out] outParamArray - A msParamArray_t containing an array of msParam_t.
  * \return integer
  * \retval 0 on success
  * \sideeffect none

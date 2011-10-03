@@ -16,7 +16,7 @@
  *
  * \user client
  *
- * \category data object operations
+ * \category misc operations
  *
  * \since 1.0
  *
