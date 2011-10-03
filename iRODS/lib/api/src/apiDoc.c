@@ -86,7 +86,7 @@ This documentation is generated from the iRODS code.
 \subsection batchExecOpr Batch (delayed exec) Request Operations
   - #rcRuleExecDel
   - #rcRuleExecMod
-  - #ccRuleExecSubmit
+  - #rcRuleExecSubmit
 
 \subsection xmsgOpr Xmsg Operations
   - #rcGetXmsgTicket
