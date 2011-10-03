@@ -1,3 +1,8 @@
+/**
+ * @file  rcExecMyRule.c
+ *
+ */
+
 /* This is script-generated code.  */ 
 /* See execMyRule.h for a description of this API call.*/
 
@@ -5,6 +10,65 @@
 #include "oprComplete.h"
 #include "dataObjPut.h"
 #include "dataObjGet.h"
+
+/**
+ * \fn rcExecMyRule (rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
+ * msParamArray_t **outParamArray)
+ *
+ * \brief Submit a user defined rule to be executed by an iRODS server.
+ *
+ * \user client
+ *
+ * \category data object operations
+ *
+ * \since 1.0
+ *
+ * \author  Mike Wan
+ * \date    2007
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \usage
+ * Execute a rule that create a collection /myZone/home/john/coll1
+ * \n int status;
+ * \n execMyRuleInp_t execMyRuleInp;
+ * \n msParamArray_t msParamArray;
+ * \n msParamArray_t *outParamArray = NULL;
+ * \n bzero (&execMyRuleInp, sizeof (execMyRuleInp));
+ * \n rstrcpy (execMyRuleInp.myRule, "myTestRule { msiCollCreate(*Path,"0",*Status); writeLine("stdout","Create collection *Path"); }", META_STR_LEN);
+ * \n memset (&msParamArray, 0, sizeof (msParamArray));
+ * \n execMyRuleInp.inpParamArray = &msParamArray;
+ * \n addMsParamToArray (&msParamArray, "Path", STR_MS_T, "/myZone/home/john/coll1", 1);
+ * \n rstrcpy (execMyRuleInp.outParamDesc, "ruleExecOut", LONG_NAME_LEN);
+ * \n status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
+ * \n if (status < 0) {
+ * \n .... handle the error
+ * \n } else {
+ * \n  ... hnadle outParamArray output
+ * \n }
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] collCreateInp - Elements of collInp_t used :
+ *    \li char \b myRule[META_STR_LEN] - The string representing the rule to 
+ *       be executed..
+ *    \li rodsHostAddr_t \b addr - The address to execute the rule. Can be
+ *       left blank.
+ *    \li char \b outParamDesc[LONG_NAME_LEN] - the list of output parameters
+ *       separated by "%".
+ *    \li msParamArray_t \b *inpParamArray - Input parameters for the rule in
+ *       the form of array of msParam.
+ *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
+ *    \n "looptest" - Just a test.
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
 
 int
 rcExecMyRule (rcComm_t *conn, execMyRuleInp_t *execMyRuleInp, 
