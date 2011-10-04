@@ -1,3 +1,8 @@
+/**
+ * @file  execCmd.h
+ *
+ */
+
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* execCmd.h
@@ -26,7 +31,27 @@ typedef struct {
     keyValPair_t condInput;
 } execCmd241_t;
 
-typedef struct {
+/**
+ * \var execCmd_t
+ * \brief Input struct for the rcExecCmd API for executing commands on the 
+ *         server.
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note
+ * Elements of execCmd_t:
+ * \li char cmd[LONG_NAME_LEN] - The cmd to execute. 
+ * \li char cmdArgv[LONG_NAME_LEN] - The input argument for the cmd
+ * \li char execAddr[LONG_NAME_LEN] - The address of the server to execute 
+ *        this cmd. 
+ * \li char hintPath[MAX_NAME_LEN] - Execute where this file is located. 
+ * \li int addPathToArgv - whether to add the resolved path to the argv
+ * \sa none
+ * \bug  no known bugs
+ */
+
+typedef struct ExecCmd {
     char cmd[LONG_NAME_LEN];
     char cmdArgv[HUGE_NAME_LEN];
     char execAddr[LONG_NAME_LEN];       /* if non empty, exec at this addr */
@@ -37,7 +62,26 @@ typedef struct {
     keyValPair_t condInput;
 } execCmd_t;
 
-typedef struct {
+/**
+ * \var execCmdOut_t
+ * \brief Output struct for the rcExecCmd API for executing commands on the 
+ *         server.
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note
+ * Elements of execCmdOut_t:
+ * \li bytesBuf_t stdoutBuf - the buffer containing the stdout output from
+ *        the command.
+ * \li bytesBuf_t stderrBuf - the buffer containing the stderr output from
+ *        the command.
+ * \li int status - The status of the command
+ * \sa none
+ * \bug  no known bugs
+ */
+
+typedef struct ExecCmdOut {
     bytesBuf_t stdoutBuf;
     bytesBuf_t stderrBuf;
     int status;	    /* XXXXXX have to move status to back for 64 bit addr */

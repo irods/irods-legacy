@@ -177,7 +177,7 @@ This documentation is generated from the iRODS code.
   - #rcGetRescQuota
   - #rcQuerySpecColl
 
-\section inputDataStruct Input Data Structure
+\section inputDataStruct Input/Output Data Structures
   - #dataObjInp_t
   - #openedDataObjInp_t
   - #bytesBuf_t
@@ -187,7 +187,6 @@ This documentation is generated from the iRODS code.
   - #collEnt_t
   - #structFileExtAndRegInp_t
   - #execMyRuleInp_t 
-  - #msParamArray_t
   - #execCmd_t 
   - #execCmdOut_t
   - #fileReadInp_t

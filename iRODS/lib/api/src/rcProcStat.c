@@ -12,7 +12,7 @@
  * \fn rcProcStat (rcComm_t *conn, procStatInp_t *procStatInp,
  * genQueryOut_t **procStatOut)
  *
- * \brief Get all the client processes running in the federation.
+ * \brief Get all the information on client processes running in the federation.
  *
  * \user client
  *
@@ -59,7 +59,7 @@
  * \param[in] procStatInp - Elements of procStatInp_t used :
  *    \li char \b addr[LONG_NAME_LEN] - get the clients running only on this
  *        server. If empty, get the clients on the connected server. 
- *    \li char \b rodsZone[NAME_LEN] - get he clients running in this zone.
+ *    \li char \b rodsZone[NAME_LEN] - get the clients running in this zone.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n RESC_NAME_KW - get the clients on this resource server. 
  *    \n ALL_KW -  get the clients on all servers. This keyword has no value.

@@ -13,7 +13,7 @@
 /**
  * \fn rcGetMiscSvrInfo (rcComm_t *conn, miscSvrInfo_t **outSvrInfo)
  *
- * \brief Get the information of the connected server.
+ * \brief Get the system information of the connected server.
  *
  * \user client
  *

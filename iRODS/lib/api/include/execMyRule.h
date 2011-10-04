@@ -1,3 +1,8 @@
+/**
+ * @file  execMyRule.h
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* execMyRule.h
@@ -16,7 +21,28 @@
 #include "dataObjInpOut.h"
 #include "msParam.h"
 
-typedef struct {
+/**
+ * \var execMyRuleInp_t
+ * \brief Input struct for rule submission type API such as rcExecMyRule.
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note
+ * Elements of execMyRuleInp_t:
+ * \li char myRule[META_STR_LEN] - The string representing the rule to 
+ *        be executed. 
+ * \li rodsHostAddr_t addr - The address to execute the rule. 
+ * \li keyValPair_t condInput - keyword/value pair input.
+ * \li outParamDesc[LONG_NAME_LEN] - the list of output parameters 
+ *        separated by "%".
+ * \li msParamArray_t *inpParamArray - input parameters for the rule in the 
+ *        form of array of msParam
+ * \sa none
+ * \bug  no known bugs
+ */
+
+typedef struct ExecMyRuleInp {
     char myRule[META_STR_LEN];
     rodsHostAddr_t addr;
     keyValPair_t condInput;
