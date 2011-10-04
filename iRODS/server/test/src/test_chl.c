@@ -814,6 +814,17 @@ testVersionFnmBase(rsComm_t *rsComm, char *arg1) {
    return(status);
 }
 
+int 
+testGetLocalZone(rsComm_t *rsComm, char *expectedZone) {
+   char *zone;
+   zone = chlGetLocalZone();
+   printf("Zone is %s\n",zone);
+   if (strcmp(zone, expectedZone)!=0) {
+      return(-1);
+   }
+   return(0);
+}
+
 
 int
 main(int argc, char **argv) {
@@ -1109,6 +1120,10 @@ main(int argc, char **argv) {
 			   argv[6], argv[7], argv[8], argv[9], argv[10]);
       }
      didOne=1;
+   }
+   if (strcmp(argv[1],"getlocalzone")==0) {
+      status = testGetLocalZone(Comm, argv[2]);
+      didOne=1;
    }
 
    if (status != 0) {

@@ -279,4 +279,7 @@ runCmd(0, "rm -rf $Resc2Path");
 $testCmd="test_chl sql \"select coll_id from R_COLL_MAIN where coll_name != " . "?" . "\" /$myZone/home/rods 1";
 runCmd(2, $testCmd);
 
+# Exercise the chlGetLocalZone for coverage
+runCmd(0, "test_chl getlocalzone $myZone");
+
 printf("Success\n");

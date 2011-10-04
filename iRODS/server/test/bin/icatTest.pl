@@ -285,6 +285,8 @@ runCmd(0, "imeta rm -d $F1 x y z");
 runCmd(0, "imeta add -d $F1 testAVUnumber 14");
 runCmd(0, "imeta qu -d testAVUnumber '<' 6 | wc -l", "2");
 runCmd(0, "imeta qu -d testAVUnumber 'n<' 6 | grep 'No rows found'");
+runCmd(0, "imeta qu -d testAVUnumber 'n>' 6 | wc -l", "2");
+runCmd(0, "imeta qu -d testAVUnumber 'n=' 14 | wc -l", "2");
 runCmd(0, "imeta rm -d $F1 testAVUnumber 14");
 runCmd(0, "irm -f $F3");
 
@@ -625,6 +627,13 @@ runCmd(0, "irm -rf $D1");
 runCmd(0, "irmtrash");
 
 #
+# Admin mode of irmtrash
+#
+runCmd(0, "iput $F1");
+runCmd(0, "irm $F1");
+runCmd(0, "irmtrash -M");
+
+#
 # ichmod for DB Resource
 #
 runCmd(0, "ichmod -R write $U2 $Resc");
@@ -677,9 +686,27 @@ runCmd(0, "iadmin asq 'select user_name from R_USER_MAIN' testAlias");
 runCmd(0, "iquest --sql testAlias");
 runCmd(0, "iadmin rsq testAlias");
 
-# Queries with between and in
+# Queries with between and in, null and not null
 runCmd(0, "iquest \"select RESC_NAME where RESC_CLASS_NAME IN ('bundle','archive')\"");
 runCmd(0, "iquest \"select USER_NAME where USER_ID between '10000' '10110'\"");
+runCmd(0, "iquest \"select USER_NAME, USER_INFO where USER_INFO IS NOT NULL\"");
+runCmd(0, "iquest \"select USER_NAME, USER_INFO where USER_INFO IS NULL\"");
+
+# Queries with min, max, sum, avg, and count
+runCmd(1, "irm -f $F1");
+runCmd(0, "iput $F1");
+runCmd(0, "iput $F2");
+runCmd(0, "ipwd");
+chomp($cmdStdout);
+$iHome=$cmdStdout;
+runCmd(0, "iquest \"select min(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select max(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select avg(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select sum(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select count(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "irm -f $F2");
+runCmd(0, "irm -f $F1");
+
 
 # simple test to exercise the clean-up AVUs sql;
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none
