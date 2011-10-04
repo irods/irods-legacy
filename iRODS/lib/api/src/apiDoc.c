@@ -184,5 +184,15 @@ This documentation is generated from the iRODS code.
   - #fileLseekInp_t
   - #dataObjCopyInp_t
   - #collInp_t
+  - #collEnt_t
+  - #structFileExtAndRegInp_t
+  - #execMyRuleInp_t 
+  - #msParamArray_t
+  - #execCmd_t 
+  - #execCmdOut_t
+  - #fileReadInp_t
+  - #fileCloseInp_t 
+  - #procStatInp_t 
+  - #miscSvrInfo_t
 
 **/
