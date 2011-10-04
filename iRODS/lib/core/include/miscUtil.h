@@ -1,3 +1,8 @@
+/**
+ * @file  miscUtil.h
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* miscUtil.h - Header file for miscUtil.c */
@@ -108,6 +113,40 @@ typedef struct CollHandle {
     char prevdataId[NAME_LEN];
 } collHandle_t;
     
+/**
+ * \var collEnt_t
+ * \brief Output structure for collection read operation. Each structure
+ *     contains info on an object read.
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note
+ * Elements of collEnt_t:
+ * \li objType_t objType - the type of object. Valid types are:
+ *        \n DATA_OBJ_T
+ *        \n COLL_OBJ_T
+ * \li    int replNum - the replica number if a DATA_OBJ_T
+ * \li    int replStatus - the replica status if a DATA_OBJ_T
+ * \li    uint dataMode - the mode if a DATA_OBJ_T
+ * \li    rodsLong_t dataSize - the data size if a DATA_OBJ_T
+ * \li    char *collName - full path of the collection if a COLL_OBJ_T
+ *         \n full path of the parent collection if a DATA_OBJ_T 
+ * \li    char *dataName - the name of the data object if a DATA_OBJ_T
+ * \li    char *dataId - the data ID if DATA_OBJ_T
+ * \li    char *createTime - creation time in seconds since Epoch
+ * \li    char *modifyTime - the last modified time
+ * \li    char *chksum - the md5 checksum value if a DATA_OBJ_T
+ * \li    char *resource - the resource where the data object is located
+ * \li    char *rescGrp - the resource group
+ * \li    char *phyPath - the full physical path of the file in resource vault
+ * \li    char *ownerName - the owner of the data object or collection
+ * \li    specColl_t specColl - valid only if the path is in a special 
+ *           collection (e.g., mounted collection).
+ * \sa none
+ * \bug  no known bugs
+ */
+
 /* the output of rclReadCollection */
 typedef struct CollEnt {
     objType_t objType;
