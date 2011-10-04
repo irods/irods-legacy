@@ -1092,7 +1092,10 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
    }
    if (stat == SQL_NO_DATA_FOUND) {
       if (logGetRows) {
-	 rodsLogSql("cllGetRow: NO DATA FOUND");
+	 char tmpstr[210];
+	 snprintf(tmpstr, 200, "cllGetRow: NO DATA FOUND, statement:%d",
+		  statementNumber);
+	 rodsLogSql(tmpstr);
       }
       _cllFreeStatementColumns(icss,statementNumber);
       myStatement->numOfCols=0;
@@ -1100,7 +1103,8 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
    else {
       if (logGetRows) {
 	 char tmpstr[210];
-	 snprintf(tmpstr, 200, "cllGetRow columns:%d first column: %s", nCols, 
+	 snprintf(tmpstr, 200, "cllGetRow statement:%d columns:%d first column: %s", 
+		  statementNumber, nCols, 
 		  myStatement->resultValue[0]);
 	 rodsLogSql(tmpstr);
       }
