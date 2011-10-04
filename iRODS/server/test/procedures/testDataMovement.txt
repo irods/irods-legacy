@@ -1,0 +1,53 @@
+This is a test of some data movement functionality via the dataTest.pl
+script.  It uses 3 resources that can be on multiple hosts to test
+various transfers modes (by default, demoResc, demoResc2, and
+demoResc3).  Some of the files are large to exercise that mode of
+transfer.  It uses iput, itrim, irepl, irm, imkdir, and imkdir.  See
+the script for more information.
+
+The local host is zuri.ucsd.edu, substitute your own.
+The local vaults were under /home/schroeder/vault, substitute your own.
+For some tests, pivo.ucsd.edu and /home/schroeder/vault were used,
+substitute your own.
+
+1) Setup three resources on the local host and test
+
+Install iRODS via irodssetup.
+After the default irodssetup, demoResc is defined already.
+
+Make sure the icommands are in the path and 'iinit' has been run.
+
+iadmin mkresc demoResc2 'unix file system' archive zuri.ucsd.edu /home/schroeder/vault_2
+
+iadmin mkresc demoResc3 'unix file system' archive zuri.ucsd.edu /home/schroeder/vault_3
+
+cd server/test/bin
+./dataTest.pl
+(Takes about 3 minutes, should complete with 'Success')
+
+2) Set up a non-ICAT Enabled Server on another host, moving demoResc2 to it.
+
+iadmin rmresc demoResc2
+
+Run irodssetup or some other way create a non-IES on the 2nd host. By
+default, irodssetup will create demoResc2.
+
+2a) run dataTest.pl on the IES
+(With the network transfers, it will take longer than test 1.)
+
+2b) log into the non-IES and run dataTest.pl.  
+By default, this will have the user environment set up to talk to the
+non-IES as the initial connection, which is what we want as this tests
+somewhat different communications logic.
+
+3) Repeat 2, moving demoResc from the IES to the non-IES
+
+demoResc must be empty.
+
+iadmin rmresc demoResc
+iadmin mkresc demoResc 'unix file system' archive pivo.ucsd.edu /home/schroeder/vault
+
+dataTest.pl
+
+4) Repeat 2 and/or 3 using using platforms of different architecture
+types, Ubuntu and Mac for example.

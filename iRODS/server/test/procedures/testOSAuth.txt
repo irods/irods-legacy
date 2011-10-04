@@ -1,0 +1,43 @@
+For this test, we will enable and exercise the OS Auth mode.
+
+I normally run irods under user 'schroeder'.  My test secondary unix
+user login for this test is 'wayne'.
+
+Edit config/config.mk, uncomment:
+# OS_AUTH = 1
+to be
+OS_AUTH = 1
+And change:
+OS_AUTH_KEYFILE = /etc/irods.key
+to be:
+OS_AUTH_KEYFILE = /tmp/irods.key
+
+Create /tmp/irods.key as a text file and edit it to add some random
+characters.  (Since this is only a test, it doesn't have to be secure.)
+
+make
+
+irodsctl restart
+
+iadmin mkuser wayne rodsuser
+(Don't set a password tho, it's not needed.)
+
+su wayne
+As user wayne:
+ 
+  set up a normal irods user environment (password auth) and path to
+  the i-commands.
+
+  ils
+  (should get an error)
+
+  export irodsAuthScheme=OS
+  ils
+  (should list the empty home collection)
+
+  ls > f1
+  iput f1
+  irm -f f1
+  (should also work fine)
+
+  exit

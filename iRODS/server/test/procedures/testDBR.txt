@@ -1,0 +1,59 @@
+For this test, we will use the ICAT postgres instance and the ICAT
+Database as the database resource (DBR) (note that we recommend
+against using doing this in production but can do so as a test).
+
+The ICAT host is 'zuri.ucsd.edu'.
+Postgres is being used for the ICAT.
+Postgres was installed in /home/schroeder/pg/pgsql.
+The DBR will be called 'dbr1'.
+
+As the irods admin user, update ~/.odbc.ini file to have:
+[IRODS_DBR_dbr1]
+Driver=/home/schroeder/pg/pgsql/lib/libodbcpsql.so.2.0.0
+Debug=0
+CommLog=0
+Servername=zuri.ucsd.edu
+Database=ICAT
+ReadOnly=no
+Ksqo=0
+Port=5432
+
+Edit server/config/dbr.config adding:
+dbr1 schroeder abcdef postgresql
+where 'abcdef' is the database password
+
+Edit config/config.mk
+Uncomment:
+#DBR=1
+to be
+DBR=1
+and check the lines below that for accuracy.
+
+make
+
+irodsctl restart
+
+iadmin rmresc dbr1   (to remove existing dbr1, if it exists)
+iadmin mkresc dbr1 database postgresql zuri.ucsd.edu
+
+ichmod -R own rods dbr1
+
+cd server/icat/dbr
+iput lt.pg 
+isysmeta mod lt.pg datatype 'database object'
+isysmeta ls -l lt.pg 
+
+idbo exec dbr1 lt.pg
+(should get a list of the tables)
+
+idbo exec dbr1x lt.pg
+(should get an error message)
+
+idbo exec dbr1 file1
+(should get an error message)
+
+idbo
+output dbo1
+exec dbr1 lt.pg
+quit
+(output should be written to irods file dbo1)
