@@ -1,0 +1,39 @@
+To generate the Doxygen html document for the C APIs, type in:
+    doxygen doxygen-api.config
+
+The C APIs documentation can then be view through the file 
+    lib/api/doc/html/index.html with a web browser.
+
+To add a C API to the documentation, follow the following steps:
+
+1) Add an entry to the lib/api/src/apiDoc.c file. The APIs are classified
+into a number of categories. Enter the new API in the appropriate
+category.
+
+2) Document the API - Documentation for one of the API can be used as a
+template. e.g., lib/api/src/rcDataObjOpen.c
+
+Two blocks of comments are needed.
+i) A block with the "@file" keyword at the top of the file. e.g.:
+/**
+ * @file  rcDataObjOpen.c
+ *
+ */
+This instructs doxygen to 'compile' this file for documentation. Note that
+the commnet block must start with "/**" 
+
+ii) A block containing the documentation of the C API. e.g.,
+/**
+ * \fn rcDataObjOpen (rcComm_t *conn, dataObjInp_t *dataObjInp)
+ *
+ * \brief Open a data object. This is equivalent to open of UNIX.
+   ....
+   ....
+   ....
+ */
+
+In addition, near the bottom of apiDoc.c contains a list of Input/Output
+data structures used by the documented APIs. If the data structures used by 
+this API is not on this list, add the missing data structures and document 
+them. 
+  
