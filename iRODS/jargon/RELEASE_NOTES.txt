@@ -1,10 +1,10 @@
 
-Jargon 3.0 Release Notes
+Jargon 3.0.x Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
 Date: 10/01/2011
-Release Version: Jargon 3.0.0
+Release Version: Jargon 3.0.X work in progress
 ================================================================================================
 
 News
@@ -38,34 +38,7 @@ libraries
 
 ================================================================================================
 Features and Changes
-********
-Switched to GForge bug numbering as of iRODS2.5
-********
- 
-*71 io exception on rule execution
 
-*112 IRODSFile.setResource(...) is limited 300 resources
- 
-*147 SQL incorrect for gen query associated with '<=' or '>=' or '<' or '>' comparisons
- 
-*156 Very bizarre file copy bug in iRODS 2.5/Jargon 2.5
-
-*157 adding Resource.modifyStatus()
-
-*176 put/get resource switching 
-  **reroute for get/put
-  ***reroute for streams
-
-*Addition of buffering capability for input streams for better performance
-
-*166 gen query 'in' support - in and between added
-
-*Added close and buffering of streams in IRODSCommands.irodsFunction() method.
-
-*canRead and canWrite methods were logging and ignoring io exceptions, these now throw JargonRuntimeException
-
-*removing jargon from iRODS distro, will distribute through GForge, and mirror the libraries in git
- 
 ================================================================================================
 Outstanding Issues
 
