@@ -3,13 +3,13 @@ Jargon 3.0 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 08/18.2011
-Release Version: Jargon 3.0.0-beta1
+Date: 10/01/2011
+Release Version: Jargon 3.0.0
 ================================================================================================
 
 News
 
-This beta release is for the current 'classic' Jargon API, for release of iRODS 3.0.  This is differentiated from the newer 'Jargon-core' libraries which are now available and recommended.  
+This release is for the current 'classic' Jargon API, for release of iRODS 3.0.  This is differentiated from the newer 'Jargon-core' libraries which are now available and recommended.  
 
 This 'classic' version of the API is supported, and the API will remain stable, as there are many implementations that depend on it.  Most of the 'new development' and new features activity
 will be in Jargon-core.  To get the code, and for bug tracking and feature requests, please use the GForge page at: [[https://code.renci.org/gf/project/jargon/]]
