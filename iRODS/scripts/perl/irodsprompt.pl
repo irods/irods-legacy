@@ -657,6 +657,21 @@ sub promptForIrodsConfiguration( )
 
 		if ( $installCatalogServer == 1 ) {
 
+		    # Remote or local ICAT DBMS host
+		    printNotice(
+			"\n",
+			"[Advanced option]\n",
+                        "Normally this script configures iRODS to interface to Postgres or MySQL\n",
+                        "that runs on the same host as the ICAT-enabled iRODS server but\n",
+                        "you can utilize an existing database system running on another host via this.\n",
+                        "A local ODBC library is still needed to communicate with the DBMS.\n",
+                        "The .odbc.ini file will be set to refer to the remote DBMS.\n",
+			"\n" );
+		    $databaseServerHost = promptString(
+			       "DBMS host",
+                               $databaseServerHost);
+
+
 		    # iRODS database name
 		    printNotice(
 			"\n",
@@ -1103,7 +1118,7 @@ sub promptForNewPostgresConfiguration( $ )
 {
 	my ($upgrade) = @_;
 
-	$databaseServerHost = 'localhost';	# Always
+#	$databaseServerHost = 'localhost';	# Normally, but not always
 
 	# Intro
 	if ( $upgrade == 0 )
@@ -1373,7 +1388,7 @@ sub promptForNewPostgresConfiguration( $ )
 #
 sub promptForExistingPostgresDatabase( )
 {
-	$databaseServerHost = 'localhost';	# Always
+#	$databaseServerHost = 'localhost';	# Normally, but not always
 	if ( $databaseServerOdbcType eq "" )
 	{
 		$databaseServerOdbcType = $DEFAULT_databaseServerOdbcType;

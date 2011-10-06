@@ -1165,7 +1165,8 @@ sub configureIrodsServer
 		"server.config" );
 	copyTemplateIfNeeded( $serverConfigFile );
 
-	my $host = ($IRODS_ICAT_HOST eq "") ? $DATABASE_HOST : $IRODS_ICAT_HOST;
+#	my $host = ($IRODS_ICAT_HOST eq "") ? $DATABASE_HOST : $IRODS_ICAT_HOST;
+	my $host = ($IRODS_ICAT_HOST eq "") ? "localhost" : $IRODS_ICAT_HOST;
 
 	my %variables = (
 		"icatHost",	$host,
@@ -2767,7 +2768,12 @@ sub Postgres_CreateDatabase()
 		my $tmpPassword = createTempFilePath( "create" );
 		printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 		chmod( 0600, $tmpPassword );
-		($status,$output) = run( "$createdb $DB_NAME < $tmpPassword" );
+		if ($DATABASE_HOST eq "localhost") {
+		    ($status,$output) = run( "$createdb $DB_NAME < $tmpPassword" );
+		}
+		else {
+		    ($status,$output) = run( "$createdb -h $DATABASE_HOST $DB_NAME < $tmpPassword" );
+		}
 		unlink( $tmpPassword );
 
 		if ( $status != 0 )
@@ -2840,7 +2846,7 @@ sub Postgres_CreateDatabase()
 				"Driver=$libPath\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
-				"Servername=$thisHost\n" .
+				"Servername=$DATABASE_HOST\n" .
 				"Database=$DB_NAME\n" .
 				"ReadOnly=no\n" .
 				"Ksqo=0\n" .
@@ -2894,7 +2900,7 @@ sub Postgres_CreateDatabase()
 				"[PostgreSQL]\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
-				"Servername=$thisHost\n" .
+				"Servername=$DATABASE_HOST\n" .
 				"Database=$DB_NAME\n" .
 				"ReadOnly=no\n" .
 				"Ksqo=0\n" .
@@ -2997,7 +3003,7 @@ sub Postgres_CreateDatabase()
 				"Driver=$libPath\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
-				"Servername=$thisHost\n" .
+				"Servername=$DATABASE_HOST\n" .
 				"Database=$DB_NAME\n" .
 				"ReadOnly=no\n" .
 				"Ksqo=0\n" .
@@ -3488,7 +3494,10 @@ sub Postgres_sql($$)
 {
 	my ($databaseName,$sqlFilename) = @_;
 
-	return run( "$psql $databaseName < $sqlFilename" );
+	if ($DATABASE_HOST eq "localhost") {
+	    return run( "$psql $databaseName < $sqlFilename" );
+	}
+	return run( "$psql -h $DATABASE_HOST $databaseName < $sqlFilename" );
 }
 
 #
