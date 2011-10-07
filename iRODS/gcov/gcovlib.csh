@@ -1,8 +1,8 @@
 #!/bin/csh -e
 #!/bin/csh -ex
-# gcov script for the server directory
+# gcov script for the lib directory
 if ($#argv > 1) then
-  echo "Too many input"
+  echo "Too many arguments"
   echo "usage: gcovlib.csh [clean|help]"
   exit 1
 else if ($#argv == 1) then

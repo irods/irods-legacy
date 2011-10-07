@@ -2,15 +2,15 @@
 #!/bin/csh -ex
 # gcov script for the server directory
 if ($#argv > 1) then 
-  echo "Too many input"
-  echo "usage: gconserver.csh [clean|help]"
+  echo "Too many arguments"
+  echo "usage: gcovserver.csh [clean|help]"
   exit 1
 else if ($#argv == 1) then
   if ($1 == "clean") then 
     rm server/*.gcov
     exit 0
   else if ($1 == "help") then
-    echo "usage: gconserver.csh [clean|help]"
+    echo "usage: gcovserver.csh [clean|help]"
     exit 0
   else
     echo "unknown input:" $1
