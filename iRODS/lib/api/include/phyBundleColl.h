@@ -22,7 +22,7 @@
 #define BUNDLE_RESC_CLASS	"bundle"
 
 #define MAX_BUNDLE_SIZE		4	/* 4 G */
-#define MAX_SUB_FILE_CNT	512
+#define MAX_SUB_FILE_CNT	5120
 
 typedef struct BunReplCache {
     rodsLong_t  dataId;
