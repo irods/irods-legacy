@@ -144,6 +144,8 @@ sub sendNotices($$) {
 #   print "short Coll:" . $shortCollName . "\n";
 
     $body = "iRODS collection change notification for $collection, $change";
+    $body = $body . "\n" . "Current file count: $count" ;
+    $body = $body . "\n" . "Current total size: $size" ;
     $subj = "iRODS change notice for $shortCollName, $changeBrief";
 
     my @values = split(',', $emailAddresses);
@@ -154,7 +156,7 @@ sub sendNotices($$) {
 	    printf "subj:$subj\n";
 	}
 	else {
-	    `echo $body | mail -s \"$subj\" $email`;
+	    `echo \"$body\" | mail -s \"$subj\" $email`;
 	}
     }
 }
