@@ -893,7 +893,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
     int startInx;
 
     if (defaultRescList != NULL && strcmp (defaultRescList, "null") != 0 &&
-      optionStr != NULL &&  strcmp (optionStr, "force") == 0 &&
+      optionStr != NULL &&  strcmp (optionStr, "forced") == 0 &&
       rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         condInput = NULL;
     }
@@ -974,7 +974,8 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
                 status = 0;
             }
         }
-    } else if (strcmp (optionStr, "forced") == 0) {
+    } else if (strcmp (optionStr, "forced") == 0 && 
+      rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         if (defRescGrpInfo != NULL) {
             myRescGrpInfo = defRescGrpInfo;
         }
