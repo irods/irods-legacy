@@ -5,6 +5,8 @@ set libdir = "--directory ../lib/rbudp/obj --directory ../lib/md5/obj --director
 set serverdir = "--directory ../server/icat/obj --directory ../server/drivers/obj --directory ../server/core/obj --directory ../server/api/obj --directory ../server/re/obj"
 set clientsdir = "--directory ../clients/icommands/obj" 
 set fuselib = "--directory ../clients/fuse/obj"
+set isioLib = "../lib/isio"
+set fortranLib = "../lib/fortran"
 
 # echo $libdir
 # echo $serverdir

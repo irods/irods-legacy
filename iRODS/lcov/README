@@ -1,6 +1,6 @@
-'lcov' is a  GNU tool which provides information about
-  what parts of a program are actually executed (i.e. "covered") while running
-  a particular test case. It is an extension of the 'gcov' tool.
+'lcov' is a  GNU tool which provides information about what parts of a 
+program are actually executed (i.e. "covered") while running a particular 
+test case. It is an extension of the 'gcov' tool.
 
 To use 'lcov' for iRODS, please do the following:
 
