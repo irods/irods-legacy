@@ -2227,7 +2227,7 @@ sub saveIrodsConfiguration
 		"DATABASE_HOME",    $POSTGRES_HOME,
 
 		# Postgres uses this host
-		"DATABASE_HOST",    $POSTGRES_HOST,
+		"DATABASE_HOST",    $DATABASE_HOST,
 
 		# Postgres uses this port
 		"DATABASE_PORT",    $POSTGRES_PORT,
