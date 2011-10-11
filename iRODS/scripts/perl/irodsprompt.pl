@@ -1035,7 +1035,8 @@ sub promptForDatabaseConfiguration()
 						"Using an existing Postgres database.\n",
 						"\n" );
 				}
-				$databaseServerExclusive = 0;
+# No longer change this default at this point:
+# $databaseServerExclusive = 0;
 				promptForExistingPostgresDatabase( );
 				return;
 			}
@@ -1373,7 +1374,8 @@ sub promptForNewPostgresConfiguration( $ )
 	}
 	else
 	{
-		$databaseServerExclusive = 1;
+# No longer change this default at this point:
+#	$databaseServerExclusive = 1;
 	}
 }
 
@@ -1489,7 +1491,7 @@ sub promptForExistingPostgresDatabase( )
 		"\n" );
 	$databaseServerExclusive = promptYesNo(
 		"Start and stop the database along with iRODS",
-		"yes" );
+	        (($databaseServerExclusive==1)?"yes":"no") );
 }
 
 
