@@ -1,6 +1,6 @@
 #!/bin/csh -e
 #!/bin/csh -ex
-# gcov script for the server directory
+# gcov script for the clients directory
 if ($#argv > 1) then
   echo "Too many input"
   echo "usage: gcovclients.csh [clean|help]"
