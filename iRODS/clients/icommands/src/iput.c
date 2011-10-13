@@ -100,7 +100,7 @@ usage ()
 "               localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
-"not provided, the current irods directory and the input file name are used.",
+"not provided, the current iRODS directory and the input file name are used.",
 " ",
 "The -X option specifies that the restart option is on and the operation",
 "is restartable. The restartFile input specifies a local file that contains",
