@@ -26,3 +26,15 @@ DESCRIPTION
         help us keep them organized.
 
         Wayne Schroeder, March, 2008
+
+Test scripts ran by TinderBox:
+
+1) testiCommands.pl - every time.
+
+2) irodsctl devtest every time.
+
+3) poundtest - once a day
+
+4) boost build and devtest - once a day
+
+5) downloads and builds Postgres and reinstalls the ICAT - once a day
