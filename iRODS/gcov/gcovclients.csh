@@ -2,12 +2,12 @@
 #!/bin/csh -ex
 # gcov script for the clients directory
 if ($#argv > 1) then
-  echo "Too many input"
+  echo "Too many arguments"
   echo "usage: gcovclients.csh [clean|help]"
   exit 1
 else if ($#argv == 1) then
   if ($1 == "clean") then
-    rm server/*.gcov
+    rm clients/*.gcov
     exit 0
   else if ($1 == "help") then
     echo "usage: gcovclients.csh [clean|help]"

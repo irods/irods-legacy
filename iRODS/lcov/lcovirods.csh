@@ -1,6 +1,6 @@
 #!/bin/csh -e
 #!/bin/csh -ex
-# lcov script for the irods 
+# lcov script for iRODS
 set libdir = "--directory ../lib/rbudp/obj --directory ../lib/md5/obj --directory ../lib/core/obj --directory ../lib/api/obj"
 set serverdir = "--directory ../server/icat/obj --directory ../server/drivers/obj --directory ../server/core/obj --directory ../server/api/obj --directory ../server/re/obj"
 set clientsdir = "--directory ../clients/icommands/obj" 
