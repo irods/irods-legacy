@@ -518,3 +518,50 @@ checkPermissionByObjType(rsComm_t *rsComm, char *objName, char *objType, char *u
     i = INVALID_OBJECT_TYPE;
   return(i);
 }
+
+/* checkDupReplica - Check if a given object with a given rescName
+ * and physical path already exist. If it does, returns the replNum.
+ */
+
+int
+checkDupReplica (rsComm_t *rsComm, rodsLong_t dataId, char *rescName, 
+char *filePath)
+{
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    char tmpStr[MAX_NAME_LEN];
+    int status;
+
+    if (rsComm == NULL || rescName == NULL || filePath == NULL)
+	return USER__NULL_INPUT_ERR;
+
+    bzero (&genQueryInp, sizeof (genQueryInp_t));
+    
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", rescName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_RESC_NAME, tmpStr);
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", filePath);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_PATH, tmpStr);
+    snprintf (tmpStr, MAX_NAME_LEN, "='%lld'", dataId);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_ID, tmpStr);
+
+    addInxIval (&genQueryInp.selectInp, COL_DATA_REPL_NUM, 1);
+    genQueryInp.maxRows = 2;
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+    clearGenQueryInp (&genQueryInp);
+    if (status >= 0) {
+	int intReplNum;
+	sqlResult_t *replNum;
+        if ((replNum = getSqlResultByInx (genQueryOut, COL_DATA_REPL_NUM)) ==
+         NULL) {
+            rodsLog (LOG_ERROR,
+              "checkDupReplica: getSqlResultByInx COL_DATA_REPL_NUM failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+	intReplNum = atoi (replNum->value);
+        freeGenQueryOut (&genQueryOut);
+        return (intReplNum);
+    } else {
+	return status;
+    }
+}
+    

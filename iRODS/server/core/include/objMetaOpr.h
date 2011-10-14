@@ -55,6 +55,9 @@ getStructFileType (specColl_t *specColl);
 
 extern int
 checkPermissionByObjType(rsComm_t *rsComm, char *objName, char *objType, char *user, char *zone, char *oper);
+int
+checkDupReplica (rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
+char *filePath);
 #ifdef  __cplusplus
 }
 #endif

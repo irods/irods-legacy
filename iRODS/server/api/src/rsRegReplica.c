@@ -4,6 +4,7 @@
  */
 
 #include "regReplica.h"
+#include "objMetaOpr.h"
 #include "icatHighLevelRoutines.h"
 
 int
@@ -49,6 +50,12 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
     destDataObjInfo = regReplicaInp->destDataObjInfo;
 
+    status = checkDupReplica (rsComm, srcDataObjInfo->dataId, 
+      destDataObjInfo->rescName, destDataObjInfo->filePath);
+    if (status >= 0) {
+	destDataObjInfo->replNum = status;
+	return status;
+    }
     if (getValByKey (&regReplicaInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
 	rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
