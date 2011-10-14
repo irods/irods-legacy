@@ -37,6 +37,12 @@ my @summarylist;
 my @tmp_tab;
 my $username;
 my @words;
+# If noprompt_flag is set to 1, it will no as for path and password input. It
+# is normally not set.
+# my $noprompt_flag = 1;
+my $noprompt_flag;
+my $myldir = "ldir";
+my $mysdir = "sdir";
 
 my $dir_w        = cwd();
 my $host         = hostname();
@@ -148,23 +154,26 @@ if ( $debug ) {
 print( "\nThe results of the test will be written in the file: $outputfile\n\n" );
 print( "Warning: you need to be a rodsadmin in order to pass successfully all the tests," );
 print( " as some admin commands are being tested." );
-print( " If icommands location has not been set into the PATH env variable," );
-print( " please give it now, else press return to proceed.\n" );
-print( "icommands location path: " );
-chomp( $input = <STDIN> );
-if ( $input ) { $ENV{'PATH'} .= ":$input"; }
-print "Please, enter the password of the iRODS user used for the test: ";
-chomp( $input = <STDIN> );
-if ( ! $input ) {
+if ( ! $noprompt_flag ) {
+    print( " If icommands location has not been set into the PATH env variable," );
+    print( " please give it now, else press return to proceed.\n" );
+    print( "icommands location path: " );
+    chomp( $input = <STDIN> );
+    if ( $input ) { $ENV{'PATH'} .= ":$input"; }
+    print "Please, enter the password of the iRODS user used for the test: ";
+    chomp( $input = <STDIN> );
+    if ( ! $input ) {
 	print( "\nYou should give valid pwd.\n\n");
 	exit;
-} else {
+    } else {
 	print( "\n" );
+    }
+
+
+    runCmd( "iinit $input" );
 }
 
 #-- Test the icommands and eventually compared the result to what is expected.
-
-runCmd( "iinit $input" );
 
 #-- Basic admin commands
 
@@ -201,6 +210,7 @@ runCmd( "ilsresc" );
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
 runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
+# make a directory of large files
 runCmd( "iput -K -N 2 $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
 runCmd( "ils $irodshome/test/foo1", "", "LIST", "foo1" );
 runCmd( "iadmin ls $irodshome/test", "", "LIST", "foo1" );
@@ -274,7 +284,9 @@ runCmd( "iadmin lg", "negtest", "LIST", "testgroup" );
 runCmd( "iadmin lg", "negtest", "LIST", "resgroup" );
 runCmd( "iadmin lr", "negtest", "LIST", "testresource" );
 runCmd( "irmtrash" );
-runCmd( "iexit full" );
+if ( ! $noprompt_flag ) {
+    runCmd( "iexit full" );
+}
 `/bin/rm -rf /tmp/foo`;# remove the vault for the testresource; needed in case
                        # another unix login runs this test on this host
 
@@ -511,3 +523,39 @@ sub makeRuleFile {
 	close( FILE2 );
 	return( 0 );
 }
+
+# make a directory of large files
+sub mkldir
+{
+    my $i;
+    my $count = 3; 
+    my $mylfile;
+    system( "cat $progname $progname $progname > lfile" );
+    for ( $i = $count; $i >= 0; $i-- ) {
+      system ( "cat lfile lfile lfile lfile lfile > lfile1" );
+      system ( "mv lfile1 lfile" );
+    }
+    system ( "mkdir $myldir" );
+    for ( $i = $count; $i > 0; $i-- ) {
+        $mylfile = $myldir . '/' . 'lfile' . $i;
+	if ($i != 1) {
+	    system ( "cp lfile $mylfile" );
+	} else { 
+	    system ( "mv lfile $mylfile" );
+	}
+    }
+}
+
+# make a directory of small files
+sub mksdir
+{
+    my $i;
+    my $count = 20;
+    my $mysfile;
+    system ( "mkdir $mysdir" );
+    for ( $i = $count; $i > 0; $i-- ) {
+        $mysfile = $mysdir . '/' . 'sfile' . $i;
+        system ( "cp $progname $mysfile" );
+    }
+}
+
