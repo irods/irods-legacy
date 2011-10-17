@@ -184,13 +184,13 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
 
 			case N_ACTIONS:
 							generateErrMsg("error: evaluate actions using function evaluateExpression3, use function evaluateActions instead.", NODE_EXPR_POS(expr), expr->base, errbuf);
-							addRErrorMsg(errmsg, RUNTIME_ERROR, errbuf);
-							res = newErrorRes(r, RUNTIME_ERROR);
+							addRErrorMsg(errmsg, RE_UNSUPPORTED_AST_NODE_TYPE, errbuf);
+							res = newErrorRes(r, RE_UNSUPPORTED_AST_NODE_TYPE);
 							break;
 					default:
 							generateErrMsg("error: unsupported ast node type.", NODE_EXPR_POS(expr), expr->base, errbuf);
-							addRErrorMsg(errmsg, UNKNOWN_ERROR, errbuf);
-							res = newErrorRes(r, UNKNOWN_ERROR);
+							addRErrorMsg(errmsg, RE_UNSUPPORTED_AST_NODE_TYPE, errbuf);
+							res = newErrorRes(r, RE_UNSUPPORTED_AST_NODE_TYPE);
 							break;
 		}
     } else {
@@ -232,8 +232,8 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
         } else {
             if(TYPE(res)==T_UNSPECED) {
                 generateErrMsg("error: dynamic coercion from an uninitialized value", NODE_EXPR_POS(node), node->base, buf);
-                addRErrorMsg(errmsg, RUNTIME_ERROR, buf);
-                return newErrorRes(r, RUNTIME_ERROR);
+                addRErrorMsg(errmsg, RE_DYNAMIC_COERCION_ERROR, buf);
+                return newErrorRes(r, RE_DYNAMIC_COERCION_ERROR);
             }
             switch(getNodeType(coercion)) {
                 case T_DYNAMIC:
@@ -244,8 +244,8 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                         case T_BOOL:
                             if((int)RES_DOUBLE_VAL(res)!=RES_DOUBLE_VAL(res)) {
                                 generateErrMsg("error: dynamic type conversion DOUBLE -> INTEGER: the double is not an integer", NODE_EXPR_POS(node), node->base, buf);
-                                addRErrorMsg(errmsg, RUNTIME_ERROR, buf);
-                                return newErrorRes(r, RUNTIME_ERROR);
+                                addRErrorMsg(errmsg, RE_DYNAMIC_COERCION_ERROR, buf);
+                                return newErrorRes(r, RE_DYNAMIC_COERCION_ERROR);
                             } else {
                                 return newIntRes(r, RES_INT_VAL(res));
                             }
@@ -292,8 +292,8 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                                 return newBoolRes(r, 0);
                             } else {
                                 generateErrMsg("error: dynamic type conversion  string -> bool: the string is not in {true, false}", NODE_EXPR_POS(node), node->base, buf);
-                                addRErrorMsg(errmsg, RUNTIME_ERROR, buf);
-                                return newErrorRes(r, RUNTIME_ERROR);
+                                addRErrorMsg(errmsg, RE_DYNAMIC_COERCION_ERROR, buf);
+                                return newErrorRes(r, RE_DYNAMIC_COERCION_ERROR);
                             }
                             break;
                         default:
@@ -333,8 +333,8 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
             		typeToString(res->exprType, tvarEnv, typeBuf1, 128),
             		typeToString(coercion, tvarEnv, typeBuf2, 128));
             generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf3);
-            addRErrorMsg(errmsg, TYPE_ERROR, buf3);
-            return newErrorRes(r, TYPE_ERROR);
+            addRErrorMsg(errmsg, RE_TYPE_ERROR, buf3);
+            return newErrorRes(r, RE_TYPE_ERROR);
         }
 }
 
@@ -408,8 +408,8 @@ Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, 
 	}
     char errbuf[ERR_MSG_LEN];
     generateErrMsg("error: unsupported ast node type.", NODE_EXPR_POS(expr), expr->base, errbuf);
-	addRErrorMsg(errmsg, UNKNOWN_ERROR, errbuf);
-	return newErrorRes(r, UNKNOWN_ERROR);
+	addRErrorMsg(errmsg, RE_UNSUPPORTED_AST_NODE_TYPE, errbuf);
+	return newErrorRes(r, RE_UNSUPPORTED_AST_NODE_TYPE);
 }
 
 Res *evaluateFunctionApplication(Node *func, Node *arg, int applyAll, Node *node, ruleExecInfo_t* rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -425,8 +425,8 @@ Res *evaluateFunctionApplication(Node *func, Node *arg, int applyAll, Node *node
             return res;
         default:
             generateErrMsg("unsupported function node type.", NODE_EXPR_POS(node), node->base, errbuf);
-            addRErrorMsg(errmsg, UNKNOWN_ERROR, errbuf);
-            return newErrorRes(r, UNKNOWN_ERROR);
+            addRErrorMsg(errmsg, RE_UNSUPPORTED_AST_NODE_TYPE, errbuf);
+            return newErrorRes(r, RE_UNSUPPORTED_AST_NODE_TYPE);
     }
 }
 
@@ -572,7 +572,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 
         ExprType *argType = newTupleRes(n, args, r)->exprType;
 		if(typeFuncParam(node->subtrees[1], argType, coercionType, env->current, localTypingConstraints, errmsg, newRegion)!=0) {
-			res = newErrorRes(r, TYPE_ERROR);
+			res = newErrorRes(r, RE_TYPE_ERROR);
 			RETURN;
 		}
 		/* solve local typing constraints */
@@ -580,7 +580,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 		printf("%s\n", buf); */
 		Node *errnode;
 		if(!solveConstraints(localTypingConstraints, env->current, errmsg, &errnode, r)) {
-			res = newErrorRes(r, RUNTIME_ERROR);
+			res = newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 			RETURN;
 		}
 		/*printVarTypeEnvToStdOut(localTVarEnv); */
@@ -622,8 +622,8 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
                 res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
                 break;
             default:
-            	res = newErrorRes(r, UNKNOWN_ERROR);
-                generateAndAddErrMsg("unsupported function descriptor type", node, UNKNOWN_ERROR, errmsg);
+            	res = newErrorRes(r, RE_UNSUPPORTED_AST_NODE_TYPE);
+                generateAndAddErrMsg("unsupported function descriptor type", node, RE_UNSUPPORTED_AST_NODE_TYPE, errmsg);
                 RETURN;
         }
     } else {
@@ -704,19 +704,19 @@ Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, En
         if(vn[0]=='*') { /* local variable */
 		    snprintf(buf, ERR_MSG_LEN, "error: unable to read local variable %s.", vn);
                     generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf2);
-                    addRErrorMsg(errmsg, UNABLE_TO_READ_LOCAL_VAR, buf2);
+                    addRErrorMsg(errmsg, RE_UNABLE_TO_READ_LOCAL_VAR, buf2);
                     /*printEnvToStdOut(env); */
-                    return newErrorRes(r, UNABLE_TO_READ_LOCAL_VAR);
+                    return newErrorRes(r, RE_UNABLE_TO_READ_LOCAL_VAR);
         } else if(vn[0]=='$') { /* session variable */
     	    snprintf(buf, ERR_MSG_LEN, "error: unable to read session variable %s.", vn);
             generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf2);
-            addRErrorMsg(errmsg, UNABLE_TO_READ_SESSION_VAR, buf2);
-            return newErrorRes(r, UNABLE_TO_READ_SESSION_VAR);
+            addRErrorMsg(errmsg, RE_UNABLE_TO_READ_SESSION_VAR, buf2);
+            return newErrorRes(r, RE_UNABLE_TO_READ_SESSION_VAR);
         } else {
             snprintf(buf, ERR_MSG_LEN, "error: unable to read variable %s.", vn);
             generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf2);
-            addRErrorMsg(errmsg, UNABLE_TO_READ_VAR, buf2);
-            return newErrorRes(r, UNABLE_TO_READ_VAR);
+            addRErrorMsg(errmsg, RE_UNABLE_TO_READ_VAR, buf2);
+            return newErrorRes(r, RE_UNABLE_TO_READ_VAR);
         }
 	}
 	return res;
@@ -768,8 +768,8 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
                             break;
                         default:
                             /* unsupported type error */
-                            res = NULL;
-                            addRErrorMsg(errmsg, UNKNOWN_ERROR, "error: unsupported session variable type");
+                            res = newErrorRes(r, RE_UNSUPPORTED_SESSION_VAR_TYPE);
+                            addRErrorMsg(errmsg, RE_UNSUPPORTED_SESSION_VAR_TYPE, "error: unsupported session variable type");
                             break;
                     }
                 }
@@ -1014,8 +1014,8 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
         }
         if(TYPE(res) != T_STRING) {
             /* todo try coercion */
-            addRErrorMsg(errmsg, DYNAMIC_TYPE_ERROR, "error: the lhs of indexed rule condition does not evaluate to a string");
-            status = newErrorRes(r, DYNAMIC_TYPE_ERROR);
+            addRErrorMsg(errmsg, RE_DYNAMIC_TYPE_ERROR, "error: the lhs of indexed rule condition does not evaluate to a string");
+            status = newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
             RETURN;
         }
 
@@ -1263,7 +1263,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, int applyAll, En
             if(getNodeType(res)!=N_ERROR && TYPE(res)!=T_BOOL) {
                 char buf[ERR_MSG_LEN];
                 generateErrMsg("error: the rule condition does not evaluate to a boolean value", NODE_EXPR_POS(ruleCondition), ruleCondition->base, buf);
-                addRErrorMsg(errmsg, TYPE_ERROR, buf);
+                addRErrorMsg(errmsg, RE_TYPE_ERROR, buf);
             }
             statusRes = newErrorRes(r, RULE_FAILED_ERR);
         }
@@ -1312,8 +1312,8 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
         		/* new variable */
 				if(insertIntoHashTable(env->current, varName, val) == 0) {
 					snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
-					addRErrorMsg(errmsg, UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
-					return newErrorRes(r, UNABLE_TO_WRITE_LOCAL_VAR);
+					addRErrorMsg(errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
+					return newErrorRes(r, RE_UNABLE_TO_WRITE_LOCAL_VAR);
 				}
 			} else {
 				updateInEnv(env, varName, val);
@@ -1362,8 +1362,8 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
     }
     error:
         generateErrMsg(localErrorMsg,NODE_EXPR_POS(pattern), pattern->base, errbuf);
-        addRErrorMsg(errmsg, PATTERN_NOT_MATCHED, errbuf);
-        return newErrorRes(r, PATTERN_NOT_MATCHED);
+        addRErrorMsg(errmsg, RE_PATTERN_NOT_MATCHED, errbuf);
+        return newErrorRes(r, RE_PATTERN_NOT_MATCHED);
 
 }
 
