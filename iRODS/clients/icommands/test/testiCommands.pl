@@ -37,12 +37,31 @@ my @summarylist;
 my @tmp_tab;
 my $username;
 my @words;
-# If noprompt_flag is set to 1, it will no as for path and password input. It
-# is normally not set.
-# my $noprompt_flag = 1;
+# If noprompt_flag is set to 1, it assume iinit was done before running this
+# script and will not ask for path and password input. A "noprompt" input 
+# will set it.
 my $noprompt_flag;
 my $myldir = "ldir";
 my $mysdir = "sdir";
+my $arg;
+
+$debug = 0;
+$noprompt_flag = 0;
+foreach $arg (@ARGV)
+{
+    if ( $arg =~ "debug" ) {
+        $debug = 1;
+    } elsif ( $arg =~ "noprompt" ) {
+	$noprompt_flag = 1;
+    } elsif ( $arg =~ "help" ) {
+	print ("usage:   $0 [debug] [noprompt] [help]\n");
+	exit( 0 );
+    }  else {
+	print ("unknown input - $arg \n");
+        print ("usage:   $0 [debug] [noprompt] [help]\n");
+        exit( 1 );
+    }
+}
 
 my $dir_w        = cwd();
 my $host         = hostname();
@@ -81,12 +100,12 @@ if ( -e $ruletestfile ) { unlink( $ruletestfile ); }
 
 #-- Take debug level
 
-$debug = shift;
-if ( ! $debug ) {
-	$debug = 0;
-} else {
-	$debug = 1;
-}
+# $debug = shift;
+# if ( ! $debug ) {
+# 	$debug = 0;
+# } else {
+# 	$debug = 1;
+# }
 
 #-- Print debug
 
