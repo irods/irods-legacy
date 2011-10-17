@@ -8,6 +8,11 @@
 
 #include "ftpMS.h"
 
+#ifdef  OAUTH
+extern "C" {
+#include <oauth.h>
+}
+#endif
 
 #include <stdio.h>
 
@@ -271,6 +276,7 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
  * \post None
  * \sa None
 **/
+#ifndef OAUTH
 int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *message, msParam_t *status, ruleExecInfo_t *rei)
 {
 	CURL *curl;								/* curl handler */
@@ -378,7 +384,77 @@ int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *me
 	
 	return (rei->status);
 }
+#else
+/* UPDATED TO SUPPORT OAUTH. THIS PART IS A WORK IN PROGRESS... */
+int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *message, msParam_t *status, ruleExecInfo_t *rei)
+{
+	char status_update[160], *tweet;
+	char *url="http://twitter.com/statuses/update.json";
 
+	const char *c_key         = "CONSUMER_KEY_HERE"; // consumer key
+	const char *c_secret      = "CONSMER_SECRET_HERE"; // consumer secret
+	char *t_key               = "ACCESS_TOKEN_KEY_HERE"; // access token key
+	char *t_secret            = "ACCESS_TOKEN_SECRET_HERE"; // access token secret
+
+	char *postarg = NULL;
+	char *req_url = NULL;
+	char *reply   = NULL;
+	char *bh;
+	char *uh;
+	char *sig_url;
+
+
+
+	/* parse message */
+	if ((tweet = parseMspForStr(message)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiTwitterPost: input message is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+
+	/* prepare form and truncate tweet to 140 chars */
+	strcpy(status_update, "status=");
+	strncat(status_update, tweet, 140);
+
+//	bh=oauth_body_hash_data(strlen(data), data);
+//	uh = oauth_catenc(2, url, bh);
+	uh = oauth_catenc(2, url, status_update);
+	req_url = oauth_sign_url2(uh, &postarg, OA_HMAC, NULL, c_key, c_secret, t_key, t_secret);
+
+
+	rodsLog(LOG_NOTICE, "---------------------------------");
+
+	rodsLog(LOG_NOTICE, "req_url: %s", req_url);
+	rodsLog(LOG_NOTICE, "postarg: %s", postarg);
+
+
+
+	rodsLog(LOG_NOTICE, "msiTwitterPost - POST: %s?%s", req_url, postarg);
+
+	if (uh) free(uh);
+
+	sig_url = (char *)malloc(2+strlen(req_url)+strlen(postarg));
+	sprintf(sig_url,"%s?%s",req_url, postarg);
+	reply = oauth_post_data(sig_url, status_update, strlen(status_update), "Content-Type: application/json");
+
+	if(sig_url) free(sig_url);
+
+	rodsLog(LOG_NOTICE, "msiTwitterPost - REPLY: %s", reply);
+
+
+	rodsLog(LOG_NOTICE, "---------------------------------");
+
+
+	fillStrInMsParam (status, reply);
+
+//	if(reply) free(reply);
+
+	return 0;
+
+}
+
+#endif
 
 
 

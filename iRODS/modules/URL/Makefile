@@ -44,6 +44,7 @@ INCLUDE_FLAGS =	-I$(MSIncDir)
 #
 # INCLUDE_FLAGS += 
 LIBS = -L/usr/lib -lcurl
+#LIBS = -L/usr/lib -lcurl -loauth
 
 
 
