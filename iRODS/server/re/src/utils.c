@@ -838,13 +838,13 @@ void logErrMsg(rError_t *errmsg, rError_t *system) {
     writeToTmp("err.log", "end errlog\n");
 #endif
     if(system!=NULL) {
-    	rodsLogAndErrorMsg(LOG_ERROR, system, RE_UNKNOWN_ERROR, "%s", errbuf);
+    	rodsLogAndErrorMsg(LOG_ERROR, system,RE_UNKNOWN_ERROR, "%s", errbuf);
     } else {
     	rodsLog (LOG_ERROR, "%s", errbuf);
     }
 }
 
-char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen) {
+char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
     errbuf[0] = '\0';
     int p = 0;
     int i;
