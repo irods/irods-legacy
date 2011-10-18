@@ -278,9 +278,10 @@ runCmd( "iget -f -K $irodshome/test/foo2 $dir_w" );
 runCmd( "ls -l $dir_w/foo2", "", "LIST", "foo2, $myssize");
 unlink ( "$dir_w/foo2" );
 # we have foo1 in $irodsdefresource and foo2 in testresource
+# make a directory containing 20 small files
 mksdir ();
 runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
-runCmd( "iput -KfR $irodsdefresource $sfile2 $irodshome/test/foo1" );
+runCmd( "iput -IkfR $irodsdefresource $sfile2 $irodshome/test/foo1" );
 # show have 2 different copies
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1, $myssize, $sfile2size" );
 # update all old copies
@@ -288,11 +289,16 @@ runCmd( "irepl -U $irodshome/test/foo1" );
 # make sure the old size is not there
 runCmd( "ils -l $irodshome/test/foo1", "negtest", "LIST", "$myssize" );
 runCmd( "itrim -S $irodsdefresource $irodshome/test/foo1" );
-# make a directory containing 20 small files
-runCmd( "iput -br $mysdir $irodshome/test" );
-runCmd( "iget -r $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
+# bulk test
+runCmd( "iput -bvPKr $mysdir $irodshome/test" );
+# iput with a lot of options
+runCmd( "iput -PkIfTr -X $dir_w/rsfile --retries 10  $mysdir $irodshome/testiw",  "", "", "", "irm -rvf $irodshome/testiw" );
+system ( "rm $dir_w/rsfile" );
+runCmd( "iget -vIKPfr -X rsfile --retries 10 $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
+system ( "rm $dir_w/rsfile" );
 runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
-runCmd( "iput $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
+my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
+runCmd( "iput -p $phypath $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
 runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
 runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2, sfile10" );
 runCmd( "ibun -cDtar $irodshome/testx1.tar $irodshome/testx", "", "", "", "irm -f $irodshome/testx1.tar" );
