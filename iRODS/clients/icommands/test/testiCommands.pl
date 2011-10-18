@@ -4,8 +4,10 @@
 # icommands location has to be put in the PATH env variable or their PATH will be asked
 # at the beginning of the execution of this script.
 #
-# usage: ./testiCommands.pl
-# If an argument is given, the debug mode is activated
+# usage:   ./testiCommands.pl [debug] [noprompt] [help]
+#    noprompt assumes iinit was done before running this script 
+#    and will not ask for path and password input.
+# 
 #
 # Copyright (c), CCIN2P3
 # For more information please refer to files in the COPYRIGHT directory.
@@ -13,6 +15,8 @@
 use strict;
 use Cwd;
 use Sys::Hostname;
+use File::stat;
+use File::Copy;
 
 #-- Initialization
 
@@ -41,8 +45,6 @@ my @words;
 # script and will not ask for path and password input. A "noprompt" input 
 # will set it.
 my $noprompt_flag;
-my $myldir = "ldir";
-my $mysdir = "sdir";
 my $arg;
 
 $debug = 0;
@@ -64,6 +66,12 @@ foreach $arg (@ARGV)
 }
 
 my $dir_w        = cwd();
+my $myldir = $dir_w . '/ldir';
+my $mylsize;
+my $mysdir = $dir_w . '/sdir';
+my $myssize;
+my $sfile2 = $dir_w . '/sfile2';
+my $sfile2size;
 my $host         = hostname();
 if ( $host =~ '.' ) {
 	@words = split( /\./, $host );
@@ -231,26 +239,30 @@ runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,$irodsdefresource" );
 
 #-- basic clients commands.
 
+
+# single file test
+
 runCmd( "ilsresc" );
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
 runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
 # make a directory of large files
-runCmd( "iput -K -N 2 $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
-runCmd( "ils $irodshome/test/foo1", "", "LIST", "foo1" );
+runCmd( "iput -K $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
+runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1, $myssize" );
 runCmd( "iadmin ls $irodshome/test", "", "LIST", "foo1" );
 runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "$username#$irodszone:own" );
 runCmd( "ichmod read testuser1 $irodshome/test/foo1" );
 runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "testuser1#$irodszone:read" );
 runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
-runCmd( "itrim -S testresource -N1 $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "negtest", "LIST", "testresource" );
-runCmd( "iphymv -R testresource $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "testresource" );
+# overwrite a copy 
+runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/test/foo1" );
+runCmd( "ils -l $irodshome/test/foo1", "negtest", "LIST", "$irodsdefresource" );
+runCmd( "iphymv -R  $irodsdefresource $irodshome/test/foo1" );
+runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "$irodsdefresource" );
 runCmd( "imeta add -d $irodshome/test/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta1 180 cm" );
 runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,180,cm" );
-runCmd( "icp -K $irodshome/test/foo1 $irodshome/test/foo2", "", "", "", "irm $irodshome/test/foo2" );
+runCmd( "icp -K -R testresource $irodshome/test/foo1 $irodshome/test/foo2", "", "", "", "irm $irodshome/test/foo2" );
 runCmd( "ils $irodshome/test/foo2", "", "LIST", "foo2" );
 runCmd( "imv $irodshome/test/foo2 $irodshome/test/foo4" );
 runCmd( "ils -l $irodshome/test/foo4", "", "LIST", "foo4" );
@@ -262,20 +274,33 @@ runCmd( "imeta add -d $irodshome/test/foo1 testmeta2 hello", "", "", "", "imeta 
 runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,hello" );
 runCmd( "imeta qu -d testmeta1 = 180", "", "LIST", "foo1" );
 runCmd( "imeta qu -d testmeta2 = hello", "", "dataObj:", "foo1" );
-runCmd( "iget -f -K -N 2 $irodshome/test/foo1 $dir_w/targetTest.txt" );
-if ( -e "$dir_w/targetTest.txt" ) {
-	print( "    $dir_w/targetTest.txt is present (now will be removed). OK.\n" );
-	unlink( "$dir_w/targetTest.txt" );
-} else {
-	print( "No $dir_w/targetTest.txt file.\n" );
-}
+runCmd( "iget -f -K $irodshome/test/foo2 $dir_w" );
+runCmd( "ls -l $dir_w/foo2", "", "LIST", "foo2, $myssize");
+unlink ( "$dir_w/foo2" );
+# we have foo1 in $irodsdefresource and foo2 in testresource
+mksdir ();
+runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
+runCmd( "iput -KfR $irodsdefresource $sfile2 $irodshome/test/foo1" );
+# show have 2 different copies
+runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1, $myssize, $sfile2size" );
+# update all old copies
+runCmd( "irepl -U $irodshome/test/foo1" );
+# make sure the old size is not there
+runCmd( "ils -l $irodshome/test/foo1", "negtest", "LIST", "$myssize" );
+runCmd( "itrim -S $irodsdefresource $irodshome/test/foo1" );
+# make a directory containing 20 small files
+runCmd( "iput -br $mysdir $irodshome/test" );
 runCmd( "iget -r $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
 runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
 runCmd( "iput $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
 runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
-runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2" );
+runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2, sfile10" );
 runCmd( "ibun -cDtar $irodshome/testx1.tar $irodshome/testx", "", "", "", "irm -f $irodshome/testx1.tar" );
 runCmd( "ils -l $irodshome/testx1.tar", "", "LIST", "testx1.tar" );
+system ( "mkdir $dir_w/testx1" );
+runCmd( "iget  $irodshome/testx1.tar $dir_w", "",  "", "", "rm $dir_w/testx1.tar" );
+runCmd( "tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
+runCmd( "diff -r $dir_w/testx $dir_w/testx1", "", "NOANSWER" );
 
 #-- Test a simple rule from the rule test file
 
@@ -289,6 +314,10 @@ if ( $rc ) {
 runCmd( "irsync $ruletestfile i:$irodshome/test/foo1" );
 runCmd( "irsync i:$irodshome/test/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
 runCmd( "irsync i:$irodshome/test/foo1 i:$irodshome/test/foo2" );
+
+unlink ( $sfile2 );
+system ( "rm -r $mysdir" );
+system ( "rm -r $myldir" );
 
 #-- Execute rollback commands
 
@@ -344,7 +373,7 @@ exit;
 # runCmd needs at least 8 arguments: 
 #   1- command name + arguments
 #   2- specify if it is a negative test by providing the "negtest" value, ie it is successfull if the test fails (optional).
-#   3- output line of interest (optional), if equal to "LIST" then match test the entire list of answers provided in 4-.
+#   3- output line of interest (optional), if equal to "LIST" then match test the entire list of answers provided in 4-. if equal to "NOANSWER" then expect no answer.
 #   4- expected list of results separeted by ',' (optional: must be given if second argument provided else it will fail).
 #	5- command name to go back to first situation
 #	6- same as 2 but for 5
@@ -459,6 +488,13 @@ sub runCmd {
 			} else {
 				$result = 0;
 			}
+		} elsif ( $stringToCheck eq "NOANSWER" ) {
+			my $numanswer = @list;
+			if ($numanswer == 0) {
+				$result = 1;
+                        } else {
+                                $result = 0;
+                        }
 		} else {
 			if ( $debug ) { print( "DEBUG: stringToCheck = $stringToCheck\n" ); }
 			foreach $line ( @list ) {
@@ -554,33 +590,38 @@ sub mkldir
 {
     my $i;
     my $count = 3; 
+    my $fcount = 2; 
     my $mylfile;
     system( "cat $progname $progname $progname > lfile" );
     for ( $i = $count; $i >= 0; $i-- ) {
       system ( "cat lfile lfile lfile lfile lfile > lfile1" );
-      system ( "mv lfile1 lfile" );
+	rename ( "lfile1", "lfile" );
     }
+    $mylsize = stat ("lfile")->size;
     system ( "mkdir $myldir" );
-    for ( $i = $count; $i > 0; $i-- ) {
+    for ( $i = $fcount; $i > 0; $i-- ) {
         $mylfile = $myldir . '/' . 'lfile' . $i;
 	if ($i != 1) {
-	    system ( "cp lfile $mylfile" );
+	    copy ( "lfile", $mylfile );
 	} else { 
-	    system ( "mv lfile $mylfile" );
+	    rename ( "lfile", $mylfile );
 	}
     }
 }
 
-# make a directory of small files
+# make a directory of small files and $sfile2
 sub mksdir
 {
     my $i;
     my $count = 20;
     my $mysfile;
+    $myssize = stat ($progname)->size;
+    system ( "cat $progname $progname > $sfile2" );
+    $sfile2size =  stat ($sfile2)->size;
     system ( "mkdir $mysdir" );
     for ( $i = $count; $i > 0; $i-- ) {
         $mysfile = $mysdir . '/' . 'sfile' . $i;
-        system ( "cp $progname $mysfile" );
+	copy ( $progname, $mysfile );
     }
 }
 
