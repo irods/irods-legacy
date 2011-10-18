@@ -198,9 +198,11 @@ chlGeneralUpdate(generalUpdateInp_t generalUpdateInp) {
 
    status =  cmlExecuteNoAnswerSql(tSQL, icss);
    if (status != 0) {
+      int status2;
       rodsLog(LOG_NOTICE,
 	      "chlGeneralUpdate cmlExecuteNoAnswerSql insert failure %d",
 	      status);
+      status2 =  cmlExecuteNoAnswerSql("rollback", icss);
       return(status);
    }
 
