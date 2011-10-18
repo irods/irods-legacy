@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<metadata>
+	<AVU>
+		<Target>/zone/home/username/..../somefile</Target>
+		<Attribute>Attr0</Attribute>
+		<Value>Value0</Value>
+		<Unit />
+	</AVU>
+	<AVU>
+		<Target>/zone/home/username/..../someotherfile</Target>
+		<Attribute>Attr1</Attribute>
+		<Value>Value1</Value>
+		<Unit />
+	</AVU>
+	<AVU>
+		<Target>/zone/home/username/..../somethirdfile</Target>
+		<Attribute>Attr2</Attribute>
+		<Value>Value2</Value>
+		<Unit>Units2</Unit>
+	</AVU>
+</metadata>
