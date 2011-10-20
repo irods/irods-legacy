@@ -976,8 +976,10 @@ rsTarStructFileOpen (rsComm_t *rsComm, specColl_t *specColl)
       &specCollCache)) >= 0) {
 	StructFileDesc[structFileInx].specColl = &specCollCache->specColl;
 	/* getSpecCollCache does not give phyPath nor resource */
-	rstrcpy (specCollCache->specColl.phyPath, specColl->phyPath, 
-	  MAX_NAME_LEN);
+	if (strlen (specColl->phyPath) > 0) {
+	    rstrcpy (specCollCache->specColl.phyPath, specColl->phyPath, 
+	      MAX_NAME_LEN);
+	}
 	if (strlen (specCollCache->specColl.resource) == 0) {
 	    rstrcpy (specCollCache->specColl.resource, specColl->resource,
 	      NAME_LEN);
