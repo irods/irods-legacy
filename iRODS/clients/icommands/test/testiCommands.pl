@@ -242,6 +242,7 @@ runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,$irodsdefresource" );
 
 # single file test
 
+$myssize = stat ($progname)->size;
 runCmd( "ilsresc" );
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
@@ -292,10 +293,12 @@ runCmd( "itrim -S $irodsdefresource $irodshome/test/foo1" );
 # bulk test
 runCmd( "iput -bvPKr $mysdir $irodshome/test" );
 # iput with a lot of options
-runCmd( "iput -PkIfTr -X $dir_w/rsfile --retries 10  $mysdir $irodshome/testiw",  "", "", "", "irm -rvf $irodshome/testiw" );
-system ( "rm $dir_w/rsfile" );
+my $rsfile = $dir_w . "/rsfile";
+if ( -e $rsfile ) { unlink( $rsfile ); }
+runCmd( "iput -PkIfTr -X $rsfile --retries 10  $mysdir $irodshome/testw",  "", "", "", "irm -rvf $irodshome/testw" );
+if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "iget -vIKPfr -X rsfile --retries 10 $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
-system ( "rm $dir_w/rsfile" );
+if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
 my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
 runCmd( "iput -p $phypath $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
@@ -322,7 +325,50 @@ runCmd( "irsync i:$irodshome/test/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1
 runCmd( "irsync i:$irodshome/test/foo1 i:$irodshome/test/foo2" );
 
 unlink ( $sfile2 );
+if ( -e $ruletestfile ) { unlink( $ruletestfile ); }
 system ( "rm -r $mysdir" );
+
+# do the large files tests
+mkldir ();
+my $lrsfile = $dir_w . "/lrsfile";
+if ( -e $lrsfile ) { unlink( $lrsfile ); }
+if ( -e $rsfile ) { unlink( $rsfile ); }
+runCmd( "iput -vbPKr --retries 10 -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/test/testy" );
+if ( -e $lrsfile ) { unlink( $lrsfile ); }
+if ( -e $rsfile ) { unlink( $rsfile ); }
+runCmd( "irepl -BvrPT -R testresource $irodshome/test/testy" );
+runCmd( "itrim -vrS $irodsdefresource --dryrun --age 1 -N1 $irodshome/test/testy" );
+runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/test/testy" );
+runCmd( "icp -vKPTr -N2 $irodshome/test/testy $irodshome/test/testz" );
+system ( "irm -vrf $irodshome/test/testy" );
+runCmd( "iphymv -vrS $irodsdefresource -R testresource  $irodshome/test/testz" );
+
+if ( -e $lrsfile ) { unlink( $lrsfile ); }
+if ( -e $rsfile ) { unlink( $rsfile ); }
+runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile -N 2 $irodshome/test/testz $dir_w/testz" );
+if ( -e $lrsfile ) { unlink( $lrsfile ); }
+if ( -e $rsfile ) { unlink( $rsfile ); }
+runCmd( "diff -r $dir_w/testz $myldir", "", "NOANSWER" );
+system ( "rm -r $dir_w/testz" );
+system ( "irm -vrf $irodshome/test/testz" );
+
+# do the large files tests using RBUDP
+
+runCmd( "iput -vQPKr --retries 10 -X $rsfile --lfrestart $lrsfile $myldir $irodshome/test/testy" );
+if ( -e $lrsfile ) { unlink( $lrsfile ); }
+if ( -e $rsfile ) { unlink( $rsfile ); }
+runCmd( "irepl -BQvrPT -R testresource $irodshome/test/testy" );
+runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/test/testy" );
+runCmd( "icp -vQKPTr $irodshome/test/testy $irodshome/test/testz" );
+system ( "irm -vrf $irodshome/test/testy" );
+if ( -e $lrsfile ) { unlink( $lrsfile ); }
+if ( -e $rsfile ) { unlink( $rsfile ); }
+runCmd( "iget -vQPKr --retries 10 -X $rsfile --lfrestart $lrsfile $irodshome/test/testz $dir_w/testz" );
+if ( -e $lrsfile ) { unlink( $lrsfile ); }
+if ( -e $rsfile ) { unlink( $rsfile ); }
+runCmd( "diff -r $dir_w/testz $myldir", "", "NOANSWER" );
+system ( "rm -r $dir_w/testz" );
+system ( "irm -vrf $irodshome/test/testz" );
 system ( "rm -r $myldir" );
 
 #-- Execute rollback commands
@@ -591,27 +637,32 @@ sub makeRuleFile {
 	return( 0 );
 }
 
-# make a directory of large files
+# make a directory of 2 large files and 2 small fles
 sub mkldir
 {
     my $i;
-    my $count = 3; 
+    my $count = 5; 
     my $fcount = 2; 
     my $mylfile;
-    system( "cat $progname $progname $progname > lfile" );
+    my $mysfile;
+    my $lfile = $dir_w . "lfile";
+    my $lfile1 = $dir_w . "lfile1";
+    system( "echo 012345678901234567890123456789012345678901234567890123456789012 > $lfile" );
     for ( $i = $count; $i >= 0; $i-- ) {
-      system ( "cat lfile lfile lfile lfile lfile > lfile1" );
-	rename ( "lfile1", "lfile" );
+      system ( "cat $lfile $lfile $lfile $lfile $lfile $lfile $lfile $lfile $lfile > $lfile1" );
+	rename ( $lfile1, $lfile );
     }
-    $mylsize = stat ("lfile")->size;
+    $mylsize = stat ($lfile)->size;
     system ( "mkdir $myldir" );
     for ( $i = $fcount; $i > 0; $i-- ) {
         $mylfile = $myldir . '/' . 'lfile' . $i;
+        $mysfile = $myldir . '/' . 'sfile' . $i;
 	if ($i != 1) {
-	    copy ( "lfile", $mylfile );
+	    copy ( $lfile, $mylfile );
 	} else { 
-	    rename ( "lfile", $mylfile );
+	    rename ( $lfile, $mylfile );
 	}
+	copy ( $progname, $mysfile );
     }
 }
 
@@ -621,7 +672,6 @@ sub mksdir
     my $i;
     my $count = 20;
     my $mysfile;
-    $myssize = stat ($progname)->size;
     system ( "cat $progname $progname > $sfile2" );
     $sfile2size =  stat ($sfile2)->size;
     system ( "mkdir $mysdir" );
