@@ -203,9 +203,11 @@ printSysTiming (char *procName, char *action, int envVarFlag);
 int
 printNoSync (char *objPath, rodsLong_t fileSize);
 int
-queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut);
+queryDataObjAcl (rcComm_t *conn, char *dataId, char *zoneHint,
+                 genQueryOut_t **genQueryOut);
 int
-queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut);
+queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint,
+              genQueryOut_t **genQueryOut);
 int
 queryCollInheritance (rcComm_t *conn, char *collName, 
 		      genQueryOut_t **genQueryOut);

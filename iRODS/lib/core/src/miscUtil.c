@@ -602,7 +602,8 @@ printNoSync (char *objPath, rodsLong_t fileSize)
 }
 
 int
-queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
+queryDataObjAcl (rcComm_t *conn, char *dataId, char *zoneHint,
+                 genQueryOut_t **genQueryOut)
 {
     genQueryInp_t genQueryInp;
     int status;
@@ -613,6 +614,10 @@ queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
     }
 
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+    if (zoneHint != NULL) {
+       addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneHint);
+    }
 
     addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
@@ -637,7 +642,8 @@ queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
 
 
 int
-queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
+queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint,
+              genQueryOut_t **genQueryOut)
 {
     genQueryInp_t genQueryInp;
     genQueryOut_t *myGenQueryOut;
@@ -655,6 +661,10 @@ queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
     memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
 
     clearGenQueryInp (&genQueryInp);
+
+    if (zoneHint != NULL) {
+       addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneHint);
+    }
 
     addInxIval (&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_COLL_USER_ZONE, 1);

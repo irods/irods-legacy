@@ -4,6 +4,8 @@
 #include "lsUtil.h"
 #include "miscUtil.h"
 
+char zoneHint[MAX_NAME_LEN];
+
 int
 lsUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 rodsPathInp_t *rodsPathInp)
@@ -21,6 +23,7 @@ rodsPathInp_t *rodsPathInp)
     initCondForLs (myRodsEnv, myRodsArgs, &genQueryInp);
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
+	rstrcpy(zoneHint, rodsPathInp->srcPath[i].inPath, MAX_NAME_LEN);
 	if (rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T || 
 	  rodsPathInp->srcPath[i].objState == UNKNOWN_ST) {
 	    status = getRodsObjType (conn, &rodsPathInp->srcPath[i]);
@@ -318,13 +321,13 @@ genQueryOut_t *genQueryOut)
 
     if ((dataId = getSqlResultByInx (genQueryOut, COL_D_DATA_ID)) == NULL) {
         rodsLog (LOG_ERROR,
-          "printLsLong: getSqlResultByInx for COL_D_DATA_ID failed");
+          "printLsShort: getSqlResultByInx for COL_D_DATA_ID failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
     if ((dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == NULL) {
         rodsLog (LOG_ERROR,
-          "printLsLong: getSqlResultByInx for COL_DATA_NAME failed");
+          "printLsShort: getSqlResultByInx for COL_DATA_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
@@ -547,7 +550,7 @@ printDataAcl (rcComm_t *conn, char *dataId)
     sqlResult_t *userName, *userZone, *dataAccess;
     char *userNameStr, *userZoneStr, *dataAccessStr;
 
-    status = queryDataObjAcl (conn, dataId, &genQueryOut);
+    status = queryDataObjAcl (conn, dataId, zoneHint, &genQueryOut);
 
     printf ("        ACL - ");
 
@@ -598,7 +601,7 @@ printCollAcl (rcComm_t *conn, char *collName)
     sqlResult_t *userName, *userZone, *dataAccess ;
     char *userNameStr, *userZoneStr, *dataAccessStr;
 
-    status = queryCollAcl (conn, collName, &genQueryOut);
+    status = queryCollAcl (conn, collName, zoneHint, &genQueryOut);
 
     printf ("        ACL - ");
 
