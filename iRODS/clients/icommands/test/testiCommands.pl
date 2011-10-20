@@ -645,8 +645,8 @@ sub mkldir
     my $fcount = 2; 
     my $mylfile;
     my $mysfile;
-    my $lfile = $dir_w . "lfile";
-    my $lfile1 = $dir_w . "lfile1";
+    my $lfile = $dir_w . "/lfile";
+    my $lfile1 = $dir_w . "/lfile1";
     system( "echo 012345678901234567890123456789012345678901234567890123456789012 > $lfile" );
     for ( $i = $count; $i >= 0; $i-- ) {
       system ( "cat $lfile $lfile $lfile $lfile $lfile $lfile $lfile $lfile $lfile > $lfile1" );
