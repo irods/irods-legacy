@@ -68,10 +68,8 @@ foreach $arg (@ARGV)
 my $dir_w        = cwd();
 my $myldir = $dir_w . '/ldir';
 my $mylsize;
-my $mysdir = $dir_w . '/sdir';
+my $mysdir = '/tmp/irodssdir';
 my $myssize;
-my $sfile2 = $dir_w . '/sfile2';
-my $sfile2size;
 my $host         = hostname();
 if ( $host =~ '.' ) {
 	@words = split( /\./, $host );
@@ -89,6 +87,11 @@ my $progname     = $0;
 
 my $outputfile   = "testSurvey_" . $host . ".log";
 my $ruletestfile = "testRule_"   . $host . ".irb";
+my $sfile2 = $dir_w . '/sfile2';
+my $sfile2size;
+system ( "cat $progname $progname > $sfile2" );
+$sfile2size =  stat ($sfile2)->size;
+
 
 #-- Find current working directory and make consistency path
 
@@ -246,9 +249,18 @@ $myssize = stat ($progname)->size;
 runCmd( "ilsresc" );
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
+runCmd( "ienv" );
+runCmd( "icd $irodshome" );
+runCmd( "ipwd",  "", "LIST", "home" );
+runCmd( "ihelp ils" );
+runCmd( "ierror -14000", "", "LIST", "SYS_API_INPUT_ERR" );
+runCmd( "iexecmd hello", "", "LIST", "Hello world" );
+runCmd( "ips -v", "", "LIST", "ips" );
+runCmd( "iqstat" );
 runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
 # make a directory of large files
 runCmd( "iput -K $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
+runCmd( "iput -kf $progname $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1, $myssize" );
 runCmd( "iadmin ls $irodshome/test", "", "LIST", "foo1" );
 runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "$username#$irodszone:own" );
@@ -258,7 +270,7 @@ runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
 # overwrite a copy 
 runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "negtest", "LIST", "$irodsdefresource" );
+runCmd( "ils -L $irodshome/test/foo1", "negtest", "LIST", "$irodsdefresource" );
 runCmd( "iphymv -R  $irodsdefresource $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "$irodsdefresource" );
 runCmd( "imeta add -d $irodshome/test/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta1 180 cm" );
@@ -310,6 +322,28 @@ system ( "mkdir $dir_w/testx1" );
 runCmd( "iget  $irodshome/testx1.tar $dir_w", "",  "", "", "rm $dir_w/testx1.tar" );
 runCmd( "tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
 runCmd( "diff -r $dir_w/testx $dir_w/testx1", "", "NOANSWER" );
+system ( "mv $sfile2 /tmp/sfile2" );
+runCmd( "ireg -KR testresource /tmp/sfile2  $irodshome/foo5", "", "", "", "irm -f foo5" );
+runCmd( "iget -fK $irodshome/foo5 $dir_w/foo5", "", "", "", "rm $dir_w/foo5" );
+runCmd( "diff /tmp/sfile2  $dir_w/foo5", "", "NOANSWER" );
+runCmd( "ireg -KCR testresource $mysdir $irodshome/testa", "", "", "", "irm -vrf $irodshome/testa" );
+runCmd( "iget -fvrK $irodshome/testa $dir_w/testa" );
+runCmd( "diff -r $mysdir $dir_w/testa", "", "NOANSWER" );
+system ( "rm -r $dir_w/testa" );
+runCmd( "imcoll -m link $irodshome/testa $irodshome/testb" );
+runCmd( "iget -fvrK $irodshome/testb $dir_w/testb" );
+runCmd( "diff -r $mysdir $dir_w/testb", "", "NOANSWER" );
+runCmd( "imcoll -U $irodshome/testb" );
+runCmd( "irm -rf $irodshome/testb" );
+system ( "rm -r $dir_w/testb" );
+runCmd( "imkdir $irodshome/testm" );
+runCmd( "imcoll -m filesystem -R testresource $mysdir $irodshome/testm" );
+runCmd( "iget -fvrK $irodshome/testa $dir_w/testm" );
+runCmd( "diff -r $mysdir $dir_w/testm", "", "NOANSWER" );
+runCmd( "imcoll -U $irodshome/testm" );
+runCmd( "irm -rf $irodshome/testm" );
+system ( "rm -r $dir_w/testm" );
+
 
 #-- Test a simple rule from the rule test file
 
@@ -324,9 +358,7 @@ runCmd( "irsync $ruletestfile i:$irodshome/test/foo1" );
 runCmd( "irsync i:$irodshome/test/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
 runCmd( "irsync i:$irodshome/test/foo1 i:$irodshome/test/foo2" );
 
-unlink ( $sfile2 );
 if ( -e $ruletestfile ) { unlink( $ruletestfile ); }
-system ( "rm -r $mysdir" );
 
 # do the large files tests
 mkldir ();
@@ -672,8 +704,6 @@ sub mksdir
     my $i;
     my $count = 20;
     my $mysfile;
-    system ( "cat $progname $progname > $sfile2" );
-    $sfile2size =  stat ($sfile2)->size;
     system ( "mkdir $mysdir" );
     for ( $i = $count; $i > 0; $i-- ) {
         $mysfile = $mysdir . '/' . 'sfile' . $i;
