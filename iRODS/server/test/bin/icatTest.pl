@@ -31,6 +31,8 @@ $D3D="direct003/subAD";
 $D3E="direct003/subE";
 $D4="directory04";
 $D4A="directory04/sub1";
+$TICKET1="ticket1";
+$TICKET_HOST="pivo.ucsd.edu";
 
 $U2="u2";
 $U3="u3";
@@ -707,6 +709,18 @@ runCmd(0, "iquest \"select count(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "irm -f $F2");
 runCmd(0, "irm -f $F1");
 
+#Tickets 
+runCmd(0, "iput $F1");
+runCmd(0, "iticket create read $F1 $TICKET1");
+runCmd(0, "iticket mod $TICKET1 uses 1");
+runCmd(1, "iticket mod badticketname uses 1");
+runCmd(0, "iticket mod $TICKET1 add host $TICKET_HOST");
+runCmd(0, "iticket mod $TICKET1 remove host $TICKET_HOST");
+runCmd(0, "iticket mod $TICKET1 add user $U1");
+runCmd(0, "iticket mod $TICKET1 remove user $U1");
+runCmd(0, "iticket mod $TICKET1 expire 2012-02-02");
+runCmd(0, "iticket delete $TICKET1");
+runCmd(0, "irm -f $F1");
 
 # simple test to exercise the clean-up AVUs sql;
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none

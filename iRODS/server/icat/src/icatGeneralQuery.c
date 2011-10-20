@@ -1681,7 +1681,12 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 		RODS_ZONE_CLIENT_KW)==0)  zoneIx=i;
       if (strcmp(genQueryInp.condInput.keyWord[i],
 		ACCESS_PERMISSION_KW)==0)  accessIx=i;
-
+      if (strcmp(genQueryInp.condInput.keyWord[i],
+                 TICKET_KW)==0) {
+         /* just log it for debug for now */
+	 rodsLog(LOG_NOTICE, "ticket input, value: %s",
+                 genQueryInp.condInput.value[i]);
+      }
    }
    if (genQueryInp.condInput.len==1 && 
        strcmp(genQueryInp.condInput.keyWord[0], ZONE_KW)==0) {

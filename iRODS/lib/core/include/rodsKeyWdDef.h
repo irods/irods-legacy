@@ -102,6 +102,7 @@
 						  * the ACL should be used */
 #define NO_CHK_COPY_LEN_KW	"noChkCopyLen"  /* Don't check the len 
 						  * when transfering  */
+#define TICKET_KW               "ticket"        /* for ticket-based-access */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

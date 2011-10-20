@@ -178,7 +178,9 @@ icatGeneralQuerySetup() {
  sTable( "r_msrvc_au_user_group", "R_USER_GROUP r_msrvc_au_user_group", 0);
  sTable( "r_msrvc_au_user_main", "R_USER_MAIN r_msrvc_au_user_main", 0);
 
-
+ sTable( "R_TICKET_MAIN", "R_TICKET_MAIN", 0);
+ sTable( "R_TICKET_ALLOWED_HOSTS", "R_TICKET_ALLOWED_HOSTS", 0);
+ sTable( "R_TICKET_ALLOWED_USERS", "R_TICKET_ALLOWED_USERS", 0);
 
   /* Map the #define values to tables and columns */
 
@@ -543,6 +545,23 @@ icatGeneralQuerySetup() {
   sColumn( COL_MSRVC_ACCESS_USER_ID, "r_msrvc_access", "user_id");
   sColumn( COL_MSRVC_ACCESS_MSRVC_ID, "r_msrvc_access", "object_id");
 
+  sColumn( COL_TICKET_ID, "R_TICKET_MAIN", "ticket_id");
+  sColumn( COL_TICKET_STRING, "R_TICKET_MAIN", "ticket_string"); /* need to restrict somehow before release // */
+  sColumn( COL_TICKET_USER_ID, "R_TICKET_MAIN", "user_id");
+  sColumn( COL_TICKET_OBJECT_ID, "R_TICKET_MAIN", "object_id");
+  sColumn( COL_TICKET_OBJECT_TYPE, "R_TICKET_MAIN", "object_type");
+  sColumn( COL_TICKET_USES_LIMIT, "R_TICKET_MAIN", "uses_limit");
+  sColumn( COL_TICKET_USES_COUNT, "R_TICKET_MAIN", "uses_count");
+  sColumn( COL_TICKET_EXPIRY_TS, "R_TICKET_MAIN", "ticket_expiry_ts");
+  sColumn( COL_TICKET_CREATE_TIME, "R_TICKET_MAIN", "create_time");
+  sColumn( COL_TICKET_MODIFY_TIME, "R_TICKET_MAIN", "modify_time");
+
+  sColumn( COL_TICKET_ALLOWED_HOST, "R_TICKET_ALLOWED_HOSTS", "host");
+  sColumn( COL_TICKET_ALLOWED_HOST_TICKET_ID, "R_TICKET_ALLOWED_HOSTS", "ticket_id");
+  sColumn( COL_TICKET_ALLOWED_USER_ID, "R_TICKET_ALLOWED_USERS", "user_id");
+  sColumn( COL_TICKET_ALLOWED_USER_TICKET_ID, "R_TICKET_ALLOWED_USERS", "ticket_id");
+
+  sColumn( COL_TICKET_DATA_NAME, "R_DATA_MAIN", "data_name");
 
   /* Define the Foreign Key links between tables */
 
@@ -657,6 +676,11 @@ icatGeneralQuerySetup() {
   sFklink("r_msrvc_audit", "r_msrvc_tokn_audit", "r_msrvc_audit.action_id = r_msrvc_tokn_audit.token_id");
   sFklink("r_msrvc_audit", "r_msrvc_au_user_group", "r_msrvc_audit.user_id = r_msrvc_au_user_group.group_user_id");
   sFklink("r_msrvc_au_user_group", "r_msrvc_au_user_main", "r_msrvc_au_user_group.user_id = r_msrvc_au_user_main.user_id");
+
+  sFklink("R_TICKET_MAIN", "R_TICKET_ALLOWED_HOSTS", "R_TICKET_MAIN.ticket_id = R_TICKET_ALLOWED_HOSTS.ticket_id");
+  sFklink("R_TICKET_MAIN", "R_TICKET_ALLOWED_USERS", "R_TICKET_MAIN.ticket_id = R_TICKET_ALLOWED_USERS.ticket_id");
+
+  sFklink("R_TICKET_MAIN", "R_DATA_MAIN", "R_TICKET_MAIN.object_id = R_DATA_MAIN.data_id");
 
 
 

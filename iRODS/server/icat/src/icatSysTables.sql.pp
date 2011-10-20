@@ -458,6 +458,41 @@ create table R_SPECIFIC_QUERY
    create_ts varchar(32)
 );
 
+create table R_TICKET_MAIN
+(
+   ticket_id           INT64TYPE not null,
+   ticket_string       varchar(100),
+   user_id             INT64TYPE not null,
+   object_id           INT64TYPE not null,
+   object_type         varchar(16),     /* data or collection */
+   uses_limit          int  DEFAULT 0,
+   uses_count          int  DEFAULT 0,
+   write_file_limit    int  DEFAULT 10, 
+   write_file_count    int  DEFAULT 0, 
+   write_byte_limit    int  DEFAULT 0,
+   write_byte_count    int  DEFAULT 0,
+   ticket_expiry_ts    varchar(32),
+   restrictions        varchar(16), /* flag for hosts, users, both or neither,
+                                       used to avoid unneeded queries on 
+                                       the ticket_allowed tables below;
+                                       default is any are allowed. */
+   create_ts           varchar(32),
+   modify_ts           varchar(32)
+);
+
+create table R_TICKET_ALLOWED_HOSTS
+(
+   ticket_id           INT64TYPE not null,
+   host                varchar(32)
+);
+
+create table R_TICKET_ALLOWED_USERS
+(
+   ticket_id           INT64TYPE not null,
+   user_id             INT64TYPE not null
+);
+
+
 
 #ifdef mysql
 
@@ -537,3 +572,9 @@ create index idx_tokn_main3 on R_TOKN_MAIN (token_value);
 create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
 create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr);
 create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
+
+/* these indexes enforce the uniqueness contraint on the ticket strings
+   (which can be provided by users), hosts, and users */
+create unique index idx_ticket on R_TICKET_MAIN (ticket_string);
+create unique index idx_ticket_host on R_TICKET_ALLOWED_HOSTS (ticket_id, host);
+create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_id);

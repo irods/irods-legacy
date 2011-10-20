@@ -97,7 +97,9 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         snprintf (accStr, LONG_NAME_LEN, "%s", accessPerm);
         addKeyVal (&genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr);
     }
-
+    if ((tmpStr= getValByKey(&dataObjInp->condInput, TICKET_KW)) != NULL) {
+          addKeyVal (&genQueryInp.condInput, TICKET_KW, tmpStr);
+    }
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);

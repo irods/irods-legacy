@@ -286,6 +286,17 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         }
     }
 
+    if (rodsArgs->ticket == True) {
+       if (rodsArgs->ticketString == NULL) {
+	  rodsLog (LOG_ERROR,
+		   "initCondForPut: NULL ticketString error");
+	  return (USER__NULL_INPUT_ERR);
+       } else {
+	  addKeyVal (&dataObjOprInp->condInput, TICKET_KW,
+		     rodsArgs->ticketString);
+       }
+    }
+
 #ifdef RBUDP_TRANSFER
     if (rodsArgs->rbudp == True) {
         /* use -Q for rbudp transfer */

@@ -159,4 +159,7 @@ int chlVersionDvmBase(rsComm_t *rsComm,
 		  char *baseName, char *myTime);
 int chlVersionFnmBase(rsComm_t *rsComm,
 		  char *baseName, char *myTime); 
+int chlModTicket(rsComm_t *rsComm, char *opName, char *ticket,
+		    char *arg1, char *arg2, char *arg3);
+
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

@@ -134,6 +134,13 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
           return(status);
        }
     } 
+    if (strcmp(userAdminInp->arg0,"ticket")==0) {
+       status = chlModTicket(rsComm, userAdminInp->arg1, 
+			     userAdminInp->arg2, userAdminInp->arg3, 
+			     userAdminInp->arg4, userAdminInp->arg5);
+       return(status);
+    }
+
     return(CAT_INVALID_ARGUMENT);
 }
 #endif

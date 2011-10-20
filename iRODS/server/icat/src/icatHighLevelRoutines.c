@@ -8952,3 +8952,312 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
    return(0);
 
 }
+
+int
+icatGetTicketUserId(char *userName, char *userIdStr) {
+   char userId[MAX_NAME_LEN];
+   char userZone[NAME_LEN];
+   char zoneToUse[MAX_NAME_LEN];
+   char userName2[NAME_LEN];
+   int status;
+
+   status = getLocalZone();
+   if (status != 0) return(status);
+
+   strncpy(zoneToUse, localZone, MAX_NAME_LEN);
+   status = parseUserName(userName, userName2, userZone);
+   if (userZone[0]!='\0') {
+      rstrcpy(zoneToUse, userZone, MAX_NAME_LEN);
+   }
+
+   userId[0]='\0';
+   if (logSQL!=0) rodsLog(LOG_SQL, "icatGetTicketUserId SQL 1 ");
+   status = cmlGetStringValueFromSql(
+            "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=?",
+	    userId, MAX_NAME_LEN, userName2, zoneToUse, 0, &icss);
+            /* find user row, type user or group */
+   if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) {
+	 return(CAT_INVALID_USER);
+      }
+      _rollback("icatGetTicketUserId");
+      return(status);
+   }
+   strncpy(userIdStr, userId, MAX_NAME_LEN);
+   return(0);
+}
+
+/* Administrative operations on a ticket.
+   create, modify, and remove.
+   ticketString is either the ticket-string or ticket-id.
+*/
+int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
+		    char *arg3, char *arg4, char *arg5) {
+   rodsLong_t status, status2;
+   char logicalEndName[MAX_NAME_LEN];
+   char logicalParentDirName[MAX_NAME_LEN];
+   rodsLong_t objId=0;
+   rodsLong_t userId;
+   rodsLong_t ticketId;
+   rodsLong_t seqNum;
+   char seqNumStr[MAX_NAME_LEN];
+   char objIdStr[MAX_NAME_LEN];
+   char objTypeStr[MAX_NAME_LEN];
+   char userIdStr[MAX_NAME_LEN];
+   char user2IdStr[MAX_NAME_LEN];
+   char ticketIdStr[MAX_NAME_LEN];
+   int i;
+   char myTime[50];
+
+   status = 0;
+
+   /* create */
+   if (strcmp(opName, "create") == 0) {
+      status = splitPathByKey(arg4,
+			      logicalParentDirName, logicalEndName, '/');
+      if (strlen(logicalParentDirName)==0) {
+	 strcpy(logicalParentDirName, "/");
+	 strcpy(logicalEndName, arg4+1);
+      }
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 1");
+      status2 = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
+				       rsComm->clientUser.userName, 
+				       rsComm->clientUser.rodsZone, 
+				       ACCESS_OWN, &icss);
+      if (status2 < 0) { 
+	 status = status2;
+	 return(status);
+      }
+      strncpy(objTypeStr, "data", sizeof(objTypeStr));
+      objId=status2;
+
+      status = cmlGetIntegerValueFromSql(
+	 "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+	 &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
+	 0, 0, 0, &icss);
+      if (status != 0) {
+	 return(CAT_INVALID_USER);
+      }
+
+      seqNum = cmlGetNextSeqVal(&icss);
+      if (seqNum < 0) {
+	 rodsLog(LOG_NOTICE, "chlModTicket failure %d",
+	       seqNum);
+	 return(seqNum);
+      }
+      snprintf(seqNumStr, MAX_NAME_LEN, "%lld", seqNum);
+      snprintf(objIdStr, MAX_NAME_LEN, "%lld", objId);
+      snprintf(userIdStr, MAX_NAME_LEN, "%lld", userId);
+      getNowStr(myTime);
+      i=0;
+      cllBindVars[i++]=seqNumStr;
+      cllBindVars[i++]=ticketString;
+      cllBindVars[i++]=userIdStr;
+      cllBindVars[i++]=objIdStr;
+      cllBindVars[i++]=objTypeStr;
+      cllBindVars[i++]=myTime;
+      cllBindVars[i++]=myTime;
+      cllBindVarCount=i;
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 2");
+      status =  cmlExecuteNoAnswerSql(
+	 "insert into R_TICKET_MAIN (ticket_id, ticket_string, user_id, object_id, object_type, modify_ts, create_ts) values (?, ?, ?, ?, ?, ?, ?)",
+	 &icss);
+
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+	     "chlModTicket cmlExecuteNoAnswerSql insert failure %d",
+		 status);
+	 return(status);
+      }
+
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      return(status);
+   }
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 3");
+   status = cmlGetIntegerValueFromSql(
+      "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+      &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
+      0, 0, 0, &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO ||
+       status==CAT_NO_ROWS_FOUND) {
+      int i;
+      i = addRErrorMsg (&rsComm->rError, 0, "Invalid user");
+      return(CAT_INVALID_USER); 
+   }
+   if (status < 0) return(status);
+   snprintf(userIdStr, sizeof userIdStr, "%lld", userId);
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 4");
+   status = cmlGetIntegerValueFromSql(
+      "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_string=?",
+      &ticketId, userIdStr, ticketString,
+	 0, 0, 0, &icss);
+   if (status != 0) {
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 5");
+      status = cmlGetIntegerValueFromSql(
+	 "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_id=?",
+	 &ticketId, userIdStr, ticketString,
+	 0, 0, 0, &icss);
+      if (status != 0) {
+	 return(CAT_INVALID_USER);  // should be a more specific Ticket error, later
+      }
+   }
+   snprintf(ticketIdStr, MAX_NAME_LEN, "%lld", ticketId);
+
+   /* delete */
+   if (strcmp(opName, "delete") == 0) {
+      i=0;
+      cllBindVars[i++]=ticketIdStr;
+      cllBindVars[i++]=userIdStr;
+      cllBindVarCount=i;
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 6");
+      status =  cmlExecuteNoAnswerSql(
+	 "delete from R_TICKET_MAIN where ticket_id = ? and user_id = ?",
+	 &icss);
+      if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+	     "chlModTicket cmlExecuteNoAnswerSql delete failure %d",
+		 status);
+	 return(status);
+      }
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      return(status);
+   }
+
+   /* mod */
+   if (strcmp(opName, "mod") == 0) {
+      if (strcmp(arg3, "uses") == 0) {
+	 i=0;
+	 cllBindVars[i++]=arg4;
+	 cllBindVars[i++]=ticketIdStr;
+	 cllBindVars[i++]=userIdStr;
+	 cllBindVarCount=i;
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 7");
+	 status =  cmlExecuteNoAnswerSql(
+	    "update R_TICKET_MAIN set uses_limit=? where ticket_id = ? and user_id = ?",
+	    &icss);
+	 if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	 if (status != 0) {
+	    rodsLog(LOG_NOTICE,
+		    "chlModTicket cmlExecuteNoAnswerSql delete failure %d",
+		    status);
+	    return(status);
+	 }
+	 status =  cmlExecuteNoAnswerSql("commit", &icss);
+	 return(status);
+      }
+      if (strncmp(arg3, "expir", 5) == 0) {
+	 status=checkDateFormat(arg4);
+	 if (status!=0) {
+	    return(status);
+	 }
+	 i=0;
+	 cllBindVars[i++]=arg4;
+	 cllBindVars[i++]=ticketIdStr;
+	 cllBindVars[i++]=userIdStr;
+	 cllBindVarCount=i;
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 8");
+	 status =  cmlExecuteNoAnswerSql(
+	    "update R_TICKET_MAIN set ticket_expiry_ts=? where ticket_id = ? and user_id = ?",
+	    &icss);
+	 if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	 if (status != 0) {
+	    rodsLog(LOG_NOTICE,
+		    "chlModTicket cmlExecuteNoAnswerSql delete failure %d",
+		    status);
+	    return(status);
+	 }
+	 status =  cmlExecuteNoAnswerSql("commit", &icss);
+	 return(status);
+      }
+
+      if (strcmp(arg3, "add") == 0) {
+	 if (strcmp(arg4, "host") == 0) {
+	    i=0;
+	    cllBindVars[i++]=ticketIdStr;
+	    cllBindVars[i++]=arg5;
+	    cllBindVarCount=i;
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 9");
+	    status =  cmlExecuteNoAnswerSql(
+	       "insert into R_TICKET_ALLOWED_HOSTS (ticket_id, host) values (? , ?)",
+	       &icss);
+	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	    if (status != 0) {
+	       rodsLog(LOG_NOTICE,
+		       "chlModTicket cmlExecuteNoAnswerSql insert host failure %d",
+		       status);
+	       return(status);
+	    }
+	    status =  cmlExecuteNoAnswerSql("commit", &icss);
+	    return(status);
+	 }
+	 if (strcmp(arg4, "user") == 0) {
+	    status = icatGetTicketUserId(arg5, user2IdStr);
+	    if (status != 0) return(status);
+	    i=0;
+	    cllBindVars[i++]=ticketIdStr;
+	    cllBindVars[i++]=user2IdStr;
+	    cllBindVarCount=i;
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 10");
+	    status =  cmlExecuteNoAnswerSql(
+	       "insert into R_TICKET_ALLOWED_USERS (ticket_id, user_id) values (? , ?)",
+	       &icss);
+	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	    if (status != 0) {
+	       rodsLog(LOG_NOTICE,
+		       "chlModTicket cmlExecuteNoAnswerSql insert user failure %d",
+		       status);
+	       return(status);
+	    }
+	    status =  cmlExecuteNoAnswerSql("commit", &icss);
+	    return(status);
+	 }
+      }
+      if (strcmp(arg3, "remove") == 0) {
+	 if (strcmp(arg4, "host") == 0) {
+	    i=0;
+	    cllBindVars[i++]=ticketIdStr;
+	    cllBindVars[i++]=arg5;
+	    cllBindVarCount=i;
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 11");
+	    status =  cmlExecuteNoAnswerSql(
+	       "delete from R_TICKET_ALLOWED_HOSTS where ticket_id=? and host=?",
+	       &icss);
+	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	    if (status != 0) {
+	       rodsLog(LOG_NOTICE,
+		       "chlModTicket cmlExecuteNoAnswerSql delete host failure %d",
+		       status);
+	       return(status);
+	    }
+	    status =  cmlExecuteNoAnswerSql("commit", &icss);
+	    return(status);
+	 }
+	 if (strcmp(arg4, "user") == 0) {
+	    status = icatGetTicketUserId(arg5, user2IdStr);
+	    if (status != 0) return(status);
+	    i=0;
+	    cllBindVars[i++]=ticketIdStr;
+	    cllBindVars[i++]=user2IdStr;
+	    cllBindVarCount=i;
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 12");
+	    status =  cmlExecuteNoAnswerSql(
+	       "delete from R_TICKET_ALLOWED_USERS where ticket_id=? and user_id=?",
+	       &icss);
+	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	    if (status != 0) {
+	       rodsLog(LOG_NOTICE,
+		       "chlModTicket cmlExecuteNoAnswerSql delete user failure %d",
+		       status);
+	       return(status);
+	    }
+	    status =  cmlExecuteNoAnswerSql("commit", &icss);
+	    return(status);
+	 }
+      }
+   }
+
+   return (CAT_INVALID_ARGUMENT);
+}
