@@ -246,7 +246,8 @@ runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,$irodsdefresource" );
 # single file test
 
 $myssize = stat ($progname)->size;
-runCmd( "ilsresc" );
+runCmd( "ilsresc", "", "LIST", "$irodsdefresource, testresource");
+runCmd( "ilsresc -l",  "", "LIST", "$irodsdefresource, testresource");
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
 runCmd( "ienv" );
@@ -326,7 +327,7 @@ system ( "mv $sfile2 /tmp/sfile2" );
 runCmd( "ireg -KR testresource /tmp/sfile2  $irodshome/foo5", "", "", "", "irm -f foo5" );
 runCmd( "iget -fK $irodshome/foo5 $dir_w/foo5", "", "", "", "rm $dir_w/foo5" );
 runCmd( "diff /tmp/sfile2  $dir_w/foo5", "", "NOANSWER" );
-runCmd( "ireg -KCR testresource $mysdir $irodshome/testa", "", "", "", "irm -vrf $irodshome/testa" );
+runCmd( "ireg -KCR testresource $mysdir $irodshome/testa", "", "", "", "irm -vr $irodshome/testa" );
 runCmd( "iget -fvrK $irodshome/testa $dir_w/testa" );
 runCmd( "diff -r $mysdir $dir_w/testa", "", "NOANSWER" );
 system ( "rm -r $dir_w/testa" );
@@ -343,7 +344,17 @@ runCmd( "diff -r $mysdir $dir_w/testm", "", "NOANSWER" );
 runCmd( "imcoll -U $irodshome/testm" );
 runCmd( "irm -rf $irodshome/testm" );
 system ( "rm -r $dir_w/testm" );
-
+system ( "rm -r $mysdir" );
+runCmd( "imkdir $irodshome/testt" );
+runCmd( "imcoll -m tar $irodshome/testx.tar $irodshome/testt" );
+runCmd( "ils -lr $irodshome/testt", "", "LIST", "foo2, foo1" );
+runCmd( "iget -vr $irodshome/testt  $dir_w/testt" );
+runCmd( "diff -r  $dir_w/testx $dir_w/testt", "", "NOANSWER" );
+runCmd( "imcoll -s $irodshome/testt" );
+runCmd( "imcoll -p $irodshome/testt" );
+runCmd( "imcoll -U $irodshome/testt" );
+runCmd( "irm -rf $irodshome/testt" );
+system ( "rm -r $dir_w/testt" );
 
 #-- Test a simple rule from the rule test file
 
