@@ -162,6 +162,7 @@ reServerMain (rsComm_t *rsComm)
     time_t endTime;
     int runCnt;
     reExec_t reExec;
+    int repeatedQueryErrorCount=0;
    
     initReExec (rsComm, &reExec);
     LastRescUpdateTime = time (NULL);
@@ -174,10 +175,28 @@ reServerMain (rsComm_t *rsComm)
             if (status != CAT_NO_ROWS_FOUND) {
                 rodsLog (LOG_ERROR,
                   "reServerMain: getReInfo error. status = %d", status);
+#ifdef ORA_ICAT
+                /* For Oracle, since we don't disconnect (to avoid a
+                   memory leak in the OCI library), we do want to
+                   disconnect when there are repeated errors so we can
+                   reconnect and possibly recover from an Oracle
+                   outage. */
+                if (repeatedQueryErrorCount>3) {
+                   disconnectRcat (rsComm);
+                   repeatedQueryErrorCount=0;
+                }
+#endif
             }
-	    reSvrSleep (rsComm);
+            else {
+               repeatedQueryErrorCount++;
+            }
+            reSvrSleep (rsComm);
             continue;
         }
+        else {
+           repeatedQueryErrorCount=0;
+        }
+
         endTime = time (NULL) + RE_SERVER_EXEC_TIME;
 	runCnt = runQueuedRuleExec (rsComm, &reExec, &genQueryOut, endTime, 0);
 	if (runCnt > 0 || 
