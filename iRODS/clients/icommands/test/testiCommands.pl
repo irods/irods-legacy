@@ -229,6 +229,7 @@ runCmd( "iadmin rfg testgroup testuser2" );
 runCmd( "iadmin lg testgroup", "negtest", "LIST", "testuser1,testuser2" );
 runCmd( "iadmin rfg testgroup testuser1" );
 runCmd( "iadmin mkresc testresource \"unix file system\" cache $irodshost \"/tmp/foo\"", "", "", "", "iadmin rmresc testresource" );
+runCmd( "iadmin mkresc compresource \"test stage file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
 runCmd( "iadmin lr testresource", "", "resc_name:", "testresource", "irmtrash" );
 runCmd( "iadmin lr testresource", "", "resc_type_name:", "unix file system" );
 runCmd( "iadmin lr testresource", "", "resc_net:", "$irodshost" );
@@ -237,8 +238,8 @@ runCmd( "iadmin lr testresource", "", "r_comment:", "Modify by me $username" );
 runCmd( "iadmin mkgroup resgroup", "", "", "", "iadmin rmgroup resgroup" );
 runCmd( "iadmin atg resgroup $username", "", "", "", "iadmin rfg resgroup $username" );
 runCmd( "iadmin atrg resgroup testresource", "", "", "", "iadmin rfrg resgroup testresource" );
-runCmd( "iadmin atrg resgroup $irodsdefresource", "", "", "", "iadmin rfrg resgroup $irodsdefresource" );
-runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,$irodsdefresource" );
+runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
+runCmd( "iadmin lrg resgroup", "", "LIST", "testresource, compresource" );
 
 #-- basic clients commands.
 
@@ -355,6 +356,19 @@ runCmd( "imcoll -p $irodshome/testt" );
 runCmd( "imcoll -U $irodshome/testt" );
 runCmd( "irm -rf $irodshome/testt" );
 system ( "rm -r $dir_w/testt" );
+# resource group test
+runCmd( "iput -KR resgroup $progname $irodshome/test/foo6", "", "", "", "irm $irodshome/test/foo6" );
+runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "foo6, testresource" );
+runCmd( "irepl -a $irodshome/test/foo6" );
+runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource, testresource" );
+runCmd( "itrim -S testresource -N1 $irodshome/test/foo6" );
+runCmd( "ils -l $irodshome/test/foo6", "negtest", "LIST", "testresource" );
+runCmd( "iget -f $irodshome/test/foo6 $dir_w/foo6" );
+runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource, testresource" );
+runCmd( "diff  $progname $dir_w/foo6", "", "NOANSWER" );
+system ( "rm $dir_w/foo6" );
+
+
 
 #-- Test a simple rule from the rule test file
 
