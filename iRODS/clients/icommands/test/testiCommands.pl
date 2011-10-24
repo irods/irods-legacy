@@ -229,7 +229,8 @@ runCmd( "iadmin rfg testgroup testuser2" );
 runCmd( "iadmin lg testgroup", "negtest", "LIST", "testuser1,testuser2" );
 runCmd( "iadmin rfg testgroup testuser1" );
 runCmd( "iadmin mkresc testresource \"unix file system\" cache $irodshost \"/tmp/foo\"", "", "", "", "iadmin rmresc testresource" );
-runCmd( "iadmin mkresc compresource \"test stage file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
+# runCmd( "iadmin mkresc compresource \"test stage file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
+runCmd( "iadmin mkresc compresource \"unix file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
 runCmd( "iadmin lr testresource", "", "resc_name:", "testresource", "irmtrash" );
 runCmd( "iadmin lr testresource", "", "resc_type_name:", "unix file system" );
 runCmd( "iadmin lr testresource", "", "resc_net:", "$irodshost" );
@@ -452,7 +453,7 @@ if ( ! $noprompt_flag ) {
 }
 `/bin/rm -rf /tmp/foo`;# remove the vault for the testresource; needed in case
                        # another unix login runs this test on this host
-
+`/bin/rm -rf /tmp/comp`;
 #-- print the result of the test into testSurvey.log
 
 $nsuccess = @successlist;

@@ -137,8 +137,8 @@ fileDriver_t FileDriverTable[] = {
       unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
       unixFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
       unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
-      unixFileGetFsFreeSpace, unixFileTruncate, noSupportFsFileStageToCache, 
-      noSupportFsFileSyncToArch},
+      unixFileGetFsFreeSpace, unixFileTruncate, unixStageToCache, 
+      unixSyncToArch},
     #ifdef HPSS
         {HPSS_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead, 
          noSupportFsFileWrite, noSupportFsFileClose, hpssFileUnlink, hpssFileStat, 
