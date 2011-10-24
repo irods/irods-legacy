@@ -386,7 +386,8 @@ runCmd( "irsync i:$irodshome/test/foo1 i:$irodshome/test/foo2" );
 
 # do test using xml protocol
 $ENV{'irodsProt'} = 1;
-runCmd( "ilsresc -l",  "", "LIST", "$irodsdefresource, testresource");
+runCmd( "iadmin mkresc test1resource \"unix file system\" cache $irodshost \"/tmp/foo\"", "", "", "", "iadmin rmresc test1resource" );
+runCmd( "ilsresc",  "", "LIST", "test1resource");
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
 runCmd( "ienv" );
