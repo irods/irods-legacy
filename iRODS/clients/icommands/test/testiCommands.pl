@@ -248,8 +248,8 @@ runCmd( "iadmin lrg resgroup", "", "LIST", "testresource, compresource" );
 # single file test
 
 $myssize = stat ($progname)->size;
-runCmd( "ilsresc", "", "LIST", "$irodsdefresource, testresource");
-runCmd( "ilsresc -l",  "", "LIST", "$irodsdefresource, testresource");
+runCmd( "ilsresc", "", "LIST", "compresource, testresource");
+runCmd( "ilsresc -l",  "", "LIST", "compresource, testresource");
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
 runCmd( "ienv" );
