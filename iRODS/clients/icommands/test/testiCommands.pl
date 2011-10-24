@@ -240,7 +240,7 @@ runCmd( "iadmin mkgroup resgroup", "", "", "", "iadmin rmgroup resgroup" );
 runCmd( "iadmin atg resgroup $username", "", "", "", "iadmin rfg resgroup $username" );
 runCmd( "iadmin atrg resgroup testresource", "", "", "", "iadmin rfrg resgroup testresource" );
 runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
-runCmd( "iadmin lrg resgroup", "", "LIST", "testresource, compresource" );
+runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,compresource" );
 
 #-- basic clients commands.
 
@@ -248,8 +248,8 @@ runCmd( "iadmin lrg resgroup", "", "LIST", "testresource, compresource" );
 # single file test
 
 $myssize = stat ($progname)->size;
-runCmd( "ilsresc", "", "LIST", "compresource, testresource");
-runCmd( "ilsresc -l",  "", "LIST", "compresource, testresource");
+runCmd( "ilsresc", "", "LIST", "compresource,testresource");
+runCmd( "ilsresc -l",  "", "LIST", "compresource,testresource");
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
 runCmd( "ienv" );
@@ -264,7 +264,7 @@ runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
 # make a directory of large files
 runCmd( "iput -K $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
 runCmd( "iput -kf $progname $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1, $myssize" );
+runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1,$myssize" );
 runCmd( "iadmin ls $irodshome/test", "", "LIST", "foo1" );
 runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "$username#$irodszone:own" );
 runCmd( "ichmod read testuser1 $irodshome/test/foo1" );
@@ -291,7 +291,7 @@ runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,hello" );
 runCmd( "imeta qu -d testmeta1 = 180", "", "LIST", "foo1" );
 runCmd( "imeta qu -d testmeta2 = hello", "", "dataObj:", "foo1" );
 runCmd( "iget -f -K $irodshome/test/foo2 $dir_w" );
-runCmd( "ls -l $dir_w/foo2", "", "LIST", "foo2, $myssize");
+runCmd( "ls -l $dir_w/foo2", "", "LIST", "foo2,$myssize");
 unlink ( "$dir_w/foo2" );
 # we have foo1 in $irodsdefresource and foo2 in testresource
 # make a directory containing 20 small files
@@ -299,7 +299,7 @@ mksdir ();
 runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
 runCmd( "iput -IkfR $irodsdefresource $sfile2 $irodshome/test/foo1" );
 # show have 2 different copies
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1, $myssize, $sfile2size" );
+runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1,$myssize,$sfile2size" );
 # update all old copies
 runCmd( "irepl -U $irodshome/test/foo1" );
 # make sure the old size is not there
@@ -318,7 +318,7 @@ runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/te
 my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
 runCmd( "iput -p $phypath $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
 runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
-runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2, sfile10" );
+runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2,sfile10" );
 runCmd( "ibun -cDtar $irodshome/testx1.tar $irodshome/testx", "", "", "", "irm -f $irodshome/testx1.tar" );
 runCmd( "ils -l $irodshome/testx1.tar", "", "LIST", "testx1.tar" );
 system ( "mkdir $dir_w/testx1" );
@@ -349,7 +349,7 @@ system ( "rm -r $dir_w/testm" );
 system ( "rm -r $mysdir" );
 runCmd( "imkdir $irodshome/testt" );
 runCmd( "imcoll -m tar $irodshome/testx.tar $irodshome/testt" );
-runCmd( "ils -lr $irodshome/testt", "", "LIST", "foo2, foo1" );
+runCmd( "ils -lr $irodshome/testt", "", "LIST", "foo2,foo1" );
 runCmd( "iget -vr $irodshome/testt  $dir_w/testt" );
 runCmd( "diff -r  $dir_w/testx $dir_w/testt", "", "NOANSWER" );
 runCmd( "imcoll -s $irodshome/testt" );
@@ -359,13 +359,13 @@ runCmd( "irm -rf $irodshome/testt" );
 system ( "rm -r $dir_w/testt" );
 # resource group test
 runCmd( "iput -KR resgroup $progname $irodshome/test/foo6", "", "", "", "irm $irodshome/test/foo6" );
-runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "foo6, testresource" );
+runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "foo6,testresource" );
 runCmd( "irepl -a $irodshome/test/foo6" );
-runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource, testresource" );
+runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource,testresource" );
 runCmd( "itrim -S testresource -N1 $irodshome/test/foo6" );
 runCmd( "ils -l $irodshome/test/foo6", "negtest", "LIST", "testresource" );
 runCmd( "iget -f $irodshome/test/foo6 $dir_w/foo6" );
-runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource, testresource" );
+runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource,testresource" );
 runCmd( "diff  $progname $dir_w/foo6", "", "NOANSWER" );
 system ( "rm $dir_w/foo6" );
 
@@ -593,7 +593,7 @@ sub runCmd {
 				if ( $answer =~ /$entry/ ) { $numsuccess++; }
 			}
 			
-			if ( $numsuccess == $numinlist ) {
+			if ( $numsuccess >= $numinlist ) {
 				$result = 1;
 			} else {
 				$result = 0;
