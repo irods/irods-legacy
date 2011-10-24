@@ -384,7 +384,46 @@ runCmd( "irsync $ruletestfile i:$irodshome/test/foo1" );
 runCmd( "irsync i:$irodshome/test/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
 runCmd( "irsync i:$irodshome/test/foo1 i:$irodshome/test/foo2" );
 
+# do test using xml protocol
+$ENV{'irodsProt'} = 1;
+runCmd( "ilsresc -l",  "", "LIST", "$irodsdefresource, testresource");
+runCmd( "imiscsvrinfo" );
+runCmd( "iuserinfo", "", "name:", $username );
+runCmd( "ienv" );
+runCmd( "icd $irodshome" );
+runCmd( "ipwd",  "", "LIST", "home" );
+runCmd( "ihelp ils" );
+runCmd( "ierror -14000", "", "LIST", "SYS_API_INPUT_ERR" );
+runCmd( "iexecmd hello", "", "LIST", "Hello world" );
+runCmd( "ips -v", "", "LIST", "ips" );
+runCmd( "iqstat" );
+runCmd( "imkdir $irodshome/test1", "", "", "", "irm -r $irodshome/test1" );
+# make a directory of large files
+runCmd( "iput -kf $progname $irodshome/test1/foo1" );
+runCmd( "ils -l $irodshome/test1/foo1", "", "LIST", "foo1, $myssize" );
+runCmd( "iadmin ls $irodshome/test1", "", "LIST", "foo1" );
+runCmd( "ichmod read testuser1 $irodshome/test1/foo1" );
+runCmd( "ils -A $irodshome/test1/foo1", "", "LIST", "testuser1#$irodszone:read" );
+runCmd( "irepl -B -R testresource $irodshome/test1/foo1" );
+# overwrite a copy
+runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/test1/foo1" );
+runCmd( "iphymv -R  $irodsdefresource $irodshome/test1/foo1" );
+runCmd( "imeta add -d $irodshome/test1/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test1/foo1 testmeta1 180 cm" );
+runCmd( "imeta ls -d $irodshome/test1/foo1", "", "LIST", "testmeta1,180,cm" );
+runCmd( "icp -K -R testresource $irodshome/test1/foo1 $irodshome/test1/foo2", "", "", "", "irm $irodshome/test1/foo2" );
+runCmd( "imv $irodshome/test1/foo2 $irodshome/test1/foo4" );
+runCmd( "imv $irodshome/test1/foo4 $irodshome/test1/foo2" );
+runCmd( "ichksum $irodshome/test1/foo2", "", "LIST", "foo2" );
+runCmd( "iget -f -K $irodshome/test1/foo2 $dir_w" );
+unlink ( "$dir_w/foo2" );
+system ( "irm $irodshome/test/foo3" );
+runCmd( "irule -F $ruletestfile" );
+runCmd( "irsync $ruletestfile i:$irodshome/test1/foo1" );
+system ( "rm $dir_w/foo1" );
+runCmd( "irsync i:$irodshome/test1/foo1 $dir_w/foo1" );
+runCmd( "irsync i:$irodshome/test1/foo1 i:$irodshome/test1/foo2" );
 if ( -e $ruletestfile ) { unlink( $ruletestfile ); }
+$ENV{'irodsProt'} = 0;
 
 # do the large files tests
 mkldir ();
