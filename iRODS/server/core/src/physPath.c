@@ -478,18 +478,63 @@ dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam)
 #endif
 
 int 
-_dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)
+_dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, 
+char **chksumStr)
 {
     fileChksumInp_t fileChksumInp;
     int rescTypeInx;
     int rescClass;
     int status;
-    rescInfo_t *rescInfo = dataObjInfo->rescInfo;
+    dataObjInfo_t *dataObjInfo;
+    rescInfo_t *rescInfo = inpDataObjInfo->rescInfo;
+    int destL1descInx = -1;
+    rescInfo_t *cacheResc;
 
     rescClass = getRescClass (rescInfo);
-    if (rescClass == COMPOUND_CL) return SYS_CANT_CHKSUM_COMP_RESC_DATA;
-    else if (rescClass == BUNDLE_CL) return SYS_CANT_CHKSUM_BUNDLED_DATA;
-
+    if (rescClass == COMPOUND_CL) {
+#if 0
+        return SYS_CANT_CHKSUM_COMP_RESC_DATA;
+#else
+	dataObjInp_t dataObjInp;
+        status = getCacheRescInGrp (rsComm, inpDataObjInfo->rescGroupName,
+          inpDataObjInfo->rescInfo, &cacheResc);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "_dataObjChksum: getCacheRescInGrp %s failed for %s stat=%d",
+              inpDataObjInfo->rescGroupName, inpDataObjInfo->objPath, status);
+            return status;
+	}
+	/* create a fake object */
+        memset (&dataObjInp, 0, sizeof (dataObjInp_t));
+	snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s.%-d", 
+          inpDataObjInfo->objPath, (int) random());
+        addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, 
+          cacheResc->rescName);
+        addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
+	destL1descInx = _rsDataObjCreate (rsComm, &dataObjInp);
+	clearKeyVal (&dataObjInp.condInput);
+	if (destL1descInx < 0) {
+            rodsLogError (LOG_ERROR, destL1descInx,
+             "_dataObjChksum: _rsDataObjCreate failed for %s",
+              inpDataObjInfo->objPath);
+            return destL1descInx;
+        }
+	dataObjInfo = L1desc[destL1descInx].dataObjInfo;
+	rescInfo = cacheResc;
+	status = _l3FileStage (rsComm, inpDataObjInfo, dataObjInfo,
+	  getFileMode (NULL));
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+             "_dataObjChksum: _l3FileStage failed for %s",
+              dataObjInfo->objPath);
+            return destL1descInx;
+        }
+#endif
+    } else if (rescClass == BUNDLE_CL) {
+	return SYS_CANT_CHKSUM_BUNDLED_DATA;
+    } else {
+	dataObjInfo = inpDataObjInfo;
+    }
     rescTypeInx = rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
@@ -507,6 +552,10 @@ _dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)
           RescTypeDef[rescTypeInx].rescCat);
         status = SYS_INVALID_RESC_TYPE;
         break;
+    }
+    if (destL1descInx >= 0) {
+	l3Unlink (rsComm, L1desc[destL1descInx].dataObjInfo);
+	freeL1desc (destL1descInx);
     }
     return (status);
 }

@@ -352,8 +352,12 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	newSize = L1desc[l1descInx].dataSize;
     }
 
+#if 0	/* _dataObjChksum do COMPOUND_CL now */
     if (getRescClass (L1desc[l1descInx].dataObjInfo->rescInfo) != COMPOUND_CL &&
       noChkCopyLenFlag == 0) {
+#else
+    if (noChkCopyLenFlag == 0) {
+#endif
         status = procChksumForClose (rsComm, l1descInx, &chksumStr);
         if (status < 0) return status;
     }

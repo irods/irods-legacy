@@ -1180,13 +1180,34 @@ int
 l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
 {
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
-    int rescTypeInx, cacheRescTypeInx;
-    fileStageSyncInp_t fileSyncToArchInp;
-    dataObjInp_t *dataObjInp;
-    int status;
+    int mode, status;
 
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
+
+    mode = getFileMode (L1desc[destL1descInx].dataObjInp);
+
+    status = _l3FileStage (rsComm, srcDataObjInfo, destDataObjInfo, mode);
+
+    return status;
+}
+
+int
+_l3FileStage (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo, 
+dataObjInfo_t *destDataObjInfo, int mode)
+{
+#if 0
+    dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
+    dataObjInp_t *dataObjInp;
+#endif
+    int rescTypeInx, cacheRescTypeInx;
+    fileStageSyncInp_t fileSyncToArchInp;
+    int status;
+
+#if 0
+    srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+    destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
+#endif
 
     rescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
     cacheRescTypeInx = destDataObjInfo->rescInfo->rescTypeInx;
@@ -1195,7 +1216,9 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
+#if 0
         dataObjInp = L1desc[destL1descInx].dataObjInp;
+#endif
 	fileSyncToArchInp.dataSize = srcDataObjInfo->dataSize;
         fileSyncToArchInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         fileSyncToArchInp.cacheFileType = 
@@ -1207,7 +1230,11 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
 	  MAX_NAME_LEN);
         rstrcpy (fileSyncToArchInp.filename, srcDataObjInfo->filePath, 
 	  MAX_NAME_LEN);
+#if 0
         fileSyncToArchInp.mode = getFileMode (dataObjInp);
+#else
+        fileSyncToArchInp.mode = mode;
+#endif
         status = rsFileStageToCache (rsComm, &fileSyncToArchInp);
         break;
       default:

@@ -65,6 +65,9 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
 int
 l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
 int
+_l3FileStage (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
+dataObjInfo_t *destDataObjInfo, int mode);
+int
 rsReplAndRequeDataObjInfo (rsComm_t *rsComm, 
 dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr);
 int
