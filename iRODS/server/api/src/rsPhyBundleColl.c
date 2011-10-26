@@ -19,6 +19,7 @@
 #include "syncMountedColl.h"
 #include "regReplica.h"
 #include "unbunAndRegPhyBunfile.h"
+#include "fileChksum.h"
 
 static rodsLong_t OneGig = (1024*1024*1024);
 
@@ -87,6 +88,7 @@ rescGrpInfo_t *rescGrpInfo)
     dataObjInp_t dataObjInp;
     bunReplCacheHeader_t bunReplCacheHeader;
     int savedStatus = 0;
+    int chksumFlag;
 
     myRescInfo = rescGrpInfo->rescInfo;
     myRescName = myRescInfo->rescName;
@@ -116,6 +118,12 @@ rescGrpInfo_t *rescGrpInfo)
 
     if (l1descInx < 0) return l1descInx;
 
+    if (getValByKey (&phyBundleCollInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
+	L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
+	chksumFlag = 1;
+    } else {
+	chksumFlag = 0;
+    }
     createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath, 
       phyBunDir);
 
@@ -139,7 +147,7 @@ rescGrpInfo_t *rescGrpInfo)
 		    /* bundle is full */
 		    status = bundlleAndRegSubFiles (rsComm, l1descInx,
 		      phyBunDir, phyBundleCollInp->collection,
-		      &bunReplCacheHeader);
+		      &bunReplCacheHeader, chksumFlag);
                     if (status < 0) {
                         rodsLog (LOG_ERROR,
                         "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stst=%d",
@@ -221,7 +229,7 @@ rescGrpInfo_t *rescGrpInfo)
     }
 
     status = bundlleAndRegSubFiles (rsComm, l1descInx, phyBunDir, 
-      phyBundleCollInp->collection, &bunReplCacheHeader);
+      phyBundleCollInp->collection, &bunReplCacheHeader, chksumFlag);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stat=%d",
@@ -271,13 +279,16 @@ char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader)
 
 int
 bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
-char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
+char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag)
 {
     int status;
     openedDataObjInp_t dataObjCloseInp;
     bunReplCache_t *tmpBunReplCache, *nextBunReplCache;
     regReplica_t regReplicaInp;
     dataObjInp_t dataObjUnlinkInp;
+    keyValPair_t regParam;
+    modDataObjMeta_t modDataObjMetaInp;
+
     int savedStatus = 0;
 
     bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
@@ -341,6 +352,12 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
     rstrcpy (regReplicaInp.destDataObjInfo->rescName, BUNDLE_RESC, NAME_LEN);
     rstrcpy (regReplicaInp.destDataObjInfo->filePath, 
       L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN);
+    if (chksumFlag != 0) {
+	bzero (&modDataObjMetaInp, sizeof (modDataObjMetaInp));
+	bzero (&regParam, sizeof (regParam));
+        modDataObjMetaInp.dataObjInfo = regReplicaInp.destDataObjInfo;
+        modDataObjMetaInp.regParam = &regParam;
+    }
     
     /* close here because dataObjInfo is still being used */
 
@@ -352,6 +369,16 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
 	/* rm the hard link here */
 	snprintf (subPhyPath, MAX_NAME_LEN, "%s/%lld", phyBunDir, 
 	  tmpBunReplCache->dataId);
+	if (chksumFlag != 0) {
+	    status = fileChksum (UNIX_FILE_TYPE, rsComm, subPhyPath, 
+	      tmpBunReplCache->chksumStr);
+	    if (status < 0) {
+                savedStatus = status;
+                rodsLogError (LOG_ERROR, status,
+                  "bundlleAndRegSubFiles: fileChksum error for %s",
+                  tmpBunReplCache->objPath);
+            }
+	}    
 	unlink (subPhyPath);
 	/* register the replica */
         rstrcpy (regReplicaInp.srcDataObjInfo->objPath, 
@@ -367,6 +394,17 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
               "bundlleAndRegSubFiles: rsRegReplica error for %s. stat = %d",
               tmpBunReplCache->objPath, status);
 	}
+	if (chksumFlag != 0) {
+	    addKeyVal (&regParam, CHKSUM_KW, tmpBunReplCache->chksumStr);
+	    status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+            clearKeyVal (&regParam);
+           if (status < 0) {
+                savedStatus = status;
+                rodsLogError (LOG_ERROR, status,
+                  "bundlleAndRegSubFiles: rsModDataObjMeta error for %s.",
+                  tmpBunReplCache->objPath);
+	    }
+        }
 	free (tmpBunReplCache);
         tmpBunReplCache = nextBunReplCache;
     }

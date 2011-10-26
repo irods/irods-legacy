@@ -93,6 +93,10 @@ rodsPathInp_t *rodsPathInp)
         return (USER__NULL_INPUT_ERR);
     }
 
+    if (rodsArgs->verifyChecksum == True) {
+        addKeyVal (&phyBundleCollInp->condInput, VERIFY_CHKSUM_KW, "");
+    }
+
     return (0);
 }
 

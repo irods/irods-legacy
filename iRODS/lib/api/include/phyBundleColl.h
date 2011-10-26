@@ -27,6 +27,7 @@
 typedef struct BunReplCache {
     rodsLong_t  dataId;
     char objPath[MAX_NAME_LEN];         /* optional for IRODS_ADMIN_KW */
+    char chksumStr[NAME_LEN];
     int srcReplNum;
     struct BunReplCache *next;
 } bunReplCache_t;
@@ -84,7 +85,7 @@ replAndAddSubFileToDir (rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
 char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader);
 int
 bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
-char *collection, bunReplCacheHeader_t *bunReplCacheHeader);
+char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag);
 int
 phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
 char *collection);
