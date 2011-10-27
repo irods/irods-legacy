@@ -245,6 +245,12 @@ runCmd(0, "irm -rf $DIR1");
 #runCmd(0, "test_genu 1 test 100078 name1");
 #runCmd(2, "test_genu 2 test 100099 name1");
 #runCmd(0, "test_genu 2 test 100078 name1");
+#
+# Oct 2011, re-added test_genu tests to improve coverage a little.
+# Without defining an extended ICAT (which would be difficult), 
+# coverage will be slight tho.
+runCmd(2, "test_genu 1 test 100078 name1");
+runCmd(2, "test_genu 2 test 100078 name1");
 
 # multiple open/close test
 runCmd(0, "test_chl open");
