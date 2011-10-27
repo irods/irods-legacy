@@ -54,13 +54,13 @@ msiz3950Submit(msParam_t *serverName,msParam_t *query, msParam_t *recordSyntax, 
 {
 
   const char *rec;
-  char *sName = serverName->inOutStruct ; 
-  char *zquery = query->inOutStruct;  
-  char *rSyntax = recordSyntax->inOutStruct;
+  char *sName = (char *)serverName->inOutStruct;
+  char *zquery = (char *)query->inOutStruct;
+  char *rSyntax = (char *)recordSyntax->inOutStruct;
 
   ZOOM_connection z = ZOOM_connection_new (sName, 0);   // 0 denotes port number
     ZOOM_resultset r;
-      
+
     ZOOM_connection_option_set(z, "preferredRecordSyntax", rSyntax);
     r = ZOOM_connection_search_pqf(z,zquery);
 
