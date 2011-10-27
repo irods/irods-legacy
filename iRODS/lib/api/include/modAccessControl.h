@@ -1,3 +1,8 @@
+/**
+ * @file  modAccessControl.h
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* modAccessControl.h
@@ -26,6 +31,24 @@
 				      * to the protocol */
 #define MOD_ADMIN_MODE_PREFIX "admin:" /* To indicate admin mode,
                                           without protocol change. */
+/**
+ * \var modAccessControl_t
+ * \brief Input struct for modAccessControl operation
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note 
+ * Elements of modAccessControlInp_t:
+ * \li int recursiveFlag - Request applies to full subtree if set.
+ * \li char accessLevel - null, read, write, own or inherit.
+ * \li char userName - user to provide modified access to (except inherit)
+ * \li char zone  - user's zone that is getting the modified access.
+ * \li char path  - the object's path name in the logical namespace.
+ *
+ * \sa none
+ * \bug  no known bugs
+ */
 
 typedef struct {	
    int recursiveFlag;

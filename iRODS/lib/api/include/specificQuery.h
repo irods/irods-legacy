@@ -1,3 +1,8 @@
+/**
+ * @file  specificQuery.h
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* specificQuery.h
@@ -17,6 +22,25 @@
 
 #include "rodsGenQuery.h"  /* for output struct, etc */
 
+/**
+ * \var specificQueryInp_t
+ * \brief Input struct for specificQuery
+ * \since 2.5
+ *
+ * \remark none
+ *
+ * \note 
+ * Elements of specificQueryInp_t:
+ * \li char sql - the SQL or alias
+ * \li char *args[10] -  optional arguments (bind variables)
+ * \li int maxRows -  max number of rows to return, if 0 close SQL statemetn
+ * \li int continueInx - continuing index
+ * \li int rowOffset -  Currently unused (matches general-query-input)
+ * \li int options - Bits for special options, currently unused. 
+ *
+ * \sa none
+ * \bug  no known bugs
+ */
 typedef struct {
    char *sql;
    char *args[10];  /* optional arguments (bind variables) */

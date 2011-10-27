@@ -194,4 +194,9 @@ This documentation is generated from the iRODS code.
   - #procStatInp_t 
   - #miscSvrInfo_t
 
+\subsection inputMetadataStruct Metadata Data Structures
+  - #modAccessControlInp_t
+  - #modAVUMetadataInp_t
+  - #specificQueryInp_t
+
 **/

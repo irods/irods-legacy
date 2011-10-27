@@ -1,7 +1,10 @@
+/**
+ * @file  modAVUMetadata.h
+ *
+ */
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* modMetadata.h
- */
+/* modMetadata.h  */
 
 #ifndef MOD_AVU_METADATA_H
 #define MOD_AVU_METADATA_H
@@ -11,7 +14,7 @@
 /* 
    This call performs various operations on the Attribute-Value-Units
    (AVU) triplets type of metadata.  The Units are optional, so these
-   are frequently Attribute-Value pairs.  ATUs are user-defined
+   are frequently Attribute-Value pairs.  AVUs are user-defined
    metadata items.  The imeta command makes extensive use of this and
    the genQuery call.
 */
@@ -22,7 +25,31 @@
 #include "apiNumber.h"
 #include "initServer.h"
 #include "icatDefines.h"
+/*
+ * \n chlCopyAVUMetadata or chlModAVUMetadata
+ * Elements of modAVUMetadataInp_t:
+ */
 
+/**
+ * \var modAVUMetadataInp_t
+ * \brief Input struct for modAVUMetadata operations.  
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note calls chlAddAVUMetadata, chlAddAVUMetadataWild, chlDeleteAVUMetadata, 
+ * \li char arg1 - option: add, adda, addw, rm, rmw, rmi, cp, or mod 
+ * \li char arg2 - varies depending on other arguments
+ * \li char arg3 - varies depending on other arguments
+ * \li char arg4 - varies depending on other arguments
+ * \li char arg5 - varies depending on other arguments
+ * \li char arg6 - varies depending on other arguments
+ * \li char arg7 - unused
+ * \li char arg8 - unused
+ *
+ * \sa none
+ * \bug  no known bugs
+ */
 typedef struct {
    char *arg0;
    char *arg1;
