@@ -939,6 +939,7 @@ main(int argc, char **argv) {
 	 now used), so just do it.   */
       chlGenQueryAccessControlSetup(myEnv.rodsUserName,
 				myEnv.rodsZone,
+				"",
 				LOCAL_PRIV_USER_AUTH, 1);
 
       if (strstr(myEnv.rodsDebug, "CAT") != NULL) {

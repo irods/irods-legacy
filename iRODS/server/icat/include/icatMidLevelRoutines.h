@@ -176,7 +176,9 @@ rodsLong_t cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
 			   icatSessionStruct *icss);
 
 int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName, 
-		       char *accessLevel, icatSessionStruct *icss);
+		       char *accessLevel, char *ticketStr, 
+		       char *ticketHost, 
+		       icatSessionStruct *icss);
 
 rodsLong_t cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
 				char *userZone,

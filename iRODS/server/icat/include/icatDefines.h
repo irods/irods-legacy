@@ -25,6 +25,9 @@
 #define DB_TYPE_ORACLE   2
 #define DB_TYPE_MYSQL    3
 
+#define TICKET_TYPE_DATA "data"
+#define TICKET_TYPE_COLL "collection"
+
 /* 
    These are the access permissions known to the system, listed in
    order.  The defines are here to make it clear what these are and

@@ -925,20 +925,171 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
    return(iVal);
 }
 
+
+/* check on additional restrictions on a ticket, return error if not
+ * allowed */
+int
+cmlCheckTicketRestrictions(char *ticketId, char *ticketHost, 
+			   char *userName, char *userZone,
+			   icatSessionStruct *icss) {
+   int status;
+   int stmtNum;
+   int hostOK=0;
+   int userOK=0;
+   char myUser[NAME_LEN];
+
+   strncpy(myUser,userName,sizeof(myUser));
+   strncat(myUser,"#",sizeof(myUser));
+   strncat(myUser,userZone,sizeof(myUser));
+
+   /* first, check if there are any host restrictions, and if so
+      return error if the connected client host is not in the list */
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckTicketRestrictions SQL 1");
+   status = cmlGetFirstRowFromSqlBV(
+      "select host from R_TICKET_ALLOWED_HOSTS where ticket_id=?",
+      ticketId, "", "", "",  &stmtNum, icss);
+   if (status==CAT_NO_ROWS_FOUND) {
+      hostOK=1;
+   }
+   else {
+      if (status != 0) return(status);
+   }
+   for (;status!=CAT_NO_ROWS_FOUND;) {
+      if (strncmp(ticketHost,
+		  icss->stmtPtr[stmtNum]->resultValue[0],
+		  NAME_LEN)==0) {
+	 hostOK=1;
+      }
+      status = cmlGetNextRowFromStatement(stmtNum, icss);
+      if (status!=0 && status!=CAT_NO_ROWS_FOUND) return(status);
+   }
+   if (hostOK==0) return(CAT_TICKET_HOST_EXCLUDED);
+
+   /* Now check on user restrictions */
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckTicketRestrictions SQL 2");
+   status = cmlGetFirstRowFromSqlBV(
+      "select user_name from R_TICKET_ALLOWED_USERS where ticket_id=?",
+      ticketId, "", "", "",  &stmtNum, icss);
+   if (status==CAT_NO_ROWS_FOUND) {
+      userOK=1;
+   }
+   else {
+      if (status != 0) return(status);
+   }
+   for (;status!=CAT_NO_ROWS_FOUND;) {
+      if (strncmp(userName,
+		  icss->stmtPtr[stmtNum]->resultValue[0],
+		  NAME_LEN)==0) {
+	 userOK=1;
+      }
+      else {
+         /* try user#zone */
+	 if (strncmp(myUser,
+		     icss->stmtPtr[stmtNum]->resultValue[0],
+		     NAME_LEN)==0) {
+	    userOK=1;
+	 }
+      }
+      status = cmlGetNextRowFromStatement(stmtNum, icss);
+      if (status!=0 && status!=CAT_NO_ROWS_FOUND) return(status);
+   }
+   if (userOK==0) return(CAT_TICKET_USER_EXCLUDED);
+   return(0);
+}
+
+/* Check access via a Ticket to a data-object */
+int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel, 
+			       char *ticketStr, char *ticketHost,
+			       char *userName, char *userZone,
+			      icatSessionStruct *icss) {
+   int status, i;
+   char *cVal[10];
+   int iVal[10];
+   char ticketId[NAME_LEN]="";
+   char usesCount[NAME_LEN]="";
+   char usesLimit[NAME_LEN]="";
+   char ticketExpiry[NAME_LEN]="";
+   char restrictions[NAME_LEN]="";
+   int iUsesCount=0;
+   int iUsesLimit=0;
+   char myUsesCount[NAME_LEN];
+
+   for (i=0;i<10;i++) { iVal[i]=NAME_LEN; }
+
+   cVal[0]=ticketId;
+   cVal[1]=usesLimit;
+   cVal[2]=usesCount;
+   cVal[3]=ticketExpiry;
+   cVal[4]=restrictions;
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "_cmlCheckDataObjIdByTicket SQL 1 ");
+   status = cmlGetStringValuesFromSql(
+	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM where TM.object_type=? and TM.ticket_string = ? and TM.object_id=?",
+	    cVal, iVal, 5, TICKET_TYPE_DATA,
+	    ticketStr, dataId, icss);
+   if (status != 0) return (CAT_TICKET_INVALID);
+
+   if (ticketExpiry[0]!='\0') {
+      rodsLong_t ticketExp, now;
+      char myTime[50];
+
+      ticketExp = atoll(ticketExpiry);
+      if (ticketExp > 0) {
+	 getNowStr(myTime);
+	 now = atoll(myTime);
+	 if (now < ticketExp) {
+	    return(CAT_TICKET_EXPIRED);
+	 }
+      }
+
+      status = cmlCheckTicketRestrictions(ticketId, ticketHost, 
+					  userName, userZone, icss);
+      if (status != 0) return(status);
+
+      iUsesLimit = atoi(usesLimit);
+      if (iUsesLimit > 0) {
+	 iUsesCount = atoi(usesCount);
+	 if (iUsesCount >= iUsesLimit) {
+	    return(CAT_TICKET_USES_EXCEEDED);
+	 }
+	 iUsesCount++;
+	 snprintf(myUsesCount, sizeof myUsesCount, "%d", iUsesCount);
+	 cllBindVars[cllBindVarCount++]=myUsesCount;
+	 cllBindVars[cllBindVarCount++]=ticketId;
+	 if (logSQL_CML!=0) rodsLog(LOG_SQL, "_cmlCheckDataObjIdByTicket SQL 2 ");
+         status =  cmlExecuteNoAnswerSql(
+	    "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
+	 if (status != 0) return(status);
+         status =  cmlExecuteNoAnswerSql("commit", icss);
+	 if (status != 0) return(status);
+      }
+   }
+   return(0);
+}
+
+
 /*
   Check that a user has the specified permission or better to a dataObj.
   Return value is either an iRODS error code (< 0) or success (0).
+  TicketStr is an optional ticket for ticket-based access,
+  TicketHost is an optional host (the connected client IP) for ticket checks.
 */
 int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName, 
-		     char *accessLevel, icatSessionStruct *icss)
+		       char *accessLevel, char *ticketStr, char *ticketHost,
+		       icatSessionStruct *icss)
 {
    int status;
    rodsLong_t iVal; 
 
-   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDataObjId SQL 1 ");
-
    iVal=0;
-   status = cmlGetIntegerValueFromSql(
+   if (ticketStr != NULL && *ticketStr!='\0') {
+      status = _cmlCheckDataObjIdByTicket(dataId, accessLevel, ticketStr, 
+					  ticketHost, userName, zoneName,
+					  icss);
+      if (status != 0) return (status);
+   }
+   else {
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDataObjId SQL 1 ");
+      status = cmlGetIntegerValueFromSql(
   	        "select object_id from R_OBJT_ACCESS OA, R_DATA_MAIN DM, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where OA.object_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
 	    &iVal,
 	    dataId,
@@ -947,8 +1098,9 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
 	    accessLevel,
 	    0,
 	    icss);
+      if (iVal==0)  return (CAT_NO_ACCESS_PERMISSION);
+   }
    if (status != 0) return (CAT_NO_ACCESS_PERMISSION);
-   if (iVal==0)  return (CAT_NO_ACCESS_PERMISSION);
    cmlAudit2(AU_ACCESS_GRANTED, dataId, userName, zoneName, accessLevel, icss);
    return(status);
 }

@@ -63,8 +63,9 @@ char orderBySQL[MAX_SQL_SIZE];
 char groupBySQL[MAX_SQL_SIZE];
 int mightNeedGroupBy;
 int fromCount;
-char accessControlUserName[MAX_NAME_LEN];
-char accessControlZone[MAX_NAME_LEN];
+char accessControlUserName[NAME_LEN];
+char accessControlZone[NAME_LEN];
+char accessControlHost[NAME_LEN];
 int accessControlPriv;
 int accessControlControlFlag=0;
 
@@ -1669,6 +1670,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    int userIx=-1, zoneIx=-1, accessIx=-1, dataIx=-1, collIx=-1;
    int status;
    char *zoneName;
+   char *ticketString=NULL;
    static char prevDataId[LONG_NAME_LEN];
    static char prevUser[LONG_NAME_LEN];
    static char prevAccess[LONG_NAME_LEN];
@@ -1686,6 +1688,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
          /* just log it for debug for now */
 	 rodsLog(LOG_NOTICE, "ticket input, value: %s",
                  genQueryInp.condInput.value[i]);
+	 ticketString=genQueryInp.condInput.value[i];
       }
    }
    if (genQueryInp.condInput.len==1 && 
@@ -1695,7 +1698,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 
    if (userIx<0 || zoneIx<0 || accessIx<0) return(CAT_INVALID_ARGUMENT);
 
-   /* Try to find the dataId and/or collID in the output */
+   /* Try to find the dataId and/or collId in the output */
    nCols = icss->stmtPtr[statementNum]->numOfCols;
    for (i=0;i<nCols;i++) {
       if (strcmp(icss->stmtPtr[statementNum]->resultColName[i], "data_id")==0) 
@@ -1742,7 +1745,8 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 			      icss->stmtPtr[statementNum]->resultValue[dataIx],
 			      genQueryInp.condInput.value[userIx],
 			      zoneName,
-			      genQueryInp.condInput.value[accessIx], icss);
+			      genQueryInp.condInput.value[accessIx], 
+			      ticketString, accessControlHost, icss);
       prevStatus=status;
       return(status);
    }
@@ -1768,11 +1772,12 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    user info.
  */
 int 
-chlGenQueryAccessControlSetup(char *user, char *zone, int priv, 
+chlGenQueryAccessControlSetup(char *user, char *zone, char *host, int priv, 
                               int controlFlag) {
     if (user != NULL ) {
-        rstrcpy(accessControlUserName, user, MAX_NAME_LEN);
-	rstrcpy(accessControlZone, zone, MAX_NAME_LEN);
+        rstrcpy(accessControlUserName, user, NAME_LEN);
+	rstrcpy(accessControlZone, zone, NAME_LEN);
+	rstrcpy(accessControlHost, host, NAME_LEN);
 	accessControlPriv=priv;
     }
     if (controlFlag > 0 ) {

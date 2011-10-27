@@ -441,7 +441,8 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    }
    else {
       status = cmlCheckDataObjId(objIdString, rsComm->clientUser.userName,
-	      rsComm->clientUser.rodsZone, neededAccess, &icss);
+				 rsComm->clientUser.rodsZone, neededAccess, 
+				 "", "",&icss);
       if (status != 0) {
 	 theVal = getValByKey(regParam, ACL_COLLECTION_KW);
 	 if (theVal != NULL && dataObjInfo->objPath != NULL &&
@@ -8993,7 +8994,7 @@ icatGetTicketUserId(char *userName, char *userIdStr) {
 */
 int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		    char *arg3, char *arg4, char *arg5) {
-   rodsLong_t status, status2;
+   rodsLong_t status, status2, status3;
    char logicalEndName[MAX_NAME_LEN];
    char logicalParentDirName[MAX_NAME_LEN];
    rodsLong_t objId=0;
@@ -9024,13 +9025,27 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 				       rsComm->clientUser.userName, 
 				       rsComm->clientUser.rodsZone, 
 				       ACCESS_OWN, &icss);
-      if (status2 < 0) { 
-	 status = status2;
-	 return(status);
+      if (status2 > 0) {
+	 strncpy(objTypeStr, TICKET_TYPE_DATA, sizeof(objTypeStr));
+	 objId=status2;
       }
-      strncpy(objTypeStr, "data", sizeof(objTypeStr));
-      objId=status2;
+      else 
+      {
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 2");
+	 status3 = cmlCheckDir(arg4,   rsComm->clientUser.userName, 
+				       rsComm->clientUser.rodsZone, 
+				       ACCESS_OWN, &icss);
+	 if (status3 == CAT_NO_ROWS_FOUND && status2==CAT_NO_ROWS_FOUND) {
+	    return(CAT_UNKNOWN_COLLECTION);
+	 }
+	 if (status3 < 0) {
+	    return(status3);
+	 }
+	 strncpy(objTypeStr, TICKET_TYPE_COLL, sizeof(objTypeStr));
+	 objId=status3;
+      }
 
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 3");
       status = cmlGetIntegerValueFromSql(
 	 "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 	 &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
@@ -9058,7 +9073,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       cllBindVars[i++]=myTime;
       cllBindVars[i++]=myTime;
       cllBindVarCount=i;
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 2");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 4");
       status =  cmlExecuteNoAnswerSql(
 	 "insert into R_TICKET_MAIN (ticket_id, ticket_string, user_id, object_id, object_type, modify_ts, create_ts) values (?, ?, ?, ?, ?, ?, ?)",
 	 &icss);
@@ -9074,7 +9089,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       return(status);
    }
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 3");
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 5");
    status = cmlGetIntegerValueFromSql(
       "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
       &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
@@ -9088,19 +9103,19 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
    if (status < 0) return(status);
    snprintf(userIdStr, sizeof userIdStr, "%lld", userId);
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 4");
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 6");
    status = cmlGetIntegerValueFromSql(
       "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_string=?",
       &ticketId, userIdStr, ticketString,
 	 0, 0, 0, &icss);
    if (status != 0) {
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 5");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 7");
       status = cmlGetIntegerValueFromSql(
 	 "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_id=?",
 	 &ticketId, userIdStr, ticketString,
 	 0, 0, 0, &icss);
       if (status != 0) {
-	 return(CAT_INVALID_USER);  // should be a more specific Ticket error, later
+	 return(CAT_TICKET_INVALID);
       }
    }
    snprintf(ticketIdStr, MAX_NAME_LEN, "%lld", ticketId);
@@ -9111,7 +9126,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       cllBindVars[i++]=ticketIdStr;
       cllBindVars[i++]=userIdStr;
       cllBindVarCount=i;
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 6");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 8");
       status =  cmlExecuteNoAnswerSql(
 	 "delete from R_TICKET_MAIN where ticket_id = ? and user_id = ?",
 	 &icss);
@@ -9134,7 +9149,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 cllBindVars[i++]=ticketIdStr;
 	 cllBindVars[i++]=userIdStr;
 	 cllBindVarCount=i;
-	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 7");
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 9");
 	 status =  cmlExecuteNoAnswerSql(
 	    "update R_TICKET_MAIN set uses_limit=? where ticket_id = ? and user_id = ?",
 	    &icss);
@@ -9158,7 +9173,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 cllBindVars[i++]=ticketIdStr;
 	 cllBindVars[i++]=userIdStr;
 	 cllBindVarCount=i;
-	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 8");
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 10");
 	 status =  cmlExecuteNoAnswerSql(
 	    "update R_TICKET_MAIN set ticket_expiry_ts=? where ticket_id = ? and user_id = ?",
 	    &icss);
@@ -9179,7 +9194,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    cllBindVars[i++]=ticketIdStr;
 	    cllBindVars[i++]=arg5;
 	    cllBindVarCount=i;
-	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 9");
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 11");
 	    status =  cmlExecuteNoAnswerSql(
 	       "insert into R_TICKET_ALLOWED_HOSTS (ticket_id, host) values (? , ?)",
 	       &icss);
@@ -9198,11 +9213,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    if (status != 0) return(status);
 	    i=0;
 	    cllBindVars[i++]=ticketIdStr;
-	    cllBindVars[i++]=user2IdStr;
+	    cllBindVars[i++]=arg5;
 	    cllBindVarCount=i;
-	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 10");
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 12");
 	    status =  cmlExecuteNoAnswerSql(
-	       "insert into R_TICKET_ALLOWED_USERS (ticket_id, user_id) values (? , ?)",
+	       "insert into R_TICKET_ALLOWED_USERS (ticket_id, user_name) values (? , ?)",
 	       &icss);
 	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
 	    if (status != 0) {
@@ -9221,7 +9236,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    cllBindVars[i++]=ticketIdStr;
 	    cllBindVars[i++]=arg5;
 	    cllBindVarCount=i;
-	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 11");
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 13");
 	    status =  cmlExecuteNoAnswerSql(
 	       "delete from R_TICKET_ALLOWED_HOSTS where ticket_id=? and host=?",
 	       &icss);
@@ -9240,11 +9255,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    if (status != 0) return(status);
 	    i=0;
 	    cllBindVars[i++]=ticketIdStr;
-	    cllBindVars[i++]=user2IdStr;
+	    cllBindVars[i++]=arg5;
 	    cllBindVarCount=i;
-	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 12");
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 14");
 	    status =  cmlExecuteNoAnswerSql(
-	       "delete from R_TICKET_ALLOWED_USERS where ticket_id=? and user_id=?",
+	       "delete from R_TICKET_ALLOWED_USERS where ticket_id=? and user_name=?",
 	       &icss);
 	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
 	    if (status != 0) {

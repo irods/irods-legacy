@@ -489,7 +489,7 @@ create table R_TICKET_ALLOWED_HOSTS
 create table R_TICKET_ALLOWED_USERS
 (
    ticket_id           INT64TYPE not null,
-   user_id             INT64TYPE not null
+   user_name           varchar(250) not null
 );
 
 
@@ -577,4 +577,4 @@ create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
    (which can be provided by users), hosts, and users */
 create unique index idx_ticket on R_TICKET_MAIN (ticket_string);
 create unique index idx_ticket_host on R_TICKET_ALLOWED_HOSTS (ticket_id, host);
-create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_id);
+create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_name);

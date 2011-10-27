@@ -38,8 +38,8 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
     int format, 
     int *control, char *outBuf, int maxOutBuf);
 int chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result);
-int chlGenQueryAccessControlSetup(char *user, char *zone, int priv, 
-    int controlFlag);
+int chlGenQueryAccessControlSetup(char *user, char *zone, char *host, 
+				  int priv, int controlFlag);
 int chlSpecificQuery(specificQueryInp_t specificQueryInp,
                      genQueryOut_t *genQueryOut);
 

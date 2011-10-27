@@ -659,9 +659,9 @@ usage(char *subOpt)
 "the IP address for use in the internal checks.  You can use multiple mod",
 "commands to add more hosts to the list.",
 " ",
-" 'mod Ticket-id expire date.time-or-none' will make the ticket only valid",
+" 'mod Ticket-id expire date.time-or-0' will make the ticket only valid",
 "before the specified date-time.  You can cancel this expiration by using",
-"'none'.  The time is year:mo:da.hr:min:sec, for example: 2012-05-07.23:00:00",
+"'0'.  The time is year-mo-da.hr:min:sec, for example: 2012-05-07.23:00:00",
 " ",
 " The Ticket-id is either the ticket object number or the ticket-string",
 ""};

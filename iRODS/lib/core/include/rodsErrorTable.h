@@ -336,6 +336,12 @@
 #define RDA_ACCESS_PROHIBITED           -888000
 #define RDA_NAME_NOT_FOUND              -889000
 
+#define CAT_TICKET_INVALID              -890000
+#define CAT_TICKET_EXPIRED              -891000
+#define CAT_TICKET_USES_EXCEEDED        -892000
+#define CAT_TICKET_USER_EXCLUDED        -893000
+#define CAT_TICKET_HOST_EXCLUDED        -894000
+
 
 /* 900,000 to 920,000 - Misc errors (used by obf library, etc)  */
 #define FILE_OPEN_ERR                    -900000
