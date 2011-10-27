@@ -723,6 +723,7 @@ runCmd(0, "iticket mod $TICKET1 expire 0");
 runCmd(0, "iget -f -t $TICKET1 $F1");
 runCmd(0, "iticket mod $TICKET1 uses 0");
 runCmd(0, "iticket delete $TICKET1");
+runCmd(1, "iticket create read badfilename");
 runCmd(0, "irm -f $F1");
 
 # simple test to exercise the clean-up AVUs sql;
