@@ -134,6 +134,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->orphan=True;
             argv[i]="-Z";
          }
+         if (strcmp("--bundle", argv[i])==0) {
+            rodsArgs->bundle=True;
+            argv[i]="-Z";
+         }
          if (strcmp("--age", argv[i])==0) {  /* also -Y */
             rodsArgs->age=True;
             argv[i]="-Z";

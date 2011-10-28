@@ -19,9 +19,9 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hArlLvV";
+    optStr = "hArlLvVZ";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
         printf("Use -h for help\n");
@@ -79,6 +79,7 @@ void
 usage () {
    char *msgs[]={
 "Usage : ils [-ArlLv] dataObj|collection ... ",
+"Usage : ils --bundle [-r] dataObj|collection ... ",
 "Display data Objects and collections stored in irods.",
 "Options are:",
 " -A  ACL (access control list) and inheritance format",
@@ -88,6 +89,8 @@ usage () {
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",
+" --bundle - list the subfiles in the bundle file (usually stored in the",
+"     /myZone/bundle collection) created by iphybun command.",
 ""};
    int i;
    for (i=0;;i++) {
