@@ -103,6 +103,8 @@
 #define NO_CHK_COPY_LEN_KW	"noChkCopyLen"  /* Don't check the len 
 						  * when transfering  */
 #define TICKET_KW               "ticket"        /* for ticket-based-access */
+#define PURGE_CACHE_KW		"purgeCache"	/* purge the cache copy right
+						 * after the operation */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

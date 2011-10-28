@@ -221,7 +221,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	    continue;
 	}
 	status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,
-	  phyOpenFlag, tmpDataObjInfo);
+	  phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
 
         if (status >= 0) {
 	    if (compDataObjInfo != NULL) {
@@ -263,7 +263,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
 int
 _rsDataObjOpenWithObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-int phyOpenFlag, dataObjInfo_t *dataObjInfo)
+int phyOpenFlag, dataObjInfo_t *dataObjInfo, dataObjInfo_t *cacheDataObjInfo)
 {
     int replStatus;
     int status;
@@ -279,6 +279,10 @@ int phyOpenFlag, dataObjInfo_t *dataObjInfo)
      * For copy and replicate, the calling routine should modify this
      * dataSize */
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, replStatus, -1);
+    if (dataObjInfo == cacheDataObjInfo && 
+      getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+	L1desc[l1descInx].purgeCacheFlag = 1;
+    }
     if (phyOpenFlag == DO_NOT_PHYOPEN) {
         /* don't actually physically open the file */
         status = 0;

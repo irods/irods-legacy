@@ -321,6 +321,9 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
     }
 #endif  /* RBUDP_TRANSFER */
 
+    if (rodsArgs->purgeCache == True) {
+        addKeyVal (&dataObjOprInp->condInput, PURGE_CACHE_KW, "");
+    }
     memset (rodsRestart, 0, sizeof (rodsRestart_t));
     if (rodsArgs->restart == True) {
         int status;

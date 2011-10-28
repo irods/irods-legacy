@@ -351,6 +351,10 @@ rodsRestart_t *rodsRestart)
           rodsArgs->replNumValue);
     }
 
+    if (rodsArgs->purgeCache == True) {
+        addKeyVal (&dataObjOprInp->condInput, PURGE_CACHE_KW, "");
+    }
+
 #ifdef RBUDP_TRANSFER
     if (rodsArgs->rbudp == True) {
 	/* use -Q for rbudp transfer */

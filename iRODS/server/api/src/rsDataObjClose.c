@@ -25,6 +25,7 @@
 #include "subStructFileClose.h"
 #include "regDataObj.h"
 #include "dataObjRepl.h"
+#include "dataObjTrim.h"
 #include "getRescQuota.h"
 
 #ifdef LOG_TRANSFERS
@@ -305,6 +306,15 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
       L1desc[l1descInx].oprType != PHYMV_DEST &&
       L1desc[l1descInx].oprType != COPY_DEST) {
         /* no write */
+        if (L1desc[l1descInx].purgeCacheFlag > 0) {
+	    int status1 = trimDataObjInfo (rsComm, 
+	      L1desc[l1descInx].dataObjInfo);
+            if (status1 < 0) {
+                rodsLogError (LOG_ERROR, status1,
+                  "_rsDataObjClose: trimDataObjInfo error for %s",
+                  L1desc[l1descInx].dataObjInfo->objPath);
+	    }
+	}
 #ifdef LOG_TRANSFERS
        if (L1desc[l1descInx].oprType == GET_OPR) {
 	  logTransfer("get", L1desc[l1descInx].dataObjInfo->objPath,
@@ -583,6 +593,17 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
               "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",
                 L1desc[l1descInx].dataObjInfo->objPath, status);
             return status;
+        }
+    }
+
+    /* purge the cache copy */
+    if (L1desc[l1descInx].purgeCacheFlag > 0) {
+        int status1 = trimDataObjInfo (rsComm,
+          L1desc[l1descInx].dataObjInfo);
+        if (status1 < 0) {
+           rodsLogError (LOG_ERROR, status1,
+              "_rsDataObjClose: trimDataObjInfo error for %s",
+              L1desc[l1descInx].dataObjInfo->objPath);
         }
     }
 

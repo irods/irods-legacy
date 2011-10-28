@@ -67,6 +67,7 @@ typedef struct {
    int option;
    char *optionString;
    int orphan;
+   int purgeCache;
    int bundle;
    int prompt;
    int query;

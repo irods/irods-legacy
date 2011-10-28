@@ -275,6 +275,10 @@ rescInfo_t *rescInfo, char *rescGroupName)
         dataObjInfo->rescInfo = cacheResc;
         rstrcpy (dataObjInfo->rescName, cacheResc->rescName, NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, myRescGroupName, NAME_LEN);
+        if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+            L1desc[l1descInx].purgeCacheFlag = 1;
+        }
+
     } else {
         dataObjInfo->rescInfo = rescInfo;
         rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);

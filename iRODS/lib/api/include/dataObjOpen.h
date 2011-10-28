@@ -28,7 +28,7 @@ int
 rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 int
 _rsDataObjOpenWithObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-int phyOpenFlag, dataObjInfo_t *dataObjInfo);
+int phyOpenFlag, dataObjInfo_t *dataObjInfo, dataObjInfo_t *cacheDataObjInfo);
 int
 _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 int

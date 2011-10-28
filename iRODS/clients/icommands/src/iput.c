@@ -171,6 +171,8 @@ usage ()
 " -N  numThreads - the number of threads to use for the transfer. A value of",
 "       0 means no threading. By default (-N option not used) the server ",
 "       decides the number of threads to use.",
+" --purgec  Purge the staged cache copy after uploading an object to a",
+"     COMPOUND resource",
 " -p  physicalPath - the physical path of the uploaded file on the server ",
 " -P  output the progress of the upload.",
 " -Q  use RBUDP (datagram) protocol for the data transfer",
