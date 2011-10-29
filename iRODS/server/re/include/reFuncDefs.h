@@ -216,6 +216,8 @@ int applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc
 		      msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag);
 int applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag);
+int applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray,
+	  ruleExecInfo_t *rei, int reiSaveFlag);
 
 int applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath);
 int applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteOutBBuf, char *objPath);

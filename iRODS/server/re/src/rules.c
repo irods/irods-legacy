@@ -656,7 +656,10 @@ int actionTableLookUp (char *action)
 
 	return (UNMATCHED_ACTION_ERR);
 }
-Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
+/*
+ * Set retOutParam to 1 if you need to retrieve the output parameters from inMsParamArray and 0 if not
+ */
+Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, int updateParams, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
     /* set clearDelayed to 0 so that nested calls to this function do not call clearDelay() */
     int recclearDelayed = ruleEngineConfig.clearDelayed;
     ruleEngineConfig.clearDelayed = 0;
@@ -684,12 +687,12 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     }
 
     res = parseAndComputeExpression(inAction, env, rei, reiSaveFlag, &errmsgBuf, r);
-/*    if(inMsParamArray != NULL) {
-        clearMsParamArray(inMsParamArray, 0);
-    	convertEnvToMsParamArray(inMsParamArray, env, &errmsgBuf, r);
-    } else {
-        freeEnvUninterpretedStructs(env);
-    }*/
+    if(updateParams) {
+    	if(inMsParamArray != NULL) {
+			clearMsParamArray(inMsParamArray, 0);
+			convertEnvToMsParamArray(inMsParamArray, env, &errmsgBuf, r);
+		}
+    }
 
     rei->msParamArray = orig;
 
