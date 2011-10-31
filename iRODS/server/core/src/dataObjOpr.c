@@ -580,8 +580,8 @@ char *preferredResc, int writeFlag, int topFlag)
     tmpDataObjInfo = *dataObjInfoHead;
     if (tmpDataObjInfo->next == NULL) {
 	/* just one */
-	if (strcmp (preferredResc, tmpDataObjInfo->rescInfo->rescName) 
-	  == 0) {
+	if (strcmp (preferredResc, tmpDataObjInfo->rescInfo->rescName) == 0 || 
+	  strcmp (preferredResc, tmpDataObjInfo->rescGroupName) == 0) {
 	    return (0);
 	} else {
 	    return (-1);
