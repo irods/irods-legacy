@@ -834,7 +834,11 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 			snprintf(dataObjInp->objPath, MAX_NAME_LEN, "%s/%s", collEnt->collName, collEnt->dataName);
 		
 			/* Run actionStr on our object */
+#ifdef RULE_ENGINE_N
+			rei->status = applyRuleUpdateParams(actionStr, rei->msParamArray, rei, 0);
+#else
 			rei->status = applyRule(actionStr, rei->msParamArray, rei, 0);
+#endif
 			if (rei->status < 0)
 			{
 				/* If an error occurs, log incident but keep going */			
