@@ -45,6 +45,12 @@ LDRFLAGS+=-L$(BOOST_DIR)/lib -lboost_thread -lboost_filesystem -lboost_regex
 endif
 # =-=-=-=-=-=-=-
 
+# USE_GCOV - specify whether to compile for gcov test coverage
+#USE_GCOV = 1
+ifdef USE_GCOV
+CCFLAGS += -fprofile-arcs -ftest-coverage
+LDRFLAGS += -lgcov
+endif
 
 ifdef CCFLAGS
 MY_CFLAG += $(CCFLAGS)
