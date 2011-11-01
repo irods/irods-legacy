@@ -119,7 +119,7 @@ usage ()
 " ",
 "For security reasons, file permissions are checked to make sure that",
 "the client has the proper permission for the registration.",   
-"The acNoChkFilePathPerm rule in core.irb can be used to bypass the path",
+"The acNoChkFilePathPerm rule in core.re can be used to bypass the path",
 "checking.",
 " ",
 " ",
