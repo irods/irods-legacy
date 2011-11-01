@@ -32,6 +32,8 @@ region_free(_rnew); \
 _rnew = _rnew2;}
 #define GC_END region_free(_rnew);
 
+#define RE_BACKWARD_COMPATIBLE
+
 int fileConcatenate(char *file1, char *file2, char *file3);
 
 Node *wrapToActions(Node *node, Region *r) {
@@ -1911,19 +1913,14 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "match", newFunctionFD("e 0 * e (0 * 1)*->1", smsi_matchExec, r));
     insertIntoHashTable(ft, "if2", newFunctionFD("e boolean * e 0 * e 0 * e ? * e ?->0", smsi_if2Exec, r));
     insertIntoHashTable(ft, "if", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
-    insertIntoHashTable(ft, "ifExec", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
     insertIntoHashTable(ft, "for", newFunctionFD("e ? * e boolean * e ? * a ? * a ?->?",smsi_forExec, r));
-    insertIntoHashTable(ft, "forExec", newFunctionFD("e ? * e boolean * a ? * a ? * a ?->?", smsi_forExec, r));
     insertIntoHashTable(ft, "while", newFunctionFD("e boolean * a ? * a ?->?",smsi_whileExec, r));
-    insertIntoHashTable(ft, "whileExec", newFunctionFD("e boolean * a ? * a ?->?", smsi_whileExec, r));
     insertIntoHashTable(ft, "foreach", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
     insertIntoHashTable(ft, "foreach2", newFunctionFD("forall X, e X * e list X * a ? * a ?->?", smsi_forEach2Exec, r));
-    insertIntoHashTable(ft, "forEachExec", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
     insertIntoHashTable(ft, "break", newFunctionFD("->integer", smsi_break, r));
     insertIntoHashTable(ft, "succeed", newFunctionFD("->integer", smsi_succeed, r));
     insertIntoHashTable(ft, "fail", newFunctionFD("integer ?->integer", smsi_fail, r));
     insertIntoHashTable(ft, "assign", newFunctionFD("e 0 * e f 0->integer", smsi_assign, r));
-    insertIntoHashTable(ft, "assignStr", newFunctionFD("e ? * e ?->integer", smsi_assignStr, r));
     insertIntoHashTable(ft, "lmsg", newFunctionFD("string->integer", smsi_lmsg, r));
     insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
     insertIntoHashTable(ft, "listcorerules", newFunctionFD("->list string", smsi_listcorerules, r));
@@ -2016,6 +2013,15 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionFD("string * `RuleSet_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
     insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
     insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double", (SmsiFuncTypePtr) NULL, r));
+
+#ifdef RE_BACKWARD_COMPATIBLE
+    insertIntoHashTable(ft, "assignStr", newFunctionFD("e ? * e ?->integer", smsi_assignStr, r));
+    insertIntoHashTable(ft, "ifExec", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
+    insertIntoHashTable(ft, "forExec", newFunctionFD("e ? * e boolean * a ? * a ? * a ?->?", smsi_forExec, r));
+    insertIntoHashTable(ft, "whileExec", newFunctionFD("e boolean * a ? * a ?->?", smsi_whileExec, r));
+    insertIntoHashTable(ft, "forEachExec", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "msiGetRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+#endif
 
 
 }
