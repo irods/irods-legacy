@@ -283,6 +283,15 @@ rescInfo_t *rescInfo, char *rescGroupName)
         dataObjInfo->rescInfo = rescInfo;
         rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
+        if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
+	  getRescClass (rescInfo) == CACHE_CL) {
+	    rescInfo_t *compResc = NULL;
+	    if (getRescInGrpByClass (rsComm, rescGroupName, COMPOUND_CL,
+	      &compResc) >= 0) {
+	        L1desc[l1descInx].replRescInfo = compResc;
+                L1desc[l1descInx].purgeCacheFlag = 1;
+	    }
+        }
     }
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
       dataObjInp->dataSize);

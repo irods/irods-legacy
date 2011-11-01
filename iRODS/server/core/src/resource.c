@@ -634,6 +634,38 @@ rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
     return SYS_NO_CACHE_RESC_IN_GRP;
 }
 
+int
+getRescInGrpByClass (rsComm_t *rsComm, char *rescGroupName,
+int rescClass, rescInfo_t **outCacheResc)
+{
+    int status;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *tmpRescGrpInfo;
+
+    *outCacheResc = NULL;
+
+    if (rescGroupName == NULL || strlen (rescGroupName) == 0) {
+        rodsLog (LOG_NOTICE,
+          "getRescInGrpByClass: NULL rescGroupName input");
+	    return USER__NULL_INPUT_ERR;
+    }
+    status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
+    if (status < 0) return status;
+    tmpRescGrpInfo = myRescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+        rescInfo_t *tmpRescInfo;
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (RescClass[tmpRescInfo->rescClassInx].classType == rescClass) {
+            *outCacheResc = tmpRescInfo;
+            freeAllRescGrpInfo (myRescGrpInfo);
+            return 0;
+        }
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    freeAllRescGrpInfo (myRescGrpInfo);
+    return SYS_NO_CACHE_RESC_IN_GRP;
+}
+
 /* getRescInGrp - Given the rescName string and the rescGroupName string
  * get the rescInfo of the resource in the resource group. If rescName
  * is not in rescGroupName, return SYS_UNMATCHED_RESC_IN_RESC_GRP.
