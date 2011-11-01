@@ -1753,3 +1753,21 @@ dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo)
     return SYS_NO_CACHE_RESC_IN_GRP;
 }
 
+int
+getDataObjByClass (dataObjInfo_t *dataObjInfoHead, int rescClass,
+dataObjInfo_t **outDataObjInfo)
+{
+    dataObjInfo_t *tmpDataObjInfo = dataObjInfoHead;
+
+    if (outDataObjInfo == NULL) return USER__NULL_INPUT_ERR;
+    *outDataObjInfo = NULL;
+    while (tmpDataObjInfo != NULL) {
+	if (getRescClass (tmpDataObjInfo->rescInfo) == rescClass) {
+	    *outDataObjInfo = tmpDataObjInfo;
+	    return 0;
+	}
+	tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+    return -1;
+}
+

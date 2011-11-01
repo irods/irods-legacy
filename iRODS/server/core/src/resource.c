@@ -636,7 +636,7 @@ rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
 
 int
 getRescInGrpByClass (rsComm_t *rsComm, char *rescGroupName,
-int rescClass, rescInfo_t **outCacheResc)
+int rescClass, rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp)
 {
     int status;
     rescGrpInfo_t *myRescGrpInfo = NULL;
@@ -657,7 +657,11 @@ int rescClass, rescInfo_t **outCacheResc)
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
         if (RescClass[tmpRescInfo->rescClassInx].classType == rescClass) {
             *outCacheResc = tmpRescInfo;
-            freeAllRescGrpInfo (myRescGrpInfo);
+	    if (outRescGrp != NULL) {
+		*outRescGrp = myRescGrpInfo;
+	    } else {
+                freeAllRescGrpInfo (myRescGrpInfo);
+	    }
             return 0;
         }
         tmpRescGrpInfo = tmpRescGrpInfo->next;

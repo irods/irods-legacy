@@ -287,7 +287,7 @@ rescInfo_t *rescInfo, char *rescGroupName)
 	  getRescClass (rescInfo) == CACHE_CL) {
 	    rescInfo_t *compResc = NULL;
 	    if (getRescInGrpByClass (rsComm, rescGroupName, COMPOUND_CL,
-	      &compResc) >= 0) {
+	      &compResc, NULL) >= 0) {
 	        L1desc[l1descInx].replRescInfo = compResc;
                 L1desc[l1descInx].purgeCacheFlag = 1;
 	    }

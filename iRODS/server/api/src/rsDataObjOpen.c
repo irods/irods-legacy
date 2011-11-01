@@ -72,6 +72,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     dataObjInfo_t *compDataObjInfo = NULL;
     dataObjInfo_t *cacheDataObjInfo = NULL;
     rescInfo_t *compRescInfo = NULL;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
     int l1descInx;
     int writeFlag;
     int phyOpenFlag = DO_PHYOPEN;
@@ -115,7 +116,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	/* status < 0 means there is no copy in the DEST_RESC */
 	if (status < 0 &&
 	  getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
-	    rescGrpInfo_t *myRescGrpInfo = NULL;
 	    /* we don't have a copy in the DEST_RESC_NAME */
             status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
             if (status < 0) return status;
@@ -154,7 +154,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 		    return status;
 	        }
 	    }
-	    freeAllRescGrpInfo (myRescGrpInfo);
 	} else if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
 	    /* The target data object exists and it is a COMPOUND_CL. Save the 
 	     * comp object. It can be requeued by stageAndRequeDataToCache */
@@ -168,6 +167,26 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                 return status;
             }
 	    cacheDataObjInfo = dataObjInfoHead;
+        } else if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL
+          && getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo) >= 0 &&
+          strlen (myRescGrpInfo->rescGroupName) > 0) {
+            if (getRescInGrpByClass (rsComm, myRescGrpInfo->rescGroupName,
+              COMPOUND_CL, &compRescInfo, NULL) >= 0) {
+                status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+                  dataObjInfoHead, NULL, myRescGrpInfo, NULL,
+                  &cacheDataObjInfo);
+                if (status < 0) {
+                    rodsLog (LOG_NOTICE,
+                      "_rsDataObjOpen: getCacheDataInfo of %s failed, stat=%d",
+                      dataObjInfoHead->objPath, status);
+	        } else {
+		    if (getDataObjByClass (dataObjInfoHead, COMPOUND_CL, 
+		      &compDataObjInfo) >= 0) {
+		        /* we have a compDataObjInfo */
+		        compRescInfo = NULL;
+		    }
+		}
+	    }
 	}
     } else if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
 	/* open for read */
@@ -180,7 +199,27 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             return status;
         }
 	cacheDataObjInfo = dataObjInfoHead;
+    } else if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
+      strlen (dataObjInfoHead->rescGroupName) > 0) {
+        if (getRescInGrpByClass (rsComm, dataObjInfoHead->rescGroupName,
+          COMPOUND_CL, &compRescInfo, &myRescGrpInfo) >= 0) {
+            status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+              dataObjInfoHead, NULL, myRescGrpInfo, NULL,
+              &cacheDataObjInfo);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "_rsDataObjOpen: getCacheDataInfo of %s failed, stat=%d",
+                  dataObjInfoHead->objPath, status);
+            } else {
+                if (getDataObjByClass (dataObjInfoHead, COMPOUND_CL,
+                  &compDataObjInfo) >= 0) {
+                    /* we have a compDataObjInfo */
+                    compRescInfo = NULL;
+                }
+            }
+        }
     }
+    freeAllRescGrpInfo (myRescGrpInfo);
 
     if (getRescClass (dataObjInfoHead->rescInfo) == BUNDLE_CL) {
 	status = stageBundledData (rsComm, &dataObjInfoHead);
