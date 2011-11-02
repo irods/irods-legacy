@@ -873,6 +873,11 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
         L1desc[srcL1descInx].oprType = REPLICATE_SRC;
     }
 
+    if (L1desc[destL1descInx].stageFlag == SYNC_DEST &&
+      getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+        L1desc[srcL1descInx].purgeCacheFlag = 1;
+    }
+
     if (l1DataObjInp->numThreads > 0 &&
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
 	openedDataObjInp_t dataObjCloseInp;

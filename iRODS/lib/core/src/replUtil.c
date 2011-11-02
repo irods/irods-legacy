@@ -166,6 +166,10 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
 	  rodsArgs->replNumValue);
     }
 
+    if (rodsArgs->purgeCache == True) {
+        addKeyVal (&dataObjInp->condInput, PURGE_CACHE_KW, "");
+    }
+
     if (rodsArgs->all == True) {
         addKeyVal (&dataObjInp->condInput, ALL_KW, "");
     }

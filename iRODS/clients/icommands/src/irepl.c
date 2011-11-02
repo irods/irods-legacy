@@ -22,9 +22,9 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "aBG:QMhrvVn:PR:S:TX:U";
+    optStr = "aBG:QMhrvVn:PR:S:TX:UZ";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
         printf("Use -h for help.\n");
@@ -99,7 +99,7 @@ usage ()
 
    char *msgs[]={
 "Usage : irepl [-aBMPQrTvV] [-n replNum] [-R destResource] [-S srcResource]",
-"[-G resourceGroup] [-X restartFile]  dataObj|collection ... ",
+"[-G resourceGroup] [-X restartFile] [--purgec] dataObj|collection ... ",
 " ",
 "Replicate a file in iRODS to another storage resource.",
 " ",
@@ -160,6 +160,8 @@ usage ()
 " -V  Very verbose",
 " -X  restartFile - specifies that the restart option is on and the",
 "     restartFile input specifies a local file that contains the restart info.",
+" --purgec  Purge the staged cache copy after replicating an object to a",
+"     COMPOUND resource",
 " -h  this help",
 " ",
 "Also see 'irsync' for other types of iRODS/local synchronization.",

@@ -1630,6 +1630,18 @@ dataObjInfo_t **outDataObjInfo)
                   compDataObjInfo, outDataObjInfo);
                 if (status >= 0) {
                     /* update the rescGroupName */
+		    /* see if we are in the same resource grp as cache */
+		    if (strlen ((*outDataObjInfo)->rescGroupName) > 0) {
+			rescInfo_t *myRescInfo = NULL;
+			if (getRescInGrp (rsComm, 
+			  compDataObjInfo->rescInfo->rescName,
+			  (*outDataObjInfo)->rescGroupName, &myRescInfo) >= 0) {
+			    rstrcpy (compDataObjInfo->rescGroupName,
+			      (*outDataObjInfo)->rescGroupName, NAME_LEN);
+                            freeAllRescGrpInfo (rescGrpInfo);
+                            return 0;
+			}
+		    }
                     rstrcpy (compDataObjInfo->rescGroupName,
                       tmpRescGrpInfo->rescGroupName, NAME_LEN);
 		    rstrcpy ((*outDataObjInfo)->rescGroupName, 
