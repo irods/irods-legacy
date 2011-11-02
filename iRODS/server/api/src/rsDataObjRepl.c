@@ -23,6 +23,7 @@
 #include "fileSyncToArch.h"
 #include "fileStageToCache.h"
 #include "unbunAndRegPhyBunfile.h"
+#include "dataObjTrim.h"
 
 int
 rsDataObjRepl250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -220,6 +221,18 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         status = resolveSingleReplCopy (&dataObjInfoHead, &oldDataObjInfoHead,
           &myRescGrpInfo, &destDataObjInfo, &dataObjInp->condInput);
         if (status == HAVE_GOOD_COPY) {
+	    dataObjInfo_t *cacheDataObjInfo = NULL;
+	    if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
+	      getDataObjByClass (dataObjInfoHead, CACHE_CL, &cacheDataObjInfo)
+	      >= 0 && cacheDataObjInfo != destDataObjInfo) {
+	        /* purge the cache */
+		int status1 = trimDataObjInfo (rsComm, cacheDataObjInfo);
+		if (status1 < 0) {
+                    rodsLog (LOG_NOTICE,
+                      "_rsDataObjRepl: trimDataObjInfo for %s", 
+		      dataObjInp->objPath);
+		}
+	    }
             if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
                 /* pass back the GOOD_COPY */
                 *outDataObjInfo = *destDataObjInfo;
