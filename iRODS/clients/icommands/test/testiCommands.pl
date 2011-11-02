@@ -369,6 +369,31 @@ runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource,testresource" )
 runCmd( "diff  $progname $dir_w/foo6", "", "NOANSWER" );
 system ( "rm $dir_w/foo6" );
 
+# test --purgec option
+runCmd( "iput -R resgroup --purgec $progname $irodshome/test/foo7", "", "", "", "irm $irodshome/test/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
+runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "compresource" );
+runCmd( "irepl -a $irodshome/test/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "iput -fR resgroup --purgec $progname $irodshome/test/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/test/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "irepl -R compresource --purgec $irodshome/test/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/test/foo7" );
+runCmd( "itrim -S compresource -N1 $irodshome/test/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "testresource" );
+runCmd( "irepl -R compresource --purgec $irodshome/test/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
+runCmd( "iget -f $irodshome/test/foo7 --purgec $dir_w/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/test/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "iget -f $irodshome/test/foo7 --purgec $dir_w/foo7" );
+runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
+runCmd( "diff  $progname $dir_w/foo7", "", "NOANSWER" );
+system ( "rm $dir_w/foo7" );
 
 
 #-- Test a simple rule from the rule test file
