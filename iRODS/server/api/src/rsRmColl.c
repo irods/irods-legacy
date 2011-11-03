@@ -239,7 +239,10 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
         addKeyVal (&dataObjInp.condInput, IRODS_RMTRASH_KW, "");
 	rmtrashFlag = 1;
     }
-
+    if (getValByKey (&rmCollInp->condInput, EMPTY_BUNDLE_ONLY_KW) != NULL) {
+        addKeyVal (&tmpCollInp.condInput, EMPTY_BUNDLE_ONLY_KW, "");
+        addKeyVal (&dataObjInp.condInput, EMPTY_BUNDLE_ONLY_KW, "");
+    }
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
 	if (entCnt == 0) {
 	    entCnt ++;
@@ -292,7 +295,8 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
     rsCloseCollection (rsComm, &handleInx);
 
     if (rmtrashFlag > 0 && (isTrashHome (rmCollInp->collName) > 0 || 
-      isOrphanPath (rmCollInp->collName) == is_ORPHAN_HOME)) {
+      isOrphanPath (rmCollInp->collName) == is_ORPHAN_HOME) ||
+      isBundlePath (rmCollInp->collName) == True) {
         /* don't rm user's home trash coll or orphan collection */
         status = 0;
     } else {

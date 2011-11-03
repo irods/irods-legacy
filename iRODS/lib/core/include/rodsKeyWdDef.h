@@ -105,6 +105,7 @@
 #define TICKET_KW               "ticket"        /* for ticket-based-access */
 #define PURGE_CACHE_KW		"purgeCache"	/* purge the cache copy right
 						 * after the operation */
+#define EMPTY_BUNDLE_ONLY_KW	"emptyBundleOnly" /* delete emptyBundleOnly */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

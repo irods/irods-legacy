@@ -58,6 +58,8 @@ checkPermissionByObjType(rsComm_t *rsComm, char *objName, char *objType, char *u
 int
 checkDupReplica (rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
 char *filePath);
+int
+getNumSubfilesInBunfileObj (rsComm_t *rsComm, char *objPath);
 #ifdef  __cplusplus
 }
 #endif

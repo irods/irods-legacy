@@ -2327,6 +2327,32 @@ appendRandomToPath (char *trashPath)
 }
 
 int
+isBundlePath (char *myPath)
+{
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if (*tmpPtr != '/') {
+        return False;
+    }
+
+    tmpPtr++;
+    if ((tmpPtr1 = strchr (tmpPtr, '/')) == NULL) {
+        return False;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if (strncmp (tmpPtr, "bundle/", 7) == 0) {
+	return True;
+    } else {
+        return False;
+    }
+}
+
+int
 isTrashPath (char *myPath)
 {
     char *tmpPtr, *tmpPtr1;

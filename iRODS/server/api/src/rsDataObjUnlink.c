@@ -140,32 +140,44 @@ dataObjInfo_t **dataObjInfoHead)
 
     myDataObjInfoHead = *dataObjInfoHead;
     if (strcmp (myDataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+	int numSubfiles;
         if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
 	}
 	if (getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL) {
 	    return SYS_CANT_MV_BUNDLE_DATA_BY_COPY;
 	}
-	status = _unbunAndStageBunfileObj (rsComm, dataObjInfoHead, NULL, 1);
-	if (status < 0) {
-	    /* go ahead and unlink the obj if the phy file does not exist or
-	     * have problem untaring it */
-	    if (getErrno (status) != EEXIST && 
-	      getIrodsErrno (status) != SYS_TAR_STRUCT_FILE_EXTRACT_ERR) {
-                rodsLog (LOG_NOTICE,
-                "_rsDataObjUnlink:_unbunAndStageBunfileObj err for %s,stat=%d",
-                  myDataObjInfoHead->objPath, status);
-                return (status);
-	    }
-        }
-	/* dataObjInfoHead may be outdated */
-	*dataObjInfoHead = NULL;
-        status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp,
-          dataObjInfoHead);
+	numSubfiles = getNumSubfilesInBunfileObj (rsComm, 
+	  myDataObjInfoHead->objPath);
+	if (numSubfiles > 0) {
+	    if (getValByKey (&dataObjUnlinkInp->condInput, 
+	      EMPTY_BUNDLE_ONLY_KW) != NULL) {
+		/* not empty. Nothing yo do */
+		return 0;
+	    } else {
+	        status = _unbunAndStageBunfileObj (rsComm, dataObjInfoHead, 
+		  NULL, 1);
+	        if (status < 0) {
+	            /* go ahead and unlink the obj if the phy file does not 
+		     * exist or have problem untaring it */
+	            if (getErrno (status) != EEXIST && 
+	                getIrodsErrno (status) != 
+			  SYS_TAR_STRUCT_FILE_EXTRACT_ERR) {
+                        rodsLogError (LOG_ERROR, status,
+                        "_rsDataObjUnlink:_unbunAndStageBunfileObj err for %s",
+                          myDataObjInfoHead->objPath);
+                        return (status);
+	            }
+                }
+	        /* dataObjInfoHead may be outdated */
+	        *dataObjInfoHead = NULL;
+                status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp,
+                  dataObjInfoHead);
 
-        if (status < 0) return (status);
+                if (status < 0) return (status);
+            }
+	}
     }
-
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
 	status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);

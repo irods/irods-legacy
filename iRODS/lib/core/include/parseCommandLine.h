@@ -34,6 +34,7 @@ typedef struct {
    int dataObjects;
    int dryrun;
    int echo;
+   int empty;
    int force;
    int file;
    char *fileString;

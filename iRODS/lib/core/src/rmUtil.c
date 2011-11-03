@@ -130,6 +130,11 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
         addKeyVal (&collInp->condInput, FORCE_FLAG_KW, "");
     }
 
+    if (rodsArgs->empty == True) {
+        addKeyVal (&dataObjInp->condInput, EMPTY_BUNDLE_ONLY_KW, "");
+        addKeyVal (&collInp->condInput, EMPTY_BUNDLE_ONLY_KW, "");
+    }
+
     if (rodsArgs->replNum == True) {
         addKeyVal (&dataObjInp->condInput, REPL_NUM_KW, 
 	  rodsArgs->replNumValue);

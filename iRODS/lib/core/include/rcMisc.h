@@ -139,6 +139,8 @@ getDataObjInfoCnt (dataObjInfo_t *dataObjInfoHead);
 int
 appendRandomToPath (char *trashPath);
 int
+isBundlePath (char *myPath);
+int
 isTrashPath (char *myPath);
 orphanPathType_t
 isOrphanPath (char *myPath);
