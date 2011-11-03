@@ -41,6 +41,7 @@ my @summarylist;
 my @tmp_tab;
 my $username;
 my @words;
+
 # If noprompt_flag is set to 1, it assume iinit was done before running this
 # script and will not ask for path and password input. A "noprompt" input 
 # will set it.
@@ -138,6 +139,7 @@ if ( $debug ) {
 
 #-- Dump content of $irodsfile to @list
 
+my $tempFile   = "/tmp/iCommand.log";
 @list = dumpFileContent( $irodsfile );
 
 #-- Loop on content of @list
@@ -333,6 +335,7 @@ runCmd( "ireg -KCR testresource $mysdir $irodshome/testa", "", "", "", "irm -vr 
 runCmd( "iget -fvrK $irodshome/testa $dir_w/testa" );
 runCmd( "diff -r $mysdir $dir_w/testa", "", "NOANSWER" );
 system ( "rm -r $dir_w/testa" );
+# mcoll test
 runCmd( "imcoll -m link $irodshome/testa $irodshome/testb" );
 runCmd( "iget -fvrK $irodshome/testb $dir_w/testb" );
 runCmd( "diff -r $mysdir $dir_w/testb", "", "NOANSWER" );
@@ -346,7 +349,6 @@ runCmd( "diff -r $mysdir $dir_w/testm", "", "NOANSWER" );
 runCmd( "imcoll -U $irodshome/testm" );
 runCmd( "irm -rf $irodshome/testm" );
 system ( "rm -r $dir_w/testm" );
-system ( "rm -r $mysdir" );
 runCmd( "imkdir $irodshome/testt" );
 runCmd( "imcoll -m tar $irodshome/testx.tar $irodshome/testt" );
 runCmd( "ils -lr $irodshome/testt", "", "LIST", "foo2,foo1" );
@@ -357,6 +359,24 @@ runCmd( "imcoll -p $irodshome/testt" );
 runCmd( "imcoll -U $irodshome/testt" );
 runCmd( "irm -rf $irodshome/testt" );
 system ( "rm -r $dir_w/testt" );
+# iphybun test
+runCmd( "iput -rR testresource $mysdir $irodshome/testp" );
+runCmd( "iphybun -KRresgroup $irodshome/testp" );
+runCmd( "itrim -rStestresource -N1 $irodshome/testp" );
+runCmd( "iget -r $irodshome/testp  $dir_w/testp" );
+runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
+runCmd( "itrim -rStestresource -N1 $irodshome/testp" );
+# get the name of bundle file
+my $bunfile = getBunpathOfSubfile ( "$irodshome/testp/sfile1" );
+runCmd( "irm -f --empty $bunfile" );
+# should not be able to remove it because it is not empty
+runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
+runCmd( "irm -rvf $irodshome/testp" );
+runCmd( "irm -f --empty $bunfile" );
+system ( "rm -r $dir_w/testp" );
+system ( "rm -r $mysdir" );
+
+
 # resource group test
 runCmd( "iput -KR resgroup $progname $irodshome/test/foo6", "", "", "", "irm $irodshome/test/foo6" );
 runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "foo6,testresource" );
@@ -567,7 +587,6 @@ sub runCmd {
  	my @list       = "";
  	my $numinlist  = 0;
  	my $numsuccess = 0;
- 	my $tempFile   = "/tmp/iCommand.log";
  	my $negtest    = 0;
  	my $result     = 1; 		# used only in the case where the answer of the command has to be compared to an expected answer.
 
@@ -800,5 +819,24 @@ sub mksdir
         $mysfile = $mysdir . '/' . 'sfile' . $i;
 	copy ( $progname, $mysfile );
     }
+}
+
+# given a sub file path, get the path of the bundle file
+sub getBunpathOfSubfile ()
+{
+    my $subfilepath = shift;
+    my $line;
+    my @list;
+    my @words;
+    my $numwords;
+
+    system  ("ils -L $subfilepath > $tempFile" );
+    @list      = dumpFileContent( $tempFile );
+    unlink( $tempFile );
+# bundle path is in 2nd line
+    @words = split( / /, $list[1] );
+    $numwords = @words;
+# bundle path is in the last entry of the line
+    return ( $words[$numwords - 1] );
 }
 
