@@ -118,7 +118,7 @@ getRescType (rescInfo_t *rescInfo);
 int
 getRescClassInx (char *rescClass);
 int
-getMultiCopyPerResc ();
+getMultiCopyPerResc (rsComm_t *rsComm);
 int
 getRescCnt (rescGrpInfo_t *myRescGrpInfo);
 int

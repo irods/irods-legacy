@@ -1624,11 +1624,12 @@ getRescClassInx (char *rescClass)
  */
 
 int
-getMultiCopyPerResc ()
+getMultiCopyPerResc (rsComm_t *rsComm)
 {
     ruleExecInfo_t rei;
 
     memset (&rei, 0, sizeof (rei));
+    rei.rsComm = rsComm;
     applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
     if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
         return 1;

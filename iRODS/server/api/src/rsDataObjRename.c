@@ -187,7 +187,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         return (status);
     }
 
-    multiCopyFlag = getMultiCopyPerResc ();
+    multiCopyFlag = getMultiCopyPerResc (rsComm);
 
      if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
 	status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,
