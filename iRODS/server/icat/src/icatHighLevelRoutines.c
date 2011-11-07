@@ -9012,6 +9012,12 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 
    status = 0;
 
+   /* session ticket (temp, for debug) */
+   if (strcmp(opName, "session") == 0) {
+      status = chlGenQueryTicketSetup(ticketString);
+      return(0);
+   }
+
    /* create */
    if (strcmp(opName, "create") == 0) {
       status = splitPathByKey(arg4,

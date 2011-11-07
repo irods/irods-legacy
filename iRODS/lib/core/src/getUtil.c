@@ -12,6 +12,28 @@
 #include "rcPortalOpr.h"
 
 int
+setSessionTicket(rcComm_t *myConn, char *ticket) {
+   userAdminInp_t userAdminInp;
+   int status;
+
+   userAdminInp.arg0 = "ticket";
+   userAdminInp.arg1 = "session";
+   userAdminInp.arg2 = ticket;
+   userAdminInp.arg3 = "";
+   userAdminInp.arg4 = "";
+   userAdminInp.arg5 = "";
+   userAdminInp.arg6 = "";
+   userAdminInp.arg7 = "";
+   userAdminInp.arg8 = "";
+   userAdminInp.arg9 = "";
+   status = rcUserAdmin(myConn, &userAdminInp);
+   if (status != 0) {
+      printf("set ticket error %d \n", status);
+   }
+   return(status);
+}
+
+int
 getUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 rodsPathInp_t *rodsPathInp)
 {
@@ -25,6 +47,16 @@ rodsPathInp_t *rodsPathInp)
 
     if (rodsPathInp == NULL) {
 	return (USER__NULL_INPUT_ERR);
+    }
+
+    if (myRodsArgs->ticket == True) {
+       if (myRodsArgs->ticketString == NULL) {
+	  rodsLog (LOG_ERROR,
+		   "initCondForPut: NULL ticketString error");
+	  return (USER__NULL_INPUT_ERR);
+       } else {
+	  setSessionTicket(conn, myRodsArgs->ticketString);
+       }
     }
 
     initCondForGet (conn, myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);

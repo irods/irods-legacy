@@ -1022,10 +1022,17 @@ int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel,
    cVal[3]=ticketExpiry;
    cVal[4]=restrictions;
    if (logSQL_CML!=0) rodsLog(LOG_SQL, "_cmlCheckDataObjIdByTicket SQL 1 ");
+#if 0
    status = cmlGetStringValuesFromSql(
-	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM where TM.object_type=? and TM.ticket_string = ? and TM.object_id=?",
+	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.object_type=? and TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
 	    cVal, iVal, 5, TICKET_TYPE_DATA,
-	    ticketStr, dataId, icss);
+	    ticketStr, dataId, dataId, icss);
+#endif
+   status = cmlGetStringValuesFromSql(
+	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
+	    cVal, iVal, 5, 
+	    ticketStr, dataId, dataId, icss);
+
    if (status != 0) return (CAT_TICKET_INVALID);
 
    if (ticketExpiry[0]!='\0') {
@@ -1036,32 +1043,32 @@ int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel,
       if (ticketExp > 0) {
 	 getNowStr(myTime);
 	 now = atoll(myTime);
-	 if (now < ticketExp) {
+	 if (now > ticketExp) {
 	    return(CAT_TICKET_EXPIRED);
 	 }
       }
+   }
 
-      status = cmlCheckTicketRestrictions(ticketId, ticketHost, 
-					  userName, userZone, icss);
-      if (status != 0) return(status);
+   status = cmlCheckTicketRestrictions(ticketId, ticketHost, 
+				       userName, userZone, icss);
+   if (status != 0) return(status);
 
-      iUsesLimit = atoi(usesLimit);
-      if (iUsesLimit > 0) {
-	 iUsesCount = atoi(usesCount);
-	 if (iUsesCount >= iUsesLimit) {
-	    return(CAT_TICKET_USES_EXCEEDED);
-	 }
-	 iUsesCount++;
-	 snprintf(myUsesCount, sizeof myUsesCount, "%d", iUsesCount);
-	 cllBindVars[cllBindVarCount++]=myUsesCount;
-	 cllBindVars[cllBindVarCount++]=ticketId;
-	 if (logSQL_CML!=0) rodsLog(LOG_SQL, "_cmlCheckDataObjIdByTicket SQL 2 ");
-         status =  cmlExecuteNoAnswerSql(
-	    "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
-	 if (status != 0) return(status);
-         status =  cmlExecuteNoAnswerSql("commit", icss);
-	 if (status != 0) return(status);
+   iUsesLimit = atoi(usesLimit);
+   if (iUsesLimit > 0) {
+      iUsesCount = atoi(usesCount);
+      if (iUsesCount >= iUsesLimit) {
+	 return(CAT_TICKET_USES_EXCEEDED);
       }
+      iUsesCount++;
+      snprintf(myUsesCount, sizeof myUsesCount, "%d", iUsesCount);
+      cllBindVars[cllBindVarCount++]=myUsesCount;
+      cllBindVars[cllBindVarCount++]=ticketId;
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "_cmlCheckDataObjIdByTicket SQL 2 ");
+      status =  cmlExecuteNoAnswerSql(
+	 "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
+      if (status != 0) return(status);
+      status =  cmlExecuteNoAnswerSql("commit", icss);
+      if (status != 0) return(status);
    }
    return(0);
 }

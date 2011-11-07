@@ -68,6 +68,7 @@ char accessControlZone[NAME_LEN];
 char accessControlHost[NAME_LEN];
 int accessControlPriv;
 int accessControlControlFlag=0;
+char sessionTicket[NAME_LEN]="";
 
 struct tlinks {
    int table1;
@@ -1328,18 +1329,32 @@ genqAppendAccessCheck() {
       (complicated) addition to the where clause to check access */
    if (strstr(selectSQL, "R_DATA_MAIN") != NULL) {
       if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
-      cllBindVars[cllBindVarCount++]=accessControlUserName;
-      cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
+      if (sessionTicket[0]=='\0') {
+	 cllBindVars[cllBindVarCount++]=accessControlUserName;
+	 cllBindVars[cllBindVarCount++]=accessControlZone;
+	 rstrcat(whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
+      }
+      else {
+	 cllBindVars[cllBindVarCount++]=sessionTicket;
+	 cllBindVars[cllBindVarCount++]=sessionTicket;
+	 rstrcat(whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE);
+      }
    }
 
    /* if an item in R_COLL_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
    if (strstr(selectSQL, "R_COLL_MAIN") != NULL) {
       if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
-      cllBindVars[cllBindVarCount++]=accessControlUserName;
-      cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
+      if (sessionTicket[0]=='\0') {
+	 cllBindVars[cllBindVarCount++]=accessControlUserName;
+	 cllBindVars[cllBindVarCount++]=accessControlZone;
+	 rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
+      }
+      else {
+	 cllBindVars[cllBindVarCount++]=sessionTicket;
+	 rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE);
+
+      }
    }
    return(0);
 }
@@ -1685,7 +1700,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 		ACCESS_PERMISSION_KW)==0)  accessIx=i;
       if (strcmp(genQueryInp.condInput.keyWord[i],
                  TICKET_KW)==0) {
-         /* just log it for debug for now */
+         /* for now, log it but the one used is the session ticket */
 	 rodsLog(LOG_NOTICE, "ticket input, value: %s",
                  genQueryInp.condInput.value[i]);
 	 ticketString=genQueryInp.condInput.value[i];
@@ -1746,7 +1761,8 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 			      genQueryInp.condInput.value[userIx],
 			      zoneName,
 			      genQueryInp.condInput.value[accessIx], 
-			      ticketString, accessControlHost, icss);
+/*			      ticketString, accessControlHost, icss); */
+			      sessionTicket, accessControlHost, icss);
       prevStatus=status;
       return(status);
    }
@@ -1791,6 +1807,13 @@ chlGenQueryAccessControlSetup(char *user, char *zone, char *host, int priv,
        accessControlControlFlag=controlFlag;
     }
     return(0);
+}
+
+int 
+chlGenQueryTicketSetup(char *ticket) {
+   rstrcpy(sessionTicket, ticket, sizeof(sessionTicket));
+   rodsLog(LOG_NOTICE, "session ticket setup, value: %s", ticket);
+   return(0);
 }
 
 /* General Query */
