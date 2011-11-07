@@ -895,9 +895,9 @@ char *estimateExeTime, char *notificationAddr)
     if (stat (ruleExecSubmitInp->reiFilePath, &statbuf) < 0) {
 #endif
         status = UNIX_FILE_STAT_ERR - errno;
-        rodsLog (LOG_ERROR,
-         "fillExecSubmitInp: stat error for rei file %s, status = %d",
-         ruleExecSubmitInp->reiFilePath, status);
+        rodsLogError (LOG_ERROR, status,
+         "fillExecSubmitInp: stat error for rei file %s, id %s rule %s",
+         ruleExecSubmitInp->reiFilePath, ruleExecId, ruleName);
         return status;
     }
 
