@@ -1149,6 +1149,7 @@ initZone (rsComm_t *rsComm)
 	/* assume address:port */
         parseHostAddrStr (tmpZoneConn, &addr);
         if (addr.portNum == 0) addr.portNum = ZoneInfoHead->portNum;
+	rstrcpy (addr.zoneName, tmpZoneName, NAME_LEN);
         status = resolveHost (&addr, &tmpRodsServerHost);
 	if (status < 0) {
 	    rodsLog (LOG_ERROR,
@@ -1163,6 +1164,9 @@ initZone (rsComm_t *rsComm)
 	    continue;
 	}
 	tmpRodsServerHost->rcatEnabled = REMOTE_ICAT;
+	/* REMOTE_ICAT is always on a remote host even if it is one the same
+         * host, but will be on different port */
+	tmpRodsServerHost->localFlag = REMOTE_HOST;
         queZone (tmpZoneName, addr.portNum, tmpRodsServerHost, NULL);
     }
 
