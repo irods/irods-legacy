@@ -258,7 +258,7 @@ showTickets1(char *inOption, char *inName)
 
    if (strstr(inOption, "data")!=0) {
       i1a[i]=COL_TICKET_DATA_NAME;
-      columnNames[6]="data-object name";
+      columnNames[i]="data-object name";
    }
    i1b[i++]=0;
 
