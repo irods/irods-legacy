@@ -19,6 +19,7 @@
 #
 
 $F1="TestFile1";
+$F1LC="testfile1";
 $F2="TestFile2";
 $F3="TestFile3";
 $D1="directory1";
@@ -123,6 +124,14 @@ runCmd(0, "imv $F1 $F1a");
 runCmd(0, "imv $F1a $F1b");
 runCmd(0, "imv $F1b $F1");
 runCmd(2, "imv $F1 $F1"); 
+runCmd(0, "irm -f $F1");
+
+# test that upper/lower case are different (can be problem with MySQL)
+`ls -l > $F1LC`;
+runCmd(2, "irm -f $F1LC");
+runCmd(0, "iput $F1");
+runCmd(0, "iput $F1LC");
+runCmd(0, "irm -f $F1LC");
 runCmd(0, "irm -f $F1");
 
 $D1a = "$D1" . "a";

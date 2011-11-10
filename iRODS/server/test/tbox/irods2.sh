@@ -46,13 +46,22 @@ date
 pgsql=`ls -d pgsql`
 
 #cd /tbox/IRODS_BUILD/iRODS
+
+# Once or twice a day (during a certain hour), use MySQL as the ICAT.
+# This assumes MySQL has been installed on the host, as is the case
+# for the DICE Tinderbox test host 'pivo'.
 cd iRODS
-if [ $pgsql = "pgsql" ] ; then
-  echo reusing pgsql
-  ./irodssetup < ../../input1.txt.reuse.pg
-else
-  echo building a new pgsql
-  ./irodssetup < ../../input1.txt.no.pg
+if [ $myhour -eq 08 ] ; then
+    echo running setup to use MySQL instead of Postgres
+    ./irodssetup < server/test/tbox/input1.txt.no.pg.mysql
+else 
+    if [ $pgsql = "pgsql" ] ; then
+	echo reusing pgsql
+	./irodssetup < ../../input1.txt.reuse.pg
+    else
+	echo building a new pgsql
+	./irodssetup < ../../input1.txt.no.pg
+    fi
 fi
 
 # remember error code
@@ -70,6 +79,7 @@ if [ $error1 -eq 0 ] ; then
   ./irodsctl testWithoutConfirmation
 # remember error code
   error3=$?
+  date
 fi 
 
 error4=0
@@ -81,7 +91,6 @@ if [ $error3 -ne 0 ] ; then
     doPoundTest=0
 fi
 if [ $myhour -ne  18 ] ; then
-#if [ $myhour -ne  15 ] ; then
     doPoundTest=0
 fi
 if [ $doPoundTest -eq 1 ] ; then
