@@ -28,12 +28,15 @@ int printCount=0;
 
 int usage(char *subOpt);
 
+void showRestrictions(char *inColumn);
+
+
 /* 
  print the results of a general query.
  */
 void
-printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, 
-		     char *descriptions[])
+printResultsAndSubQuery(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, 
+			char *descriptions[], int subColumn, int dashOpt)
 {
    int i, j;
    char localTime[20];
@@ -48,14 +51,21 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
       }
       else {
 	 for (i=0;i<genQueryOut->rowCnt;i++) {
-	    if (i>0) printf("----\n");
+	    char *subCol;
+	    if (i>0 && dashOpt>0) printf("----\n");
 	    for (j=0;j<genQueryOut->attriCnt;j++) {
 	       char *tResult;
 	       tResult = genQueryOut->sqlResult[j].value;
 	       tResult += i*genQueryOut->sqlResult[j].len;
+	       if (subColumn==j) {
+		  subCol=tResult;
+	       }
 	       if (*descriptions[j]!='\0') {
 		  if (strstr(descriptions[j],"time")!=0) {
 		     getLocalTimeFromRodsTime(tResult, localTime);
+		     if (strcmp(tResult,"0")==0 || *tResult=='\0') {
+			strcpy(localTime,"none");
+		     }
 		     printf("%s: %s\n", descriptions[j], 
 			    localTime);
 		  } 
@@ -65,9 +75,143 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 		  }
 	       }
 	    }
+	    if (subColumn>=0) showRestrictions(subCol);
 	 }
       }
    }
+}
+
+void
+showRestrictionsByHost(char *inColumn) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   int i;
+   char v1[MAX_NAME_LEN];
+   char *condVal[10];
+   int status;
+   char *columnNames[]={"restricted-to host"};
+
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printCount=0;
+
+   i=0;
+   i1a[i]=COL_TICKET_ALLOWED_HOST;
+   i1b[i++]=0;
+
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = i;
+
+   i2a[0]=COL_TICKET_ALLOWED_HOST_TICKET_ID;
+   sprintf(v1,"='%s'", inColumn);
+   condVal[0]=v1;
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=1;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_USER_COMMENT;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("No host restrictions (1)\n");
+	 return;
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("No host restrictions\n");
+	 return;
+      }
+   }
+
+   printResultsAndSubQuery(Conn, status, genQueryOut, columnNames,-1, 0);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      printResultsAndSubQuery(Conn, status, genQueryOut, 
+			      columnNames, 0, 0);
+   }
+   return;
+}
+
+void
+showRestrictionsByUser(char *inColumn) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   int i;
+   char v1[MAX_NAME_LEN];
+   char *condVal[10];
+   int status;
+   char *columnNames[]={"restricted-to user"};
+
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printCount=0;
+
+   i=0;
+   i1a[i]=COL_TICKET_ALLOWED_USER_NAME;
+   i1b[i++]=0;
+
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = i;
+
+   i2a[0]=COL_TICKET_ALLOWED_USER_TICKET_ID;
+   sprintf(v1,"='%s'", inColumn);
+   condVal[0]=v1;
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=1;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_USER_COMMENT;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("No user restrictions (1)\n");
+	 return;
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("No user restrictions\n");
+	 return;
+      }
+   }
+
+   printResultsAndSubQuery(Conn, status, genQueryOut, columnNames,-1, 0);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      printResultsAndSubQuery(Conn, status, genQueryOut, 
+			      columnNames, 0, 0);
+   }
+   return;
+}
+
+void
+showRestrictions(char *inColumn) {
+   showRestrictionsByHost(inColumn);
+   showRestrictionsByUser(inColumn);
+   return;
 }
 
 
@@ -75,7 +219,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 Via a general query, show the Tickets for this user
 */
 int
-showThisUsersTickets()
+showTickets1(char *inOption, char *inName)
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
@@ -83,9 +227,11 @@ showThisUsersTickets()
    int i1b[10];
    int i2a[10];
    int i;
+   char v1[MAX_NAME_LEN];
    char *condVal[10];
    int status;
-   char *columnNames[]={"id", "obj id", "type", "limit", "count"};
+   char *columnNames[]={"id", "string", "type", "owner name", "owner zone", "uses count", "uses limit", "expire time", "collection name"};
+
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
@@ -94,26 +240,64 @@ showThisUsersTickets()
    i=0;
    i1a[i]=COL_TICKET_ID;
    i1b[i++]=0;
-   i1a[i]=COL_TICKET_OBJECT_ID;
+   i1a[i]=COL_TICKET_STRING;
    i1b[i++]=0;
    i1a[i]=COL_TICKET_OBJECT_TYPE;
    i1b[i++]=0;
-   i1a[i]=COL_TICKET_USES_LIMIT;
+   i1a[i]=COL_TICKET_OWNER_NAME;
+   i1b[i++]=0;
+   i1a[i]=COL_TICKET_OWNER_ZONE;
    i1b[i++]=0;
    i1a[i]=COL_TICKET_USES_COUNT;
    i1b[i++]=0;
+   i1a[i]=COL_TICKET_USES_LIMIT;
+   i1b[i++]=0;
+   i1a[i]=COL_TICKET_EXPIRY_TS;
+   i1b[i++]=0;
+   i1a[i]=COL_TICKET_COLL_NAME;
+
+   if (strstr(inOption, "data")!=0) {
+      i1a[i]=COL_TICKET_DATA_NAME;
+      columnNames[6]="data-object name";
+   }
+   i1b[i++]=0;
+
    genQueryInp.selectInp.inx = i1a;
    genQueryInp.selectInp.value = i1b;
    genQueryInp.selectInp.len = i;
 
+#if 0
+   i2a[0]=COL_USER_NAME;
+   sprintf(v1,"='%s'", myEnv.rodsUserName);
+   condVal[0]=v1;
+   i2a[1]=COL_USER_ZONE;
+   sprintf(v2,"='%s'", myEnv.rodsZone);
+   condVal[1]=v2;
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
+/*   genQueryInp.sqlCondInp.len=2; */
    genQueryInp.sqlCondInp.len=0;
+#endif
+   genQueryInp.condInput.len=0;
 
+   if (inName != NULL and *inName!='\0') {
+      if (isInteger(inName)==1) {
+         /* Could have an all-integer ticket but in most cases this is a good
+	    guess */
+	 i2a[0]=COL_TICKET_ID;
+      }
+      else {
+	 i2a[0]=COL_TICKET_STRING;
+      }
+      sprintf(v1,"='%s'", inName);
+      condVal[0]=v1;
+      genQueryInp.sqlCondInp.inx = i2a;
+      genQueryInp.sqlCondInp.value = condVal;
+      genQueryInp.sqlCondInp.len=1;
+   }
 
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
-   genQueryInp.condInput.len=0;
 
    if (zoneArgument[0]!='\0') {
       addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
@@ -125,27 +309,33 @@ showThisUsersTickets()
       genQueryInp.selectInp.len = 1;
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       if (status==0) {
-	 printf("None\n");
 	 return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
-	 printf("None\n");
 	 return(0);
       }
    }
 
-   printGenQueryResults(Conn, status, genQueryOut, columnNames);
+   printResultsAndSubQuery(Conn, status, genQueryOut, columnNames,0, 1);
 
    while (status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       if (genQueryOut->rowCnt>0) printf("----\n");
-      printGenQueryResults(Conn, status, genQueryOut, 
-					columnNames);
+      printResultsAndSubQuery(Conn, status, genQueryOut, 
+			      columnNames, 0, 1);
    }
 
    return (0);
 }
+
+void
+showTickets(char *inName) {
+   showTickets1("data", inName);
+   printf("----\n");
+   showTickets1("collection", inName);
+}
+
 
 void
 makeFullPath(char *inName, char **outName) {
@@ -389,7 +579,7 @@ doCommand(char *cmdToken[]) {
    }
 
    if (strcmp(cmdToken[0],"ls") == 0) {
-      showThisUsersTickets();
+      showTickets(cmdToken[1]);
       return(0);
    }
 
@@ -586,7 +776,7 @@ void usageMain()
 " create read/write Object-Name [string] (create a new ticket)",
 " mod Ticket_string-or-id uses/expire string-or-none  (modify restrictions)",
 " mod Ticket_string-or-id add/remove host/user string (modify restrictions)",
-" ls [-l] [-u user] [-a] list tickets (by default, just your own)",
+" ls [Ticket_string-or-id] (non-admins will see just your own)",
 " delete ticket_string-or-id",
 " quit", 
 " ", 
@@ -684,12 +874,10 @@ usage(char *subOpt)
 
       if (strcmp(subOpt,"ls")==0) {
 	 char *msgs[]={
-" ls [-l] [-u user] [-a] list tickets",
-
-"By default, 'ls' will briefly list the tickets owned by you.",
-"The -l option will list them in long form.",
-"The -a (all) option will list all the tickets (all users).",
-"The -u username option will cause it to list tickets owned by that user.",
+" ls [Ticket_string-or-id]",
+"List the tickets owned by you or, for admin users, all tickets.",
+"Include a ticket-string or the ticket-id (object number) to list only one",
+"(in this case, a numeric string is assumed to be an id).",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);

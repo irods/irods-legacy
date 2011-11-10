@@ -1321,6 +1321,17 @@ genqAppendAccessCheck() {
       }
    }
 
+   /* First, in all cases (non-admin), check on ticket_string
+      and, if present, restrict to the owner */
+   if ( strstr(selectSQL, "ticket_string") != NULL &&
+        strstr(selectSQL, "R_TICKET_MAIN") != NULL
+      ) {
+      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
+      cllBindVars[cllBindVarCount++]=accessControlUserName;
+      cllBindVars[cllBindVarCount++]=accessControlZone;
+      rstrcat(whereSQL, "R_TICKET_MAIN.user_id in (select user_id from R_USER_MAIN UM where UM.user_name = ? AND UM.zone_name=?)", MAX_SQL_SIZE);
+   }
+
    if (doCheck==0) return(0);
 
    if (ACDebug)  printf("genqAC 4\n");
