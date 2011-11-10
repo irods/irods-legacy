@@ -518,10 +518,11 @@ primary ordering column.
 #define COL_TICKET_ALLOWED_USER_NAME 2213
 
 #define COL_TICKET_DATA_NAME 2214
-#define COL_TICKET_COLL_NAME 2215
+#define COL_TICKET_DATA_COLL_NAME 2215
+#define COL_TICKET_COLL_NAME 2216
 
-#define COL_TICKET_OWNER_NAME 2216
-#define COL_TICKET_OWNER_ZONE 2217
+#define COL_TICKET_OWNER_NAME 2217
+#define COL_TICKET_OWNER_ZONE 2218
 
 
 /* The range beginning with 10,000 is reserved for the extended icat (
