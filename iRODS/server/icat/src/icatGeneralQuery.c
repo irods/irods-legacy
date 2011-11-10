@@ -51,7 +51,7 @@ extern icatSessionStruct *chlGetRcs();
 #define MAX_LINKS_TABLES_OR_COLUMNS 500
 #endif
 
-#define MAX_TSQL 100
+#define MAX_TSQL 110
 
 int firstCall=1;
 

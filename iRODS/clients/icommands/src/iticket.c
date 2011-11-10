@@ -230,7 +230,7 @@ showTickets1(char *inOption, char *inName)
    char v1[MAX_NAME_LEN];
    char *condVal[10];
    int status;
-   char *columnNames[]={"id", "string", "type", "owner name", "owner zone", "uses count", "uses limit", "expire time", "collection name"};
+   char *columnNames[]={"id", "string", "type", "owner name", "owner zone", "uses count", "uses limit", "expire time", "collection name", "data collection"};
 
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -259,6 +259,8 @@ showTickets1(char *inOption, char *inName)
    if (strstr(inOption, "data")!=0) {
       i1a[i]=COL_TICKET_DATA_NAME;
       columnNames[i]="data-object name";
+      i1b[i++]=0;
+      i1a[i]=COL_TICKET_DATA_COLL_NAME;
    }
    i1b[i++]=0;
 

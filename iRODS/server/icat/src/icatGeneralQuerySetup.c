@@ -183,6 +183,7 @@ icatGeneralQuerySetup() {
  sTable( "R_TICKET_ALLOWED_USERS", "R_TICKET_ALLOWED_USERS", 0);
  sTable( "r_ticket_coll_main", "R_COLL_MAIN r_ticket_coll_main", 1);
  sTable( "r_ticket_user_main", "R_USER_MAIN r_ticket_user_main", 1);
+ sTable( "r_ticket_data_coll_main", "R_COLL_MAIN r_ticket_data_coll_main", 1);
 
   /* Map the #define values to tables and columns */
 
@@ -568,6 +569,8 @@ icatGeneralQuerySetup() {
   sColumn( COL_TICKET_OWNER_NAME, "r_ticket_user_main", "user_name");
   sColumn( COL_TICKET_OWNER_ZONE, "r_ticket_user_main", "zone_name");
 
+  sColumn( COL_TICKET_DATA_COLL_NAME, "r_ticket_data_coll_main", "coll_name");
+
   /* Define the Foreign Key links between tables */
 
   sFklink("R_COLL_MAIN", "R_DATA_MAIN", "R_COLL_MAIN.coll_id = R_DATA_MAIN.coll_id");
@@ -687,7 +690,7 @@ icatGeneralQuerySetup() {
 
   sFklink("R_TICKET_MAIN", "R_DATA_MAIN", "R_TICKET_MAIN.object_id = R_DATA_MAIN.data_id");
   sFklink("R_TICKET_MAIN", "r_ticket_coll_main", "R_TICKET_MAIN.object_id = r_ticket_coll_main.coll_id");
-
+  sFklink("R_TICKET_MAIN", "r_ticket_data_coll_main", "R_TICKET_MAIN.object_id = R_DATA_MAIN.data_id AND R_DATA_MAIN.coll_id = r_ticket_data_coll_main.coll_id");
   sFklink("R_TICKET_MAIN", "r_ticket_user_main", "R_TICKET_MAIN.user_id = r_ticket_user_main.user_id");
 
 /*
