@@ -475,7 +475,10 @@ runCmd(0, "iadmin moduser $U2 type groupadmin");
 unlink($F2);
 $MYHOME=$ENV{'HOME'};
 $authFile="$MYHOME/.irods/.irodsA";
-$envAuth=$ENV{'irodsAuthFileName'};
+runCmd(0, "ienv | grep irodsAuthFileName | tail -1");
+chomp($cmdStdout);
+$ix = index($cmdStdout,"=");
+$envAuth=substr($cmdStdout, $ix+1);
 if ($envAuth ne "") {
     $authFile=$envAuth;
 }
