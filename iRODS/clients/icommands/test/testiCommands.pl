@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# script to test the basic functionnalities of icommands.
+# script to test the basic functionalities of icommands.
 # icommands location has to be put in the PATH env variable or their PATH will be asked
 # at the beginning of the execution of this script.
 #
@@ -211,7 +211,7 @@ if ( ! $noprompt_flag ) {
     runCmd( "iinit $input" );
 }
 
-#-- Test the icommands and eventually compared the result to what is expected.
+#-- Test the icommands and eventually compare the result to what is expected.
 
 #-- Basic admin commands
 
