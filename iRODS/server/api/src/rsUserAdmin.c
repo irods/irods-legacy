@@ -28,6 +28,10 @@ rsUserAdmin (rsComm_t *rsComm, userAdminInp_t *userAdminInp )
 #endif
     }
     else {
+       if (strcmp(userAdminInp->arg0,"ticket")==0 &&
+	   strcmp(userAdminInp->arg1,"session")==0 ) {
+	  userAdminInp->arg3 = rsComm->clientAddr;
+       }
        status = rcUserAdmin(rodsServerHost->conn,
                             userAdminInp);
     }

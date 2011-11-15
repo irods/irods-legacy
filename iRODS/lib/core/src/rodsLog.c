@@ -329,6 +329,7 @@
     CAT_TICKET_USES_EXCEEDED, 
     CAT_TICKET_USER_EXCLUDED, 
     CAT_TICKET_HOST_EXCLUDED, 
+    CAT_TICKET_GROUP_EXCLUDED, 
     FILE_OPEN_ERR, 
     FILE_READ_ERR, 
     FILE_WRITE_ERR, 
@@ -857,6 +858,7 @@
     "CAT_TICKET_USES_EXCEEDED", 
     "CAT_TICKET_USER_EXCLUDED", 
     "CAT_TICKET_HOST_EXCLUDED", 
+    "CAT_TICKET_GROUP_EXCLUDED", 
     "FILE_OPEN_ERR", 
     "FILE_READ_ERR", 
     "FILE_WRITE_ERR", 
@@ -1085,7 +1087,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 526;
+int irodsErrorCount= 527;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

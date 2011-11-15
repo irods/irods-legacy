@@ -208,9 +208,73 @@ showRestrictionsByUser(char *inColumn) {
 }
 
 void
+showRestrictionsByGroup(char *inColumn) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   int i;
+   char v1[MAX_NAME_LEN];
+   char *condVal[10];
+   int status;
+   char *columnNames[]={"restricted-to group"};
+
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printCount=0;
+
+   i=0;
+   i1a[i]=COL_TICKET_ALLOWED_GROUP_NAME;
+   i1b[i++]=0;
+
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = i;
+
+   i2a[0]=COL_TICKET_ALLOWED_GROUP_TICKET_ID;
+   sprintf(v1,"='%s'", inColumn);
+   condVal[0]=v1;
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=1;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_USER_COMMENT;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("No group restrictions (1)\n");
+	 return;
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("No group restrictions\n");
+	 return;
+      }
+   }
+
+   printResultsAndSubQuery(Conn, status, genQueryOut, columnNames,-1, 0);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      printResultsAndSubQuery(Conn, status, genQueryOut, 
+			      columnNames, 0, 0);
+   }
+   return;
+}
+
+void
 showRestrictions(char *inColumn) {
    showRestrictionsByHost(inColumn);
    showRestrictionsByUser(inColumn);
+   showRestrictionsByGroup(inColumn);
    return;
 }
 

@@ -723,6 +723,7 @@ runCmd(0, "irm -f $F1");
 
 #Tickets 
 runCmd(0, "iput $F1");
+runCmd(1, "iticket delete $TICKET1");
 runCmd(0, "iticket create read $F1 $TICKET1");
 runCmd(0, "iticket mod $TICKET1 uses 10");
 runCmd(1, "iticket mod badticketname uses 1");
@@ -734,7 +735,12 @@ runCmd(0, "iticket mod $TICKET1 expire 2012-02-02");
 runCmd(0, "iticket mod $TICKET1 expire 0");
 runCmd(0, "iget -f -t $TICKET1 $F1");
 runCmd(0, "iticket mod $TICKET1 uses 0");
+runCmd(0, "iadmin mkgroup $G1");
+runCmd(0, "iticket mod $TICKET1 add group $G1");
+runCmd(1, "iget -f -t $TICKET1 $F1");
+runCmd(0, "iticket mod $TICKET1 remove group $G1");
 runCmd(0, "iticket delete $TICKET1");
+runCmd(0, "iadmin rmgroup $G1");
 runCmd(1, "iticket create read badfilename");
 runCmd(0, "irm -f $F1");
 

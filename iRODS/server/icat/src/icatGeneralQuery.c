@@ -65,10 +65,11 @@ int mightNeedGroupBy;
 int fromCount;
 char accessControlUserName[NAME_LEN];
 char accessControlZone[NAME_LEN];
-char accessControlHost[NAME_LEN];
+/* char accessControlHost[NAME_LEN]; no longer used, need to adjust funcs*/
 int accessControlPriv;
 int accessControlControlFlag=0;
 char sessionTicket[NAME_LEN]="";
+char sessionClientAddr[NAME_LEN]="";
 
 struct tlinks {
    int table1;
@@ -1773,7 +1774,8 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 			      zoneName,
 			      genQueryInp.condInput.value[accessIx], 
 /*			      ticketString, accessControlHost, icss); */
-			      sessionTicket, accessControlHost, icss);
+/*			      sessionTicket, accessControlHost, icss); */
+			      sessionTicket, sessionClientAddr, icss); 
       prevStatus=status;
       return(status);
    }
@@ -1804,7 +1806,7 @@ chlGenQueryAccessControlSetup(char *user, char *zone, char *host, int priv,
     if (user != NULL ) {
         rstrcpy(accessControlUserName, user, NAME_LEN);
 	rstrcpy(accessControlZone, zone, NAME_LEN);
-	rstrcpy(accessControlHost, host, NAME_LEN);
+/*	rstrcpy(accessControlHost, host, NAME_LEN); */
 	accessControlPriv=priv;
     }
     if (controlFlag > 0 ) {
@@ -1821,8 +1823,9 @@ chlGenQueryAccessControlSetup(char *user, char *zone, char *host, int priv,
 }
 
 int 
-chlGenQueryTicketSetup(char *ticket) {
+chlGenQueryTicketSetup(char *ticket, char *clientAddr) {
    rstrcpy(sessionTicket, ticket, sizeof(sessionTicket));
+   rstrcpy(sessionClientAddr, clientAddr, sizeof(sessionClientAddr));
    rodsLog(LOG_NOTICE, "session ticket setup, value: %s", ticket);
    return(0);
 }

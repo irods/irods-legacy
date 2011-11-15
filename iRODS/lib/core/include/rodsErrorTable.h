@@ -341,6 +341,7 @@
 #define CAT_TICKET_USES_EXCEEDED        -892000
 #define CAT_TICKET_USER_EXCLUDED        -893000
 #define CAT_TICKET_HOST_EXCLUDED        -894000
+#define CAT_TICKET_GROUP_EXCLUDED       -895000
 
 
 /* 900,000 to 920,000 - Misc errors (used by obf library, etc)  */

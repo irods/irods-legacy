@@ -40,7 +40,7 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 int chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result);
 int chlGenQueryAccessControlSetup(char *user, char *zone, char *host, 
 				  int priv, int controlFlag);
-int chlGenQueryTicketSetup(char *ticket);
+int chlGenQueryTicketSetup(char *ticket, char *clientAddr);
 int chlSpecificQuery(specificQueryInp_t specificQueryInp,
                      genQueryOut_t *genQueryOut);
 

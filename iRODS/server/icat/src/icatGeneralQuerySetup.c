@@ -181,6 +181,7 @@ icatGeneralQuerySetup() {
  sTable( "R_TICKET_MAIN", "R_TICKET_MAIN", 0);
  sTable( "R_TICKET_ALLOWED_HOSTS", "R_TICKET_ALLOWED_HOSTS", 0);
  sTable( "R_TICKET_ALLOWED_USERS", "R_TICKET_ALLOWED_USERS", 0);
+ sTable( "R_TICKET_ALLOWED_GROUPS", "R_TICKET_ALLOWED_GROUPS", 0);
  sTable( "r_ticket_coll_main", "R_COLL_MAIN r_ticket_coll_main", 1);
  sTable( "r_ticket_user_main", "R_USER_MAIN r_ticket_user_main", 1);
  sTable( "r_ticket_data_coll_main", "R_COLL_MAIN r_ticket_data_coll_main", 1);
@@ -563,6 +564,8 @@ icatGeneralQuerySetup() {
   sColumn( COL_TICKET_ALLOWED_HOST_TICKET_ID, "R_TICKET_ALLOWED_HOSTS", "ticket_id");
   sColumn( COL_TICKET_ALLOWED_USER_NAME, "R_TICKET_ALLOWED_USERS", "user_name");
   sColumn( COL_TICKET_ALLOWED_USER_TICKET_ID, "R_TICKET_ALLOWED_USERS", "ticket_id");
+  sColumn( COL_TICKET_ALLOWED_GROUP_NAME, "R_TICKET_ALLOWED_GROUPS", "group_name");
+  sColumn( COL_TICKET_ALLOWED_GROUP_TICKET_ID, "R_TICKET_ALLOWED_GROUPS", "ticket_id");
 
   sColumn( COL_TICKET_DATA_NAME, "R_DATA_MAIN", "data_name");
   sColumn( COL_TICKET_COLL_NAME, "r_ticket_coll_main", "coll_name");
@@ -687,6 +690,7 @@ icatGeneralQuerySetup() {
 
   sFklink("R_TICKET_MAIN", "R_TICKET_ALLOWED_HOSTS", "R_TICKET_MAIN.ticket_id = R_TICKET_ALLOWED_HOSTS.ticket_id");
   sFklink("R_TICKET_MAIN", "R_TICKET_ALLOWED_USERS", "R_TICKET_MAIN.ticket_id = R_TICKET_ALLOWED_USERS.ticket_id");
+  sFklink("R_TICKET_MAIN", "R_TICKET_ALLOWED_GROUPS", "R_TICKET_MAIN.ticket_id = R_TICKET_ALLOWED_GROUPS.ticket_id");
 
   sFklink("R_TICKET_MAIN", "R_DATA_MAIN", "R_TICKET_MAIN.object_id = R_DATA_MAIN.data_id");
   sFklink("R_TICKET_MAIN", "r_ticket_coll_main", "R_TICKET_MAIN.object_id = r_ticket_coll_main.coll_id");

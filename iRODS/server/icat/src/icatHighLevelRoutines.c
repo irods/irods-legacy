@@ -8974,17 +8974,47 @@ icatGetTicketUserId(char *userName, char *userIdStr) {
    userId[0]='\0';
    if (logSQL!=0) rodsLog(LOG_SQL, "icatGetTicketUserId SQL 1 ");
    status = cmlGetStringValueFromSql(
-            "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=?",
+            "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name!='rodsgroup'",
 	    userId, MAX_NAME_LEN, userName2, zoneToUse, 0, &icss);
-            /* find user row, type user or group */
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
 	 return(CAT_INVALID_USER);
       }
-      _rollback("icatGetTicketUserId");
       return(status);
    }
    strncpy(userIdStr, userId, MAX_NAME_LEN);
+   return(0);
+}
+
+int
+icatGetTicketGroupId(char *groupName, char *groupIdStr) {
+   char groupId[MAX_NAME_LEN];
+   char groupZone[NAME_LEN];
+   char zoneToUse[MAX_NAME_LEN];
+   char groupName2[NAME_LEN];
+   int status;
+
+   status = getLocalZone();
+   if (status != 0) return(status);
+
+   strncpy(zoneToUse, localZone, MAX_NAME_LEN);
+   status = parseUserName(groupName, groupName2, groupZone);
+   if (groupZone[0]!='\0') {
+      rstrcpy(zoneToUse, groupZone, MAX_NAME_LEN);
+   }
+
+   groupId[0]='\0';
+   if (logSQL!=0) rodsLog(LOG_SQL, "icatGetTicketGroupId SQL 1 ");
+   status = cmlGetStringValueFromSql(
+            "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
+	    groupId, MAX_NAME_LEN, groupName2, zoneToUse, 0, &icss);
+   if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) {
+	 return(CAT_INVALID_GROUP);
+      }
+      return(status);
+   }
+   strncpy(groupIdStr, groupId, MAX_NAME_LEN);
    return(0);
 }
 
@@ -9006,6 +9036,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
    char objTypeStr[MAX_NAME_LEN];
    char userIdStr[MAX_NAME_LEN];
    char user2IdStr[MAX_NAME_LEN];
+   char group2IdStr[MAX_NAME_LEN];
    char ticketIdStr[MAX_NAME_LEN];
    int i;
    char myTime[50];
@@ -9014,7 +9045,14 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 
    /* session ticket (temp, for debug) */
    if (strcmp(opName, "session") == 0) {
-      status = chlGenQueryTicketSetup(ticketString);
+      if (strlen(arg3)>0) {
+         /* for 2 server hops, arg3 is the original client addr */
+	 status = chlGenQueryTicketSetup(ticketString, arg3);
+      }
+      else {
+         /* for direct connections, rsComm has the original client addr */
+	 status = chlGenQueryTicketSetup(ticketString, rsComm->clientAddr);
+      }
       return(0);
    }
 
@@ -9235,6 +9273,27 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }
+	 if (strcmp(arg4, "group") == 0) {
+	    status = icatGetTicketGroupId(arg5, user2IdStr);
+	    if (status != 0) return(status);
+	    i=0;
+	    cllBindVars[i++]=ticketIdStr;
+	    cllBindVars[i++]=arg5;
+	    cllBindVarCount=i;
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 13");
+	    status =  cmlExecuteNoAnswerSql(
+	       "insert into R_TICKET_ALLOWED_GROUPS (ticket_id, group_name) values (? , ?)",
+	       &icss);
+	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	    if (status != 0) {
+	       rodsLog(LOG_NOTICE,
+		       "chlModTicket cmlExecuteNoAnswerSql insert user failure %d",
+		       status);
+	       return(status);
+	    }
+	    status =  cmlExecuteNoAnswerSql("commit", &icss);
+	    return(status);
+	 }
       }
       if (strcmp(arg3, "remove") == 0) {
 	 if (strcmp(arg4, "host") == 0) {
@@ -9242,7 +9301,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    cllBindVars[i++]=ticketIdStr;
 	    cllBindVars[i++]=arg5;
 	    cllBindVarCount=i;
-	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 13");
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 14");
 	    status =  cmlExecuteNoAnswerSql(
 	       "delete from R_TICKET_ALLOWED_HOSTS where ticket_id=? and host=?",
 	       &icss);
@@ -9263,7 +9322,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    cllBindVars[i++]=ticketIdStr;
 	    cllBindVars[i++]=arg5;
 	    cllBindVarCount=i;
-	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 14");
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 15");
 	    status =  cmlExecuteNoAnswerSql(
 	       "delete from R_TICKET_ALLOWED_USERS where ticket_id=? and user_name=?",
 	       &icss);
@@ -9271,6 +9330,27 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    if (status != 0) {
 	       rodsLog(LOG_NOTICE,
 		       "chlModTicket cmlExecuteNoAnswerSql delete user failure %d",
+		       status);
+	       return(status);
+	    }
+	    status =  cmlExecuteNoAnswerSql("commit", &icss);
+	    return(status);
+	 }
+	 if (strcmp(arg4, "group") == 0) {
+	    status = icatGetTicketGroupId(arg5, group2IdStr);
+	    if (status != 0) return(status);
+	    i=0;
+	    cllBindVars[i++]=ticketIdStr;
+	    cllBindVars[i++]=arg5;
+	    cllBindVarCount=i;
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 16");
+	    status =  cmlExecuteNoAnswerSql(
+	       "delete from R_TICKET_ALLOWED_GROUPS where ticket_id=? and group_name=?",
+	       &icss);
+	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	    if (status != 0) {
+	       rodsLog(LOG_NOTICE,
+		       "chlModTicket cmlExecuteNoAnswerSql delete group failure %d",
 		       status);
 	       return(status);
 	    }

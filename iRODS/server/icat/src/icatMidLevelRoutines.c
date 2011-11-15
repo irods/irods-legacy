@@ -926,6 +926,29 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
 }
 
 
+int cmlCheckUserInGroup(char *userName, char *userZone, 
+			char *groupName, icatSessionStruct *icss) {
+   int status;
+   char sVal[MAX_NAME_LEN];
+   rodsLong_t iVal;
+
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckUserInGroup SQL 1 ");
+
+   status = cmlGetStringValueFromSql(
+      "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
+      sVal, MAX_NAME_LEN, userName, userZone, 0, icss);
+   if (status==CAT_NO_ROWS_FOUND) return (CAT_INVALID_USER);
+   if (status) return(status);
+
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckUserInGroup SQL 2 ");
+
+   status = cmlGetIntegerValueFromSql(
+      "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
+      &iVal, sVal,  groupName, 0, 0, 0, icss);
+   if (status) return(status);
+   return(0);
+}
+
 /* check on additional restrictions on a ticket, return error if not
  * allowed */
 int
@@ -936,6 +959,7 @@ cmlCheckTicketRestrictions(char *ticketId, char *ticketHost,
    int stmtNum;
    int hostOK=0;
    int userOK=0;
+   int groupOK=0;
    char myUser[NAME_LEN];
 
    strncpy(myUser,userName,sizeof(myUser));
@@ -994,6 +1018,30 @@ cmlCheckTicketRestrictions(char *ticketId, char *ticketHost,
       if (status!=0 && status!=CAT_NO_ROWS_FOUND) return(status);
    }
    if (userOK==0) return(CAT_TICKET_USER_EXCLUDED);
+
+   /* Now check on group restrictions */
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckTicketRestrictions SQL 3");
+   status = cmlGetFirstRowFromSqlBV(
+      "select group_name from R_TICKET_ALLOWED_GROUPS where ticket_id=?",
+      ticketId, "", "", "",  &stmtNum, icss);
+   if (status==CAT_NO_ROWS_FOUND) {
+      groupOK=1;
+   }
+   else {
+      if (status != 0) return(status);
+   }
+   for (;status!=CAT_NO_ROWS_FOUND;) {
+      int status2;
+      status2 = cmlCheckUserInGroup(userName, userZone, 
+				    icss->stmtPtr[stmtNum]->resultValue[0],
+				    icss);
+      if (status2==0) {
+	 groupOK=1;
+      }
+      status = cmlGetNextRowFromStatement(stmtNum, icss);
+      if (status!=0 && status!=CAT_NO_ROWS_FOUND) return(status);
+   }
+   if (groupOK==0) return(CAT_TICKET_GROUP_EXCLUDED);
    return(0);
 }
 

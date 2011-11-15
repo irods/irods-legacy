@@ -492,6 +492,12 @@ create table R_TICKET_ALLOWED_USERS
    user_name           varchar(250) not null
 );
 
+create table R_TICKET_ALLOWED_GROUPS
+(
+   ticket_id           INT64TYPE not null,
+   group_name           varchar(250) not null
+);
+
 
 
 #ifdef mysql
@@ -578,3 +584,4 @@ create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
 create unique index idx_ticket on R_TICKET_MAIN (ticket_string);
 create unique index idx_ticket_host on R_TICKET_ALLOWED_HOSTS (ticket_id, host);
 create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_name);
+create unique index idx_ticket_group on R_TICKET_ALLOWED_GROUPS (ticket_id, group_name);
