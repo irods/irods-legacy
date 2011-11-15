@@ -302,7 +302,8 @@ unlink ( "$dir_w/foo2" );
 # make a directory containing 20 small files
 mksdir ();
 runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
-runCmd( "iput -IkfR $irodsdefresource $sfile2 $irodshome/test/foo1" );
+my $phypath = $dir_w . '/' . 'foo1.' .  int(rand(10000000));
+runCmd( "iput -IkfR $irodsdefresource -p $phypath $sfile2 $irodshome/test/foo1" );
 # show have 2 different copies
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1,$myssize,$sfile2size" );
 # update all old copies
@@ -320,8 +321,8 @@ if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "iget -vIKPfr -X rsfile --retries 10 $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
-my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
-runCmd( "iput -p $phypath $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
+# my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
+runCmd( "iput $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
 runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
 runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2,sfile10" );
 runCmd( "ibun -cDtar $irodshome/testx1.tar $irodshome/testx", "", "", "", "irm -f $irodshome/testx1.tar" );
