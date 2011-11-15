@@ -21,9 +21,11 @@ use File::Copy;
 #-- Initialization
 # This test has 3 servers and 3 resources. One of the server is an IES.
 # This 3 addresses needs to be changed for real tests.
-my $iesHostAddr="mwan-hp";
-my $host2Addr="mwan-hp";
-my $host3Addr="mwan-hp";
+my $iesHostAddr="one.ucsd.edu";
+# my $host2Addr="srbbrick14.ucsd.edu";
+# my $host3Addr="srbbrick15.ucsd.edu";
+my $host2Addr="one.ucsd.edu";
+my $host3Addr="one.ucsd.edu";
 my $resc1="myresc1";
 my $resc2="myresc2";
 my $resc3="myresc3";
@@ -224,10 +226,9 @@ if ( ! $noprompt_flag ) {
 
 runCmd( "iadmin mkresc $resc1 \"unix file system\" cache $iesHostAddr \"/tmp/myresc1\"", "", "", "", "iadmin rmresc $resc1" );
 runCmd( "iadmin mkresc $resc2 \"unix file system\" cache $host2Addr \"/tmp/myresc2\"", "", "", "", "iadmin rmresc $resc2" );
-# have to rfrg before rmresc
-runCmd( "iadmin mkresc $resc3 \"unix file system\" cache $host3Addr \"/tmp/myresc3\"", "", "", "", "iadmin rfrg resgroup $resc3" );
+runCmd( "iadmin mkresc $resc3 \"unix file system\" cache $host3Addr \"/tmp/myresc3\"", "", "", "", "iadmin rmresc $resc3" );
 runCmd( "iadmin mkresc compresource \"unix file system\" compound $host3Addr \"/tmp/compresc\"", "", "", "", "iadmin rmresc compresource" );
-runCmd( "iadmin atrg resgroup $resc3", "", "", "", "iadmin rmresc $resc3" );
+runCmd( "iadmin atrg resgroup $resc3", "", "", "", "iadmin rfrg resgroup $resc3" );
 runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
 
 # transfer file test
@@ -307,9 +308,9 @@ foreach $hostAddr (@hostList) {
     runCmd( "itrim -rS $resc2 -N1 $irodshome/test/dir1" );
     runCmd( "iget -r $irodshome/test/dir1  $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
-    runCmd( "itrim -rSresc3 -N1 $irodshome/test/dir1" );
+    runCmd( "itrim -rS $resc3 -N1 $irodshome/test/dir1" );
     # get the name of bundle file
-    my $bunfile = getBunpathOfSubfile ( "$irodshome/test/dir1/sfile1" );
+    my $bunfile = getBunpathOfSubfile ( "$irodshome/test/dir1/sdir/sfile1" );
     runCmd( "irm -f --empty $bunfile" );
     # should not be able to remove it because it is not empty
     runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
@@ -319,8 +320,8 @@ foreach $hostAddr (@hostList) {
 
     # resource group test
     runCmd( "iput -PKrR resgroup $testsrcdir $irodshome/test/dir1" );
-    runCmd( "irepl -a $irodshome/test/dir1" );
-    runCmd( "itrim -S $resc3 -N1 $irodshome/test/dir1" );
+    runCmd( "irepl -ar $irodshome/test/dir1" );
+    runCmd( "itrim -rS $resc3 -N1 $irodshome/test/dir1" );
     runCmd( "iget -r $irodshome/test/dir1  $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
     runCmd( "irm -rvf $irodshome/test/dir1" );
@@ -339,6 +340,7 @@ foreach $hostAddr (@hostList) {
     system ( "irm -vrf $irodshome/test/dir2" );
 }
 system ( "rm -r $testsrcdir" );
+system ( "irmtrash" );
 
 #-- Execute rollback commands
 
@@ -614,10 +616,11 @@ sub getBunpathOfSubfile ()
     my @list;
     my @words;
     my $numwords;
+    my $dumpFile="/tmp/myDumpFile";
 
-    system  ("ils -L $subfilepath > $tempFile" );
-    @list      = dumpFileContent( $tempFile );
-    unlink( $tempFile );
+    system  ("ils -L $subfilepath > $dumpFile" );
+    @list      = dumpFileContent( $dumpFile );
+    unlink( $dumpFile );
 # bundle path is in 2nd line
     @words = split( / /, $list[1] );
     $numwords = @words;
