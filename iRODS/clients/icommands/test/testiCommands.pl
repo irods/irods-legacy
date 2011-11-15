@@ -371,6 +371,7 @@ runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
 runCmd( "itrim -rStestresource -N1 $irodshome/testp" );
 # get the name of bundle file
 my $bunfile = getBunpathOfSubfile ( "$irodshome/testp/sfile1" );
+if ( $debug ) { print( "DEBUG: bunfile = $bunfile\n" ); }
 runCmd( "irm -f --empty $bunfile" );
 # should not be able to remove it because it is not empty
 runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
