@@ -318,7 +318,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag)
 	while (tmpBunReplCache != NULL) {
 	    nextBunReplCache = tmpBunReplCache->next;
 	    free (tmpBunReplCache);
-	    tmpBunReplCache = tmpBunReplCache;
+	    tmpBunReplCache = nextBunReplCache;
 	}
         bzero (bunReplCacheHeader, sizeof (bunReplCacheHeader_t));
 	return status;
