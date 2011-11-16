@@ -1289,6 +1289,7 @@ genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
 	    }
             addKeyVal (&collHandle->dataObjInp.condInput,
               SEL_OBJ_TYPE_KW, "dataObj");
+	    collHandle->dataObjInp.openFlags = 0;    /* start over */
             status = (*queryHandle->querySpecColl) 
 	      ((rcComm_t *) queryHandle->conn,
 	      &collHandle->dataObjInp, &genQueryOut);
