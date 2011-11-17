@@ -5,8 +5,10 @@
 # at the beginning of the execution of this script.
 #
 # usage:   ./testiCommands.pl [debug] [noprompt] [help]
-#    noprompt assumes iinit was done before running this script 
-#    and will not ask for path and password input.
+#    help - Print usage messages.
+#    debug - print debug messages.
+#    noprompt - assumes iinit was done before running this script 
+#    and will not ask for path nor password input.
 # 
 #
 # Copyright (c), CCIN2P3
@@ -57,11 +59,11 @@ foreach $arg (@ARGV)
     } elsif ( $arg =~ "noprompt" ) {
 	$noprompt_flag = 1;
     } elsif ( $arg =~ "help" ) {
-	print ("usage:   $0 [debug] [noprompt] [help]\n");
+        &printUsage ();
 	exit( 0 );
     }  else {
 	print ("unknown input - $arg \n");
-        print ("usage:   $0 [debug] [noprompt] [help]\n");
+        &printUsage ();
         exit( 1 );
     }
 }
@@ -843,5 +845,14 @@ sub getBunpathOfSubfile ()
     $numwords = @words;
 # bundle path is in the last entry of the line
     return ( $words[$numwords - 1] );
+}
+
+sub printUsage ()
+{
+    print ("usage: $0 [help] [debug] [noprompt]\n");
+    print ("  help - Print usage messages.\n");
+    print ("  debug - Print debug messages.\n");
+    print ("  noprompt -  Assumes iinit was done before running this script and\n");
+    print ("    will not ask for password nor path input.\n");
 }
 
