@@ -4,13 +4,16 @@
 # icommands location has to be put in the PATH env variable or their PATH will be asked
 # at the beginning of the execution of this script.
 #
-# usage:   ./mhostsTestiCommands.pl [debug] [noprompt] [help]
-#    noprompt assumes iinit was done before running this script 
-#    and will not ask for path and password input.
+# usage: ./mhostsTestiCommands.pl [help] [debug] [noprompt] [addr1 addr2 addr3]
+#    help - Print usage messages.
+#    debug - print debug messages.
+#    noprompt - Assumes iinit was done before running this script 
+#        and will not ask for path nor password input.
+#    addrN - The 3 iRODS server addresses for this test. If they are not
+#        defined, the values defined by $iesHostAddr, $host2Addr and $host3Addr
+#        in this script will be used.
 # 
 #
-# Copyright (c), CCIN2P3
-# For more information please refer to files in the COPYRIGHT directory.
 
 use strict;
 use Cwd;
@@ -20,20 +23,18 @@ use File::Copy;
 
 #-- Initialization
 # This test has 3 servers and 3 resources. One of the server is an IES.
-# This 3 addresses needs to be changed for real tests.
+# These 3 addresses can be input on the mhostsTestiCommands.pl command line.
+# If they are not given, the values defined below will be used.
 my $iesHostAddr="one.ucsd.edu";
-# my $host2Addr="srbbrick14.ucsd.edu";
-# my $host3Addr="srbbrick15.ucsd.edu";
-my $host2Addr="one.ucsd.edu";
-my $host3Addr="one.ucsd.edu";
+my $host2Addr="srbbrick14.ucsd.edu";
+my $host3Addr="srbbrick15.ucsd.edu";
 my $resc1="myresc1";
 my $resc2="myresc2";
 my $resc3="myresc3";
+# $doRbudpTest - whether to do Rbudp Test. "yes" or "no". Default is yes
+my $doRbudpTest = "yes";
 my @hostList;
 my $hostAddr;
-push ( @hostList, $host3Addr );
-push ( @hostList, $host2Addr );
-push ( @hostList, $iesHostAddr );
 
 my $debug;
 my $entry;
@@ -62,24 +63,56 @@ my @words;
 # will set it.
 my $noprompt_flag;
 my $arg;
+my $inHostCnt;
 
 $debug = 0;
 $noprompt_flag = 0;
+$inHostCnt = 0;
 foreach $arg (@ARGV)
 {
     if ( $arg =~ "debug" ) {
-        $debug = 1;
+	if ($inHostCnt > 0) {
+            &printUsage ();
+            exit ( 1 );
+	} else {
+            $debug = 1;
+        }
     } elsif ( $arg =~ "noprompt" ) {
-	$noprompt_flag = 1;
+        if ($inHostCnt > 0) {
+            &printUsage ();
+            exit ( 1 );
+        } else {
+	    $noprompt_flag = 1;
+        }
     } elsif ( $arg =~ "help" ) {
-	print ("usage:   $0 [debug] [noprompt] [help]\n");
+        &printUsage ();
 	exit( 0 );
-    }  else {
-	print ("unknown input - $arg \n");
-        print ("usage:   $0 [debug] [noprompt] [help]\n");
-        exit( 1 );
+    }  elsif ($inHostCnt == 0) {
+	$iesHostAddr=$arg;
+	$inHostCnt++;
+    }  elsif ($inHostCnt == 1) {
+        $host2Addr=$arg;
+        $inHostCnt++;
+    }  elsif ($inHostCnt == 2) {
+        $host3Addr=$arg;
+        $inHostCnt++;
+    } else {
+	print ("Too many address input - must be 0 or 3.\n\n");
+        &printUsage ();
+	exit ( 1 );
     }
 }
+
+if ($inHostCnt > 0 && $inHostCnt < 3 ) {
+    print ("Not enough address input - must be 0 or 3.\n\n");
+    &printUsage ();
+    exit ( 1 );
+}
+
+print ("Host addresses used are:  $iesHostAddr  $host2Addr  $host3Addr\n");
+push ( @hostList, $iesHostAddr );
+push ( @hostList, $host2Addr );
+push ( @hostList, $host3Addr );
 
 my $dir_w        = cwd();
 my $testsrcdir = $dir_w . '/testsrc';
@@ -102,7 +135,7 @@ if ($irodsEnvFile) {
 my $ntests       = 0;
 my $progname     = $0;
 
-my $outputfile   = "testSurvey_" . $host . ".log";
+my $outputfile   = "multiHostTest" . $host . ".log";
 my $sfile2 = $dir_w . '/sfile2';
 my $sfile2size;
 system ( "cat $progname $progname > $sfile2" );
@@ -241,7 +274,7 @@ runCmd( "icd $irodshome" );
 runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
 # loop through the all hosts 
 foreach $hostAddr (@hostList) {
-    print ("COONECT to host: $hostAddr\n");
+    print ("CONNECT to host: $hostAddr\n");
     # test small file put/get
     $ENV{'irodsHost'}  = $hostAddr;
     runCmd( "iput -KrR $resc2 $progname $irodshome/test/foo1" );
@@ -310,7 +343,7 @@ foreach $hostAddr (@hostList) {
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
     runCmd( "itrim -rS $resc3 -N1 $irodshome/test/dir1" );
     # get the name of bundle file
-    my $bunfile = getBunpathOfSubfile ( "$irodshome/test/dir1/sdir/sfile1" );
+    my $bunfile = &getBunpathOfSubfile ( "$irodshome/test/dir1/sdir/sfile1" );
     runCmd( "irm -f --empty $bunfile" );
     # should not be able to remove it because it is not empty
     runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
@@ -328,16 +361,17 @@ foreach $hostAddr (@hostList) {
     system ( "rm -r $dir_w/dir1" );
 
     # do the large files tests using RBUDP
-
-    runCmd( "iput -vQPKrR $resc2 $testsrcdir $irodshome/test/dir1" );
-    runCmd( "irepl -BQvrPT -R $resc3 $irodshome/test/dir1" );
-    runCmd( "itrim -vrS $resc2 -N1 $irodshome/test/dir1" );
-    runCmd( "icp -vQKPTr $irodshome/test/dir1 $irodshome/test/dir2" );
-    system ( "irm -vrf $irodshome/test/dir1" );
-    runCmd( "iget -vQPKr $irodshome/test/dir2 $dir_w/dir2" );
-    runCmd( "diff -r $dir_w/dir2 $testsrcdir", "", "NOANSWER" );
-    system ( "rm -r $dir_w/dir2" );
-    system ( "irm -vrf $irodshome/test/dir2" );
+    if ( $doRbudpTest =~ "yes" ) {
+        runCmd( "iput -vQPKrR $resc2 $testsrcdir $irodshome/test/dir1" );
+        runCmd( "irepl -BQvrPT -R $resc3 $irodshome/test/dir1" );
+        runCmd( "itrim -vrS $resc2 -N1 $irodshome/test/dir1" );
+        runCmd( "icp -vQKPTr $irodshome/test/dir1 $irodshome/test/dir2" );
+        system ( "irm -vrf $irodshome/test/dir1" );
+        runCmd( "iget -vQPKr $irodshome/test/dir2 $dir_w/dir2" );
+        runCmd( "diff -r $dir_w/dir2 $testsrcdir", "", "NOANSWER" );
+        system ( "rm -r $dir_w/dir2" );
+        system ( "irm -vrf $irodshome/test/dir2" );
+    }
 }
 system ( "rm -r $testsrcdir" );
 system ( "irmtrash" );
@@ -628,3 +662,14 @@ sub getBunpathOfSubfile ()
     return ( $words[$numwords - 1] );
 }
 
+sub printUsage ()
+{
+    print ("usage: $0 [help] [debug] [noprompt] [addr1 addr2 addr3]\n");
+    print ("  help - Print usage messages.\n");
+    print ("  debug - Print debug messages.\n");
+    print ("  noprompt -  Assumes iinit was done before running this script and\n");
+    print ("    will not ask for password nor path input.\n");
+    print ("  addrN - The 3 iRODS server addresses for this test. If they are not\n");
+    print ("    defined, the values defined by iesHostAddr, host2Addr and host3Addr\n");
+    print ("    in this script will be used.\n");
+}
