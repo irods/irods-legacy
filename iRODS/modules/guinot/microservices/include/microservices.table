@@ -1,3 +1,0 @@
-/* Properties module microservices */
-/* Service name			# args		Service function */
-{"msiGetFormattedSystemTime", 3, (funcPtr) msiGetFormattedSystemTime},
