@@ -1594,7 +1594,7 @@ msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei)
  *
  * \brief Returns the local system time
  *
- * \module guinot
+ * \module core
  *
  * \since pre-2.1
  *
