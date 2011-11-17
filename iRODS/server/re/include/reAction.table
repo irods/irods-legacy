@@ -33,6 +33,7 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei);
 int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei);
 int msiGetDiffTime(msParam_t* inpParam1,  msParam_t* inpParam2, msParam_t* inpParam3, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *rei);
+int msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam, msParam_t* inpFormatParam, ruleExecInfo_t *rei);
 int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei);
 int msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
@@ -324,6 +325,7 @@ microsdef_t MicrosTable[] = {
   {"writeKeyValPairs",3,(funcPtr) writeKeyValPairs},
   {"msiGetDiffTime", 4, (funcPtr) msiGetDiffTime},
   {"msiGetSystemTime", 2, (funcPtr) msiGetSystemTime},
+  {"msiGetFormattedSystemTime", 3, (funcPtr) msiGetFormattedSystemTime},
   {"msiHumanToSystemTime", 2, (funcPtr) msiHumanToSystemTime},
   {"msiStrToBytesBuf", 2, (funcPtr) msiStrToBytesBuf},
   {"msiApplyDCMetadataTemplate", 2, (funcPtr) msiApplyDCMetadataTemplate},
