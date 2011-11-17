@@ -2967,7 +2967,10 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 	    else {
 	       rstrcat(outBuf, icss.stmtPtr[stmtNum]->resultValue[i], 
 		       maxOutBuf);
-	       rstrcat(outBuf, " ", maxOutBuf);
+	       if (i != nCols-1) {
+		 /* add a space except for the last column */
+		 rstrcat(outBuf, " ", maxOutBuf);
+	       }
 	    }
 	 }
 	 if (format == 2) {
