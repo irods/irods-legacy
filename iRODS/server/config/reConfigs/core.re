@@ -86,6 +86,10 @@ acGetUserByDN(*arg,*OUT) { }
 # strict or not for all users:
 acAclPolicy { }
 #acAclPolicy {msiAclPolicy("STRICT"); }
+# When choosing a "STRICT" ACL policy you should consider setting the 
+# following permissions if you are using the PHP web browser:
+# ichmod -M read public /ZONE_NAME
+# ichmod -M read public /ZONE_NAME/home 
 #
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
