@@ -263,26 +263,27 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	  phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
 
         if (status >= 0) {
-	    if (compDataObjInfo != NULL) {
-		/* don't put compDataObjInfo in the otherDataObjInfo queue */
-                dataObjInfo_t *prevDataObjInfo = NULL;
-		tmpDataObjInfo = nextDataObjInfo;
-		while (tmpDataObjInfo != NULL) {
-		    if (tmpDataObjInfo == compDataObjInfo) {
-			if (prevDataObjInfo == NULL) {
-			    nextDataObjInfo = tmpDataObjInfo->next;
-			} else {
-			    prevDataObjInfo->next = tmpDataObjInfo->next;
-			}
-			break;
+	    if (writeFlag > 0) {
+	        if (compDataObjInfo != NULL) {
+		    /* don't put compDataObjInfo in otherDataObjInfo queue */
+                    dataObjInfo_t *prevDataObjInfo = NULL;
+		    tmpDataObjInfo = nextDataObjInfo;
+		    while (tmpDataObjInfo != NULL) {
+		        if (tmpDataObjInfo == compDataObjInfo) {
+			    if (prevDataObjInfo == NULL) {
+			        nextDataObjInfo = tmpDataObjInfo->next;
+			    } else {
+			        prevDataObjInfo->next = tmpDataObjInfo->next;
+			    }
+			    break;
+		        }
+		        prevDataObjInfo = tmpDataObjInfo;
+		        tmpDataObjInfo = tmpDataObjInfo->next;
 		    }
-		    prevDataObjInfo = tmpDataObjInfo;
-		    tmpDataObjInfo = tmpDataObjInfo->next;
-		}
-		 L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
-	    } else {
-		if (compRescInfo != NULL)
+		    L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
+	        } else if (compRescInfo != NULL) {
 		    L1desc[l1descInx].replRescInfo = compRescInfo;
+		}
 	    }
             queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 0, 1);
             L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo;
