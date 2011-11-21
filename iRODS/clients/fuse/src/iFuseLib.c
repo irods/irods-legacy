@@ -1246,6 +1246,7 @@ ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
     status = clientLogin (iFuseConn->conn);
     if (status != 0) {
         rcDisconnect (iFuseConn->conn);
+	iFuseConn->conn=NULL;
     }
     return (status);
 }
@@ -1367,6 +1368,7 @@ disconnectAll ()
     while (tmpIFuseConn != NULL) {
 	if (tmpIFuseConn->conn != NULL) {
 	    rcDisconnect (tmpIFuseConn->conn);
+	    tmpIFuseConn->conn=NULL;
 	}
 	tmpIFuseConn = tmpIFuseConn->next;
     }
@@ -1376,6 +1378,7 @@ disconnectAll ()
     while (tmpIFuseConn != NULL) {
 	if (tmpIFuseConn->conn != NULL) {
 	    rcDisconnect (tmpIFuseConn->conn);
+	    tmpIFuseConn->conn=NULL;
 	}
 	tmpIFuseConn = tmpIFuseConn->next;
     }
@@ -1414,6 +1417,7 @@ connManager ()
 		    /* can be disconnected */
 		    if (tmpIFuseConn->conn != NULL) {
 		        rcDisconnect (tmpIFuseConn->conn);
+			tmpIFuseConn->conn=NULL;
 		    }
 #ifdef USE_BOOST
 		    /* don't unlock. it will cause delete to fail */
@@ -1450,6 +1454,7 @@ connManager ()
                     /* can be disconnected */
                     if (tmpIFuseConn->conn != NULL) {
                         rcDisconnect (tmpIFuseConn->conn);
+	    		tmpIFuseConn->conn=NULL;
                     }
 #ifdef USE_BOOST
 		    /* don't unlock. it will cause delete to fail */
@@ -1529,6 +1534,7 @@ ifuseReconnect (iFuseConn_t *iFuseConn)
 	return USER__NULL_INPUT_ERR;
     rodsLog (LOG_DEBUG, "ifuseReconnect: reconnecting");
     rcDisconnect (iFuseConn->conn);
+    iFuseConn->conn=NULL;
     status = ifuseConnect (iFuseConn, &MyRodsEnv);
     return status;
 }
