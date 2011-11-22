@@ -387,6 +387,8 @@ dataObjInfo_t *outDataObjInfo)
     int status;
     int allFlag;
     int savedStatus = 0;
+    rescInfo_t *compRescInfo = NULL;
+    rescInfo_t *cacheRescInfo = NULL;
 
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
         allFlag = 1;
@@ -394,14 +396,24 @@ dataObjInfo_t *outDataObjInfo)
         allFlag = 0;
     }
 
+    if (allFlag == 1 && destRescGrpInfo != NULL &&
+      strlen (destRescGrpInfo->rescGroupName) > 0 &&
+      getRescGrpClass (destRescGrpInfo, &compRescInfo) == COMPOUND_CL) {
+	getCacheRescInGrp (rsComm, destRescGrpInfo->rescGroupName,
+          compRescInfo, &cacheRescInfo);
+    }
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
     tmpRescGrpInfo = destRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
+	if (tmpRescInfo == cacheRescInfo) {
+	    /* spkip cacheResc of COMPOUND_CL because getCacheDataInfoOfCompResc will
+	     * stage to this cache */
+	    tmpRescGrpInfo = tmpRescGrpInfo->next;
+	    continue;
+	}
         if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
             /* need to get a copy in cache first */
-            /* XXXX this will not work because it is likely that
-             * rescGrpName will be blank */
             if ((status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
               srcDataObjInfoHead, NULL, tmpRescGrpInfo,
               oldDataObjInfo, &srcDataObjInfo)) < 0) {
