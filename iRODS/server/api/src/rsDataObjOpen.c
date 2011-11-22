@@ -72,7 +72,9 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     dataObjInfo_t *compDataObjInfo = NULL;
     dataObjInfo_t *cacheDataObjInfo = NULL;
     rescInfo_t *compRescInfo = NULL;
+#if 0
     rescGrpInfo_t *myRescGrpInfo = NULL;
+#endif
     int l1descInx;
     int writeFlag;
     int phyOpenFlag = DO_PHYOPEN;
@@ -110,6 +112,17 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (getStructFileType (dataObjInfoHead->specColl) >= 0) {
 	/* special coll. Nothing to do */
     } else if (writeFlag > 0) {
+	status = procDataObjOpenForWrite (rsComm, dataObjInp, &dataObjInfoHead,
+	  &cacheDataObjInfo, &compDataObjInfo, &compRescInfo);
+    } else {
+        status = procDataObjOpenForRead (rsComm, dataObjInp, &dataObjInfoHead,
+          &cacheDataObjInfo, &compDataObjInfo, &compRescInfo);
+    }
+    if (status < 0) {
+        freeAllDataObjInfo (dataObjInfoHead);
+	return status;
+    }
+#if 0	/* refactor with procDataObjOpenForRead and procDataObjOpenForWrite */
 	/* put the copy with destResc on top */
 	status = requeDataObjInfoByDestResc (&dataObjInfoHead, 
 	  &dataObjInp->condInput, writeFlag, 1);
@@ -220,6 +233,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         }
     }
     freeAllRescGrpInfo (myRescGrpInfo);
+#endif  /* refactor with procDataObjOpenForRead and procDataObjOpenForWrite */
 
     if (getRescClass (dataObjInfoHead->rescInfo) == BUNDLE_CL) {
 	status = stageBundledData (rsComm, &dataObjInfoHead);
@@ -233,23 +247,25 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     /* If cacheDataObjInfo != NULL, this is the staged copy of
-     * the compound obj. This copy must be opened. If compDataObjInfo != NULL,
-     * an existing COMPOUND_CL DataObjInfo exist. Need to replicate to
-     * this DataObjInfo in rsdataObjClose. If compRescInfo != NULL,
-     * writing to a compound resource where there is no existing copy in 
-     * the resource. Need to replicate to this resource in rsdataObjClose.  
+     * the compound obj. This copy must be opened. 
+     * If compDataObjInfo != NULL, an existing COMPOUND_CL DataObjInfo exist. 
+     * Need to replicate to * this DataObjInfo in rsdataObjClose. 
+     * At this point, cacheDataObjInfo is left in the dataObjInfoHead queue
+     * but not compDataObjInfo.
+     * If compRescInfo != NULL, writing to a compound resource where there 
+     * is no existing copy in the resource. Need to replicate to this 
+     * resource in rsdataObjClose.  
+     * For read, both compDataObjInfo and compRescInfo should be NULL.
      */
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
 	if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
-	    if (compDataObjInfo != tmpDataObjInfo) 
+	    if (compDataObjInfo != tmpDataObjInfo) {
+		/* save it in otherDataObjInfo so no mem leak */
 		queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
-#if 0
-	    if (replDataObjInfo != NULL) freeDataObjInfo (replDataObjInfo);
-	    replDataObjInfo = tmpDataObjInfo;
-#endif
+	    }
 	    tmpDataObjInfo = nextDataObjInfo;
 	    continue;
 	} else if (writeFlag > 0 && cacheDataObjInfo != NULL && 
@@ -263,27 +279,27 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	  phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
 
         if (status >= 0) {
-	    if (writeFlag > 0) {
-	        if (compDataObjInfo != NULL) {
-		    /* don't put compDataObjInfo in otherDataObjInfo queue */
-                    dataObjInfo_t *prevDataObjInfo = NULL;
-		    tmpDataObjInfo = nextDataObjInfo;
-		    while (tmpDataObjInfo != NULL) {
-		        if (tmpDataObjInfo == compDataObjInfo) {
-			    if (prevDataObjInfo == NULL) {
-			        nextDataObjInfo = tmpDataObjInfo->next;
-			    } else {
-			        prevDataObjInfo->next = tmpDataObjInfo->next;
-			    }
-			    break;
-		        }
-		        prevDataObjInfo = tmpDataObjInfo;
-		        tmpDataObjInfo = tmpDataObjInfo->next;
+	    if (compDataObjInfo != NULL) {
+#if 0	/* done in dequeDataObjInfo */
+		/* don't put compDataObjInfo in otherDataObjInfo queue */
+                dataObjInfo_t *prevDataObjInfo = NULL;
+		tmpDataObjInfo = nextDataObjInfo;
+		while (tmpDataObjInfo != NULL) {
+		    if (tmpDataObjInfo == compDataObjInfo) {
+			if (prevDataObjInfo == NULL) {
+			    nextDataObjInfo = tmpDataObjInfo->next;
+			} else {
+			    prevDataObjInfo->next = tmpDataObjInfo->next;
+			}
+			break;
 		    }
-		    L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
-	        } else if (compRescInfo != NULL) {
-		    L1desc[l1descInx].replRescInfo = compRescInfo;
+		    prevDataObjInfo = tmpDataObjInfo;
+		    tmpDataObjInfo = tmpDataObjInfo->next;
 		}
+#endif
+		L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
+	    } else if (compRescInfo != NULL) {
+		L1desc[l1descInx].replRescInfo = compRescInfo;
 	    }
             queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 0, 1);
             L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo;
@@ -558,6 +574,169 @@ dataObjInfo_t **dataObjInfoHead)
 	myDataObjInfo->next = *dataObjInfoHead;
 	*dataObjInfoHead = myDataObjInfo;
     }
+    return status;
+}
+
+int
+procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo, 
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
+{
+    int status = 0;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+
+    /* put the copy with destResc on top */
+    status = requeDataObjInfoByDestResc (dataObjInfoHead,
+      &dataObjInp->condInput, 1, 1);
+    /* status < 0 means there is no copy in the DEST_RESC */
+    if (status < 0 &&
+      getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
+        /* we don't have a copy in the DEST_RESC_NAME */
+        status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+        if (status < 0) return status;
+        if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
+            /* get here because the comp object does not exist. Find
+             * a cache copy. If one does not exist, stage one to cache */
+            status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+              *dataObjInfoHead, NULL, myRescGrpInfo, NULL,
+              cacheDataObjInfo);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "procDataObjForOpenWrite: getCacheDataInfo of %s failed",
+                  (*dataObjInfoHead)->objPath);
+                freeAllRescGrpInfo (myRescGrpInfo);
+                return status;
+            } else {
+		/* replicate to compRescInfo after write is done */
+                *compRescInfo = myRescGrpInfo->rescInfo;
+            }
+        } else {     /* dest resource is not a compound resource */
+	    /* we don't have a copy, so create an empty dataObjInfo */
+            status = createEmptyRepl (rsComm, dataObjInp, dataObjInfoHead);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "procDataObjForOpenWrite: createEmptyRepl of %s failed",
+                  (*dataObjInfoHead)->objPath);
+                freeAllRescGrpInfo (myRescGrpInfo);
+                return status;
+            }
+        }
+    } else {	/*  The target data object exists */
+        status = procDataObjOpenForExistObj (rsComm, dataObjInp, 
+	  dataObjInfoHead, cacheDataObjInfo, compDataObjInfo, compRescInfo);
+#if 0	/* refactored by procDataObjOpenForExistObj */
+        if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL) {
+        /* It is a COMPOUND_CL. Save the comp object because it can be 
+         * requeued by stageAndRequeDataToCache */
+            *compDataObjInfo = *dataObjInfoHead;
+            status = stageAndRequeDataToCache (rsComm, dataObjInfoHead);
+            if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
+                rodsLogError (LOG_ERROR, status,
+                  "procDataObjForOpenWrite:stageAndRequeDataToCache %s failed",
+                  (*dataObjInfoHead)->objPath);
+                return status;
+            }
+            *cacheDataObjInfo = *dataObjInfoHead;
+        } else if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL
+          && getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo) >= 0 &&
+          strlen (myRescGrpInfo->rescGroupName) > 0) {
+	    /* Do purge cache and destResc is a resource group. See if we
+	     * a COMPOUND_CL resource in the group */ 
+            if (getRescInGrpByClass (rsComm, myRescGrpInfo->rescGroupName,
+              COMPOUND_CL, compRescInfo, NULL) >= 0) {
+		/* get cacheDataObjInfo */
+                status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+                 *dataObjInfoHead, NULL, myRescGrpInfo, NULL, cacheDataObjInfo);
+                if (status < 0) {
+                    rodsLogError (LOG_NOTICE, status,
+                      "procDataObjForOpenWrite: getCacheDataInfo of %s failed",
+                      (*dataObjInfoHead)->objPath);
+                } else {
+                    if (getDataObjByClass (*dataObjInfoHead, COMPOUND_CL,
+                      compDataObjInfo) >= 0) {
+                        /* we have a compDataObjInfo */
+                        *compRescInfo = NULL;
+                    }
+                }
+            }
+        }
+#endif /*   refactored by procDataObjOpenForExistObj */
+    }
+    if (*compDataObjInfo != NULL) {
+        dequeDataObjInfo (dataObjInfoHead, *compDataObjInfo);
+    }
+    freeAllRescGrpInfo (myRescGrpInfo);
+    return status;
+}
+
+/* procDataObjOpenForExistObj - process a dataObj for COMPOUND_CL special
+ * situation. The object must be :
+ *    read - already exist 
+ *    write - already exist in dest Resource
+ */
+int
+procDataObjOpenForExistObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
+{
+    int status = 0;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+
+    if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL) {
+        /* It is a COMPOUND_CL. Save the comp object because it can be
+         * requeued by stageAndRequeDataToCache */
+        *compDataObjInfo = *dataObjInfoHead;
+        status = stageAndRequeDataToCache (rsComm, dataObjInfoHead);
+        if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
+            rodsLogError (LOG_ERROR, status,
+             "procDataObjOpenForExistObj:stageAndRequeDataToCache of %s failed",
+              (*dataObjInfoHead)->objPath);
+            return status;
+        }
+        *cacheDataObjInfo = *dataObjInfoHead;
+    } else if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
+      strlen ((*dataObjInfoHead)->rescGroupName) > 0) {
+        /* Do purge cache and destResc is a resource group. See if we
+         * a COMPOUND_CL resource in the group */
+        if (getRescInGrpByClass (rsComm, (*dataObjInfoHead)->rescGroupName,
+          COMPOUND_CL, compRescInfo, &myRescGrpInfo) >= 0) {
+	    /* get cacheDataObjInfo */
+            status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+              *dataObjInfoHead, NULL, myRescGrpInfo, NULL,
+              cacheDataObjInfo);
+            if (status < 0) {
+                rodsLogError (LOG_NOTICE, status,
+                  "procDataObjOpenForExistObj: getCacheDataInfo of %s failed",
+                  (*dataObjInfoHead)->objPath);
+            } else {
+                if (getDataObjByClass (*dataObjInfoHead, COMPOUND_CL,
+                  compDataObjInfo) >= 0) {
+                    /* we have a compDataObjInfo */
+                    *compRescInfo = NULL;
+                }
+            }
+        }
+    }
+    freeAllRescGrpInfo (myRescGrpInfo);
+    return status;
+}
+
+int
+procDataObjOpenForRead (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
+{
+    int status = 0;
+
+    status = procDataObjOpenForExistObj (rsComm, dataObjInp, dataObjInfoHead,
+      cacheDataObjInfo, compDataObjInfo, compRescInfo);
+
+    if (*compDataObjInfo != NULL) {
+	dequeDataObjInfo (dataObjInfoHead, *compDataObjInfo);
+	freeDataObjInfo (*compDataObjInfo);
+        *compDataObjInfo = NULL;
+    }
+    *compRescInfo = NULL;
     return status;
 }
 

@@ -1033,8 +1033,8 @@ int sendRate, int packetSize)
     sendClose (&rbudpSender);
     if (status < 0) {
         rodsLog (LOG_ERROR,
-         "putFileToPortalRbudp: sendfile error for %s", 
-	  myPortList->hostAddr);
+         "putFileToPortalRbudp: sendfile error for %s:%d", 
+	  myPortList->hostAddr, myPortList->portNum & 0xffff0000);
         return (status);
     }
     return (status);

@@ -629,6 +629,31 @@ int singleInfoFlag, int topFlag)
     return (0);
 }
 
+int
+dequeDataObjInfo (dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo)
+{
+    dataObjInfo_t *tmpDataObjInfo;
+    dataObjInfo_t *prevDataObjInfo = NULL;
+
+    if (dataObjInfo == NULL || dataObjInfoHead == NULL)
+        return (-1);
+
+    tmpDataObjInfo = *dataObjInfoHead;
+    while (tmpDataObjInfo != NULL) {
+        if (tmpDataObjInfo == dataObjInfo) {
+            if (prevDataObjInfo == NULL) {
+                *dataObjInfoHead = tmpDataObjInfo->next;
+            } else {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+            }
+            return 0;
+        }
+        prevDataObjInfo = tmpDataObjInfo;
+        tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+    return -1;
+}
+
 int 
 getDataObjInfoCnt (dataObjInfo_t *dataObjInfoHead)
 {

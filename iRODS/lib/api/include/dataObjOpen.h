@@ -45,6 +45,18 @@ dataObjInfo_t **dataObjInfoHead);
 int
 createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfoHead);
+int
+procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo);
+int
+procDataObjOpenForRead (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo);
+int
+procDataObjOpenForExistObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo);
 #else
 #define RS_DATA_OBJ_OPEN NULL
 #endif

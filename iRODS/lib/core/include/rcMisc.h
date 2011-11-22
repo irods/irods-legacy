@@ -85,6 +85,8 @@ int
 queDataObjInfo (dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo,
 int singleInfoFlag, int topFlag);
 int
+dequeDataObjInfo (dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo);
+int
 clearKeyVal (keyValPair_t *condInput);
 int
 clearInxIval (inxIvalPair_t *inxIvalPair);
