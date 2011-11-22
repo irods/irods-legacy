@@ -262,6 +262,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
 	if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
+	    /* this check is not necessary but won't hurt */
 	    if (compDataObjInfo != tmpDataObjInfo) {
 		/* save it in otherDataObjInfo so no mem leak */
 		queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
