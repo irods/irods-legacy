@@ -192,7 +192,8 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     if (backupFlag == 0 && allFlag == 1 &&
       getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) == NULL &&
       dataObjInfoHead != NULL && dataObjInfoHead->rescGroupName[0] != '\0') {
-	/* replicate to all resc in the rescGroup if DEST_RESC is not specified */
+	/* replicate to all resc in the rescGroup if DEST_RESC is not 
+         * specified */
 	addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW, 
 	  dataObjInfoHead->rescGroupName);
     }
