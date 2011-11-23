@@ -1120,6 +1120,7 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
         if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
 	  *destRescGrpInfo)) != NULL) {
             /* have a good copy already */
+	    *destDataObjInfo = NULL;
             return (HAVE_GOOD_COPY);
 	}
     } else {
@@ -1150,7 +1151,9 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
             if (*destRescGrpInfo != NULL) {
                 /* just creat a new one in myRescGrpInfo */
                 *destDataObjInfo = NULL;
-            }
+            } else {
+		dequeDataObjInfo (oldDataObjInfoHead, *destDataObjInfo);
+	    }
 	}
     }
     return (NO_GOOD_COPY);

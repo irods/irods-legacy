@@ -177,7 +177,9 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     if (status < 0) return status;
 
     if (getValByKey (&dataObjInp->condInput, BACKUP_RESC_NAME_KW) != NULL) {
+	/* backup to the DEST_RESC if one does not exist */
 	backupFlag = 1;
+	multiCopyFlag = 0;
     } else {
 	backupFlag = 0;
     }
@@ -190,7 +192,7 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     if (backupFlag == 0 && allFlag == 1 &&
       getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) == NULL &&
       dataObjInfoHead != NULL && dataObjInfoHead->rescGroupName[0] != '\0') {
-	/* replicate to all resc in the rescGroup */
+	/* replicate to all resc in the rescGroup if DEST_RESC is not specified */
 	addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW, 
 	  dataObjInfoHead->rescGroupName);
     }
@@ -200,7 +202,7 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     if (status < 0) return status;
 
 
-    if (multiCopyFlag == 0 || backupFlag == 1) {
+    if (multiCopyFlag == 0) {
 	/* if one copy per resource, see if a good copy already exist, 
 	 * If it does, the copy is returned in destDataObjInfo. 
 	 * Otherwise, Resources in &myRescGrpInfo are trimmed. Only those
@@ -211,9 +213,17 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
           &myRescGrpInfo, &destDataObjInfo, &dataObjInp->condInput);
         if (status == HAVE_GOOD_COPY) {
 	    dataObjInfo_t *cacheDataObjInfo = NULL;
+	    dataObjInfo_t *compDataObjInfo = NULL;
 	    if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
-	      getDataObjByClass (dataObjInfoHead, CACHE_CL, &cacheDataObjInfo)
-	      >= 0 && cacheDataObjInfo != destDataObjInfo) {
+#if 0
+	      getDataObjByClass (dataObjInfoHead, CACHE_CL, &cacheDataObjInfo) 
+	        >= 0 && cacheDataObjInfo != destDataObjInfo) {
+#else
+	      getDataObjByClass (dataObjInfoHead, COMPOUND_CL, &compDataObjInfo) 
+              >= 0 && strlen (compDataObjInfo->rescGroupName) > 0 &&
+	      getCacheDataInfoForRepl (rsComm, dataObjInfoHead, NULL,
+              compDataObjInfo, &cacheDataObjInfo) >= 0) {
+#endif
 	        /* purge the cache */
 		int status1 = trimDataObjInfo (rsComm, cacheDataObjInfo);
 		if (status1 < 0) {
@@ -227,27 +237,26 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
                 *outDataObjInfo = *destDataObjInfo;
 		outDataObjInfo->next = NULL;
             }
-	    if (backupFlag == 0) {
-		if (myRescGrpInfo != NULL && 
-	          (allFlag == 1 || myRescGrpInfo->next == NULL) && 
-		  (myRescGrpInfo->status < 0)) {
-		    status = myRescGrpInfo->status;
-		} else {
-                    status = 0;
-		}
+	    if (backupFlag == 0 && myRescGrpInfo != NULL && 
+	      (allFlag == 1 || myRescGrpInfo->next == NULL) && 
+	      (myRescGrpInfo->status < 0)) {
+		status = myRescGrpInfo->status;
 	    } else {
 	        status = 0;
 	    }
             freeAllDataObjInfo (dataObjInfoHead);
             freeAllDataObjInfo (oldDataObjInfoHead);
+            freeAllDataObjInfo (destDataObjInfo);
             freeAllRescGrpInfo (myRescGrpInfo);
 	    return status;
 	} else if (status < 0) {
             freeAllDataObjInfo (dataObjInfoHead);
             freeAllDataObjInfo (oldDataObjInfoHead);
+            freeAllDataObjInfo (destDataObjInfo);
             freeAllRescGrpInfo (myRescGrpInfo);
             return status;
         }
+	/* NO_GOOD_COPY drop through here */
     }
 
     status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
@@ -267,8 +276,14 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 	    if (allFlag == 0) {
 		freeAllDataObjInfo (dataObjInfoHead);
 		freeAllDataObjInfo (oldDataObjInfoHead);
+                freeAllDataObjInfo (destDataObjInfo);
 		freeAllRescGrpInfo (myRescGrpInfo);
 		return 0;
+	    } else {
+		/* queue destDataObjInfo in &dataObjInfoHead so that stage to cache 
+		 * can evaluate it */
+		queDataObjInfo (&dataObjInfoHead, destDataObjInfo, 0, 1);
+		destDataObjInfo = NULL;
 	    }
 	} else {
 	    savedStatus = status;
@@ -396,6 +411,8 @@ dataObjInfo_t *outDataObjInfo)
         allFlag = 0;
     }
 
+    /* If doing ALL, need to skip cacheRescInfo if the rescGrp has a COMPOUND_CL resc 
+     * because getCacheDataInfoOfCompResc will stage it */
     if (allFlag == 1 && destRescGrpInfo != NULL &&
       strlen (destRescGrpInfo->rescGroupName) > 0 &&
       getRescGrpClass (destRescGrpInfo, &compRescInfo) == COMPOUND_CL) {
@@ -407,7 +424,7 @@ dataObjInfo_t *outDataObjInfo)
     while (tmpRescGrpInfo != NULL) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
 	if (tmpRescInfo == cacheRescInfo) {
-	    /* spkip cacheResc of COMPOUND_CL because getCacheDataInfoOfCompResc will
+	    /* skip cacheResc of COMPOUND_CL because getCacheDataInfoOfCompResc will
 	     * stage to this cache */
 	    tmpRescGrpInfo = tmpRescGrpInfo->next;
 	    continue;
