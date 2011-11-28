@@ -262,8 +262,12 @@ endif
 # Otherwise tarDir can be used to specify the directory path of libtar.
 # Both TAR_EXEC_PATH  and tarDir should NOT be specified. By default, 
 # TAR_EXEC_PATH is on and tarDir is off.
+# TAR_EXTENDED_HDR - specify whether the extended header format option (-E) 
+# which allows individual file size larger than 8 Gb, is to be used. 
+# The default is off since not all tar commands support this option.
 TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
+# TAR_EXTENDED_HDR = 1
 ifeq ($(OS_platform), osx_platform)
 TAR_EXEC_PATH="`which tar`"
 else
@@ -384,6 +388,9 @@ ifndef BOOST_DIR
 BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
 endif
 endif
+
+# USE_GCOV - specify whether to compile for gcov test ocverage
+# USE_GCOV = 1
 
 # OS_AUTH - build in support for "OS level" authentication. This form
 # of authentication uses a shared secret and the genOSAuth command to

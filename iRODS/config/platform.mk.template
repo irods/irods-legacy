@@ -181,6 +181,9 @@ MY_CFLAG+= -I$(tarDir) -I$(tarDir)/listhash \
                   -I${tarDir}/lib \
                   -I${tarDir}/compat
 endif
+ifdef TAR_EXTENDED_HDR
+MY_CFLAG+=  -DTAR_EXTENDED_HDR
+endif
 endif
 
 ifdef RBUDP_TRANSFER

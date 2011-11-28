@@ -1329,10 +1329,18 @@ extractTarFileWithExec (int structFileInx)
 #ifdef GNU_TAR
     av[0] = TAR_EXEC_PATH;
     av[1] = "-x";
+#ifdef TAR_EXTENDED_HDR
+    av[2] = "-E";
+    av[3] = "-f";
+    av[4] = specColl->phyPath;
+    av[5] = "-C";
+    av[6] = specColl->cacheDir;
+#else
     av[2] = "-f";
     av[3] = specColl->phyPath;
     av[4] = "-C";
     av[5] = specColl->cacheDir;
+#endif
 #else	/* GNU_TAR */
     mkdir (specColl->cacheDir, getDefDirMode ());
     if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
@@ -1342,7 +1350,11 @@ extractTarFileWithExec (int structFileInx)
     }
     chdir (specColl->cacheDir);
     av[0] = TAR_EXEC_PATH;
+#ifdef TAR_EXTENDED_HDR
+    av[1] = "-xEf";
+#else
     av[1] = "-xf";
+#endif
     av[2] = specColl->phyPath;
 #endif	/* GNU_TAR */
     status = forkAndExec (av);
@@ -1514,7 +1526,11 @@ bundleCacheDirWithExec (int structFileInx)
 #else
     bzero (av, sizeof (av));
     av[0] = TAR_EXEC_PATH;
+#ifdef TAR_EXTENDED_HDR
+    av[1] = "-chEf";
+#else
     av[1] = "-chf";
+#endif
     av[2] = specColl->phyPath;
     av[3] = "-C";
     av[4] = specColl->cacheDir;
