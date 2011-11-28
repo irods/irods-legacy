@@ -4,6 +4,8 @@
 /* physPath.c - routines for physical path operations
  */
 
+#include <unistd.h>
+#include <fcntl.h>
 #include "rodsDef.h"
 #include "physPath.h"
 #include "dataObjOpr.h"
@@ -1205,5 +1207,106 @@ rsMkOrhpanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
       childName, (uint) random());
 
     return 0;
+}
+
+int
+getDataObjLockPath (char *objPath, char **outLockPath)
+{
+    int i;
+    char *objPathPtr, *tmpPtr;
+    char tmpPath[MAX_NAME_LEN];
+    int c;
+    int len;
+
+    if (objPath == NULL || outLockPath == NULL) return USER__NULL_INPUT_ERR;
+    /* skip over the first 3 '/' */
+    for (i = 0; i < 3; i++) {
+        tmpPtr = strchr (objPathPtr, '/');
+        if (tmpPtr == NULL) {
+            break;      /* just use the shorten one */
+        } else {
+            /* skip over '/' */
+            objPathPtr = tmpPtr + 1;
+        }
+    }
+    rstrcpy (tmpPath, objPathPtr, MAX_NAME_LEN);
+    /* replace all '/' with '.' */
+    objPathPtr = tmpPath;
+
+    while ((c = *objPathPtr) != '\0') {
+        if (c == '/')
+            *objPathPtr = '.';
+        objPathPtr++;
+    }
+
+    len = strlen (getConfigDir()) + strlen (LOCK_FILE_DIR) + 
+     strlen (tmpPath) + 10;
+    *outLockPath = (char *) malloc (len); 
+    snprintf (*outLockPath, len, "%-s/%-s/%-s", getConfigDir(), LOCK_FILE_DIR,
+      tmpPath);
+
+    return 0;
+}
+
+/* fsDataObjLock - lock the data object using the local file system
+ * Input:
+ *    char *objPath - The full Object path
+ *    int cmd - the fcntl cmd - valid values are F_SETLK, F_SETLKW and F_GETLK
+ *    int type - the fcntl type - valid values are F_UNLCK, F_WRLCK, F_RDLCK
+ *    int infd - For F_UNLCK, the fd of the file to unlock
+ */
+
+int
+fsDataObjLock (char *objPath, int cmd, int type, int infd)
+{
+    int status;
+    int myFd;
+    struct flock myflock;
+    char *path = NULL;
+
+    if ((status = getDataObjLockPath (objPath, &path)) < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "fsDataObjLock: getDataObjLockPath error for %s", objPath);
+	return status;
+    }
+
+    if (type != F_UNLCK) {
+	myFd = open (path, O_RDWR | O_CREAT, 0644);
+	if (myFd < 0) {
+	    status = FILE_OPEN_ERR - errno;
+            rodsLogError (LOG_ERROR, status,
+              "fsDataObjLock: open error for %s", objPath);
+            return status;
+	}
+    } else {
+	myFd = infd;
+    }
+#ifndef _WIN32
+    bzero (&myflock, sizeof (myflock));
+    myflock.l_type = type;
+    myflock.l_whence = SEEK_SET;
+    status = fcntl (myFd, cmd, &myflock);
+    if (status < 0) {
+	/* this is not necessary an error. cmd F_SETLK or F_GETLK can return 
+	 * -1. */
+	status = SYS_FS_LOCK_ERR - errno;
+        rodsLogError (LOG_DEBUG, status,
+          "fsDataObjLock: fcntl error for %s, cmd = %d, type = %d", 
+	  path, cmd, type);
+        free (path);
+	close (myFd);
+        return (status);
+    }
+#endif
+    free (path);
+    if (type == F_UNLCK) {
+        close (myFd);
+	myFd = 0;
+    } else if (cmd == F_GETLK) {
+	/* get the status of locking the file. return F_UNLCK if no conflict */
+	close (myFd);
+	myFd = myflock.l_type;
+    }
+    return (myFd);
 }
 

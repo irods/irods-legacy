@@ -145,6 +145,7 @@
 #define SYS_PHY_PATH_INUSE		-120000
 #define SYS_USER_NO_PERMISSION		-121000
 #define SYS_USER_RETRIEVE_ERR		-122000
+#define SYS_FS_LOCK_ERR			-123000
 
 /* 300,000 - 499,000 - user input type error */
 #define USER_AUTH_SCHEME_ERR		-300000

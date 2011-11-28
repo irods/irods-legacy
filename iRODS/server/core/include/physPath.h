@@ -22,6 +22,8 @@
 #define ORPHAN_DIR	"orphan"
 #define REPL_DIR	"replica"
 #define CHK_ORPHAN_CNT_LIMIT  20  /* number of failed check before stopping */
+#define LOCK_FILE_DIR	"lockFileDir"
+#define IRODS_OBJ_LOCK_FILE	"IRODS_OBJ_LOCK_FILE"	/* name of lock file */ 
 
 #ifdef  __cplusplus
 extern "C" {
@@ -91,7 +93,10 @@ int
 getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath);
 int
 rsMkOrhpanPath (rsComm_t *rsComm, char *objPath, char *orphanPath);
-
+int
+getDataObjLockPath (char *objPath, char **outLockPath);
+int
+fsDataObjLock (char *objPath, int cmd, int type, int infd);
 #ifdef  __cplusplus
 }
 #endif
