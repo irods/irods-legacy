@@ -570,18 +570,18 @@ generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
       funcName = "rcGeneralAdmin and rcUserAdmin";
    }
 
-   if (status < 0 ) {
-      if (Conn->rError) {
-	 rError_t *Err;
-         rErrMsg_t *ErrMsg;
-	 int i, len;
-	 Err = Conn->rError;
-	 len = Err->len;
-	 for (i=0;i<len;i++) {
-	    ErrMsg = Err->errMsg[i];
-	    rodsLog(LOG_ERROR, "Level %d: %s",i, ErrMsg->msg);
-	 }
+   if (Conn->rError) {
+      rError_t *Err;
+      rErrMsg_t *ErrMsg;
+      int i, len;
+      Err = Conn->rError;
+      len = Err->len;
+      for (i=0;i<len;i++) {
+	 ErrMsg = Err->errMsg[i];
+	 printf("Level %d message: %s\n",i, ErrMsg->msg);
       }
+   }
+   if (status < 0 ) {
       myName = rodsErrorName(status, &mySubName);
       rodsLog (LOG_ERROR, "%s failed with error %d %s %s",funcName,
 	       status, myName, mySubName);

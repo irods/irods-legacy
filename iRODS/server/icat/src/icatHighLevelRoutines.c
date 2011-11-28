@@ -1412,6 +1412,7 @@ int chlRegResc(rsComm_t *rsComm,
    char idNum[MAX_SQL_SIZE];
    int status;
    char myTime[50];
+   struct hostent *myHostEnt;
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc");
 
@@ -1467,6 +1468,15 @@ int chlRegResc(rsComm_t *rsComm,
 
    if (strlen(rescInfo->rescLoc)<1) {
       return(CAT_INVALID_RESOURCE_NET_ADDR);
+   }
+   myHostEnt = gethostbyname(rescInfo->rescLoc);
+   if (myHostEnt <= 0) {
+      int i;
+      char errMsg[155];
+      snprintf(errMsg, 150, 
+	       "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+	       rescInfo->rescLoc);
+      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
    }
 
    if ((strcmp(rescInfo->rescType, "database") !=0) &&
@@ -4119,6 +4129,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    char myTime[50];
    char rescId[MAX_NAME_LEN];
    char commentStr[200];
+   struct hostent *myHostEnt;
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc");
 
@@ -4249,6 +4260,15 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       OK=1;
    }
    if (strcmp(option, "host")==0) {
+      myHostEnt = gethostbyname(optionValue);
+      if (myHostEnt <= 0) {
+	 int i;
+	 char errMsg[155];
+	 snprintf(errMsg, 150, 
+		  "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+		  optionValue);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      }
       cllBindVars[cllBindVarCount++]=optionValue;
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=rescId;
