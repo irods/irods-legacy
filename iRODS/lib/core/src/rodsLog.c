@@ -151,6 +151,8 @@
     SYS_USER_NO_PERMISSION, 
     SYS_USER_RETRIEVE_ERR, 
     SYS_FS_LOCK_ERR, 
+    SYS_LOCK_TYPE_INP_ERR, 
+    SYS_LOCK_CMD_INP_ERR, 
     USER_AUTH_SCHEME_ERR, 
     USER_AUTH_STRING_EMPTY, 
     USER_RODS_HOST_EMPTY, 
@@ -681,6 +683,8 @@
     "SYS_USER_NO_PERMISSION", 
     "SYS_USER_RETRIEVE_ERR", 
     "SYS_FS_LOCK_ERR", 
+    "SYS_LOCK_TYPE_INP_ERR", 
+    "SYS_LOCK_CMD_INP_ERR", 
     "USER_AUTH_SCHEME_ERR", 
     "USER_AUTH_STRING_EMPTY", 
     "USER_RODS_HOST_EMPTY", 
@@ -1089,7 +1093,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 528;
+int irodsErrorCount= 530;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

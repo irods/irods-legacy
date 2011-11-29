@@ -138,4 +138,5 @@
 #include "streamClose.h"
 #include "getHostForGet.h"
 #include "dataObjFsync.h"
+#include "dataObjLock.h"
 #endif	/* API_HEADER_ALL_H */

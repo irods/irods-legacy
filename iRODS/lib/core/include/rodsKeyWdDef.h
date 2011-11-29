@@ -106,6 +106,11 @@
 #define PURGE_CACHE_KW		"purgeCache"	/* purge the cache copy right
 						 * after the operation */
 #define EMPTY_BUNDLE_ONLY_KW	"emptyBundleOnly" /* delete emptyBundleOnly */
+#define LOCK_TYPE_KW	"lockType"	/* valid values are READ_LOCK_TYPE
+					 * WRITE_LOCK_TYPE and UNLOCK_TYPE */
+#define LOCK_CMD_KW	"lockCmd"	/* valid values are SET_LOCK_WAIT_CMD,
+					 * SET_LOCK_CMD and GET_LOCK_CMD */
+#define LOCK_FD_KW	"lockFd"	/* Lock file desc for unlock */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 
