@@ -65,9 +65,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     /* Gets here means local zone operation */
     /* stat dataObj */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
-#if 0   /* separate specColl */
-    status = __rsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
-#endif
     status = rsObjStat (rsComm, dataObjInp, &rodsObjStatOut); 
     if (rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T) {
 	return (USER_INPUT_PATH_ERR);
@@ -77,19 +74,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
       rodsObjStatOut->specColl->collClass == LINKED_COLL) {
         /*  should not be here because if has been translated */
         return SYS_COLL_LINK_PATH_ERR;
-
-#if 0
-	/* linked obj,  just replace the path */
-	if (strlen (rodsObjStatOut->specColl->objPath) > 0) {
-	    rstrcpy (dataObjInp->objPath, rodsObjStatOut->specColl->objPath,
-	      MAX_NAME_LEN);
-	    freeRodsObjStat (rodsObjStatOut);
-	    /* call rsDataObjCreate because the translated path could be
-	     * a cross zone opertion */
-	    l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-	    return (l1descInx);
-	}
-#endif
     }
 
     if (rodsObjStatOut == NULL || 
@@ -102,22 +86,12 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
     } else if (rodsObjStatOut->specColl != NULL &&
       rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-#if 0 /* XXXXXXXXXX is this needed ? */
-        dataObjInp->specColl = rodsObjStatOut->specColl;
-	rodsObjStatOut->specColl = NULL;
-#endif
 	/* newly created. take out FORCE_FLAG since it could be used by put */
         /* rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW); */
         l1descInx = specCollSubCreate (rsComm, dataObjInp);
     } else {
 	/* dataObj exist */
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-#if 0 /* XXXXXXXXXX is this needed ? */
-	    if (rodsObjStatOut->specColl != NULL) {
-                dataObjInp->specColl = rodsObjStatOut->specColl;
-                rodsObjStatOut->specColl = NULL;
-	    }
-#endif
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
         } else {
@@ -253,9 +227,6 @@ rescInfo_t *rescInfo, char *rescGroupName)
 
     dataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
-#if 0	/* not needed */
-    dataObjInfo->replStatus = NEWLY_CREATED_COPY;
-#endif
     if (getRescClass (rescInfo) == COMPOUND_CL) {
 	rescInfo_t *cacheResc = NULL;
 	char myRescGroupName[NAME_LEN];
@@ -499,6 +470,5 @@ rescGrpInfo_t **myRescGrpInfo)
     } else {
 	return 1;
     }
-
 }
 
