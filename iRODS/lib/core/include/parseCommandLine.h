@@ -52,6 +52,8 @@ typedef struct {
    char *dataTypeString; 
    int longOption;
    int link;
+   int rlock;
+   int wlock;
    int veryLongOption;
    int mountCollection;
    char *mountType; 

@@ -75,6 +75,7 @@ getLockCmdAndType (keyValPair_t *condInput, int *cmd, int *type)
         *type = F_WRLCK;
     } else if (strcmp (lockType, UNLOCK_TYPE) == 0) {
         *type = F_UNLCK;
+	*cmd = F_SETLK;
         lockFd = getValByKey (condInput, LOCK_FD_KW);
         if (lockFd  != NULL) {
 	    return (atoi (lockFd));
@@ -113,3 +114,17 @@ getLockCmdAndType (keyValPair_t *condInput, int *cmd, int *type)
     return 0;
 }
 
+int
+rsDataObjUnlock (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int fd)
+{
+    char tmpStr[NAME_LEN];
+    int status;
+
+    snprintf (tmpStr, NAME_LEN, "%-d", fd);
+    addKeyVal (&dataObjInp->condInput, LOCK_FD_KW, tmpStr);
+    addKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW, UNLOCK_TYPE);
+
+    status = rsDataObjLock (rsComm, dataObjInp);
+
+    return status;
+}

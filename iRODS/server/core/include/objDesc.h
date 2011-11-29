@@ -54,6 +54,7 @@ typedef struct l1desc {
     int remoteL1descInx;
     int stageFlag;
     int purgeCacheFlag;
+    int lockFd;
     rescInfo_t *replRescInfo;	/* if non NULL, repl to this resc on close */
     dataObjInfo_t *replDataObjInfo; /* if non NULL, repl to this dataObjInfo
 				     * on close */

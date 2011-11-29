@@ -93,13 +93,13 @@ usage () {
    char *msgs[]={
 "Usage: iget [-fIKPQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] [--lfrestart lfRestartFile] [--retries count] [--purgec]",
-"srcDataObj|srcCollection ... destLocalFile|destLocalDir",
+"[--rlock]  srcDataObj|srcCollection ... destLocalFile|destLocalDir",
 "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] [--lfrestart lfRestartFile] [--retries count] [--purgec]",
-"srcDataObj|srcCollection",
+"[--rlock]  srcDataObj|srcCollection",
 "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] [--lfrestart lfRestartFile]  [--retries count]  [--purgec]",
-"srcDataObj ... -",
+"[--rlock]  srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
 " ",
@@ -169,6 +169,7 @@ usage () {
 "      on and the lfRestartFile input specifies a local file that contains",
 "      the restart info.",
 " -t  ticket - ticket (string) to use for ticket-based access.",
+" --rlock - use advisory read lock for the upload",
 " -h  this help",
 ""};
    int i;

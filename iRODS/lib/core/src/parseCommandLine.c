@@ -163,6 +163,14 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->dryrun=True;
             argv[i]="-Z";
          }
+         if (strcmp("--rlock", argv[i])==0) {
+            rodsArgs->rlock=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--wlock", argv[i])==0) {
+            rodsArgs->wlock=True;
+            argv[i]="-Z";
+         }
       }
    }
 

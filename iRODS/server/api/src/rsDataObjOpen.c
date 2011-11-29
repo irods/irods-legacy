@@ -12,6 +12,7 @@
 #include "dataObjOpr.h"
 #include "physPath.h"
 #include "dataObjCreate.h"
+#include "dataObjLock.h"
 #include "fileOpen.h"
 #include "subStructFileOpen.h"
 #include "rsGlobalExtern.h"
@@ -56,9 +57,6 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 /* _rsDataObjOpen - handle internal server dataObj open request.
  * valid phyOpenFlag are DO_PHYOPEN, DO_NOT_PHYOPEN and PHYOPEN_BY_SIZE
  *
- * return value - 0-2 - success but did not phy open
- *                > 2 - success with phy open
- *                < 0 - failure
  */
  
 int
@@ -78,6 +76,8 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int l1descInx;
     int writeFlag;
     int phyOpenFlag = DO_PHYOPEN;
+    char *lockType = NULL;
+    int lockFd = -1;
 
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
 	phyOpenFlag = DO_NOT_PHYOPEN;
@@ -86,6 +86,19 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	phyOpenFlag = PHYOPEN_BY_SIZE;
     }
 
+    lockType = getValByKey (&dataObjInp->condInput, LOCK_TYPE_KW);
+    if (lockType != NULL) {
+        lockFd = rsDataObjLock (rsComm, dataObjInp);
+        if (lockFd > 0) {
+            /* rm it so it won't be done again causing deadlock */
+            rmKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW);
+        } else {
+            rodsLogError (LOG_ERROR, lockFd,
+              "_rsDataObjOpen: rsDataObjLock error for %s. lockType = %s",
+              dataObjInp->objPath, lockType);
+            return lockFd;
+        }
+    }
     /* query rcat for dataObjInfo and sort it */
 
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, &dataObjInfoHead);
@@ -95,18 +108,29 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (status < 0) {
         if (dataObjInp->openFlags & O_CREAT && writeFlag > 0) {
             l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-            return (l1descInx);
-        } else {
-	    return (status);
+	    status = l1descInx;
 	}
+	if (lockFd > 0) {
+	    if (status > 0) {
+	        L1desc[l1descInx].lockFd = lockFd;
+	    } else {
+                rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+	    }
+	}
+	return (status);
     } else {
         /* screen out any stale copies */
         status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, 
 	  &dataObjInp->condInput, writeFlag);
-        if (status < 0) return status;
-
+        if (status < 0) {
+	    if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+	    return status;
+	}
         status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
-        if (status < 0) return status;
+        if (status < 0) {
+	    if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+	    return status;
+	}
     }
 
     if (getStructFileType (dataObjInfoHead->specColl) >= 0) {
@@ -119,6 +143,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
           &cacheDataObjInfo, &compDataObjInfo, &compRescInfo);
     }
     if (status < 0) {
+	if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
         freeAllDataObjInfo (dataObjInfoHead);
 	return status;
     }
@@ -135,11 +160,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	    if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
 	        /* get here because the comp object does not exist. Find
 		 * a cache copy. If one does not exist, stage one to cache */
-#if 0	/* not needed since we changed dataObjOpenForRepl */
-		/* have to save dataSize because it could be changed in
-		 * getCacheDataInfoOfCompResc */
-		rodsLong_t dataSize = dataObjInp->dataSize;
-#endif
 		status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
 		  dataObjInfoHead, NULL, myRescGrpInfo, NULL, 
 		  &cacheDataObjInfo);
@@ -152,9 +172,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                     return status;
                 } else {
 		    compRescInfo = myRescGrpInfo->rescInfo;
-#if 0
-		     dataObjInp->dataSize = dataSize;
-#endif
 		}
 	    } else {     /* dest resource is not a compound resource */
 	        status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
@@ -242,6 +259,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
               "_rsDataObjOpen: stageBundledData of %s failed stat=%d",
               dataObjInfoHead->objPath, status);
             freeAllDataObjInfo (dataObjInfoHead);
+	    if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
             return status;
         }
     }
@@ -281,23 +299,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
         if (status >= 0) {
 	    if (compDataObjInfo != NULL) {
-#if 0	/* done in dequeDataObjInfo */
-		/* don't put compDataObjInfo in otherDataObjInfo queue */
-                dataObjInfo_t *prevDataObjInfo = NULL;
-		tmpDataObjInfo = nextDataObjInfo;
-		while (tmpDataObjInfo != NULL) {
-		    if (tmpDataObjInfo == compDataObjInfo) {
-			if (prevDataObjInfo == NULL) {
-			    nextDataObjInfo = tmpDataObjInfo->next;
-			} else {
-			    prevDataObjInfo->next = tmpDataObjInfo->next;
-			}
-			break;
-		    }
-		    prevDataObjInfo = tmpDataObjInfo;
-		    tmpDataObjInfo = tmpDataObjInfo->next;
-		}
-#endif
 		L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
 	    } else if (compRescInfo != NULL) {
 		L1desc[l1descInx].replRescInfo = compRescInfo;
@@ -309,11 +310,19 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	    } else {
                L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
 	    }
+            if (lockFd >= 0) {
+                if (l1descInx >= 0) {
+                     L1desc[l1descInx].lockFd = lockFd;
+                } else {
+                    rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+                }
+            }
             return (l1descInx);
 	}
         tmpDataObjInfo = nextDataObjInfo;
     }
     freeAllDataObjInfo (otherDataObjInfo);
+    if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
 
     return (status);
 }

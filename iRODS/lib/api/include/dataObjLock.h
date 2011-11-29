@@ -34,6 +34,8 @@ int
 _rsDataObjLock (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 int
 getLockCmdAndType (keyValPair_t *condInput, int *cmd, int *type);
+int
+rsDataObjUnlock (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int fd);
 #else
 #define RS_DATA_OBJ_LOCK NULL
 #endif

@@ -15,6 +15,7 @@
 #include "dataObjOpr.h"
 #include "physPath.h"
 #include "dataObjUnlink.h"
+#include "dataObjLock.h"
 #include "regDataObj.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
@@ -40,6 +41,8 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
+    char *lockType = NULL;
+    int lockFd = -1;
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
       &dataObjInp->condInput);
@@ -62,17 +65,32 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (l1descInx);
     }
 
+    lockType = getValByKey (&dataObjInp->condInput, LOCK_TYPE_KW);
+    if (lockType != NULL) {
+	lockFd = rsDataObjLock (rsComm, dataObjInp);
+	if (lockFd > 0) {
+	    /* rm it so it won't be done again causing deadlock */
+	    rmKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW);
+	} else {
+            rodsLogError (LOG_ERROR, lockFd,
+              "rsDataObjCreate: rsDataObjLock error for %s. lockType = %s",
+              dataObjInp->objPath, lockType);
+	    return lockFd;
+	}
+    }
     /* Gets here means local zone operation */
     /* stat dataObj */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
     status = rsObjStat (rsComm, dataObjInp, &rodsObjStatOut); 
     if (rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T) {
+	if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
 	return (USER_INPUT_PATH_ERR);
     }
 
     if (rodsObjStatOut != NULL && rodsObjStatOut->specColl != NULL &&
       rodsObjStatOut->specColl->collClass == LINKED_COLL) {
         /*  should not be here because if has been translated */
+	if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
         return SYS_COLL_LINK_PATH_ERR;
     }
 
@@ -100,6 +118,14 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
     if (rodsObjStatOut != NULL) freeRodsObjStat (rodsObjStatOut);
 
+    
+    if (lockFd >= 0) {
+        if (l1descInx >= 0) {
+	     L1desc[l1descInx].lockFd = lockFd;
+	} else {
+	    rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+	}
+    }
     return (l1descInx);
 }
 

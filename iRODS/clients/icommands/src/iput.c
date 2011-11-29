@@ -92,11 +92,11 @@ usage ()
    char *msgs[]={
 "Usage : iput [-abfIkKPQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile] [--link]", 
-"             [--lfrestart lfRestartFile] [--retries count]",
+"             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
 "Usage : iput [-abfIkKPQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] [--link]",
-"             [--lfrestart lfRestartFile] [--retries count]",
+"             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
 "               localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -190,6 +190,7 @@ usage ()
 " --lfrestart lfRestartFile - specifies that the large file restart option is",
 "      on and the lfRestartFile input specifies a local file that contains",
 "      the restart info.",
+" --wlock - use advisory write (exclusive) lock for the upload",
 " -h  this help",
 ""};
    int i;

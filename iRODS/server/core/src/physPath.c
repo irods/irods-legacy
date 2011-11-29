@@ -1219,6 +1219,7 @@ getDataObjLockPath (char *objPath, char **outLockPath)
     int len;
 
     if (objPath == NULL || outLockPath == NULL) return USER__NULL_INPUT_ERR;
+    objPathPtr = objPath;
     /* skip over the first 3 '/' */
     for (i = 0; i < 3; i++) {
         tmpPtr = strchr (objPathPtr, '/');
@@ -1240,10 +1241,10 @@ getDataObjLockPath (char *objPath, char **outLockPath)
     }
 
     len = strlen (getConfigDir()) + strlen (LOCK_FILE_DIR) + 
-     strlen (tmpPath) + 10;
+     strlen (tmpPath) + strlen (LOCK_FILE_TRAILER) + 10;
     *outLockPath = (char *) malloc (len); 
-    snprintf (*outLockPath, len, "%-s/%-s/%-s", getConfigDir(), LOCK_FILE_DIR,
-      tmpPath);
+    snprintf (*outLockPath, len, "%-s/%-s/%-s.%-s", getConfigDir(), 
+      LOCK_FILE_DIR, tmpPath, LOCK_FILE_TRAILER);
 
     return 0;
 }
@@ -1264,13 +1265,12 @@ fsDataObjLock (char *objPath, int cmd, int type, int infd)
     struct flock myflock;
     char *path = NULL;
 
-    if ((status = getDataObjLockPath (objPath, &path)) < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "fsDataObjLock: getDataObjLockPath error for %s", objPath);
-	return status;
-    }
-
     if (type != F_UNLCK) {
+        if ((status = getDataObjLockPath (objPath, &path)) < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "fsDataObjLock: getDataObjLockPath error for %s", objPath);
+            return status;
+        }
 	myFd = open (path, O_RDWR | O_CREAT, 0644);
 	if (myFd < 0) {
 	    status = FILE_OPEN_ERR - errno;
@@ -1292,13 +1292,13 @@ fsDataObjLock (char *objPath, int cmd, int type, int infd)
 	status = SYS_FS_LOCK_ERR - errno;
         rodsLogError (LOG_DEBUG, status,
           "fsDataObjLock: fcntl error for %s, cmd = %d, type = %d", 
-	  path, cmd, type);
-        free (path);
+	  objPath, cmd, type);
+        if (path != NULL) free (path);
 	close (myFd);
         return (status);
     }
 #endif
-    free (path);
+    if (path != NULL) free (path);
     if (type == F_UNLCK) {
         close (myFd);
 	myFd = 0;

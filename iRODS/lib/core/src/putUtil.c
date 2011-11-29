@@ -435,6 +435,9 @@ rodsRestart_t *rodsRestart)
 	      MAX_NAME_LEN);
 	}
     }
+    if (rodsArgs->wlock == True) {
+	addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE);
+    }
 
     return (0);
 }

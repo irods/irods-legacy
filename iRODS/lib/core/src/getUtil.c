@@ -383,6 +383,9 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
               MAX_NAME_LEN);
         }
     }
+    if (rodsArgs->rlock == True) {
+        addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE);
+    }
 
     dataObjOprInp->openFlags = O_RDONLY;
 

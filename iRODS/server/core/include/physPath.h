@@ -23,7 +23,7 @@
 #define REPL_DIR	"replica"
 #define CHK_ORPHAN_CNT_LIMIT  20  /* number of failed check before stopping */
 #define LOCK_FILE_DIR	"lockFileDir"
-#define IRODS_OBJ_LOCK_FILE	"IRODS_OBJ_LOCK_FILE"	/* name of lock file */ 
+#define LOCK_FILE_TRAILER	"LOCK_FILE"	/* added to end of lock file */ 
 
 #ifdef  __cplusplus
 extern "C" {

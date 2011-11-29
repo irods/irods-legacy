@@ -26,6 +26,7 @@
 #include "regDataObj.h"
 #include "dataObjRepl.h"
 #include "dataObjTrim.h"
+#include "dataObjLock.h"
 #include "getRescQuota.h"
 
 #ifdef LOG_TRANSFERS
@@ -77,7 +78,11 @@ dataObjInfo_t **outDataObjInfo)
 	dataObjCloseInp->l1descInx = l1descInx;
     } else {
         status = _rsDataObjClose (rsComm, dataObjCloseInp);
-
+	if (L1desc[l1descInx].lockFd > 0) {
+	    rsDataObjUnlock (rsComm, L1desc[l1descInx].dataObjInp, 
+	      L1desc[l1descInx].lockFd);
+	    L1desc[l1descInx].lockFd = -1;
+	}
         if (status >= 0 && L1desc[l1descInx].oprStatus >= 0) {
 	    /* note : this may overlap with acPostProcForPut or 
 	     * acPostProcForCopy */
