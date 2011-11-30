@@ -169,7 +169,7 @@ usage () {
 "      on and the lfRestartFile input specifies a local file that contains",
 "      the restart info.",
 " -t  ticket - ticket (string) to use for ticket-based access.",
-" --rlock - use advisory read lock for the upload",
+" --rlock - use advisory read lock for the download",
 " -h  this help",
 ""};
    int i;
