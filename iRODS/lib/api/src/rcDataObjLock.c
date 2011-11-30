@@ -22,19 +22,30 @@
  * \since 1.0
  *
  * \author  Mike Wan
- * \date    2007
+ * \date    2011
  *
  * \remark none
  *
  * \note none
  *
  * \usage
- * Lock a data object /myZone/home/john/myfile in myRescource for write:
+ * Lock and unlock a data object /myZone/home/john/myfile for write:
  * \n dataObjInp_t dataObjInp;
+ * \n int lockFd;
+ * \n char tmpStr[NAME_LEN];
  * \n bzero (&dataObjInp, sizeof (dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.openFlags = O_WRONLY;
- * \n addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, "myRescource");
+ * \n addKeyVal (&dataObjInp.condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE);
+ * \n # LOCK_CMD_KW input is optional. If not specified, SET_LOCK_WAIT_CMD is assumed
+ * \n lockFd = rcDataObjLock (conn, &dataObjInp);
+ * \n if (lockFd < 0) {
+ * \n .... handle the error
+ * \n }
+ * \n # now unlock it
+ * \n addKeyVal (&dataObjInp.condInput, LOCK_TYPE_KW, UNLOCK_TYPE);
+ * \n snprintf (tmpStr, NAME_LEN, "%-d", lockFd);
+ * \n addKeyVal (&dataObjInp.condInput, LOCK_FD_KW, tmpStr);
  * \n status = rcDataObjLock (conn, &dataObjInp);
  * \n if (status < 0) {
  * \n .... handle the error
@@ -44,9 +55,12 @@
  * \param[in] dataObjInp - Elements of dataObjInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
+ *    \n LOCK_TYPE_KW - the lock type. Valid values are READ_LOCK_TYPE, WRITE_LOCK_TYPE and UNLOCK_TYPE.
+ *    \n LOCK_CMD_KW - the lock command.  Valid values are SET_LOCK_CMD, SET_LOCK_WAIT_CMD and GET_LOCK_CMD.
+ *    \n LOCK_FD_KW - the file desc of the locked file. Needed only for UNLOCK_TYPE.
  *
  * \return integer
- * \retval an opened and locked file descriptor on success
+ * \retval an opened and locked file descriptor for READ_LOCK_TYPE, WRITE_LOCK_TYPE or 0 for UNLOCK_TYPE on success
 
  * \sideeffect none
  * \pre none
