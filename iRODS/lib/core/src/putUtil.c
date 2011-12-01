@@ -471,6 +471,12 @@ rodsRestart_t *rodsRestart)
 	addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE);
     }
 
+    if (rodsArgs->rlock == True) {
+        rodsLog (LOG_NOTICE,
+          "initCondForPut: --rlock not supported, changing it to --wlock");
+        addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE);
+    }
+
     return (0);
 }
 

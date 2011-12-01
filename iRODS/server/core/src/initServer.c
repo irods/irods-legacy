@@ -22,6 +22,7 @@
 #include "reDefines.h"
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
+#include "physPath.h"
 #ifdef HPSS
 #include "hpssFileDriver.h"
 #endif
@@ -2552,5 +2553,72 @@ irodsPosition_t position)
         agentProc->next = NULL;
     }
     return 0;
+}
+
+int
+purgeLockFileDir (int chkLockFlag)
+{
+    char lockFileDir[MAX_NAME_LEN];
+    char lockFilePath[MAX_NAME_LEN*2];
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+    int status;
+    int savedStatus = 0;
+    struct flock myflock;
+    uint purgeTime;
+
+    snprintf (lockFileDir, MAX_NAME_LEN, "%-s/%-s", getConfigDir(),
+      LOCK_FILE_DIR);
+
+    dirPtr = opendir (lockFileDir);
+    if (dirPtr == NULL) {
+        rodsLog (LOG_ERROR,
+        "purgeLockFileDir: opendir error for %s, errno = %d",
+         lockFileDir, errno);
+        return (UNIX_FILE_OPENDIR_ERR - errno);
+    }
+    bzero (&myflock, sizeof (myflock));
+    myflock.l_whence = SEEK_SET;
+    purgeTime = time (0) - LOCK_FILE_PURGE_TIME;
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (lockFilePath, MAX_NAME_LEN, "%-s/%-s",
+          lockFileDir, myDirent->d_name);
+        status = stat (lockFilePath, &statbuf);
+
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+              "purgeLockFileDir: stat error for %s, errno = %d",
+              lockFilePath, errno);
+            savedStatus = UNIX_FILE_STAT_ERR - errno;
+            unlink (lockFilePath);
+            continue;
+        }
+	if ((statbuf.st_mode & S_IFREG) == 0) continue;
+	if (chkLockFlag) {
+	    int myFd;
+	    if ((int)purgeTime < statbuf.st_mtime) continue;
+	    myFd = open (lockFilePath, O_RDWR | O_CREAT, 0644);
+            if (myFd < 0) {
+                savedStatus = FILE_OPEN_ERR - errno;
+                rodsLogError (LOG_ERROR, savedStatus,
+                  "purgeLockFileDir: open error for %s", lockFilePath);
+		continue;
+            }
+            myflock.l_type = F_WRLCK;
+            fcntl (myFd, F_GETLK, &myflock);
+	    close (myFd);
+	    /* some process is locking it */
+            if (myflock.l_type != F_UNLCK) continue;
+	}
+	unlink (lockFilePath);
+    }
+    closedir (dirPtr);
+
+    return savedStatus;
 }
 

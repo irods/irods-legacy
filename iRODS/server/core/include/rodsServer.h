@@ -103,4 +103,6 @@ void
 spawnManagerTask ();
 int
 procBadReq ();
+void
+purgeLockFileWorkerTask ();
 #endif	/* RODS_SERVER_H */
