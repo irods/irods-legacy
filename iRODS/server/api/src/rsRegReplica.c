@@ -50,12 +50,14 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
     destDataObjInfo = regReplicaInp->destDataObjInfo;
 
+#if 0
     status = checkDupReplica (rsComm, srcDataObjInfo->dataId, 
       destDataObjInfo->rescName, destDataObjInfo->filePath);
     if (status >= 0) {
 	destDataObjInfo->replNum = status;
 	return status;
     }
+#endif
     if (getValByKey (&regReplicaInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
 	rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
@@ -67,6 +69,18 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
           &regReplicaInp->condInput);
 	if (status >= 0) status = destDataObjInfo->replNum;
+    }
+    if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+	int status2;
+	rodsSleep (1, 0);
+	/* 2 staging at the same time */
+        status2 = checkDupReplica (rsComm, srcDataObjInfo->dataId,
+          destDataObjInfo->rescName, destDataObjInfo->filePath);
+        if (status2 >= 0) {
+            destDataObjInfo->replNum = status;
+	    destDataObjInfo->dataId = srcDataObjInfo->dataId;
+            return status2;
+        }
     }
     return (status);
 #else

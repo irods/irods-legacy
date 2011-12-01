@@ -494,7 +494,9 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
 	if (status < 0) {
 	    L1desc[l1descInx].oprStatus = status;
-	    l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
+	    /* don't delete replica with the same filePath */
+	    if (status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME)
+	        l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
             rodsLog (LOG_NOTICE,
               "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
               destDataObjInfo->objPath, status);

@@ -1195,9 +1195,11 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
         /* if (status == SYS_COPY_ALREADY_IN_RESC) { */
 	if (outCacheObjInfo->dataId > 0) {
 	    /* put the cache copy on top */
-	    requeDataObjInfoByReplNum (compObjInfoHead, 
-	      outCacheObjInfo->replNum);
-	    status = 0;
+	    if (requeDataObjInfoByReplNum (compObjInfoHead, 
+	      outCacheObjInfo->replNum) == 0) {
+		/* sucessfully requeued */
+	        status = 0;
+	    }
 	}
 	free (outCacheObjInfo);
     } else {
