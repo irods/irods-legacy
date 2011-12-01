@@ -24,6 +24,7 @@
 #include "fileStageToCache.h"
 #include "unbunAndRegPhyBunfile.h"
 #include "dataObjTrim.h"
+#include "dataObjLock.h"
 
 int
 rsDataObjRepl250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -56,10 +57,11 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 transferStat_t **transStat)
 {
     int status;
-
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     dataObjInfo_t *dataObjInfo = NULL;
+    char *lockType = NULL;
+    int lockFd = -1;
 
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	/* To SU, cannot be called by normal user directly */ 
@@ -98,8 +100,24 @@ transferStat_t **transStat)
     *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));
 
+    lockType = getValByKey (&dataObjInp->condInput, LOCK_TYPE_KW);
+    if (lockType != NULL) {
+        lockFd = rsDataObjLock (rsComm, dataObjInp);
+        if (lockFd > 0) {
+            /* rm it so it won't be done again causing deadlock */
+            rmKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW);
+        } else {
+            rodsLogError (LOG_ERROR, lockFd,
+              "rsDataObjRepl: rsDataObjLock error for %s. lockType = %s",
+              dataObjInp->objPath, lockType);
+            return lockFd;
+        }
+    }
     status = _rsDataObjRepl (rsComm, dataObjInp, 
      *transStat, NULL); 
+
+    if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+
     return (status);
 }
     

@@ -250,6 +250,9 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
             return (status);
         }
     }
+    if (rodsArgs->rlock == True) {
+        addKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE);
+    }
 
     return (0);
 }
