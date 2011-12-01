@@ -472,7 +472,7 @@ rodsRestart_t *rodsRestart)
     }
 
     if (rodsArgs->rlock == True) {
-        rodsLog (LOG_NOTICE,
+        rodsLog (LOG_ERROR,
           "initCondForPut: --rlock not supported, changing it to --wlock");
         addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE);
     }
