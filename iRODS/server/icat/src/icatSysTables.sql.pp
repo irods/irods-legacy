@@ -462,6 +462,7 @@ create table R_TICKET_MAIN
 (
    ticket_id           INT64TYPE not null,
    ticket_string       varchar(100),
+   ticket_type         varchar(20),     /* read or write */
    user_id             INT64TYPE not null,
    object_id           INT64TYPE not null,
    object_type         varchar(16),     /* data or collection */

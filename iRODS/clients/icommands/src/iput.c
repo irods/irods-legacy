@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "abD:fhIkKn:N:p:PrR:QTvVX:Z";
+    optStr = "abD:fhIkKn:N:p:Prt:R:QTvVX:Z";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
@@ -90,11 +90,11 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-abfIkKPQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-abfIkKPQrtTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile] [--link]", 
 "             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-abfIkKPQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-abfIkKPQtTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] [--link]",
 "             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
 "               localSrcFile",
@@ -180,6 +180,7 @@ usage ()
 "     in your environment or via a rule set up by the administrator.",
 " -r  recursive - store the whole subdirectory",
 " -T  renew socket connection after 10 minutes",
+" -t  ticket - ticket (string) to use for ticket-based access",
 " -v  verbose",
 " -V  Very verbose",
 " -X  restartFile - specifies that the restart option is on and the",

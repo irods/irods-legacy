@@ -79,6 +79,8 @@ static int removeAVUs();
 icatSessionStruct icss={0};
 char localZone[MAX_NAME_LEN]="";
 
+char mySessionTicket[NAME_LEN]="";
+
 /*
  Enable or disable some debug logging.
  By default this is off.
@@ -442,7 +444,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    else {
       status = cmlCheckDataObjId(objIdString, rsComm->clientUser.userName,
 				 rsComm->clientUser.rodsZone, neededAccess, 
-				 "", "",&icss);
+				 mySessionTicket, "",&icss);
       if (status != 0) {
 	 theVal = getValByKey(regParam, ACL_COLLECTION_KW);
 	 if (theVal != NULL && dataObjInfo->objPath != NULL &&
@@ -8979,65 +8981,65 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
 
 int
 icatGetTicketUserId(char *userName, char *userIdStr) {
-   char userId[MAX_NAME_LEN];
+   char userId[NAME_LEN];
    char userZone[NAME_LEN];
-   char zoneToUse[MAX_NAME_LEN];
+   char zoneToUse[NAME_LEN];
    char userName2[NAME_LEN];
    int status;
 
    status = getLocalZone();
    if (status != 0) return(status);
 
-   strncpy(zoneToUse, localZone, MAX_NAME_LEN);
+   strncpy(zoneToUse, localZone, NAME_LEN);
    status = parseUserName(userName, userName2, userZone);
    if (userZone[0]!='\0') {
-      rstrcpy(zoneToUse, userZone, MAX_NAME_LEN);
+      rstrcpy(zoneToUse, userZone, NAME_LEN);
    }
 
    userId[0]='\0';
    if (logSQL!=0) rodsLog(LOG_SQL, "icatGetTicketUserId SQL 1 ");
    status = cmlGetStringValueFromSql(
             "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name!='rodsgroup'",
-	    userId, MAX_NAME_LEN, userName2, zoneToUse, 0, &icss);
+	    userId, NAME_LEN, userName2, zoneToUse, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
 	 return(CAT_INVALID_USER);
       }
       return(status);
    }
-   strncpy(userIdStr, userId, MAX_NAME_LEN);
+   strncpy(userIdStr, userId, NAME_LEN);
    return(0);
 }
 
 int
 icatGetTicketGroupId(char *groupName, char *groupIdStr) {
-   char groupId[MAX_NAME_LEN];
+   char groupId[NAME_LEN];
    char groupZone[NAME_LEN];
-   char zoneToUse[MAX_NAME_LEN];
+   char zoneToUse[NAME_LEN];
    char groupName2[NAME_LEN];
    int status;
 
    status = getLocalZone();
    if (status != 0) return(status);
 
-   strncpy(zoneToUse, localZone, MAX_NAME_LEN);
+   strncpy(zoneToUse, localZone, NAME_LEN);
    status = parseUserName(groupName, groupName2, groupZone);
    if (groupZone[0]!='\0') {
-      rstrcpy(zoneToUse, groupZone, MAX_NAME_LEN);
+      rstrcpy(zoneToUse, groupZone, NAME_LEN);
    }
 
    groupId[0]='\0';
    if (logSQL!=0) rodsLog(LOG_SQL, "icatGetTicketGroupId SQL 1 ");
    status = cmlGetStringValueFromSql(
             "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
-	    groupId, MAX_NAME_LEN, groupName2, zoneToUse, 0, &icss);
+	    groupId, NAME_LEN, groupName2, zoneToUse, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
 	 return(CAT_INVALID_GROUP);
       }
       return(status);
    }
-   strncpy(groupIdStr, groupId, MAX_NAME_LEN);
+   strncpy(groupIdStr, groupId, NAME_LEN);
    return(0);
 }
 
@@ -9054,13 +9056,14 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
    rodsLong_t userId;
    rodsLong_t ticketId;
    rodsLong_t seqNum;
-   char seqNumStr[MAX_NAME_LEN];
-   char objIdStr[MAX_NAME_LEN];
-   char objTypeStr[MAX_NAME_LEN];
-   char userIdStr[MAX_NAME_LEN];
+   char seqNumStr[NAME_LEN];
+   char objIdStr[NAME_LEN];
+   char objTypeStr[NAME_LEN];
+   char userIdStr[NAME_LEN];
    char user2IdStr[MAX_NAME_LEN];
-   char group2IdStr[MAX_NAME_LEN];
-   char ticketIdStr[MAX_NAME_LEN];
+   char group2IdStr[NAME_LEN];
+   char ticketIdStr[NAME_LEN];
+   char ticketType[NAME_LEN];
    int i;
    char myTime[50];
 
@@ -9071,10 +9074,12 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       if (strlen(arg3)>0) {
          /* for 2 server hops, arg3 is the original client addr */
 	 status = chlGenQueryTicketSetup(ticketString, arg3);
+	 strncpy(mySessionTicket, ticketString, sizeof(mySessionTicket));
       }
       else {
          /* for direct connections, rsComm has the original client addr */
 	 status = chlGenQueryTicketSetup(ticketString, rsComm->clientAddr);
+	 strncpy(mySessionTicket, ticketString, sizeof(mySessionTicket));
       }
       return(0);
    }
@@ -9123,17 +9128,24 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 
       seqNum = cmlGetNextSeqVal(&icss);
       if (seqNum < 0) {
-	 rodsLog(LOG_NOTICE, "chlModTicket failure %d",
+	 rodsLog(LOG_NOTICE, "chlModTicket failure %ld",
 	       seqNum);
 	 return(seqNum);
       }
-      snprintf(seqNumStr, MAX_NAME_LEN, "%lld", seqNum);
-      snprintf(objIdStr, MAX_NAME_LEN, "%lld", objId);
-      snprintf(userIdStr, MAX_NAME_LEN, "%lld", userId);
+      snprintf(seqNumStr, NAME_LEN, "%lld", seqNum);
+      snprintf(objIdStr, NAME_LEN, "%lld", objId);
+      snprintf(userIdStr, NAME_LEN, "%lld", userId);
+      if (strncmp(arg3, "write", 5) == 0) {
+	 strncpy(ticketType, "write", sizeof(ticketType));
+      }
+      else {
+	 strncpy(ticketType, "read", sizeof(ticketType));
+      }
       getNowStr(myTime);
       i=0;
       cllBindVars[i++]=seqNumStr;
       cllBindVars[i++]=ticketString;
+      cllBindVars[i++]=ticketType;
       cllBindVars[i++]=userIdStr;
       cllBindVars[i++]=objIdStr;
       cllBindVars[i++]=objTypeStr;
@@ -9142,7 +9154,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       cllBindVarCount=i;
       if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 4");
       status =  cmlExecuteNoAnswerSql(
-	 "insert into R_TICKET_MAIN (ticket_id, ticket_string, user_id, object_id, object_type, modify_ts, create_ts) values (?, ?, ?, ?, ?, ?, ?)",
+	 "insert into R_TICKET_MAIN (ticket_id, ticket_string, ticket_type, user_id, object_id, object_type, modify_ts, create_ts) values (?, ?, ?, ?, ?, ?, ?, ?)",
 	 &icss);
 
       if (status != 0) {
@@ -9185,7 +9197,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 return(CAT_TICKET_INVALID);
       }
    }
-   snprintf(ticketIdStr, MAX_NAME_LEN, "%lld", ticketId);
+   snprintf(ticketIdStr, NAME_LEN, "%lld", ticketId);
 
    /* delete */
    if (strcmp(opName, "delete") == 0) {
@@ -9204,6 +9216,43 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		 status);
 	 return(status);
       }
+
+      i=0;
+      cllBindVars[i++]=ticketIdStr;
+      cllBindVarCount=i;
+      status =  cmlExecuteNoAnswerSql(
+	 "delete from R_TICKET_ALLOWED_HOSTS where ticket_id = ?",
+	 &icss);
+      if (status != 0 && status!=CAT_SUCCESS_BUT_WITH_NO_INFO) {
+	 rodsLog(LOG_NOTICE,
+	     "chlModTicket cmlExecuteNoAnswerSql delete 2 failure %d",
+		 status);
+      }
+
+      i=0;
+      cllBindVars[i++]=ticketIdStr;
+      cllBindVarCount=i;
+      status =  cmlExecuteNoAnswerSql(
+	 "delete from R_TICKET_ALLOWED_USERS where ticket_id = ?",
+	 &icss);
+      if (status != 0 && status!=CAT_SUCCESS_BUT_WITH_NO_INFO) {
+	 rodsLog(LOG_NOTICE,
+	     "chlModTicket cmlExecuteNoAnswerSql delete 3 failure %d",
+		 status);
+      }
+
+      i=0;
+      cllBindVars[i++]=ticketIdStr;
+      cllBindVarCount=i;
+      status =  cmlExecuteNoAnswerSql(
+	 "delete from R_TICKET_ALLOWED_GROUPS where ticket_id = ?",
+	 &icss);
+      if (status != 0 && status!=CAT_SUCCESS_BUT_WITH_NO_INFO) {
+	 rodsLog(LOG_NOTICE,
+	     "chlModTicket cmlExecuteNoAnswerSql delete 4 failure %d",
+		 status);
+      }
+
       status =  cmlExecuteNoAnswerSql("commit", &icss);
       return(status);
    }

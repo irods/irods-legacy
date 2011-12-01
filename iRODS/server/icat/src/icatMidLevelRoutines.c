@@ -1076,10 +1076,21 @@ int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel,
 	    cVal, iVal, 5, TICKET_TYPE_DATA,
 	    ticketStr, dataId, dataId, icss);
 #endif
-   status = cmlGetStringValuesFromSql(
+   if (strncmp(accessLevel, "modify", 6) == 0) {
+      /* ticket must also be of type 'write' */
+      status = cmlGetStringValuesFromSql(
+	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.ticket_type = 'write' and TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
+	    cVal, iVal, 5, 
+	    ticketStr, dataId, dataId, icss);
+
+   }
+   else {
+      /* don't check ticket type, 'read' or 'write' is fine */
+      status = cmlGetStringValuesFromSql(
 	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
 	    cVal, iVal, 5, 
 	    ticketStr, dataId, dataId, icss);
+   }
 
    if (status != 0) return (CAT_TICKET_INVALID);
 

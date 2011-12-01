@@ -287,14 +287,14 @@ showTickets1(char *inOption, char *inName)
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
-   int i1a[10];
-   int i1b[10];
-   int i2a[10];
+   int i1a[15];
+   int i1b[15];
+   int i2a[15];
    int i;
    char v1[MAX_NAME_LEN];
-   char *condVal[10];
+   char *condVal[15];
    int status;
-   char *columnNames[]={"id", "string", "type", "owner name", "owner zone", "uses count", "uses limit", "expire time", "collection name", "data collection"};
+   char *columnNames[]={"id", "string", "ticket type", "obj type", "owner name", "owner zone", "uses count", "uses limit", "expire time", "collection name", "data collection"};
 
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -305,6 +305,8 @@ showTickets1(char *inOption, char *inName)
    i1a[i]=COL_TICKET_ID;
    i1b[i++]=0;
    i1a[i]=COL_TICKET_STRING;
+   i1b[i++]=0;
+   i1a[i]=COL_TICKET_TYPE;
    i1b[i++]=0;
    i1a[i]=COL_TICKET_OBJECT_TYPE;
    i1b[i++]=0;
@@ -319,14 +321,15 @@ showTickets1(char *inOption, char *inName)
    i1a[i]=COL_TICKET_EXPIRY_TS;
    i1b[i++]=0;
    i1a[i]=COL_TICKET_COLL_NAME;
-
+   i1b[i++]=0;
    if (strstr(inOption, "data")!=0) {
+      i--;
       i1a[i]=COL_TICKET_DATA_NAME;
       columnNames[i]="data-object name";
       i1b[i++]=0;
       i1a[i]=COL_TICKET_DATA_COLL_NAME;
+      i1b[i++]=0;
    }
-   i1b[i++]=0;
 
    genQueryInp.selectInp.inx = i1a;
    genQueryInp.selectInp.value = i1b;

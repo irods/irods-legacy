@@ -551,6 +551,7 @@ icatGeneralQuerySetup() {
 
   sColumn( COL_TICKET_ID, "R_TICKET_MAIN", "ticket_id");
   sColumn( COL_TICKET_STRING, "R_TICKET_MAIN", "ticket_string");
+  sColumn( COL_TICKET_TYPE, "R_TICKET_MAIN", "ticket_type");
   sColumn( COL_TICKET_USER_ID, "R_TICKET_MAIN", "user_id");
   sColumn( COL_TICKET_OBJECT_ID, "R_TICKET_MAIN", "object_id");
   sColumn( COL_TICKET_OBJECT_TYPE, "R_TICKET_MAIN", "object_type");
