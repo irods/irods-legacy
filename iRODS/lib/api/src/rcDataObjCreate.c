@@ -53,6 +53,7 @@
  *    \n FILE_PATH_KW - The physical file path for this data object if the
  *             normal resource vault is not used.
  *    \n FORCE_FLAG_KW - overwrite existing copy. This keyWd has no value
+ *    \n LOCK_TYPE_KW - set advisory lock type. valid value - WRITE_LOCK_TYPE.
  *
  * \return integer
  * \retval an opened object descriptor on success
