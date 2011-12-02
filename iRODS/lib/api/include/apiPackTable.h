@@ -101,6 +101,7 @@ packInstructArray_t ApiPackTable[] = {
         {"ProcStatInp_PI", ProcStatInp_PI},
         {"databaseRescCloseInp_PI", databaseRescCloseInp_PI},
         {"specificQueryInp_PI", specificQueryInp_PI},
+        {"ticketAdminInp_PI", ticketAdminInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

@@ -428,23 +428,19 @@ makeFullPath(char *inName, char **outName) {
  */
 int
 doTicketOp(char *arg1, char *arg2, char *arg3, char *arg4, char *arg5) {
-   userAdminInp_t userAdminInp;
+   ticketAdminInp_t ticketAdminInp;
    int status;
    char *mySubName;
    char *myName;
 
-   userAdminInp.arg0 = "ticket";
-   userAdminInp.arg1 = arg1;
-   userAdminInp.arg2 = arg2;
-   userAdminInp.arg3 = arg3;
-   userAdminInp.arg4 = arg4;
-   userAdminInp.arg5 = arg5;
-   userAdminInp.arg6 ="";
-   userAdminInp.arg7 ="";
-   userAdminInp.arg8 ="";
-   userAdminInp.arg9 ="";
+   ticketAdminInp.arg1 = arg1;
+   ticketAdminInp.arg2 = arg2;
+   ticketAdminInp.arg3 = arg3;
+   ticketAdminInp.arg4 = arg4;
+   ticketAdminInp.arg5 = arg5;
+   ticketAdminInp.arg6 ="";
 
-   status = rcUserAdmin(Conn, &userAdminInp);
+   status = rcTicketAdmin(Conn, &ticketAdminInp);
    lastCommandStatus = status;
 
    if (status < 0 ) {
@@ -460,7 +456,7 @@ doTicketOp(char *arg1, char *arg2, char *arg3, char *arg4, char *arg5) {
 	 }
       }
       myName = rodsErrorName(status, &mySubName);
-      rodsLog (LOG_ERROR, "rcUserAdmin failed with error %d %s %s",
+      rodsLog (LOG_ERROR, "rcTicketAdmin failed with error %d %s %s",
 	       status, myName, mySubName);
    }
    return(status);

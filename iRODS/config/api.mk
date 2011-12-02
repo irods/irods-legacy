@@ -401,3 +401,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcDataObjFsync.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsDataObjLock.o
 LIB_API_OBJS += $(libApiObjDir)/rcDataObjLock.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsTicketAdmin.o
+LIB_API_OBJS += $(libApiObjDir)/rcTicketAdmin.o

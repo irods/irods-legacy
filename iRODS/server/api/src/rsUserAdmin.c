@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */ 
+
 /* See userAdmin.h for a description of this API call.*/
 
 #include "userAdmin.h"
@@ -28,10 +28,6 @@ rsUserAdmin (rsComm_t *rsComm, userAdminInp_t *userAdminInp )
 #endif
     }
     else {
-       if (strcmp(userAdminInp->arg0,"ticket")==0 &&
-	   strcmp(userAdminInp->arg1,"session")==0 ) {
-	  userAdminInp->arg3 = rsComm->clientAddr;
-       }
        status = rcUserAdmin(rodsServerHost->conn,
                             userAdminInp);
     }
@@ -138,13 +134,6 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
           return(status);
        }
     } 
-    if (strcmp(userAdminInp->arg0,"ticket")==0) {
-       status = chlModTicket(rsComm, userAdminInp->arg1, 
-			     userAdminInp->arg2, userAdminInp->arg3, 
-			     userAdminInp->arg4, userAdminInp->arg5);
-       return(status);
-    }
-
     return(CAT_INVALID_ARGUMENT);
 }
 #endif

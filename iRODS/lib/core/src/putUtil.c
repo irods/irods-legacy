@@ -12,20 +12,16 @@
 
 int
 setSessionTicket(rcComm_t *myConn, char *ticket) {
-   userAdminInp_t userAdminInp;
+   ticketAdminInp_t ticketAdminInp;
    int status;
 
-   userAdminInp.arg0 = "ticket";
-   userAdminInp.arg1 = "session";
-   userAdminInp.arg2 = ticket;
-   userAdminInp.arg3 = "";
-   userAdminInp.arg4 = "";
-   userAdminInp.arg5 = "";
-   userAdminInp.arg6 = "";
-   userAdminInp.arg7 = "";
-   userAdminInp.arg8 = "";
-   userAdminInp.arg9 = "";
-   status = rcUserAdmin(myConn, &userAdminInp);
+   ticketAdminInp.arg1 = "session";
+   ticketAdminInp.arg2 = ticket;
+   ticketAdminInp.arg3 = "";
+   ticketAdminInp.arg4 = "";
+   ticketAdminInp.arg5 = "";
+   ticketAdminInp.arg6 = "";
+   status = rcTicketAdmin(myConn, &ticketAdminInp);
    if (status != 0) {
       printf("set ticket error %d \n", status);
    }
