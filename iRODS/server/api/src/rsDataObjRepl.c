@@ -103,7 +103,7 @@ transferStat_t **transStat)
     lockType = getValByKey (&dataObjInp->condInput, LOCK_TYPE_KW);
     if (lockType != NULL) {
         lockFd = rsDataObjLock (rsComm, dataObjInp);
-        if (lockFd > 0) {
+        if (lockFd >= 0) {
             /* rm it so it won't be done again causing deadlock */
             rmKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW);
         } else {
