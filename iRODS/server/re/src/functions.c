@@ -6,6 +6,10 @@
 #include "datetime.h"
 #include "cache.h"
 #include "configuration.h"
+#include "apiHeaderAll.h"
+#include "rsApiHandler.h"
+
+
 #if defined(USE_BOOST)
 #include <boost/regex.h>
 #elif defined(_POSIX_VERSION)
@@ -1229,14 +1233,67 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
       return newIntRes(r, i);
   }
 }
-int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r) {
+int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r, ruleExecInfo_t *rei) {
   execCmdOut_t *myExecCmdOut;
   Res *execOutRes;
+  dataObjInp_t dataObjInp;
+  openedDataObjInp_t openedDataObjInp;
+  bytesBuf_t tmpBBuf;
+  fileLseekOut_t *dataObjLseekOut = NULL;
+  int fd,i;
 
   if (writeId != NULL && strcmp (writeId, "serverLog") == 0) {
     rodsLog (LOG_NOTICE, "writeString: inString = %s", writeStr);
     return 0;
   }
+  /* inserted by Raja Dec 2, 2011 */
+    if (writeId != NULL && writeId[0] == '/') {
+    /* writing to an existing iRODS file */
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR, "_writeString: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    dataObjInp.openFlags = O_RDWR;
+    snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s",writeId);
+    fd = rsDataObjOpen (rei->rsComm, &dataObjInp);
+    if (fd < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd);
+      return(fd);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    openedDataObjInp.offset = 0;
+    openedDataObjInp.whence = SEEK_END;
+    i = rsDataObjLseek (rei->rsComm, &openedDataObjInp, &dataObjLseekOut);
+    if (i < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i);
+      return(i);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    tmpBBuf.len = openedDataObjInp.len = strlen(writeStr) + 1;
+    tmpBBuf.buf =  writeStr;
+    i = rsDataObjWrite (rei->rsComm, &openedDataObjInp, &tmpBBuf);
+    if (i < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i);
+      return(i);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    i = rsDataObjClose (rei->rsComm, &openedDataObjInp);
+    return(i);
+  }
+
+  /* inserted by Raja Dec 2, 2011 */
+
+
+
   if ((execOutRes = (Res *)lookupFromEnv(env, "ruleExecOut")) != NULL) {
     myExecCmdOut = (execCmdOut_t *)RES_UNINTER_STRUCT(execOutRes);
   } else {
@@ -1267,7 +1324,7 @@ Res *smsi_writeLine(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
       free(inString);
       return newIntRes(r, 0);
   }
-  int i = writeStringNew(whereId, inString, env, r);
+  int i = writeStringNew(whereId, inString, env, r, rei);
 #ifdef DEBUG
   printf("%s\n", inString);
 #endif
@@ -1276,7 +1333,7 @@ Res *smsi_writeLine(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
   if (i < 0) {
       return newErrorRes(r, i);
   }
-  i = writeStringNew(whereId, "\n", env, r);
+  i = writeStringNew(whereId, "\n", env, r,rei);
 
   if (i < 0)
     return newErrorRes(r, i);
@@ -1289,7 +1346,7 @@ Res *smsi_writeString(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, in
   Res *where = (Res *)paramsr[0];
   char *whereId = where->text;
 
-  int i = writeStringNew(whereId, inString, env, r);
+  int i = writeStringNew(whereId, inString, env, r, rei);
 
   free(inString);
   if (i < 0)
@@ -1436,7 +1493,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 #ifdef DEBUG_VERBOSE
 			printf("%s", buf);
 #endif
-			writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r, rei);
 		}
 	}
 	if(isComponentInitialized(ruleEngineConfig.appRuleSetStatus)) {
@@ -1445,7 +1502,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 #ifdef DEBUG_VERBOSE
 			printf("%s", buf);
 #endif
-			writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r, rei);
 		}
 	}
 	if(isComponentInitialized(ruleEngineConfig.coreRuleSetStatus)) {
@@ -1454,7 +1511,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 #ifdef DEBUG_VERBOSE
 			printf("%s", buf);
 #endif
-			writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r, rei);
 		}
 	}
 	return newIntRes(r, 0);
@@ -1472,7 +1529,7 @@ Res *smsi_msiAdmShowCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *re
 #ifdef DEBUG_VERBOSE
 			printf("%s", buf);
 #endif
-			writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r, rei);
 		}
 	}
 	fclose(f2);
