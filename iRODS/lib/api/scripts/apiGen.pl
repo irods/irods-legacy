@@ -20,18 +20,18 @@
 #   update /lib/api/include/apiPackTable.h
 #   update /lib/api/include/apiHeaderAll.h
 #   update /config/api.mk
-#   generate ../server/src/api/rsFileFoo.c (empty tho)  and
+#   generate ../server/api/src/rsFileFoo.c (empty tho)  and
 #   generate ../lib/src/api/rcFileFoo.c 
 #
 # The generated rsFileFoo.c will have to be edited to add specific
 # calls for the function, but the other files should be fine as
 # updated or generated.
 #
-# The cvs add and commit commands that need to be run are displayed.
+# The svn add and commit commands that need to be run are displayed.
 #
 # You can safely rerun this script with the same input multiple times;
 # it will avoid repeating the same updates in each file.  But it will
-# show you the filenames of the updated files (cvs commands).
+# show you the filenames of the updated files (svn commands).
 #
 # Previous versions of this script attempted to generate rsFileFoo.c,
 # but with the various types it is now too complicated to do that and
@@ -72,8 +72,8 @@ if (!-e $incFile) {
     printf("$incFile does not exist\n");
     die("Usage");
 }
-$cvsAdd = $incFile;
-$cvsCommit=$incFile;
+$svnAdd = $incFile;
+$svnCommit=$incFile;
 
 #
 # Make the Upper case name string, for example FILE_CREATE
@@ -141,7 +141,7 @@ else {
     }
     printf("Updated $apiNumberH\n");
 }
-$cvsCommit=$cvsCommit . " " . $apiNumberH;
+$svnCommit=$svnCommit . " " . $apiNumberH;
 
 
 #
@@ -218,7 +218,7 @@ else {
     insertInFile("after", $theFile, $RS_Str, $theString);
     printf("Updated $theFile\n");
 }
-$cvsCommit=$cvsCommit . " " . $theFile;
+$svnCommit=$svnCommit . " " . $theFile;
 
 
 #
@@ -252,7 +252,7 @@ if ($didPackTab eq "1") {
     printf("Updated $theFile\n");
 }
 if ($inStruct or $outStruct) {
-    $cvsCommit=$cvsCommit . " " . $theFile;
+    $svnCommit=$svnCommit . " " . $theFile;
 }
 
 
@@ -270,7 +270,7 @@ else {
     insertInFile("before", $theFile, "#endif", $incLine);
     printf("Updated $theFile\n");
 }
-$cvsCommit=$cvsCommit . " " . $theFile;
+$svnCommit=$svnCommit . " " . $theFile;
 
 
 #
@@ -306,7 +306,7 @@ if ($didUpdate) {
 else {
     printf("WARNING, did not update $theFile, $NewName already there\n");
 }
-$cvsCommit=$cvsCommit . " " . $theFile;
+$svnCommit=$svnCommit . " " . $theFile;
 
 #
 # Create empty server .c file
@@ -324,8 +324,8 @@ else {
     `touch $theFile`;
     printf("Created empty $theFile\n");
 }
-$cvsAdd = $cvsAdd . " " . $theFile;
-$cvsCommit=$cvsCommit . " " . $theFile;
+$svnAdd = $svnAdd . " " . $theFile;
+$svnCommit=$svnCommit . " " . $theFile;
 
 #
 # Generate the client .c file
@@ -382,11 +382,11 @@ else {
     writeFile($theFile, "/* This is script-generated code.  */ \n/* See $incFileShort for a description of this API call.*/\n\n#include \"$incFileShort\"\n$prot1\n{\n    int status;\n    status = procApiRequest ($procArgs);\n\n    return (status);\n}\n");
     printf("Generated $theFile\n");
 }
-$cvsAdd = $cvsAdd . " " .  $theFile;
-$cvsCommit=$cvsCommit . " " . $theFile;
-printf("When ready, you need to cvs add the 3 new files and commit all changes:\n");
-printf("cvs add $cvsAdd\n");
-printf("cvs commit $cvsCommit\n");
+$svnAdd = $svnAdd . " " .  $theFile;
+$svnCommit=$svnCommit . " " . $theFile;
+printf("When ready, you need to svn add the 3 new files and commit all changes:\n");
+printf("svn add $svnAdd\n");
+printf("svn commit $svnCommit\n");
 exit(0);
 
 #
