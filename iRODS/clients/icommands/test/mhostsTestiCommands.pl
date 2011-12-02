@@ -295,10 +295,10 @@ foreach $hostAddr (@hostList) {
     system ( "irm -f $irodshome/test/foo1" );
     system ( "rm $dir_w/foo1" );
     # test a directory of file between $resc2 and $resc3
-    runCmd( "iput -KrR $resc2 $testsrcdir $irodshome/test/dir1" );
+    runCmd( "iput -KrR $resc2 --wlock $testsrcdir $irodshome/test/dir1" );
 
     runCmd( "ils -l $irodshome/test/dir1/sdir/sfile1", "", "LIST", "sfile1, $myssize" );
-    runCmd( "irepl -Br -R $resc3 $irodshome/test/dir1" );
+    runCmd( "irepl -Br -R $resc3 --rlock $irodshome/test/dir1" );
     runCmd( "ils -l $irodshome/test/dir1/sdir/sfile1", "", "LIST", "1 $resc3" );
     runCmd( "itrim -rS $resc2 -N1 $irodshome/test/dir1" );
     runCmd( "iphymv -rR $resc2 $irodshome/test/dir1" );
@@ -324,7 +324,7 @@ foreach $hostAddr (@hostList) {
     runCmd( "ichksum -Kr $irodshome/test/dir1" );
     runCmd( "irm -vrf $irodshome/test/dir3" );
     # we have dir1 in $resc2
-    runCmd( "iget -f -rK $irodshome/test/dir1 $dir_w" );
+    runCmd( "iget -f -rK --rlock $irodshome/test/dir1 $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
     system ( "rm -r $dir_w/dir1" );
     runCmd( "irm -vrf $irodshome/test/dir1" );
@@ -362,12 +362,12 @@ foreach $hostAddr (@hostList) {
 
     # do the large files tests using RBUDP
     if ( $doRbudpTest =~ "yes" ) {
-        runCmd( "iput -vQPKrR $resc2 $testsrcdir $irodshome/test/dir1" );
-        runCmd( "irepl -BQvrPT -R $resc3 $irodshome/test/dir1" );
+        runCmd( "iput -vQPKrR $resc2 --wlock $testsrcdir $irodshome/test/dir1" );
+        runCmd( "irepl -BQvrPT -R $resc3 --rlock $irodshome/test/dir1" );
         runCmd( "itrim -vrS $resc2 -N1 $irodshome/test/dir1" );
         runCmd( "icp -vQKPTr $irodshome/test/dir1 $irodshome/test/dir2" );
         system ( "irm -vrf $irodshome/test/dir1" );
-        runCmd( "iget -vQPKr $irodshome/test/dir2 $dir_w/dir2" );
+        runCmd( "iget -vQPKr --rlock $irodshome/test/dir2 $dir_w/dir2" );
         runCmd( "diff -r $dir_w/dir2 $testsrcdir", "", "NOANSWER" );
         system ( "rm -r $dir_w/dir2" );
         system ( "irm -vrf $irodshome/test/dir2" );

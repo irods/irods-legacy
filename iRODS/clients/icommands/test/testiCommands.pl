@@ -269,14 +269,14 @@ runCmd( "ips -v", "", "LIST", "ips" );
 runCmd( "iqstat" );
 runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
 # make a directory of large files
-runCmd( "iput -K $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
+runCmd( "iput -K --wlock $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
 runCmd( "iput -kf $progname $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1,$myssize" );
 runCmd( "iadmin ls $irodshome/test", "", "LIST", "foo1" );
 runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "$username#$irodszone:own" );
 runCmd( "ichmod read testuser1 $irodshome/test/foo1" );
 runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "testuser1#$irodszone:read" );
-runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
+runCmd( "irepl -B -R testresource --rlock $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
 # overwrite a copy 
 runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/test/foo1" );
@@ -297,7 +297,7 @@ runCmd( "imeta add -d $irodshome/test/foo1 testmeta2 hello", "", "", "", "imeta 
 runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,hello" );
 runCmd( "imeta qu -d testmeta1 = 180", "", "LIST", "foo1" );
 runCmd( "imeta qu -d testmeta2 = hello", "", "dataObj:", "foo1" );
-runCmd( "iget -f -K $irodshome/test/foo2 $dir_w" );
+runCmd( "iget -f -K --rlock $irodshome/test/foo2 $dir_w" );
 runCmd( "ls -l $dir_w/foo2", "", "LIST", "foo2,$myssize");
 unlink ( "$dir_w/foo2" );
 # we have foo1 in $irodsdefresource and foo2 in testresource
@@ -483,10 +483,10 @@ mkldir ();
 my $lrsfile = $dir_w . "/lrsfile";
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "iput -vbPKr --retries 10 -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/test/testy" );
+runCmd( "iput -vbPKr --retries 10 --wlock -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/test/testy" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "irepl -BvrPT -R testresource $irodshome/test/testy" );
+runCmd( "irepl -BvrPT -R testresource --rlock $irodshome/test/testy" );
 runCmd( "itrim -vrS $irodsdefresource --dryrun --age 1 -N1 $irodshome/test/testy" );
 runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/test/testy" );
 runCmd( "icp -vKPTr -N2 $irodshome/test/testy $irodshome/test/testz" );
@@ -495,7 +495,7 @@ runCmd( "iphymv -vrS $irodsdefresource -R testresource  $irodshome/test/testz" )
 
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile -N 2 $irodshome/test/testz $dir_w/testz" );
+runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile --rlock -N 2 $irodshome/test/testz $dir_w/testz" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "diff -r $dir_w/testz $myldir", "", "NOANSWER" );
