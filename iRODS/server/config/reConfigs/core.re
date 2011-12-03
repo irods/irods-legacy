@@ -182,6 +182,7 @@ acSetMultiReplPerResc { }
 # 7) acPostProcForCreate - Rule for post processing of data object create.
 # 8) acPostProcForOpen - Rule for post processing of data object open.
 # 8a) acPostProcForPhymv - Rule for post processing of data object phymv.
+# 8b) acPostProcForRepl - Rule for post processing of data object repl.
 # of a physical file path (e.g. - ireg command).
 # 
 # Currently, three post processing functions can be used individually or
@@ -224,6 +225,7 @@ acPostProcForCreate { }
 # acPostProcForOpen {writeLine("serverLog",$objPath); }
 acPostProcForOpen { }
 acPostProcForPhymv { }
+acPostProcForRepl { }
 # 9) acSetNumThreads - Rule to set the number of threads for a data transfer
 # This rule supports condition based on $rescName so that different
 # policies can be set for different resources.

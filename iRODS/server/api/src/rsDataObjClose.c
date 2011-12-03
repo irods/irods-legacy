@@ -118,6 +118,15 @@ dataObjInfo_t **outDataObjInfo)
                     NO_SAVE_REI);
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
+	    } else if (L1desc[l1descInx].oprType == REPLICATE_DEST) {
+               initReiWithDataObjInp (&rei, rsComm,
+                  L1desc[l1descInx].dataObjInp);
+                rei.doi = L1desc[l1descInx].dataObjInfo;
+                rei.status = status;
+                rei.status = applyRule ("acPostProcForRepl", NULL, &rei,
+                    NO_SAVE_REI);
+                /* doi might have changed */
+                L1desc[l1descInx].dataObjInfo = rei.doi;
 	    } else if (L1desc[l1descInx].oprType == PUT_OPR || 
 	      L1desc[l1descInx].openType == CREATE_TYPE ||
     	      (L1desc[l1descInx].openType == OPEN_FOR_WRITE_TYPE && 
