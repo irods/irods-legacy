@@ -343,9 +343,18 @@ foreach $ver (keys %version)
 # Postgres FTP site access
 $POSTGRES_FTP_ACCOUNT_NAME     = "anonymous";
 $POSTGRES_FTP_ACCOUNT_PASSWORD = "anonymous@";
-$POSTGRES_FTP_POSTGRES_DIR     = "pub/PostgreSQL/source";
-$POSTGRES_FTP_ODBC_DIR         = "PostgreSQL/odbc/versions/src";
-$POSTGRES_FTP_HOST             = "ftp5.us.postgresql.org";
+#
+# Use to use ftp5 or ftp10, but now (Dec 2011) am trying
+# ftp.postgresql.org as both the others were down; not sure
+# if that's just temporary tho.
+$POSTGRES_FTP_POSTGRES_DIR     = "pub/source";
+$POSTGRES_FTP_ODBC_DIR         = "pub/odbc/versions/src";
+$POSTGRES_FTP_HOST             = "ftp.postgresql.org";
+#
+#$POSTGRES_FTP_POSTGRES_DIR     = "pub/PostgreSQL/source";
+#$POSTGRES_FTP_ODBC_DIR         = "PostgreSQL/odbc/versions/src";
+#$POSTGRES_FTP_HOST             = "ftp5.us.postgresql.org";
+#
 #$POSTGRES_FTP_POSTGRES_DIR     = "pub/postgresql/source";
 #$POSTGRES_FTP_ODBC_DIR         = "postgresql/odbc/versions/src";
 #$POSTGRES_FTP_HOST             = "ftp10.us.postgresql.org";
