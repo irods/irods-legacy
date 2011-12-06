@@ -1,15 +1,11 @@
 myTestRule {
-#Input parameters are:
-#  inMSOPath - the string that specifies a test of the msodrivers
-#  inCacheFilename - the full path of the cache file
-#  inFileSize - the size of the cache file
-#No output parameters
-  msiSplitPath(*Path, *Coll, *File);
-  msiExecStrCondQuery("SELECT DATA_SIZE where DATA_NAME = '*File' and COLL_NAME = '*Coll'",*GenQOut);
-  foreach(*GenQOut) {
-    msiGetValByKey(*GenQOut, "DATA_SIZE", *Size);
-  }
+# Input parameters are:
+#   inMSOPath - the string that specifies a test of the microservice object framework
+#   inCacheFilename - the full path of the cache file in the local storage vault
+#   inFileSize - the size of the cache file, found from a ls command on the storage vault
+# Output from the rule is located in the rodsLog file:
+#   MSO_TEST file contains: This is a test
   msiobjput_test(*Request, *Path, *Size);
 }
-INPUT *Request ="test:Test string", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="//test:Test string", *Path = "/home/reagan/Vault/home/rods/rodsfile", *Size="15"
 OUTPUT ruleExecOut
