@@ -11,6 +11,7 @@
 #include "rcConnect.h"
 #include "rodsGeneralUpdate.h"
 #include "specificQuery.h" 
+#include "phyBundleColl.h"
 
 int chlOpen(char *DBUser, char *DBpasswd);
 int chlClose();

@@ -1559,6 +1559,17 @@ int chlDelResc(rsComm_t *rsComm,
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    }
 
+   if (strncmp(rescInfo->rescName, BUNDLE_RESC, strlen(BUNDLE_RESC))==0) {
+	 char errMsg[155];
+	 int i;
+	 snprintf(errMsg, 150, 
+		  "%s is a built-in resource needed for bundle operations.", 
+		  BUNDLE_RESC);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(CAT_PSEUDO_RESC_MODIFY_DISALLOWED);
+   }
+
+
    if (logSQL!=0) rodsLog(LOG_SQL, "chlDelResc SQL 1 ");
    status = cmlGetIntegerValueFromSql(
 	    "select data_id from R_DATA_MAIN where resc_name=?",
@@ -4148,6 +4159,16 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    }
    if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (strncmp(rescName, BUNDLE_RESC, strlen(BUNDLE_RESC))==0) {
+	 char errMsg[155];
+	 int i;
+	 snprintf(errMsg, 150, 
+		  "%s is a built-in resource needed for bundle operations.", 
+		  BUNDLE_RESC);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(CAT_PSEUDO_RESC_MODIFY_DISALLOWED);
    }
 
    status = getLocalZone();
