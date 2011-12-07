@@ -13,6 +13,7 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/xmlschemas.h>
+#include <libxml/uri.h>
 
 
 
@@ -280,7 +281,8 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 			}
 			else
 			{
-				modAVUMetadataInp.arg2 = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Target"));
+				modAVUMetadataInp.arg2 = xmlURIUnescapeString((char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Target")),
+						MAX_NAME_LEN, NULL);
 			}
 
 			modAVUMetadataInp.arg3 = attrStr;
