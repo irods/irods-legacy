@@ -71,7 +71,7 @@ rescInfo_t *rescInfo)
     createPhyBundleDir (rsComm, bunFilePath, phyBunDir);
 
     status = unbunPhyBunFile (rsComm, dataObjInp, rescInfo, bunFilePath,
-      phyBunDir);
+      phyBunDir, NULL);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -320,7 +320,7 @@ dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo)
 
 int
 unbunPhyBunFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
+rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType)
 {
     int status;
     structFileOprInp_t structFileOprInp;
@@ -342,7 +342,12 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
       NAME_LEN);
     /* set the cacheDir */
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
-
+    /* pass on the dataType */
+    if (dataType != NULL && 
+      (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
+      strcmp (dataType, BZIP2_TAR_DT_STR) == 0)) {
+	addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
+    }
     rmLinkedFilesInUnixDir (phyBunDir);
     status = rsStructFileExtract (rsComm, &structFileOprInp);
     if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
@@ -368,6 +373,7 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
             }
 	}
     }
+    clearKeyVal (&structFileOprInp.condInput);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "unbunPhyBunFile: rsStructFileExtract err for %s. status = %d",

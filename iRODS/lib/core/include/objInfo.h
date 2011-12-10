@@ -32,6 +32,8 @@ extern "C" {
 /* defines some commonly used dataTypes */
 #define GENERIC_DT_STR	"generic"
 #define TAR_DT_STR	"tar file"
+#define GZIP_TAR_DT_STR	"gzipTar"
+#define BZIP2_TAR_DT_STR "bzip2Tar"
 #define HAAW_DT_STR	"haaw file"
 #define MAX_LINK_CNT	20	/* max number soft link in a path */
 
