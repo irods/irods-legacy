@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int nArgv;
     
 
-    optStr = "bhR:cxD:f";
+    optStr = "bD:hR:cxD:f";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -138,10 +138,11 @@ usage ()
 " -b  bulk registration when used with -x to reduce overhead",
 " -R  resource - specifies the resource to store to. This is optional",
 "     in your environment",
-" -D  dataType - the struct file data type. Valid only if the struct file",
-"     does not exist. Currently only one dataType - 't' which specifies",
-"     a tar file type is supported. If -D is not specified, the default is",
-"     a tar file type",
+" -D  dataType - the struct file data type. Valid only for -c option to",
+"     specify the target data type. Valid dataTypes are - 't' or 'tar' for", 
+"     tar file. 'g' of 'gzip' for gziped tar file, 'b' or 'bzip' for bzip2",
+"     file, and 'z' or 'zip' for archive using 'zip'.  If -D is not specified,",
+"     the default is a tar file type",
 " -x  extract the structFile and register the extracted files and directories",
 "     under the input irodsCollection", 
 " -c  bundle the files and sub-collection underneath the input irodsCollection",

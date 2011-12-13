@@ -427,6 +427,7 @@ char *collection)
 {
     structFileOprInp_t structFileOprInp;
     int status;
+    char *dataType;
 
     bzero (&structFileOprInp, sizeof (structFileOprInp));
 
@@ -450,7 +451,13 @@ char *collection)
     structFileOprInp.specColl->cacheDirty = 1;
     /* don't reg CollInfo2 */
     structFileOprInp.oprType = NO_REG_COLL_INFO;
-
+    dataType = dataObjInfo->dataType;
+    if (dataType != NULL &&
+      (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
+      strcmp (dataType, BZIP2_TAR_DT_STR) == 0 ||
+      strcmp (dataType, ZIP_DT_STR) == 0)) {
+        addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
+    }
     status = rsStructFileSync (rsComm, &structFileOprInp);
 
     free (structFileOprInp.specColl);

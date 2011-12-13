@@ -97,7 +97,19 @@ rodsPathInp_t *rodsPathInp)
 	    if (strcmp (rodsArgs->dataTypeString, "t") == 0 ||
 	      strcmp (rodsArgs->dataTypeString, "tar") == 0) {
                 addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
-                  "tar file");
+                  TAR_DT_STR);
+            } else if (strcmp (rodsArgs->dataTypeString, "g") == 0 ||
+              strcmp (rodsArgs->dataTypeString, "gzip") == 0) {
+                addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
+                  GZIP_TAR_DT_STR);
+            } else if (strcmp (rodsArgs->dataTypeString, "b") == 0 ||
+              strcmp (rodsArgs->dataTypeString, "bzip") == 0) {
+                addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
+                  BZIP2_TAR_DT_STR);
+            } else if (strcmp (rodsArgs->dataTypeString, "z") == 0 ||
+              strcmp (rodsArgs->dataTypeString, "zip") == 0) {
+                addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
+                  ZIP_DT_STR);
 	    } else {
                 addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
                   rodsArgs->dataTypeString);

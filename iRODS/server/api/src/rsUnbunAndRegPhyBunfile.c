@@ -345,7 +345,8 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType)
     /* pass on the dataType */
     if (dataType != NULL && 
       (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
-      strcmp (dataType, BZIP2_TAR_DT_STR) == 0)) {
+      strcmp (dataType, BZIP2_TAR_DT_STR) == 0 ||
+      strcmp (dataType, ZIP_DT_STR) == 0)) {
 	addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
     }
     rmLinkedFilesInUnixDir (phyBunDir);
