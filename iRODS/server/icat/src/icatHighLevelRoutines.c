@@ -80,6 +80,7 @@ icatSessionStruct icss={0};
 char localZone[MAX_NAME_LEN]="";
 
 char mySessionTicket[NAME_LEN]="";
+char mySessionClientAddr[NAME_LEN]="";
 
 /*
  Enable or disable some debug logging.
@@ -333,6 +334,9 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       "data_mode"
    };
    int DATA_EXPIRY_TS_IX=9; /* must match index in above colNames table */
+   int DATA_SIZE_IX=2;      /* must match index in above colNames table */
+   int doingDataSize=0;
+   char dataSizeString[NAME_LEN]="";
 
    char objIdString[MAX_NAME_LEN];
    char *neededAccess;
@@ -368,6 +372,10 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 		  updateVals[j]=theVal2;
 	       }
 	    }
+	 }
+	 if (i==DATA_SIZE_IX) {
+	    doingDataSize=1; /* flag to check size */
+	    strncpy(dataSizeString, theVal, sizeof(dataSizeString));
 	 }
 	 j++;
 
@@ -442,9 +450,16 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       }
    }
    else {
+      if (doingDataSize==1 && strlen(mySessionTicket)>0) {
+	 status = cmlTicketUpdateWriteBytes(mySessionTicket,
+						    dataSizeString, 
+						    objIdString,&icss);
+	 if (status != 0) return(status);
+      }
+
       status = cmlCheckDataObjId(objIdString, rsComm->clientUser.userName,
 				 rsComm->clientUser.rodsZone, neededAccess, 
-				 mySessionTicket, "",&icss);
+				 mySessionTicket, mySessionClientAddr,&icss);
       if (status != 0) {
 	 theVal = getValByKey(regParam, ACL_COLLECTION_KW);
 	 if (theVal != NULL && dataObjInfo->objPath != NULL &&
@@ -471,7 +486,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 }
 	 if (status) {
 	    _rollback("chlModDataObjMeta");
-	    return(CAT_NO_ACCESS_PERMISSION);
+	    return(status);
 	 }
       } 
    }
@@ -604,7 +619,8 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    iVal = cmlCheckDirAndGetInheritFlag(logicalDirName, 
 		      rsComm->clientUser.userName,
 		      rsComm->clientUser.rodsZone, 
-		      ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
+		      ACCESS_MODIFY_OBJECT, &inheritFlag, 
+		      mySessionTicket, mySessionClientAddr,&icss);
    if (iVal < 0) {
       int i;
       char errMsg[105];
@@ -2075,7 +2091,8 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    status = cmlCheckDirAndGetInheritFlag(logicalParentDirName, 
 		      rsComm->clientUser.userName,
 		      rsComm->clientUser.rodsZone, 
-		      ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
+		      ACCESS_MODIFY_OBJECT, &inheritFlag, 
+		      mySessionTicket, mySessionClientAddr,&icss);
    if (status < 0) {
       int i;
       char errMsg[105];
@@ -9090,17 +9107,20 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 
    status = 0;
 
-   /* session ticket (temp, for debug) */
+   /* session ticket */
    if (strcmp(opName, "session") == 0) {
       if (strlen(arg3)>0) {
          /* for 2 server hops, arg3 is the original client addr */
 	 status = chlGenQueryTicketSetup(ticketString, arg3);
 	 strncpy(mySessionTicket, ticketString, sizeof(mySessionTicket));
+	 strncpy(mySessionClientAddr, arg3, sizeof(mySessionClientAddr));
       }
       else {
          /* for direct connections, rsComm has the original client addr */
 	 status = chlGenQueryTicketSetup(ticketString, rsComm->clientAddr);
 	 strncpy(mySessionTicket, ticketString, sizeof(mySessionTicket));
+	 strncpy(mySessionClientAddr, rsComm->clientAddr, 
+		 sizeof(mySessionClientAddr));
       }
       return(0);
    }
@@ -9293,13 +9313,57 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
 	 if (status != 0) {
 	    rodsLog(LOG_NOTICE,
-		    "chlModTicket cmlExecuteNoAnswerSql delete failure %d",
+		    "chlModTicket cmlExecuteNoAnswerSql update failure %d",
 		    status);
 	    return(status);
 	 }
 	 status =  cmlExecuteNoAnswerSql("commit", &icss);
 	 return(status);
       }
+
+      if (strncmp(arg3, "write", 5) == 0) {
+	 if (strstr(arg3, "file") != NULL) {
+	    i=0;
+	    cllBindVars[i++]=arg4;
+	    cllBindVars[i++]=ticketIdStr;
+	    cllBindVars[i++]=userIdStr;
+	    cllBindVarCount=i;
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 9");
+	    status =  cmlExecuteNoAnswerSql(
+	       "update R_TICKET_MAIN set write_file_limit=? where ticket_id = ? and user_id = ?",
+	       &icss);
+	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	    if (status != 0) {
+	       rodsLog(LOG_NOTICE,
+		       "chlModTicket cmlExecuteNoAnswerSql update failure %d",
+		       status);
+	       return(status);
+	    }
+	    status =  cmlExecuteNoAnswerSql("commit", &icss);
+	    return(status);
+	 }
+	 if (strstr(arg3, "byte") != NULL) {
+	    i=0;
+	    cllBindVars[i++]=arg4;
+	    cllBindVars[i++]=ticketIdStr;
+	    cllBindVars[i++]=userIdStr;
+	    cllBindVarCount=i;
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 9");
+	    status =  cmlExecuteNoAnswerSql(
+	       "update R_TICKET_MAIN set write_byte_limit=? where ticket_id = ? and user_id = ?",
+	       &icss);
+	    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+	    if (status != 0) {
+	       rodsLog(LOG_NOTICE,
+		       "chlModTicket cmlExecuteNoAnswerSql update failure %d",
+		       status);
+	       return(status);
+	    }
+	    status =  cmlExecuteNoAnswerSql("commit", &icss);
+	    return(status);
+	 }
+      }
+
       if (strncmp(arg3, "expir", 5) == 0) {
 	 status=checkDateFormat(arg4);
 	 if (status!=0) {
@@ -9317,7 +9381,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
 	 if (status != 0) {
 	    rodsLog(LOG_NOTICE,
-		    "chlModTicket cmlExecuteNoAnswerSql delete failure %d",
+		    "chlModTicket cmlExecuteNoAnswerSql update failure %d",
 		    status);
 	    return(status);
 	 }

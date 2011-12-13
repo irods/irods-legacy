@@ -287,14 +287,14 @@ showTickets1(char *inOption, char *inName)
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
-   int i1a[15];
-   int i1b[15];
-   int i2a[15];
+   int i1a[20];
+   int i1b[20];
+   int i2a[20];
    int i;
    char v1[MAX_NAME_LEN];
-   char *condVal[15];
+   char *condVal[20];
    int status;
-   char *columnNames[]={"id", "string", "ticket type", "obj type", "owner name", "owner zone", "uses count", "uses limit", "expire time", "collection name", "data collection"};
+   char *columnNames[]={"id", "string", "ticket type", "obj type", "owner name", "owner zone", "uses count", "uses limit", "write file count", "write file limit", "write byte count", "write byte limit", "expire time", "collection name", "data collection"};
 
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -317,6 +317,14 @@ showTickets1(char *inOption, char *inName)
    i1a[i]=COL_TICKET_USES_COUNT;
    i1b[i++]=0;
    i1a[i]=COL_TICKET_USES_LIMIT;
+   i1b[i++]=0;
+   i1a[i]=COL_TICKET_WRITE_FILE_COUNT;
+   i1b[i++]=0;
+   i1a[i]=COL_TICKET_WRITE_FILE_LIMIT;
+   i1b[i++]=0;
+   i1a[i]=COL_TICKET_WRITE_BYTE_COUNT;
+   i1b[i++]=0;
+   i1a[i]=COL_TICKET_WRITE_BYTE_LIMIT;
    i1b[i++]=0;
    i1a[i]=COL_TICKET_EXPIRY_TS;
    i1b[i++]=0;
@@ -349,7 +357,7 @@ showTickets1(char *inOption, char *inName)
 #endif
    genQueryInp.condInput.len=0;
 
-   if (inName != NULL and *inName!='\0') {
+   if (inName != NULL && *inName!='\0') {
       if (isInteger(inName)==1) {
          /* Could have an all-integer ticket but in most cases this is a good
 	    guess */
@@ -840,6 +848,7 @@ void usageMain()
 "Commands are:", 
 " create read/write Object-Name [string] (create a new ticket)",
 " mod Ticket_string-or-id uses/expire string-or-none  (modify restrictions)",
+" mod Ticket_string-or-id write-bytes-or-file number-or-0 (modify restrictions)",
 " mod Ticket_string-or-id add/remove host/user string (modify restrictions)",
 " ls [Ticket_string-or-id] (non-admins will see just your own)",
 " delete ticket_string-or-id",
@@ -902,8 +911,16 @@ usage(char *subOpt)
 "number of times, and for all time (until deleted).  You can modify it to",
 "add (or remove) these types of restrictions.",
 " ",
-" 'mod Ticket-id uses integer-or-none' will make the ticket only valid",
-"the specified number of times.  Use 'none' to remove this restriction.",
+" 'mod Ticket-id uses integer-or-0' will make the ticket only valid",
+"the specified number of times.  Use 0 to remove this restriction.",
+" ",
+" 'mod Ticket-id write-file integer-or-0' will make the write-ticket only",
+"valid for writing the specified number of times.  Use 0 to remove this",
+"restriction.",
+" ",
+" 'mod Ticket-id write-byte integer-or-0' will make the write-ticket only",
+"valid for writing the specified number of bytes.  Use 0 to remove this",
+"restriction.",
 " ",
 " 'mod Ticket-id add/remove user Username' will make the ticket only valid",
 "when used by that particular iRODS user.  You can use multiple mod commands",

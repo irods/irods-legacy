@@ -167,7 +167,8 @@ rodsLong_t cmlCheckResc( char *rescName, char *userName, char *userZone,
 
 rodsLong_t cmlCheckDirAndGetInheritFlag( char *dirName, char *userName,
 			char *userZone, char *accessLevel, 
-			int *inheritFlag, icatSessionStruct *icss);
+			int *inheritFlag, char *ticketStr, char *ticketHost,
+			icatSessionStruct *icss);
 
 rodsLong_t cmlCheckDirId( char *dirId, char *userName, char *userZone,
 			  char *accessLevel, icatSessionStruct *icss);
@@ -179,6 +180,10 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
 		       char *accessLevel, char *ticketStr, 
 		       char *ticketHost, 
 		       icatSessionStruct *icss);
+
+int cmlTicketUpdateWriteBytes(char *ticketStr,
+			      char *dataSize, char *objectId,
+			      icatSessionStruct *icss);
 
 rodsLong_t cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
 				char *userZone,

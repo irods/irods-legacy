@@ -30,6 +30,11 @@ int auditEnabled=0;  /* Set this to 2 and rebuild to enable iRODS
                         permanently enabled).  We plan to change this
                         sometime to have better control. */
 
+int checkObjIdByTicket(char *dataId, char *accessLevel, 
+			   char *ticketStr, char *ticketHost,
+			   char *userName, char *userZone,
+			   icatSessionStruct *icss);
+
 int cmlDebug(int mode) {
    logSQL_CML = mode;
    if (mode > 1) {
@@ -755,7 +760,8 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
 rodsLong_t
 cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
 			      char *accessLevel, int *inheritFlag,
-		 icatSessionStruct *icss)
+			       char *ticketStr, char *ticketHost,
+			      icatSessionStruct *icss)
 {
    int status;
    rodsLong_t iVal;
@@ -773,7 +779,12 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
    *inheritFlag = 0;
    if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 ");
 
-   status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss);
+   if (ticketStr != NULL && *ticketStr!='\0') {
+      status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from R_COLL_MAIN CM, R_TICKET_MAIN TM where CM.coll_name=? and TM.ticket_string=? and TM.ticket_type = 'write' and TM.object_id = CM.coll_id", cVal, cValSize, 2, dirName, ticketStr, 0, 0, 0, icss);
+   }
+   else {
+      status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss);
+   }
    if (status == 2) {
       if (*cVal[0]=='\0') {
 	 return(CAT_NO_ROWS_FOUND);
@@ -796,6 +807,16 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
 	 return(CAT_UNKNOWN_COLLECTION);
       }
       return (CAT_NO_ACCESS_PERMISSION);
+   }
+
+/*
+ Also check the other aspects ticket at this point.
+ */
+   if (ticketStr != NULL && *ticketStr!='\0') {
+      status = checkObjIdByTicket(cValStr1, accessLevel, ticketStr, 
+				      ticketHost, userName, userZone,
+				      icss);
+      if (status != 0) return (status);
    }
 
    return(iVal);
@@ -1045,8 +1066,8 @@ cmlCheckTicketRestrictions(char *ticketId, char *ticketHost,
    return(0);
 }
 
-/* Check access via a Ticket to a data-object */
-int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel, 
+/* Check access via a Ticket to a data-object or collection */
+int checkObjIdByTicket(char *dataId, char *accessLevel, 
 			       char *ticketStr, char *ticketHost,
 			       char *userName, char *userZone,
 			      icatSessionStruct *icss) {
@@ -1058,9 +1079,23 @@ int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel,
    char usesLimit[NAME_LEN]="";
    char ticketExpiry[NAME_LEN]="";
    char restrictions[NAME_LEN]="";
+   char writeFileCount[NAME_LEN]="";
+   char writeFileLimit[NAME_LEN]="";
+   char writeByteCount[NAME_LEN]="";
+   char writeByteLimit[NAME_LEN]="";
    int iUsesCount=0;
    int iUsesLimit=0;
+   int iWriteFileCount=0;
+   int iWriteFileLimit=0;
+   int iWriteByteCount=0;
+   int iWriteByteLimit=0;
    char myUsesCount[NAME_LEN];
+   char myWriteFileCount[NAME_LEN];
+
+#if 0
+   rodsLog(LOG_NOTICE, "checkObjIdByTicket debug dataId=%s accessLevel=%s", dataId, 
+	   accessLevel);
+#endif
 
    for (i=0;i<10;i++) { iVal[i]=NAME_LEN; }
 
@@ -1069,18 +1104,16 @@ int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel,
    cVal[2]=usesCount;
    cVal[3]=ticketExpiry;
    cVal[4]=restrictions;
-   if (logSQL_CML!=0) rodsLog(LOG_SQL, "_cmlCheckDataObjIdByTicket SQL 1 ");
-#if 0
-   status = cmlGetStringValuesFromSql(
-	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.object_type=? and TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
-	    cVal, iVal, 5, TICKET_TYPE_DATA,
-	    ticketStr, dataId, dataId, icss);
-#endif
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 1 ");
    if (strncmp(accessLevel, "modify", 6) == 0) {
-      /* ticket must also be of type 'write' */
+      /* ticket must also be of type 'write', and get the writeFileCount and writeFileLimit*/
+      cVal[5]=writeFileCount;
+      cVal[6]=writeFileLimit;
+      cVal[7]=writeByteCount;
+      cVal[8]=writeByteLimit;
       status = cmlGetStringValuesFromSql(
-	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.ticket_type = 'write' and TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
-	    cVal, iVal, 5, 
+	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions, write_file_count, write_file_limit, write_byte_count, write_byte_limit from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.ticket_type = 'write' and TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
+	    cVal, iVal, 9, 
 	    ticketStr, dataId, dataId, icss);
 
    }
@@ -1112,6 +1145,33 @@ int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel,
 				       userName, userZone, icss);
    if (status != 0) return(status);
 
+   if (strncmp(accessLevel, "modify", 6) == 0) {
+      iWriteByteLimit = atoi(writeByteLimit);
+      if (iWriteByteLimit > 0) {
+	 iWriteByteCount = atoi(writeByteCount);
+	 if (iWriteByteCount > iWriteByteLimit) {
+	    return(CAT_TICKET_WRITE_BYTES_EXCEEDED);
+	 }
+      }
+
+      iWriteFileLimit = atoi(writeFileLimit);
+      if (iWriteFileLimit > 0) {
+	 iWriteFileCount = atoi(writeFileCount);
+	 if (iWriteFileCount >= iWriteFileLimit) {
+	    return(CAT_TICKET_WRITE_USES_EXCEEDED);
+	 }
+	 iWriteFileCount++;
+	 snprintf(myWriteFileCount, sizeof myWriteFileCount, "%d", iWriteFileCount);
+	 cllBindVars[cllBindVarCount++]=myWriteFileCount;
+	 cllBindVars[cllBindVarCount++]=ticketId;
+	 if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
+	 status =  cmlExecuteNoAnswerSql(
+	    "update R_TICKET_MAIN set write_file_count=? where ticket_id=?", icss);
+	 if (status != 0) return(status);
+         /* Commit will be done later */
+      }
+   }
+
    iUsesLimit = atoi(usesLimit);
    if (iUsesLimit > 0) {
       iUsesCount = atoi(usesCount);
@@ -1122,13 +1182,65 @@ int _cmlCheckDataObjIdByTicket(char *dataId, char *accessLevel,
       snprintf(myUsesCount, sizeof myUsesCount, "%d", iUsesCount);
       cllBindVars[cllBindVarCount++]=myUsesCount;
       cllBindVars[cllBindVarCount++]=ticketId;
-      if (logSQL_CML!=0) rodsLog(LOG_SQL, "_cmlCheckDataObjIdByTicket SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
       status =  cmlExecuteNoAnswerSql(
 	 "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
       if (status != 0) return(status);
-      status =  cmlExecuteNoAnswerSql("commit", icss);
-      if (status != 0) return(status);
+      /* commit will be done as part of sequence later */
    }
+   return(0);
+}
+
+int
+cmlTicketUpdateWriteBytes(char *ticketStr,
+			  char *dataSize, char *objectId,
+			  icatSessionStruct *icss) {
+   int status, i;
+   char *cVal[10];
+   int iVal[10];
+   char ticketId[NAME_LEN]="";
+   char writeByteCount[NAME_LEN]="";
+   char writeByteLimit[NAME_LEN]="";
+   rodsLong_t iWriteByteCount=0;
+   rodsLong_t iWriteByteLimit=0;
+   rodsLong_t iDataSize;
+   char myWriteByteCount[NAME_LEN];
+   rodsLong_t iNewByteCount;
+
+   iDataSize = atoll(dataSize);
+   if (iDataSize == 0) return(0);
+
+   for (i=0;i<10;i++) { iVal[i]=NAME_LEN; }
+
+   cVal[0]=ticketId;
+   cVal[1]=writeByteCount;
+   cVal[2]=writeByteLimit;
+   
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlTicketUpdateWriteBytes SxxQL 1 ");
+   status = cmlGetStringValuesFromSql(
+      "select ticket_id, write_byte_count, write_byte_limit from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.ticket_type = 'write' and TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
+      cVal, iVal, 3, 
+      ticketStr, objectId, objectId, icss);
+   if (status != 0) return(status);
+   iWriteByteLimit = atoll(writeByteLimit);
+   iWriteByteCount = atoll(writeByteCount);
+   
+   if (iWriteByteLimit==0) return(0);
+#if 0
+    /* doesn't work well here; too late for a roll-back, 
+       so will catch it on next put */
+   if ( (iWriteByteCount+iDataSize) > iWriteByteLimit) {
+     return(CAT_TICKET_WRITE_BYTES_EXCEEDED); 
+   }
+#endif
+   iNewByteCount = iWriteByteCount + iDataSize;
+   snprintf(myWriteByteCount, sizeof myWriteByteCount, "%lld", iNewByteCount);
+   cllBindVars[cllBindVarCount++]=myWriteByteCount;
+   cllBindVars[cllBindVarCount++]=ticketId;
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlTicketUpdateWriteBytes SxxQL 2 ");
+   status =  cmlExecuteNoAnswerSql(
+      "update R_TICKET_MAIN set write_byte_count=? where ticket_id=?", icss);
+
    return(0);
 }
 
@@ -1148,7 +1260,7 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
 
    iVal=0;
    if (ticketStr != NULL && *ticketStr!='\0') {
-      status = _cmlCheckDataObjIdByTicket(dataId, accessLevel, ticketStr, 
+      status = checkObjIdByTicket(dataId, accessLevel, ticketStr, 
 					  ticketHost, userName, zoneName,
 					  icss);
       if (status != 0) return (status);

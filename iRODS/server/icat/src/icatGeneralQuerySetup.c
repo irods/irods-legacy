@@ -557,6 +557,10 @@ icatGeneralQuerySetup() {
   sColumn( COL_TICKET_OBJECT_TYPE, "R_TICKET_MAIN", "object_type");
   sColumn( COL_TICKET_USES_LIMIT, "R_TICKET_MAIN", "uses_limit");
   sColumn( COL_TICKET_USES_COUNT, "R_TICKET_MAIN", "uses_count");
+  sColumn( COL_TICKET_WRITE_FILE_LIMIT, "R_TICKET_MAIN", "write_file_limit");
+  sColumn( COL_TICKET_WRITE_FILE_COUNT, "R_TICKET_MAIN", "write_file_count");
+  sColumn( COL_TICKET_WRITE_BYTE_LIMIT, "R_TICKET_MAIN", "write_byte_limit");
+  sColumn( COL_TICKET_WRITE_BYTE_COUNT, "R_TICKET_MAIN", "write_byte_count");
   sColumn( COL_TICKET_EXPIRY_TS, "R_TICKET_MAIN", "ticket_expiry_ts");
   sColumn( COL_TICKET_CREATE_TIME, "R_TICKET_MAIN", "create_time");
   sColumn( COL_TICKET_MODIFY_TIME, "R_TICKET_MAIN", "modify_time");
