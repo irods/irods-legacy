@@ -435,6 +435,7 @@ setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
              addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
              addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
              addInxIval (&genQueryInp->selectInp, COL_D_RESC_GROUP_NAME, 1);
+             addInxIval (&genQueryInp->selectInp, COL_DATA_TYPE_NAME, 1);
 	}
     }
 
@@ -912,6 +913,8 @@ clearDataObjSqlResult (dataObjSqlResult_t *dataObjSqlResult)
       free (dataObjSqlResult->replNum.value);
     if (dataObjSqlResult->rescGrp.value != NULL)
       free (dataObjSqlResult->rescGrp.value);
+    if (dataObjSqlResult->dataType.value != NULL)
+      free (dataObjSqlResult->dataType.value);
 
     memset (dataObjSqlResult, 0, sizeof (dataObjSqlResult_t));
 
@@ -925,7 +928,7 @@ dataObjSqlResult_t *dataObjSqlResult)
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime, 
       *modifyTime, *chksum, *replStatus, *dataId, *resource, *phyPath, 
-      *ownerName, *replNum, *rescGrp;
+      *ownerName, *replNum, *rescGrp, *dataType;
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
       dataObjSqlResult == NULL)
@@ -1020,6 +1023,14 @@ dataObjSqlResult_t *dataObjSqlResult)
           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->rescGrp = *rescGrp;
+    }
+
+    if ((dataType = getSqlResultByInx (myGenQueryOut, COL_DATA_TYPE_NAME))
+      == NULL) {
+        setSqlResultValue (&dataObjSqlResult->dataType, COL_DATA_TYPE_NAME,
+          "", myGenQueryOut->rowCnt);
+    } else {
+        dataObjSqlResult->dataType = *dataType;
     }
 
     if ((phyPath = getSqlResultByInx (myGenQueryOut, COL_D_DATA_PATH))
@@ -1574,6 +1585,10 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     len = dataObjSqlResult->chksum.len;
     outCollEnt->chksum = &value[len * selectedInx];
 
+    value = dataObjSqlResult->dataType.value;
+    len = dataObjSqlResult->dataType.len;
+    outCollEnt->dataType = &value[len * selectedInx];
+
     if (rodsObjStat->specColl != NULL) {
 	outCollEnt->specColl = *rodsObjStat->specColl;
     }
@@ -1662,6 +1677,7 @@ clearCollEnt (collEnt_t *collEnt)
     if (collEnt->resource != NULL) free (collEnt->resource);
     if (collEnt->phyPath != NULL) free (collEnt->phyPath);
     if (collEnt->ownerName != NULL) free (collEnt->ownerName);
+    if (collEnt->dataType != NULL) free (collEnt->dataType);
  
     return (0);
 }
