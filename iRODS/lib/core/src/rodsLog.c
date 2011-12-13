@@ -153,6 +153,7 @@
     SYS_FS_LOCK_ERR, 
     SYS_LOCK_TYPE_INP_ERR, 
     SYS_LOCK_CMD_INP_ERR, 
+    SYS_ZIP_FORMAT_NOT_SUPPORTED, 
     USER_AUTH_SCHEME_ERR, 
     USER_AUTH_STRING_EMPTY, 
     USER_RODS_HOST_EMPTY, 
@@ -688,6 +689,7 @@
     "SYS_FS_LOCK_ERR", 
     "SYS_LOCK_TYPE_INP_ERR", 
     "SYS_LOCK_CMD_INP_ERR", 
+    "SYS_ZIP_FORMAT_NOT_SUPPORTED", 
     "USER_AUTH_SCHEME_ERR", 
     "USER_AUTH_STRING_EMPTY", 
     "USER_RODS_HOST_EMPTY", 
@@ -1099,7 +1101,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 533;
+int irodsErrorCount= 534;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

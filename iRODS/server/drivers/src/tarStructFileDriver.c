@@ -824,6 +824,7 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     specColl_t *specColl;
     rescInfo_t *rescInfo;
     fileRmdirInp_t fileRmdirInp;
+    char *dataType;
     int status = 0;
 
     structFileInx = rsTarStructFileOpen (rsComm, structFileOprInp->specColl);
@@ -847,7 +848,10 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 	freeStructFileDesc (structFileInx);
 	return (status);
     }
-
+    if ((dataType = getValByKey (&structFileOprInp->condInput, DATA_TYPE_KW))
+      != NULL) {
+        rstrcpy (StructFileDesc[structFileInx].dataType, dataType, NAME_LEN);
+    }
     if (strlen (specColl->cacheDir) > 0) {
 	if (specColl->cacheDirty > 0) {
 	    /* write the tar file and register no dirty */
@@ -908,6 +912,7 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     int structFileInx;
     int status;
     specColl_t *specColl;
+    char *dataType;
 
     if (rsComm == NULL || structFileOprInp == NULL || 
       structFileOprInp->specColl == NULL) {
@@ -936,6 +941,10 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
         return (status);
     }
 
+    if ((dataType = getValByKey (&structFileOprInp->condInput, DATA_TYPE_KW)) 
+      != NULL) {
+	rstrcpy (StructFileDesc[structFileInx].dataType, dataType, NAME_LEN);
+    }
     status = extractTarFile (structFileInx);
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -1294,8 +1303,10 @@ extractTarFileWithExec (int structFileInx)
 #ifndef GNU_TAR
     char tmpPath[MAX_NAME_LEN];
 #endif
+    int inx = 0;
 
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+    char *dataType = StructFileDesc[structFileInx].dataType;
 
     if (StructFileDesc[structFileInx].inuseFlag <= 0) {
         rodsLog (LOG_NOTICE,
@@ -1320,28 +1331,43 @@ extractTarFileWithExec (int structFileInx)
 
     if (status != 0) {
         rodsLog (LOG_ERROR,
-          "extractTarFileWithExec:: tar of %s to %s failed. stat = %d",
+          "extractTarFileWithExec: tar of %s to %s failed. stat = %d",
           specColl->cacheDir, specColl->phyPath, status);
         status = SYS_EXEC_TAR_ERR;
     }
 #else
     bzero (av, sizeof (av));
+    av[inx] = TAR_EXEC_PATH;
+    inx++;
 #ifdef GNU_TAR
-    av[0] = TAR_EXEC_PATH;
-    av[1] = "-x";
+    av[inx] = "-x";
+    inx++;
+    if (strcmp (dataType, GZIP_TAR_DT_STR) == 0) {
+	av[inx] = "-z";
+        inx++;
+    } else if (strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+        av[inx] = "-j";
+        inx++;
+    }
 #ifdef TAR_EXTENDED_HDR
-    av[2] = "-E";
-    av[3] = "-f";
-    av[4] = specColl->phyPath;
-    av[5] = "-C";
-    av[6] = specColl->cacheDir;
-#else
-    av[2] = "-f";
-    av[3] = specColl->phyPath;
-    av[4] = "-C";
-    av[5] = specColl->cacheDir;
+    av[inx] = "-E";
+    inx++;
 #endif
+    av[inx] = "-f";
+    inx++;
+    av[inx] = specColl->phyPath;
+    inx++;
+    av[inx] = "-C";
+    inx++;
+    av[inx] = specColl->cacheDir;
 #else	/* GNU_TAR */
+    if (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
+      strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+        /* non GNU_TAR don't seem to support -j nor -z option */
+        rodsLog (LOG_ERROR,
+         "extractTarFileWithExec:gzip/bzip2 %s not supported by non-GNU_TAR",
+          specColl->phyPath);
+    }
     mkdir (specColl->cacheDir, getDefDirMode ());
     if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
         rodsLog (LOG_ERROR,
@@ -1349,13 +1375,13 @@ extractTarFileWithExec (int structFileInx)
 	return SYS_EXEC_TAR_ERR - errno;
     }
     chdir (specColl->cacheDir);
-    av[0] = TAR_EXEC_PATH;
 #ifdef TAR_EXTENDED_HDR
-    av[1] = "-xEf";
+    av[inx] = "-xEf";
 #else
-    av[1] = "-xf";
+    av[inx] = "-xf";
 #endif
-    av[2] = specColl->phyPath;
+    inx++;
+    av[inx] = specColl->phyPath;
 #endif	/* GNU_TAR */
     status = forkAndExec (av);
 #ifndef GNU_TAR
@@ -1506,6 +1532,8 @@ bundleCacheDirWithExec (int structFileInx)
 #else
      char *av[NAME_LEN];
 #endif
+    char *dataType;
+    int inx = 0;
 
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
     if (specColl == NULL || specColl->cacheDirty <= 0 ||
@@ -1521,20 +1549,52 @@ bundleCacheDirWithExec (int structFileInx)
         rodsLog (LOG_ERROR,
           "bundleCacheDirWithExec: tar of %s to %s failed. stat = %d",
           specColl->cacheDir, specColl->phyPath, status);
-	status = SYS_EXEC_TAR_ERR;
+        status = SYS_EXEC_TAR_ERR;
     }
 #else
+    dataType = StructFileDesc[structFileInx].dataType;
     bzero (av, sizeof (av));
-    av[0] = TAR_EXEC_PATH;
+    av[inx] = TAR_EXEC_PATH;
+    inx++;
+#ifdef GNU_TAR
+    av[inx] = "-c";
+    inx++;
+    av[inx] = "-h";
+    inx++;
+    if (strcmp (dataType, GZIP_TAR_DT_STR) == 0) {
+        av[inx] = "-z";
+        inx++;
+    } else if (strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+        av[inx] = "-j";
+        inx++;
+    }
 #ifdef TAR_EXTENDED_HDR
-    av[1] = "-chEf";
-#else
-    av[1] = "-chf";
+    av[inx] = "-E";
 #endif
-    av[2] = specColl->phyPath;
-    av[3] = "-C";
-    av[4] = specColl->cacheDir;
-    av[5] = ".";
+    av[inx] = "-f";
+    inx++;
+#else	/* GNU_TAR */
+    if (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
+      strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+        rodsLog (LOG_ERROR,
+         "bundleCacheDirWithExec: gzip/bzip2 %s not supported for non-GNU_TAR",
+          specColl->phyPath);
+	return SYS_ZIP_FORMAT_NOT_SUPPORTED;
+    }
+#ifdef TAR_EXTENDED_HDR
+    av[inx] = "-chEf";
+#else
+    av[inx] = "-chf";
+#endif
+    inx++;
+#endif	/* GNU_TAR */
+    av[inx] = specColl->phyPath;
+    inx++;
+    av[inx] = "-C";
+    inx++;
+    av[inx] = specColl->cacheDir;
+    inx++;
+    av[inx] = ".";
 
     status = forkAndExec (av);
 #endif
