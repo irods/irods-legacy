@@ -3580,14 +3580,16 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 }
 
 /* Generate a temporary, one-time password.
-   Input is the username from the rsComm structure.  
-   Output is the pattern, that when hashed with the user's password,
+   Input is the username from the rsComm structure and an optional otherUser.
+   Output is the pattern, that when hashed with the client user's password,
    becomes the temporary password.  The temp password is also stored
    in the database.
 
-   Called from rsGetTempPassword.
-*/
-int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
+   Called from rsGetTempPassword and rsGetTempPasswordForOther.
+
+   If otherUser is non-blank, then create a password for the
+   specified user, and the caller must be a local admin.  */
+int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash, char *otherUser) {
    int status;
    char md5Buf[100];
    unsigned char digest[RESPONSE_LEN+2];
@@ -3601,8 +3603,19 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    char hashValue[50];
    int j=0;
    char tSQL[MAX_SQL_SIZE];
+   int useOtherUser=0;
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeTempPw");
+
+   if (otherUser!=NULL && strlen(otherUser)>0) {
+      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
+      if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
+      useOtherUser=1;
+   }
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeTempPw SQL 1 ");
 
@@ -3661,7 +3674,12 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    getNowStr(myTime);
    sprintf(myTimeExp, "%d", TEMP_PASSWORD_TIME);  /* seconds from create time
                                                      when it will expire */
-   cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+   if (useOtherUser==1) {
+      cllBindVars[cllBindVarCount++]=otherUser;
+   }
+   else {
+      cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+   }
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone,
    cllBindVars[cllBindVarCount++]=newPw;
    cllBindVars[cllBindVarCount++]=myTimeExp;

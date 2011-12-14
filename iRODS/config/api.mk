@@ -404,3 +404,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcDataObjLock.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsTicketAdmin.o
 LIB_API_OBJS += $(libApiObjDir)/rcTicketAdmin.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetTempPasswordForOther.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetTempPasswordForOther.o

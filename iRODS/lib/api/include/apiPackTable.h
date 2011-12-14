@@ -102,6 +102,8 @@ packInstructArray_t ApiPackTable[] = {
         {"databaseRescCloseInp_PI", databaseRescCloseInp_PI},
         {"specificQueryInp_PI", specificQueryInp_PI},
         {"ticketAdminInp_PI", ticketAdminInp_PI},
+        {"getTempPasswordForOtherInp_PI", getTempPasswordForOtherInp_PI},
+        {"getTempPasswordForOtherOut_PI", getTempPasswordForOtherOut_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

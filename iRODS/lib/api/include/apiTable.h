@@ -168,6 +168,9 @@ apidef_t RcApiTable[] = {
        "specificQueryInp_PI", 0, "GenQueryOut_PI", 0, (funcPtr) RS_SPECIFIC_QUERY},
     {TICKET_ADMIN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
        "ticketAdminInp_PI", 0, NULL, 0, (funcPtr) RS_TICKET_ADMIN},
+    {GET_TEMP_PASSWORD_FOR_OTHER_AN, RODS_API_VERSION, 
+       LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH, 
+       "getTempPasswordForOtherInp_PI", 0,  "getTempPasswordForOtherOut_PI", 0, (funcPtr) RS_GET_TEMP_PASSWORD_FOR_OTHER},
     {OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION},
 #ifdef COMPAT_201

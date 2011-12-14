@@ -140,4 +140,5 @@
 #include "dataObjFsync.h"
 #include "dataObjLock.h"
 #include "ticketAdmin.h"
+#include "getTempPasswordForOther.h"
 #endif	/* API_HEADER_ALL_H */
