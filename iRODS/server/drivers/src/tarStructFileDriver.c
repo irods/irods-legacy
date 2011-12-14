@@ -1282,11 +1282,16 @@ int
 extractTarFile (int structFileInx)
 {
     int status; 
+
+    if (strcmp (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) == 0) {
+	status = extractFileWithUnzip (structFileInx);
+    } else {
 #ifdef TAR_EXEC_PATH
-    status = extractTarFileWithExec (structFileInx);
+        status = extractTarFileWithExec (structFileInx);
 #else
-    status = extractTarFileWithLib (structFileInx);
+        status = extractTarFileWithLib (structFileInx);
 #endif
+    }
     return status;
 }
 
@@ -1487,11 +1492,19 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
     rsComm_t *rsComm = StructFileDesc[structFileInx].rsComm;
 
 
-#ifdef TAR_EXEC_PATH
-    status = bundleCacheDirWithExec (structFileInx);
+    if (strcmp (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) == 0) {
+#ifdef ZIP_EXEC_PATH
+        status = bundleCacheDirWithZip (structFileInx);
 #else
-    status = bundleCacheDirWithLib (structFileInx);
+	return SYS_ZIP_FORMAT_NOT_SUPPORTED;
 #endif
+    } else {
+#ifdef TAR_EXEC_PATH
+        status = bundleCacheDirWithExec (structFileInx);
+#else
+        status = bundleCacheDirWithLib (structFileInx);
+#endif
+    }
     if (status < 0) return status;
 
     /* register size change */
@@ -1691,5 +1704,79 @@ freeTarSubFileDesc (int tarSubFileInx)
     memset (&TarSubFileDesc[tarSubFileInx], 0, sizeof (tarSubFileDesc_t));
 
     return (0);
+}
+
+int 
+bundleCacheDirWithZip (int structFileInx)
+{
+    char *av[NAME_LEN];
+    char tmpPath[MAX_NAME_LEN];
+    int status;
+    int inx = 0;
+
+    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+    if (specColl == NULL || specColl->cacheDirty <= 0 ||
+      strlen (specColl->cacheDir) == 0) return 0;
+
+    /* cd to the cacheDir */
+    if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
+        rodsLog (LOG_ERROR,
+          "bundleCacheDirWithZip: getcwd failed. errno = %d", errno);
+        return SYS_EXEC_TAR_ERR - errno;
+    }
+    chdir (specColl->cacheDir);
+    bzero (av, sizeof (av));
+    av[inx] = ZIP_EXEC_PATH;
+    inx++;
+    av[inx] = "-r";
+    inx++;
+    av[inx] = "-q";
+    inx++;
+    av[inx] = specColl->phyPath;
+    inx++;
+    av[inx] = ".";
+    status = forkAndExec (av);
+    chdir (tmpPath);
+
+    return status;
+}
+
+int
+extractFileWithUnzip (int structFileInx)
+{
+    char *av[NAME_LEN];
+    int status;
+    int inx = 0;
+
+    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+    if (StructFileDesc[structFileInx].inuseFlag <= 0) {
+        rodsLog (LOG_NOTICE,
+          "extractFileWithUnzip: structFileInx %d not in use",
+          structFileInx);
+        return (SYS_STRUCT_FILE_DESC_ERR);
+    }
+
+    if (specColl == NULL || strlen (specColl->cacheDir) == 0 ||
+     strlen (specColl->phyPath) == 0) {
+        rodsLog (LOG_NOTICE,
+          "extractFileWithUnzip: Bad specColl for structFileInx %d ",
+          structFileInx);
+        return (SYS_STRUCT_FILE_DESC_ERR);
+    }
+
+    /* cd to the cacheDir */
+    bzero (av, sizeof (av));
+    av[inx] = UNZIP_EXEC_PATH;
+    inx++;
+    av[inx] = "-q";
+    inx++;
+    av[inx] = "-d";
+    inx++;
+    av[inx] = specColl->cacheDir;
+    inx++;
+    av[inx] = specColl->phyPath;
+    status = forkAndExec (av);
+
+    return status;
 }
 

@@ -276,6 +276,10 @@ endif
 # tarDir=/data/mwan/tar/libtar-1.2.11
 endif
 
+# ZIP_EXEC_PATH and UNZIP_EXEC_PATH define the paths of zip/unzip executable.
+ZIP_EXEC_PATH=/usr/bin/zip
+UNZIP_EXEC_PATH=/usr/bin/unzip
+
 #
 # Grid Security Infrastructure
 # 

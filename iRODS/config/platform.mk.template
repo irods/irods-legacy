@@ -186,6 +186,14 @@ MY_CFLAG+=  -DTAR_EXTENDED_HDR
 endif
 endif
 
+ifdef ZIP_EXEC_PATH
+MY_CFLAG+= -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\"
+endif
+
+ifdef UNZIP_EXEC_PATH
+MY_CFLAG+= -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
+endif
+
 ifdef RBUDP_TRANSFER
 MY_CFLAG+= -DRBUDP_TRANSFER -I$(libCoreIncDir) -I$(libApiIncDir)        \
 		-I$(libMd5IncDir) -I$(libRbudpIncDir)

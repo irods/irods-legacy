@@ -108,4 +108,8 @@ int
 allocTarSubFileDesc ();
 int
 freeTarSubFileDesc (int tarSubFileInx);
+int
+bundleCacheDirWithZip (int structFileInx);
+int
+extractFileWithUnzip (int structFileInx);
 #endif	/* TAR_STRUCT_FILE_DRIVER_H_H */

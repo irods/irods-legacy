@@ -113,8 +113,11 @@ structFileExtAndRegInp_t *structFileBundleInp)
           dataObjInp.objPath, l1descInx);
         return (l1descInx);
     }
+    clearKeyVal (&dataObjInp.condInput);
     l3Close (rsComm, l1descInx);
     L1desc[l1descInx].l3descInx = 0;
+    /* zip does not like a zero length file as target */
+    l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
 
     memset (&chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
     rstrcpy (chkObjPermAndStatInp.objPath, 
