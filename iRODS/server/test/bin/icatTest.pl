@@ -488,6 +488,8 @@ $ENV{'irodsUserName'}=$U2;
 runCmd(0, "iinit 1234");
 runCmd(2, "iadmin atg g1 user3"); # test SQL (just needs to be groupadmin to)
 runCmd(2, "ichmod -R write $U1 $Resc"); # test SQL (the non-admin)
+runCmd(0, "echo '1234\nabcd\nabcd' | ipasswd"); # change the password
+runCmd(0, "echo 'abcd\n1234\n1234' | ipasswd"); # change the password back
 runCmd(0, "iexit full");
 runCmd(0, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};
@@ -518,6 +520,12 @@ runCmd(0, "iadmin cu");
 runCmd(0, "iadmin suq $U1 total 20");
 runCmd(0, "iadmin sgq $G1 total 20");
 runCmd(0, "iadmin cu");
+runCmd(0, "iquota");
+runCmd(0, "iquota -a");
+runCmd(0, "iquota -u baduser");
+runCmd(0, "iquota -u $U2");
+runCmd(0, "iquota usage");
+runCmd(0, "iquota -a usage");
 runCmd(0, "iadmin suq $U1 total 0");
 runCmd(0, "iadmin sgq $G1 total 0");
 runCmd(0, "iadmin suq $U1 $Resc 0");

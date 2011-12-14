@@ -248,6 +248,8 @@ runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,compresource" );
 
 # Simple test to increase coverage; run each of the i-commands with -h
 runCmd( "ihelp -a" );
+# and also run the ihelp usage function
+runCmd( "ihelp -h" );
 
 #-- basic clients commands.
 
