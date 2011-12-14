@@ -1284,7 +1284,11 @@ extractTarFile (int structFileInx)
     int status; 
 
     if (strcmp (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) == 0) {
+#ifdef UNZIP_EXEC_PATH
 	status = extractFileWithUnzip (structFileInx);
+#else
+	return SYS_ZIP_FORMAT_NOT_SUPPORTED;
+#endif
     } else {
 #ifdef TAR_EXEC_PATH
         status = extractTarFileWithExec (structFileInx);
@@ -1706,6 +1710,7 @@ freeTarSubFileDesc (int tarSubFileInx)
     return (0);
 }
 
+#ifdef ZIP_EXEC_PATH
 int 
 bundleCacheDirWithZip (int structFileInx)
 {
@@ -1740,7 +1745,9 @@ bundleCacheDirWithZip (int structFileInx)
 
     return status;
 }
+#endif
 
+#ifdef UNZIP_EXEC_PATH
 int
 extractFileWithUnzip (int structFileInx)
 {
@@ -1779,4 +1786,4 @@ extractFileWithUnzip (int structFileInx)
 
     return status;
 }
-
+#endif
