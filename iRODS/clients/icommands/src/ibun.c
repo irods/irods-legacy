@@ -141,7 +141,7 @@ usage ()
 "     in your environment",
 " -D  dataType - the struct file data type. Valid only for -c option for",
 "     specifying the target data type. Valid dataTypes are - t|tar|'tar file'",
-"     for tar file. g|gzip|gzipTar for gziped tar file, b|bzip|bzip2Tar for",
+"     for tar file. g|gzip|gzipTar for gziped tar file, b|bzip2|bzip2Tar for",
 "     bzip2 file, and z|zip|zipFile for archive using 'zip'.  If -D is not",
 "     specified, the default is a tar file type",
 " -x  extract the structFile and register the extracted files and directories",

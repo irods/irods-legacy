@@ -108,7 +108,7 @@ rodsPathInp_t *rodsPathInp)
                   GZIP_TAR_DT_STR);
             } else if (strcmp (rodsArgs->dataTypeString, "b") == 0 ||
               strcmp (rodsArgs->dataTypeString, BZIP2_TAR_DT_STR) == 0 ||
-              strcmp (rodsArgs->dataTypeString, "bzip") == 0) {
+              strcmp (rodsArgs->dataTypeString, "bzip2") == 0) {
                 addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
                   BZIP2_TAR_DT_STR);
             } else if (strcmp (rodsArgs->dataTypeString, "z") == 0 ||
@@ -117,8 +117,10 @@ rodsPathInp_t *rodsPathInp)
                 addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
                   ZIP_DT_STR);
 	    } else {
-                addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
-                  rodsArgs->dataTypeString);
+                rodsLog (LOG_ERROR,
+                 "bunUtil: Unknown dataType %s for ibun", 
+		  rodsArgs->dataTypeString);
+		return SYS_ZIP_FORMAT_NOT_SUPPORTED;
 	    }
         }
     } else if (rodsArgs->condition == True) {	/* -c */
