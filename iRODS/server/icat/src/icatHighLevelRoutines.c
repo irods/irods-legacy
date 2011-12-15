@@ -1496,6 +1496,10 @@ int chlRegResc(rsComm_t *rsComm,
 	       rescInfo->rescLoc);
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
    }
+   if (strcmp(rescInfo->rescLoc, "localhost") == 0) {
+      addRErrorMsg (&rsComm->rError, 0, 
+		    "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
+   }
 
    if ((strcmp(rescInfo->rescType, "database") !=0) &&
        (strcmp(rescInfo->rescType, "mso") !=0) ) {
@@ -4326,6 +4330,10 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 		  "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
 		  optionValue);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      }
+      if (strcmp(optionValue, "localhost") == 0) {
+	 addRErrorMsg (&rsComm->rError, 0, 
+		    "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
       }
       cllBindVars[cllBindVarCount++]=optionValue;
       cllBindVars[cllBindVarCount++]=myTime;
