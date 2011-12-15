@@ -262,11 +262,14 @@ endif
 # Otherwise tarDir can be used to specify the directory path of libtar.
 # Both TAR_EXEC_PATH  and tarDir should NOT be specified. By default, 
 # TAR_EXEC_PATH is on and tarDir is off.
+# GNU_TAR -specifies whether the tar execuable is a GNU tar. The default
+# is it is a GNU tar
 # TAR_EXTENDED_HDR - specify whether the extended header format option (-E) 
 # which allows individual file size larger than 8 Gb, is to be used. 
 # The default is off since not all tar commands support this option.
 TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
+GNU_TAR=1
 # TAR_EXTENDED_HDR = 1
 ifeq ($(OS_platform), osx_platform)
 TAR_EXEC_PATH="`which tar`"
