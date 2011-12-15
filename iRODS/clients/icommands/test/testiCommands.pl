@@ -22,6 +22,11 @@ use File::Copy;
 
 #-- Initialization
 
+# $doIbunZipTest - whether to do ibun test for gzip and bzip2 dataType.
+# "yes" or "no". Default is no since the gzipTar and bzip2Tar dataType
+# are not defined yet.
+my $doIbunZipTest = "no";
+
 my $debug;
 my $entry;
 my @failureList;
@@ -335,6 +340,22 @@ system ( "mkdir $dir_w/testx1" );
 runCmd( "iget  $irodshome/testx1.tar $dir_w", "",  "", "", "rm $dir_w/testx1.tar" );
 runCmd( "tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
 runCmd( "diff -r $dir_w/testx $dir_w/testx1/testx", "", "NOANSWER" );
+if ( $doIbunZipTest =~ "yes" ) {
+# test ibun with gzip
+    runCmd( "ibun -cDgzip $irodshome/testx1.tar.gz $irodshome/testx");
+    runCmd( "ibun -xDgzip $irodshome/testx1.tar.gz $irodshome/testgz");
+    runCmd( "iget -vr $irodshome/testgz $dir_w");
+    runCmd( "diff -r $dir_w/testx $dir_w/testgz/testx", "", "NOANSWER" );
+    system ("rm -r $dir_w/testgz");
+    system ("irm -rf $irodshome/testx1.tar.gz $irodshome/testgz");
+# test ibun with bzip2
+    runCmd( "ibun -cDbzip2 $irodshome/testx1.tar.bz2 $irodshome/testx");
+    runCmd( "ibun -xDgzip $irodshome/testx1.tar.bz2 $irodshome/testbz2");
+    runCmd( "iget -vr $irodshome/testbz2 $dir_w");
+    runCmd( "diff -r $dir_w/testx $dir_w/testbz2/testx", "", "NOANSWER" );
+    system ("rm -r $dir_w/testbz2");
+    system ("irm -rf $irodshome/testx1.tar.bz2 $irodshome/testbz2");
+}
 system ( "mv $sfile2 /tmp/sfile2" );
 runCmd( "ireg -KR testresource /tmp/sfile2  $irodshome/foo5", "", "", "", "irm -f foo5" );
 runCmd( "iget -fK $irodshome/foo5 $dir_w/foo5", "", "", "", "rm $dir_w/foo5" );
