@@ -334,7 +334,7 @@ runCmd( "ils -l $irodshome/testx1.tar", "", "LIST", "testx1.tar" );
 system ( "mkdir $dir_w/testx1" );
 runCmd( "iget  $irodshome/testx1.tar $dir_w", "",  "", "", "rm $dir_w/testx1.tar" );
 runCmd( "tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
-runCmd( "diff -r $dir_w/testx $dir_w/testx1", "", "NOANSWER" );
+runCmd( "diff -r $dir_w/testx $dir_w/testx1/testx", "", "NOANSWER" );
 system ( "mv $sfile2 /tmp/sfile2" );
 runCmd( "ireg -KR testresource /tmp/sfile2  $irodshome/foo5", "", "", "", "irm -f foo5" );
 runCmd( "iget -fK $irodshome/foo5 $dir_w/foo5", "", "", "", "rm $dir_w/foo5" );
