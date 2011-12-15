@@ -667,128 +667,6 @@ tarSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
     return status;
 }
 
-#if 0	/* no long use tarLogStructFileSync */
-int
-tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
-{
-    int status;
-
-    if ((structFileOprInp->oprType & LOGICAL_BUNDLE) != 0) {
-	status = tarLogStructFileSync (rsComm, structFileOprInp);
-    } else {
-	status = tarPhyStructFileSync (rsComm, structFileOprInp);
-    }
-    return (status);
-}
-
-/* tarLogStructFileSync - bundle files in the cacheDir UNIX directory,
- */
-int
-tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
-{
-    int structFileInx;
-    specColl_t *specColl;
-    rescInfo_t *rescInfo;
-    collInp_t openCollInp;
-    collEnt_t *collEnt = NULL;
-    int handleInx;
-    int status = 0;
-    TAR *t;
-    int myMode;
-    int collLen;
-    int parLen;
-    char savepath[MAX_NAME_LEN];
-    char topTmpDir[MAX_NAME_LEN];
-
-    structFileInx = rsTarStructFileOpen (rsComm, structFileOprInp->specColl);
-    if (structFileInx < 0) {
-        rodsLog (LOG_NOTICE,
-         "tarLogStructFileSync: rsTarStructFileOpen error for %s, stat=%d",
-         structFileOprInp->specColl->collection, structFileInx);
-        return (structFileInx);
-    }
-
-    rescInfo = StructFileDesc[structFileInx].rescInfo;
-    specColl = structFileOprInp->specColl;
-
-    memset (&openCollInp, 0, sizeof (openCollInp));
-    rstrcpy (openCollInp.collName, specColl->collection, MAX_NAME_LEN);
-    openCollInp.flags =
-      RECUR_QUERY_FG | VERY_LONG_METADATA_FG | INCLUDE_CONDINPUT_IN_QUERY;
-    addKeyVal (&openCollInp.condInput, RESC_NAME_KW, rescInfo->rescName);
-
-    handleInx = rsOpenCollection (rsComm, &openCollInp);
-    if (handleInx < 0) {
-        rodsLog (LOG_ERROR,
-          "tarLogStructFileSync: rsOpenCollection of %s error. status = %d",
-          openCollInp.collName, handleInx);
-        return (handleInx);
-    }
-
-    myMode = encodeIrodsTarfd (structFileInx, getDefFileMode ());
-
-    status = tar_open (&t, specColl->phyPath, &irodstype,
-      O_WRONLY, myMode, TAR_GNU);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE,
-          "tarLogStructFileSync: tar_open error for %s, errno = %d",
-          specColl->phyPath, errno);
-        return (SYS_TAR_OPEN_ERR - errno);
-    }
-    collLen = strlen (openCollInp.collName) + 1;
-    parLen = getParentPathlen (openCollInp.collName);
-    snprintf (topTmpDir, MAX_NAME_LEN, "/tmp/%s", 
-      openCollInp.collName + parLen);
-
-    while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
-	if (collEnt->objType == DATA_OBJ_T) {
-	    if (collEnt->collName[collLen] == '\0') {
-	        snprintf (savepath, MAX_NAME_LEN, "./%s", 
-	          collEnt->dataName);
-	    } else {
-	        snprintf (savepath, MAX_NAME_LEN, "./%s/%s", 
-	          collEnt->collName + collLen, collEnt->dataName);
-	    }
-	    status = tar_append_file (t, collEnt->phyPath, savepath);
-    	    if (status != 0) {
-        	rodsLog (LOG_NOTICE,
-      		 "tarLogStructFileSync: tar_append_tree error for %s, errno=%d",
-                  savepath, errno);
-		rsCloseCollection (rsComm, &handleInx);;
-		rmTmpDirAll (topTmpDir);
-		tar_close(t);
-                return (SYS_TAR_APPEND_ERR - errno);
-            }
-	} else {	/* a collection */
-	    char tmpDir[MAX_NAME_LEN];
-	    snprintf (savepath, MAX_NAME_LEN, "./%s",
-              collEnt->collName + collLen);
-	   /* have to mkdir to fool tar_append_file */
-	    snprintf (tmpDir, MAX_NAME_LEN, "/tmp/%s", 
-	     collEnt->collName + parLen);
-	    mkdirR ("/tmp", tmpDir, getDefDirMode ());
-	    status = tar_append_file (t, tmpDir, savepath);
-            if (status != 0) {
-                rodsLog (LOG_NOTICE,
-                 "tarLogStructFileSync: tar_append_tree error for %s, errno=%d",
-                  collEnt->collName + collLen, errno);
-		rmTmpDirAll (topTmpDir);
-		rsCloseCollection (rsComm, &handleInx);
-		tar_close(t);
-                return (SYS_TAR_APPEND_ERR - errno);
-            }
-	}
-    }
-
-    rmTmpDirAll (topTmpDir);
-    rsCloseCollection (rsComm, &handleInx);;
-    tar_close(t);
-
-    return 0;
-}
-#endif
-    
 int
 rmTmpDirAll (char *myDir)
 {
@@ -1304,11 +1182,7 @@ int
 extractTarFileWithExec (int structFileInx)
 {
     int status;
-#if 0
-    char cmdStr[MAX_NAME_LEN];
-#else
-     char *av[NAME_LEN];
-#endif
+    char *av[NAME_LEN];
 #ifndef GNU_TAR
     char tmpPath[MAX_NAME_LEN];
 #endif
@@ -1331,20 +1205,6 @@ extractTarFileWithExec (int structFileInx)
           structFileInx);
         return (SYS_STRUCT_FILE_DESC_ERR);
     }
-
-#if 0
-    snprintf (cmdStr, MAX_NAME_LEN, "%s -xf %s -C %s",
-      TAR_EXEC_PATH, specColl->phyPath, specColl->cacheDir);
-
-    status = system (cmdStr);
-
-    if (status != 0) {
-        rodsLog (LOG_ERROR,
-          "extractTarFileWithExec: tar of %s to %s failed. stat = %d",
-          specColl->cacheDir, specColl->phyPath, status);
-        status = SYS_EXEC_TAR_ERR;
-    }
-#else
     bzero (av, sizeof (av));
     av[inx] = TAR_EXEC_PATH;
     inx++;
@@ -1395,8 +1255,6 @@ extractTarFileWithExec (int structFileInx)
     status = forkAndExec (av);
 #ifndef GNU_TAR
     chdir (tmpPath);
-#endif
-
 #endif
 
     return status;
@@ -1548,11 +1406,7 @@ int
 bundleCacheDirWithExec (int structFileInx, int oprType)
 {
     int status;
-#if 0
-    char cmdStr[MAX_NAME_LEN];
-#else
      char *av[NAME_LEN];
-#endif
 #ifndef GNU_TAR
     char optStr[NAME_LEN];
 #endif
@@ -1563,19 +1417,6 @@ bundleCacheDirWithExec (int structFileInx, int oprType)
     if (specColl == NULL || specColl->cacheDirty <= 0 ||
       strlen (specColl->cacheDir) == 0) return 0;
 
-#if 0
-    snprintf (cmdStr, MAX_NAME_LEN, "%s -chlf %s -C %s .",
-      TAR_EXEC_PATH, specColl->phyPath, specColl->cacheDir);
-
-    status = system (cmdStr);
-
-    if (status != 0) {
-        rodsLog (LOG_ERROR,
-          "bundleCacheDirWithExec: tar of %s to %s failed. stat = %d",
-          specColl->cacheDir, specColl->phyPath, status);
-        status = SYS_EXEC_TAR_ERR;
-    }
-#else
     dataType = StructFileDesc[structFileInx].dataType;
     bzero (av, sizeof (av));
     av[inx] = TAR_EXEC_PATH;
@@ -1613,13 +1454,15 @@ bundleCacheDirWithExec (int structFileInx, int oprType)
           specColl->phyPath);
 	return SYS_ZIP_FORMAT_NOT_SUPPORTED;
     }
-    rstrcpy (optStr, "-ch", NAME_LEN);
+    rstrcpy (optStr, "-h", NAME_LEN);
 #ifdef TAR_EXTENDED_HDR
     strcat (optStr, "E");
 #endif
     if ((oprType & ADD_TO_TAR_OPR) != 0) {
 	/* update */
 	strcat (optStr, "u");
+    } else {
+        strcat (optStr, "c");
     }
     strcat (optStr, "f");
     av[inx] = optStr;
@@ -1634,7 +1477,6 @@ bundleCacheDirWithExec (int structFileInx, int oprType)
     av[inx] = ".";
 
     status = forkAndExec (av);
-#endif
 
     return status;
 }
