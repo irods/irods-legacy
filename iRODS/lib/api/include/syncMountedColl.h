@@ -37,6 +37,7 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType);
 					 * the path in cacheDir */  
 #define CREATE_TAR_OPR		0x0	/* create tar file -c */
 #define ADD_TO_TAR_OPR          0x10	/* add to a tar file */
+#define PRESERVE_COLL_PATH      0x20	/* preserver the last entry of coll */
 
 
 

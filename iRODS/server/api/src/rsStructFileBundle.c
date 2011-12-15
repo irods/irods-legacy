@@ -161,8 +161,20 @@ structFileExtAndRegInp_t *structFileBundleInp)
         rmdir (phyBunDir);
         return (handleInx);
     }
-    collLen = strlen (collInp.collName);
-
+    if ((structFileBundleInp->oprType & PRESERVE_COLL_PATH) != 0) {
+	/* preserver the last entry of the coll path */
+	char *tmpPtr = collInp.collName;
+	int tmpLen = 0;
+	collLen = 0;
+	/* find length to the last '/' */
+        while (*tmpPtr != '\0') {
+	    if (*tmpPtr == '/') collLen = tmpLen;
+	    tmpLen++;
+	    tmpPtr++;
+	}
+    } else {
+        collLen = strlen (collInp.collName);
+    }
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->objType == DATA_OBJ_T) {
             if (collEnt->collName[collLen] == '\0') {

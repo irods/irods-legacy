@@ -152,8 +152,12 @@ rodsPathInp_t *rodsPathInp)
         addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
     }
 
+    if (rodsArgs->condition == True) {  /* -c - create */
+	structFileExtAndRegInp->oprType = PRESERVE_COLL_PATH;
+    }
+
     if (rodsArgs->add == True) {  /* add to tar */
-	structFileExtAndRegInp->oprType = ADD_TO_TAR_OPR;
+	structFileExtAndRegInp->oprType = ADD_TO_TAR_OPR | PRESERVE_COLL_PATH;
         addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
     }
 
