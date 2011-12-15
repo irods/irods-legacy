@@ -1037,7 +1037,8 @@ PARSER_FUNC_BEGIN1(StringExpression, Token *tk)
     pos.exprloc = startLoc + st[0];
     int startloc = pos.exprloc;
     BUILD_NODE(TK_STRING, sbuf, &pos,0,0);
-    for(k=1;k<noi;k++) {
+    k=1;
+    while(k<noi) {
         strncpy(sbuf, str+end[k-1], st[k]-end[k-1]); /* var */
         strcpy(sbuf+st[k]-end[k-1], delim);
         pos.exprloc = startLoc + end[k-1];
@@ -1055,6 +1056,7 @@ PARSER_FUNC_BEGIN1(StringExpression, Token *tk)
 
         pos.exprloc = startloc;
         BUILD_APP_NODE("++", &pos, 2);
+        k++;
     }
 PARSER_FUNC_END(StringExpression)
 
