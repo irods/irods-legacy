@@ -306,7 +306,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag)
     }
 
     status = phyBundle (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
-      collection);
+      collection, CREATE_TAR_OPR);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "bundlleAndRegSubFiles: rsStructFileSync of %s error. stat = %d",
@@ -421,9 +421,12 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag)
     }
 }
 
+/* phyBundle
+ * Valid oprType are CREATE_TAR_OPR and ADD_TO_TAR_OPR
+ */
 int
 phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
-char *collection)
+char *collection, int oprType)
 {
     structFileOprInp_t structFileOprInp;
     int status;
@@ -450,7 +453,7 @@ char *collection)
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
     structFileOprInp.specColl->cacheDirty = 1;
     /* don't reg CollInfo2 */
-    structFileOprInp.oprType = NO_REG_COLL_INFO;
+    structFileOprInp.oprType = NO_REG_COLL_INFO | oprType;
     dataType = dataObjInfo->dataType;
     if (dataType != NULL &&
       (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||

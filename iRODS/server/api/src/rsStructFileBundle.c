@@ -106,7 +106,11 @@ structFileExtAndRegInp_t *structFileBundleInp)
 
     dataObjInp.openFlags = O_WRONLY;  
 
-    l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
+    if ((structFileBundleInp->oprType & ADD_TO_TAR_OPR) != 0) {
+        l1descInx = rsDataObjOpen (rsComm, &dataObjInp);
+    } else {
+        l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
+    }
     if (l1descInx < 0) {
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: rsDataObjCreate of %s error. status = %d",
@@ -117,7 +121,8 @@ structFileExtAndRegInp_t *structFileBundleInp)
     l3Close (rsComm, l1descInx);
     L1desc[l1descInx].l3descInx = 0;
     /* zip does not like a zero length file as target */
-    l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
+    if ((structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0)
+        l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
 
     memset (&chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
     rstrcpy (chkObjPermAndStatInp.objPath, 
@@ -197,7 +202,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
     rsCloseCollection (rsComm, &handleInx);
 
     status = phyBundle (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
-      collInp.collName);
+      collInp.collName, structFileBundleInp->oprType);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: phyBundle of %s error. stat = %d",

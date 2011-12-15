@@ -99,7 +99,7 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 int
 syncCacheDirToTarfile (int structFileInx, int oprType);
 int
-bundleCacheDirWithExec (int structFileInx);
+bundleCacheDirWithExec (int structFileInx, int oprType);
 int
 bundleCacheDirWithLib (int structFileInx);
 int

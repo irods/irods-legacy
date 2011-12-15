@@ -1498,14 +1498,18 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
 
     if (strcmp (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) == 0) {
 #ifdef ZIP_EXEC_PATH
+	if ((oprType & ADD_TO_TAR_OPR) != 0)
+	    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
         status = bundleCacheDirWithZip (structFileInx);
 #else
 	return SYS_ZIP_FORMAT_NOT_SUPPORTED;
 #endif
     } else {
 #ifdef TAR_EXEC_PATH
-        status = bundleCacheDirWithExec (structFileInx);
+        status = bundleCacheDirWithExec (structFileInx, oprType);
 #else
+	if ((oprType & ADD_TO_TAR_OPR) != 0)
+	    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
         status = bundleCacheDirWithLib (structFileInx);
 #endif
     }
@@ -1541,13 +1545,16 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
 
 #ifdef TAR_EXEC_PATH
 int
-bundleCacheDirWithExec (int structFileInx)
+bundleCacheDirWithExec (int structFileInx, int oprType)
 {
     int status;
 #if 0
     char cmdStr[MAX_NAME_LEN];
 #else
      char *av[NAME_LEN];
+#endif
+#ifndef GNU_TAR
+    char optStr[NAME_LEN];
 #endif
     char *dataType;
     int inx = 0;
@@ -1574,14 +1581,22 @@ bundleCacheDirWithExec (int structFileInx)
     av[inx] = TAR_EXEC_PATH;
     inx++;
 #ifdef GNU_TAR
-    av[inx] = "-c";
+    if ((oprType & ADD_TO_TAR_OPR) == 0) {
+        av[inx] = "-c";
+    } else {
+        av[inx] = "-r";
+    }
     inx++;
     av[inx] = "-h";
     inx++;
     if (strcmp (dataType, GZIP_TAR_DT_STR) == 0) {
+	if ((oprType & ADD_TO_TAR_OPR) != 0)
+	    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
         av[inx] = "-z";
         inx++;
     } else if (strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+	if ((oprType & ADD_TO_TAR_OPR) != 0)
+	    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
         av[inx] = "-j";
         inx++;
     }
@@ -1598,11 +1613,16 @@ bundleCacheDirWithExec (int structFileInx)
           specColl->phyPath);
 	return SYS_ZIP_FORMAT_NOT_SUPPORTED;
     }
+    rstrcpy (optStr, "-ch", NAME_LEN);
 #ifdef TAR_EXTENDED_HDR
-    av[inx] = "-chEf";
-#else
-    av[inx] = "-chf";
+    strcat (optStr, "E");
 #endif
+    if ((oprType & ADD_TO_TAR_OPR) != 0) {
+	/* update */
+	strcat (optStr, "u");
+    }
+    strcat (optStr, "f");
+    av[inx] = optStr;
     inx++;
 #endif	/* GNU_TAR */
     av[inx] = specColl->phyPath;

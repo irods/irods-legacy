@@ -46,7 +46,8 @@ typedef struct StructFileExtAndRegInp {
     char collection[MAX_NAME_LEN];	/* the collection under which the
 					 * extracted files are registered.
 					 */
-    int oprType;			/* not used */
+    int oprType;	/* see syncMountedColl.h. valid oprType are 
+			 * CREATE_TAR_OPR and ADD_TO_TAR_OPR */
     int flags;				/* not used */
     keyValPair_t condInput;   /* include chksum flag and value */
 } structFileExtAndRegInp_t;

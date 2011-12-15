@@ -22,9 +22,9 @@ main(int argc, char **argv) {
     int nArgv;
     
 
-    optStr = "bD:hR:cxD:f";
+    optStr = "bD:hR:cxD:fZ";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
 	printf("use -h for help.\n");
@@ -91,6 +91,7 @@ usage ()
 "               irodsCollection",
 "Usage : ibun -c [-hf] [-R resource] [-D dataType] structFilePath",
 "               irodsCollection",
+"Usage : ibun --add [-h] structFilePath irodsCollection",
 
 " ",
 "Bundle file operations. This command allows structured files such as ",
@@ -148,6 +149,7 @@ usage ()
 " -c  bundle the files and sub-collection underneath the input irodsCollection",
 "     and store it in the structFilePath",  
 " -f  force overwrite the struct file (-c) or the subfiles (-x).", 
+" --add  add or append to existing tar file. The tar file must not be compressed",
 " -h  this help",
 ""};
    int i;

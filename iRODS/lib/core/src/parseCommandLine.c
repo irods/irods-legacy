@@ -171,6 +171,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->wlock=True;
             argv[i]="-Z";
          }
+         if (strcmp("--add", argv[i])==0) {
+            rodsArgs->add=True;
+            argv[i]="-Z";
+         }
       }
    }
 

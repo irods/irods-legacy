@@ -35,6 +35,10 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType);
 #define LOGICAL_BUNDLE		0x8	/* use the filePath associated with
 					 * the logical path instead of
 					 * the path in cacheDir */  
+#define CREATE_TAR_OPR		0x0	/* create tar file -c */
+#define ADD_TO_TAR_OPR          0x10	/* add to a tar file */
+
+
 
 #ifdef  __cplusplus
 extern "C" {

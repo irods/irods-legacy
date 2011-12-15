@@ -88,7 +88,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
 char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag);
 int
 phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
-char *collection);
+char *collection, int oprType);
 #else
 #define RS_PHY_BUNDLE_COLL NULL
 #endif

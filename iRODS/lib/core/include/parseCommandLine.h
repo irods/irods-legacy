@@ -20,6 +20,7 @@ extern "C" {
 #define False 0
 
 typedef struct {
+   int add;
    int age;
    int agevalue;
    int all;

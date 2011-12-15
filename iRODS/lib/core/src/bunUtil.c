@@ -45,6 +45,8 @@ rodsPathInp_t *rodsPathInp)
 	    status = rcStructFileExtAndReg (conn, &structFileExtAndRegInp);
 	} else if (myRodsArgs->condition == True) {  /* -c - create */
 	    status = rcStructFileBundle (conn, &structFileExtAndRegInp);
+        } else if (myRodsArgs->add == True) {  /* add to tar */
+            status = rcStructFileBundle (conn, &structFileExtAndRegInp);
 	} else {
             rodsLog (LOG_ERROR,
               "bunUtil: -x or -c must be specified");
@@ -147,6 +149,11 @@ rodsPathInp_t *rodsPathInp)
     } 
 
     if (rodsArgs->force == True) {
+        addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
+    }
+
+    if (rodsArgs->add == True) {  /* add to tar */
+	structFileExtAndRegInp->oprType = ADD_TO_TAR_OPR;
         addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
     }
 
