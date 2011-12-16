@@ -196,7 +196,7 @@ insert into R_TOKN_MAIN values ('data_type',1699,'gzipFile','','|.gz|','','','13
 insert into R_TOKN_MAIN values ('data_type',1700,'bzip2File','','|.bz2|','','','1324000000','1324000000');
 insert into R_TOKN_MAIN values ('data_type',1701,'zipFile','','|.zip|','','','1324000000','1324000000');
 insert into R_TOKN_MAIN values ('data_type',1702,'gzipTar bundle','','','','','1324000000','1324000000');
-insert into R_TOKN_MAIN values ('data_type',1703,'gzip2Tar bundle','','','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1703,'bzip2Tar bundle','','','','','1324000000','1324000000');
 insert into R_TOKN_MAIN values ('data_type',1704,'gzipFile bundle','','','','','1324000000','1324000000');
 
 
