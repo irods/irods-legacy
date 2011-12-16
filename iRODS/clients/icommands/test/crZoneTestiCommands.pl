@@ -4,7 +4,7 @@
 # icommands location has to be put in the PATH env variable or their PATH will be asked
 # at the beginning of the execution of this script.
 #
-# usage: ./crZoneTestiCommands.pl [help] [debug] [noprompt] [addr1 addr2 rzoneAddr1 rzoneAddr2 rzoneIrodsHome]
+# usage: ./crZoneTestiCommands.pl [help] [debug] [noprompt] [addr1 addr2 rzoneAddr1 rzoneAddr2 rzoneResc rzoneIrodsHome]
 #    help - Print usage messages.
 #    debug - print debug messages.
 #    noprompt - Assumes iinit was done before running this script 
@@ -12,10 +12,11 @@
 #    addr1 addr2 - The 2 local zone iRODS server addresses for this test. 
 #    rzoneAddr1 rzoneAddr2 - The 2 remote zone iRODS server addresses for 
 #        this test.
+#    rzoneResc - An existing resource in the remote zone.
+#    rzoneIrodsHome - The home collection in the remote zone
 # If they are not defined, the values defined by $iesHostAddr, $rescHostAddr,
-# $rzoneIesHostAddr, $rzoneRescHostAddr and $rzoneIrodsHome in this script 
-# will be used.
-
+# $rzoneIesHostAddr, $rzoneRescHostAddr, $rzoneIrodsHome $rzoneResc and
+# $rzoneIrodsHome defined in this script will be used.
 # 
 #
 
@@ -26,27 +27,26 @@ use File::stat;
 use File::Copy;
 
 #-- Initialization
-# This test has 2 zones (local and remote) and 4 servers and 4 resources. 
+# This test has 2 zones (local and remote) and 4 servers and 3 resources. 
 # $iesHostAddr and $rzoneIesHostAddr specify the host addresses of the IES 
 # servers for the local zone and remote zone respectively.
 # $rescHostAddr and $rzoneRescHostAddr specify the host addresses of 
 # aditional resource servers for the local zone and remote zone respectively.
 # $rzoneIrodsHome is the home collection of the remote zone. The home
 # collection of the local zone is obtained through the .irodsEnv file.
-# These 4 addresses and $rzoneIrodsHome can be input on the 
+# These 4 addresses plus $rzoneResc $rzoneIrodsHome can be input on the 
 # mhostsTestiCommands.pl command line. If they are not given, the values 
 # defined below will be used.
 my $iesHostAddr="one.ucsd.edu";
-my $rescHostAddr="srbbrick14.ucsd.edu";
-my $rzoneIesHostAddr="srbbrick15.ucsd.edu";
+my $rescHostAddr="mwimac.ucsd.edu";
+my $rzoneIesHostAddr="srbbrick8.ucsd.edu";
 my $rzoneRescHostAddr="srbbrick8.ucsd.edu";
-my $rzoneIrodsHome="/myrzone/home/rods#myrzone";
+my $rzoneResc="demoResc8";
+my $rzoneIrodsHome="/tempZone/home/rods#oneZone";
 my $resc1="myresc1";
 my $resc2="myresc2";
-my $rzresc1="rzresc1";
-my $rzresc2="rzresc2";
 # $doRbudpTest - whether to do Rbudp Test. "yes" or "no". Default is yes
-my $doRbudpTest = "yes";
+my $doRbudpTest = "no";
 my @hostList;
 my $hostAddr;
 
@@ -114,22 +114,26 @@ foreach $arg (@ARGV)
         $rzoneRescHostAddr=$arg;
         $inHostCnt++;
     }  elsif ($inHostCnt == 4) {
+        $rzoneResc=$arg;
+        $inHostCnt++;
+    }  elsif ($inHostCnt == 5) {
         $rzoneIrodsHome=$arg;
         $inHostCnt++;
     } else {
-	print ("Too many address input - must be 0 or 5.\n\n");
+	print ("Too many address input - must be 0 or 6.\n\n");
         &printUsage ();
 	exit ( 1 );
     }
 }
 
-if ($inHostCnt > 0 && $inHostCnt < 5) {
-    print ("Not enough address input - must be 0 or 3.\n\n");
+if ($inHostCnt > 0 && $inHostCnt < 6) {
+    print ("Not enough address input - must be 0 or 6.\n\n");
     &printUsage ();
     exit ( 1 );
 }
 
 print ("Host addresses used are:  $iesHostAddr  $rescHostAddr  $rzoneIesHostAddr $rzoneRescHostAddr \n");
+print ("rzoneResc = $rzoneResc\n");
 print ("rzoneIrodsHome = $rzoneIrodsHome\n");
 
 push ( @hostList, $iesHostAddr );
@@ -282,8 +286,6 @@ if ( ! $noprompt_flag ) {
 
 runCmd( "iadmin mkresc $resc1 \"unix file system\" cache $iesHostAddr \"/tmp/myresc1\"", "", "", "", "iadmin rmresc $resc1" );
 runCmd( "iadmin mkresc $resc2 \"unix file system\" cache $rescHostAddr \"/tmp/myresc2\"", "", "", "", "iadmin rmresc $resc2" );
-runCmd( "iadmin mkresc $rzresc1 \"unix file system\" cache $rzoneIesHostAddr \"/tmp/rzresc1\"", "", "", "", "iadmin rmresc $rzresc1" );
-runCmd( "iadmin mkresc $rzresc2 \"unix file system\" cache $rzoneRescHostAddr \"/tmp/rzresc2\"", "", "", "", "iadmin rmresc $rzresc2" );
 runCmd( "iadmin mkresc compresource \"unix file system\" compound $rescHostAddr \"/tmp/compresc\"", "", "", "", "iadmin rmresc compresource" );
 runCmd( "iadmin atrg resgroup $resc2", "", "", "", "iadmin rfrg resgroup $resc2" );
 runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
@@ -295,7 +297,7 @@ mksdir ();
 mkldir ();
 my $testlfile = $myldir . '/lfile1';
 runCmd( "icd $irodshome" );
-runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
+runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" );
 runCmd( "imkdir $rzoneIrodsHome/icmdtest", "", "", "", "irm -r $rzoneIrodsHome/icmdtest" );
 # loop through the all hosts 
 foreach $hostAddr (@hostList) {
@@ -335,12 +337,12 @@ foreach $hostAddr (@hostList) {
     runCmd( "ils $irodshome/icmdtest/dir3/sdir/sfile1", "", "LIST", "sfile1" );
     runCmd( "ichksum -Kr $irodshome/icmdtest/dir3" );
     runCmd( "irm -vrf $irodshome/icmdtest/dir1" );
-    # we have dir3 in $resc2. cross test between $resc2 and $rzresc2
-    runCmd( "icp -rK -R $rzresc2 $irodshome/icmdtest/dir3 $rzoneIrodsHome/icmdtest/dir2" );
+    # we have dir3 in $resc2. cross test between $resc2 and $rzoneResc
+    runCmd( "icp -rK -R $rzoneResc $irodshome/icmdtest/dir3 $rzoneIrodsHome/icmdtest/dir2" );
     runCmd( "ils $rzoneIrodsHome/icmdtest/dir2/sdir/sfile1", "", "LIST", "sfile1" );
     runCmd( "irm -vrf $irodshome/icmdtest/dir3" );
     runCmd( "icp -rK -R $resc2 $rzoneIrodsHome/icmdtest/dir2 $irodshome/icmdtest/dir1" );
-    runCmd( "ils $irodshome/icmdtest/dir2/sdir/sfile1", "", "LIST", "sfile1" );
+    runCmd( "ils $irodshome/icmdtest/dir1/sdir/sfile1", "", "LIST", "sfile1" );
     runCmd( "irm -vrf $rzoneIrodsHome/icmdtest/dir2" );
     # we have dir1 in $resc2
     runCmd( "iget -f -rK --rlock $irodshome/icmdtest/dir1 $dir_w" );
@@ -353,22 +355,7 @@ foreach $hostAddr (@hostList) {
     runCmd( "iget -f -rK $irodshome/icmdtest/dir1 $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
     system ( "rm -r $dir_w/dir1" );
-    # iphybun test. we have dir1 in $resc2`h
-    runCmd( "iphybun -KRresgroup $irodshome/icmdtest/dir1" );
-    # $resc2 is the cache resc of resgroup
-    runCmd( "itrim -rS $resc2 -N1 $irodshome/icmdtest/dir1" );
-    runCmd( "itrim -rS $resc1 -N1 $irodshome/icmdtest/dir1" );
-    runCmd( "iget -r $irodshome/icmdtest/dir1  $dir_w" );
-    runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
-    runCmd( "itrim -rS $resc2 -N1 $irodshome/icmdtest/dir1" );
-    # get the name of bundle file
-    my $bunfile = &getBunpathOfSubfile ( "$irodshome/icmdtest/dir1/sdir/sfile1" );
-    runCmd( "irm -f --empty $bunfile" );
-    # should not be able to remove it because it is not empty
-    runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
     runCmd( "irm -rvf $irodshome/icmdtest/dir1" );
-    runCmd( "irm -f --empty $bunfile" );
-    system ( "rm -r $dir_w/dir1" );
 
     # resource group test
     runCmd( "iput -PKrR resgroup $testsrcdir $irodshome/icmdtest/dir1" );
@@ -396,6 +383,10 @@ foreach $hostAddr (@hostList) {
 }
 system ( "rm -r $testsrcdir" );
 system ( "irmtrash" );
+# have to set  irodsHost back;
+$ENV{'irodsHost'}  = $iesHostAddr;
+system ( "irmtrash" );
+
 
 #-- Execute rollback commands
 
