@@ -41,12 +41,13 @@ my $iesHostAddr="one.ucsd.edu";
 my $rescHostAddr="mwimac.ucsd.edu";
 my $rzoneIesHostAddr="srbbrick8.ucsd.edu";
 my $rzoneRescHostAddr="srbbrick8.ucsd.edu";
-my $rzoneResc="demoResc8";
+
+my $rzoneResc="demoResc";
 my $rzoneIrodsHome="/tempZone/home/rods#oneZone";
 my $resc1="myresc1";
 my $resc2="myresc2";
 # $doRbudpTest - whether to do Rbudp Test. "yes" or "no". Default is yes
-my $doRbudpTest = "no";
+my $doRbudpTest = "yes";
 my @hostList;
 my $hostAddr;
 
@@ -341,10 +342,10 @@ foreach $hostAddr (@hostList) {
     runCmd( "icp -rK -R $rzoneResc $irodshome/icmdtest/dir3 $rzoneIrodsHome/icmdtest/dir2" );
     runCmd( "ils $rzoneIrodsHome/icmdtest/dir2/sdir/sfile1", "", "LIST", "sfile1" );
     runCmd( "irm -vrf $irodshome/icmdtest/dir3" );
-    runCmd( "icp -rK -R $resc2 $rzoneIrodsHome/icmdtest/dir2 $irodshome/icmdtest/dir1" );
+    runCmd( "icp -rK -R $resc1 $rzoneIrodsHome/icmdtest/dir2 $irodshome/icmdtest/dir1" );
     runCmd( "ils $irodshome/icmdtest/dir1/sdir/sfile1", "", "LIST", "sfile1" );
     runCmd( "irm -vrf $rzoneIrodsHome/icmdtest/dir2" );
-    # we have dir1 in $resc2
+    # we have dir1 in $resc1
     runCmd( "iget -f -rK --rlock $irodshome/icmdtest/dir1 $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
     system ( "rm -r $dir_w/dir1" );
@@ -373,7 +374,7 @@ foreach $hostAddr (@hostList) {
         runCmd( "itrim -vrS $resc2 -N1 $irodshome/icmdtest/dir1" );
         runCmd( "icp -vQKPTr $irodshome/icmdtest/dir1 $irodshome/icmdtest/dir2" );
         system ( "irm -vrf $irodshome/icmdtest/dir1" );
-        runCmd( "icp -vQKPTr $irodshome/icmdtest/dir2 $rzoneIrodsHome/icmdtest/dir1" );
+        runCmd( "icp -vQKPTr -R $rzoneResc $irodshome/icmdtest/dir2 $rzoneIrodsHome/icmdtest/dir1" );
         system ( "irm -vrf $irodshome/icmdtest/dir2" );
         runCmd( "iget -vQPKr --rlock $rzoneIrodsHome/icmdtest/dir1 $dir_w/dir2" );
         runCmd( "diff -r $dir_w/dir2 $testsrcdir", "", "NOANSWER" );
