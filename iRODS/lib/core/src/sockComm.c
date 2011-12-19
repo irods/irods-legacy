@@ -756,7 +756,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
           conn->host, conn->svrVersion->status);
 	if (conn->svrVersion->status == SYS_EXCEED_CONNECT_CNT)
 	    rodsLog (LOG_ERROR,
-	      "It is likely %s is a localhost but not recognized by this server. A line can be added to the server/config/irodsHost file to fix the problem", conn->host);
+	      "It is likely %s is set to localhost but not recognized by this server. A line can be added to the server/config/irodsHost file to fix the problem. Alternately, you may see this message if one or more of your resources has resc_net set to localhost. Resource resc_net values need to be routable hostnames when federating.", conn->host);
 	close (conn->sock);
         return conn->svrVersion->status;
     }
