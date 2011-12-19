@@ -70,8 +70,8 @@ rescInfo_t *rescInfo)
 
     createPhyBundleDir (rsComm, bunFilePath, phyBunDir);
 
-    status = unbunPhyBunFile (rsComm, dataObjInp, rescInfo, bunFilePath,
-      phyBunDir, NULL);
+    status = unbunPhyBunFile (rsComm, dataObjInp->objPath, rescInfo, 
+      bunFilePath, phyBunDir, NULL, 0);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -319,8 +319,9 @@ dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo)
 }
 
 int
-unbunPhyBunFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType)
+unbunPhyBunFile (rsComm_t *rsComm, char *objPath,
+rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType,
+int oprType)
 {
     int status;
     structFileOprInp_t structFileOprInp;
@@ -331,9 +332,9 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType)
     memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
     structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
     snprintf (structFileOprInp.specColl->collection, MAX_NAME_LEN,
-      "%s.dir", dataObjInp->objPath);
+      "%s.dir", objPath);
     rstrcpy (structFileOprInp.specColl->objPath,
-      dataObjInp->objPath, MAX_NAME_LEN);
+      objPath, MAX_NAME_LEN);
     structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
     rstrcpy (structFileOprInp.specColl->resource, rescInfo->rescName,
       NAME_LEN);
@@ -349,7 +350,9 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType)
       strcmp (dataType, ZIP_DT_STR) == 0)) {
 	addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
     }
-    rmLinkedFilesInUnixDir (phyBunDir);
+    if ((oprType & PRESERVE_DIR_CONT) == 0)
+        rmLinkedFilesInUnixDir (phyBunDir);
+    structFileOprInp.oprType = oprType;
     status = rsStructFileExtract (rsComm, &structFileOprInp);
     if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
 	/* phyBunDir is not empty */
@@ -378,7 +381,7 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType)
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "unbunPhyBunFile: rsStructFileExtract err for %s. status = %d",
-          dataObjInp->objPath, status);
+          objPath, status);
     }
     free (structFileOprInp.specColl);
 
@@ -474,6 +477,42 @@ rmLinkedFilesInUnixDir (char *phyBunDir)
 #ifndef USE_BOOST_FS
     closedir (dirPtr);
 #endif
+    return 0;
+}
+
+int
+rmUnlinkedFilesInUnixDir (char *phyBunDir)
+{
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+    int status;
+    char subfilePath[MAX_NAME_LEN];
+
+    dirPtr = opendir (phyBunDir);
+    if (dirPtr == NULL) return 0;
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
+          phyBunDir, myDirent->d_name);
+        status = stat (subfilePath, &statbuf);
+
+        if (status != 0) {
+            continue;
+        }
+
+        if ((statbuf.st_mode & S_IFREG) != 0) {
+	    if (statbuf.st_nlink == 1) unlink (subfilePath);
+        } else {        /* a directory */
+            status = rmUnlinkedFilesInUnixDir (subfilePath);
+            /* rm subfilePath but not phyBunDir */
+            rmdir (subfilePath);
+        }
+    }
+    closedir (dirPtr);
     return 0;
 }
 

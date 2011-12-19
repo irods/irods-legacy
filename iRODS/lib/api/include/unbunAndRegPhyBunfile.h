@@ -29,8 +29,9 @@ int
 remoteUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsServerHost_t *rodsServerHost);
 int
-unbunPhyBunFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType);
+unbunPhyBunFile (rsComm_t *rsComm, char *objPath,
+rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType,
+int saveLinkedFles);
 int
 regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
 int rmBunCopyFlag);
@@ -39,6 +40,8 @@ regPhySubFile (rsComm_t *rsComm, char *subfilePath,
 dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo);
 int
 rmLinkedFilesInUnixDir (char *phyBunDir);
+int
+rmUnlinkedFilesInUnixDir (char *phyBunDir);
 #else
 #define RS_UNBUN_AND_REG_PHY_BUNFILE NULL
 #endif

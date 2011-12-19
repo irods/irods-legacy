@@ -9,6 +9,7 @@
 #include "collection.h"
 #include "specColl.h"
 #include "physPath.h"
+#include "dataObjOpr.h"
 #include "miscServerFunct.h"
 #include "openCollection.h"
 #include "readCollection.h"
@@ -431,6 +432,22 @@ char *collection, int oprType)
     structFileOprInp_t structFileOprInp;
     int status;
     char *dataType;
+    int myOprType = oprType;
+
+    dataType = dataObjInfo->dataType;
+    if ((oprType & ADD_TO_TAR_OPR) != 0) {
+	/* need to extract the content of the exsisting zipped file */
+        if (dataType != NULL &&
+          (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
+          strcmp (dataType, BZIP2_TAR_DT_STR) == 0)) {
+	    status = unbunPhyBunFile (rsComm, dataObjInfo->objPath,
+	      dataObjInfo->rescInfo,  dataObjInfo->filePath, phyBunDir, 
+	      dataType, PRESERVE_DIR_CONT);
+	    if (status < 0) return status;
+	    /* take out ADD_TO_TAR_OPR */
+	    myOprType = myOprType ^ ADD_TO_TAR_OPR;
+	}
+    }
 
     bzero (&structFileOprInp, sizeof (structFileOprInp));
 
@@ -453,8 +470,7 @@ char *collection, int oprType)
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
     structFileOprInp.specColl->cacheDirty = 1;
     /* don't reg CollInfo2 */
-    structFileOprInp.oprType = NO_REG_COLL_INFO | oprType;
-    dataType = dataObjInfo->dataType;
+    structFileOprInp.oprType = NO_REG_COLL_INFO | myOprType;
     if (dataType != NULL &&
       (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
       strcmp (dataType, BZIP2_TAR_DT_STR) == 0 ||
@@ -465,6 +481,13 @@ char *collection, int oprType)
 
     free (structFileOprInp.specColl);
 
+    /* rm the the exsisting files in the original tar files */
+    if ((oprType & ADD_TO_TAR_OPR) != 0 && (myOprType & ADD_TO_TAR_OPR) == 0) {
+	if (chkOrphanDir (rsComm, phyBunDir, dataObjInfo->rescName) > 0) {
+	    /* orphan dir */ 
+            rmUnlinkedFilesInUnixDir (phyBunDir);
+	}
+    }
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "phyBundle: rsStructFileSync of %s error. stat = %d",

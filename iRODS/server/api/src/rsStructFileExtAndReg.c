@@ -109,15 +109,15 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
 
     createPhyBundleDir (rsComm, dataObjInfo->filePath, phyBunDir);
 
-    status = unbunPhyBunFile (rsComm, &dataObjInp, rescInfo, 
-      dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType);
+    status = unbunPhyBunFile (rsComm, dataObjInp.objPath, rescInfo, 
+      dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0);
 
     if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
 	/* rename the phyBunDir */
 	snprintf (phyBunDir, MAX_NAME_LEN, "%s.%-d", 
 	 phyBunDir, (int) random ());
-        status = unbunPhyBunFile (rsComm, &dataObjInp, rescInfo,
-          dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType);
+        status = unbunPhyBunFile (rsComm, dataObjInp.objPath, rescInfo,
+          dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0);
     }
     if (status < 0) {
         rodsLog (LOG_ERROR,
