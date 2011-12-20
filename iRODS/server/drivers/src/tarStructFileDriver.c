@@ -1161,7 +1161,7 @@ extractTarFile (int structFileInx)
 {
     int status; 
 
-    if (strcmp (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) == 0) {
+    if (strstr (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) != NULL) {
 #ifdef UNZIP_EXEC_PATH
 	status = extractFileWithUnzip (structFileInx);
 #else
@@ -1211,10 +1211,10 @@ extractTarFileWithExec (int structFileInx)
 #ifdef GNU_TAR
     av[inx] = "-x";
     inx++;
-    if (strcmp (dataType, GZIP_TAR_DT_STR) == 0) {
+    if (strstr (dataType, GZIP_TAR_DT_STR) != NULL) {
 	av[inx] = "-z";
         inx++;
-    } else if (strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+    } else if (strstr (dataType, BZIP2_TAR_DT_STR) != NULL) {
         av[inx] = "-j";
         inx++;
     }
@@ -1230,8 +1230,8 @@ extractTarFileWithExec (int structFileInx)
     inx++;
     av[inx] = specColl->cacheDir;
 #else	/* GNU_TAR */
-    if (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
-      strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+    if (strstr (dataType, GZIP_TAR_DT_STR) != NULL ||
+      strstr (dataType, BZIP2_TAR_DT_STR) != NULL) {
         /* non GNU_TAR don't seem to support -j nor -z option */
         rodsLog (LOG_ERROR,
          "extractTarFileWithExec:gzip/bzip2 %s not supported by non-GNU_TAR",
@@ -1354,7 +1354,7 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
     rsComm_t *rsComm = StructFileDesc[structFileInx].rsComm;
 
 
-    if (strcmp (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) == 0) {
+    if (strstr (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) != NULL) {
 #ifdef ZIP_EXEC_PATH
 	if ((oprType & ADD_TO_TAR_OPR) != 0)
 	    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
@@ -1430,12 +1430,12 @@ bundleCacheDirWithExec (int structFileInx, int oprType)
     inx++;
     av[inx] = "-h";
     inx++;
-    if (strcmp (dataType, GZIP_TAR_DT_STR) == 0) {
+    if (strstr (dataType, GZIP_TAR_DT_STR) != NULL) {
 	if ((oprType & ADD_TO_TAR_OPR) != 0)
 	    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
         av[inx] = "-z";
         inx++;
-    } else if (strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+    } else if (strstr (dataType, BZIP2_TAR_DT_STR) != NULL) {
 	if ((oprType & ADD_TO_TAR_OPR) != 0)
 	    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
         av[inx] = "-j";
@@ -1447,8 +1447,8 @@ bundleCacheDirWithExec (int structFileInx, int oprType)
     av[inx] = "-f";
     inx++;
 #else	/* GNU_TAR */
-    if (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
-      strcmp (dataType, BZIP2_TAR_DT_STR) == 0) {
+    if (strstr (dataType, GZIP_TAR_DT_STR) != NULL ||
+      strstr (dataType, BZIP2_TAR_DT_STR) != NULL) {
         rodsLog (LOG_ERROR,
          "bundleCacheDirWithExec: gzip/bzip2 %s not supported for non-GNU_TAR",
           specColl->phyPath);

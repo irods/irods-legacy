@@ -139,7 +139,7 @@ dataObjInfo_t **dataObjInfoHead)
 #endif
 
     myDataObjInfoHead = *dataObjInfoHead;
-    if (strcmp (myDataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+    if (strstr (myDataObjInfoHead->dataType, BUNDLE_STR) != NULL) {
 	int numSubfiles;
         if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
@@ -421,7 +421,7 @@ dataObjInfo_t **dataObjInfoHead)
     char trashPath[MAX_NAME_LEN];
     dataObjCopyInp_t dataObjRenameInp;
 
-    if (strcmp ((*dataObjInfoHead)->dataType, TAR_BUNDLE_TYPE) == 0) {
+    if (strstr ((*dataObjInfoHead)->dataType, BUNDLE_STR) != NULL) {
 	return SYS_CANT_MV_BUNDLE_DATA_TO_TRASH;
     }
 

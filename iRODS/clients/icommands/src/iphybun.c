@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hKR:";
+    optStr = "hD:KR:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status < 0) {
@@ -84,7 +84,7 @@ void
 usage ()
 {
    char *msgs[]={
-   "Usage : iphybun [-hK] -R resource collection ... ",
+   "Usage : iphybun [-hK] [-D dataType] -R resource collection ... ",
 "iphybun allows system admin to physically bundle files in a collection into",
 "a number of tar files to make it more efficient to store these files on tape.",
 "The tar files are placed into the /myZone/bundle/.... collection with file",
@@ -106,6 +106,10 @@ usage ()
 "resource group that contains at least one 'cache' type resource."  
 
 "Options are:",
+" -D  dataType - the target struct file dataType. Valid dataTypes are -",
+"     t|tar|'tar file' for tar file, g|gzip|gzipTar for gziped tar file,",
+"     b|bzip2|bzip2Tar for bzip2 file, and z|zip|zipFile for archive using",
+"     'zip'.  If -D is not specified, the default is a tar file type",
 " -R  resource - The resource where the bundle file is located",
 " -K  compute and register checksum value for the bundled subfiles and the",
 "     bundle file.",

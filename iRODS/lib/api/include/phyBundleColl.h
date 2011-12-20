@@ -18,7 +18,7 @@
 #include "miscUtil.h"
 
 #define BUNDLE_RESC	"bundleResc"
-#define TAR_BUNDLE_TYPE	"tar bundle"
+#define BUNDLE_STR	"bundle"
 #define BUNDLE_RESC_CLASS	"bundle"
 
 #define MAX_BUNDLE_SIZE		4	/* 4 G */
@@ -63,7 +63,7 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
 rescGrpInfo_t *rescGrpInfo);
 int
 createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
-rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp);
+rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char *dataType);
 int
 createPhyBundleDir (rsComm_t *rsComm, char *bunFilePath,
 char *outPhyBundleDir);

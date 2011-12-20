@@ -236,7 +236,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     }
 
     if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
-	if (strcmp (dataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+	if (strstr (dataObjInfoHead->dataType, BUNDLE_STR) != NULL) {
             rodsLog (LOG_ERROR,
               "_rsDataObjRename: cannot rename tar bundle type obj %s",
               srcDataObjInp->objPath);

@@ -35,6 +35,12 @@ extern "C" {
 #define GZIP_TAR_DT_STR	"gzipTar"
 #define BZIP2_TAR_DT_STR "bzip2Tar"
 #define ZIP_DT_STR "zipFile"
+/* bundle are types for internal phybun use */
+#define TAR_BUNDLE_DT_STR "tar bundle"
+#define GZIP_TAR_BUNDLE_DT_STR "gzipTar bundle"
+#define BZIP2_TAR_BUNDLE_DT_STR "bzip2Tar bundle"
+#define ZIP_BUNDLE_DT_STR "zipFile bundle"
+
 #define HAAW_DT_STR	"haaw file"
 #define MAX_LINK_CNT	20	/* max number soft link in a path */
 

@@ -1048,7 +1048,7 @@ dataObjInfo_t *dataObjInfo)
     structFileOprInp->specColl = (specColl_t*)malloc (sizeof (specColl_t));
     memset (structFileOprInp->specColl, 0, sizeof (specColl_t));
     if (strcmp (dataObjInfo->dataType, TAR_DT_STR) == 0 ||
-      strcmp (dataObjInfo->dataType, TAR_BUNDLE_TYPE) == 0) {
+      strstr (dataObjInfo->dataType, BUNDLE_STR) == 0) {
         structFileOprInp->specColl->type = TAR_STRUCT_FILE_T;
     } else if (strcmp (dataObjInfo->dataType, HAAW_DT_STR) == 0) {
         structFileOprInp->specColl->type = HAAW_STRUCT_FILE_T;

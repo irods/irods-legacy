@@ -90,6 +90,7 @@ rescGrpInfo_t *rescGrpInfo)
     bunReplCacheHeader_t bunReplCacheHeader;
     int savedStatus = 0;
     int chksumFlag;
+    char *dataType = NULL;
 
     myRescInfo = rescGrpInfo->rescInfo;
     myRescName = myRescInfo->rescName;
@@ -113,9 +114,10 @@ rescGrpInfo_t *rescGrpInfo)
         return (0);
     }
 
-    /* greate the bundle file */ 
+    /* create the bundle file */ 
+    dataType = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW);
     l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
-      rescGrpInfo, &dataObjInp);
+      rescGrpInfo, &dataObjInp, dataType);
 
     if (l1descInx < 0) return l1descInx;
 
@@ -158,7 +160,7 @@ rescGrpInfo_t *rescGrpInfo)
                         /* create a new bundle file */
                         l1descInx = createPhyBundleDataObj (rsComm,
                           phyBundleCollInp->collection, rescGrpInfo,
-                          &dataObjInp);
+                          &dataObjInp, dataType);
 
                         if (l1descInx < 0) {
                             rodsLog (LOG_ERROR,
@@ -438,8 +440,9 @@ char *collection, int oprType)
     if ((oprType & ADD_TO_TAR_OPR) != 0) {
 	/* need to extract the content of the exsisting zipped file */
         if (dataType != NULL &&
-          (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
-          strcmp (dataType, BZIP2_TAR_DT_STR) == 0)) {
+          (strstr (dataType, GZIP_TAR_DT_STR) != NULL ||
+          strstr (dataType, BZIP2_TAR_DT_STR) != NULL) ||
+	  strstr (dataType, ZIP_DT_STR) != NULL) {
 	    status = unbunPhyBunFile (rsComm, dataObjInfo->objPath,
 	      dataObjInfo->rescInfo,  dataObjInfo->filePath, phyBunDir, 
 	      dataType, PRESERVE_DIR_CONT);
@@ -472,9 +475,9 @@ char *collection, int oprType)
     /* don't reg CollInfo2 */
     structFileOprInp.oprType = NO_REG_COLL_INFO | myOprType;
     if (dataType != NULL &&
-      (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
-      strcmp (dataType, BZIP2_TAR_DT_STR) == 0 ||
-      strcmp (dataType, ZIP_DT_STR) == 0)) {
+      (strstr (dataType, GZIP_TAR_DT_STR) != NULL ||
+      strstr (dataType, BZIP2_TAR_DT_STR) != NULL ||
+      strstr (dataType, ZIP_DT_STR) != NULL)) {
         addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
     }
     status = rsStructFileSync (rsComm, &structFileOprInp);
@@ -584,7 +587,7 @@ char *outPhyBundleDir)
 
 int
 createPhyBundleDataObj (rsComm_t *rsComm, char *collection, 
-rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
+rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char *dataType)
 {
     int myRanNum;
     int l1descInx;
@@ -627,7 +630,12 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
 		break;
 	    }
 	}
-        addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_TYPE);
+        if (dataType != NULL && strstr (dataType, BUNDLE_STR) != NULL) {
+            addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, dataType);
+        } else {
+            /* assume it is TAR_BUNDLE_DT_STR */
+            addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_DT_STR);
+        }
 
         l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp,
           rescGrpInfo->rescInfo, rescGrpInfo->rescGroupName);

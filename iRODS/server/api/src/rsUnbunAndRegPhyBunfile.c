@@ -345,9 +345,9 @@ int oprType)
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
     /* pass on the dataType */
     if (dataType != NULL && 
-      (strcmp (dataType, GZIP_TAR_DT_STR) == 0 ||
-      strcmp (dataType, BZIP2_TAR_DT_STR) == 0 ||
-      strcmp (dataType, ZIP_DT_STR) == 0)) {
+      (strstr (dataType, GZIP_TAR_DT_STR) != NULL ||
+      strstr (dataType, BZIP2_TAR_DT_STR) != NULL ||
+      strstr (dataType, ZIP_DT_STR) != NULL)) {
 	addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
     }
     if ((oprType & PRESERVE_DIR_CONT) == 0)
