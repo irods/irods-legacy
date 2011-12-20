@@ -19,4 +19,5 @@ in config/platform.mk and rebuild the iRODS software (make clean;make).
 4) To see the report, open ./data/index.html in a web browser.
 Note that some browsers may not be able to properly open files outside
 of the user's home directory.  When using 'pivo' (Ubuntu/Firefox) for
-example, you may need to copy the data directory.
+example, you may need to copy the data directory from the Tinderbox
+build area (/tbox/IRODS_BUILD/iRODS).
