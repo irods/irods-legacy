@@ -127,11 +127,18 @@ acAclPolicy { }
 #        msiSetRescSortScheme(random); msiSetRescSortScheme(byRescClass)
 #        will select randomly a cache class resource and put it on the
 #        top of the list.
+#
+# 1a) acSetRescSchemeForRepl - This is the preprossing rule for replicating a
+# data object. This rule is similar to acSetRescSchemeForCreate except it
+# applies to replication. All the micro-services for acSetRescSchemeForCreate
+# also apply to acSetRescSchemeForRepl
+# 
 # acSetRescSchemeForCreate {msiSetNoDirectRescInp("xyz%demoResc8%abc"); msiSetDefaultResc("demoResc8","null"); msiSetRescSortScheme("default"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","null"); msiSetRescSortScheme("random"); msiSetRescSortScheme("byRescClass"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc7%demoResc8","preferred"); }
 # acSetRescSchemeForCreate {ON($objPath like "/tempZone/home/rods/protected/*") {msiOprDisallowed;} }
 acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","null"); }
+acSetRescSchemeForRepl {msiSetDefaultResc("demoResc","null"); }
 # acSetRescSchemeForCreate {msiGetSessionVarValue("all","all"); msiSetDefaultResc("demoResc","null"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","forced"); msiSetRescSortScheme("random"); msiSetRescSortScheme("byRescClass"); }
 #

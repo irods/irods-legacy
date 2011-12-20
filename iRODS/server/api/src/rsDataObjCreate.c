@@ -466,7 +466,13 @@ rescGrpInfo_t **myRescGrpInfo)
     /* query rcat for resource info and sort it */
 
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-    status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
+    if (dataObjInp->oprType == REPLICATE_OPR) {
+        status = applyRule ("acSetRescSchemeForRepl", NULL, &rei, 
+	  NO_SAVE_REI);
+    } else {
+        status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, 
+	  NO_SAVE_REI);
+    }
 
     if (status < 0) {
         if (rei.status < 0)

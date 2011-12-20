@@ -217,6 +217,7 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     }
 
     /* query rcat for resource info and sort it */
+    dataObjInp->oprType = REPLICATE_OPR;
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
 
