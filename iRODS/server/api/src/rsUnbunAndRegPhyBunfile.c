@@ -49,6 +49,7 @@ rescInfo_t *rescInfo)
     char *bunFilePath;
     char phyBunDir[MAX_NAME_LEN];
     int rmBunCopyFlag;
+    char *dataType = NULL;
 
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
@@ -70,8 +71,10 @@ rescInfo_t *rescInfo)
 
     createPhyBundleDir (rsComm, bunFilePath, phyBunDir);
 
+    dataType = getValByKey (&dataObjInp->condInput, DATA_TYPE_KW);
+
     status = unbunPhyBunFile (rsComm, dataObjInp->objPath, rescInfo, 
-      bunFilePath, phyBunDir, NULL, 0);
+      bunFilePath, phyBunDir, dataType, 0);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,

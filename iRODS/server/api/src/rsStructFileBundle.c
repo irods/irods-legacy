@@ -95,9 +95,18 @@ structFileExtAndRegInp_t *structFileBundleInp)
     chkObjPermAndStat_t chkObjPermAndStatInp;
     int l1descInx;
     int savedStatus = 0;
+    char *dataType;
 
     /* open the structured file */
     memset (&dataObjInp, 0, sizeof (dataObjInp));
+    dataType = getValByKey (&structFileBundleInp->condInput, DATA_TYPE_KW);
+    if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) {
+	/* zipFile type. must end with .zip */
+	int len = strlen (structFileBundleInp->objPath);
+	if (strcmp (&structFileBundleInp->objPath[len - 4], ".zip") != 0) {
+	    strcat (structFileBundleInp->objPath, ".zip");
+        }
+    }
     rstrcpy (dataObjInp.objPath, structFileBundleInp->objPath, 
       MAX_NAME_LEN);
  

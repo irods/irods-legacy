@@ -637,6 +637,15 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char *dataType)
             addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_DT_STR);
         }
 
+        if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) {
+        /* zipFile type. must end with .zip */
+        int len = strlen (dataObjInp->objPath);
+        if (strcmp (&dataObjInp->objPath[len - 4], ".zip") != 0) {
+            strcat (dataObjInp->objPath, ".zip");
+        }
+    }
+
+
         l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp,
           rescGrpInfo->rescInfo, rescGrpInfo->rescGroupName);
 
@@ -646,6 +655,9 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char *dataType)
     if (l1descInx >= 0) {
         l3Close (rsComm, l1descInx);
         L1desc[l1descInx].l3descInx = 0;
+	if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL)
+            l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
+
     }
 
     return l1descInx;

@@ -1389,6 +1389,10 @@ rescInfo_t **outCacheResc, int rmBunCopyFlag)
     if (rmBunCopyFlag > 0) {
         addKeyVal (&dataObjInp.condInput, RM_BUN_COPY_KW, "");
     }
+    if (strlen ((*bunfileObjInfoHead)->dataType) > 0) {
+        addKeyVal (&dataObjInp.condInput, DATA_TYPE_KW, 
+          (*bunfileObjInfoHead)->dataType);
+    }
     status = _rsUnbunAndRegPhyBunfile (rsComm, &dataObjInp, 
       (*bunfileObjInfoHead)->rescInfo);
 
