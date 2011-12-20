@@ -441,8 +441,8 @@ char *collection, int oprType)
 	/* need to extract the content of the exsisting zipped file */
         if (dataType != NULL &&
           (strstr (dataType, GZIP_TAR_DT_STR) != NULL ||
-          strstr (dataType, BZIP2_TAR_DT_STR) != NULL) ||
-	  strstr (dataType, ZIP_DT_STR) != NULL) {
+          strstr (dataType, BZIP2_TAR_DT_STR) != NULL ||
+	  strstr (dataType, ZIP_DT_STR) != NULL)) {
 	    status = unbunPhyBunFile (rsComm, dataObjInfo->objPath,
 	      dataObjInfo->rescInfo,  dataObjInfo->filePath, phyBunDir, 
 	      dataType, PRESERVE_DIR_CONT);
