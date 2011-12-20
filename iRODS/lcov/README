@@ -13,6 +13,10 @@ in config/platform.mk and rebuild the iRODS software (make clean;make).
 3) Build the lcov html index:
   cd lcov
   ./lcovirods.csh clean	# start the coverage run from the beginning
+  run tests (without any, the script below will just fail with no .gcda files)
   ./lcovirods.csh
 
 4) To see the report, open ./data/index.html in a web browser.
+Note that some browsers may not be able to properly open files outside
+of the user's home directory.  When using 'pivo' (Ubuntu/Firefox) for
+example, you may need to copy the data directory.
