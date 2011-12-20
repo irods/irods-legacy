@@ -1356,8 +1356,10 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
 
     if (strstr (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) != NULL) {
 #ifdef ZIP_EXEC_PATH
+#if 0
 	if ((oprType & ADD_TO_TAR_OPR) != 0)
 	    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
+#endif
         status = bundleCacheDirWithZip (structFileInx);
 #else
 	return SYS_ZIP_FORMAT_NOT_SUPPORTED;
@@ -1580,8 +1582,8 @@ bundleCacheDirWithZip (int structFileInx)
     char tmpPath[MAX_NAME_LEN];
     int status;
     int inx = 0;
-
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+    
     if (specColl == NULL || specColl->cacheDirty <= 0 ||
       strlen (specColl->cacheDir) == 0) return 0;
 
