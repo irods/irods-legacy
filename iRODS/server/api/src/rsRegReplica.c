@@ -70,14 +70,14 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
           &regReplicaInp->condInput);
 	if (status >= 0) status = destDataObjInfo->replNum;
     }
-    if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	int status2;
-	rodsSleep (1, 0);
-	/* 2 staging at the same time */
+	/* register a repl with a copy with the same resource and phyPaht.
+         * could be caused by 2 staging at the same time */
         status2 = checkDupReplica (rsComm, srcDataObjInfo->dataId,
           destDataObjInfo->rescName, destDataObjInfo->filePath);
         if (status2 >= 0) {
-            destDataObjInfo->replNum = status;
+            destDataObjInfo->replNum = status2;
 	    destDataObjInfo->dataId = srcDataObjInfo->dataId;
             return status2;
         }
