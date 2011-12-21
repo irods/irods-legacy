@@ -130,7 +130,7 @@ usage ()
 "     in your environment or via a rule set up by the administrator.",
 " -C  the specified path is a directory. The default assumes the path is a file.",
 " -f  Force. If the target collection already exists, register the files and",
-"     subdirectories that have not releady been registered in the directory.",
+"     subdirectories that have not already been registered in the directory.",
 " -k  calculate a checksum on the iRODS client and store with the file details.",
 " -K  calculate a checksum on the iRODS server and store with the file details.",
 " --repl  register the physical path as a replica.",
