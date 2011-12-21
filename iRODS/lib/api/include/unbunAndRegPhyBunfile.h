@@ -17,6 +17,7 @@
 #include "dataObjClose.h"
 #include "dataCopy.h"
 
+#define UNLINK_FILE_AGE		7200	/* delete files younger than this */
 #if defined(RODS_SERVER)
 #define RS_UNBUN_AND_REG_PHY_BUNFILE rsUnbunAndRegPhyBunfile
 /* prototype for the server handler */

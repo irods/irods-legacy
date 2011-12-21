@@ -491,6 +491,7 @@ rmUnlinkedFilesInUnixDir (char *phyBunDir)
     struct stat statbuf;
     int status;
     char subfilePath[MAX_NAME_LEN];
+    time_t myTime = time (0) - UNLINK_FILE_AGE;
 
     dirPtr = opendir (phyBunDir);
     if (dirPtr == NULL) return 0;
@@ -508,7 +509,10 @@ rmUnlinkedFilesInUnixDir (char *phyBunDir)
         }
 
         if ((statbuf.st_mode & S_IFREG) != 0) {
-	    if (statbuf.st_nlink == 1) unlink (subfilePath);
+	    /* only delete those younger than UNLINK_FILE_AGE. A little 
+	     * safeguard since this routine is very dangerous */
+	    if (statbuf.st_nlink == 1 && statbuf.st_mtime > myTime) 
+	        unlink (subfilePath);
         } else {        /* a directory */
             status = rmUnlinkedFilesInUnixDir (subfilePath);
             /* rm subfilePath but not phyBunDir */
