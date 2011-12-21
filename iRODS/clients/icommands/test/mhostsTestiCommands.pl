@@ -25,12 +25,9 @@ use File::Copy;
 # This test has 3 servers and 3 resources. One of the server is an IES.
 # These 3 addresses can be input on the mhostsTestiCommands.pl command line.
 # If they are not given, the values defined below will be used.
-# my $iesHostAddr="one.ucsd.edu";
-# my $host2Addr="srbbrick14.ucsd.edu";
-# my $host3Addr="srbbrick15.ucsd.edu";
-my $iesHostAddr="mwan-hp";
-my $host2Addr="mwan-hp";
-my $host3Addr="mwan-hp";
+my $iesHostAddr="one.ucsd.edu";
+my $host2Addr="srbbrick14.ucsd.edu";
+my $host3Addr="srbbrick15.ucsd.edu";
 my $resc1="myresc1";
 my $resc2="myresc2";
 my $resc3="myresc3";
