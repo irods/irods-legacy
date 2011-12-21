@@ -273,6 +273,19 @@ runCmd(0, "iput -f $F1");
 runCmd(0, "iput -fK $F1");
 runCmd(0, "irm -f $F1");
 
+# isysmeta
+runCmd(0, "iput $F1");
+runCmd(0, "isysmeta mod $F1 +1h");
+runCmd(0, "isysmeta mod $F1 2009-12-01");
+runCmd(0, "isysmeta mod $F1 datatype 'tar file'");
+runCmd(0, "isysmeta mod $F1 comment 0 'my comment'");
+runCmd(0, "isysmeta mod $F1 comment 'my other comment'");
+runCmd(0, "isysmeta ls $F1");
+runCmd(0, "isysmeta ls -l $F1");
+runCmd(0, "isysmeta ls -v $F1");
+runCmd(0, "isysmeta ldt");
+runCmd(0, "irm -f $F1");
+
 # Metadata
 unlink($F3);
 `ls -l > $F3`;
@@ -741,6 +754,8 @@ runCmd(0, "iticket mod $TICKET1 add user $U1");
 runCmd(0, "iticket mod $TICKET1 remove user $U1");
 runCmd(0, "iticket mod $TICKET1 expire 2012-02-02");
 runCmd(0, "iticket mod $TICKET1 expire 0");
+runCmd(0, "iticket ls $TICKET1");
+runCmd(0, "iticket ls");
 runCmd(0, "iget -f -t $TICKET1 $F1");
 runCmd(0, "iticket mod $TICKET1 uses 0");
 runCmd(0, "iadmin mkgroup $G1");
