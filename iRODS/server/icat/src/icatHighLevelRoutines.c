@@ -783,12 +783,14 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    int IX_DATA_PATH=9;      /* index into theColls */
    int IX_CREATE_TS=18;
    int IX_MODIFY_TS=19;
-   int nColumns=20;
+   int IX_RESC_NAME2=20;
+   int IX_DATA_PATH2=21;
+   int IX_DATA_ID2=22;
+   int nColumns=23;
    char objIdString[MAX_NAME_LEN];
    char replNumString[MAX_NAME_LEN];
    int adminMode;
    char *theVal;
-
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegReplica");
 
    adminMode=0;
@@ -861,11 +863,15 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    cVal[IX_MODIFY_TS]=myTime;
    cVal[IX_CREATE_TS]=myTime;
 
+   cVal[IX_RESC_NAME2]=dstDataObjInfo->rescName;
+   cVal[IX_DATA_PATH2]=dstDataObjInfo->filePath;
+   cVal[IX_DATA_ID2]=objIdString;
+
    for (i=0;i<nColumns;i++) {
       cllBindVars[i]=cVal[i];
    }
    cllBindVarCount = nColumns;
-   snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+   snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",
 	    theColls);
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegReplica SQL 4");
    status = cmlExecuteNoAnswerSql(tSQL,  &icss);
