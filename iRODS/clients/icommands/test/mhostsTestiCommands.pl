@@ -25,9 +25,12 @@ use File::Copy;
 # This test has 3 servers and 3 resources. One of the server is an IES.
 # These 3 addresses can be input on the mhostsTestiCommands.pl command line.
 # If they are not given, the values defined below will be used.
-my $iesHostAddr="one.ucsd.edu";
-my $host2Addr="srbbrick14.ucsd.edu";
-my $host3Addr="srbbrick15.ucsd.edu";
+# my $iesHostAddr="one.ucsd.edu";
+# my $host2Addr="srbbrick14.ucsd.edu";
+# my $host3Addr="srbbrick15.ucsd.edu";
+my $iesHostAddr="mwan-hp";
+my $host2Addr="mwan-hp";
+my $host3Addr="mwan-hp";
 my $resc1="myresc1";
 my $resc2="myresc2";
 my $resc3="myresc3";
@@ -271,106 +274,106 @@ mksdir ();
 mkldir ();
 my $testlfile = $myldir . '/lfile1';
 runCmd( "icd $irodshome" );
-runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
+runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" );
 # loop through the all hosts 
 foreach $hostAddr (@hostList) {
     print ("CONNECT to host: $hostAddr\n");
     # test small file put/get
     $ENV{'irodsHost'}  = $hostAddr;
-    runCmd( "iput -KrR $resc2 $progname $irodshome/test/foo1" );
-    runCmd( "iget -f -K $irodshome/test/foo1 $dir_w" );
+    runCmd( "iput -KrR $resc2 $progname $irodshome/icmdtest/foo1" );
+    runCmd( "iget -f -K $irodshome/icmdtest/foo1 $dir_w" );
     runCmd( "diff  $dir_w/foo1 $progname", "", "NOANSWER" );
-    runCmd( "iput -kf $progname $irodshome/test/foo1" );
-    runCmd( "iget -f -K $irodshome/test/foo1 $dir_w" );
+    runCmd( "iput -kf $progname $irodshome/icmdtest/foo1" );
+    runCmd( "iget -f -K $irodshome/icmdtest/foo1 $dir_w" );
     runCmd( "diff  $dir_w/foo1 $progname", "", "NOANSWER" );
-    system ( "irm -f $irodshome/test/foo1" );
+    system ( "irm -f $irodshome/icmdtest/foo1" );
     system ( "rm $dir_w/foo1" );
     # test large file put/get
-    runCmd( "iput -KrR $resc2 $testlfile $irodshome/test/foo1" );
-    runCmd( "iget -f -K $irodshome/test/foo1 $dir_w" );
+    runCmd( "iput -KrR $resc2 $testlfile $irodshome/icmdtest/foo1" );
+    runCmd( "iget -f -K $irodshome/icmdtest/foo1 $dir_w" );
     runCmd( "diff  $dir_w/foo1 $testlfile", "", "NOANSWER" );
-    runCmd( "iput -kf $testlfile $irodshome/test/foo1" );
-    runCmd( "iget -f -K $irodshome/test/foo1 $dir_w" );
+    runCmd( "iput -kf $testlfile $irodshome/icmdtest/foo1" );
+    runCmd( "iget -f -K $irodshome/icmdtest/foo1 $dir_w" );
     runCmd( "diff  $dir_w/foo1 $testlfile", "", "NOANSWER" );
-    system ( "irm -f $irodshome/test/foo1" );
+    system ( "irm -f $irodshome/icmdtest/foo1" );
     system ( "rm $dir_w/foo1" );
     # test a directory of file between $resc2 and $resc3
-    runCmd( "iput -KrR $resc2 --wlock $testsrcdir $irodshome/test/dir1" );
+    runCmd( "iput -KrR $resc2 --wlock $testsrcdir $irodshome/icmdtest/dir1" );
 
-    runCmd( "ils -l $irodshome/test/dir1/sdir/sfile1", "", "LIST", "sfile1, $myssize" );
-    runCmd( "irepl -Br -R $resc3 --rlock $irodshome/test/dir1" );
-    runCmd( "ils -l $irodshome/test/dir1/sdir/sfile1", "", "LIST", "1 $resc3" );
-    runCmd( "itrim -rS $resc2 -N1 $irodshome/test/dir1" );
-    runCmd( "iphymv -rR $resc2 $irodshome/test/dir1" );
-    runCmd( "ils -l $irodshome/test/dir1/sdir/sfile1", "", "LIST", "$resc2" );
-    runCmd( "itrim -rS  $resc2 -N1 $irodshome/test/dir1" );
-    runCmd( "icp -rK -R $resc2 $irodshome/test/dir1 $irodshome/test/dir2" );
-    runCmd( "ils $irodshome/test/dir2/sdir/sfile1", "", "LIST", "sfile1" );
-    runCmd( "imv $irodshome/test/dir2 $irodshome/test/dir3" );
-    runCmd( "ils $irodshome/test/dir3/sdir/sfile1", "", "LIST", "sfile1" );
-    runCmd( "ichksum -Kr $irodshome/test/dir3" );
-    runCmd( "irm -vrf $irodshome/test/dir1" );
+    runCmd( "ils -l $irodshome/icmdtest/dir1/sdir/sfile1", "", "LIST", "sfile1, $myssize" );
+    runCmd( "irepl -Br -R $resc3 --rlock $irodshome/icmdtest/dir1" );
+    runCmd( "ils -l $irodshome/icmdtest/dir1/sdir/sfile1", "", "LIST", "1 $resc3" );
+    runCmd( "itrim -rS $resc2 -N1 $irodshome/icmdtest/dir1" );
+    runCmd( "iphymv -rR $resc2 $irodshome/icmdtest/dir1" );
+    runCmd( "ils -l $irodshome/icmdtest/dir1/sdir/sfile1", "", "LIST", "$resc2" );
+    runCmd( "itrim -rS  $resc2 -N1 $irodshome/icmdtest/dir1" );
+    runCmd( "icp -rK -R $resc2 $irodshome/icmdtest/dir1 $irodshome/icmdtest/dir2" );
+    runCmd( "ils $irodshome/icmdtest/dir2/sdir/sfile1", "", "LIST", "sfile1" );
+    runCmd( "imv $irodshome/icmdtest/dir2 $irodshome/icmdtest/dir3" );
+    runCmd( "ils $irodshome/icmdtest/dir3/sdir/sfile1", "", "LIST", "sfile1" );
+    runCmd( "ichksum -Kr $irodshome/icmdtest/dir3" );
+    runCmd( "irm -vrf $irodshome/icmdtest/dir1" );
     # we have dir3 in $resc2. test between $resc2 and $resc1
-    runCmd( "irepl -Br -R $resc1 $irodshome/test/dir3" );
-    runCmd( "ils -l $irodshome/test/dir3/sdir/sfile1", "", "LIST", "$resc1" );
-    runCmd( "itrim -rS $resc2 -N1 $irodshome/test/dir3" );
-    runCmd( "iphymv -rR $resc2 $irodshome/test/dir3" );
-    runCmd( "ils -l $irodshome/test/dir3/sdir/sfile1", "", "LIST", "$resc2" );
-    runCmd( "itrim -rS  $resc2 -N1 $irodshome/test/dir3" );
-    runCmd( "icp -rK -R $resc2 $irodshome/test/dir3 $irodshome/test/dir2" );
-    runCmd( "ils $irodshome/test/dir2/sdir/sfile1", "", "LIST", "sfile1" );
-    runCmd( "imv $irodshome/test/dir2 $irodshome/test/dir1" );
-    runCmd( "ils $irodshome/test/dir1/sdir/sfile1", "", "LIST", "sfile1" );
-    runCmd( "ichksum -Kr $irodshome/test/dir1" );
-    runCmd( "irm -vrf $irodshome/test/dir3" );
+    runCmd( "irepl -Br -R $resc1 $irodshome/icmdtest/dir3" );
+    runCmd( "ils -l $irodshome/icmdtest/dir3/sdir/sfile1", "", "LIST", "$resc1" );
+    runCmd( "itrim -rS $resc2 -N1 $irodshome/icmdtest/dir3" );
+    runCmd( "iphymv -rR $resc2 $irodshome/icmdtest/dir3" );
+    runCmd( "ils -l $irodshome/icmdtest/dir3/sdir/sfile1", "", "LIST", "$resc2" );
+    runCmd( "itrim -rS  $resc2 -N1 $irodshome/icmdtest/dir3" );
+    runCmd( "icp -rK -R $resc2 $irodshome/icmdtest/dir3 $irodshome/icmdtest/dir2" );
+    runCmd( "ils $irodshome/icmdtest/dir2/sdir/sfile1", "", "LIST", "sfile1" );
+    runCmd( "imv $irodshome/icmdtest/dir2 $irodshome/icmdtest/dir1" );
+    runCmd( "ils $irodshome/icmdtest/dir1/sdir/sfile1", "", "LIST", "sfile1" );
+    runCmd( "ichksum -Kr $irodshome/icmdtest/dir1" );
+    runCmd( "irm -vrf $irodshome/icmdtest/dir3" );
     # we have dir1 in $resc2
-    runCmd( "iget -f -rK --rlock $irodshome/test/dir1 $dir_w" );
+    runCmd( "iget -f -rK --rlock $irodshome/icmdtest/dir1 $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
     system ( "rm -r $dir_w/dir1" );
-    runCmd( "irm -vrf $irodshome/test/dir1" );
+    runCmd( "irm -vrf $irodshome/icmdtest/dir1" );
 
     # bulk test
-    runCmd( "iput -bPKrR $resc2 $testsrcdir $irodshome/test/dir1" );
-    runCmd( "iget -f -rK $irodshome/test/dir1 $dir_w" );
+    runCmd( "iput -bPKrR $resc2 $testsrcdir $irodshome/icmdtest/dir1" );
+    runCmd( "iget -f -rK $irodshome/icmdtest/dir1 $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
     system ( "rm -r $dir_w/dir1" );
     # iphybun test. we have dir1 in $resc2`h
-    runCmd( "iphybun -KRresgroup $irodshome/test/dir1" );
+    runCmd( "iphybun -KRresgroup $irodshome/icmdtest/dir1" );
     # $resc3 is the cache resc of resgroup
-    runCmd( "itrim -rS $resc3 -N1 $irodshome/test/dir1" );
-    runCmd( "itrim -rS $resc2 -N1 $irodshome/test/dir1" );
-    runCmd( "iget -r $irodshome/test/dir1  $dir_w" );
+    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/dir1" );
+    runCmd( "itrim -rS $resc2 -N1 $irodshome/icmdtest/dir1" );
+    runCmd( "iget -r $irodshome/icmdtest/dir1  $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
-    runCmd( "itrim -rS $resc3 -N1 $irodshome/test/dir1" );
+    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/dir1" );
     # get the name of bundle file
-    my $bunfile = &getBunpathOfSubfile ( "$irodshome/test/dir1/sdir/sfile1" );
+    my $bunfile = &getBunpathOfSubfile ( "$irodshome/icmdtest/dir1/sdir/sfile1" );
     runCmd( "irm -f --empty $bunfile" );
     # should not be able to remove it because it is not empty
     runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
-    runCmd( "irm -rvf $irodshome/test/dir1" );
+    runCmd( "irm -rvf $irodshome/icmdtest/dir1" );
     runCmd( "irm -f --empty $bunfile" );
     system ( "rm -r $dir_w/dir1" );
 
     # resource group test
-    runCmd( "iput -PKrR resgroup $testsrcdir $irodshome/test/dir1" );
-    runCmd( "irepl -ar $irodshome/test/dir1" );
-    runCmd( "itrim -rS $resc3 -N1 $irodshome/test/dir1" );
-    runCmd( "iget -r $irodshome/test/dir1  $dir_w" );
+    runCmd( "iput -PKrR resgroup $testsrcdir $irodshome/icmdtest/dir1" );
+    runCmd( "irepl -ar $irodshome/icmdtest/dir1" );
+    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/dir1" );
+    runCmd( "iget -r $irodshome/icmdtest/dir1  $dir_w" );
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
-    runCmd( "irm -rvf $irodshome/test/dir1" );
+    runCmd( "irm -rvf $irodshome/icmdtest/dir1" );
     system ( "rm -r $dir_w/dir1" );
 
     # do the large files tests using RBUDP
     if ( $doRbudpTest =~ "yes" ) {
-        runCmd( "iput -vQPKrR $resc2 --wlock $testsrcdir $irodshome/test/dir1" );
-        runCmd( "irepl -BQvrPT -R $resc3 --rlock $irodshome/test/dir1" );
-        runCmd( "itrim -vrS $resc2 -N1 $irodshome/test/dir1" );
-        runCmd( "icp -vQKPTr $irodshome/test/dir1 $irodshome/test/dir2" );
-        system ( "irm -vrf $irodshome/test/dir1" );
-        runCmd( "iget -vQPKr --rlock $irodshome/test/dir2 $dir_w/dir2" );
+        runCmd( "iput -vQPKrR $resc2 --wlock $testsrcdir $irodshome/icmdtest/dir1" );
+        runCmd( "irepl -BQvrPT -R $resc3 --rlock $irodshome/icmdtest/dir1" );
+        runCmd( "itrim -vrS $resc2 -N1 $irodshome/icmdtest/dir1" );
+        runCmd( "icp -vQKPTr $irodshome/icmdtest/dir1 $irodshome/icmdtest/dir2" );
+        system ( "irm -vrf $irodshome/icmdtest/dir1" );
+        runCmd( "iget -vQPKr --rlock $irodshome/icmdtest/dir2 $dir_w/dir2" );
         runCmd( "diff -r $dir_w/dir2 $testsrcdir", "", "NOANSWER" );
         system ( "rm -r $dir_w/dir2" );
-        system ( "irm -vrf $irodshome/test/dir2" );
+        system ( "irm -vrf $irodshome/icmdtest/dir2" );
     }
 }
 system ( "rm -r $testsrcdir" );
