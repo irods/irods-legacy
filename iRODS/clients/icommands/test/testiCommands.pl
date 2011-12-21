@@ -274,174 +274,174 @@ runCmd( "ierror -14000", "", "LIST", "SYS_API_INPUT_ERR" );
 runCmd( "iexecmd hello", "", "LIST", "Hello world" );
 runCmd( "ips -v", "", "LIST", "ips" );
 runCmd( "iqstat" );
-runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
+runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" );
 # make a directory of large files
-runCmd( "iput -K --wlock $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
-runCmd( "iput -kf $progname $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1,$myssize" );
-runCmd( "iadmin ls $irodshome/test", "", "LIST", "foo1" );
-runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "$username#$irodszone:own" );
-runCmd( "ichmod read testuser1 $irodshome/test/foo1" );
-runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "testuser1#$irodszone:read" );
-runCmd( "irepl -B -R testresource --rlock $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
+runCmd( "iput -K --wlock $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
+runCmd( "iput -kf $progname $irodshome/icmdtest/foo1" );
+runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "foo1,$myssize" );
+runCmd( "iadmin ls $irodshome/icmdtest", "", "LIST", "foo1" );
+runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "$username#$irodszone:own" );
+runCmd( "ichmod read testuser1 $irodshome/icmdtest/foo1" );
+runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "testuser1#$irodszone:read" );
+runCmd( "irepl -B -R testresource --rlock $irodshome/icmdtest/foo1" );
+runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "1 testresource" );
 # overwrite a copy 
-runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/test/foo1" );
-runCmd( "ils -L $irodshome/test/foo1", "negtest", "LIST", "$irodsdefresource" );
-runCmd( "iphymv -R  $irodsdefresource $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "$irodsdefresource" );
-runCmd( "imeta add -d $irodshome/test/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta1 180 cm" );
-runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,180,cm" );
-runCmd( "icp -K -R testresource $irodshome/test/foo1 $irodshome/test/foo2", "", "", "", "irm $irodshome/test/foo2" );
-runCmd( "ils $irodshome/test/foo2", "", "LIST", "foo2" );
-runCmd( "imv $irodshome/test/foo2 $irodshome/test/foo4" );
-runCmd( "ils -l $irodshome/test/foo4", "", "LIST", "foo4" );
-runCmd( "imv $irodshome/test/foo4 $irodshome/test/foo2" );
-runCmd( "ils -l $irodshome/test/foo2", "", "LIST", "foo2" );
-runCmd( "ichksum $irodshome/test/foo2", "", "LIST", "foo2" );
-runCmd( "imeta add -d $irodshome/test/foo2 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo2 testmeta1 180 cm" );
-runCmd( "imeta add -d $irodshome/test/foo1 testmeta2 hello", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta2 hello"  );
-runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,hello" );
+runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/icmdtest/foo1" );
+runCmd( "ils -L $irodshome/icmdtest/foo1", "negtest", "LIST", "$irodsdefresource" );
+runCmd( "iphymv -R  $irodsdefresource $irodshome/icmdtest/foo1" );
+runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "$irodsdefresource" );
+runCmd( "imeta add -d $irodshome/icmdtest/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/icmdtest/foo1 testmeta1 180 cm" );
+runCmd( "imeta ls -d $irodshome/icmdtest/foo1", "", "LIST", "testmeta1,180,cm" );
+runCmd( "icp -K -R testresource $irodshome/icmdtest/foo1 $irodshome/icmdtest/foo2", "", "", "", "irm $irodshome/icmdtest/foo2" );
+runCmd( "ils $irodshome/icmdtest/foo2", "", "LIST", "foo2" );
+runCmd( "imv $irodshome/icmdtest/foo2 $irodshome/icmdtest/foo4" );
+runCmd( "ils -l $irodshome/icmdtest/foo4", "", "LIST", "foo4" );
+runCmd( "imv $irodshome/icmdtest/foo4 $irodshome/icmdtest/foo2" );
+runCmd( "ils -l $irodshome/icmdtest/foo2", "", "LIST", "foo2" );
+runCmd( "ichksum $irodshome/icmdtest/foo2", "", "LIST", "foo2" );
+runCmd( "imeta add -d $irodshome/icmdtest/foo2 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/icmdtest/foo2 testmeta1 180 cm" );
+runCmd( "imeta add -d $irodshome/icmdtest/foo1 testmeta2 hello", "", "", "", "imeta rm -d $irodshome/icmdtest/foo1 testmeta2 hello"  );
+runCmd( "imeta ls -d $irodshome/icmdtest/foo1", "", "LIST", "testmeta1,hello" );
 runCmd( "imeta qu -d testmeta1 = 180", "", "LIST", "foo1" );
 runCmd( "imeta qu -d testmeta2 = hello", "", "dataObj:", "foo1" );
-runCmd( "iget -f -K --rlock $irodshome/test/foo2 $dir_w" );
+runCmd( "iget -f -K --rlock $irodshome/icmdtest/foo2 $dir_w" );
 runCmd( "ls -l $dir_w/foo2", "", "LIST", "foo2,$myssize");
 unlink ( "$dir_w/foo2" );
 # we have foo1 in $irodsdefresource and foo2 in testresource
 # make a directory containing 20 small files
 mksdir ();
-runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
+runCmd( "irepl -B -R testresource $irodshome/icmdtest/foo1" );
 my $phypath = $dir_w . '/' . 'foo1.' .  int(rand(10000000));
-runCmd( "iput -IkfR $irodsdefresource -p $phypath $sfile2 $irodshome/test/foo1" );
+runCmd( "iput -IkfR $irodsdefresource -p $phypath $sfile2 $irodshome/icmdtest/foo1" );
 # show have 2 different copies
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "foo1,$myssize,$sfile2size" );
+runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "foo1,$myssize,$sfile2size" );
 # update all old copies
-runCmd( "irepl -U $irodshome/test/foo1" );
+runCmd( "irepl -U $irodshome/icmdtest/foo1" );
 # make sure the old size is not there
-runCmd( "ils -l $irodshome/test/foo1", "negtest", "LIST", "$myssize" );
-runCmd( "itrim -S $irodsdefresource $irodshome/test/foo1" );
+runCmd( "ils -l $irodshome/icmdtest/foo1", "negtest", "LIST", "$myssize" );
+runCmd( "itrim -S $irodsdefresource $irodshome/icmdtest/foo1" );
 # bulk test
-runCmd( "iput -bvPKr $mysdir $irodshome/test" );
+runCmd( "iput -bvPKr $mysdir $irodshome/icmdtest" );
 # iput with a lot of options
 my $rsfile = $dir_w . "/rsfile";
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "iput -PkIfTr -X $rsfile --retries 10  $mysdir $irodshome/testw",  "", "", "", "irm -rvf $irodshome/testw" );
+runCmd( "iput -PkIfTr -X $rsfile --retries 10  $mysdir $irodshome/icmdtestw",  "", "", "", "irm -rvf $irodshome/icmdtestw" );
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "iget -vIKPfr -X rsfile --retries 10 $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
+runCmd( "iget -vIKPfr -X rsfile --retries 10 $irodshome/icmdtest $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
 # my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
-runCmd( "iput $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
-runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
-runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2,sfile10" );
-runCmd( "ibun -cDtar $irodshome/testx1.tar $irodshome/testx", "", "", "", "irm -f $irodshome/testx1.tar" );
-runCmd( "ils -l $irodshome/testx1.tar", "", "LIST", "testx1.tar" );
+runCmd( "iput $dir_w/testx.tar $irodshome/icmdtestx.tar", "", "", "", "irm -f $irodshome/icmdtestx.tar" );
+runCmd( "ibun -x $irodshome/icmdtestx.tar $irodshome/icmdtestx", "", "", "", "irm -rf $irodshome/icmdtestx" );
+runCmd( "ils -lr $irodshome/icmdtestx", "", "LIST", "foo2,sfile10" );
+runCmd( "ibun -cDtar $irodshome/icmdtestx1.tar $irodshome/icmdtestx", "", "", "", "irm -f $irodshome/icmdtestx1.tar" );
+runCmd( "ils -l $irodshome/icmdtestx1.tar", "", "LIST", "testx1.tar" );
 system ( "mkdir $dir_w/testx1" );
-runCmd( "iget  $irodshome/testx1.tar $dir_w", "",  "", "", "rm $dir_w/testx1.tar" );
+runCmd( "iget  $irodshome/icmdtestx1.tar $dir_w/testx1.tar", "",  "", "", "rm $dir_w/testx1.tar" );
 runCmd( "tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
-runCmd( "diff -r $dir_w/testx $dir_w/testx1/testx", "", "NOANSWER" );
+runCmd( "diff -r $dir_w/testx $dir_w/testx1/icmdtestx", "", "NOANSWER" );
 if ( $doIbunZipTest =~ "yes" ) {
 # test ibun with gzip
-    runCmd( "ibun -cDgzip $irodshome/testx1.tar.gz $irodshome/testx");
-    runCmd( "ibun -xDgzip $irodshome/testx1.tar.gz $irodshome/testgz");
-    runCmd( "iget -vr $irodshome/testgz $dir_w");
+    runCmd( "ibun -cDgzip $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestx");
+    runCmd( "ibun -xDgzip $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
+    runCmd( "iget -vr $irodshome/icmdtestgz $dir_w");
     runCmd( "diff -r $dir_w/testx $dir_w/testgz/testx", "", "NOANSWER" );
     system ("rm -r $dir_w/testgz");
-    system ("irm -rf $irodshome/testx1.tar.gz $irodshome/testgz");
+    system ("irm -rf $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
 # test ibun with bzip2
-    runCmd( "ibun -cDbzip2 $irodshome/testx1.tar.bz2 $irodshome/testx");
-    runCmd( "ibun -xDgzip $irodshome/testx1.tar.bz2 $irodshome/testbz2");
-    runCmd( "iget -vr $irodshome/testbz2 $dir_w");
+    runCmd( "ibun -cDbzip2 $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestx");
+    runCmd( "ibun -xDgzip $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestbz2");
+    runCmd( "iget -vr $irodshome/icmdtestbz2 $dir_w");
     runCmd( "diff -r $dir_w/testx $dir_w/testbz2/testx", "", "NOANSWER" );
     system ("rm -r $dir_w/testbz2");
-    system ("irm -rf $irodshome/testx1.tar.bz2 $irodshome/testbz2");
+    system ("irm -rf $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestbz2");
 }
 system ( "mv $sfile2 /tmp/sfile2" );
 runCmd( "ireg -KR testresource /tmp/sfile2  $irodshome/foo5", "", "", "", "irm -f foo5" );
 runCmd( "iget -fK $irodshome/foo5 $dir_w/foo5", "", "", "", "rm $dir_w/foo5" );
 runCmd( "diff /tmp/sfile2  $dir_w/foo5", "", "NOANSWER" );
-runCmd( "ireg -KCR testresource $mysdir $irodshome/testa", "", "", "", "irm -vr $irodshome/testa" );
-runCmd( "iget -fvrK $irodshome/testa $dir_w/testa" );
+runCmd( "ireg -KCR testresource $mysdir $irodshome/icmdtesta", "", "", "", "irm -vr $irodshome/icmdtesta" );
+runCmd( "iget -fvrK $irodshome/icmdtesta $dir_w/testa" );
 runCmd( "diff -r $mysdir $dir_w/testa", "", "NOANSWER" );
 system ( "rm -r $dir_w/testa" );
 # mcoll test
-runCmd( "imcoll -m link $irodshome/testa $irodshome/testb" );
-runCmd( "iget -fvrK $irodshome/testb $dir_w/testb" );
+runCmd( "imcoll -m link $irodshome/icmdtesta $irodshome/icmdtestb" );
+runCmd( "iget -fvrK $irodshome/icmdtestb $dir_w/testb" );
 runCmd( "diff -r $mysdir $dir_w/testb", "", "NOANSWER" );
-runCmd( "imcoll -U $irodshome/testb" );
-runCmd( "irm -rf $irodshome/testb" );
+runCmd( "imcoll -U $irodshome/icmdtestb" );
+runCmd( "irm -rf $irodshome/icmdtestb" );
 system ( "rm -r $dir_w/testb" );
-runCmd( "imkdir $irodshome/testm" );
-runCmd( "imcoll -m filesystem -R testresource $mysdir $irodshome/testm" );
-runCmd( "iget -fvrK $irodshome/testa $dir_w/testm" );
+runCmd( "imkdir $irodshome/icmdtestm" );
+runCmd( "imcoll -m filesystem -R testresource $mysdir $irodshome/icmdtestm" );
+runCmd( "iget -fvrK $irodshome/icmdtesta $dir_w/testm" );
 runCmd( "diff -r $mysdir $dir_w/testm", "", "NOANSWER" );
-runCmd( "imcoll -U $irodshome/testm" );
-runCmd( "irm -rf $irodshome/testm" );
+runCmd( "imcoll -U $irodshome/icmdtestm" );
+runCmd( "irm -rf $irodshome/icmdtestm" );
 system ( "rm -r $dir_w/testm" );
-runCmd( "imkdir $irodshome/testt" );
-runCmd( "imcoll -m tar $irodshome/testx.tar $irodshome/testt" );
-runCmd( "ils -lr $irodshome/testt", "", "LIST", "foo2,foo1" );
-runCmd( "iget -vr $irodshome/testt  $dir_w/testt" );
+runCmd( "imkdir $irodshome/icmdtestt" );
+runCmd( "imcoll -m tar $irodshome/icmdtestx.tar $irodshome/icmdtestt" );
+runCmd( "ils -lr $irodshome/icmdtestt", "", "LIST", "foo2,foo1" );
+runCmd( "iget -vr $irodshome/icmdtestt  $dir_w/testt" );
 runCmd( "diff -r  $dir_w/testx $dir_w/testt", "", "NOANSWER" );
-runCmd( "imcoll -s $irodshome/testt" );
-runCmd( "imcoll -p $irodshome/testt" );
-runCmd( "imcoll -U $irodshome/testt" );
-runCmd( "irm -rf $irodshome/testt" );
+runCmd( "imcoll -s $irodshome/icmdtestt" );
+runCmd( "imcoll -p $irodshome/icmdtestt" );
+runCmd( "imcoll -U $irodshome/icmdtestt" );
+runCmd( "irm -rf $irodshome/icmdtestt" );
 system ( "rm -r $dir_w/testt" );
 # iphybun test
-runCmd( "iput -rR testresource $mysdir $irodshome/testp" );
-runCmd( "iphybun -KRresgroup $irodshome/testp" );
-runCmd( "itrim -rStestresource -N1 $irodshome/testp" );
-runCmd( "iget -r $irodshome/testp  $dir_w/testp" );
+runCmd( "iput -rR testresource $mysdir $irodshome/icmdtestp" );
+runCmd( "iphybun -KRresgroup $irodshome/icmdtestp" );
+runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
+runCmd( "iget -r $irodshome/icmdtestp  $dir_w/testp" );
 runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
-runCmd( "itrim -rStestresource -N1 $irodshome/testp" );
+runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
 # get the name of bundle file
-my $bunfile = getBunpathOfSubfile ( "$irodshome/testp/sfile1" );
+my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestp/sfile1" );
 if ( $debug ) { print( "DEBUG: bunfile = $bunfile\n" ); }
 runCmd( "irm -f --empty $bunfile" );
 # should not be able to remove it because it is not empty
 runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
-runCmd( "irm -rvf $irodshome/testp" );
+runCmd( "irm -rvf $irodshome/icmdtestp" );
 runCmd( "irm -f --empty $bunfile" );
 system ( "rm -r $dir_w/testp" );
 system ( "rm -r $mysdir" );
 
 
 # resource group test
-runCmd( "iput -KR resgroup $progname $irodshome/test/foo6", "", "", "", "irm $irodshome/test/foo6" );
-runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "foo6,testresource" );
-runCmd( "irepl -a $irodshome/test/foo6" );
-runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource,testresource" );
-runCmd( "itrim -S testresource -N1 $irodshome/test/foo6" );
-runCmd( "ils -l $irodshome/test/foo6", "negtest", "LIST", "testresource" );
-runCmd( "iget -f $irodshome/test/foo6 $dir_w/foo6" );
-runCmd( "ils -l $irodshome/test/foo6", "", "LIST", "compresource,testresource" );
+runCmd( "iput -KR resgroup $progname $irodshome/icmdtest/foo6", "", "", "", "irm $irodshome/icmdtest/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "foo6,testresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "compresource,testresource" );
+runCmd( "itrim -S testresource -N1 $irodshome/icmdtest/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "negtest", "LIST", "testresource" );
+runCmd( "iget -f $irodshome/icmdtest/foo6 $dir_w/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "compresource,testresource" );
 runCmd( "diff  $progname $dir_w/foo6", "", "NOANSWER" );
 system ( "rm $dir_w/foo6" );
 
 # test --purgec option
-runCmd( "iput -R resgroup --purgec $progname $irodshome/test/foo7", "", "", "", "irm $irodshome/test/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
-runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "compresource" );
-runCmd( "irepl -a $irodshome/test/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "compresource,testresource" );
-runCmd( "iput -fR resgroup --purgec $progname $irodshome/test/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
-runCmd( "irepl -a $irodshome/test/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "compresource,testresource" );
-runCmd( "irepl -R compresource --purgec $irodshome/test/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
-runCmd( "irepl -a $irodshome/test/foo7" );
-runCmd( "itrim -S compresource -N1 $irodshome/test/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "testresource" );
-runCmd( "irepl -R compresource --purgec $irodshome/test/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
-runCmd( "iget -f $irodshome/test/foo7 --purgec $dir_w/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
-runCmd( "irepl -a $irodshome/test/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "", "LIST", "compresource,testresource" );
-runCmd( "iget -f $irodshome/test/foo7 --purgec $dir_w/foo7" );
-runCmd( "ils -l $irodshome/test/foo7", "negtest", "LIST", "testresource" );
+runCmd( "iput -R resgroup --purgec $progname $irodshome/icmdtest/foo7", "", "", "", "irm $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "iput -fR resgroup --purgec $progname $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "irepl -R compresource --purgec $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo7" );
+runCmd( "itrim -S compresource -N1 $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "testresource" );
+runCmd( "irepl -R compresource --purgec $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "iget -f $irodshome/icmdtest/foo7 --purgec $dir_w/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "iget -f $irodshome/icmdtest/foo7 --purgec $dir_w/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
 runCmd( "diff  $progname $dir_w/foo7", "", "NOANSWER" );
 system ( "rm $dir_w/foo7" );
 
@@ -452,12 +452,12 @@ $rc = makeRuleFile();
 if ( $rc ) {
 	print( "Problem with makeRuleFile. Rc = $rc\n" );
 } else {
-	runCmd( "irule -F $ruletestfile", "", "", "", "irm $irodshome/test/foo3" );
+	runCmd( "irule -F $ruletestfile", "", "", "", "irm $irodshome/icmdtest/foo3" );
 }
 
-runCmd( "irsync $ruletestfile i:$irodshome/test/foo1" );
-runCmd( "irsync i:$irodshome/test/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
-runCmd( "irsync i:$irodshome/test/foo1 i:$irodshome/test/foo2" );
+runCmd( "irsync $ruletestfile i:$irodshome/icmdtest/foo1" );
+runCmd( "irsync i:$irodshome/icmdtest/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
+runCmd( "irsync i:$irodshome/icmdtest/foo1 i:$irodshome/icmdtest/foo2" );
 
 # do test using xml protocol
 $ENV{'irodsProt'} = 1;
@@ -473,31 +473,31 @@ runCmd( "ierror -14000", "", "LIST", "SYS_API_INPUT_ERR" );
 runCmd( "iexecmd hello", "", "LIST", "Hello world" );
 runCmd( "ips -v", "", "LIST", "ips" );
 runCmd( "iqstat" );
-runCmd( "imkdir $irodshome/test1", "", "", "", "irm -r $irodshome/test1" );
+runCmd( "imkdir $irodshome/icmdtest1", "", "", "", "irm -r $irodshome/icmdtest1" );
 # make a directory of large files
-runCmd( "iput -kf $progname $irodshome/test1/foo1" );
-runCmd( "ils -l $irodshome/test1/foo1", "", "LIST", "foo1, $myssize" );
-runCmd( "iadmin ls $irodshome/test1", "", "LIST", "foo1" );
-runCmd( "ichmod read testuser1 $irodshome/test1/foo1" );
-runCmd( "ils -A $irodshome/test1/foo1", "", "LIST", "testuser1#$irodszone:read" );
-runCmd( "irepl -B -R testresource $irodshome/test1/foo1" );
+runCmd( "iput -kf $progname $irodshome/icmdtest1/foo1" );
+runCmd( "ils -l $irodshome/icmdtest1/foo1", "", "LIST", "foo1, $myssize" );
+runCmd( "iadmin ls $irodshome/icmdtest1", "", "LIST", "foo1" );
+runCmd( "ichmod read testuser1 $irodshome/icmdtest1/foo1" );
+runCmd( "ils -A $irodshome/icmdtest1/foo1", "", "LIST", "testuser1#$irodszone:read" );
+runCmd( "irepl -B -R testresource $irodshome/icmdtest1/foo1" );
 # overwrite a copy
-runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/test1/foo1" );
-runCmd( "iphymv -R  $irodsdefresource $irodshome/test1/foo1" );
-runCmd( "imeta add -d $irodshome/test1/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test1/foo1 testmeta1 180 cm" );
-runCmd( "imeta ls -d $irodshome/test1/foo1", "", "LIST", "testmeta1,180,cm" );
-runCmd( "icp -K -R testresource $irodshome/test1/foo1 $irodshome/test1/foo2", "", "", "", "irm $irodshome/test1/foo2" );
-runCmd( "imv $irodshome/test1/foo2 $irodshome/test1/foo4" );
-runCmd( "imv $irodshome/test1/foo4 $irodshome/test1/foo2" );
-runCmd( "ichksum $irodshome/test1/foo2", "", "LIST", "foo2" );
-runCmd( "iget -f -K $irodshome/test1/foo2 $dir_w" );
+runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/icmdtest1/foo1" );
+runCmd( "iphymv -R  $irodsdefresource $irodshome/icmdtest1/foo1" );
+runCmd( "imeta add -d $irodshome/icmdtest1/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/icmdtest1/foo1 testmeta1 180 cm" );
+runCmd( "imeta ls -d $irodshome/icmdtest1/foo1", "", "LIST", "testmeta1,180,cm" );
+runCmd( "icp -K -R testresource $irodshome/icmdtest1/foo1 $irodshome/icmdtest1/foo2", "", "", "", "irm $irodshome/icmdtest1/foo2" );
+runCmd( "imv $irodshome/icmdtest1/foo2 $irodshome/icmdtest1/foo4" );
+runCmd( "imv $irodshome/icmdtest1/foo4 $irodshome/icmdtest1/foo2" );
+runCmd( "ichksum $irodshome/icmdtest1/foo2", "", "LIST", "foo2" );
+runCmd( "iget -f -K $irodshome/icmdtest1/foo2 $dir_w" );
 unlink ( "$dir_w/foo2" );
-system ( "irm $irodshome/test/foo3" );
+system ( "irm $irodshome/icmdtest/foo3" );
 runCmd( "irule -F $ruletestfile" );
-runCmd( "irsync $ruletestfile i:$irodshome/test1/foo1" );
+runCmd( "irsync $ruletestfile i:$irodshome/icmdtest1/foo1" );
 system ( "rm $dir_w/foo1" );
-runCmd( "irsync i:$irodshome/test1/foo1 $dir_w/foo1" );
-runCmd( "irsync i:$irodshome/test1/foo1 i:$irodshome/test1/foo2" );
+runCmd( "irsync i:$irodshome/icmdtest1/foo1 $dir_w/foo1" );
+runCmd( "irsync i:$irodshome/icmdtest1/foo1 i:$irodshome/icmdtest1/foo2" );
 if ( -e $ruletestfile ) { unlink( $ruletestfile ); }
 $ENV{'irodsProt'} = 0;
 
@@ -506,42 +506,42 @@ mkldir ();
 my $lrsfile = $dir_w . "/lrsfile";
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "iput -vbPKr --retries 10 --wlock -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/test/testy" );
+runCmd( "iput -vbPKr --retries 10 --wlock -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/icmdtest/testy" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "irepl -BvrPT -R testresource --rlock $irodshome/test/testy" );
-runCmd( "itrim -vrS $irodsdefresource --dryrun --age 1 -N1 $irodshome/test/testy" );
-runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/test/testy" );
-runCmd( "icp -vKPTr -N2 $irodshome/test/testy $irodshome/test/testz" );
-system ( "irm -vrf $irodshome/test/testy" );
-runCmd( "iphymv -vrS $irodsdefresource -R testresource  $irodshome/test/testz" );
+runCmd( "irepl -BvrPT -R testresource --rlock $irodshome/icmdtest/testy" );
+runCmd( "itrim -vrS $irodsdefresource --dryrun --age 1 -N1 $irodshome/icmdtest/testy" );
+runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/icmdtest/testy" );
+runCmd( "icp -vKPTr -N2 $irodshome/icmdtest/testy $irodshome/icmdtest/testz" );
+system ( "irm -vrf $irodshome/icmdtest/testy" );
+runCmd( "iphymv -vrS $irodsdefresource -R testresource  $irodshome/icmdtest/testz" );
 
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile --rlock -N 2 $irodshome/test/testz $dir_w/testz" );
+runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile --rlock -N 2 $irodshome/icmdtest/testz $dir_w/testz" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "diff -r $dir_w/testz $myldir", "", "NOANSWER" );
 system ( "rm -r $dir_w/testz" );
-system ( "irm -vrf $irodshome/test/testz" );
+system ( "irm -vrf $irodshome/icmdtest/testz" );
 
 # do the large files tests using RBUDP
 
-runCmd( "iput -vQPKr --retries 10 -X $rsfile --lfrestart $lrsfile $myldir $irodshome/test/testy" );
+runCmd( "iput -vQPKr --retries 10 -X $rsfile --lfrestart $lrsfile $myldir $irodshome/icmdtest/testy" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "irepl -BQvrPT -R testresource $irodshome/test/testy" );
-runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/test/testy" );
-runCmd( "icp -vQKPTr $irodshome/test/testy $irodshome/test/testz" );
-system ( "irm -vrf $irodshome/test/testy" );
+runCmd( "irepl -BQvrPT -R testresource $irodshome/icmdtest/testy" );
+runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/icmdtest/testy" );
+runCmd( "icp -vQKPTr $irodshome/icmdtest/testy $irodshome/icmdtest/testz" );
+system ( "irm -vrf $irodshome/icmdtest/testy" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "iget -vQPKr --retries 10 -X $rsfile --lfrestart $lrsfile $irodshome/test/testz $dir_w/testz" );
+runCmd( "iget -vQPKr --retries 10 -X $rsfile --lfrestart $lrsfile $irodshome/icmdtest/testz $dir_w/testz" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "diff -r $dir_w/testz $myldir", "", "NOANSWER" );
 system ( "rm -r $dir_w/testz" );
-system ( "irm -vrf $irodshome/test/testz" );
+system ( "irm -vrf $irodshome/icmdtest/testz" );
 system ( "rm -r $myldir" );
 
 #-- Execute rollback commands
@@ -785,7 +785,7 @@ sub makeRuleFile {
 	print( FILE2 "# This is an example of an input for the irule command.\n" );
 	print( FILE2 "# This first input line is the rule body.\n" );
 	print( FILE2 "# The second input line is the input parameter in the format of:\n" );
-	print( FILE2 "#   label=value. e.g., *A=$irodshome/test/foo1\n" );
+	print( FILE2 "#   label=value. e.g., *A=$irodshome/icmdtest/foo1\n" );
 	print( FILE2 "# Multiple inputs can be specified using the \'\%\' character as the seperator.\n" );
 	print( FILE2 "# The third input line is the output description. Multiple outputs can be specified\n" );
 	print( FILE2 "# using the \'\%\' character as the seperator.\n" );
@@ -801,7 +801,7 @@ sub makeRuleFile {
 #	print( FILE2 "##delayExec(msiDataObjRepl(*C,$irodsdefresource,*junk5),<A></A>)" );
 	print( FILE2 "##msiDataObjUnlink(*B,*junk6)|null" );
 	print( FILE2 "\n" );
-	print( FILE2 "*A=\"$irodshome/test/foo1\"\%*B=\"$irodshome/test/foo4\"\%*C=\"$irodshome/test/foo3\"" );
+	print( FILE2 "*A=\"$irodshome/icmdtest/foo1\"\%*B=\"$irodshome/icmdtest/foo4\"\%*C=\"$irodshome/icmdtest/foo3\"" );
 	print( FILE2 "\n" );
 	print( FILE2 "*R_BUF\%*W_LEN" );
 	print( FILE2 "\n" );
