@@ -70,7 +70,8 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
           &regReplicaInp->condInput);
 	if (status >= 0) status = destDataObjInfo->replNum;
     }
-    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO || 
+      status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
 	int status2;
 	/* register a repl with a copy with the same resource and phyPaht.
          * could be caused by 2 staging at the same time */
