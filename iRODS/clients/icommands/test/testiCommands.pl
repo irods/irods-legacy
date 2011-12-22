@@ -277,6 +277,7 @@ runCmd( "iqstat" );
 runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" );
 # make a directory of large files
 runCmd( "iput -K --wlock $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
+runCmd( "ichksum -f $irodshome/icmdtest/foo1" );
 runCmd( "iput -kf $progname $irodshome/icmdtest/foo1" );
 runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "foo1,$myssize" );
 runCmd( "iadmin ls $irodshome/icmdtest", "", "LIST", "foo1" );
@@ -343,14 +344,14 @@ runCmd( "diff -r $dir_w/testx $dir_w/testx1/icmdtestx", "", "NOANSWER" );
 if ( $doIbunZipTest =~ "yes" ) {
 # test ibun with gzip
     runCmd( "ibun -cDgzip $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestx");
-    runCmd( "ibun -xDgzip $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
+    runCmd( "ibun -x $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
     runCmd( "iget -vr $irodshome/icmdtestgz $dir_w");
     runCmd( "diff -r $dir_w/testx $dir_w/icmdtestgz/icmdtestx", "", "NOANSWER" );
     system ("rm -r $dir_w/icmdtestgz");
     system ("irm -rf $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
 # test ibun with bzip2
     runCmd( "ibun -cDbzip2 $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestx");
-    runCmd( "ibun -xDgzip $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestbz2");
+    runCmd( "ibun -xb $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestbz2");
     runCmd( "iget -vr $irodshome/icmdtestbz2 $dir_w");
     runCmd( "diff -r $dir_w/testx $dir_w/icmdtestbz2/icmdtestx", "", "NOANSWER" );
     system ("rm -r $dir_w/icmdtestbz2");
@@ -373,6 +374,9 @@ runCmd( "irm -rf $irodshome/icmdtestb" );
 system ( "rm -r $dir_w/testb" );
 runCmd( "imkdir $irodshome/icmdtestm" );
 runCmd( "imcoll -m filesystem -R testresource $mysdir $irodshome/icmdtestm" );
+runCmd( "imkdir $irodshome/icmdtestm/testmm" );
+runCmd( "iput $progname $irodshome/icmdtestm/testmm/foo1" );
+runCmd( "irm -r $irodshome/icmdtestm/testmm" );
 runCmd( "iget -fvrK $irodshome/icmdtesta $dir_w/testm" );
 runCmd( "diff -r $mysdir $dir_w/testm", "", "NOANSWER" );
 runCmd( "imcoll -U $irodshome/icmdtestm" );
@@ -489,7 +493,7 @@ runCmd( "imeta ls -d $irodshome/icmdtest1/foo1", "", "LIST", "testmeta1,180,cm" 
 runCmd( "icp -K -R testresource $irodshome/icmdtest1/foo1 $irodshome/icmdtest1/foo2", "", "", "", "irm $irodshome/icmdtest1/foo2" );
 runCmd( "imv $irodshome/icmdtest1/foo2 $irodshome/icmdtest1/foo4" );
 runCmd( "imv $irodshome/icmdtest1/foo4 $irodshome/icmdtest1/foo2" );
-runCmd( "ichksum $irodshome/icmdtest1/foo2", "", "LIST", "foo2" );
+runCmd( "ichksum -K $irodshome/icmdtest1/foo2", "", "LIST", "foo2" );
 runCmd( "iget -f -K $irodshome/icmdtest1/foo2 $dir_w" );
 unlink ( "$dir_w/foo2" );
 system ( "irm $irodshome/icmdtest/foo3" );
