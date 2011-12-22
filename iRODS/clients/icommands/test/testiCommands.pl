@@ -25,7 +25,7 @@ use File::Copy;
 # $doIbunZipTest - whether to do ibun test for gzip and bzip2 dataType.
 # "yes" or "no". Default is no since the gzipTar and bzip2Tar dataType
 # are not defined yet.
-my $doIbunZipTest = "no";
+my $doIbunZipTest = "yes";
 
 my $debug;
 my $entry;
@@ -345,15 +345,15 @@ if ( $doIbunZipTest =~ "yes" ) {
     runCmd( "ibun -cDgzip $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestx");
     runCmd( "ibun -xDgzip $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
     runCmd( "iget -vr $irodshome/icmdtestgz $dir_w");
-    runCmd( "diff -r $dir_w/testx $dir_w/testgz/testx", "", "NOANSWER" );
-    system ("rm -r $dir_w/testgz");
+    runCmd( "diff -r $dir_w/testx $dir_w/icmdtestgz/icmdtestx", "", "NOANSWER" );
+    system ("rm -r $dir_w/icmdtestgz");
     system ("irm -rf $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
 # test ibun with bzip2
     runCmd( "ibun -cDbzip2 $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestx");
     runCmd( "ibun -xDgzip $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestbz2");
     runCmd( "iget -vr $irodshome/icmdtestbz2 $dir_w");
-    runCmd( "diff -r $dir_w/testx $dir_w/testbz2/testx", "", "NOANSWER" );
-    system ("rm -r $dir_w/testbz2");
+    runCmd( "diff -r $dir_w/testx $dir_w/icmdtestbz2/icmdtestx", "", "NOANSWER" );
+    system ("rm -r $dir_w/icmdtestbz2");
     system ("irm -rf $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestbz2");
 }
 system ( "mv $sfile2 /tmp/sfile2" );
