@@ -278,7 +278,7 @@ rodsObjStat_t **rodsObjStatOut)
                     replSpecColl (&specCollCache->specColl,
                       &(*rodsObjStatOut)->specColl);
                 } else {
-                    status = queueSpecCollCache (genQueryOut,
+                    status = queueSpecCollCache (rsComm, genQueryOut,
                       dataObjInp->objPath);
                     if (status < 0) return (status);
                     replSpecColl (&SpecCollCacheHead->specColl,

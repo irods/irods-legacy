@@ -92,6 +92,43 @@ isData (rsComm_t *rsComm, char *objName, rodsLong_t *dataId)
 }
 
 int
+getPhyPath (rsComm_t *rsComm, char *objName,  char *resource, char *phyPath)
+{
+   genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    char tmpStr[MAX_NAME_LEN];
+    char logicalEndName[MAX_NAME_LEN];
+    char logicalParentDirName[MAX_NAME_LEN];
+    int status;
+
+    status = splitPathByKey(objName,
+                            logicalParentDirName, logicalEndName, '/');
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalEndName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, tmpStr);
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalParentDirName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_PATH, 1);
+    genQueryInp.maxRows = 2;
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+    if (status >= 0) {
+        sqlResult_t *phyPathRes = NULL;
+        if ((phyPathRes = getSqlResultByInx (genQueryOut, COL_D_DATA_PATH)) ==
+          NULL) {
+            rodsLog (LOG_ERROR,
+              "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+        if (phyPath != NULL) {
+            rstrcpy (phyPath, phyPathRes->value, MAX_NAME_LEN);
+        }
+        freeGenQueryOut (&genQueryOut);
+    }
+    clearGenQueryInp (&genQueryInp);
+    return(status);
+}
+
+int
 isCollAllKinds (rsComm_t *rsComm, char *objName, rodsLong_t *collId)
 {
     dataObjInp_t dataObjInp;

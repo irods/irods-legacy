@@ -60,6 +60,8 @@ checkDupReplica (rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
 char *filePath);
 int
 getNumSubfilesInBunfileObj (rsComm_t *rsComm, char *objPath);
+int
+getPhyPath (rsComm_t *rsComm, char *objName,  char *resource, char *phyPath);
 #ifdef  __cplusplus
 }
 #endif
