@@ -351,6 +351,7 @@ if ( $doIbunZipTest =~ "yes" ) {
     runCmd( "iget -vr $irodshome/icmdtestgz $dir_w");
     runCmd( "diff -r $dir_w/testx $dir_w/icmdtestgz/icmdtestx", "", "NOANSWER" );
     system ("rm -r $dir_w/icmdtestgz");
+    runCmd( "ibun --add $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
     system ("irm -rf $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
 # test ibun with bzip2
     runCmd( "ibun -cDbzip2 $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestx");
