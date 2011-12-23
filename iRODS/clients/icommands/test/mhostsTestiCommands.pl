@@ -335,13 +335,15 @@ foreach $hostAddr (@hostList) {
     runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
     system ( "rm -r $dir_w/dir1" );
     # iphybun test. we have dir1 in $resc2`h
-    runCmd( "iphybun -KRresgroup $irodshome/icmdtest/dir1" );
+    runCmd( "iphybun -KRresgroup $irodshome/icmdtest/dir1/sdir" );
     # $resc3 is the cache resc of resgroup
-    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/dir1" );
-    runCmd( "itrim -rS $resc2 -N1 $irodshome/icmdtest/dir1" );
-    runCmd( "iget -r $irodshome/icmdtest/dir1  $dir_w" );
-    runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
-    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/dir1" );
+    runCmd( "ibun -c -R $resc3 $irodshome/icmdtest/sdir.tar $irodshome/icmdtest/dir1/sdir" );
+    system ( "irm -f $irodshome/icmdtest/sdir.tar" );
+    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/dir1/sdir" );
+    runCmd( "itrim -rS $resc2 -N1 $irodshome/icmdtest/dir1/sdir" );
+    runCmd( "iget -r $irodshome/icmdtest/dir1/sdir  $dir_w" );
+    runCmd( "diff -r $dir_w/sdir $testsrcdir/sdir", "", "NOANSWER" );
+    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/dir1/sdir" );
     # get the name of bundle file
     my $bunfile = &getBunpathOfSubfile ( "$irodshome/icmdtest/dir1/sdir/sfile1" );
     runCmd( "irm -f --empty $bunfile" );
@@ -349,16 +351,21 @@ foreach $hostAddr (@hostList) {
     runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
     runCmd( "irm -rvf $irodshome/icmdtest/dir1" );
     runCmd( "irm -f --empty $bunfile" );
-    system ( "rm -r $dir_w/dir1" );
+    system ( "rm -r $dir_w/sdir" );
 
     # resource group test
-    runCmd( "iput -PKrR resgroup $testsrcdir $irodshome/icmdtest/dir1" );
-    runCmd( "irepl -ar $irodshome/icmdtest/dir1" );
-    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/dir1" );
-    runCmd( "iget -r $irodshome/icmdtest/dir1  $dir_w" );
-    runCmd( "diff -r $dir_w/dir1 $testsrcdir", "", "NOANSWER" );
-    runCmd( "irm -rvf $irodshome/icmdtest/dir1" );
-    system ( "rm -r $dir_w/dir1" );
+    runCmd( "iput -PKrR resgroup $testsrcdir/sdir $irodshome/icmdtest/sdir" );
+    runCmd( "irepl -ar $irodshome/icmdtest/sdir" );
+    runCmd( "itrim -rS $resc3 -N1 $irodshome/icmdtest/sdir" );
+    runCmd( "iget -r $irodshome/icmdtest/sdir  $dir_w" );
+    runCmd( "diff -r $dir_w/sdir $testsrcdir/sdir", "", "NOANSWER" );
+    runCmd( "irm -rvf $irodshome/icmdtest/sdir" );
+    system ( "rm -r $dir_w/sdir" );
+    runCmd( "iexecmd -H $host2Addr hello", "", "LIST", "Hello world" );
+    runCmd( "ips -H $host2Addr" );
+    system ( "cp $progname /tmp/regphyfile" );
+    runCmd( "ireg -KR $resc1 /tmp/regphyfile  $irodshome/icmdtest/foo5" );
+    system ( "irm -f $irodshome/icmdtest/foo5" );
 
     # do the large files tests using RBUDP
     if ( $doRbudpTest =~ "yes" ) {
