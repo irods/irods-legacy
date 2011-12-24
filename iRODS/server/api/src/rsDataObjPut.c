@@ -154,6 +154,13 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     L1desc[l1descInx].oprType = PUT_OPR;
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;
 
+    if (getStructFileType (L1desc[l1descInx].dataObjInfo->specColl) >= 0) {
+        *portalOprOut = (portalOprOut_t *) malloc (sizeof (portalOprOut_t));
+        bzero (*portalOprOut,  sizeof (portalOprOut_t));
+        (*portalOprOut)->l1descInx = l1descInx;
+        return l1descInx;
+    }
+
     status = preProcParaPut (rsComm, l1descInx, portalOprOut);
 
     if (status < 0) {
