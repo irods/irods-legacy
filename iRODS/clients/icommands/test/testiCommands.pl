@@ -412,6 +412,9 @@ runCmd( "diff -r  $dir_w/testx $dir_w/testt", "", "NOANSWER" );
 runCmd( "imkdir $irodshome/icmdtestt/mydirtt" );
 runCmd( "iput $progname $irodshome/icmdtestt/mydirtt/foo1mt" );
 runCmd( "imv $irodshome/icmdtestt/mydirtt/foo1mt $irodshome/icmdtestt/mydirtt/foo1mtx" );
+mkldir ();
+runCmd( "iput $myldir/lfile1 $irodshome/icmdtestt/mydirtt" );
+runCmd( "iget $irodshome/icmdtestt/mydirtt/lfile1 $dir_w/testt" );
 runCmd( "irm -r $irodshome/icmdtestt/mydirtt" );
 runCmd( "imcoll -s $irodshome/icmdtestt" );
 runCmd( "imcoll -p $irodshome/icmdtestt" );
@@ -544,7 +547,7 @@ if ( -e $ruletestfile ) { unlink( $ruletestfile ); }
 $ENV{'irodsProt'} = 0;
 
 # do the large files tests
-mkldir ();
+# mkldir ();
 my $lrsfile = $dir_w . "/lrsfile";
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
