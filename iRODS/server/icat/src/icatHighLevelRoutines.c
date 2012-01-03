@@ -871,8 +871,17 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
       cllBindVars[i]=cVal[i];
    }
    cllBindVarCount = nColumns;
+#if (defined ORA_ICAT || defined MY_ICAT)
+   /* MySQL and Oracle */
+   /* For now, use the old SQL form as the new (below) works only on Postgres */
+   cllBindVarCount = nColumns-3;
+   snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	    theColls);
+#else  
+   /* Postgres */
    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",
 	    theColls);
+#endif
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegReplica SQL 4");
    status = cmlExecuteNoAnswerSql(tSQL,  &icss);
    if (status < 0) {
