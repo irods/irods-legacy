@@ -14,7 +14,9 @@
 #include "apiNumber.h"
 #include "initServer.h"
 #include "dataObjInpOut.h"
+#ifdef NETCDF_API
 #include "netcdf.h"
+#endif
 
 typedef struct {
     char objPath[MAX_NAME_LEN];
