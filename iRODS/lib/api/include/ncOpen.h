@@ -22,10 +22,12 @@ typedef struct {
     char objPath[MAX_NAME_LEN];
     int mode;
     int flags;		/* not used */
+    rodsULong_t	intialsz;	/* used for nc__open, nc__create */
+    rodsULong_t bufrsizehint;	/* used for nc__open, nc__create */
     keyValPair_t condInput;	/* not used */
 } ncOpenInp_t;
 
-#define NcOpenInp_PI "str objPath[MAX_NAME_LEN]; int mode; int flags; struct *SpecColl_PI; struct KeyValPair_PI;"
+#define NcOpenInp_PI "str objPath[MAX_NAME_LEN]; int mode; int flags; double intialsz; double bufrsizehint; struct *SpecColl_PI; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_NC_OPEN rsNcOpen
@@ -54,7 +56,9 @@ extern "C" {
  */
 
 int
-rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid);
+rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid);
+int
+_rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid);
 
 #ifdef  __cplusplus
 }

@@ -209,6 +209,10 @@ typedef struct CollInp201 {
 #define CREATE_OPR     		23
 #define OPEN_OPR         	25
 #endif
+/* NETCDF type operation */
+#define NC_OPR			1000	/* netcdf operation */
+#define NC_OPEN_FOR_WRITE	1000	/* open/create NETCDF for write */
+#define NC_OPEN_FOR_READ	1001    /* open NETCDF for read */
 
 /* definition for openType in l1desc_t */
 #define CREATE_TYPE         	1

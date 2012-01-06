@@ -11,7 +11,7 @@
 #include "ncOpen.h"
 
 /**
- * \fn rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid)
+ * \fn rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid)
  *
  * \brief netcdf open an iRODS data object (equivalent to nc_open).
  *
@@ -31,7 +31,7 @@
  * \usage
  * nc_open a data object /myZone/home/john/myfile.nc for write:
  * \n ncOpenInp_t ncOpenInp;
- * \n int *ncid = NULL;
+ * \n int ncid = 0;
  * \n int status;
  * \n bzero (&ncOpenInp, sizeof (ncOpenInp));
  * \n rstrcpy (ncOpenInp.objPath, "/myZone/home/john/myfile.nc", MAX_NAME_LEN);
@@ -58,7 +58,23 @@
 **/
 
 int
-rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid)
+rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid)
+{
+    int status;
+    int *myncid = NULL;
+
+    status = procApiRequest (conn, NC_OPEN_AN,  ncOpenInp, NULL,
+        (void **) &myncid, NULL);
+
+    if (myncid != NULL) {
+	*ncid = *myncid;
+	free (myncid);
+    }
+    return (status);
+}
+
+int
+_rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid)
 {
     int status;
     status = procApiRequest (conn, NC_OPEN_AN,  ncOpenInp, NULL, 
