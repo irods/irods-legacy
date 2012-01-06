@@ -495,7 +495,7 @@ $envAuth=substr($cmdStdout, $ix+1);
 if ($envAuth ne "") {
     $authFile=$envAuth;
 }
-runCmd(0, "mv $authFile $F2"); # save the auth file
+runCmd(1, "mv $authFile $F2"); # save the auth file
 runCmd(2, "iinit 1234");
 $ENV{'irodsUserName'}=$U2; 
 runCmd(0, "iinit 1234");
@@ -504,7 +504,7 @@ runCmd(2, "ichmod -R write $U1 $Resc"); # test SQL (the non-admin)
 runCmd(0, "echo '1234\nabcd\nabcd' | ipasswd"); # change the password
 runCmd(0, "echo 'abcd\n1234\n1234' | ipasswd"); # change the password back
 runCmd(0, "iexit full");
-runCmd(0, "mv $F2 $authFile"); # restore auth file
+runCmd(1, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};
 runCmd(0, "ils");
 
