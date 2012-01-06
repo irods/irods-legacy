@@ -458,14 +458,22 @@ create table R_SPECIFIC_QUERY
    create_ts varchar(32)
 );
 
+
+/* Main ticket table.
+   Column ticket_type: read or write;
+          object_type: data or collection;
+          restrictions: flag for hosts, users, both or neither,
+                  may be used to avoid unneeded queries on 
+                  the ticket_allowed tables below,
+                  default is any are allowed. */
 create table R_TICKET_MAIN
 (
    ticket_id           INT64TYPE not null,
    ticket_string       varchar(100),
-   ticket_type         varchar(20),     /* read or write */
+   ticket_type         varchar(20),   
    user_id             INT64TYPE not null,
    object_id           INT64TYPE not null,
-   object_type         varchar(16),     /* data or collection */
+   object_type         varchar(16),
    uses_limit          int  DEFAULT 0,
    uses_count          int  DEFAULT 0,
    write_file_limit    int  DEFAULT 10, 
@@ -473,10 +481,7 @@ create table R_TICKET_MAIN
    write_byte_limit    int  DEFAULT 0,
    write_byte_count    int  DEFAULT 0,
    ticket_expiry_ts    varchar(32),
-   restrictions        varchar(16), /* flag for hosts, users, both or neither,
-                                       used to avoid unneeded queries on 
-                                       the ticket_allowed tables below;
-                                       default is any are allowed. */
+   restrictions        varchar(16),
    create_ts           varchar(32),
    modify_ts           varchar(32)
 );
