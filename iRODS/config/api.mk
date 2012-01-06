@@ -407,3 +407,8 @@ LIB_API_OBJS += $(libApiObjDir)/rcTicketAdmin.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGetTempPasswordForOther.o
 LIB_API_OBJS += $(libApiObjDir)/rcGetTempPasswordForOther.o
+
+ifdef NETCDF_DIR
+SVR_API_OBJS += $(svrApiObjDir)/rsNcOpen.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcOpen.o
+endif

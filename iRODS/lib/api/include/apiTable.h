@@ -385,6 +385,10 @@ apidef_t RcApiTable[] = {
       "RegReplica_PI", 0, NULL, 0, (funcPtr) RS_REG_REPLICA},
     {FILE_CHKSUM_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
        "fileChksumInp_PI", 0, "fileChksumOut_PI", 0, (funcPtr) RS_FILE_CHKSUM},
+#ifdef NETCDF_API
+    {NC_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+       "NcOpenInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_OPEN},
+#endif
 };
 
 #ifdef RODS_SERVER	/* depends on client lib for NumOfApi */

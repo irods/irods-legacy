@@ -141,4 +141,5 @@
 #include "dataObjLock.h"
 #include "ticketAdmin.h"
 #include "getTempPasswordForOther.h"
+#include "ncOpen.h"
 #endif	/* API_HEADER_ALL_H */

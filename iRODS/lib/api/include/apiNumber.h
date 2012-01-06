@@ -168,4 +168,6 @@
 #define OPEN_COLLECTION201_AN           712
 #endif
 
+/* 1000 - 1100 - NETCDF API calls */
+#define NC_OPEN_AN 			1000
 #endif	/* API_NUMBER_H */
