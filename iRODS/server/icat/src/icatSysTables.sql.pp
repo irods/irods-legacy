@@ -55,7 +55,7 @@
     (token_namespace, token_name, token_value) is checked for uniqueness 
     before being added.
 
-    Wheneever a token value is filled in any other table, it is checked 
+    Whenever a token value is filled in any other table, it is checked 
     against the R_TOKN_MAIN table for validity.
 *******************************************************/
 
@@ -581,7 +581,7 @@ create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
 create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr);
 create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
 
-/* these indexes enforce the uniqueness contraint on the ticket strings
+/* these indexes enforce the uniqueness constraint on the ticket strings
    (which can be provided by users), hosts, and users */
 create unique index idx_ticket on R_TICKET_MAIN (ticket_string);
 create unique index idx_ticket_host on R_TICKET_ALLOWED_HOSTS (ticket_id, host);
