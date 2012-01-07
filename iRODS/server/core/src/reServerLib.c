@@ -441,7 +441,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
     int thrInx;
 
     inx = -1;
-    while (time(NULL) <= endTime && (thrInx = allocReThr (reExec)) >= 0) {
+    while (time(NULL) <= endTime && (thrInx = allocReThr (rsComm, reExec)) >= 0) {
 	myRuleExecInp = &reExec->reExecProc[thrInx].ruleExecSubmitInp;
 	chkAndUpdateResc (rsComm);
         if ((inx = getNextQueuedRuleExec (rsComm, genQueryOut, inx + 1,
@@ -509,7 +509,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
     if (reExec->doFork == 1) {
 	/* wait for all jobs to finish */
 	while (reExec->runCnt + 1 >= reExec->maxRunCnt && 
-	  waitAndFreeReThr (reExec) >= 0);
+	  waitAndFreeReThr (rsComm, reExec) >= 0);
     }
 
     return (runCnt);
@@ -628,7 +628,7 @@ initReExec (rsComm_t *rsComm, reExec_t *reExec)
 }
 
 int 
-allocReThr (reExec_t *reExec)
+allocReThr (rsComm_t *rsComm, reExec_t *reExec)
 {
     int i;
     int thrInx = SYS_NO_FREE_RE_THREAD;
@@ -652,7 +652,7 @@ allocReThr (reExec_t *reExec)
 	}
     }
     if (thrInx == SYS_NO_FREE_RE_THREAD) {
-	thrInx = waitAndFreeReThr (reExec);
+	thrInx = waitAndFreeReThr (rsComm, reExec);
     }
     if (thrInx >= 0) 
         reExec->reExecProc[thrInx].procExecState = RE_PROC_RUNNING;
@@ -661,7 +661,7 @@ allocReThr (reExec_t *reExec)
 }
 
 int
-waitAndFreeReThr (reExec_t *reExec)
+waitAndFreeReThr (rsComm_t *rsComm, reExec_t *reExec)
 {
     pid_t childPid;
     int status = 0;
@@ -684,7 +684,31 @@ waitAndFreeReThr (reExec_t *reExec)
 	}
     } else {
         thrInx = matchPidInReExec (reExec, childPid);
-        if (thrInx >= 0) freeReThr (reExec, thrInx);
+        if (thrInx >= 0) {
+	    genQueryOut_t *genQueryOut = NULL;
+	    int status1;
+	    reExecProc_t *reExecProc = &reExec->reExecProc[thrInx];
+	    char *ruleExecId = reExecProc->ruleExecSubmitInp.ruleExecId;
+	    
+	    status1 = getReInfoById (rsComm, ruleExecId, &genQueryOut);
+	    if (status1 >= 0) {
+		/* something wrong since the entry is not deleted. could
+		 * be core dump */
+		freeGenQueryOut (&genQueryOut);
+                if ((reExecProc->jobType & RE_FAILED_STATUS) == 0) {
+                    /* first time. just mark it RE_FAILED */
+                    regExeStatus (rsComm, ruleExecId, RE_FAILED);
+                } else {
+		    ruleExecDelInp_t ruleExecDelInp;
+		    rodsLog (LOG_ERROR,
+		      "waitAndFreeReThr: %s executed but still in iCat. Job deleted",
+		      ruleExecId);
+		    rstrcpy (ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN);
+                    status = rsRuleExecDel (rsComm, &ruleExecDelInp);
+		}
+	    }
+	    freeReThr (reExec, thrInx);
+	}
     }
     return thrInx;
 }
@@ -1069,7 +1093,7 @@ reServerSingleExec (rsComm_t *rsComm, char *ruleExecId, int jobType)
     seedRandom ();
     status = runRuleExec (&reExecProc);
     postProcRunRuleExec (rsComm, &reExecProc);
-
+    freeGenQueryOut (&genQueryOut);
     return (reExecProc.status);
 }
 
