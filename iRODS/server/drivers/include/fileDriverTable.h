@@ -178,7 +178,7 @@ fileDriver_t FileDriverTable[] = {
      noSupportFsFileWrite, noSupportFsFileClose, univMSSFileUnlink, univMSSFileStat, 
      noSupportFsFileFstat, noSupportFsFileLseek, noSupportFsFileFsync, univMSSFileMkdir, 
      univMSSFileChmod, noSupportFsFileRmdir, noSupportFsFileOpendir, noSupportFsFileClosedir, 
-     noSupportFsFileReaddir, noSupportFsFileStage, noSupportFsFileRename, 
+     noSupportFsFileReaddir, noSupportFsFileStage, univMSSFileRename, 
      noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, univMSSStageToCache, univMSSSyncToArch},
 #endif
 
