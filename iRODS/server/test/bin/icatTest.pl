@@ -724,6 +724,7 @@ runCmd(0, "iadmin rsq testAlias");
 # Queries with between and in, null and not null
 runCmd(0, "iquest \"select RESC_NAME where RESC_CLASS_NAME IN ('bundle','archive')\"");
 runCmd(0, "iquest \"select USER_NAME where USER_ID between '10000' '10110'\"");
+runCmd(0, "iadmin moduser $U2 info 'this is Info field'"); # in Oracle 0-len is null
 runCmd(0, "iquest \"select USER_NAME, USER_INFO where USER_INFO IS NOT NULL\"");
 runCmd(0, "iquest \"select USER_NAME, USER_INFO where USER_INFO IS NULL\"");
 
