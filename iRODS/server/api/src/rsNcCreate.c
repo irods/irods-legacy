@@ -12,6 +12,7 @@
 #include "objMetaOpr.h"
 #include "physPath.h"
 #include "specColl.h"
+#include "regDataObj.h"
 #include "getRemoteZoneResc.h"
 
 int
@@ -53,6 +54,17 @@ rsNcCreate (rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid)
 		freeL1desc (l1descInx);
 		return (NETCDF_CREATE_ERR - status);
 	    }
+	    /* need to reg here since NO_OPEN_FLAG_KW does not do it */
+            status = svrRegDataObj (rsComm, L1desc[l1descInx].dataObjInfo);
+            if (status < 0) {
+		nc_close (myncid);
+		unlink (L1desc[l1descInx].dataObjInfo->filePath);
+                rodsLog (LOG_ERROR,
+                  "rsNcCreate: svrRegDataObj for %s failed, status = %d",
+                  L1desc[l1descInx].dataObjInfo->objPath, status);
+                freeL1desc (l1descInx);
+                return (NETCDF_CREATE_ERR - status);
+            }
 	} else {
             addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW,
               L1desc[l1descInx].dataObjInfo->rescInfo->rescName);
