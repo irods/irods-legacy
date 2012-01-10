@@ -51,7 +51,7 @@ rsNcCreate (rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid)
 		  "rsNcCreate: nc_open %s error, status = %d, %s",
 		  ncCreateInp->objPath, status, nc_strerror(status));
 		freeL1desc (l1descInx);
-		return (NETCDF_OPEN_ERR - status);
+		return (NETCDF_CREATE_ERR - status);
 	    }
 	} else {
             addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW,
