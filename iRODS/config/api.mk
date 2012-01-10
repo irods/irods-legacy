@@ -411,4 +411,10 @@ LIB_API_OBJS += $(libApiObjDir)/rcGetTempPasswordForOther.o
 ifdef NETCDF_DIR
 SVR_API_OBJS += $(svrApiObjDir)/rsNcOpen.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcOpen.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsNcCreate.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcCreate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsNcClose.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcClose.o
 endif

@@ -600,6 +600,7 @@
 
 #define NETCDF_OPEN_ERR			-2000000
 #define NETCDF_CREATE_ERR		-2001000
+#define NETCDF_CLOSE_ERR		-2001000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

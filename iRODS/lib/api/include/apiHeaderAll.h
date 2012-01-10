@@ -143,4 +143,5 @@
 #include "getTempPasswordForOther.h"
 #include "ncOpen.h"
 #include "ncCreate.h"
+#include "ncClose.h"
 #endif	/* API_HEADER_ALL_H */

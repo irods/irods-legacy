@@ -288,7 +288,13 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
     l3descInx = L1desc[l1descInx].l3descInx;
 
+#ifdef NETCDF_API
+    if (l3descInx > 2 && L1desc[l1descInx].oprType != NC_CREATE &&
+      L1desc[l1descInx].oprType != NC_OPEN_FOR_WRITE && 
+      L1desc[l1descInx].oprType != NC_OPEN_FOR_READ) {
+#else
     if (l3descInx > 2) {
+#endif
         /* it could be -ive for parallel I/O */
         status = l3Close (rsComm, l1descInx);
 
