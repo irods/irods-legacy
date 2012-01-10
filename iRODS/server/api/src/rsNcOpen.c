@@ -22,9 +22,11 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
     specCollCache_t *specCollCache = NULL;
     int status;
     dataObjInp_t dataObjInp;
+    int l1descInx, myncid;
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, ncOpenInp->objPath, MAX_NAME_LEN);
+    replKeyVal (&ncOpenInp->condInput, &dataObjInp.condInput);
     resolveLinkedPath (rsComm, dataObjInp.objPath, &specCollCache,
       &dataObjInp.condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
@@ -33,22 +35,54 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
-	int l1descInx, myncid;
 	addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
 	l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
 	clearKeyVal (&dataObjInp.condInput);
         if (l1descInx < 0) return l1descInx;
-	if (ncOpenInp->mode == NC_NOWRITE) {
-	    L1desc[l1descInx].oprType = NC_OPEN_FOR_READ;
+	remoteFlag = resolveHostByDataObjInfo (L1desc[l1descInx].dataObjInfo, 
+	  &rodsServerHost);
+	if (remoteFlag < 0) {
+            return (remoteFlag);
+	} else if (remoteFlag == LOCAL_HOST) {
+            status = nc_open (ncOpenInp->objPath, NC_NOWRITE, &myncid);
+	    if (status != NC_NOERR) {
+		rodsLog (LOG_ERROR,
+		  "rsNcOpen: nc_open %s error, status = %d, %s",
+		  ncOpenInp->objPath, status, nc_strerror(status));
+		freeL1desc (l1descInx);
+		return (NETCDF_OPEN_ERR - status);
+	    }
 	} else {
-            L1desc[l1descInx].oprType = NC_OPEN_FOR_WRITE;
-	}
-        status = nc_open (ncOpenInp->objPath, NC_NOWRITE, &myncid);
+	    status = rcNcOpen (rodsServerHost->conn, ncOpenInp, &myncid);
+	    if (status < 0) {
+		rodsLog (LOG_ERROR,
+                  "rsNcOpen: _rcNcOpen %s error, status = %d",
+                  ncOpenInp->objPath, status);
+                freeL1desc (l1descInx);
+                return (status);
+            }
+	    L1desc[l1descInx].l3descInx = myncid;
+	} 
     } else {
-        status = _rcNcOpen (rodsServerHost->conn, ncOpenInp, ncid);
+        status = rcNcOpen (rodsServerHost->conn, ncOpenInp, &myncid);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "rsNcOpen: _rcNcOpen %s error, status = %d",
+              ncOpenInp->objPath, status);
+            return (status);
+        }
+        l1descInx = allocAndSetL1descForZoneOpr (myncid, &dataObjInp,
+          rodsServerHost, NULL);
     }
+    if (ncOpenInp->mode == NC_NOWRITE) {
+        L1desc[l1descInx].oprType = NC_OPEN_FOR_READ;
+    } else {
+        L1desc[l1descInx].oprType = NC_OPEN_FOR_WRITE;
+    }
+    L1desc[l1descInx].l3descInx = myncid;
+    *ncid = (int *) malloc (sizeof (int));
+    *(*ncid) = l1descInx;
 
-
-    return status;
+    return 0;
 }
 
