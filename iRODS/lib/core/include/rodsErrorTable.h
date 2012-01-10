@@ -596,6 +596,9 @@
 #define DBO_WRITABLE_BY_TOO_MANY        -1717000
 #define DBO_WRITABLE_BY_NON_PRIVILEGED  -1718000
 
+/* NetCDF error code */
+
+#define NETCDF_OPEN_ERR			-2000000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

@@ -388,6 +388,8 @@ apidef_t RcApiTable[] = {
 #ifdef NETCDF_API
     {NC_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
        "NcOpenInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_OPEN},
+    {NC_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+      "NcOpenInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_CREATE},
 #endif
 };
 
