@@ -104,6 +104,12 @@ packInstructArray_t ApiPackTable[] = {
         {"ticketAdminInp_PI", ticketAdminInp_PI},
         {"getTempPasswordForOtherInp_PI", getTempPasswordForOtherInp_PI},
         {"getTempPasswordForOtherOut_PI", getTempPasswordForOtherOut_PI},
+        /* NETCDF PI */
+#ifdef NETCDF_API
+        {"NcOpenInp_PI", NcOpenInp_PI},
+        {"NcCloseInp_PI", NcCloseInp_PI},
+#endif
+        /* endof NETCDF PI */
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

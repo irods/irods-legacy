@@ -111,6 +111,7 @@
 #define LOCK_CMD_KW	"lockCmd"	/* valid values are SET_LOCK_WAIT_CMD,
 					 * SET_LOCK_CMD and GET_LOCK_CMD */
 #define LOCK_FD_KW	"lockFd"	/* Lock file desc for unlock */
+#define NATIVE_NETCDF_CALL_KW "nativeNetcdfCall"  /* call netcdf natively */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

@@ -124,9 +124,6 @@ packInstructArray_t RodsPackTable[] = {
         {"MsrvcStruct_PI", MsrvcStruct_PI},
         {"DataSeg_PI", DataSeg_PI},
         {"FileRestartInfo_PI", FileRestartInfo_PI},
-	/* NETCDF PI */
-	{"NcOpenInp_PI", NcOpenInp_PI},
-	/* endof NETCDF PI */
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

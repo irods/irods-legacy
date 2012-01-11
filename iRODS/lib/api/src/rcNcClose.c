@@ -4,10 +4,10 @@
 #include "ncClose.h"
 
 int
-rcNcClose (rcComm_t *conn, int ncid)
+rcNcClose (rcComm_t *conn, ncCloseInp_t *ncCloseInp)
 {
     int status;
-    status = procApiRequest (conn, NC_CLOSE_AN, &ncid, NULL, 
+    status = procApiRequest (conn, NC_CLOSE_AN, ncCloseInp, NULL, 
         (void **) NULL, NULL);
 
     return (status);

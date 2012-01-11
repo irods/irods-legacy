@@ -23,7 +23,7 @@ typedef struct {
     int type;
     int ncid;
     char name[NAME_LEN];
-    keyValPair_t condInput;     /* not used */
+    keyValPair_t condInput;
 } ncInqIdInp_t;
     
 #define NcInqIdInput "int type; int ncid; str name[NAME_LEN]; struct KeyValPair_PI;"

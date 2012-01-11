@@ -15,14 +15,21 @@
 #include "getRemoteZoneResc.h"
 
 int
-rsNcClose (rsComm_t *rsComm, int *ncid)
+rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
 {
     int remoteFlag;
     rodsServerHost_t *rodsServerHost = NULL;
     int l1descInx;
+    ncCloseInp_t myNcCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     int status = 0;
 
-    l1descInx = *ncid;
+    if (getValByKey (&ncCloseInp->condInput, NATIVE_NETCDF_CALL_KW) != NULL) {
+	/* just do nc_close */
+	status = nc_close (ncCloseInp->ncid);
+	return status;
+    }
+    l1descInx = ncCloseInp->ncid;
     if (l1descInx < 2 || l1descInx >= NUM_L1_DESC) {
         rodsLog (LOG_ERROR,
           "rsNcClose: l1descInx %d out of range",
@@ -31,18 +38,19 @@ rsNcClose (rsComm_t *rsComm, int *ncid)
     }
     if (L1desc[l1descInx].inuseFlag != FD_INUSE) return BAD_INPUT_DESC_INDEX;
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
+	bzero (&myNcCloseInp, sizeof (myNcCloseInp));
+	myNcCloseInp.ncid = L1desc[l1descInx].remoteL1descInx;
         /* cross zone operation */
 	status = rcNcClose (L1desc[l1descInx].remoteZoneHost->conn,
-	  L1desc[l1descInx].remoteL1descInx);
-	/* the local resc will do the registration */
+	  &myNcCloseInp);
+	/* the remote zone resc will do the registration */
 	freeL1desc (l1descInx);
     } else {
-        remoteFlag = resolveHostByDataObjInfo (L1desc[l1descInx].dataObjInfo,
-          &rodsServerHost);
+        remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
+	  L1desc[l1descInx].dataObjInfo, &rodsServerHost);
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else if (remoteFlag == LOCAL_HOST) {
-      	    openedDataObjInp_t dataObjCloseInp;
             status = nc_close (L1desc[l1descInx].l3descInx);
             if (status != NC_NOERR) {
                 rodsLog (LOG_ERROR,
@@ -58,10 +66,29 @@ rsNcClose (rsComm_t *rsComm, int *ncid)
 
             status = rsDataObjClose (rsComm, &dataObjCloseInp);
         } else {
-            status = rcNcClose (rodsServerHost->conn, 
-	      L1desc[l1descInx].l3descInx);
-	    freeL1desc (l1descInx);
+	    /* execute it remotely */
+	    bzero (&myNcCloseInp, sizeof (myNcCloseInp));
+	    myNcCloseInp.ncid = L1desc[l1descInx].l3descInx;
+	    addKeyVal (&myNcCloseInp.condInput, NATIVE_NETCDF_CALL_KW, "");
+            status = rcNcClose (rodsServerHost->conn, &myNcCloseInp);
+	    clearKeyVal (&myNcCloseInp.condInput);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "rsNcClose: rcNcClose %d for %s error, status = %d",
+                  L1desc[l1descInx].l3descInx,
+                  L1desc[l1descInx].dataObjInfo->objPath, status);
+                freeL1desc (l1descInx);
+                return (status);
+            }
 	}
+        bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
+        dataObjCloseInp.l1descInx = l1descInx;
+        status = rsDataObjClose (rsComm, &dataObjCloseInp);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "rsNcClose: rcNcClose %d error, status = %d",
+              l1descInx, status);
+        }
     }
     return status;
 }

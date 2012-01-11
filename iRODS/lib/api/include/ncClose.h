@@ -16,11 +16,19 @@
 #include "dataObjInpOut.h"
 #include "ncOpen.h"
 
+typedef struct {
+    int type;			/* not used */
+    int ncid;
+    keyValPair_t condInput; 
+} ncCloseInp_t;
+
+#define NcCloseInp_PI "int type; int ncid; struct KeyValPair_PI;"
+
 #if defined(RODS_SERVER)
 #define RS_NC_CLOSE rsNcClose
 /* prototype for the server handler */
 int
-rsNcClose (rsComm_t *rsComm, int *ncid);
+rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp);
 #else
 #define RS_NC_CLOSE NULL
 #endif
@@ -37,7 +45,7 @@ extern "C" {
  */
 /* prototype for the client call */
 int
-rcNcClose (rcComm_t *conn, int ncid);
+rcNcClose (rcComm_t *conn, ncCloseInp_t *ncCloseInp);
 
 
 #ifdef  __cplusplus

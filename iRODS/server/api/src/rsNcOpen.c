@@ -24,6 +24,22 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
     dataObjInp_t dataObjInp;
     int l1descInx, myncid;
 
+    if (getValByKey (&ncOpenInp->condInput, NATIVE_NETCDF_CALL_KW) != NULL) {
+	/* just all nc_open with objPath as file nc file path */
+	/* must to be called internally */
+        if (rsComm->proxyUser.authInfo.authFlag < REMOTE_PRIV_USER_AUTH) {
+            return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+	}
+        status = nc_open (ncOpenInp->objPath, ncOpenInp->mode, &myncid);
+        if (status == NC_NOERR) {
+	    return 0;
+	} else {
+            rodsLog (LOG_ERROR,
+              "rsNcOpen: nc_open %s error, status = %d, %s",
+              ncOpenInp->objPath, status, nc_strerror(status));
+            return (NETCDF_OPEN_ERR - status);
+        } 
+    }
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, ncOpenInp->objPath, MAX_NAME_LEN);
     replKeyVal (&ncOpenInp->condInput, &dataObjInp.condInput);
@@ -39,12 +55,13 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 	l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
 	clearKeyVal (&dataObjInp.condInput);
         if (l1descInx < 0) return l1descInx;
-	remoteFlag = resolveHostByDataObjInfo (L1desc[l1descInx].dataObjInfo, 
-	  &rodsServerHost);
+	remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
+	  L1desc[l1descInx].dataObjInfo, &rodsServerHost);
 	if (remoteFlag < 0) {
             return (remoteFlag);
 	} else if (remoteFlag == LOCAL_HOST) {
-            status = nc_open (ncOpenInp->objPath, NC_NOWRITE, &myncid);
+            status = nc_open (L1desc[l1descInx].dataObjInfo->filePath, 
+	      ncOpenInp->mode, &myncid);
 	    if (status != NC_NOERR) {
 		rodsLog (LOG_ERROR,
 		  "rsNcOpen: nc_open %s error, status = %d, %s",
@@ -53,18 +70,23 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 		return (NETCDF_OPEN_ERR - status);
 	    }
 	} else {
-	    addKeyVal (&dataObjInp.condInput, RESC_NAME_KW,
-              L1desc[l1descInx].dataObjInfo->rescInfo->rescName);
-	    status = rcNcOpen (rodsServerHost->conn, ncOpenInp, &myncid);
+	    /* execute it remotely with dataObjInfo->filePath */
+	    ncOpenInp_t myNcOpenInp;
+	    bzero (&myNcOpenInp, sizeof (myNcOpenInp));
+	    rstrcpy (myNcOpenInp.objPath, 
+	      L1desc[l1descInx].dataObjInfo->filePath, MAX_NAME_LEN);
+	    addKeyVal (&myNcOpenInp.condInput, NATIVE_NETCDF_CALL_KW, "");
+	    status = rcNcOpen (rodsServerHost->conn, &myNcOpenInp, &myncid);
+	    clearKeyVal (&myNcOpenInp.condInput);
 	    if (status < 0) {
 		rodsLog (LOG_ERROR,
-                  "rsNcOpen: _rcNcOpen %s error, status = %d",
-                  ncOpenInp->objPath, status);
+                  "rsNcOpen: rcNcOpen %s error, status = %d",
+                  myNcOpenInp.objPath, status);
                 freeL1desc (l1descInx);
                 return (status);
             }
-	    L1desc[l1descInx].l3descInx = myncid;
 	} 
+	L1desc[l1descInx].l3descInx = myncid;
     } else {
         status = rcNcOpen (rodsServerHost->conn, ncOpenInp, &myncid);
         if (status < 0) {
@@ -81,7 +103,6 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
     } else {
         L1desc[l1descInx].oprType = NC_OPEN_FOR_WRITE;
     }
-    L1desc[l1descInx].l3descInx = myncid;
     *ncid = (int *) malloc (sizeof (int));
     *(*ncid) = l1descInx;
 
