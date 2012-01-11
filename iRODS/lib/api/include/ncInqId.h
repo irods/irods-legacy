@@ -1,10 +1,10 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* ncInqGenId.h
+/* ncInqId.h
  */
 
-#ifndef NC_INQ_GEN_ID_H
-#define NC_INQ_GEN_ID_H
+#ifndef NC_INQ_ID_H
+#define NC_INQ_ID_H
 
 /* This is a NETCDF API call */
 
@@ -24,37 +24,37 @@ typedef struct {
     int ncid;
     char name[NAME_LEN];
     keyValPair_t condInput;     /* not used */
-} ncInqGenIdInp_t;
+} ncInqIdInp_t;
     
-#define NcInqGenIdInput "int type; int ncid; str name[NAME_LEN]; struct KeyValPair_PI;"
+#define NcInqIdInput "int type; int ncid; str name[NAME_LEN]; struct KeyValPair_PI;"
 #if defined(RODS_SERVER)
-#define RS_NC_INQ_GEN_ID rsNcInqGenId
+#define RS_NC_INQ_ID rsNcInqId
 /* prototype for the server handler */
 int
-rsNcInqGenId (rsComm_t *rsComm, ncInqGenIdInp_t *ncInqGenIdInp_t, int **ncid);
+rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp_t, int **ncid);
 #else
-#define RS_NC_INQ_GEN_ID NULL
+#define RS_NC_INQ_ID NULL
 #endif
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-/* rcNcInqGenId - general netcdf inq for id (equivalent to nc_inq_dimid,
+/* rcNcInqId - general netcdf inq for id (equivalent to nc_inq_dimid,
  *    nc_inq_varid, ....
  * Input - 
  *   rcComm_t *conn - The client connection handle.
- *   ncInqGenIdInp_t struct:
+ *   ncInqIdInp_t struct:
  *     type - parameter type - NC_VAR_T, NC_DIM_T, ....
  *   int the the nc id for the type.   
  * OutPut - 
  */
 /* prototype for the client call */
 int
-rcNcInqGenId (rcComm_t *conn, ncInqGenIdInp_t *ncInqGenIdInp_t, int **ncid);
+rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp_t, int **ncid);
 
 #ifdef  __cplusplus
 }
 #endif
 
-#endif	/* NC_INQ_GEN_ID_H */
+#endif	/* NC_INQ_ID_H */
