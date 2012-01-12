@@ -417,4 +417,7 @@ LIB_API_OBJS += $(libApiObjDir)/rcNcCreate.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsNcClose.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcClose.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsNcInqId.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcInqId.o
 endif

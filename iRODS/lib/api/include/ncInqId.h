@@ -16,22 +16,24 @@
 #include "dataObjInpOut.h"
 #include "ncOpen.h"
 
-/* definition for type */
+/* definition for paramType */
 #define NC_VAR_T		0	/* nc variable */
 #define NC_DIM_T		1	/* nc dimension */
 typedef struct {
-    int type;
+    int paramType;
     int ncid;
     char name[NAME_LEN];
     keyValPair_t condInput;
 } ncInqIdInp_t;
     
-#define NcInqIdInput "int type; int ncid; str name[NAME_LEN]; struct KeyValPair_PI;"
+#define NcInqIdInp_PI "int paramType; int ncid; str name[NAME_LEN]; struct KeyValPair_PI;"
 #if defined(RODS_SERVER)
 #define RS_NC_INQ_ID rsNcInqId
 /* prototype for the server handler */
 int
-rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp_t, int **ncid);
+rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
+int
+_rsNcInqId (int type, int ncid, char *name, int *outId);
 #else
 #define RS_NC_INQ_ID NULL
 #endif
@@ -51,7 +53,7 @@ extern "C" {
  */
 /* prototype for the client call */
 int
-rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp_t, int **ncid);
+rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int *outId);
 
 #ifdef  __cplusplus
 }

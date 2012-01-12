@@ -172,4 +172,5 @@
 #define NC_OPEN_AN 			1000
 #define NC_CREATE_AN 			1001
 #define NC_CLOSE_AN 			1002
+#define NC_INQ_ID_AN 			1003
 #endif	/* API_NUMBER_H */

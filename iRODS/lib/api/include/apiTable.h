@@ -392,6 +392,8 @@ apidef_t RcApiTable[] = {
       "NcOpenInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_CREATE},
     {NC_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       NcCloseInp_PI, 0, NULL, 0, (funcPtr) RS_NC_CLOSE},
+    {NC_INQ_ID_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+      "NcInqIdInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_INQ_ID},
 #endif
 };
 

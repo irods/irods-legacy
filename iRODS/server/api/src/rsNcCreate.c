@@ -35,6 +35,8 @@ rsNcCreate (rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid)
         }
         status = nc_create (ncCreateInp->objPath, ncCreateInp->mode, &myncid);
         if (status == NC_NOERR) {
+            *ncid = (int *) malloc (sizeof (int));
+            *(*ncid) = myncid;
             return 0;
         } else {
             rodsLog (LOG_ERROR,

@@ -32,6 +32,8 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 	}
         status = nc_open (ncOpenInp->objPath, ncOpenInp->mode, &myncid);
         if (status == NC_NOERR) {
+            *ncid = (int *) malloc (sizeof (int));
+            *(*ncid) = myncid;
 	    return 0;
 	} else {
             rodsLog (LOG_ERROR,

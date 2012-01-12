@@ -27,6 +27,12 @@ rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
     if (getValByKey (&ncCloseInp->condInput, NATIVE_NETCDF_CALL_KW) != NULL) {
 	/* just do nc_close */
 	status = nc_close (ncCloseInp->ncid);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "rsNcClose: nc_close %d error, status = %d, %s",
+              ncCloseInp->ncid, status, nc_strerror(status));
+            status = NETCDF_CLOSE_ERR - status;
+	}
 	return status;
     }
     l1descInx = ncCloseInp->ncid;
