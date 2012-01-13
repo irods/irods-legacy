@@ -4,18 +4,12 @@
 #include "ncInqId.h"
 
 int
-rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int *outId)
+rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int **outId)
 {
     int status;
-    int *myoutId = NULL;
 
     status = procApiRequest (conn, NC_INQ_ID_AN, ncInqIdInp, NULL, 
-        (void **) &myoutId, NULL);
-
-    if (myoutId != NULL) {
-        *outId = *myoutId;
-        free (myoutId);
-    }
+        (void **) outId, NULL);
 
     return (status);
 }

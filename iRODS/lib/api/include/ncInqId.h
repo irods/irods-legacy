@@ -35,7 +35,7 @@ typedef struct {
 int
 rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
 int
-_rsNcInqId (int type, int ncid, char *name, int *outId);
+_rsNcInqId (int type, int ncid, char *name, int **outId);
 #else
 #define RS_NC_INQ_ID NULL
 #endif
@@ -56,7 +56,7 @@ extern "C" {
  */
 /* prototype for the client call */
 int
-rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int *outId);
+rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int **outId);
 
 #ifdef  __cplusplus
 }

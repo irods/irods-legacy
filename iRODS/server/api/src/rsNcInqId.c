@@ -21,19 +21,12 @@ rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
     int l1descInx;
     ncInqIdInp_t myNcInqIdInp;
     int status = 0;
-    int myoutId = 0;
 
     if (getValByKey (&ncInqIdInp->condInput, NATIVE_NETCDF_CALL_KW) != NULL) {
 	/* just do nc_inq_YYYYid */
 	status = _rsNcInqId (ncInqIdInp->paramType, ncInqIdInp->ncid, 
-	  ncInqIdInp->name, &myoutId);
-        if (status == NC_NOERR) {
-            *outId = (int *) malloc (sizeof (int));
-            *(*outId) = myoutId;
-            return 0;
-        } else {
-            return status;
-        }
+	  ncInqIdInp->name, outId);
+        return status;
     }
     l1descInx = ncInqIdInp->ncid;
     if (l1descInx < 2 || l1descInx >= NUM_L1_DESC) {
@@ -51,7 +44,7 @@ rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
 
         /* cross zone operation */
 	status = rcNcInqId (L1desc[l1descInx].remoteZoneHost->conn,
-	  &myNcInqIdInp, &myoutId);
+	  &myNcInqIdInp, outId);
     } else {
         remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
 	  L1desc[l1descInx].dataObjInfo, &rodsServerHost);
@@ -59,7 +52,7 @@ rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
             return (remoteFlag);
         } else if (remoteFlag == LOCAL_HOST) {
 	    status = _rsNcInqId (ncInqIdInp->paramType, 
-	      L1desc[l1descInx].l3descInx, ncInqIdInp->name, &myoutId);
+	      L1desc[l1descInx].l3descInx, ncInqIdInp->name, outId);
             if (status < 0) {
                 return status;
             }
@@ -70,7 +63,7 @@ rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
 	    myNcInqIdInp.ncid = L1desc[l1descInx].l3descInx;
 	    rstrcpy (myNcInqIdInp.name, ncInqIdInp->name, MAX_NAME_LEN);
 	    addKeyVal (&myNcInqIdInp.condInput, NATIVE_NETCDF_CALL_KW, "");
-            status = rcNcInqId (rodsServerHost->conn, &myNcInqIdInp, &myoutId);
+            status = rcNcInqId (rodsServerHost->conn, &myNcInqIdInp, outId);
 	    clearKeyVal (&myNcInqIdInp.condInput);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
@@ -81,29 +74,31 @@ rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
             }
 	}
     }
-    *outId = (int *) malloc (sizeof (int));
-    *(*outId) = myoutId;
     return status;
 }
 
 int
-_rsNcInqId (int paramType, int ncid, char *name, int *outId)
+_rsNcInqId (int paramType, int ncid, char *name, int **outId)
 {
     int status;
+    int myoutId = 0;
 
     switch (paramType) {
       case NC_VAR_T:
-	status = nc_inq_varid (ncid, name, outId);
+	status = nc_inq_varid (ncid, name, &myoutId);
 	break;
       case NC_DIM_T:
-        status = nc_inq_dimid (ncid, name, outId);
+        status = nc_inq_dimid (ncid, name, &myoutId);
       default:
         rodsLog (LOG_ERROR,
           "_rsNcInqId: Unknow paramType %d for %s ", paramType, name);
         return (NETCDF_INVALID_PARAM_TYPE);
     }
 
-    if (status != NC_NOERR) {
+    if (status == NC_NOERR) {
+	*outId = (int *) malloc (sizeof (int));
+        *(*outId) = myoutId;
+    } else {
         rodsLog (LOG_ERROR,
           "_rsNcInqId: nc_inq error paramType %d for %s. %s ", 
 	  paramType, name, nc_strerror(status));
