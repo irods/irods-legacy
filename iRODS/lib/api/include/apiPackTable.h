@@ -108,6 +108,8 @@ packInstructArray_t ApiPackTable[] = {
 #ifdef NETCDF_API
         {"NcOpenInp_PI", NcOpenInp_PI},
         {"NcCloseInp_PI", NcCloseInp_PI},
+        {"NcInqIdInp_PI", NcInqIdInp_PI},
+        {"NcInqWithIdInp_PI", NcInqWithIdInp_PI},
 #endif
         /* endof NETCDF PI */
         {PACK_TABLE_END_PI, (char *) NULL},

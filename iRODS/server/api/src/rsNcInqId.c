@@ -47,7 +47,7 @@ rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
 	bzero (&myNcInqIdInp, sizeof (myNcInqIdInp));
         myNcInqIdInp.paramType = ncInqIdInp->paramType;
 	myNcInqIdInp.ncid = L1desc[l1descInx].remoteL1descInx;
-        rstrcpy (myNcInqIdInp.name, ncInqIdInp->name, NAME_LEN);
+        rstrcpy (myNcInqIdInp.name, ncInqIdInp->name, MAX_NAME_LEN);
 
         /* cross zone operation */
 	status = rcNcInqId (L1desc[l1descInx].remoteZoneHost->conn,
@@ -68,7 +68,7 @@ rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
 	    bzero (&myNcInqIdInp, sizeof (myNcInqIdInp));
 	    myNcInqIdInp.paramType = ncInqIdInp->paramType;
 	    myNcInqIdInp.ncid = L1desc[l1descInx].l3descInx;
-	    rstrcpy (myNcInqIdInp.name, ncInqIdInp->name, NAME_LEN);
+	    rstrcpy (myNcInqIdInp.name, ncInqIdInp->name, MAX_NAME_LEN);
 	    addKeyVal (&myNcInqIdInp.condInput, NATIVE_NETCDF_CALL_KW, "");
             status = rcNcInqId (rodsServerHost->conn, &myNcInqIdInp, &myoutId);
 	    clearKeyVal (&myNcInqIdInp.condInput);

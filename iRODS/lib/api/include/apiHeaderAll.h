@@ -145,4 +145,5 @@
 #include "ncCreate.h"
 #include "ncClose.h"
 #include "ncInqId.h"
+#include "ncInqWithId.h"
 #endif	/* API_HEADER_ALL_H */

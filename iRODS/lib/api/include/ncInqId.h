@@ -22,11 +22,13 @@
 typedef struct {
     int paramType;
     int ncid;
-    char name[NAME_LEN];
+    int myid;		/* used by some APIs such as rcNcInqWithId */
+    int flags;		/* not used */
+    char name[MAX_NAME_LEN];
     keyValPair_t condInput;
 } ncInqIdInp_t;
     
-#define NcInqIdInp_PI "int paramType; int ncid; str name[NAME_LEN]; struct KeyValPair_PI;"
+#define NcInqIdInp_PI "int paramType; int ncid; int myId; int flags; str name[MAX_NAME_LEN]; struct KeyValPair_PI;"
 #if defined(RODS_SERVER)
 #define RS_NC_INQ_ID rsNcInqId
 /* prototype for the server handler */
@@ -47,9 +49,10 @@ extern "C" {
  * Input - 
  *   rcComm_t *conn - The client connection handle.
  *   ncInqIdInp_t struct:
- *     type - parameter type - NC_VAR_T, NC_DIM_T, ....
- *   int the the nc id for the type.   
+ *     paramType - parameter type - NC_VAR_T, NC_DIM_T, ....
+ *     ncid - the the ncid.   
  * OutPut - 
+ *     id - the nc location id. varid for NC_VAR_T, dimid for NC_DIM_T,
  */
 /* prototype for the client call */
 int
