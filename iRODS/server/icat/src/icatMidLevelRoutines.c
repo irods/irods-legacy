@@ -1091,6 +1091,9 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
    int iWriteByteLimit=0;
    char myUsesCount[NAME_LEN];
    char myWriteFileCount[NAME_LEN];
+   rodsLong_t intDataId;
+   static rodsLong_t previousDataId1=0;
+   static rodsLong_t previousDataId2=0;
 
 #if 0
    rodsLog(LOG_NOTICE, "checkObjIdByTicket debug dataId=%s accessLevel=%s", dataId, 
@@ -1160,15 +1163,22 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
 	 if (iWriteFileCount >= iWriteFileLimit) {
 	    return(CAT_TICKET_WRITE_USES_EXCEEDED);
 	 }
-	 iWriteFileCount++;
-	 snprintf(myWriteFileCount, sizeof myWriteFileCount, "%d", iWriteFileCount);
-	 cllBindVars[cllBindVarCount++]=myWriteFileCount;
-	 cllBindVars[cllBindVarCount++]=ticketId;
-	 if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
-	 status =  cmlExecuteNoAnswerSql(
-	    "update R_TICKET_MAIN set write_file_count=? where ticket_id=?", icss);
-	 if (status != 0) return(status);
-         /* Commit will be done later */
+         intDataId = atoll(dataId);
+         /* Don't update a second time if this id matches the last one */
+	 if (previousDataId1!=intDataId) {  
+	    iWriteFileCount++;
+	    snprintf(myWriteFileCount, sizeof myWriteFileCount, "%d", 
+		     iWriteFileCount);
+	    cllBindVars[cllBindVarCount++]=myWriteFileCount;
+	    cllBindVars[cllBindVarCount++]=ticketId;
+	    if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
+	    status =  cmlExecuteNoAnswerSql(
+	       "update R_TICKET_MAIN set write_file_count=? where ticket_id=?",
+	       icss);
+	    if (status != 0) return(status);
+	    /* Commit will be done later */
+	 }
+	 previousDataId1=intDataId;
       }
    }
 
@@ -1178,15 +1188,20 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
       if (iUsesCount >= iUsesLimit) {
 	 return(CAT_TICKET_USES_EXCEEDED);
       }
-      iUsesCount++;
-      snprintf(myUsesCount, sizeof myUsesCount, "%d", iUsesCount);
-      cllBindVars[cllBindVarCount++]=myUsesCount;
-      cllBindVars[cllBindVarCount++]=ticketId;
-      if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
-      status =  cmlExecuteNoAnswerSql(
-	 "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
-      if (status != 0) return(status);
-      /* commit will be done as part of sequence later */
+      intDataId = atoll(dataId);
+      /* Don't update a second time if this id matches the last one */
+      if (previousDataId2!=intDataId) {
+	 iUsesCount++;
+	 snprintf(myUsesCount, sizeof myUsesCount, "%d", iUsesCount);
+	 cllBindVars[cllBindVarCount++]=myUsesCount;
+	 cllBindVars[cllBindVarCount++]=ticketId;
+	 if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
+	 status =  cmlExecuteNoAnswerSql(
+	    "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
+	 if (status != 0) return(status);
+	 /* commit will be done as part of sequence later */
+      }
+      previousDataId2=intDataId;
    }
    return(0);
 }
