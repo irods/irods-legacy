@@ -1224,6 +1224,10 @@ int cllTest(char *userArg, char *pwArg) {
    icatSessionStruct icss;
 
    icss.stmtPtr[0]=0;
+   icss.databaseType = DB_TYPE_POSTGRES;
+#ifdef MY_ICAT
+   icss.databaseType = DB_TYPE_MYSQL;
+#endif
    rodsLogSqlReq(1);
    OK=1;
    i = cllOpenEnv(&icss);
