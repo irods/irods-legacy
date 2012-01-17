@@ -572,6 +572,102 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
 
 
 /**
+ * \fn msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice closes an unfinished query. This is based on the code from msiGetMoreRows.
+ *
+ * \module core
+ *
+ * \since 3.1
+ *
+ * \author  Hao Xu, Antoine de Torcy (msiGetMoreRows)
+ * \date    2012-01-12
+ *
+ * \usage None
+ *
+ * \param[in] genQueryInp_msp - Required - a GenQueryInp_MS_T containing the query parameters and conditions.
+ * \param[in] genQueryOut_msp - Required - a GenQueryOut_MS_T to write results to. If its continuation index is 0 the query will be closed.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
+int
+msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei) {
+
+	genQueryInp_t *genQueryInp;
+	genQueryOut_t *genQueryOut;
+
+	RE_TEST_MACRO ("    Calling msiCloseGenQuery")
+
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiCloseGenQuery: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	/* check for non null parameters */
+	if (genQueryInp_msp == NULL || genQueryOut_msp == NULL) {
+		rodsLog (LOG_ERROR, "msiCloseGenQuery: Missing parameter(s)");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+	/* no double close */
+	if (genQueryOut_msp->type == NULL) {
+		return 0;
+	}
+
+	/* check for proper input types */
+	if (strcmp(genQueryOut_msp->type, GenQueryOut_MS_T)) {
+		rodsLog (LOG_ERROR, "msiCloseGenQuery: genQueryOut_msp type is %s, should be GenQueryOut_MS_T", genQueryOut_msp->type);
+		return (USER_PARAM_TYPE_ERR);
+	}
+
+	if (strcmp(genQueryInp_msp->type, GenQueryInp_MS_T)) {
+		rodsLog (LOG_ERROR, "msiCloseGenQuery: query_msp type is %s, should be GenQueryInp_MS_T", genQueryInp_msp->type);
+		return (USER_PARAM_TYPE_ERR);
+	}
+
+	/* retrieve genQueryXXX data structures */
+	genQueryOut = (genQueryOut_t*)genQueryOut_msp->inOutStruct;
+	genQueryInp = (genQueryInp_t*)genQueryInp_msp->inOutStruct;
+
+	/* set contiuation index so icat know which statement to free */
+	genQueryInp->continueInx = genQueryOut->continueInx;
+	genQueryInp->maxRows = -1;
+	
+	/* free memory allocated for previous results */
+	freeGenQueryOut (&genQueryOut);
+
+	/* close query */
+	rei->status = rsGenQuery(rei->rsComm, genQueryInp, &genQueryOut);
+
+	/* free memory allocated */
+	freeGenQueryOut (&genQueryOut);
+
+	if (rei->status == 0) {
+		/* clear output parameter */
+		genQueryOut_msp->type = NULL;
+		genQueryOut_msp->inOutStruct = NULL;
+	}
+
+	return (rei->status);
+}
+
+
+
+/**
  * \fn msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei)
  *
  * \brief This microservice sets up a GenQueryInp_MS_T from a list of parameters and conditions
