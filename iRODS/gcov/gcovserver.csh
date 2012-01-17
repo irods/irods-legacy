@@ -251,7 +251,7 @@ gcov -o ../../server/api/obj ../../server/api/src/rsFileSyncToArch.c
  gcov -o ../../server/re/obj ../../server/re/src/region.c
  gcov -o ../../server/re/obj ../../server/re/src/conversion.c
 # gcov -o ../../server/re/obj ../../server/re/src/juststubsMS.c
- gcov -o ../../server/re/obj ../../server/re/src/nre.genQueryMS.c
+# gcov -o ../../server/re/obj ../../server/re/src/nre.genQueryMS.c
 # ../../server/test/src/test_genu.c
 # ../../server/test/src/test_chl.c
 # ../../server/test/src/test_genq.c
