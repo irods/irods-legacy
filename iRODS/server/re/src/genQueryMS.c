@@ -927,7 +927,7 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
 
 
 /**
- * \fn msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
+ * \fn msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *opr, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
  *
  * \brief Adds a condition to a genQueryInp_t
  *
@@ -945,7 +945,7 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
  * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] attribute - Required - A STR_MS_T with the iCAT attribute name (see www.irods.org/index.php/icatAttributes).
- * \param[in] operator - Required - A STR_MS_T with the operator.
+ * \param[in] opr - Required - A STR_MS_T with the operator.
  * \param[in] value - Required - A STR_MS_T with the value.
  * \param[in,out] queryInput - Required - A GenQueryInp_MS_T.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -965,7 +965,7 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
  * \sa none
 **/
 int
-msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
+msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *opr, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
 {
 	genQueryInp_t *genQueryInp;
 	char condStr[MAX_NAME_LEN];
@@ -995,9 +995,9 @@ msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *
 	}
 	
 	/* Parse operator */
-	if ((op_str = parseMspForStr(operator)) == NULL)
+	if ((op_str = parseMspForStr(opr)) == NULL)
 	{
-		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: input operator is NULL.");
+		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: input opr is NULL.");
 		return (USER__NULL_INPUT_ERR);
 	}
 	
