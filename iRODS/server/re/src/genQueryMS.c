@@ -503,7 +503,7 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
 /**
  * \fn msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei)
  *
- * \brief This microservice closes an unfinished query. This is based on the code from msiGetMoreRows.
+ * \brief This microservice closes an unfinished query. This is based on the code from #msiGetMoreRows.
  *
  * \module core
  *
@@ -531,7 +531,6 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei) {
