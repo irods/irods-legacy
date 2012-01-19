@@ -777,12 +777,13 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
    cValSize[1] = MAX_INTEGER_SIZE;
 
    *inheritFlag = 0;
-   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 ");
 
    if (ticketStr != NULL && *ticketStr!='\0') {
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 ");
       status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from R_COLL_MAIN CM, R_TICKET_MAIN TM where CM.coll_name=? and TM.ticket_string=? and TM.ticket_type = 'write' and TM.object_id = CM.coll_id", cVal, cValSize, 2, dirName, ticketStr, 0, 0, 0, icss);
    }
    else {
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 2 ");
       status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss);
    }
    if (status == 2) {
@@ -798,7 +799,7 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
 
-      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 2 ");
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 3 ");
 
       status = cmlGetIntegerValueFromSql(
 		 "select coll_id from R_COLL_MAIN where coll_name=?",
@@ -1107,8 +1108,8 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
    cVal[2]=usesCount;
    cVal[3]=ticketExpiry;
    cVal[4]=restrictions;
-   if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 1 ");
    if (strncmp(accessLevel, "modify", 6) == 0) {
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 1 ");
       /* ticket must also be of type 'write', and get the writeFileCount and writeFileLimit*/
       cVal[5]=writeFileCount;
       cVal[6]=writeFileLimit;
@@ -1122,6 +1123,7 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
    }
    else {
       /* don't check ticket type, 'read' or 'write' is fine */
+      if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
       status = cmlGetStringValuesFromSql(
 	    "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
 	    cVal, iVal, 5, 
@@ -1171,7 +1173,7 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
 		     iWriteFileCount);
 	    cllBindVars[cllBindVarCount++]=myWriteFileCount;
 	    cllBindVars[cllBindVarCount++]=ticketId;
-	    if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
+	    if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 3 ");
 	    status =  cmlExecuteNoAnswerSql(
 	       "update R_TICKET_MAIN set write_file_count=? where ticket_id=?",
 	       icss);
@@ -1195,7 +1197,7 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
 	 snprintf(myUsesCount, sizeof myUsesCount, "%d", iUsesCount);
 	 cllBindVars[cllBindVarCount++]=myUsesCount;
 	 cllBindVars[cllBindVarCount++]=ticketId;
-	 if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 2 ");
+	 if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 4 ");
 	 status =  cmlExecuteNoAnswerSql(
 	    "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
 	 if (status != 0) return(status);
@@ -1231,7 +1233,7 @@ cmlTicketUpdateWriteBytes(char *ticketStr,
    cVal[1]=writeByteCount;
    cVal[2]=writeByteLimit;
    
-   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlTicketUpdateWriteBytes SxxQL 1 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlTicketUpdateWriteBytes SQL 1 ");
    status = cmlGetStringValuesFromSql(
       "select ticket_id, write_byte_count, write_byte_limit from R_TICKET_MAIN TM, R_DATA_MAIN DM where TM.ticket_type = 'write' and TM.ticket_string = ? and (TM.object_id=? or (TM.object_id=DM.coll_id and DM.data_id=?))",
       cVal, iVal, 3, 
@@ -1252,7 +1254,7 @@ cmlTicketUpdateWriteBytes(char *ticketStr,
    snprintf(myWriteByteCount, sizeof myWriteByteCount, "%lld", iNewByteCount);
    cllBindVars[cllBindVarCount++]=myWriteByteCount;
    cllBindVars[cllBindVarCount++]=ticketId;
-   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlTicketUpdateWriteBytes SxxQL 2 ");
+   if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlTicketUpdateWriteBytes SQL 2 ");
    status =  cmlExecuteNoAnswerSql(
       "update R_TICKET_MAIN set write_byte_count=? where ticket_id=?", icss);
 

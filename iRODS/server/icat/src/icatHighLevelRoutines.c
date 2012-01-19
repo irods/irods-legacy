@@ -9187,7 +9187,6 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 strcpy(logicalParentDirName, "/");
 	 strcpy(logicalEndName, arg4+1);
       }
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 1");
       status2 = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
 				       rsComm->clientUser.userName, 
 				       rsComm->clientUser.rodsZone, 
@@ -9198,7 +9197,6 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       }
       else 
       {
-	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 2");
 	 status3 = cmlCheckDir(arg4,   rsComm->clientUser.userName, 
 				       rsComm->clientUser.rodsZone, 
 				       ACCESS_OWN, &icss);
@@ -9212,7 +9210,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 objId=status3;
       }
 
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 3");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 1");
       status = cmlGetIntegerValueFromSql(
 	 "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 	 &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
@@ -9247,7 +9245,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       cllBindVars[i++]=myTime;
       cllBindVars[i++]=myTime;
       cllBindVarCount=i;
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 4");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 2");
       status =  cmlExecuteNoAnswerSql(
 	 "insert into R_TICKET_MAIN (ticket_id, ticket_string, ticket_type, user_id, object_id, object_type, modify_ts, create_ts) values (?, ?, ?, ?, ?, ?, ?, ?)",
 	 &icss);
@@ -9263,7 +9261,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       return(status);
    }
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 5");
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 3");
    status = cmlGetIntegerValueFromSql(
       "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
       &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
@@ -9277,13 +9275,13 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
    if (status < 0) return(status);
    snprintf(userIdStr, sizeof userIdStr, "%lld", userId);
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 6");
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 4");
    status = cmlGetIntegerValueFromSql(
       "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_string=?",
       &ticketId, userIdStr, ticketString,
 	 0, 0, 0, &icss);
    if (status != 0) {
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 7");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 5");
       status = cmlGetIntegerValueFromSql(
 	 "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_id=?",
 	 &ticketId, userIdStr, ticketString,
@@ -9300,7 +9298,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       cllBindVars[i++]=ticketIdStr;
       cllBindVars[i++]=userIdStr;
       cllBindVarCount=i;
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 8");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 6");
       status =  cmlExecuteNoAnswerSql(
 	 "delete from R_TICKET_MAIN where ticket_id = ? and user_id = ?",
 	 &icss);
@@ -9360,7 +9358,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 cllBindVars[i++]=ticketIdStr;
 	 cllBindVars[i++]=userIdStr;
 	 cllBindVarCount=i;
-	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 9");
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 7");
 	 status =  cmlExecuteNoAnswerSql(
 	    "update R_TICKET_MAIN set uses_limit=? where ticket_id = ? and user_id = ?",
 	    &icss);
@@ -9382,7 +9380,7 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	    cllBindVars[i++]=ticketIdStr;
 	    cllBindVars[i++]=userIdStr;
 	    cllBindVarCount=i;
-	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 9");
+	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 8");
 	    status =  cmlExecuteNoAnswerSql(
 	       "update R_TICKET_MAIN set write_file_limit=? where ticket_id = ? and user_id = ?",
 	       &icss);
