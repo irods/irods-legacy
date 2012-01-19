@@ -12,7 +12,7 @@
 /**
  * \fn rcSpecificQuery (rcComm_t *conn, specificQueryInp_t *specificQueryInp, genQueryOut_t **genQueryOut)
  *
- * \brief Modify the access control information for an object. 
+ * \brief Perform a specific (pre-defined) query.
  *
  * \user client
  *

@@ -9,7 +9,7 @@
 
 #include "simpleQuery.h"
 /**
- * \fn rcSimpleQuery (rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, genQueryOut_t **genQueryOut)
+ * \fn rcSimpleQuery (rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, simpleQueryOut_t **simpleQueryOut)
  *
  * \brief Perform a simple (pre-defined) query, allowed for Admin only, used in iadmin
  *
