@@ -91,7 +91,10 @@ ncInqWithIdOut_t **ncInqWithIdOut)
     int status;
     char myname[MAX_NAME_LEN];
     size_t mylong = 0;
-    int myint1 = 0;
+    int mytype = 0;
+    int mynatts = 0;
+    int myndim = 0;
+    int intArray[NC_MAX_VAR_DIMS];
 
     myname[0] = '\0';
     if (name == NULL || ncInqWithIdOut == NULL) return USER__NULL_INPUT_ERR;
@@ -99,6 +102,10 @@ ncInqWithIdOut_t **ncInqWithIdOut)
     switch (paramType) {
       case NC_DIM_T:
         status = nc_inq_dim (ncid, myid, myname, &mylong);
+	break;
+      case NC_VAR_T:
+	status = nc_inq_var (ncid, myid, myname, &mytype, &myndim, intArray,
+	  &mynatts);
       default:
         rodsLog (LOG_ERROR,
           "_rsNcInqWithId: Unknow paramType %d for %s ", paramType, myname);
@@ -108,8 +115,15 @@ ncInqWithIdOut_t **ncInqWithIdOut)
     if (status == NC_NOERR) {
 	*ncInqWithIdOut = (ncInqWithIdOut_t *) calloc (1, sizeof 
 	  (ncInqWithIdOut_t)); 
-	(*ncInqWithIdOut)->mylong = (rodsLong_t) mylong;
-	(*ncInqWithIdOut)->myint1 = myint1;
+	(*ncInqWithIdOut)->mylong = mylong;
+	(*ncInqWithIdOut)->type = mytype;
+	(*ncInqWithIdOut)->natts = mynatts;
+        if (myndim > 0) {
+	    int len = sizeof (int) * myndim;
+	    (*ncInqWithIdOut)->ndim = myndim;
+	    (*ncInqWithIdOut)->intArray = (int *) calloc (1, len);
+	    memcpy ((*ncInqWithIdOut)->intArray, intArray, len);
+	}
 	rstrcpy ((*ncInqWithIdOut)->name, myname, MAX_NAME_LEN);
     } else {
         rodsLog (LOG_ERROR,

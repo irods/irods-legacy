@@ -17,13 +17,17 @@
 #include "ncInqId.h"
 
 typedef struct {
-    rodsLong_t mylong;	/* an int output.content depends on paramType */
-    int myint1;		/* not used */
-    int myint2;		/* not used */
+    rodsLong_t mylong;	/* an int output.content depends on paramType.
+			 * For NC_DIM_T, this is dimLen */
+    int type;		/* data type for NC_VAR_T. */
+    int natts;		/* no. of napps for NC_VAR_T */
+    int myint;		/* not used */
+    int ndim;		/* no. of dimension */
+    int *intArray;	/* int array of ndim length */
     char name[MAX_NAME_LEN];
 } ncInqWithIdOut_t;
     
-#define NcInqWithIdInp_PI "double mylong; int myint1; int myint2; str name[MAX_NAME_LEN];"
+#define NcInqWithIdInp_PI "double mylong; int type; int natts; int myint; int ndim; int *intArray[ndim]; str name[MAX_NAME_LEN];"
 #if defined(RODS_SERVER)
 #define RS_NC_INQ_WITH_ID rsNcInqWithId
 /* prototype for the server handler */
