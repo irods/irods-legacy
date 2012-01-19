@@ -13,6 +13,10 @@
 #include "specificQuery.h" 
 #include "phyBundleColl.h"
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 int chlOpen(char *DBUser, char *DBpasswd);
 int chlClose();
 int chlIsConnected();

@@ -578,25 +578,6 @@ getInput(char *cmdToken[], int maxTokens) {
    }
 }
 
-/*
- Detect a 'l' in a '-' option and if present, set a mode flag and
- remove it from the string (to simplify other processing).
- */
-void
-handleMinusL(char *token) {
-   char *cptr, *cptr2;
-   if (*token!='-') return;
-   for (cptr=token++;*cptr!='\0';cptr++) {
-      if (*cptr=='l') {
-	 longMode=1;
-	 for (cptr2=cptr;*cptr2!='\0';cptr2++) {
-	    *cptr2=*(cptr2+1);
-	 }
-	 return;
-      }
-   }
-   longMode=0;
-}
 
 /* handle a command,
    return code is 0 if the command was (at least partially) valid,
@@ -615,9 +596,6 @@ doCommand(char *cmdToken[]) {
 	      strcmp(cmdToken[0],"q") == 0) {
       return(-1);
    }
-
-   handleMinusL(cmdToken[1]);
-   handleMinusL(cmdToken[2]);
 
    if (strcmp(cmdToken[0],"create") == 0 
        || strcmp(cmdToken[0],"make") == 0 
@@ -849,7 +827,7 @@ void usageMain()
 " create read/write Object-Name [string] (create a new ticket)",
 " mod Ticket_string-or-id uses/expire string-or-none  (modify restrictions)",
 " mod Ticket_string-or-id write-bytes-or-file number-or-0 (modify restrictions)",
-" mod Ticket_string-or-id add/remove host/user string (modify restrictions)",
+" mod Ticket_string-or-id add/remove host/user/group string (modify restrictions)",
 " ls [Ticket_string-or-id] (non-admins will see just your own)",
 " delete ticket_string-or-id",
 " quit", 
@@ -905,7 +883,7 @@ usage(char *subOpt)
       if (strcmp(subOpt,"mod")==0) {
 	 char *msgs[]={
 "   mod Ticket-id uses/expire string-or-none",
-"or mod Ticket-id add/remove host/user string (modify restrictions)",
+"or mod Ticket-id add/remove host/user/group string (modify restrictions)",
 "Modify a ticket to use one of the specialized options.  By default a",
 "ticket can be used by anyone (and 'anonymous'), from any host, and any",
 "number of times, and for all time (until deleted).  You can modify it to",
@@ -926,10 +904,15 @@ usage(char *subOpt)
 "when used by that particular iRODS user.  You can use multiple mod commands",
 "to add more users to the allowed list.",
 " ",
-" 'mod Ticket-id add/remove host Hostname' will make the ticket only valid",
-"when used from that particular host computer.  Hostname will be converted to",
-"the IP address for use in the internal checks.  You can use multiple mod",
-"commands to add more hosts to the list.",
+" 'mod Ticket-id add/remove group Groupname' will make the ticket only valid",
+"when used by iRODS users in that particular iRODS group.  You can use",
+"multiple mod commands to add more groups to the allowed list.",
+" ",
+" 'mod Ticket-id add/remove host Host/IP' will make the ticket only valid",
+"when used from that particular host computer.  Host (full DNS name) will be",
+"converted to the IP address for use in the internal checks or you can enter",
+"the IP address itself.  'iticket ls' will display the IP addresses.",
+"You can use multiple mod commands to add more hosts to the list.",
 " ",
 " 'mod Ticket-id expire date.time-or-0' will make the ticket only valid",
 "before the specified date-time.  You can cancel this expiration by using",

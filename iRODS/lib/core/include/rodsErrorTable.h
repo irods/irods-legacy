@@ -329,6 +329,7 @@
 #define CAT_UNKNOWN_RESOURCE             -852000
 #define CAT_UNKNOWN_SPECIFIC_QUERY       -853000
 #define CAT_PSEUDO_RESC_MODIFY_DISALLOWED -854000
+#define CAT_HOSTNAME_INVALID             -855000
 
 /* 880,000 to 899,000  RDA errors  */
 #define RDA_NOT_COMPILED_IN             -880000
@@ -350,7 +351,6 @@
 #define CAT_TICKET_GROUP_EXCLUDED       -895000
 #define CAT_TICKET_WRITE_USES_EXCEEDED  -896000
 #define CAT_TICKET_WRITE_BYTES_EXCEEDED  -897000
-
 
 /* 900,000 to 920,000 - Misc errors (used by obf library, etc)  */
 #define FILE_OPEN_ERR                    -900000

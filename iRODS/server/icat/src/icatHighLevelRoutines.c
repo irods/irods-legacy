@@ -9120,6 +9120,21 @@ icatGetTicketGroupId(char *groupName, char *groupIdStr) {
    return(0);
 }
 
+char *
+convertHostToIp(char *inputName) {
+   struct hostent *myHostent;
+   static char ipAddr[50];
+   myHostent = gethostbyname (inputName);
+   if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
+      printf("unknown hostname: %s\n", inputName);
+      return(NULL);
+   }
+   snprintf(ipAddr, sizeof(ipAddr), "%s", 
+	  (char *)inet_ntoa( *( struct in_addr*)( myHostent->h_addr_list[0])));
+   return(ipAddr);
+}
+
+
 /* Administrative operations on a ticket.
    create, modify, and remove.
    ticketString is either the ticket-string or ticket-id.
@@ -9430,9 +9445,12 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 
       if (strcmp(arg3, "add") == 0) {
 	 if (strcmp(arg4, "host") == 0) {
+	    char *hostIp;
+	    hostIp = convertHostToIp(arg5);
+	    if (hostIp==NULL) return(CAT_HOSTNAME_INVALID);
 	    i=0;
 	    cllBindVars[i++]=ticketIdStr;
-	    cllBindVars[i++]=arg5;
+	    cllBindVars[i++]=hostIp;
 	    cllBindVarCount=i;
 	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 11");
 	    status =  cmlExecuteNoAnswerSql(
@@ -9493,9 +9511,12 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
       }
       if (strcmp(arg3, "remove") == 0) {
 	 if (strcmp(arg4, "host") == 0) {
+	    char *hostIp;
+	    hostIp = convertHostToIp(arg5);
+	    if (hostIp==NULL) return(CAT_HOSTNAME_INVALID);
 	    i=0;
 	    cllBindVars[i++]=ticketIdStr;
-	    cllBindVars[i++]=arg5;
+	    cllBindVars[i++]=hostIp;
 	    cllBindVarCount=i;
 	    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 14");
 	    status =  cmlExecuteNoAnswerSql(
