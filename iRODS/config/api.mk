@@ -423,4 +423,7 @@ LIB_API_OBJS += $(libApiObjDir)/rcNcInqId.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInqWithId.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInqWithId.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsNcGetVarsByType.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcGetVarsByType.o
 endif

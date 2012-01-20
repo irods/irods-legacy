@@ -396,6 +396,8 @@ apidef_t RcApiTable[] = {
       "NcInqIdInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_INQ_ID},
     {NC_INQ_WITH_ID_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NcInqIdInp_PI", 0, "NcInqWithIdInp_PI", 0, (funcPtr) RS_NC_INQ_WITH_ID},
+    {NC_GET_VARS_BY_TYPE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+      "NcGetVarInp_PI", 0, "NcGetVarOut_PI", 0, (funcPtr) RS_NC_GET_VARS_BY_TYPE},
 #endif
 };
 

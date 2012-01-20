@@ -146,4 +146,5 @@
 #include "ncClose.h"
 #include "ncInqId.h"
 #include "ncInqWithId.h"
+#include "ncGetVarsByType.h"
 #endif	/* API_HEADER_ALL_H */
