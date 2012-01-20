@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjGet.h for a description of this API call.*/
 
-#include "ncInqWithId.h"
+#include "ncGetVarsByType.h"
 #include "rodsLog.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
@@ -14,24 +14,23 @@
 #include "getRemoteZoneResc.h"
 
 int
-rsNcGetVarsByType (rsComm_t *rsComm, ncInqIdInp_t *ncInqWithIdInp,
-ncInqWithIdOut_t **ncInqWithIdOut)
+rsNcGetVarsByType (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+ncGetVarOut_t **ncGetVarOut)
 {
     int remoteFlag;
     rodsServerHost_t *rodsServerHost = NULL;
     int l1descInx;
-    ncInqIdInp_t myNcGetVarsByTypeInp;
+    ncGetVarInp_t myNcGetVarInp;
     int status = 0;
 
-    if (getValByKey (&ncInqWithIdInp->condInput, NATIVE_NETCDF_CALL_KW) != 
+    if (getValByKey (&ncGetVarInp->condInput, NATIVE_NETCDF_CALL_KW) != 
       NULL) {
 	/* just do nc_inq_YYYY */
-	status = _rsNcGetVarsByType (ncInqWithIdInp->paramType, 
-	  ncInqWithIdInp->ncid, ncInqWithIdInp->myid, ncInqWithIdInp->name,
-	  ncInqWithIdOut);
+	status = _rsNcGetVarsByType (ncGetVarInp->ncid, ncGetVarInp,
+	  ncGetVarOut);
         return status;
     }
-    l1descInx = ncInqWithIdInp->ncid;
+    l1descInx = ncGetVarInp->ncid;
     if (l1descInx < 2 || l1descInx >= NUM_L1_DESC) {
         rodsLog (LOG_ERROR,
           "rsNcGetVarsByType: l1descInx %d out of range",
@@ -40,38 +39,31 @@ ncInqWithIdOut_t **ncInqWithIdOut)
     }
     if (L1desc[l1descInx].inuseFlag != FD_INUSE) return BAD_INPUT_DESC_INDEX;
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
-	bzero (&myNcGetVarsByTypeInp, sizeof (myNcGetVarsByTypeInp));
-        myNcGetVarsByTypeInp.paramType = ncInqWithIdInp->paramType;
-        myNcGetVarsByTypeInp.myid = ncInqWithIdInp->myid;
-	myNcGetVarsByTypeInp.ncid = L1desc[l1descInx].remoteL1descInx;
-        rstrcpy (myNcGetVarsByTypeInp.name, ncInqWithIdInp->name, MAX_NAME_LEN);
+	myNcGetVarInp = *ncGetVarInp;
+	myNcGetVarInp.ncid = L1desc[l1descInx].remoteL1descInx;
 
         /* cross zone operation */
 	status = rcNcGetVarsByType (L1desc[l1descInx].remoteZoneHost->conn,
-	  &myNcGetVarsByTypeInp, ncInqWithIdOut);
+	  &myNcGetVarInp, ncGetVarOut);
     } else {
         remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
 	  L1desc[l1descInx].dataObjInfo, &rodsServerHost);
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else if (remoteFlag == LOCAL_HOST) {
-	    status = _rsNcGetVarsByType (ncInqWithIdInp->paramType, 
-	      L1desc[l1descInx].l3descInx,  ncInqWithIdInp->myid,
-	      ncInqWithIdInp->name, ncInqWithIdOut);
+	    status = _rsNcGetVarsByType (L1desc[l1descInx].l3descInx,  
+	      ncGetVarInp, ncGetVarOut);
             if (status < 0) {
                 return status;
             }
         } else {
 	    /* execute it remotely */
-	    bzero (&myNcGetVarsByTypeInp, sizeof (myNcGetVarsByTypeInp));
-	    myNcGetVarsByTypeInp.paramType = ncInqWithIdInp->paramType;
-	    myNcGetVarsByTypeInp.ncid = L1desc[l1descInx].l3descInx;
-            myNcGetVarsByTypeInp.myid = ncInqWithIdInp->myid;
-	    rstrcpy (myNcGetVarsByTypeInp.name, ncInqWithIdInp->name, MAX_NAME_LEN);
-	    addKeyVal (&myNcGetVarsByTypeInp.condInput, NATIVE_NETCDF_CALL_KW, "");
-            status = rcNcGetVarsByType (rodsServerHost->conn, &myNcGetVarsByTypeInp, 
-	      ncInqWithIdOut);
-	    clearKeyVal (&myNcGetVarsByTypeInp.condInput);
+	    myNcGetVarInp = *ncGetVarInp;
+	    myNcGetVarInp.ncid = L1desc[l1descInx].l3descInx;
+	    addKeyVal (&myNcGetVarInp.condInput, NATIVE_NETCDF_CALL_KW, "");
+            status = rcNcGetVarsByType (rodsServerHost->conn, &myNcGetVarInp, 
+	      ncGetVarOut);
+	    clearKeyVal (&myNcGetVarInp.condInput);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "rsNcGetVarsByType: rcNcGetVarsByType %d for %s error, status = %d",
@@ -85,52 +77,51 @@ ncInqWithIdOut_t **ncInqWithIdOut)
 }
 
 int
-_rsNcGetVarsByType (int paramType, int ncid, int myid, char *name,
-ncInqWithIdOut_t **ncInqWithIdOut)
+_rsNcGetVarsByType (int ncid, ncGetVarInp_t *ncGetVarInp,
+ncGetVarOut_t **ncGetVarOut)
 {
     int status;
-    char myname[MAX_NAME_LEN];
-    size_t mylong = 0;
-    int mytype = 0;
-    int mynatts = 0;
-    int myndim = 0;
-    int intArray[NC_MAX_VAR_DIMS];
+    size_t start[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    ptrdiff_t stride[NC_MAX_DIMS];
+    int i;
+    int len = 1;
 
-    myname[0] = '\0';
-    if (name == NULL || ncInqWithIdOut == NULL) return USER__NULL_INPUT_ERR;
+    if (ncGetVarInp == NULL || ncGetVarOut == NULL) return USER__NULL_INPUT_ERR;
 
-    switch (paramType) {
-      case NC_DIM_T:
-        status = nc_inq_dim (ncid, myid, myname, &mylong);
+    *ncGetVarOut = (ncGetVarOut_t *) calloc (1, sizeof (ncGetVarOut_t));
+    for (i = 0; i < ncGetVarInp->ndim; i++) {
+	start[i] = ncGetVarInp->start[i];
+	count[i] = ncGetVarInp->count[i];
+	stride[i] = ncGetVarInp->stride[i];
+	/* cal dataLen */
+	if (stride[i] <= 0) stride[i] = 1;
+	len = len * ((count[i] + 1) / stride[i] + 1);
+    }
+    if (len <= 0) return 0;
+    (*ncGetVarOut)->dataLen = len;
+    (*ncGetVarOut)->varid = ncGetVarInp->varid;
+
+    switch (ncGetVarInp->dataType) {
+      case NC_FLOAT:
+	(*ncGetVarOut)->data = calloc (1, sizeof (float) * len);
+	rstrcpy ((*ncGetVarOut)->dataType_PI, INT_PI, NAME_LEN);
+        status = nc_get_vars_float (ncid, ncGetVarInp->varid, start, count,
+	  stride, (float *) (*ncGetVarOut)->data);
 	break;
-      case NC_VAR_T:
-	status = nc_inq_var (ncid, myid, myname, &mytype, &myndim, intArray,
-	  &mynatts);
       default:
         rodsLog (LOG_ERROR,
-          "_rsNcGetVarsByType: Unknow paramType %d for %s ", paramType, myname);
-        return (NETCDF_INVALID_PARAM_TYPE);
+          "_rsNcGetVarsByType: Unknow dataType %d", ncGetVarInp->dataType);
+        return (NETCDF_INVALID_DATA_TYPE);
     }
 
-    if (status == NC_NOERR) {
-	*ncInqWithIdOut = (ncInqWithIdOut_t *) calloc (1, sizeof 
-	  (ncInqWithIdOut_t)); 
-	(*ncInqWithIdOut)->mylong = mylong;
-	(*ncInqWithIdOut)->type = mytype;
-	(*ncInqWithIdOut)->natts = mynatts;
-        if (myndim > 0) {
-	    int len = sizeof (int) * myndim;
-	    (*ncInqWithIdOut)->ndim = myndim;
-	    (*ncInqWithIdOut)->intArray = (int *) calloc (1, len);
-	    memcpy ((*ncInqWithIdOut)->intArray, intArray, len);
-	}
-	rstrcpy ((*ncInqWithIdOut)->name, myname, MAX_NAME_LEN);
-    } else {
+    if (status != NC_NOERR) {
+	if ((*ncGetVarOut)->data != NULL) free ((*ncGetVarOut)->data);
+	free (*ncGetVarOut);
+	*ncGetVarOut = NULL;
         rodsLog (LOG_ERROR,
-          "_rsNcGetVarsByType: nc_inq error paramType %d for %s. %s ", 
-	  paramType, name, nc_strerror(status));
-	*ncInqWithIdOut = NULL;
-        status = NETCDF_INQ_ID_ERR - status;
+          "_rsNcGetVarsByType:  nc_get_vars err varid %d dataType %d. %s ", 
+	  ncGetVarInp->varid, ncGetVarInp->dataType, nc_strerror(status));
+        status = NETCDF_GET_VARS_ERR - status;
     }
     return status;
 }

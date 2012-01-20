@@ -603,7 +603,7 @@
 #define NETCDF_CLOSE_ERR		-2002000
 #define NETCDF_INVALID_PARAM_TYPE	-2003000
 #define NETCDF_INQ_ID_ERR		-2004000
-#define NETCDF_GET_VARS			-2005000
+#define NETCDF_GET_VARS_ERR		-2005000
 #define NETCDF_INVALID_DATA_TYPE	-2006000
 
 /* The following are handler protocol type msg. These are not real error */
