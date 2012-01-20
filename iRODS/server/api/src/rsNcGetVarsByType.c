@@ -85,19 +85,25 @@ ncGetVarOut_t **ncGetVarOut)
     ptrdiff_t stride[NC_MAX_DIMS];
     int i;
     int len = 1;
+    int hasStride = 0;
 
     if (ncGetVarInp == NULL || ncGetVarOut == NULL) return USER__NULL_INPUT_ERR;
 
-    *ncGetVarOut = (ncGetVarOut_t *) calloc (1, sizeof (ncGetVarOut_t));
     for (i = 0; i < ncGetVarInp->ndim; i++) {
 	start[i] = ncGetVarInp->start[i];
 	count[i] = ncGetVarInp->count[i];
 	stride[i] = ncGetVarInp->stride[i];
+	if (count[i] <= 0) return 0;
 	/* cal dataLen */
-	if (stride[i] <= 0) stride[i] = 1;
-	len = len * ((count[i] + 1) / stride[i] + 1);
+	if (stride[i] <= 0) {
+	    stride[i] = 1;
+	} else if (stride[i] > 1) {
+	    hasStride = 1;
+	}
+	len = len * ((count[i] - 1) / stride[i] + 1);
     }
     if (len <= 0) return 0;
+    *ncGetVarOut = (ncGetVarOut_t *) calloc (1, sizeof (ncGetVarOut_t));
     (*ncGetVarOut)->dataLen = len;
     (*ncGetVarOut)->varid = ncGetVarInp->varid;
 
@@ -105,8 +111,13 @@ ncGetVarOut_t **ncGetVarOut)
       case NC_FLOAT:
 	(*ncGetVarOut)->data = calloc (1, sizeof (float) * len);
 	rstrcpy ((*ncGetVarOut)->dataType_PI, INT_PI, NAME_LEN);
-        status = nc_get_vars_float (ncid, ncGetVarInp->varid, start, count,
-	  stride, (float *) (*ncGetVarOut)->data);
+	if (hasStride != 0) {
+            status = nc_get_vars_float (ncid, ncGetVarInp->varid, start, count,
+	      stride, (float *) (*ncGetVarOut)->data);
+	} else {
+            status = nc_get_vara_float (ncid, ncGetVarInp->varid, start, count,
+	      (float *) (*ncGetVarOut)->data);
+	}
 	break;
       default:
         rodsLog (LOG_ERROR,
