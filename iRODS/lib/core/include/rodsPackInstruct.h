@@ -11,6 +11,7 @@
 
 #define IRODS_STR_PI "str myStr[MAX_NAME_LEN];"
 #define STR_PI "str myStr;" 
+#define CHAR_PI "char myChar;" 
 #define STR_PTR_PI "str *myStr;" 
 #define PI_STR_PI "piStr myStr[MAX_NAME_LEN];" 
 #define INT_PI "int myInt;"

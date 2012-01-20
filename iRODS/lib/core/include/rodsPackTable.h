@@ -61,6 +61,7 @@ packInstructArray_t RodsPackTable[] = {
 	{"IRODS_STR_PI", IRODS_STR_PI},
 	{"STR_PTR_PI", STR_PTR_PI},
 	{"INT_PI", INT_PI},
+	{"CHAR_PI", CHAR_PI},
 	{"DOUBLE_PI", DOUBLE_PI},
 	{"BUF_LEN_PI", BUF_LEN_PI},
 	{"MsgHeader_PI", MsgHeader_PI},

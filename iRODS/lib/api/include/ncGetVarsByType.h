@@ -21,7 +21,6 @@ NC_BYTE         signed 1 byte integer
 NC_CHAR         ISO/ASCII character   - uchar, text
 NC_SHORT        signed 2 byte integer
 NC_INT          signed 4 byte integer 
-NC_LONG		NC_INT
 NC_FLOAT        single precision floating point number 
 NC_DOUBLE       double precision floating point number
 NC_UBYTE        unsigned 1 byte int
@@ -29,7 +28,7 @@ NC_USHORT       unsigned 2-byte int
 NC_UINT         unsigned 4-byte int
 NC_INT64        signed 8-byte int
 NC_UINT64       unsigned 8-byte int
-NC_STRING       string
+NC_STRING       string - only for netcdf librarysupports HDF
 */
 
 typedef struct {

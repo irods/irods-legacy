@@ -414,9 +414,11 @@ OS_AUTH_KEYFILE = /etc/irods.key
 endif
 
 # NETCDF_API - specify whether to compile the NETCDF API
-# NETCDF_DIR - the install directory of NETCDF
+# NETCDF_DIR - the install directory of NETCDF. NETCDF_HDF defines whether
+# the netcdf library has been built to support HDF
 # NETCDF_API=1
 ifdef NETCDF_API
+# NETCDF_HDF=1
 NETCDF_DIR=/usr/local
 endif
 
