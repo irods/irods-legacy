@@ -25,6 +25,7 @@ rodsEnv myEnv;
 
 int lastCommandStatus=0;
 int printCount=0;
+int printedRows=0;
 
 int usage(char *subOpt);
 
@@ -51,6 +52,7 @@ printResultsAndSubQuery(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
       }
       else {
 	 for (i=0;i<genQueryOut->rowCnt;i++) {
+	    printedRows++;
 	    char *subCol;
 	    if (i>0 && dashOpt>0) printf("----\n");
 	    for (j=0;j<genQueryOut->attriCnt;j++) {
@@ -338,6 +340,10 @@ showTickets1(char *inOption, char *inName)
       i1a[i]=COL_TICKET_DATA_COLL_NAME;
       i1b[i++]=0;
    }
+   if (strstr(inOption, "basic")!=0) {
+      /* skip the COLL or DATA_NAME so it's just a query on the ticket tables */
+      i--;
+   }
 
    genQueryInp.selectInp.inx = i1a;
    genQueryInp.selectInp.value = i1b;
@@ -408,9 +414,18 @@ showTickets1(char *inOption, char *inName)
 
 void
 showTickets(char *inName) {
+   printedRows=0;
    showTickets1("data", inName);
-   printf("----\n");
+   if (printedRows>0) printf("----\n");
    showTickets1("collection", inName);
+   if (printedRows==0) {
+      /* try a more basic query in case the data obj or collection is gone */
+      showTickets1("basic", inName);
+      if (printedRows > 0 &&
+	 inName != NULL && *inName!='\0') {
+	   printf("Warning: the data-object or collection for this ticket no longer exists\n");
+      }
+   }
 }
 
 
@@ -634,6 +649,12 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
 
+   if (strcmp(cmdToken[0],"ls-all") == 0) {
+      printf("Listing all of your tickets, even those for which the target collection\nor data-object no longer exists:\n");
+      showTickets1("basic","");
+      return(0);
+   }
+
    if (*cmdToken[0] != '\0') {
       printf("unrecognized command, try 'help'\n");
       return(-2);
@@ -829,6 +850,7 @@ void usageMain()
 " mod Ticket_string-or-id write-bytes-or-file number-or-0 (modify restrictions)",
 " mod Ticket_string-or-id add/remove host/user/group string (modify restrictions)",
 " ls [Ticket_string-or-id] (non-admins will see just your own)",
+" ls-all (list all your tickets, even with missing targets)",
 " delete ticket_string-or-id",
 " quit", 
 " ", 
@@ -869,11 +891,13 @@ usage(char *subOpt)
    else {
       if (strcmp(subOpt,"create")==0) {
 	 char *msgs[]={
-" create read/write Object-Name (create a new ticket)",
+" create read/write Object-Name [string] (create a new ticket)",
 "Create a new ticket for Object-Name, which is either a data-object (file)",
 "or a collection (directory). ",
 "Example: create read myFile",
 "The ticket string, which can be used for access, will be displayed.",
+"If 'string' is provided on the command line, it is the ticket-string to use",
+"as the ticket instead of a randomly generated string of characters.",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);
@@ -943,6 +967,18 @@ usage(char *subOpt)
 "List the tickets owned by you or, for admin users, all tickets.",
 "Include a ticket-string or the ticket-id (object number) to list only one",
 "(in this case, a numeric string is assumed to be an id).",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+
+      if (strcmp(subOpt,"ls-all")==0) {
+	 char *msgs[]={
+" ls-all",
+"Similar to 'ls' (with no ticket string-or-id) but will list all of your",
+"tickets even if the target collection or data-object no longer exists.",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);

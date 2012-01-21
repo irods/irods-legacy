@@ -1302,6 +1302,7 @@ int
 genqAppendAccessCheck() {
    int doCheck=0;
    int ACDebug=0;
+   int addedTicketCheck=0;
 
    if (ACDebug) printf("genqAC 1\n");
 
@@ -1342,29 +1343,39 @@ genqAppendAccessCheck() {
    if (strstr(selectSQL, "R_DATA_MAIN") != NULL) {
       if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
       if (sessionTicket[0]=='\0') {
+         /* Normal access control */
 	 cllBindVars[cllBindVarCount++]=accessControlUserName;
 	 cllBindVars[cllBindVarCount++]=accessControlZone;
 	 rstrcat(whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
       }
       else {
+         /* Ticket-based access control */
 	 cllBindVars[cllBindVarCount++]=sessionTicket;
 	 cllBindVars[cllBindVarCount++]=sessionTicket;
 	 rstrcat(whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE);
+	 addedTicketCheck=1;
       }
    }
 
    /* if an item in R_COLL_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
    if (strstr(selectSQL, "R_COLL_MAIN") != NULL) {
-      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
       if (sessionTicket[0]=='\0') {
+         /* Normal access control */
+	 if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
 	 cllBindVars[cllBindVarCount++]=accessControlUserName;
 	 cllBindVars[cllBindVarCount++]=accessControlZone;
 	 rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
       }
       else {
-	 cllBindVars[cllBindVarCount++]=sessionTicket;
-	 rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE);
+	 /* Ticket-based access control */
+	 /* We add this unless we already added the SQL check a few
+	    lines above that includes this */
+	 if (addedTicketCheck!=1 ) {
+	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
+	    cllBindVars[cllBindVarCount++]=sessionTicket;
+	    rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE);
+	 }
 
       }
    }
