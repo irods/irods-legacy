@@ -67,10 +67,6 @@ rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
                 freeL1desc (l1descInx);
                 return (NETCDF_CLOSE_ERR - status);
             }
-            bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
-            dataObjCloseInp.l1descInx = l1descInx;
-
-            status = rsDataObjClose (rsComm, &dataObjCloseInp);
         } else {
 	    /* execute it remotely */
 	    bzero (&myNcCloseInp, sizeof (myNcCloseInp));
