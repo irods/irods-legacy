@@ -27,7 +27,7 @@ typedef struct {
     keyValPair_t condInput;	/* not used */
 } ncOpenInp_t;
 
-#define NcOpenInp_PI "str objPath[MAX_NAME_LEN]; int mode; int flags; double intialsz; double bufrsizehint; struct *SpecColl_PI; struct KeyValPair_PI;"
+#define NcOpenInp_PI "str objPath[MAX_NAME_LEN]; int mode; int flags; double intialsz; double bufrsizehint; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_NC_OPEN rsNcOpen
