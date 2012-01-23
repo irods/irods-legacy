@@ -106,6 +106,7 @@ ncInqWithIdOut_t **ncInqWithIdOut)
       case NC_VAR_T:
 	status = nc_inq_var (ncid, myid, myname, &mytype, &myndim, intArray,
 	  &mynatts);
+	break;
       default:
         rodsLog (LOG_ERROR,
           "_rsNcInqWithId: Unknow paramType %d for %s ", paramType, myname);
