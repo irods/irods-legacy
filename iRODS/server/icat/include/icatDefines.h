@@ -129,4 +129,9 @@
 #define AU_REG_TOKEN                           2150
 #define AU_DEL_TOKEN                           2151
 
+#define AU_CREATE_TICKET                       2160
+#define AU_MOD_TICKET                          2161
+#define AU_DELETE_TICKET                       2162
+#define AU_USE_TICKET                          2163
+
 #endif /* ICAT_DEFINES_H */

@@ -9176,6 +9176,10 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	 strncpy(mySessionClientAddr, rsComm->clientAddr, 
 		 sizeof(mySessionClientAddr));
       }
+      status = cmlAudit3(AU_USE_TICKET, "0",
+			 rsComm->clientUser.userName, 
+			 rsComm->clientUser.rodsZone, ticketString, &icss);
+      if (status != 0) return(status);
       return(0);
    }
 
@@ -9256,7 +9260,14 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		 status);
 	 return(status);
       }
-
+      status = cmlAudit3(AU_CREATE_TICKET, seqNumStr,
+		 rsComm->clientUser.userName, 
+		 rsComm->clientUser.rodsZone, ticketString, &icss);
+      if (status != 0) return(status);
+      status = cmlAudit3(AU_CREATE_TICKET, seqNumStr,
+		 rsComm->clientUser.userName, 
+		 rsComm->clientUser.rodsZone, objIdStr, &icss); /* target obj */
+      if (status != 0) return(status);
       status =  cmlExecuteNoAnswerSql("commit", &icss);
       return(status);
    }
@@ -9345,7 +9356,10 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 	     "chlModTicket cmlExecuteNoAnswerSql delete 4 failure %d",
 		 status);
       }
-
+      status = cmlAudit3(AU_DELETE_TICKET, ticketIdStr,
+			 rsComm->clientUser.userName, 
+			 rsComm->clientUser.rodsZone, ticketString, &icss);
+      if (status != 0) return(status);
       status =  cmlExecuteNoAnswerSql("commit", &icss);
       return(status);
    }
@@ -9369,6 +9383,10 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		    status);
 	    return(status);
 	 }
+	 status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			    rsComm->clientUser.userName, 
+			    rsComm->clientUser.rodsZone, "uses", &icss);
+	 if (status != 0) return(status);
 	 status =  cmlExecuteNoAnswerSql("commit", &icss);
 	 return(status);
       }
@@ -9391,6 +9409,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		       status);
 	       return(status);
 	    }
+	    status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			       rsComm->clientUser.userName, 
+			       rsComm->clientUser.rodsZone, "write file",
+			       &icss);
+	    if (status != 0) return(status);
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }
@@ -9411,6 +9434,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		       status);
 	       return(status);
 	    }
+	    status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			       rsComm->clientUser.userName, 
+			       rsComm->clientUser.rodsZone, "write byte",
+			       &icss);
+	    if (status != 0) return(status);
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }
@@ -9437,6 +9465,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		    status);
 	    return(status);
 	 }
+	 status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			    rsComm->clientUser.userName, 
+			    rsComm->clientUser.rodsZone, "expire",
+			    &icss);
+	 if (status != 0) return(status);
 	 status =  cmlExecuteNoAnswerSql("commit", &icss);
 	 return(status);
       }
@@ -9461,6 +9494,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		       status);
 	       return(status);
 	    }
+	    status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			    rsComm->clientUser.userName, 
+			    rsComm->clientUser.rodsZone, "add host",
+			    &icss);
+	    if (status != 0) return(status);
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }
@@ -9482,6 +9520,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		       status);
 	       return(status);
 	    }
+	    status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			    rsComm->clientUser.userName, 
+			    rsComm->clientUser.rodsZone, "add user",
+			    &icss);
+	    if (status != 0) return(status);
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }
@@ -9503,6 +9546,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		       status);
 	       return(status);
 	    }
+	    status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			    rsComm->clientUser.userName, 
+			    rsComm->clientUser.rodsZone, "add group",
+			    &icss);
+	    if (status != 0) return(status);
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }
@@ -9527,6 +9575,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		       status);
 	       return(status);
 	    }
+	    status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			       rsComm->clientUser.userName, 
+			       rsComm->clientUser.rodsZone, "remove host",
+			       &icss);
+	    if (status != 0) return(status);
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }
@@ -9548,6 +9601,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		       status);
 	       return(status);
 	    }
+	    status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			       rsComm->clientUser.userName, 
+			       rsComm->clientUser.rodsZone, "remove user",
+			       &icss);
+	    if (status != 0) return(status);
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }
@@ -9569,6 +9627,11 @@ int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
 		       status);
 	       return(status);
 	    }
+	    status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+			       rsComm->clientUser.userName, 
+			       rsComm->clientUser.rodsZone, "remove group",
+			       &icss);
+	    if (status != 0) return(status);
 	    status =  cmlExecuteNoAnswerSql("commit", &icss);
 	    return(status);
 	 }

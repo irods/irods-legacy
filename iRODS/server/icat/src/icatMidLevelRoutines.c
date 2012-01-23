@@ -1096,6 +1096,8 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
    static rodsLong_t previousDataId1=0;
    static rodsLong_t previousDataId2=0;
 
+   static char prevTicketId[50]="";
+
 #if 0
    rodsLog(LOG_NOTICE, "checkObjIdByTicket debug dataId=%s accessLevel=%s", dataId, 
 	   accessLevel);
@@ -1110,7 +1112,8 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
    cVal[4]=restrictions;
    if (strncmp(accessLevel, "modify", 6) == 0) {
       if (logSQL_CML!=0) rodsLog(LOG_SQL, "checkObjIdByTicket SQL 1 ");
-      /* ticket must also be of type 'write', and get the writeFileCount and writeFileLimit*/
+      /* ticket must also be of type 'write', and get the
+          writeFileCount and writeFileLimit  */
       cVal[5]=writeFileCount;
       cVal[6]=writeFileLimit;
       cVal[7]=writeByteCount;
@@ -1131,6 +1134,13 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
    }
 
    if (status != 0) return (CAT_TICKET_INVALID);
+
+   if (strncmp(ticketId, prevTicketId, sizeof(prevTicketId)) != 0) {
+      strncpy(prevTicketId, ticketId, sizeof(prevTicketId));
+      status = cmlAudit3(AU_USE_TICKET, ticketId, userName, userZone, 
+			ticketStr, icss);
+      if (status != 0) return(status);
+   }
 
    if (ticketExpiry[0]!='\0') {
       rodsLong_t ticketExp, now;
