@@ -89,6 +89,7 @@ _rsNcInqId (int paramType, int ncid, char *name, int **outId)
 	break;
       case NC_DIM_T:
         status = nc_inq_dimid (ncid, name, &myoutId);
+	break;
       default:
         rodsLog (LOG_ERROR,
           "_rsNcInqId: Unknow paramType %d for %s ", paramType, name);
