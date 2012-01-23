@@ -19,9 +19,9 @@ https://www.irods.org/index.php/Release_Notes
 iRODS builds on the previous versions of iRODS and upon our years of
 experience developing SRB (the Storage Resource Broker).
 
-See the above URLs for additional information.  https://www.irods.org
-is a Wiki system and includes documentation, descriptions,
-publications, presentations, and other information.
+https://www.irods.org is a Wiki system and includes
+documentation, descriptions, publications, presentations,
+and other information.
 
 
 Mailing list:
