@@ -20,10 +20,10 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 
 TESTOBJS = iTestGenQuery.o luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
-l3structFile.o xmsgtest.o listcoll.o
+l3structFile.o xmsgtest.o listcoll.o nctest.o
 
 TARGETS = iTestGenQuery luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
-xmsgtest listcoll
+xmsgtest listcoll nctest
 
 ifdef TAR_STRUCT_FILE
 # TARGETS+=tartest
@@ -109,6 +109,9 @@ phpexttest: phpexttest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
 listcoll: listcoll.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+
+nctest: nctest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
 ifdef TAR_STRUCT_FILE
