@@ -31,22 +31,46 @@ char **outHost)
     rodsHostAddr_t addr;
     specCollCache_t *specCollCache = NULL;
     char *myHost;
+    int remoteFlag;
 
     *outHost = NULL;
 
+#if 0
     if (isLocalZone (dataObjInp->objPath) == 0) {
 	/* it is a remote zone. better connect to this host */
 	*outHost = strdup (THIS_ADDRESS);
 	return 0;
     }
+#endif
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache, NULL);
     if (isLocalZone (dataObjInp->objPath) == 0) {
+#if 0
         /* it is a remote zone. better connect to this host */
         *outHost = strdup (THIS_ADDRESS);
         return 0;
+#else
+        resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
+          &dataObjInp->condInput);
+        remoteFlag = getAndConnRcatHost (rsComm, SLAVE_RCAT, 
+	  dataObjInp->objPath, &rodsServerHost);
+        if (remoteFlag < 0) {
+            return (remoteFlag);
+        } else if (remoteFlag == LOCAL_HOST) {
+	    *outHost = strdup (THIS_ADDRESS);
+            return 0;
+	} else {
+            status = rcGetHostForGet (rodsServerHost->conn, dataObjInp, 
+	      outHost);
+	    if (status >= 0 && *outHost != NULL && 
+	      strcmp (*outHost, THIS_ADDRESS) == 0) {
+		free (*outHost);
+		*outHost = strdup (rodsServerHost->hostName->name);
+	    }
+            return (status);
+	}
+#endif
     }
-
     status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
     if (status >= 0) {
 	if (specCollCache->specColl.collClass == MOUNTED_COLL) {
