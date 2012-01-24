@@ -46,10 +46,10 @@ typedef struct {
 
 typedef struct {
     char dataType_PI[NAME_LEN];	  /* the packing instruction of the dataType */
-    bytesBuf_t dataArray;
+    bytesBuf_t *dataArray;
 } ncGetVarOut_t;
 
-#define NcGetVarOut_PI "piStr dataType_PI[NAME_LEN]; ?dataType_PI dataArray;"
+#define NcGetVarOut_PI "piStr dataType_PI[NAME_LEN]; ?dataType_PI *dataArray;"
 
 #if defined(RODS_SERVER)
 #define RS_NC_GET_VARS_BY_TYPE rsNcGetVarsByType
@@ -90,7 +90,8 @@ extern "C" {
 int
 rcNcGetVarsByType (rcComm_t *conn,  ncGetVarInp_t *ncGetVarInp, 
 ncGetVarOut_t **ncGetVarOut);
-
+int
+freeNcGetVarOut (ncGetVarOut_t **ncGetVarOut);
 #ifdef  __cplusplus
 }
 #endif

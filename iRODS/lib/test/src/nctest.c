@@ -161,11 +161,12 @@ main(int argc, char **argv)
         exit (3);
     } else {
 	printf ("longitude value: \n");
-	for (i = 0; i < ncGetVarOut->dataArray.len; i++) {
-	    float *fdata = (float *)  ncGetVarOut->dataArray.buf;
+	for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
+	    float *fdata = (float *)  ncGetVarOut->dataArray->buf;
 	    printf ("  %.2f", fdata[i]);
 	}
 	printf ("\n");
+	freeNcGetVarOut (&ncGetVarOut);
     }
 
     start[0] = 0;
@@ -184,11 +185,12 @@ main(int argc, char **argv)
         exit (3);
     } else {
         printf ("latitude value: \n");
-        for (i = 0; i < ncGetVarOut->dataArray.len; i++) {
-            float *fdata = (float *)  ncGetVarOut->dataArray.buf;
+        for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
+            float *fdata = (float *)  ncGetVarOut->dataArray->buf;
             printf ("  %.2f", fdata[i]);
         }
         printf ("\n");
+	freeNcGetVarOut (&ncGetVarOut);
     }
 
     start[0] = 0;
@@ -210,11 +212,12 @@ main(int argc, char **argv)
         exit (3);
     } else {
         printf ("pressure value: \n");
-        for (i = 0; i < ncGetVarOut->dataArray.len; i++) {
-            float *fdata = (float *)  ncGetVarOut->dataArray.buf;
+        for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
+            float *fdata = (float *)  ncGetVarOut->dataArray->buf;
             printf ("  %.2f", fdata[i]);
         }
         printf ("\n");
+	freeNcGetVarOut (&ncGetVarOut);
     }
 
     start[0] = 0;
@@ -236,11 +239,12 @@ main(int argc, char **argv)
         exit (3);
     } else {
         printf ("temperature value: \n");
-        for (i = 0; i < ncGetVarOut->dataArray.len; i++) {
-            float *fdata = (float *)  ncGetVarOut->dataArray.buf;
+        for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
+            float *fdata = (float *)  ncGetVarOut->dataArray->buf;
             printf ("  %.2f", fdata[i]);
         }
         printf ("\n");
+	freeNcGetVarOut (&ncGetVarOut);
     }
 
     /* close the file */
@@ -292,9 +296,9 @@ myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim)
         printf ("\n");
 	*dataType = ncInqWithIdOut->type;
 	*ndim = ncInqWithIdOut->ndim;
-        if (ncInqWithIdOut->intArray != NULL) free (ncInqWithIdOut->intArray);
-        free (ncInqWithIdOut);
-        ncInqWithIdOut = NULL;
+	if (ncInqWithIdOut->intArray != NULL) free (ncInqWithIdOut->intArray);
+	free (ncInqWithIdOut);
+	ncInqWithIdOut = NULL;
     }
     tmpId = *myid;
     free (myid);

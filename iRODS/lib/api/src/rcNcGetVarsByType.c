@@ -13,3 +13,20 @@ ncGetVarOut_t **ncGetVarOut)
 
     return (status);
 }
+
+int
+freeNcGetVarOut (ncGetVarOut_t **ncGetVarOut)
+{
+    if (ncGetVarOut == NULL || *ncGetVarOut == NULL) return 
+      USER__NULL_INPUT_ERR;
+
+    if ((*ncGetVarOut)->dataArray != NULL) {
+	if ((*ncGetVarOut)->dataArray->buf != NULL) {
+	    free ((*ncGetVarOut)->dataArray->buf);
+	}
+	free ((*ncGetVarOut)->dataArray);
+    }
+    free (*ncGetVarOut);
+    *ncGetVarOut = NULL;
+    return 0;
+}
