@@ -312,6 +312,12 @@ runCmd(0, "rm -rf $Resc2Path");
 $testCmd="test_chl sql \"select coll_id from R_COLL_MAIN where coll_name != " . "?" . "\" /$myZone/home/rods 1";
 runCmd(2, $testCmd);
 
+# Exercise a couple simple queries that are no longer used in iadmin:
+$testCmd="test_chl sql \"select user_name from R_USER_MAIN where user_type_name='rodsgroup'\"";
+runCmd(0, $testCmd);
+$testCmd="test_chl sql \"select user_name||'#'||zone_name from R_USER_MAIN, R_USER_GROUP where R_USER_GROUP.user_id=R_USER_MAIN.user_id and R_USER_GROUP.group_user_id=(select user_id from R_USER_MAIN where user_name=" . "?)" . "\" g1 1";
+runCmd(1, $testCmd);
+
 # Exercise the chlGetLocalZone for coverage
 runCmd(0, "test_chl getlocalzone $myZone");
 
