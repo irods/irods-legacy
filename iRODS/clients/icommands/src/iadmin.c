@@ -244,29 +244,97 @@ getLocalZone() {
    return(0);
 }
   
-
-int
-showGroup(char *group) 
+/* 
+ print the results of a general query for the showGroup function below
+ */
+void
+printGenQueryResultsForGroup(genQueryOut_t *genQueryOut)
 {
-   simpleQueryInp_t simpleQueryInp;
+   int i, j;
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+      char *tResult;
+      for (j=0;j<genQueryOut->attriCnt;j++) {
+	 tResult = genQueryOut->sqlResult[j].value;
+	 tResult += i*genQueryOut->sqlResult[j].len;
+	 if (j>0) {
+	    printf("#%s", tResult);
+	 }
+	 else {
+	    printf("%s", tResult);
+	 }
+      }
+      printf("\n");
+   }
+}
 
-   memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
-   simpleQueryInp.control = 0;
-   if (group==0 || *group=='\0') {
-      simpleQueryInp.form = 1;
-      simpleQueryInp.sql =
-	 "select user_name from R_USER_MAIN where user_type_name='rodsgroup'";
-      simpleQueryInp.maxBufSize = 1024;
+void
+showGroup(char *groupName)
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int selectIndexes[10];
+   int selectValues[10];
+   int conditionIndexes[10];
+   char *conditionValues[10];
+   char conditionString1[BIG_STR];
+   char conditionString2[BIG_STR];
+   int status;
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   if (groupName != NULL && *groupName!='\0') {
+      printf("Members of group %s:\n",groupName);
+   }
+   selectIndexes[0]=COL_USER_NAME;
+   selectValues[0]=0;
+   selectIndexes[1]=COL_USER_ZONE;
+   selectValues[1]=0;
+   genQueryInp.selectInp.inx = selectIndexes;
+   genQueryInp.selectInp.value = selectValues;
+   if (groupName != NULL && *groupName!='\0') {
+      genQueryInp.selectInp.len = 2;
    }
    else {
-      printf("Members of group %s:\n",group);
-      simpleQueryInp.form = 1;
-      simpleQueryInp.sql = 
-	 "select user_name||'#'||zone_name from R_USER_MAIN, R_USER_GROUP where R_USER_GROUP.user_id=R_USER_MAIN.user_id and R_USER_GROUP.group_user_id=(select user_id from R_USER_MAIN where user_name=?)";
-      simpleQueryInp.arg1 = group;
-      simpleQueryInp.maxBufSize = 1024;
+      genQueryInp.selectInp.len = 1;
    }
-   return (doSimpleQuery(simpleQueryInp));
+
+   conditionIndexes[0]=COL_USER_TYPE;
+   sprintf(conditionString1,"='rodsgroup'");
+   conditionValues[0]=conditionString1;
+
+   genQueryInp.sqlCondInp.inx = conditionIndexes;
+   genQueryInp.sqlCondInp.value = conditionValues;
+   genQueryInp.sqlCondInp.len=1;
+
+   if (groupName != NULL && *groupName!='\0') {
+
+      sprintf(conditionString1,"!='rodsgroup'");
+
+      conditionIndexes[1]=COL_USER_GROUP_NAME;
+      sprintf(conditionString2,"='%s'",groupName);
+      conditionValues[1]=conditionString2;
+      genQueryInp.sqlCondInp.len=2;
+   }
+
+   genQueryInp.maxRows=50;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      printf("No rows found\n");
+      return;
+   }
+   else {
+      printGenQueryResultsForGroup(genQueryOut);
+   }
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) printGenQueryResultsForGroup(genQueryOut);
+   }
+   return;
 }
 
 int
@@ -1396,6 +1464,8 @@ usage(char *subOpt)
 "Just 'lg' briefly lists the defined groups.",
 "If you include a group name, it will list users who are",
 "members of that group.  Users are listed in the user#zone format.",
+"In addition to 'rodsadmin', any user can use this sub-command; this is",
+"of most value to 'groupadmin' users who can also 'atg' and 'rfg'",
 ""};
 
    char *lgdMsgs[]={
