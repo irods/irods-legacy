@@ -94,7 +94,7 @@ ncGetVarOut_t **ncGetVarOut)
 	count[i] = ncGetVarInp->count[i];
 	stride[i] = ncGetVarInp->stride[i];
 	if (count[i] <= 0) return 0;
-	/* cal dataLen */
+	/* cal dataArray.len */
 	if (stride[i] <= 0) {
 	    stride[i] = 1;
 	} else if (stride[i] > 1) {
@@ -104,110 +104,110 @@ ncGetVarOut_t **ncGetVarOut)
     }
     if (len <= 0) return 0;
     *ncGetVarOut = (ncGetVarOut_t *) calloc (1, sizeof (ncGetVarOut_t));
-    (*ncGetVarOut)->dataLen = len;
-    (*ncGetVarOut)->varid = ncGetVarInp->varid;
+    (*ncGetVarOut)->dataArray.len = len;
 
     switch (ncGetVarInp->dataType) {
       case NC_CHAR:
-        (*ncGetVarOut)->data = calloc (1, sizeof (char) * len);
-        rstrcpy ((*ncGetVarOut)->dataType_PI, "CHAR_PI", NAME_LEN);
+        (*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (char) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "BytesBuf_PI", NAME_LEN);
         if (hasStride != 0) {
             status = nc_get_vars_text (ncid, ncGetVarInp->varid, start, count,
-              stride, (char *) (*ncGetVarOut)->data);
+              stride, (char *) (*ncGetVarOut)->dataArray.buf);
         } else {
             status = nc_get_vara_text (ncid, ncGetVarInp->varid, start, count,
-              (char *) (*ncGetVarOut)->data);
+              (char *) (*ncGetVarOut)->dataArray.buf);
         }
         break;
       case NC_BYTE:
       case NC_UBYTE:
-        (*ncGetVarOut)->data = calloc (1, sizeof (char) * len);
-        rstrcpy ((*ncGetVarOut)->dataType_PI, "CHAR_PI", NAME_LEN);
+        (*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (char) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "BytesBuf_PI", NAME_LEN);
         if (hasStride != 0) {
             status = nc_get_vars_uchar (ncid, ncGetVarInp->varid, start, count,
-              stride, (unsigned char *) (*ncGetVarOut)->data);
+              stride, (unsigned char *) (*ncGetVarOut)->dataArray.buf);
         } else {
             status = nc_get_vara_uchar (ncid, ncGetVarInp->varid, start, count,
-              (unsigned char *) (*ncGetVarOut)->data);
+              (unsigned char *) (*ncGetVarOut)->dataArray.buf);
         }
         break;
 #ifdef NETCDF_HDF
       case NC_STRING:
-        (*ncGetVarOut)->data = calloc (1, sizeof (char *) * len);
-        rstrcpy ((*ncGetVarOut)->dataType_PI, STR_MS_T, NAME_LEN);
+        (*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (char *) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "strBytesBuf_PI", NAME_LEN);
         if (hasStride != 0) {
             status = nc_get_vars_string (ncid, ncGetVarInp->varid, start, count,
-              stride, (char **) (*ncGetVarOut)->data);
+              stride, (char **) (*ncGetVarOut)->dataArray.buf);
         } else {
             status = nc_get_vara_string (ncid, ncGetVarInp->varid, start, count,
-              (char **) (*ncGetVarOut)->data);
+              (char **) (*ncGetVarOut)->dataArray.buf);
         }
         break;
 #endif
       case NC_INT:
-       (*ncGetVarOut)->data = calloc (1, sizeof (int) * len);
-        rstrcpy ((*ncGetVarOut)->dataType_PI, INT_MS_T, NAME_LEN);
+       (*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (int) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "IntBytesBuf_PI", NAME_LEN);
         if (hasStride != 0) {
             status = nc_get_vars_int (ncid, ncGetVarInp->varid, start, count,
-              stride, (int *) (*ncGetVarOut)->data);
+              stride, (int *) (*ncGetVarOut)->dataArray.buf);
         } else {
             status = nc_get_vara_int (ncid, ncGetVarInp->varid, start, count,
-              (int *) (*ncGetVarOut)->data);
+              (int *) (*ncGetVarOut)->dataArray.buf);
         }
         break;
       case NC_UINT:
-       (*ncGetVarOut)->data = calloc (1, sizeof (unsigned int) * len);
-        rstrcpy ((*ncGetVarOut)->dataType_PI, INT_MS_T, NAME_LEN);
+       (*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (unsigned int) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "IntBytesBuf_PI", NAME_LEN);
         if (hasStride != 0) {
             status = nc_get_vars_uint (ncid, ncGetVarInp->varid, start, count,
-              stride, (unsigned int *) (*ncGetVarOut)->data);
+              stride, (unsigned int *) (*ncGetVarOut)->dataArray.buf);
         } else {
             status = nc_get_vara_uint (ncid, ncGetVarInp->varid, start, count,
-              (unsigned int *) (*ncGetVarOut)->data);
+              (unsigned int *) (*ncGetVarOut)->dataArray.buf);
         }
         break;
       case NC_INT64:
-        (*ncGetVarOut)->data = calloc (1, sizeof (long long) * len);
-        rstrcpy ((*ncGetVarOut)->dataType_PI, DOUBLE_MS_T, NAME_LEN);
+        (*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (long long) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "Int64BytesBuf_PI", NAME_LEN);
         if (hasStride != 0) {
             status = nc_get_vars_longlong (ncid, ncGetVarInp->varid, start, 
-              count, stride, (long long *) (*ncGetVarOut)->data);
+              count, stride, (long long *) (*ncGetVarOut)->dataArray.buf);
         } else {
             status = nc_get_vara_longlong (ncid, ncGetVarInp->varid, start, 
-              count, (long long *) (*ncGetVarOut)->data);
+              count, (long long *) (*ncGetVarOut)->dataArray.buf);
         }     
         break;
       case NC_UINT64:
-        (*ncGetVarOut)->data = calloc (1, sizeof (unsigned long long) * len);
-        rstrcpy ((*ncGetVarOut)->dataType_PI, DOUBLE_MS_T, NAME_LEN);
+        (*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (unsigned long long) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "Int64BytesBuf_PI", NAME_LEN);
         if (hasStride != 0) {
-            status = nc_get_vars_ulonglong (ncid, ncGetVarInp->varid, start, 
-              count, stride, (unsigned long long *) (*ncGetVarOut)->data);
+            status = nc_get_vars_ulonglong (ncid, ncGetVarInp->varid, 
+	      start, count, stride, 
+	      (unsigned long long *) (*ncGetVarOut)->dataArray.buf);
         } else {
             status = nc_get_vara_ulonglong (ncid, ncGetVarInp->varid, start, 
-              count, (unsigned long long *) (*ncGetVarOut)->data);
+              count, (unsigned long long *) (*ncGetVarOut)->dataArray.buf);
         }
         break;
       case NC_FLOAT:
-	(*ncGetVarOut)->data = calloc (1, sizeof (float) * len);
-	rstrcpy ((*ncGetVarOut)->dataType_PI, INT_MS_T, NAME_LEN);
+	(*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (float) * len);
+	rstrcpy ((*ncGetVarOut)->dataType_PI, "IntBytesBuf_PI", NAME_LEN);
 	if (hasStride != 0) {
             status = nc_get_vars_float (ncid, ncGetVarInp->varid, start, count,
-	      stride, (float *) (*ncGetVarOut)->data);
+	      stride, (float *) (*ncGetVarOut)->dataArray.buf);
 	} else {
             status = nc_get_vara_float (ncid, ncGetVarInp->varid, start, count,
-	      (float *) (*ncGetVarOut)->data);
+	      (float *) (*ncGetVarOut)->dataArray.buf);
 	}
 	break;
       case NC_DOUBLE:
-        (*ncGetVarOut)->data = calloc (1, sizeof (double) * len);
-        rstrcpy ((*ncGetVarOut)->dataType_PI, DOUBLE_MS_T, NAME_LEN);
+        (*ncGetVarOut)->dataArray.buf = calloc (1, sizeof (double) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "Int64BytesBuf_PI", NAME_LEN);
         if (hasStride != 0) {
             status = nc_get_vars_double (ncid, ncGetVarInp->varid, start, count,
-              stride, (double *) (*ncGetVarOut)->data);
+              stride, (double *) (*ncGetVarOut)->dataArray.buf);
         } else {
             status = nc_get_vara_double (ncid, ncGetVarInp->varid, start, count,
-              (double *) (*ncGetVarOut)->data);
+              (double *) (*ncGetVarOut)->dataArray.buf);
         }
         break;
       default:
@@ -217,7 +217,8 @@ ncGetVarOut_t **ncGetVarOut)
     }
 
     if (status != NC_NOERR) {
-	if ((*ncGetVarOut)->data != NULL) free ((*ncGetVarOut)->data);
+	if ((*ncGetVarOut)->dataArray.buf != NULL) 
+	  free ((*ncGetVarOut)->dataArray.buf);
 	free (*ncGetVarOut);
 	*ncGetVarOut = NULL;
         rodsLog (LOG_ERROR,

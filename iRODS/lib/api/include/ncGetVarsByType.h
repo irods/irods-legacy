@@ -45,13 +45,11 @@ typedef struct {
 #define NcGetVarInp_PI "int varType; int ncid; int myint; int ndim; double *start(ndim); double *count(ndim); double *stride(ndim); struct KeyValPair_PI;"
 
 typedef struct {
-    int varid;
-    int dataLen;	/* array length of the data */
     char dataType_PI[NAME_LEN];	  /* the packing instruction of the dataType */
-    void *data;		/* data array of dataLen length */
+    bytesBuf_t dataArray;
 } ncGetVarOut_t;
 
-#define NcGetVarOut_PI "int varid; int dataLen; piStr dataType_PI[NAME_LEN]; ?dataType_PI *data(dataLen);"
+#define NcGetVarOut_PI "piStr dataType_PI[NAME_LEN]; ?dataType_PI dataArray;"
 
 #if defined(RODS_SERVER)
 #define RS_NC_GET_VARS_BY_TYPE rsNcGetVarsByType

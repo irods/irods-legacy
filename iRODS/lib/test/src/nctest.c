@@ -37,14 +37,6 @@ main(int argc, char **argv)
     int prestype1 = 0;
     int lonndim, latndim, tempndim, presndim;
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
-#if 0
-    rodsLong_t lonstart[NC_MAX_DIMS], latstart[NC_MAX_DIMS], 
-      tempstart[NC_MAX_DIMS], presstart[NC_MAX_DIMS];
-    rodsLong_t loncount[NC_MAX_DIMS], latcount[NC_MAX_DIMS], 
-      tempcount[NC_MAX_DIMS], prescount[NC_MAX_DIMS];
-    rodsLong_t lonstride[NC_MAX_DIMS], latstride[NC_MAX_DIMS], 
-      tempstride[NC_MAX_DIMS], presstride[NC_MAX_DIMS];
-#endif
 
     status = getRodsEnv (&myRodsEnv);
 
@@ -168,12 +160,87 @@ main(int argc, char **argv)
           ncOpenInp.objPath);
         exit (3);
     } else {
-	printf ("longitude value: ");
-	for (i = 0; i < ncGetVarOut->dataLen; i++) {
-	    float *fdata = (float *)  ncGetVarOut->data;
-	    printf ("  %f", fdata[i]);
+	printf ("longitude value: \n");
+	for (i = 0; i < ncGetVarOut->dataArray.len; i++) {
+	    float *fdata = (float *)  ncGetVarOut->dataArray.buf;
+	    printf ("  %.2f", fdata[i]);
 	}
 	printf ("\n");
+    }
+
+    start[0] = 0;
+    count[0] = latdimlen1;
+    stride[0] = 1;
+    ncGetVarInp.dataType = lattype1;
+    ncGetVarInp.varid = latvarid1;
+    ncGetVarInp.ndim = latndim;
+
+    status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcGetVarsByType error for latitude of %s", ncInqIdInp.name,
+          ncOpenInp.objPath);
+        exit (3);
+    } else {
+        printf ("latitude value: \n");
+        for (i = 0; i < ncGetVarOut->dataArray.len; i++) {
+            float *fdata = (float *)  ncGetVarOut->dataArray.buf;
+            printf ("  %.2f", fdata[i]);
+        }
+        printf ("\n");
+    }
+
+    start[0] = 0;
+    start[1] = 0;
+    count[0] = latdimlen1;
+    count[1] = londimlen1;
+    stride[0] = 1;
+    stride[2] = 1;
+    ncGetVarInp.dataType = prestype1;
+    ncGetVarInp.varid = presvarid1;
+    ncGetVarInp.ndim = presndim;
+
+    status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcGetVarsByType error for pressure of %s", ncInqIdInp.name,
+          ncOpenInp.objPath);
+        exit (3);
+    } else {
+        printf ("pressure value: \n");
+        for (i = 0; i < ncGetVarOut->dataArray.len; i++) {
+            float *fdata = (float *)  ncGetVarOut->dataArray.buf;
+            printf ("  %.2f", fdata[i]);
+        }
+        printf ("\n");
+    }
+
+    start[0] = 0;
+    start[1] = 0;
+    count[0] = latdimlen1;
+    count[1] = londimlen1;
+    stride[0] = 1;
+    stride[2] = 1;
+    ncGetVarInp.dataType = temptype1;
+    ncGetVarInp.varid = tempvarid1;
+    ncGetVarInp.ndim = tempndim;
+
+    status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcGetVarsByType error for temperature of %s", ncInqIdInp.name,
+          ncOpenInp.objPath);
+        exit (3);
+    } else {
+        printf ("temperature value: \n");
+        for (i = 0; i < ncGetVarOut->dataArray.len; i++) {
+            float *fdata = (float *)  ncGetVarOut->dataArray.buf;
+            printf ("  %.2f", fdata[i]);
+        }
+        printf ("\n");
     }
 
     /* close the file */

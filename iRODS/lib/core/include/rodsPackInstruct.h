@@ -88,7 +88,12 @@
 #define ReArg_PI "int myArgc; str *myArgv[myArgc];"
 #define ReiAndArg_PI "struct *Rei_PI; struct ReArg_PI;"
 
+/* PI for bytesBuf_t. can be used for various types of array */
 #define BytesBuf_PI "int buflen; char *buf(buflen);"
+#define strBytesBuf_PI "int buflen; str *strbuf[buflen];"  /* arr of str ptrs */
+#define IntBytesBuf_PI "int buflen; int *intbuf(buflen);"
+#define Int64BytesBuf_PI "int buflen; double *int64buf(buflen);"
+
 #define BinBytesBuf_PI "int buflen; bin *buf(buflen);"
 
 #define MsParam_PI "str *label; piStr *type; ?type *inOutStruct; struct *BinBytesBuf_PI;"
