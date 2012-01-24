@@ -42,7 +42,7 @@ typedef struct {
     keyValPair_t condInput;
 } ncGetVarInp_t;
     
-#define NcGetVarInp_PI "int varType; int ncid; int myint; int ndim; double *start[ndim]; double *count[ndim]; double *stride[ndim]; struct KeyValPair_PI;"
+#define NcGetVarInp_PI "int varType; int ncid; int myint; int ndim; double *start(ndim); double *count(ndim); double *stride(ndim); struct KeyValPair_PI;"
 
 typedef struct {
     int varid;
@@ -51,7 +51,7 @@ typedef struct {
     void *data;		/* data array of dataLen length */
 } ncGetVarOut_t;
 
-#define NcGetVarOut_PI "int varid; int dataLen; piStr dataType_PI[NAME_LEN]; ?dataType_PI *data[dataLen];"
+#define NcGetVarOut_PI "int varid; int dataLen; piStr dataType_PI[NAME_LEN]; ?dataType_PI *data(dataLen);"
 
 #if defined(RODS_SERVER)
 #define RS_NC_GET_VARS_BY_TYPE rsNcGetVarsByType
