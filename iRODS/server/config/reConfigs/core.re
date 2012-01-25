@@ -92,6 +92,19 @@ acAclPolicy { }
 # ichmod -M read public /ZONE_NAME/home 
 #
 # --------------------------------------------------------------------------
+# This is a policy point for ticket-based access (added in iRODS 3.1),
+# where the administrator can allow ticket use by all users, no users,
+# only certain users, or not certain users.  To disallow for all
+# users, comment out the defined acTicketPolicy.  Also, as an example
+# example, to disallow for user anonymous (passwordless logins),
+# comment out the default acTicketPolicy rule and uncomment out the
+# second one.  The default policy is to allow all users.  The rule is
+# executed when the server receives a ticket for use for access and
+# if the rule fails (none found to apply), the ticket is not used.
+acTicketPolicy {}
+#acTicketPolicy {ON($userNameClient != "anonymous") { } }
+#
+# --------------------------------------------------------------------------
 # The following are rules for data object operation
 # Note that the msiOprDisallowed microservice can be used by all the rules
 # to disallow the execution of certain actions.

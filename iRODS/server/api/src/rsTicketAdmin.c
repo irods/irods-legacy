@@ -37,7 +37,7 @@ rsTicketAdmin (rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp )
 
     if (status < 0) { 
        rodsLog (LOG_NOTICE,
-                "rsTicketAdmin: rcTicketAdmin failed");
+                "rsTicketAdmin failed, error %d", status);
     }
     return (status);
 }
@@ -47,7 +47,17 @@ int
 _rsTicketAdmin(rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp )
 {
     int status;
+    if (strcmp(ticketAdminInp->arg1,"session")==0 ) {
+       ruleExecInfo_t rei;
 
+       memset((char*)&rei,0,sizeof(rei));
+       rei.rsComm = rsComm;
+       rei.uoic = &rsComm->clientUser;
+       rei.uoip = &rsComm->proxyUser;
+       status = applyRule("acTicketPolicy", NULL, &rei, NO_SAVE_REI);
+       rodsLog(LOG_DEBUG, "debug ticket rule status:%d", status);
+       if (status != 0) return(status);
+    }
     status = chlModTicket(rsComm, ticketAdminInp->arg1, 
 			  ticketAdminInp->arg2, ticketAdminInp->arg3, 
 			  ticketAdminInp->arg4, ticketAdminInp->arg5);
