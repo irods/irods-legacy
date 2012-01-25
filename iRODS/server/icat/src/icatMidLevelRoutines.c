@@ -1188,7 +1188,10 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
 	       "update R_TICKET_MAIN set write_file_count=? where ticket_id=?",
 	       icss);
 	    if (status != 0) return(status);
-	    /* Commit will be done later */
+#ifndef ORA_ICAT
+            /* as with auditing, do a commit on disconnect if needed */
+	    cllCheckPending("",2, icss->databaseType); 
+#endif
 	 }
 	 previousDataId1=intDataId;
       }
@@ -1211,7 +1214,10 @@ int checkObjIdByTicket(char *dataId, char *accessLevel,
 	 status =  cmlExecuteNoAnswerSql(
 	    "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
 	 if (status != 0) return(status);
-	 /* commit will be done as part of sequence later */
+#ifndef ORA_ICAT
+	 /* as with auditing, do a commit on disconnect if needed*/
+	 cllCheckPending("",2, icss->databaseType); 
+#endif
       }
       previousDataId2=intDataId;
    }
@@ -1253,13 +1259,7 @@ cmlTicketUpdateWriteBytes(char *ticketStr,
    iWriteByteCount = atoll(writeByteCount);
    
    if (iWriteByteLimit==0) return(0);
-#if 0
-    /* doesn't work well here; too late for a roll-back, 
-       so will catch it on next put */
-   if ( (iWriteByteCount+iDataSize) > iWriteByteLimit) {
-     return(CAT_TICKET_WRITE_BYTES_EXCEEDED); 
-   }
-#endif
+
    iNewByteCount = iWriteByteCount + iDataSize;
    snprintf(myWriteByteCount, sizeof myWriteByteCount, "%lld", iNewByteCount);
    cllBindVars[cllBindVarCount++]=myWriteByteCount;
@@ -1267,7 +1267,11 @@ cmlTicketUpdateWriteBytes(char *ticketStr,
    if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlTicketUpdateWriteBytes SQL 2 ");
    status =  cmlExecuteNoAnswerSql(
       "update R_TICKET_MAIN set write_byte_count=? where ticket_id=?", icss);
-
+   if (status != 0) return(status);
+#ifndef ORA_ICAT
+   /* as with auditing, do a commit on disconnect if needed */
+   cllCheckPending("",2, icss->databaseType); 
+#endif
    return(0);
 }
 
