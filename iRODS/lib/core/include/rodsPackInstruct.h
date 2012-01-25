@@ -90,9 +90,12 @@
 
 /* PI for bytesBuf_t. can be used for various types of array */
 #define BytesBuf_PI "int buflen; char *buf(buflen);"
-#define strBytesBuf_PI "int buflen; str *strbuf[buflen];"  /* arr of str ptrs */
-#define IntBytesBuf_PI "int buflen; int *intbuf(buflen);"
-#define Int64BytesBuf_PI "int buflen; double *int64buf(buflen);"
+
+/* PI for dataArray_t */
+#define charDataArray_PI "int type; int len; char *buf(len);" 
+#define strDataArray_PI "int type; int len; str *buf[len];" 
+#define intDataArray_PI "int type; int len; int *buf(len);" 
+#define int64DataArray_PI "int type; int len; double *buf(len);" 
 
 #define BinBytesBuf_PI "int buflen; bin *buf(buflen);"
 

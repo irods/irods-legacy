@@ -46,7 +46,7 @@ typedef struct {
 
 typedef struct {
     char dataType_PI[NAME_LEN];	  /* the packing instruction of the dataType */
-    bytesBuf_t *dataArray;
+    dataArray_t *dataArray;
 } ncGetVarOut_t;
 
 #define NcGetVarOut_PI "piStr dataType_PI[NAME_LEN]; ?dataType_PI *dataArray;"
