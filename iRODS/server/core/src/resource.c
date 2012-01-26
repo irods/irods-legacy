@@ -159,6 +159,7 @@ replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, rescGrpInfo_t **destRescGrpInfo)
 /* queryRescInRescGrp - Given the rescGroupName string which must be the
  * name of a resource group, query all resources in this resource group.
  * The output of the query is given in genQueryOut.
+ * YYYY - queryRescInRescGrp - this routine is currently not used
  */
 
 int
@@ -578,6 +579,7 @@ getRescGrpClass (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
 
 /* compareRescAddr - Given 2 rescInfo, if they have the same host address,
  * return 1. Otherwise, return 0.
+ * YYYY - compareRescAddr - this routine is currently not used
  */
 
 int
@@ -1706,6 +1708,7 @@ updateResc (rsComm_t *rsComm)
 
 /* matchSameHostRescByType - find a resource on the same host
  * as the input myRescInfo but with the input driverType.
+ * YYYY - this routine is currently not used
  */
 
 rescInfo_t *

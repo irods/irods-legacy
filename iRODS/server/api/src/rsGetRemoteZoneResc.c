@@ -15,6 +15,9 @@
 #include "dataObjCreate.h"
 #include "dataObjOpen.h"
 
+/*
+ YYYY - rsGetRemoteZoneResc - this API routine is currently not used.
+*/
 int
 rsGetRemoteZoneResc (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsHostAddr_t **rescAddr)

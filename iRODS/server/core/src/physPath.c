@@ -1032,6 +1032,7 @@ isInVault (dataObjInfo_t *dataObjInfo)
 
 /* initStructFileOprInp - initialize the structFileOprInp struct for
  * rsStructFileBundle and rsStructFileExtAndReg
+ * YYYY - this routine is currently not used
  */
 
 int

@@ -819,6 +819,7 @@ dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
 
 /* dataObjExist - check whether the data object given in dataObjInp exist.
    Returns 1 if exists, 0 ==> does not exist
+   YYYY - dataObjExist - this routine is currently not used
  */
 
 int
@@ -989,6 +990,7 @@ dataObjInfo_t *dataObjInfo)
  *    return - 1 - the dir is orphan.
  *             0 - 0 the dir is not an orphan.
  *             -ive - query error.
+ * YYYY - chkOrphanDir - this routine is currently not used
  */
 
 int
@@ -1469,6 +1471,9 @@ keyValPair_t *condInput, int writeFlag, int topFlag)
     return (status);
 }
 
+/*
+ YYYY - requeDataObjInfoBySrcResc - this routine is currently not used
+ */
 int
 requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
 keyValPair_t *condInput, int writeFlag, int topFlag)

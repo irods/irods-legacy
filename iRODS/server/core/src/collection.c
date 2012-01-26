@@ -108,6 +108,9 @@ int singleFlag)
 
 }
 
+/*
+ YYYY - rsQueryCollInColl - this routine is only used in rsRmCollOld.c
+ */
 int
 rsQueryCollInColl (rsComm_t *rsComm, char *collection,
 genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut)

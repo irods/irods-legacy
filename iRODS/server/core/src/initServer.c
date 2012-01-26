@@ -89,6 +89,9 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     return (tmpRodsServerHost->localFlag);
 }
 
+/*
+ YYYY - resolveHostByDataObjInfo - this routine is currently not used
+ */
 int 
 resolveHostByDataObjInfo (dataObjInfo_t *dataObjInfo,
 rodsServerHost_t **rodsServerHost)
@@ -1022,6 +1025,9 @@ rodsServerHost_t **rodsServerHost)
     return(0);
 }
 
+/* 
+ YYYY - disconnRcatHost - this routine is currently not used
+ */
 int
 disconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint)
 {
@@ -2094,6 +2100,9 @@ rodsServerHost_t **rodsServerHost, char *remotZoneOpr)
     return (status);
 }
 
+/* 
+ YYYY - resolveAndConnHost - this routine is currently not used
+ */
 int
 resolveAndConnHost (rsComm_t *rsComm, rodsHostAddr_t *addr, 
 rodsServerHost_t **rodsServerHost)
@@ -2180,6 +2189,7 @@ getXmsgHost (rodsServerHost_t **rodsServerHost)
  * rodsServerHost).
  * If the is remote, it will automatically connect to the server where 
  * irodsReServer is run.
+ * YYYY - getAndConnReHost - this routine is currently not used
  */
 
 int
