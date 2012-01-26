@@ -276,7 +276,7 @@ runCmd( "ips -v", "", "LIST", "ips" );
 runCmd( "iqstat" );
 runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" );
 # make a directory of large files
-runCmd( "iput -IK --wlock $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
+runCmd( "iput -K --wlock $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
 runCmd( "ichksum -f $irodshome/icmdtest/foo1" );
 runCmd( "iput -kf $progname $irodshome/icmdtest/foo1" );
 runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "foo1,$myssize" );
@@ -313,7 +313,7 @@ unlink ( "$dir_w/foo2" );
 mksdir ();
 runCmd( "irepl -B -R testresource $irodshome/icmdtest/foo1" );
 my $phypath = $dir_w . '/' . 'foo1.' .  int(rand(10000000));
-runCmd( "iput -IkfR $irodsdefresource -p $phypath $sfile2 $irodshome/icmdtest/foo1" );
+runCmd( "iput -kfR $irodsdefresource -p $phypath $sfile2 $irodshome/icmdtest/foo1" );
 # show have 2 different copies
 runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "foo1,$myssize,$sfile2size" );
 # update all old copies
@@ -322,11 +322,11 @@ runCmd( "irepl -U $irodshome/icmdtest/foo1" );
 runCmd( "ils -l $irodshome/icmdtest/foo1", "negtest", "LIST", "$myssize" );
 runCmd( "itrim -S $irodsdefresource $irodshome/icmdtest/foo1" );
 # bulk test
-runCmd( "iput -bvPKr $mysdir $irodshome/icmdtest" );
+runCmd( "iput -bIvPKr $mysdir $irodshome/icmdtest" );
 # iput with a lot of options
 my $rsfile = $dir_w . "/rsfile";
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "iput -PkIfTr -X $rsfile --retries 10  $mysdir $irodshome/icmdtestw" );
+runCmd( "iput -PkITr -X $rsfile --retries 10  $mysdir $irodshome/icmdtestw" );
 runCmd( "imv $irodshome/icmdtestw $irodshome/icmdtestw1" );
 runCmd( "ils -lr $irodshome/icmdtestw1", "", "LIST", "sfile10" );
 system ( "irm -rvf $irodshome/icmdtestw1" );
