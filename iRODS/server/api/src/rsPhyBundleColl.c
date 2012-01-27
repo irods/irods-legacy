@@ -209,7 +209,8 @@ rescGrpInfo_t *rescGrpInfo)
     		curSubFileCond.cachePhyPath[0] = '\0';
 	    /* XXXX there was a bug that if dataSize == 0, replStatus is 0.
              * This bug has been fixed since 3.1 */
-	    } else if ((collEnt->replStatus > 0 || collEnt->dataSize == 0) && 
+	    } else if ((collEnt->replStatus > 0 || 
+              curSubFileCond.subPhyPath[0] == '\0') && 
 	      strcmp (collEnt->resource, myRescName) == 0) {
 		/* have a good copy in cache resource */
                 setSubPhyPath (phyBunDir, curSubFileCond.dataId, 
