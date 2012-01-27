@@ -279,6 +279,7 @@ runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" )
 runCmd( "iput -K --wlock $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
 runCmd( "ichksum -f $irodshome/icmdtest/foo1" );
 runCmd( "iput -kf $progname $irodshome/icmdtest/foo1" );
+runCmd( "ils $irodshome/icmdtest/foo1" , "", "LIST", "foo1" );
 runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "foo1,$myssize" );
 runCmd( "iadmin ls $irodshome/icmdtest", "", "LIST", "foo1" );
 runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "$username#$irodszone:own" );
@@ -329,6 +330,7 @@ if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "iput -PkITr -X $rsfile --retries 10  $mysdir $irodshome/icmdtestw" );
 runCmd( "imv $irodshome/icmdtestw $irodshome/icmdtestw1" );
 runCmd( "ils -lr $irodshome/icmdtestw1", "", "LIST", "sfile10" );
+runCmd( "ils -Ar $irodshome/icmdtestw1", "", "LIST", "sfile10" );
 system ( "irm -rvf $irodshome/icmdtestw1" );
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "iget -vIKPfr -X rsfile --retries 10 $irodshome/icmdtest $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
@@ -365,6 +367,7 @@ if ( $doIbunZipTest =~ "yes" ) {
     runCmd( "itrim -N1 -S $irodsdefresource -r $irodshome/icmdtestbz2" );
     # get the name of bundle file
     my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestbz2/icmdtestx/foo1" );
+    runCmd( "ils --bundle $bunfile" );
     system ("irm -rf $irodshome/icmdtestbz2");
     runCmd( "irm -f --empty $bunfile" );
 }
@@ -381,6 +384,7 @@ runCmd( "diff -r $mysdir $dir_w/testa", "", "NOANSWER" );
 system ( "rm -r $dir_w/testa" );
 # mcoll test
 runCmd( "imcoll -m link $irodshome/icmdtesta $irodshome/icmdtestb" );
+runCmd( "ils -lr $irodshome/icmdtestb" );
 runCmd( "iget -fvrK $irodshome/icmdtestb $dir_w/testb" );
 runCmd( "diff -r $mysdir $dir_w/testb", "", "NOANSWER" );
 runCmd( "imcoll -U $irodshome/icmdtestb" );
@@ -552,18 +556,22 @@ my $lrsfile = $dir_w . "/lrsfile";
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "iput -vbPKr --retries 10 --wlock -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/icmdtest/testy" );
+runCmd( "ichksum -rK $irodshome/icmdtest/testy" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "irepl -BvrPT -R testresource --rlock $irodshome/icmdtest/testy" );
 runCmd( "itrim -vrS $irodsdefresource --dryrun --age 1 -N1 $irodshome/icmdtest/testy" );
 runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/icmdtest/testy" );
 runCmd( "icp -vKPTr -N2 $irodshome/icmdtest/testy $irodshome/icmdtest/testz" );
+runCmd( "irsync -r i:$irodshome/icmdtest/testy i:$irodshome/icmdtest/testz" );
 system ( "irm -vrf $irodshome/icmdtest/testy" );
 runCmd( "iphymv -vrS $irodsdefresource -R testresource  $irodshome/icmdtest/testz" );
 
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile --rlock -N 2 $irodshome/icmdtest/testz $dir_w/testz" );
+runCmd( "irsync -r $dir_w/testz i:$irodshome/icmdtest/testz" );
+runCmd( "irsync -r i:$irodshome/icmdtest/testz $dir_w/testz" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "diff -r $dir_w/testz $myldir", "", "NOANSWER" );
