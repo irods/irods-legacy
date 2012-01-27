@@ -290,6 +290,7 @@ rescInfo_t *rescInfo, char *rescGroupName)
 	    }
         }
     }
+    dataObjInfo->replStatus = NEWLY_CREATED_COPY;
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
       dataObjInp->dataSize);
 
