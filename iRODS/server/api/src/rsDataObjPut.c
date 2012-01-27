@@ -367,6 +367,7 @@ bytesBuf_t *dataObjInpBBuf)
 	     * the put would have done in the remote zone. But it make
 	     * the code easier to read (similar ro copy). 
 	     */
+	    myDataObjInfo->replStatus = NEWLY_CREATED_COPY;
             status = svrRegDataObj (rsComm, myDataObjInfo);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
