@@ -825,6 +825,9 @@ bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart)
     return status;
 }
 
+/*
+ YYYY - getPhyBunDir this routine is only used with BULK_OPR_WITH_TAR
+ */
 int
 getPhyBunDir (char *phyBunRootDir, char *userName, char *outPhyBunDir) 
 {

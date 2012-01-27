@@ -189,6 +189,9 @@ userInfo_t *clientUser, userInfo_t *proxyUser)
     return (0);
 }
 
+/* 
+ YYYY - setAuthInfo - this routine is corrently not used
+ */
 int setAuthInfo (char *rodsAuthScheme,
 char *authStr, char *rodsServerDn,
 userInfo_t *clientUser, userInfo_t *proxyUser, int flag)

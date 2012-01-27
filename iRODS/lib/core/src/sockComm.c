@@ -28,6 +28,9 @@ MMRESULT win_connect_timer_id;
 #include <setjmp.h>
 jmp_buf Jcenv;
 
+/* 
+ YYYY - connToutHandler - this routine is currently not used
+ */
 void
 connToutHandler (int sig)
 {
@@ -1342,6 +1345,9 @@ rods_inet_ntoa (struct in_addr in)
     return (clHostAddr);
 }
 
+/*
+ YYYY - irodsCloseSock - this routine is currently not used
+ */
 int
 irodsCloseSock (int sock)
 {

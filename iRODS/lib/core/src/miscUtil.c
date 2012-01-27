@@ -244,6 +244,9 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
     return (rodsPath->objState);
 }
 
+/* 
+ YYYY - extractRodsObjType - this routine is currently not used
+ */
 int
 extractRodsObjType (rodsPath_t *rodsPath, sqlResult_t *dataId, 
 sqlResult_t *replStatus, sqlResult_t *chksum, sqlResult_t *dataSize, 

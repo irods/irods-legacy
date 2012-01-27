@@ -342,6 +342,9 @@ statToRodsStat (rodsStat_t *rodsStat, struct stat *myFileStat)
     return (0);
 }
 
+/* 
+ YYYY - rodsStatToStat - this routine is currently not used
+ */
 int 
 rodsStatToStat (struct stat *myFileStat, rodsStat_t *rodsStat)
 {
@@ -687,6 +690,9 @@ getValByKey (keyValPair_t *condInput, char *keyWord)
     return (NULL); 
 }
 
+/* 
+ YYYY - getValByInx - this routine is currently not used
+ */
 char *
 getValByInx (inxValPair_t *inxValPair, int inx)
 {
@@ -1056,7 +1062,9 @@ resizeStrArray (strArray_t *strArray, int newSize)
 }
 
 
-
+/* 
+ YYYY - addIntArray - this routine is currently not used
+ */
 int
 addIntArray (intArray_t *intArray, int value)
 {
@@ -1105,6 +1113,9 @@ clearKeyVal (keyValPair_t *condInput)
     return(0);
 }
 
+/* 
+ YYYY - clearTagStruct - this routine is currently not used
+ */
 int
 clearTagStruct (tagStruct_t *condInput)
 {
@@ -1721,6 +1732,7 @@ getOffsetTimeStr(char *timeStr, char *offSet)
    0123456789012345678
    Offset the number of minutes to add.
    This is based on getOffsetTimeStr.
+ YYYY - updateOffsetTimeStr - this routine is currently not used
 */
 void
 updateOffsetTimeStr(char *timeStr, int offset) 
@@ -2310,6 +2322,9 @@ printErrorStack (rError_t *rError)
     return (0);
 }
 
+/*
+ YYYY - closeQueryOut - this routine currently is not used
+ */
 int
 closeQueryOut (rcComm_t *conn, genQueryOut_t *genQueryOut)
 {
@@ -2665,6 +2680,9 @@ getLineInBuf (char **inbuf, char *outbuf, int bufLen)
     return (bytesCopied);
 }
 
+/*
+ YYYY - setStateForResume - this routine is currently not used
+ */
 int
 setStateForResume (rcComm_t *conn, rodsRestart_t *rodsRestart, 
 char *restartPath, objType_t objType, keyValPair_t *condInput,
@@ -3084,6 +3102,9 @@ fillGenQueryInpFromStrCond(char *str, genQueryInp_t *genQueryInp)
   return(0);
 }
 
+/*
+ YYYY printHintedGenQueryOut - this routine is currently not used
+ */
 int
 printHintedGenQueryOut(FILE *fd, char *format, char *hint,  genQueryOut_t *genQueryOut)
 {
@@ -3392,6 +3413,9 @@ getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl)
 	return (STRUCT_FILE_SPEC_COLL_OPR);
 }
 
+/*
+ YYYY resolveStatForStructFileOpr - this routine is currently not used
+ */
 void
 resolveStatForStructFileOpr (keyValPair_t *condInput, 
 rodsObjStat_t *rodsObjStatOut)

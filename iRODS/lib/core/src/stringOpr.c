@@ -172,6 +172,9 @@ char* outStr2, int maxOutLen2, char key)
     }
 }
 
+/*
+ YYYY - rSplitStrByStrKey - this routine is currently not used
+ */
 int
 rSplitStrByStrKey (char *inStr, char* outStr1, int maxOutLen1, 
 char* outStr2, int maxOutLen2, char* key)
@@ -327,6 +330,7 @@ splitPathByKey (char *srcPath, char *dir, char *file, char key)
 }
 
 /* get the strlen of the parent, including the last '/'
+ YYYY - getParentPathlen - this routine is currently not used
  */
 
 int

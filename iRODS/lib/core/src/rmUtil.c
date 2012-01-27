@@ -193,6 +193,9 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
     return (status);
 }
 
+/*
+ YYYY - mvDataObjToTrash - this routine is currently not used
+ */
 int
 mvDataObjToTrash (rcComm_t *conn, dataObjInp_t *dataObjInp)
 {
@@ -227,6 +230,9 @@ mvDataObjToTrash (rcComm_t *conn, dataObjInp_t *dataObjInp)
     return (status);
 }
 
+/*
+ YYYY - mkTrashPath - this routine is currently not used
+ */
 int
 mkTrashPath (rcComm_t *conn, dataObjInp_t *dataObjInp, char *trashPath)
 {
@@ -277,6 +283,9 @@ mkTrashPath (rcComm_t *conn, dataObjInp_t *dataObjInp, char *trashPath)
     return (status);
 }
 
+/*
+ YYYY - mvCollToTrash - this routine is currently not used
+ */
 int
 mvCollToTrash (rcComm_t *conn, dataObjInp_t *dataObjInp)
 {
