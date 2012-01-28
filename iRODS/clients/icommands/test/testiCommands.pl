@@ -382,6 +382,18 @@ runCmd( "ireg -KCR testresource $mysdir $irodshome/icmdtesta", "", "", "", "irm 
 runCmd( "iget -fvrK $irodshome/icmdtesta $dir_w/testa" );
 runCmd( "diff -r $mysdir $dir_w/testa", "", "NOANSWER" );
 system ( "rm -r $dir_w/testa" );
+# test ireg with normal user
+my $testuser2home = '/' . $irodszone . '/home/testuser2';
+$ENV{'clientUserName'}  = 'testuser2';
+system ( "cp /tmp/sfile2 /tmp/sfile2c" );
+# this should fail
+runCmd( "ireg -KR testresource /tmp/sfile2c  $testuser2home/foo5", "failtest" );
+runCmd( "iput -R testresource /tmp/sfile2c $testuser2home/foo5" );
+# this should fail
+runCmd( "irm -U $testuser2home/foo5", "failtest" );
+system ("irm -f $testuser2home/foo5" );
+$ENV{'clientUserName'}  = $username;
+
 # mcoll test
 runCmd( "imcoll -m link $irodshome/icmdtesta $irodshome/icmdtestb" );
 runCmd( "ils -lr $irodshome/icmdtestb" );
@@ -544,9 +556,9 @@ unlink ( "$dir_w/foo2" );
 system ( "irm $irodshome/icmdtest/foo3" );
 runCmd( "irule -F $ruletestfile" );
 runCmd( "irsync $ruletestfile i:$irodshome/icmdtest1/foo1" );
-system ( "rm $dir_w/foo1" );
-runCmd( "irsync i:$irodshome/icmdtest1/foo1 $dir_w/foo1" );
+runCmd( "irsync i:$irodshome/icmdtest1/foo1 /tmp/foo1" );
 runCmd( "irsync i:$irodshome/icmdtest1/foo1 i:$irodshome/icmdtest1/foo2" );
+system ( "rm /tmp/foo1" );
 if ( -e $ruletestfile ) { unlink( $ruletestfile ); }
 $ENV{'irodsProt'} = 0;
 
@@ -651,6 +663,7 @@ exit;
 # runCmd needs at least 8 arguments: 
 #   1- command name + arguments
 #   2- specify if it is a negative test by providing the "negtest" value, ie it is successfull if the test fails (optional).
+#   If this value is "failtest", this command is expected to fail.
 #   3- output line of interest (optional), if equal to "LIST" then match test the entire list of answers provided in 4-. if equal to "NOANSWER" then expect no answer.
 #   4- expected list of results separeted by ',' (optional: must be given if second argument provided else it will fail).
 #	5- command name to go back to first situation
@@ -671,6 +684,7 @@ sub runCmd {
  	my $numinlist  = 0;
  	my $numsuccess = 0;
  	my $negtest    = 0;
+ 	my $failtest    = 0;
  	my $result     = 1; 		# used only in the case where the answer of the command has to be compared to an expected answer.
 
 #-- Check inputs
@@ -685,6 +699,8 @@ sub runCmd {
 	} else {
 		if ( $testtype eq "negtest" ) {
 			$negtest = 1;
+                } elsif ( $testtype eq "failtest" ) {
+                        $failtest = 1;
 		} else {
 			$negtest = 0;
 		}	
@@ -793,7 +809,10 @@ sub runCmd {
 		}
 	}
 	
-	if ( $rc == 0 and ( $result ^ $negtest ) ) {
+        if ( $rc != 0 and $failtest == 1) {
+                push( @successlist, "$ntests - $cmd  ====> OK\n" );
+                $result = 1;
+	} elsif ( $rc == 0 and ( $result ^ $negtest ) ) {
 		push( @successlist, "$ntests - $cmd  ====> OK\n" );
 		$result = 1;
 	} else {
