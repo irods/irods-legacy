@@ -268,9 +268,9 @@ dataObjInfo_t *dataObjInfo)
 
             initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
             rei.doi = dataObjInfo;
-            rei.status = CHK_PERM_FLAG;         /* default */
+            rei.status = DO_CHK_PATH_PERM;         /* default */
             applyRule ("acNoChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-            if (rei.status == CHK_PERM_FLAG) {
+            if (rei.status == DO_CHK_PATH_PERM) {
                 char *outVaultPath;
                 rodsServerHost_t *rodsServerHost;
 	        status = resolveHostByRescInfo (dataObjInfo->rescInfo, 

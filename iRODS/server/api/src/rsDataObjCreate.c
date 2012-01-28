@@ -423,7 +423,7 @@ dataObjInfo_t *dataObjInfo)
 	rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
 	fileCreateInp.mode = getFileMode (dataObjInp);
 	if (getchkPathPerm (rsComm, dataObjInp, dataObjInfo)) {
-	    fileCreateInp.otherFlags |= CHK_PERM_FLAG; 
+	    fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG; 
 	}
 	l3descInx = rsFileCreate (rsComm, &fileCreateInp);
 

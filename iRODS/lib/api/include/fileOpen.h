@@ -18,7 +18,7 @@
 
 /* definition for otherFlags */
 
-#define CHK_PERM_FLAG		0x1
+#define NO_CHK_PERM_FLAG	0x1
 #define UNIQUE_REM_COMM_FLAG	0x2
 #define FORCE_FLAG		0x4
 

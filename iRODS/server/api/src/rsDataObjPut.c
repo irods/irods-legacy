@@ -447,7 +447,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
         if (getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp, 
           L1desc[l1descInx].dataObjInfo)) {
-            filePutInp.otherFlags |= CHK_PERM_FLAG;
+            filePutInp.otherFlags |= NO_CHK_PERM_FLAG;
         }
         bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
         /* file already exists ? */

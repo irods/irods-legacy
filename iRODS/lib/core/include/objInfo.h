@@ -292,8 +292,8 @@ typedef enum {
 
 /* definition for chkPathPerm */
 
-#define NO_CHK_PATH_PERM	0
-#define DO_CHK_PATH_PERM	1
+#define DO_CHK_PATH_PERM	0
+#define NO_CHK_PATH_PERM	1
 
 /* definition for stageFlag to specify whether staging is required */
 #define NO_STAGING        0

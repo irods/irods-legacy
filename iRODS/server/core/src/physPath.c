@@ -288,9 +288,9 @@ dataObjInfo_t *dataObjInfo)
         } else {
     	    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
 	    rei.doi = dataObjInfo;
-	    rei.status = CHK_PERM_FLAG;		/* default */
+	    rei.status = DO_CHK_PATH_PERM;		/* default */
 	    applyRule ("acNoChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-	    if (rei.status == CHK_PERM_FLAG) {
+	    if (rei.status == DO_CHK_PATH_PERM) {
                 chkPathPerm = RescTypeDef[rescInfo->rescTypeInx].chkPathPerm;
 	    } else {
 		chkPathPerm = NO_CHK_PATH_PERM;

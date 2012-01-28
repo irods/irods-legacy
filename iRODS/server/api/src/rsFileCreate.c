@@ -89,7 +89,7 @@ rodsServerHost_t *rodsServerHost)
      * when RCAT is available 
      */
 
-    if (fileCreateInp->otherFlags & CHK_PERM_FLAG) {
+    if ((fileCreateInp->otherFlags & NO_CHK_PERM_FLAG) == 0) {
 	status = chkFilePathPerm (rsComm, fileCreateInp, 
 	  rodsServerHost);
 	if (status < 0) {

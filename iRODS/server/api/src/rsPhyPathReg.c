@@ -189,7 +189,7 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
 
  
     if (getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
-      getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) { 
+      getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo) == DO_CHK_PATH_PERM) { 
         memset (&chkNVPathPermInp, 0, sizeof (chkNVPathPermInp));
 
         rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
