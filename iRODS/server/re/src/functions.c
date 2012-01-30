@@ -6,8 +6,10 @@
 #include "datetime.h"
 #include "cache.h"
 #include "configuration.h"
+#ifndef DEBUG
 #include "apiHeaderAll.h"
 #include "rsApiHandler.h"
+#endif
 
 
 #if defined(USE_BOOST)
@@ -411,6 +413,14 @@ Res *smsi_listapprules(Node **params, int n, Node *node, ruleExecInfo_t *rei, in
     int i;
     for(i=0;i<ruleEngineConfig.appRuleSet->len;i++) {
         coll->subtrees[i] = newStringRes(r, ruleEngineConfig.appRuleSet->rules[i]->node->subtrees[0]->text);
+    }
+    return coll;
+}
+Res *smsi_listextrules(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res *coll = newCollRes(ruleEngineConfig.extRuleSet->len, newSimpType(T_STRING, r), r);
+    int i;
+    for(i=0;i<ruleEngineConfig.extRuleSet->len;i++) {
+        coll->subtrees[i] = newStringRes(r, ruleEngineConfig.extRuleSet->rules[i]->node->subtrees[0]->text);
     }
     return coll;
 }
@@ -1236,16 +1246,19 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
 int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r, ruleExecInfo_t *rei) {
   execCmdOut_t *myExecCmdOut;
   Res *execOutRes;
+#ifndef DEBUG
   dataObjInp_t dataObjInp;
   openedDataObjInp_t openedDataObjInp;
   bytesBuf_t tmpBBuf;
   fileLseekOut_t *dataObjLseekOut = NULL;
   int fd,i;
+#endif
 
   if (writeId != NULL && strcmp (writeId, "serverLog") == 0) {
     rodsLog (LOG_NOTICE, "writeString: inString = %s", writeStr);
     return 0;
   }
+#ifndef DEBUG
   /* inserted by Raja Dec 2, 2011 */
     if (writeId != NULL && writeId[0] == '/') {
     /* writing to an existing iRODS file */
@@ -1291,7 +1304,7 @@ int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r, ruleExecI
   }
 
   /* inserted by Raja Dec 2, 2011 */
-
+#endif
 
 
   if ((execOutRes = (Res *)lookupFromEnv(env, "ruleExecOut")) != NULL) {
@@ -1982,6 +1995,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
     insertIntoHashTable(ft, "listcorerules", newFunctionFD("->list string", smsi_listcorerules, r));
     insertIntoHashTable(ft, "listapprules", newFunctionFD("->list string", smsi_listapprules, r));
+    insertIntoHashTable(ft, "listextrules", newFunctionFD("->list string", smsi_listextrules, r));
     /*insertIntoHashTable(ft, "true", newFunctionFD("boolean", smsi_true, r));
     insertIntoHashTable(ft, "false", newFunctionFD("boolean", smsi_false, r));*/
     insertIntoHashTable(ft, "time", newFunctionFD("->time", smsi_time, r));
