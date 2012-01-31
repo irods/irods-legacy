@@ -519,6 +519,7 @@ runCmd( "iput -R testresource $ruletestfile $irodshome/icmdtest/foo100");
 runCmd( "irsync $ruletestfile i:$irodshome/icmdtest/foo100" );
 runCmd( "iput -R testresource $ruletestfile $irodshome/icmdtest/foo200");
 runCmd( "irsync i:$irodshome/icmdtest/foo100 i:$irodshome/icmdtest/foo200" );
+system ("rm  $dir_w/foo100" );
 
 # do test using xml protocol
 $ENV{'irodsProt'} = 1;
