@@ -429,6 +429,7 @@ runCmd( "imkdir $irodshome/icmdtestt/mydirtt" );
 runCmd( "iput $progname $irodshome/icmdtestt/mydirtt/foo1mt" );
 runCmd( "imv $irodshome/icmdtestt/mydirtt/foo1mt $irodshome/icmdtestt/mydirtt/foo1mtx" );
 mkldir ();
+# test adding a large file to a mounted collection
 runCmd( "iput $myldir/lfile1 $irodshome/icmdtestt/mydirtt" );
 runCmd( "iget $irodshome/icmdtestt/mydirtt/lfile1 $dir_w/testt" );
 runCmd( "irm -r $irodshome/icmdtestt/mydirtt" );
@@ -588,7 +589,13 @@ runCmd( "irsync -r i:$irodshome/icmdtest/testz $dir_w/testz" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "diff -r $dir_w/testz $myldir", "", "NOANSWER" );
+# test -N0 transfer
+runCmd( "iput -N0 $myldir/lfile1 $irodshome/icmdtest/testz/lfoo100" );
+runCmd( "iget -N0 $irodshome/icmdtest/testz/lfoo100 $dir_w/lfoo100" );
+runCmd( "diff $myldir/lfile1 $dir_w/lfoo100", "", "NOANSWER" );
+
 system ( "rm -r $dir_w/testz" );
+system ( "rm $dir_w/lfoo100" );
 system ( "irm -vrf $irodshome/icmdtest/testz" );
 
 # do the large files tests using RBUDP
