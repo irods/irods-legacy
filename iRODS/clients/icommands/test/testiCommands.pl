@@ -590,7 +590,7 @@ if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "diff -r $dir_w/testz $myldir", "", "NOANSWER" );
 # test -N0 transfer
-runCmd( "iput -N0 $myldir/lfile1 $irodshome/icmdtest/testz/lfoo100" );
+runCmd( "iput -N0 -R testresource $myldir/lfile1 $irodshome/icmdtest/testz/lfoo100" );
 runCmd( "iget -N0 $irodshome/icmdtest/testz/lfoo100 $dir_w/lfoo100" );
 runCmd( "diff $myldir/lfile1 $dir_w/lfoo100", "", "NOANSWER" );
 

@@ -10,7 +10,7 @@
 #    noprompt - Assumes iinit was done before running this script 
 #        and will not ask for path nor password input.
 #    addrN - The 3 iRODS server addresses for this test. If they are not
-#        defined, the values defined by $iesHostAddr, $host2Addr and $host3Addr
+#        defined, the values defined by $localHostAddr, $host2Addr and $host3Addr
 #        in this script will be used.
 # 
 #
@@ -22,15 +22,14 @@ use File::stat;
 use File::Copy;
 
 #-- Initialization
-# This test has 3 servers and 3 resources. One of the server is an IES.
-# These 3 addresses can be input on the mhostsTestiCommands.pl command line.
-# If they are not given, the values defined below will be used.
-# my $iesHostAddr="one.ucsd.edu";
-# my $host2Addr="srbbrick14.ucsd.edu";
-# my $host3Addr="srbbrick15.ucsd.edu";
-my $iesHostAddr="mwan-hp";
-my $host2Addr="mwan-hp";
-my $host3Addr="mwan-hp";
+# This test has 3 servers and 3 resources. localHostAddr is the address of
+# the server where this test script is run. These 3 addresses can be input 
+# on the mhostsTestiCommands.pl command line.If they are not given, 
+# the values defined below will be used.
+# my $localHostAddr="srbbrick15.ucsd.edu";
+my $localHostAddr="one.ucsd.edu";
+my $host2Addr="srbbrick15.ucsd.edu";
+my $host3Addr="srbbrick14.ucsd.edu";
 my $resc1="myresc1";
 my $resc2="myresc2";
 my $resc3="myresc3";
@@ -91,7 +90,7 @@ foreach $arg (@ARGV)
         &printUsage ();
 	exit( 0 );
     }  elsif ($inHostCnt == 0) {
-	$iesHostAddr=$arg;
+	$localHostAddr=$arg;
 	$inHostCnt++;
     }  elsif ($inHostCnt == 1) {
         $host2Addr=$arg;
@@ -112,8 +111,8 @@ if ($inHostCnt > 0 && $inHostCnt < 3 ) {
     exit ( 1 );
 }
 
-print ("Host addresses used are:  $iesHostAddr  $host2Addr  $host3Addr\n");
-push ( @hostList, $iesHostAddr );
+print ("Host addresses used are:  $localHostAddr  $host2Addr  $host3Addr\n");
+push ( @hostList, $localHostAddr );
 push ( @hostList, $host2Addr );
 push ( @hostList, $host3Addr );
 
@@ -260,7 +259,7 @@ if ( ! $noprompt_flag ) {
 
 #-- Basic admin commands to make the needed resources.
 
-runCmd( "iadmin mkresc $resc1 \"unix file system\" cache $iesHostAddr \"/tmp/myresc1\"", "", "", "", "iadmin rmresc $resc1" );
+runCmd( "iadmin mkresc $resc1 \"unix file system\" cache $localHostAddr \"/tmp/myresc1\"", "", "", "", "iadmin rmresc $resc1" );
 runCmd( "iadmin mkresc $resc2 \"unix file system\" cache $host2Addr \"/tmp/myresc2\"", "", "", "", "iadmin rmresc $resc2" );
 runCmd( "iadmin mkresc $resc3 \"unix file system\" cache $host3Addr \"/tmp/myresc3\"", "", "", "", "iadmin rmresc $resc3" );
 runCmd( "iadmin mkresc compresource \"unix file system\" compound $host3Addr \"/tmp/compresc\"", "", "", "", "iadmin rmresc compresource" );
@@ -292,8 +291,8 @@ foreach $hostAddr (@hostList) {
     runCmd( "iput -KrR $resc2 $testlfile $irodshome/icmdtest/foo1" );
     runCmd( "iget -f -K $irodshome/icmdtest/foo1 $dir_w" );
     runCmd( "diff  $dir_w/foo1 $testlfile", "", "NOANSWER" );
-    runCmd( "iput -kf $testlfile $irodshome/icmdtest/foo1" );
-    runCmd( "iget -f -K $irodshome/icmdtest/foo1 $dir_w" );
+    runCmd( "iput -kf -N0 $testlfile $irodshome/icmdtest/foo1" );
+    runCmd( "iget -f -K -N0 $irodshome/icmdtest/foo1 $dir_w" );
     runCmd( "diff  $dir_w/foo1 $testlfile", "", "NOANSWER" );
     system ( "irm -f $irodshome/icmdtest/foo1" );
     system ( "rm $dir_w/foo1" );
@@ -307,7 +306,7 @@ foreach $hostAddr (@hostList) {
     runCmd( "iphymv -rR $resc2 $irodshome/icmdtest/dir1" );
     runCmd( "ils -l $irodshome/icmdtest/dir1/sdir/sfile1", "", "LIST", "$resc2" );
     runCmd( "itrim -rS  $resc2 -N1 $irodshome/icmdtest/dir1" );
-    runCmd( "icp -rK -R $resc2 $irodshome/icmdtest/dir1 $irodshome/icmdtest/dir2" );
+    runCmd( "icp -rK -R $resc3 $irodshome/icmdtest/dir1 $irodshome/icmdtest/dir2" );
     runCmd( "ils $irodshome/icmdtest/dir2/sdir/sfile1", "", "LIST", "sfile1" );
     runCmd( "imv $irodshome/icmdtest/dir2 $irodshome/icmdtest/dir3" );
     runCmd( "ils $irodshome/icmdtest/dir3/sdir/sfile1", "", "LIST", "sfile1" );
@@ -364,6 +363,11 @@ foreach $hostAddr (@hostList) {
     runCmd( "iget -r $irodshome/icmdtest/sdir  $dir_w" );
     runCmd( "diff -r $dir_w/sdir $testsrcdir/sdir", "", "NOANSWER" );
     runCmd( "irm -rvf $irodshome/icmdtest/sdir" );
+    runCmd( "imkdir $irodshome/icmdtestm" );
+    runCmd( "imcoll -m filesystem -R $resc1 $dir_w/sdir $irodshome/icmdtestm" );
+    runCmd( "ils -r $irodshome/icmdtestm", "", "LIST", "sfile1,sfile2" );
+    runCmd( "imcoll -U $irodshome/icmdtestm" );
+    system( "irm -rf $irodshome/icmdtestm" );
     system ( "rm -r $dir_w/sdir" );
     runCmd( "iexecmd -H $host2Addr hello", "", "LIST", "Hello world" );
     runCmd( "ips -H $host2Addr" );
@@ -376,7 +380,7 @@ foreach $hostAddr (@hostList) {
         runCmd( "iput -vQPKrR $resc2 --wlock $testsrcdir $irodshome/icmdtest/dir1" );
         runCmd( "irepl -BQvrPT -R $resc3 --rlock $irodshome/icmdtest/dir1" );
         runCmd( "itrim -vrS $resc2 -N1 $irodshome/icmdtest/dir1" );
-        runCmd( "icp -vQKPTr $irodshome/icmdtest/dir1 $irodshome/icmdtest/dir2" );
+        runCmd( "icp -vQKPTr -R $resc2 $irodshome/icmdtest/dir1 $irodshome/icmdtest/dir2" );
         system ( "irm -vrf $irodshome/icmdtest/dir1" );
         runCmd( "iget -vQPKr --rlock $irodshome/icmdtest/dir2 $dir_w/dir2" );
         runCmd( "diff -r $dir_w/dir2 $testsrcdir", "", "NOANSWER" );
@@ -681,6 +685,6 @@ sub printUsage ()
     print ("  noprompt -  Assumes iinit was done before running this script and\n");
     print ("    will not ask for password nor path input.\n");
     print ("  addrN - The 3 iRODS server addresses for this test. If they are not\n");
-    print ("    defined, the values defined by iesHostAddr, host2Addr and host3Addr\n");
+    print ("    defined, the values defined by localHostAddr, host2Addr and host3Addr\n");
     print ("    in this script will be used.\n");
 }
