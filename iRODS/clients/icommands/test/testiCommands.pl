@@ -378,7 +378,7 @@ system ( "cp /tmp/sfile2 /tmp/sfile2r" );
 runCmd( "ireg -KR compresource --repl /tmp/sfile2r  $irodshome/foo5" );
 runCmd( "iget -fK $irodshome/foo5 $dir_w/foo5", "", "", "", "rm $dir_w/foo5" );
 runCmd( "diff /tmp/sfile2  $dir_w/foo5", "", "NOANSWER" );
-runCmd( "ireg -KCR testresource $mysdir $irodshome/icmdtesta", "", "", "", "irm -vr $irodshome/icmdtesta" );
+runCmd( "ireg -KCR testresource $mysdir $irodshome/icmdtesta", "", "", "", "irm -Uvr $irodshome/icmdtesta" );
 runCmd( "iget -fvrK $irodshome/icmdtesta $dir_w/testa" );
 runCmd( "diff -r $mysdir $dir_w/testa", "", "NOANSWER" );
 system ( "rm -r $dir_w/testa" );
