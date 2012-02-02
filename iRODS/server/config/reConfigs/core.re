@@ -301,7 +301,7 @@ acPostProcForDelete { }
 #       "disallowPathReg" - Disallow of registration of iRODS path using
 #         ireg and imcoll by a non-privileged user. 
 #       "noChkPathPerm" - Do not check file path permission when registering
-#         a file. WARNING - This function can create a security problem if used.
+#         a file. WARNING - This setting can create a security problem if used.
 #      "doChkPathPerm" - Check UNIX ownership of physical files before
 #         registering. Registration of path inside iRODS resource vault
 #         path is not allowed.
