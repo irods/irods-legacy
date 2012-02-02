@@ -82,6 +82,8 @@ char localZone[MAX_NAME_LEN]="";
 char mySessionTicket[NAME_LEN]="";
 char mySessionClientAddr[NAME_LEN]="";
 
+int creatingUserByGroupAdmin=0;
+
 /*
  Enable or disable some debug logging.
  By default this is off.
@@ -1915,13 +1917,18 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
       return(CATALOG_NOT_CONNECTED);
    }
 
-   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
+       rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      int status2;
+      status2  = cmlCheckGroupAdminAccess(
+	 rsComm->clientUser.userName,
+	 rsComm->clientUser.rodsZone, 
+	 "", &icss);
+      if (status2 != 0) return(status2);
+      if (creatingUserByGroupAdmin==0) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
    }
-   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
-
    if (collInfo==0) {
       return(CAT_INVALID_ARGUMENT);
    }
@@ -3808,6 +3815,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    char auditComment[110];
    char auditUserName[110];
    int userSettingOwnPassword;
+   int groupAdminSettingPassword;
 
    char userName2[NAME_LEN];
    char zoneName[NAME_LEN];
@@ -3823,12 +3831,23 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    }
 
    userSettingOwnPassword=0;
-   if ( strcmp(option,"password")==0 &&
-        strcmp(userName, rsComm->clientUser.userName)==0)  {
-      userSettingOwnPassword=1;
+   groupAdminSettingPassword=0;
+   if ( strcmp(option,"password")==0) {
+      if ( strcmp(userName, rsComm->clientUser.userName)==0)  {
+	 userSettingOwnPassword=1;
+      }
+      else {
+	 int status2;
+	 status2  = cmlCheckGroupAdminAccess(
+	    rsComm->clientUser.userName,
+	    rsComm->clientUser.rodsZone, 
+	    "", &icss);
+	 if (status2 != 0) return(status2);
+	 groupAdminSettingPassword=1;
+      }
    }
 
-   if (userSettingOwnPassword==0) {
+   if (userSettingOwnPassword==0 && groupAdminSettingPassword==0) {
       if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
 	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
       }
@@ -3960,6 +3979,10 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	       userIdStr, MAX_NAME_LEN, userName2, zoneName, 0, &icss);
       if (i != 0 && i !=CAT_NO_ROWS_FOUND) return(i);
       if (i == 0) {
+	 if (groupAdminSettingPassword == 1) {
+            /* Group admin can only set the initial password, not update */
+	    return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+	 }
 	 rstrcpy(tSQL, form3, MAX_SQL_SIZE);
 	 cllBindVars[cllBindVarCount++]=decoded;
 	 cllBindVars[cllBindVarCount++]=myTime;
@@ -4804,13 +4827,6 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegUserRE");
 
-   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
-   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
-
    if (!icss.status) {
       return(CATALOG_NOT_CONNECTED);
    }
@@ -4821,6 +4837,18 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
    if (userInfo->userType==0) {
       return(CAT_INVALID_ARGUMENT);
+   }
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
+       rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	  int status2;
+	  status2  = cmlCheckGroupAdminAccess(
+	     rsComm->clientUser.userName,
+	     rsComm->clientUser.rodsZone, 
+	     "",
+	     &icss);
+	  if (status2 != 0) return(status2);
+	  creatingUserByGroupAdmin=1;
    }
 
    /*

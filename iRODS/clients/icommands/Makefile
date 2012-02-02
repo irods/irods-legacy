@@ -84,7 +84,8 @@ OBJS =		\
 		$(objDir)/ifsck.o \
 		$(objDir)/idbo.o \
 		$(objDir)/genOSAuth.o \
-		$(objDir)/iticket.o
+		$(objDir)/iticket.o \
+		$(objDir)/igroupadmin.o
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -133,7 +134,8 @@ BINS =		\
 		$(binDir)/ifsck \
 		$(binDir)/idbo \
 		$(binDir)/genOSAuth \
-		$(binDir)/iticket
+		$(binDir)/iticket \
+		$(binDir)/igroupadmin
 
 #
 # Compile and link flags
