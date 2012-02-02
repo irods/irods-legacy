@@ -248,13 +248,8 @@ rodsServerHost_t *rodsServerHost)
 {
     int status;
 
-    if (strstr (fileOpenInp->fileName, "/../") != NULL) {
-        /* don't allow /../ in the path */
-	rodsLog (LOG_ERROR,
-	  "chkFilePathPerm: input fileName %s contains /../",
-	  fileOpenInp->fileName);
-        return SYS_INVALID_FILE_PATH;
-    }
+    status = isValidFilePath (fileOpenInp->fileName); 
+    if (status < 0) return status;
 
     if (rodsServerHost == NULL) {
 	rodsLog (LOG_NOTICE,
@@ -275,6 +270,31 @@ rodsServerHost_t *rodsServerHost)
     return (status);
 }
 
+/* isValidFilePath - check if it is a valid file path - should not contain
+ * "/../" or end with "/.."
+ */
+int
+isValidFilePath (char *path) 
+{
+    char *tmpPtr = NULL;
+
+    if (strstr (path, "/../") != NULL) {
+        /* don't allow /../ in the path */
+        rodsLog (LOG_ERROR,
+          "isValidFilePath: input fileName %s contains /../", path);
+        return SYS_INVALID_FILE_PATH;
+    }
+    if ((tmpPtr = strstr (path, "/..")) != NULL) {
+	if (strlen (tmpPtr) == 3) {
+	    /* end with "/.." */
+            rodsLog (LOG_ERROR,
+          "isValidFilePath: input fileName %s ends with /..", path);
+            return SYS_INVALID_FILE_PATH;
+	}
+    }
+    return 0;
+}
+
 int
 matchVaultPath (rsComm_t *rsComm, char *filePath, 
 rodsServerHost_t *rodsServerHost, char **outVaultPath)
@@ -283,9 +303,9 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath)
     rescInfo_t *tmpRescInfo;
     int len;
 
-    if (strstr (filePath, "/../") != NULL) {
-	/* no match */
-	return (0);
+    if (isValidFilePath (filePath) < 0) {
+        /* no match */
+        return (0);
     }
     tmpRescGrpInfo = RescGrpInfo;
 

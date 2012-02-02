@@ -59,6 +59,8 @@ int
 chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 rodsServerHost_t *rodsServerHost);
 int
+isValidFilePath (char *path);
+int
 matchVaultPath (rsComm_t *rsComm, char *filePath,
 rodsServerHost_t *rodsServerHost, char **outVaultPath);
 int
