@@ -166,6 +166,7 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
     char filePath[MAX_NAME_LEN];
     dataObjInfo_t dataObjInfo;
     char *tmpStr = NULL;
+    int chkType;
 
     if ((tmpFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
       == NULL) {
@@ -189,7 +190,8 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
 
  
     if (getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
-      getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo) == DO_CHK_PATH_PERM) { 
+      (chkType = getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) != 
+      NO_CHK_PATH_PERM) { 
         memset (&chkNVPathPermInp, 0, sizeof (chkNVPathPermInp));
 
         rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
@@ -198,7 +200,8 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
         rstrcpy (chkNVPathPermInp.addr.hostAddr,  
 	  rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
 
-        status = chkFilePathPermForReg (rsComm, &chkNVPathPermInp, rodsServerHost);
+        status = chkFilePathPerm (rsComm, &chkNVPathPermInp, rodsServerHost,
+	 chkType);
     
         if (status < 0) {
             rodsLog (LOG_ERROR,

@@ -244,9 +244,16 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
  */
 int
 chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-rodsServerHost_t *rodsServerHost)
+rodsServerHost_t *rodsServerHost, int chkType)
 {
     int status;
+    char *outVaultPath = NULL;
+
+    if (chkType == NO_CHK_PATH_PERM) {
+	return 0;
+    } else if (chkType == DISALLOW_PATH_REG) {
+	return PATH_REG_NOT_ALLOWED;
+    }
 
     status = isValidFilePath (fileOpenInp->fileName); 
     if (status < 0) return status;
@@ -257,45 +264,29 @@ rodsServerHost_t *rodsServerHost)
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    status = matchCliVaultPath (rsComm, fileOpenInp->fileName, 
-      rodsServerHost);
+    if (chkType == CHK_NON_VAULT_PATH_PERM) {
+        status = matchCliVaultPath (rsComm, fileOpenInp->fileName, 
+          rodsServerHost);
 
-    if (status > 0) {
-	/* a match in vault */
-	return (status);
+        if (status == 1) {
+	    /* a match in vault */
+	    return (status);
+        } else if (status == -1) {
+	    /* in vault, but not in user's vault */
+	    return CANT_REG_IN_VAULT_FILE;
+	}
+    } else if (chkType == DO_CHK_PATH_PERM) {
+        if (matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost,
+          &outVaultPath) > 0) {
+            /* a match */
+            return CANT_REG_IN_VAULT_FILE;
+        }
+    } else {
+	return SYS_INVALID_INPUT_PARAM;
     }
 
     status = rsChkNVPathPermByHost (rsComm, fileOpenInp, rodsServerHost);
     
-    return (status);
-}
-
-/* chkFilePathPermForReg - check the FilePath permission for registration.
- */
-int
-chkFilePathPermForReg (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-rodsServerHost_t *rodsServerHost)
-{
-    int status;
-    char *outVaultPath = NULL;
-
-    status = isValidFilePath (fileOpenInp->fileName);
-    if (status < 0) return status;
-
-    if (rodsServerHost == NULL) {
-        rodsLog (LOG_NOTICE,
-          "chkFilePathPermForReg: NULL rodsServerHost");
-        return (SYS_INTERNAL_NULL_INPUT_ERR);
-    }
-
-    if (matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost, 
-      &outVaultPath) > 0) {
-        /* a match */
-        return CANT_REG_IN_VAULT_FILE;
-    }
-
-    status = rsChkNVPathPermByHost (rsComm, fileOpenInp, rodsServerHost);
-
     return (status);
 }
 
@@ -356,6 +347,11 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath)
     return (0);
 }
 
+/* matchCliVaultPath - if the input path is inside 
+ * $(vaultPath)/myzone/home/userName, retun 1.
+ * If it is in $(vaultPath) but not in $(vaultPath)/myzone/home/userName,
+ * return -1. If it is a non vault path, return 0.
+ */ 
 int
 matchCliVaultPath (rsComm_t *rsComm, char *filePath,
 rodsServerHost_t *rodsServerHost)
@@ -371,51 +367,19 @@ rodsServerHost_t *rodsServerHost)
 	return (0);
     }
 
-    /* assume the path is $(vaultPath/myzone/home/userName or 
-     * $(vaultPath/home/userName */
+    /* assume the path is $(vaultPath/myzone/home/userName */ 
 
     nameLen = strlen (rsComm->clientUser.userName);
 
     tmpPath = filePath + len + 1;    /* skip the vault path */
 
-    if ((tmpPath = strchr (tmpPath, '/')) == NULL) return 0;
-    tmpPath++;
-    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0) 
+    if (strncmp (tmpPath, "home/", 5) != -1) return -1;
+    tmpPath += 5;
+    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0 &&
+     (tmpPath[nameLen] == '/' || tmpPath[len] == '\0'))  
 	return 1;
-
-    if ((tmpPath = strchr (tmpPath, '/')) == NULL) return 0;
-    tmpPath++;
-    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0)
-        return 1;
     else
-	return 0;
-
-#if 0
-    /* skip two more '/' */
-
-    count = 0;
-    while (*tmpPath != '\0') {
-	if (*tmpPath == '/') {
-	    count++;
-	    if (count >= 2) {
-		tmpPath++;
-		break;
-	    }
-	}
-	tmpPath++;
-    }
-
-    if (count < 2) {
-	return (0);
-    }
- 
-    len = strlen (rsComm->clientUser.userName);
-    if (strncmp (tmpPath, rsComm->clientUser.userName, len) == 0) {
-	return (1);
-    } else {
-	return (0);
-    }
-#endif
+	return -1;
 }
 
 /* filePathTypeInResc - the status of a filePath in a resource.

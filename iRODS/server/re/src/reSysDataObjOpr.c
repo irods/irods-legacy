@@ -987,7 +987,7 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
 /**
  * \fn msiNoChkFilePathPerm (ruleExecInfo_t *rei)
  *
- * \brief  This microservice does not check file path permissions when registering a file.  
+ * \brief  This microservice does not check file path permissions when registering a file. This microservice is REPLACED by msiSetChkFilePathPerm 
  *
  * \module core
  *
@@ -1021,6 +1021,62 @@ msiNoChkFilePathPerm (ruleExecInfo_t *rei)
 {
     rei->status = NO_CHK_PATH_PERM;
     return (NO_CHK_PATH_PERM);
+}
+
+/**
+ * \fn msiSetChkFilePathPerm (msParam_t *xchkType, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice set the check type for file path permission check when registering a file. 
+ *
+ * \module core
+ *
+ * \since pre-3.1
+ *
+ * \author Mike Wan
+ * \date 2012
+ * 
+ * \warning This microservice can create a security problem if set to anything other than DISALLOW_PATH_REG and used incorrectly.
+ *  
+ * \usage See clients/icommands/test/rules3.0/
+ *
+ * \param[in] - xchkType - Required - a msParam of type STR_MS_T which defines the check type to set. Valid values are DO_CHK_PATH_PERM_STR, NO_CHK_PATH_PERM_STR, CHK_NON_VAULT_PATH_PERM_STR and DISALLOW_PATH_REG_STR.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval DO_CHK_PATH_PERM, NO_CHK_PATH_PERM, CHK_NON_VAULT_PATH_PERM or DISALLOW_PATH_REG.
+ * \pre none
+ * \post none
+ * \sa none
+**/
+int
+msiSetChkFilePathPerm (msParam_t *xchkType, ruleExecInfo_t *rei)
+{
+    char *chkType;
+
+    chkType = (char *) xchkType->inOutStruct;
+    
+    if (strcmp (chkType, DO_CHK_PATH_PERM_STR) == 0) {
+	rei->status = DO_CHK_PATH_PERM;
+    } else if (strcmp (chkType, NO_CHK_PATH_PERM_STR) == 0) {
+	rei->status = NO_CHK_PATH_PERM;
+    } else if (strcmp (chkType, CHK_NON_VAULT_PATH_PERM_STR) == 0) {
+	rei->status = CHK_NON_VAULT_PATH_PERM;
+    } else if (strcmp (chkType, DISALLOW_PATH_REG_STR) == 0) {
+        rei->status = DISALLOW_PATH_REG;
+    } else {
+	rodsLog (LOG_ERROR,
+	 "msiNoChkFilePathPerm:invalid check type %s,set to DISALLOW_PATH_REG");
+	rei->status = DISALLOW_PATH_REG;
+    }
+    return (rei->status);
 }
 
 /**

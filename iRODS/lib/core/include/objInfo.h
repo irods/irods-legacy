@@ -292,8 +292,15 @@ typedef enum {
 
 /* definition for chkPathPerm */
 
-#define DO_CHK_PATH_PERM	0
+#define DISALLOW_PATH_REG	0	/* disallow path registration */
 #define NO_CHK_PATH_PERM	1
+#define DO_CHK_PATH_PERM	2
+#define CHK_NON_VAULT_PATH_PERM 3    /* allow reg of user's vault path */
+
+#define DISALLOW_PATH_REG_STR 	"disallowPathReg"
+#define NO_CHK_PATH_PERM_STR	"noChkPathPerm"
+#define DO_CHK_PATH_PERM_STR	"doChkPathPerm"
+#define CHK_NON_VAULT_PATH_PERM_STR "chkNonVaultPathPerm"
 
 /* definition for stageFlag to specify whether staging is required */
 #define NO_STAGING        0

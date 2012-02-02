@@ -306,6 +306,7 @@ microsdef_t MicrosTable[] = {
   {"msiCollRsync",5,(funcPtr) msiCollRsync},
   {"msiFreeBuffer",1,(funcPtr) msiFreeBuffer},
   {"msiNoChkFilePathPerm",0,(funcPtr) msiNoChkFilePathPerm},
+  {"msiSetChkFilePathPerm",1,(funcPtr) msiSetChkFilePathPerm},
   {"msiNoTrashCan",0,(funcPtr) msiNoTrashCan},
   {"msiSetPublicUserOpr",1,(funcPtr) msiSetPublicUserOpr},
 #ifndef RULE_ENGINE_N

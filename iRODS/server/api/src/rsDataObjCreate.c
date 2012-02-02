@@ -414,6 +414,7 @@ dataObjInfo_t *dataObjInfo)
       case FILE_CAT:
       {
 	int retryCnt = 0;
+        int chkType;
 
 	fileCreateInp_t fileCreateInp;
 	memset (&fileCreateInp, 0, sizeof (fileCreateInp));
@@ -422,9 +423,12 @@ dataObjInfo_t *dataObjInfo)
 	  NAME_LEN);
 	rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
 	fileCreateInp.mode = getFileMode (dataObjInp);
-	if (getchkPathPerm (rsComm, dataObjInp, dataObjInfo)) {
+        chkType = getchkPathPerm (rsComm, dataObjInp, dataObjInfo);
+        if (chkType == DISALLOW_PATH_REG) {
+            return PATH_REG_NOT_ALLOWED;
+        } else if (chkType == NO_CHK_PATH_PERM) {
 	    fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG; 
-	}
+        }
 	l3descInx = rsFileCreate (rsComm, &fileCreateInp);
 
         /* file already exists ? */

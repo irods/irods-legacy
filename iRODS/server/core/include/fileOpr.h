@@ -57,10 +57,7 @@ mkFileDirR (int fileType, rsComm_t *rsComm, char *startDir,
 char *destDir, int mode);
 int
 chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-rodsServerHost_t *rodsServerHost);
-int
-chkFilePathPermForReg (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-rodsServerHost_t *rodsServerHost);
+rodsServerHost_t *rodsServerHost, int chkType);
 int
 isValidFilePath (char *path);
 int

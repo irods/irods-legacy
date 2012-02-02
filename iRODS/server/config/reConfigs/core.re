@@ -288,17 +288,28 @@ acDataDeletePolicy { }
 # for this rule.
 acPostProcForDelete { }
 #
-# 12) acNoChkFilePathPerm - This rule set the policy for checking the
-# file path permission when registering physical file path using commands
-# such as ireg. This rule also set the policy for checking the file path
-# when unregistering a data object without deleting the physical file.
+# 12) acSetChkFilePathPerm - This rule replaces acNoChkFilePathPerm. It sets 
+# the policy for checking the file path permission when registering physical 
+# file path using commands such as ireg and imcoll. This rule also set the 
+# policy for checking the file path when unregistering a data object without 
+# deleting the physical file.
 # Normally, a normal user cannot unregister a data object if the physical
-# file is located in a resource vault. The msiNoChkFilePathPerm allows 
-# this check to be bypassed. Only one function can be called:
-#    msiNoChkFilePathPerm() - Do not check file path permission when registering
-#    a file. WARNING - This function can create a security problem if used.
-acNoChkFilePathPerm { }
-#acNoChkFilePathPerm {msiNoChkFilePathPerm(); }
+# file is located in a resource vault. Setting the chkType input of
+# msiSetChkFilePathPerm to "noChkPathPerm" allows this check to be bypassed. 
+# Only one function can be called:
+#    msiSetChkFilePathPerm(chkType) - Valid values for chkType are:
+#       "disallowPathReg" - Disallow of registration of iRODS path using
+#         ireg and imcoll by a non-privileged user. 
+#       "noChkPathPerm" - Do not check file path permission when registering
+#         a file. WARNING - This function can create a security problem if used.
+#      "doChkPathPerm" - Check UNIX ownership of physical files before
+#         registering. Registration of path inside iRODS resource vault
+#         path is not allowed.
+#     "chkNonVaultPathPerm" - Check UNIX ownership of physical files before
+#         registering. Registration of path inside iRODS resource vault
+#         path is allowed if the vault path belong to the user. 
+# acSetChkFilePathPerm {msiSetChkFilePathPerm("doChkPathPerm"); }
+acSetChkFilePathPerm {msiSetChkFilePathPerm("doChkPathPerm"); }
 #
 # 13) acTrashPolicy - This rule set the policy for whether the trash can
 # should be used. The default policy is the trash can will be used. Only

@@ -54,6 +54,8 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei);
 int
 msiNoChkFilePathPerm (ruleExecInfo_t *rei);
 int
+msiSetChkFilePathPerm (msParam_t *xchkType, ruleExecInfo_t *rei);
+int
 msiNoTrashCan (ruleExecInfo_t *rei);
 int
 msiSetPublicUserOpr (msParam_t *xoprList, ruleExecInfo_t *rei);

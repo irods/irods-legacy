@@ -401,6 +401,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     int bytesWritten;
     dataObjInp_t *dataObjInp;
     int retryCnt = 0;
+    int chkType;
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
@@ -445,8 +446,11 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         filePutInp.mode = getFileMode (dataObjInp);
         filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
-        if (getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp, 
-          L1desc[l1descInx].dataObjInfo)) {
+	chkType = getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp,
+          L1desc[l1descInx].dataObjInfo);
+	if (chkType == DISALLOW_PATH_REG) {
+	    return PATH_REG_NOT_ALLOWED;
+	} else if (chkType == NO_CHK_PATH_PERM) {
             filePutInp.otherFlags |= NO_CHK_PERM_FLAG;
         }
         bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);

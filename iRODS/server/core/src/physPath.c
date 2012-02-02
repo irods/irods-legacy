@@ -288,12 +288,13 @@ dataObjInfo_t *dataObjInfo)
         } else {
     	    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
 	    rei.doi = dataObjInfo;
-	    rei.status = DO_CHK_PATH_PERM;		/* default */
-	    applyRule ("acNoChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-	    if (rei.status == DO_CHK_PATH_PERM) {
-                chkPathPerm = RescTypeDef[rescInfo->rescTypeInx].chkPathPerm;
-	    } else {
+	    rei.status = DISALLOW_PATH_REG;		/* default */
+	    applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+	    if (rei.status == NO_CHK_PATH_PERM || 
+	     RescTypeDef[rescInfo->rescTypeInx].chkPathPerm == NO_CHK_PATH_PERM) {
 		chkPathPerm = NO_CHK_PATH_PERM;
+	    } else {
+		chkPathPerm = rei.status;
 	    }
         }
     } else {
