@@ -89,7 +89,7 @@ rescGrpInfo_t *rescGrpInfo)
     dataObjInp_t dataObjInp;
     bunReplCacheHeader_t bunReplCacheHeader;
     int savedStatus = 0;
-    int chksumFlag;
+    int chksumFlag, maxSubFileCnt;
     char *dataType = NULL;
 
     myRescInfo = rescGrpInfo->rescInfo;
@@ -127,6 +127,11 @@ rescGrpInfo_t *rescGrpInfo)
     } else {
 	chksumFlag = 0;
     }
+    if (getValByKey (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW) != NULL) {
+            maxSubFileCnt = atoi(getValByKey (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW));
+    } else {
+            maxSubFileCnt = MAX_SUB_FILE_CNT;
+    }
     createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath, 
       phyBunDir);
 
@@ -144,7 +149,7 @@ rescGrpInfo_t *rescGrpInfo)
 	    } else if (strcmp (curSubFileCond.collName, collEnt->collName) != 0
               || strcmp (curSubFileCond.dataName, collEnt->dataName) != 0) {
 		/* a new file, need to handle the old one */
-		if (bunReplCacheHeader.numSubFiles >= MAX_SUB_FILE_CNT ||
+		if (bunReplCacheHeader.numSubFiles >= maxSubFileCnt ||
 		  bunReplCacheHeader.totSubFileSize + collEnt->dataSize > 
 		  MAX_BUNDLE_SIZE * OneGig) {
 		    /* bundle is full */

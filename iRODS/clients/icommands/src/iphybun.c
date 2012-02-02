@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hD:KR:";
+    optStr = "hD:N:KR:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status < 0) {
@@ -89,8 +89,9 @@ usage ()
 "a number of tar files to make it more efficient to store these files on tape.",
 "The tar files are placed into the /myZone/bundle/.... collection with file",
 "names - collection.aRandomNumber. A new tar file will be created whenever",
-"the number of subfiles exceeds 512 or the total size of the subfiles",
-"exceeds 4 GBytes. A replica is registered for each bundled sub-files with",
+"the number of subfiles exceeds 5120 (default value or the value given by",
+"the -N option) or the total size of the subfiles exceeds 4 GBytes.",
+"A replica is registered for each bundled sub-files with",
 "a fictitious resource - 'bundleResc' and a physical file path pointing to",
 "the logical path of the tar bundle file. Whenever this copy of the subfile",
 "is accessed, the tar file is untarred and staged automatically to the ",
@@ -110,6 +111,11 @@ usage ()
 "     t|tar|'tar file' for tar file, g|gzip|gzipTar for gziped tar file,",
 "     b|bzip2|bzip2Tar for bzip2 file, and z|zip|zipFile for archive using",
 "     'zip'.  If -D is not specified, the default is a tar file type",
+" -N  numOfSubFiles - maximum number of subfiles that are contained in the",
+"     tar file. If this option is not given, the default value will be 5120.",
+"     Note that if this number is too high, it can cause some significant",
+"     overhead for operations like retrieving a single file within a tar file",
+"     (stage, untar and register in iRODS lots of files).",
 " -R  resource - The resource where the bundle file is located",
 " -K  compute and register checksum value for the bundled subfiles and the",
 "     bundle file.",

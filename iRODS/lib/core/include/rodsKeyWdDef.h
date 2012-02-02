@@ -113,6 +113,7 @@
 					 * SET_LOCK_CMD and GET_LOCK_CMD */
 #define LOCK_FD_KW	"lockFd"	/* Lock file desc for unlock */
 #define NATIVE_NETCDF_CALL_KW "nativeNetcdfCall"  /* call netcdf natively */
+#define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 
