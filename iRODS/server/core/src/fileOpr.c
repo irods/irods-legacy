@@ -270,6 +270,35 @@ rodsServerHost_t *rodsServerHost)
     return (status);
 }
 
+/* chkFilePathPermForReg - check the FilePath permission for registration.
+ */
+int
+chkFilePathPermForReg (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
+rodsServerHost_t *rodsServerHost)
+{
+    int status;
+    char *outVaultPath = NULL;
+
+    status = isValidFilePath (fileOpenInp->fileName);
+    if (status < 0) return status;
+
+    if (rodsServerHost == NULL) {
+        rodsLog (LOG_NOTICE,
+          "chkFilePathPermForReg: NULL rodsServerHost");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost, 
+      &outVaultPath) > 0) {
+        /* a match */
+        return CANT_REG_IN_VAULT_FILE;
+    }
+
+    status = rsChkNVPathPermByHost (rsComm, fileOpenInp, rodsServerHost);
+
+    return (status);
+}
+
 /* isValidFilePath - check if it is a valid file path - should not contain
  * "/../" or end with "/.."
  */
@@ -314,7 +343,8 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath)
 	/* match the rodsServerHost */
 	if (tmpRescInfo->rodsServerHost == rodsServerHost) {
 	    len = strlen (tmpRescInfo->rescVaultPath);
-	    if (strncmp (tmpRescInfo->rescVaultPath, filePath, len) == 0) {
+	    if (strncmp (tmpRescInfo->rescVaultPath, filePath, len) == 0 &&
+	      (filePath[len] == '/' || filePath[len] == '\0')) {
 		*outVaultPath = tmpRescInfo->rescVaultPath;
 		return (len);
 	    }
@@ -355,7 +385,7 @@ rodsServerHost_t *rodsServerHost)
 
     if ((tmpPath = strchr (tmpPath, '/')) == NULL) return 0;
     tmpPath++;
-    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0) 
+    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0)
         return 1;
     else
 	return 0;

@@ -198,7 +198,7 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
         rstrcpy (chkNVPathPermInp.addr.hostAddr,  
 	  rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
 
-        status = chkFilePathPerm (rsComm, &chkNVPathPermInp, rodsServerHost);
+        status = chkFilePathPermForReg (rsComm, &chkNVPathPermInp, rodsServerHost);
     
         if (status < 0) {
             rodsLog (LOG_ERROR,
