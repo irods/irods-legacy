@@ -3832,7 +3832,16 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 
    userSettingOwnPassword=0;
    groupAdminSettingPassword=0;
-   if ( strcmp(option,"password")==0) {
+   if (rsComm->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH &&
+       rsComm->proxyUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH) {
+      /* user is OK */
+   }
+   else {
+      /* need to check */
+      if ( strcmp(option,"password")!=0) {
+         /* only password (in cases below) is allowed */
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
       if ( strcmp(userName, rsComm->clientUser.userName)==0)  {
 	 userSettingOwnPassword=1;
       }
@@ -3845,13 +3854,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 if (status2 != 0) return(status2);
 	 groupAdminSettingPassword=1;
       }
-   }
-
-   if (userSettingOwnPassword==0 && groupAdminSettingPassword==0) {
-      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-      }
-      if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      if (userSettingOwnPassword==0 && groupAdminSettingPassword==0) {
 	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
       }
    }
