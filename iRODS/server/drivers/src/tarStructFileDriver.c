@@ -83,12 +83,13 @@ tarSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
     StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
     fileCreateInp.mode = subFile->mode;
     fileCreateInp.flags = subFile->flags;
+    fileCreateInp.otherFlags = NO_CHK_PERM_FLAG;
 
     status = rsFileCreate (rsComm, &fileCreateInp);
 
     if (status < 0) {
        rodsLog (LOG_ERROR,
-          "specCollCreate: rsFileCreate for %s error, status = %d",
+          "tarSubStructFileCreate: rsFileCreate for %s error, status = %d",
           fileCreateInp.fileName, status);
         return status;
     } else {

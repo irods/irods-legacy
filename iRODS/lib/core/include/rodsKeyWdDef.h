@@ -25,6 +25,7 @@
 #define CHKSUM_KW	"chksum"
 #define VERSION_KW	"version"
 #define FILE_PATH_KW	"filePath"	/* the physical file path */
+#define BUN_FILE_PATH_KW "bunFilePath"	/* the physical bun file path */
 #define REPL_NUM_KW	"replNum"	/* replica number */
 #define WRITE_FLAG_KW	"writeFlag"	/* whether it is opened for write */
 #define REPL_STATUS_KW	"replStatus"	/* status of the replica */

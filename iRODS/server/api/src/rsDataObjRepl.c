@@ -1384,7 +1384,7 @@ rescInfo_t **outCacheResc, int rmBunCopyFlag)
 	if (outCacheResc != NULL)
 	    *outCacheResc = (*bunfileObjInfoHead)->rescInfo;
     }
-    addKeyVal (&dataObjInp.condInput, FILE_PATH_KW, 
+    addKeyVal (&dataObjInp.condInput, BUN_FILE_PATH_KW, 
       (*bunfileObjInfoHead)->filePath);
     if (rmBunCopyFlag > 0) {
         addKeyVal (&dataObjInp.condInput, RM_BUN_COPY_KW, "");

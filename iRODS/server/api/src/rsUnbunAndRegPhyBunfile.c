@@ -61,7 +61,7 @@ rescInfo_t *rescInfo)
 	return status;
     }
     /* process this locally */
-    if ((bunFilePath = getValByKey (&dataObjInp->condInput, FILE_PATH_KW))
+    if ((bunFilePath = getValByKey (&dataObjInp->condInput, BUN_FILE_PATH_KW))
       == NULL) {
         rodsLog (LOG_ERROR,
           "_rsUnbunAndRegPhyBunfile: No filePath input for %s",

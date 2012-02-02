@@ -90,7 +90,7 @@ rodsServerHost_t *rodsServerHost)
      */
 
     if ((fileCreateInp->otherFlags & NO_CHK_PERM_FLAG) == 0) {
-	status = chkFilePathPerm (rsComm, fileCreateInp, 
+	status = chkFilePathPermForReg (rsComm, fileCreateInp, 
 	  rodsServerHost);
 	if (status < 0) {
 	    return (status);
