@@ -905,6 +905,11 @@ sub getCurrentPs()
 		$PS = "$PS -ewww";
 		$PS_PID_COLUMN = 0;
 	}
+	elsif ( $os =~ /FreeBSD/i )
+	{
+		$PS = "$PS -axw";
+		$PS_PID_COLUMN = 0;
+	}
 	else
 	{
 		# Assume SysV.
@@ -965,6 +970,13 @@ sub getCurrentPs_V2()
 		$PS_V2 = "$PS_V2 -el";
 		$PS_PID_COLUMN_V2 = 3;
 		$PS_PPID_COLUMN_V2 = 4;
+	}
+	elsif ( $os =~ /FreeBSD/i )
+	{
+		$PS_V2 = "$PS_V2 -alxw";
+		$PS_PID_COLUMN_V2 = 1;
+		$PS_PPID_COLUMN_V2 = 2;
+
 	}
 	else
 	{

@@ -905,6 +905,11 @@ elsif ( $thisOS =~ /darwin/i )
 	$configMkVariables{ "OS_platform" } = "osx_platform";
 	printStatus( "Host OS is Mac OS X.\n" );
 }
+elsif ( $thisOS =~ /FreeBSD/i )
+{
+        $configMkVariables{ "OS_platform" } = "osx_platform";
+        printStatus( "Host OS is FreeBSD/Mac OS X.\n" );
+}
 else
 {
 	printError( "\n" );
