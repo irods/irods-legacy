@@ -68,7 +68,7 @@ ncGetVarOut_t **ncGetVarOut);
 extern "C" {
 #endif
 
-/* rcNcGetVarsByType - general netcdf subsetting function nc_get_vara_type
+/* rcNcGetVarsByType - general netcdf subsetting function nc_get_vars_type
  *    ....
  * Input - 
  *   rcComm_t *conn - The client connection handle.
