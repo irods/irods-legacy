@@ -42,7 +42,7 @@ typedef struct {
     keyValPair_t condInput;
 } ncGetVarInp_t;
     
-#define NcGetVarInp_PI "int varType; int ncid; int myint; int ndim; double *start(ndim); double *count(ndim); double *stride(ndim); struct KeyValPair_PI;"
+#define NcGetVarInp_PI "int varType; int ncid; int varid; int ndim; double *start(ndim); double *count(ndim); double *stride(ndim); struct KeyValPair_PI;"
 
 typedef struct {
     char dataType_PI[NAME_LEN];	  /* the packing instruction of the dataType */
