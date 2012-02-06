@@ -42,7 +42,7 @@ use Cwd;
 use Cwd 'abs_path';
 use Config;
 
-$version{"configure.pl"} = "September 2011";
+$version{"configure.pl"} = "February 2012";
 
 my $output;
 my $status;
@@ -50,7 +50,12 @@ my $status;
 
 
 
-
+# set the umask so that even if the user's umask is open (0), files
+# created will not be other or group writable.
+$UMASK = umask();
+if ( ! ($UMASK & 002)) {
+    $UMASK = umask 022;
+}
 
 ########################################################################
 #

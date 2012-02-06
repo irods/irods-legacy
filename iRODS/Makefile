@@ -74,9 +74,13 @@ MAKEFLAGS += --no-print-directory
 
 
 # Build everything
-all:	reaction libs modules server clients tests
+all:	reaction libs modules server clients tests chmod
 	@true
 
+
+# Make sure permissions are reasonable, even if the user's umask is 0
+chmod:	
+	chmod -R go-w .
 
 
 # Build the libraries

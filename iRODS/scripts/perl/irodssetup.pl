@@ -18,7 +18,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodssetup.pl"} = "September 2011";
+$version{"irodssetup.pl"} = "February 2012";
 
 
 
@@ -45,7 +45,18 @@ $version{"irodssetup.pl"} = "September 2011";
 #
 
 
-
+#
+# Check and set the umask, warning user if too open
+#
+$UMASK = umask();
+if ( ! ($UMASK & 002) ) {
+    $UMASK = umask 022;
+    print("Warning, this script set the umask to 022 to prevent\n");
+    print("'group' and 'other' write access to sensitive files that\n");
+    print("will be created while this is running.\n");
+    print("It is recommended that you set your umask to 022 or 077 for\n");
+    print("more secure operations.\n\n");
+}
 
 
 ########################################################################
