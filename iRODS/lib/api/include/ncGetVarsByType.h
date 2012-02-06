@@ -81,9 +81,9 @@ extern "C" {
  *   rodsLong_t *count;  array of ndim length
  *   rodsLong_t *stride; array of ndim length 
  * OutPut - ncGetVarOut_t
- *   int varid;
- *   int dataLen;        array length of the data
  *   char dataType_PI;   the packing instruction of the dataType 
+ *   int type;		 the type of data
+ *   int len;            array length of the data
  *   void *data;         data array of dataLen length
  */
 /* prototype for the client call */
