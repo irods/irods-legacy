@@ -222,7 +222,7 @@ typedef struct BytesBuf {   /* have to add BytesBuf to get Doxygen working */
     void *buf;
 } bytesBuf_t;
 
-typedef struct {   /* have to add BytesBuf to get Doxygen working */
+typedef struct DataArray {   /* have to add DataArray to get Doxygen working */
     int type;
     int len;    /* len of array in buf */
     void *buf;
