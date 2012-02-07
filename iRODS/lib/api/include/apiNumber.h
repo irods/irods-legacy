@@ -175,4 +175,5 @@
 #define NC_INQ_ID_AN 			1003
 #define NC_INQ_WITH_ID_AN 			1004
 #define NC_GET_VARS_BY_TYPE_AN 			1005
+#define NCCF_GET_VARA_AN 			1006
 #endif	/* API_NUMBER_H */

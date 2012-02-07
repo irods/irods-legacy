@@ -112,6 +112,8 @@ packInstructArray_t ApiPackTable[] = {
         {"NcInqWithIdInp_PI", NcInqWithIdInp_PI},
         {"NcGetVarInp_PI", NcGetVarInp_PI},
         {"NcGetVarOut_PI", NcGetVarOut_PI},
+        {"NccfGetVarInp_PI", NccfGetVarInp_PI},
+        {"NccfGetVarOut_PI", NccfGetVarOut_PI},
 #endif
         /* endof NETCDF PI */
         {PACK_TABLE_END_PI, (char *) NULL},

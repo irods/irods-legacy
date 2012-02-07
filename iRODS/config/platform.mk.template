@@ -264,6 +264,10 @@ endif
 ifdef NETCDF_API
 MY_CFLAG += -DNETCDF_API -I$(NETCDF_DIR)/include
 LDADD += -L$(NETCDF_DIR)/lib -lnetcdf -lcurl
+ifdef LIB_CF
+MY_CFLAG += -DLIB_CF -I$(LIB_CF_INC_DIR)
+LDADD += -L$(LIB_CF_LIB_DIR) -lcf
+endif
 endif
 
 ifdef RUN_SERVER_AS_ROOT

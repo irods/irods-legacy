@@ -147,4 +147,5 @@
 #include "ncInqId.h"
 #include "ncInqWithId.h"
 #include "ncGetVarsByType.h"
+#include "nccfGetVara.h"
 #endif	/* API_HEADER_ALL_H */
