@@ -608,6 +608,8 @@
 #define NETCDF_INQ_ID_ERR		-2004000
 #define NETCDF_GET_VARS_ERR		-2005000
 #define NETCDF_INVALID_DATA_TYPE	-2006000
+#define NETCDF_INQ_VARS_ERR		-2007000
+#define NETCDF_VARS_DATA_TOO_BIG	-2008000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

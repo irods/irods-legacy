@@ -21,6 +21,9 @@
 #endif
 #endif
 
+#define DEF_OUT_ARRAY_BUF_SIZE	(32 * 1024 *1024)	/* 32 MB */
+#define MIN_OUT_ARRAY_BUF_SIZE  (1024 *1024)		/* 1 MB */
+#define MAX_OUT_ARRAY_BUF_SIZE (256 * 1024 *1024)	/* 256 MB */
 typedef struct {
     int ncid;
     int varid;	
@@ -28,10 +31,18 @@ typedef struct {
     int timestep;
     float latRange[2];
     float lonRange[2];
+    int maxOutArrayLen;		/* max length of the output array. If it is
+				 * set to zero, a 32 MB buffer is allocated to
+				 * receive the data in nccfGetVarOut_t. It is
+				 * very important that a large enough 
+				 * maxOutArrayLen is specified or it can cause
+				 * memory overwrite on the server.
+				 */
+    int flags;			/* not used */
     keyValPair_t condInput;
 } nccfGetVarInp_t;
     
-#define NccfGetVarInp_PI "int ncid; int varid; int lvlIndex; int timestep; int latRange[2]; int lonRange[2]; struct KeyValPair_PI;"
+#define NccfGetVarInp_PI "int ncid; int varid; int lvlIndex; int timestep; int latRange[2]; int lonRange[2]; int maxOutArrayLen; int flags; struct KeyValPair_PI;"
 
 typedef struct {
     int nlat;
@@ -88,6 +99,9 @@ extern "C" {
 int
 rcNccfGetVara (rcComm_t *conn,   nccfGetVarInp_t *nccfGetVarInp, 
  nccfGetVarOut_t ** nccfGetVarOut);
+
+int
+freeNccfGetVarOut (nccfGetVarOut_t **nccfGetVarOut);
 #ifdef  __cplusplus
 }
 #endif

@@ -13,3 +13,21 @@ rcNccfGetVara (rcComm_t *conn,   nccfGetVarInp_t *nccfGetVarInp,
 
     return (status);
 }
+
+int
+freeNccfGetVarOut (nccfGetVarOut_t **nccfGetVarOut)
+{
+    if (nccfGetVarOut == NULL || *nccfGetVarOut == NULL) return
+      USER__NULL_INPUT_ERR;
+
+    if ((*nccfGetVarOut)->dataArray != NULL) {
+        if ((*nccfGetVarOut)->dataArray->buf != NULL) {
+            free ((*nccfGetVarOut)->dataArray->buf);
+        }
+        free ((*nccfGetVarOut)->dataArray);
+    }
+    free (*nccfGetVarOut);
+    *nccfGetVarOut = NULL;
+    return 0;
+}
+
