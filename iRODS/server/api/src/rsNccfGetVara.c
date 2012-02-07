@@ -22,7 +22,6 @@ nccfGetVarOut_t ** nccfGetVarOut)
 
     if (getValByKey (&nccfGetVarInp->condInput, NATIVE_NETCDF_CALL_KW) !=
       NULL) {
-        /* just do nc_inq_YYYY */
         status = _rsNccfGetVara (nccfGetVarInp->ncid, nccfGetVarInp,
           nccfGetVarOut);
         return status;
@@ -147,6 +146,15 @@ nccfGetVarOut_t ** nccfGetVarOut)
       nccfGetVarInp->lvlIndex,  nccfGetVarInp->timestep, data);
 
     if (status == NC_NOERR) {
+	(*nccfGetVarOut)->dataArray->len = nlat * nlon;
+	/* sanity check. It's too late */
+	if ((*nccfGetVarOut)->dataArray->len * typeSize > dataLen) {
+            rodsLog (LOG_ERROR,
+              "_rsNccfGetVara:  nccf_get_vara outlen %d > alloc len %d.",
+	      (*nccfGetVarOut)->dataArray->len, dataLen);
+            freeNccfGetVarOut (nccfGetVarOut);
+	    return NETCDF_VARS_DATA_TOO_BIG;
+	}
 	(*nccfGetVarOut)->nlat = nlat;
 	(*nccfGetVarOut)->nlon = nlon;
 	rstrcpy ((*nccfGetVarOut)->dataType_PI, dataType_PI, NAME_LEN);
