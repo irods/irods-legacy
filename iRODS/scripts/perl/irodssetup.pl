@@ -56,6 +56,9 @@ if ( ! ($UMASK & 002) ) {
     print("will be created while this is running.\n");
     print("It is recommended that you set your umask to 022 or 077 for\n");
     print("more secure operations.\n\n");
+    print("    Running 'chmod -R go-w .' to remove write access.\n" );
+    `chmod -R go-w .`;
+
 }
 
 
