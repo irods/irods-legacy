@@ -192,26 +192,25 @@ sub testGetAndUses() {
 
 sub testPutAndUses() {
     `ls -l >> $F1`;
-    runCmd(0, "iticket mod $T1 uses 3");  # for now
+    runCmd(0, "iticket mod $T1 uses 3");
     becomeU2();
     runCmd(2,"iput -f $F1 $D1/$F1");
-    runCmd(0,"iput -ft $T1 $F1 $D1/$F1");
-    becomeSelfAgain();                    #
-    runCmd(0, "iticket mod $T1 uses 1");  # for now
-    becomeU2();                           #
+    runCmd(0,"iput -ft $T1 $F1 $D1/$F1"); # 1
     `ls -l >> $F1`;
-    runCmd(2,"iput -ft $T1 $F1 $D1/$F1");
+    runCmd(0,"iput -ft $T1 $F1 $D1/$F1"); # 2
+    `ls -l >> $F1`;
+    runCmd(2,"iput -ft $T1 $F1 $D1/$F1"); # 3 should fail
+
     becomeSelfAgain();
-    runCmd(0, "iticket mod $T1 uses 3");  #
+    runCmd(0, "iticket mod $T1 uses 5");
     becomeAnon();
     `ls -l >> $F1`;
     runCmd(2,"iput $F1 $D1/$F1");
-    runCmd(0,"iput -ft $T1 $F1 $D1/$F1");
-    becomeSelfAgain();                    #
-    runCmd(0, "iticket mod $T1 uses 1");  # for now
-    becomeU2();                           #
+    runCmd(0,"iput -ft $T1 $F1 $D1/$F1"); # 1
     `ls -l >> $F1`;
-    runCmd(2,"iput -ft $T1 $F1 $D1/$F1");
+    runCmd(0,"iput -ft $T1 $F1 $D1/$F1"); # 2
+    `ls -l >> $F1`;
+    runCmd(2,"iput -ft $T1 $F1 $D1/$F1"); # 3 should fail
     becomeSelfAgain();
     runCmd(0, "iticket mod $T1 uses 100");
 }
