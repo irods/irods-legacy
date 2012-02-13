@@ -37,6 +37,11 @@ main(int argc, char **argv)
     int prestype1 = 0;
     int lonndim, latndim, tempndim, presndim;
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+#ifdef LIB_CF
+    nccfGetVarInp_t nccfGetVarInp;
+    nccfGetVarOut_t *nccfGetVarOut = NULL;
+    float *mydata;
+#endif
 
     status = getRodsEnv (&myRodsEnv);
 
@@ -256,6 +261,90 @@ main(int argc, char **argv)
           "rcNcClose error for %s", ncOpenInp.objPath);
         exit (9);
     }
+
+#ifdef LIB_CF
+    /* open an nc object */
+    bzero (&ncOpenInp, sizeof (ncOpenInp_t));
+    rstrcpy (ncOpenInp.objPath, TEST_PATH1, MAX_NAME_LEN);
+    ncOpenInp.mode = NC_NOWRITE;
+
+    status = rcNcOpen (conn, &ncOpenInp, &ncid1);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcOpen error for %s", ncOpenInp.objPath);
+        exit (2);
+    }
+
+    tempvarid1 = myInqVar (conn, ncid1, "temperature", &temptype1, &tempndim);
+    if (tempvarid1 < 0)  exit (3);
+
+    presvarid1 = myInqVar (conn, ncid1, "pressure", &prestype1, &presndim);
+    if (presvarid1 < 0)  exit (3);
+
+    /* pressure subset */
+    bzero (&nccfGetVarInp, sizeof (nccfGetVarInp));
+    nccfGetVarInp.ncid = ncid1;
+    nccfGetVarInp.varid = presvarid1;
+    nccfGetVarInp.latRange[0] = 30.0;
+    nccfGetVarInp.latRange[1] = 41.0;
+    nccfGetVarInp.lonRange[0] = -120.0;
+    nccfGetVarInp.lonRange[1] = -96.0;
+    nccfGetVarInp.maxOutArrayLen = 1000;
+
+    status = rcNccfGetVara (conn, &nccfGetVarInp, &nccfGetVarOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNccfGetVara error for %s", ncOpenInp.objPath);
+        exit (2);
+    }
+
+    printf (
+      "pressure subset: nlat = %d, nlon = %d, dataType = %d, arrayLen = %d\n", 
+      nccfGetVarOut->nlat, nccfGetVarOut->nlon, 
+      nccfGetVarOut->dataArray->type, nccfGetVarOut->dataArray->len);
+    mydata = (float *) nccfGetVarOut->dataArray->buf;
+    printf ("pressure values: ");
+    for (i = 0; i <  nccfGetVarOut->dataArray->len; i++) {
+	printf (" %f", mydata[i]);
+    }
+    printf ("\n");
+    freeNccfGetVarOut (&nccfGetVarOut);
+
+    /* temperature subset */
+    nccfGetVarInp.varid = tempvarid1;
+
+    status = rcNccfGetVara (conn, &nccfGetVarInp, &nccfGetVarOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNccfGetVara error for %s", ncOpenInp.objPath);
+        exit (2);
+    }
+
+    printf (
+      "temperature subset: nlat = %d, nlon = %d, dataType = %d, arrLen = %d\n",
+      nccfGetVarOut->nlat, nccfGetVarOut->nlon,
+      nccfGetVarOut->dataArray->type, nccfGetVarOut->dataArray->len);
+    mydata = (float *) nccfGetVarOut->dataArray->buf;
+    printf ("temperature values: ");
+    for (i = 0; i <  nccfGetVarOut->dataArray->len; i++) {
+        printf (" %f", mydata[i]);
+    }
+    printf ("\n");
+    freeNccfGetVarOut (&nccfGetVarOut);
+
+    /* close the file */
+    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
+    ncCloseInp.ncid = ncid1;
+    status = rcNcClose (conn, &ncCloseInp);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcClose error for %s", ncOpenInp.objPath);
+        exit (9);
+    }
+#endif
 
     exit (0);
 } 
