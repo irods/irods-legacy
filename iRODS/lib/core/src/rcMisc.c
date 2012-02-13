@@ -2928,6 +2928,10 @@ getSelVal(char *c)
     return(SELECT_AVG);
   if (!strcmp(c,"count") || !strcmp(c,"COUNT"))
     return(SELECT_COUNT);
+  if (!strcmp(c,"order") || !strcmp(c,"ORDER"))
+     return(ORDER_BY);
+  if (!strcmp(c,"order_desc") || !strcmp(c,"ORDER_DESC"))
+     return(ORDER_BY_DESC);
   return(1);
 }
 
