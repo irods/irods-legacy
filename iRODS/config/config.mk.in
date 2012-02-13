@@ -430,8 +430,8 @@ ifdef NETCDF_API
 # NETCDF_HDF=1
 NETCDF_DIR=/usr/local
 ifdef LIB_CF
-LIB_CF_INC_DIR=/home/mwan/myapps/libcf/libcf-1.0-beta1-snapshot2011092223/include
-LIB_CF_LIB_DIR=/home/mwan/myapps/libcf/libcf-1.0-beta1-snapshot2011092223/.libs
+LIB_CF_INC_DIR=/usr/local/include
+LIB_CF_LIB_DIR=/usr/local/lib
 endif
 endif
 

@@ -266,7 +266,7 @@ MY_CFLAG += -DNETCDF_API -I$(NETCDF_DIR)/include
 LDADD += -L$(NETCDF_DIR)/lib -lnetcdf -lcurl
 ifdef LIB_CF
 MY_CFLAG += -DLIB_CF -I$(LIB_CF_INC_DIR)
-LDADD += -L$(LIB_CF_LIB_DIR) -lcf
+LDADD += -L$(LIB_CF_LIB_DIR) -lcf_src
 endif
 endif
 
