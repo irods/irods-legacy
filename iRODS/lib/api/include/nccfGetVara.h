@@ -91,9 +91,10 @@ extern "C" {
  *   int nlon;		 the number of longitude values which fall within the 
  *                        range.
  *   char dataType_PI;   the packing instruction of the dataType 
- *   int type;           the type of data
- *   int len;            array length of the data
- *   void *data;         data array of len length
+ *   *dataArray - a dataArray_t:
+ *     int type;           the type of data
+ *     int len;            array length of the data
+ *     void *buf;         data array of len length
  */
 /* prototype for the client call */
 int
