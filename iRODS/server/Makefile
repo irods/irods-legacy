@@ -233,6 +233,10 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/reAutoReplicateService.o \
 		$(svrReObjDir)/sysBackupMS.o
+ifdef NETCDF_API
+SVR_RE_OBJS+=  $(svrReObjDir)/reNetcdf.o
+endif
+
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
@@ -294,6 +298,10 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reAutoReplicateService.o \
 		$(svrReObjDir)/sysBackupMS.o
+
+ifdef NETCDF_API
+SVR_RE_OBJS+=  $(svrReObjDir)/reNetcdf.o
+endif
 
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
