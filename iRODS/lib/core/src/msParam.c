@@ -1462,3 +1462,28 @@ chkStructFileExtAndRegInpKw (char *keyWd, int validKwFlags)
     return USER_BAD_KEYWORD_ERR;
 }
 
+#ifdef NETCDF_API
+int
+parseMspForNcInqIdInp (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp)
+{
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        /* str input */
+        bzero (ncInqIdInp, sizeof (ncInqIdInp_t));
+        rstrcpy (ncInqIdInp->name, (char*)inpParam->inOutStruct,
+          MAX_NAME_LEN);
+    } else  if (strcmp (inpParam->type, NcInqIdInp_MS_T) == 0) {
+        *ncInqIdInp = *((ncInqIdInp_t *) inpParam->inOutStruct);
+        replKeyVal (&((ncInqIdInp_t *) inpParam->inOutStruct)->condInput,
+          &ncInqIdInp->condInput);
+    } else if (strcmp (inpParam->type, INT_MS_T) == 0) { 
+        bzero (ncInqIdInp, sizeof (ncInqIdInp_t));
+        ncInqIdInp->myid = *(int *)inpParam->inOutStruct;
+    } else {
+        rodsLog (LOG_ERROR,
+          "parseMspForNcInqIdInp: Unsupported input Param1 type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    return 0;
+}
+#endif

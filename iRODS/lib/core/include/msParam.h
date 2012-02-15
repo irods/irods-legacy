@@ -16,6 +16,9 @@
 #include "structFileExtAndReg.h"
 #include "execCmd.h"
 #include "rodsPath.h"
+#ifdef NETCDF_API
+#include "ncInqId.h"
+#endif
 
 #ifdef  __cplusplus
 extern "C" {
@@ -57,6 +60,10 @@ extern "C" {
 #define DVMapStruct_MS_T        "DVMapStruct_PI"
 #define FNMapStruct_MS_T        "FNMapStruct_PI"
 #define MsrvcStruct_MS_T         "MsrvcStruct_PI"
+#define NcOpenInp_MS_T		"NcOpenInp_PI"
+#define NcInqIdInp_MS_T		"NcInqIdInp_PI"
+#define NcInqWithIdInp_MS_T	"NcInqWithIdInp_PI"
+#define NcCloseInp_MS_T		"NcCloseInp_PI"
 
 /* micro service input/output parameter */
 typedef struct MsParam {
@@ -216,6 +223,10 @@ int
 parseMsKeyValStrForStructFileExtAndRegInp (msParam_t *inpParam,
 structFileExtAndRegInp_t *structFileExtAndRegInp,
 char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
+#ifdef NETCDF_API
+int
+parseMspForNcInqIdInp (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp);
+#endif
 #ifdef  __cplusplus
 }
 #endif
