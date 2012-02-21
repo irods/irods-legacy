@@ -1774,6 +1774,7 @@ msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)
 			pstr2 = strstr(pstr1 + 4, "=");
 			if ( pstr2 != NULL ) {
 				len2 = strlen(pstr1 + 4) - strlen(pstr2);
+				memset(replAttr, 0, sizeof(replAttr));
 				strncpy(replAttr, pstr1 + 4, len2);
 				if ( len2 > 0 ) {
 					if ( strcmp(replAttr, "numRepl") == 0 ) {
