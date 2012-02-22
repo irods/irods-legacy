@@ -109,7 +109,7 @@ packInstructArray_t ApiPackTable[] = {
         {"NcOpenInp_PI", NcOpenInp_PI},
         {"NcCloseInp_PI", NcCloseInp_PI},
         {"NcInqIdInp_PI", NcInqIdInp_PI},
-        {"NcInqWithIdInp_PI", NcInqWithIdInp_PI},
+        {"NcInqWithIdOut_PI", NcInqWithIdOut_PI},
         {"NcGetVarInp_PI", NcGetVarInp_PI},
         {"NcGetVarOut_PI", NcGetVarOut_PI},
         {"NccfGetVarInp_PI", NccfGetVarInp_PI},

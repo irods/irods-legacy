@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* ncInqId.h
+/* ncGetVarsByType.h
  */
 
 #ifndef NC_GET_VARS_BY_TYPE_H

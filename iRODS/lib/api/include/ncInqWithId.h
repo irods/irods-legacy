@@ -27,7 +27,7 @@ typedef struct {
     int *intArray;	/* int array of ndim length */
 } ncInqWithIdOut_t;
     
-#define NcInqWithIdInp_PI "double mylong; int type; int natts; str name[MAX_NAME_LEN];int myint; int ndim; int *intArray(ndim);"
+#define NcInqWithIdOut_PI "double mylong; int type; int natts; str name[MAX_NAME_LEN];int myint; int ndim; int *intArray(ndim);"
 #if defined(RODS_SERVER)
 #define RS_NC_INQ_WITH_ID rsNcInqWithId
 /* prototype for the server handler */

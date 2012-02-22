@@ -138,8 +138,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    /* parse for myid or ncInqWithIdInp_t */
-    rei->status = parseMspForNcInqIdInp (inpParam1, &ncInqIdInp);
+    /* parse for name or ncInqWithIdInp_t */
+    rei->status = parseMspForNcInqIdInpName (inpParam1, &ncInqIdInp);
 
     if (rei->status < 0) return rei->status;
 
@@ -197,7 +197,7 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     /* parse for myid or ncInqWithIdInp_t */
-    rei->status = parseMspForNcInqIdInp (inpParam1, &ncInqWithIdInp);
+    rei->status = parseMspForNcInqIdInpId (inpParam1, &ncInqWithIdInp);
 
     if (rei->status < 0) return rei->status;
 
@@ -221,11 +221,114 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
     rei->status = rsNcInqWithId (rsComm, &ncInqWithIdInp, &ncInqWithIdOut);
     clearKeyVal (&ncInqWithIdInp.condInput);
     if (rei->status >= 0) {
-	fillMsParam (outParam, NULL, NcInqWithIdInp_PI, ncInqWithIdOut, NULL);
+	fillMsParam (outParam, NULL, NcInqWithIdOut_MS_T, ncInqWithIdOut, NULL);
     } else {
       rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
         "msiNcInqWithId: rsNcInqWithId failed for %s, status = %d",
         ncInqWithIdInp.name, rei->status);
+    }
+
+    return (rei->status);
+}
+
+int
+msiNcGetVarsByType (msParam_t *dataTypeParam, msParam_t *ncidParam, 
+msParam_t *varidParam, msParam_t *ndimParam, msParam_t *startParam, 
+msParam_t *countParam, msParam_t *strideParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    ncGetVarInp_t ncGetVarInp;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+    int ndimOut;
+
+    RE_TEST_MACRO ("    Calling msiNcGetVarsByType")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR,
+        "msiNcGetVarsByType: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (dataTypeParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetVarsByType: input dataTypeParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    /* parse for dataType or ncGetVarInp_t */
+    rei->status = parseMspForNcGetVarInp (dataTypeParam, &ncGetVarInp);
+
+    if (rei->status < 0) return rei->status;
+
+    if (ncidParam != NULL) {
+	/* parse for ncid */
+	ncGetVarInp.ncid = parseMspForPosInt (ncidParam);
+	if (ncGetVarInp.ncid < 0) return ncGetVarInp.ncid;
+    }
+
+    if (varidParam != NULL) { 
+        /* parse for varid */ 
+        ncGetVarInp.varid = parseMspForPosInt (varidParam);
+        if (ncGetVarInp.varid < 0) return ncGetVarInp.varid;
+    }
+
+    if (ndimParam != NULL) { 
+        /* parse for ndim */
+        ncGetVarInp.ndim = parseMspForPosInt (ndimParam);
+        if (ncGetVarInp.ndim < 0) return ncGetVarInp.ndim;
+    }
+
+    if (startParam != NULL) {
+        /* parse for start */
+        rei->status = parseStrMspForLongArray (startParam, &ndimOut, 
+	  &ncGetVarInp.start);
+        if (rei->status < 0) return rei->status;
+	if (ndimOut != ncGetVarInp.ndim) {
+	    rei->status = NETCDF_DIM_MISMATCH_ERR;
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiNcGetVarsByType: start dim = %d, input ndim = %d",
+	      ndimOut, ncGetVarInp.ndim);
+	    return NETCDF_DIM_MISMATCH_ERR;
+	}
+    }
+
+    if (countParam != NULL) {
+        /* parse for count */
+        rei->status = parseStrMspForLongArray (countParam, &ndimOut,
+          &ncGetVarInp.count);
+        if (rei->status < 0) return rei->status;
+        if (ndimOut != ncGetVarInp.ndim) {
+            rei->status = NETCDF_DIM_MISMATCH_ERR;
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiNcGetVarsByType: count dim = %d, input ndim = %d",
+              ndimOut, ncGetVarInp.ndim);
+            return NETCDF_DIM_MISMATCH_ERR;
+        }
+    }
+
+    if (strideParam != NULL) {
+        /* parse for stride */
+        rei->status = parseStrMspForLongArray (strideParam, &ndimOut,
+          &ncGetVarInp.stride);
+        if (rei->status < 0) return rei->status;
+        if (ndimOut != ncGetVarInp.ndim) {
+            rei->status = NETCDF_DIM_MISMATCH_ERR;
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiNcGetVarsByType: stride dim = %d, input ndim = %d",
+              ndimOut, ncGetVarInp.ndim);
+            return NETCDF_DIM_MISMATCH_ERR;
+        }
+    }
+
+    rei->status = rsNcGetVarsByType (rsComm, &ncGetVarInp, &ncGetVarOut);
+    clearKeyVal (&ncGetVarInp.condInput);
+    if (rei->status >= 0) {
+	fillMsParam (outParam, NULL, NcGetVarOut_MS_T, ncGetVarOut, NULL);
+    } else {
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiNcGetVarsByType: rsNcGetVarsByType failed, status = %d",
+        rei->status);
     }
 
     return (rei->status);

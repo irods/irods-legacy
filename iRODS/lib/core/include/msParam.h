@@ -18,6 +18,7 @@
 #include "rodsPath.h"
 #ifdef NETCDF_API
 #include "ncInqId.h"
+#include "ncGetVarsByType.h"
 #endif
 
 #ifdef  __cplusplus
@@ -62,8 +63,10 @@ extern "C" {
 #define MsrvcStruct_MS_T         "MsrvcStruct_PI"
 #define NcOpenInp_MS_T		"NcOpenInp_PI"
 #define NcInqIdInp_MS_T		"NcInqIdInp_PI"
-#define NcInqWithIdInp_MS_T	"NcInqWithIdInp_PI"
+#define NcInqWithIdOut_MS_T	"NcInqWithIdOut_PI"
 #define NcCloseInp_MS_T		"NcCloseInp_PI"
+#define NcGetVarInp_MS_T	"NcGetVarInp_PI"
+#define NcGetVarOut_MS_T	"NcGetVarOut_PI"
 
 /* micro service input/output parameter */
 typedef struct MsParam {
@@ -225,7 +228,16 @@ structFileExtAndRegInp_t *structFileExtAndRegInp,
 char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
 #ifdef NETCDF_API
 int
-parseMspForNcInqIdInp (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp);
+parseMspForNcInqIdInpName (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp);
+int
+parseMspForNcInqIdInpId (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp);
+int
+parseMspForNcGetVarInp (msParam_t *inpParam, ncGetVarInp_t *ncGetVarInp);
+int
+parseStrToNcType (char *myStr);
+int
+parseStrMspForLongArray (msParam_t *inpParam, int *ndim, 
+rodsLong_t **longArray);
 #endif
 #ifdef  __cplusplus
 }
