@@ -19,6 +19,7 @@ s3FileUnlink (rsComm_t *rsComm, char *s3ObjName)
     int status;
     char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
     callback_data_t data;
+    S3BucketContext bucketContext;
 
     bzero (&data, sizeof (data));
 
@@ -27,12 +28,14 @@ s3FileUnlink (rsComm_t *rsComm, char *s3ObjName)
 
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
-    S3BucketContext bucketContext =
       /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
       /* XXXXX using S3UriStyleVirtualHost causes operation containing
        * the sub-string "S3" to fail. use S3UriStylePath instead */
+      /* this initialization failed for 3-2.0 because of the hostName
+       * element
+      S3BucketContext bucketContext =
       {myBucket,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId,
-        S3Auth.secretAccessKey};
+        S3Auth.secretAccessKey}; */
 
     S3ResponseHandler responseHandler = {
         0, &responseCompleteCallback
@@ -296,6 +299,7 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 #endif
     char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
     callback_data_t data;
+    S3BucketContext bucketContext;
 
 
     bzero (&data, sizeof (data));
@@ -315,12 +319,21 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
-    S3BucketContext bucketContext =
       /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
       /* XXXXX using S3UriStyleVirtualHost causes operation containing
        * the sub-string "S3" to fail. use S3UriStylePath instead */
+      /* this initialization failed for 3-2.0 because of the hostName
+       * element
+      S3BucketContext bucketContext =
       {myBucket,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId, 
-	S3Auth.secretAccessKey};
+	S3Auth.secretAccessKey}; */
+    bzero (&bucketContext, sizeof (bucketContext));
+    bucketContext.bucketName = myBucket;
+    bucketContext.protocol = S3ProtocolHTTPS;
+    bucketContext.uriStyle = S3UriStylePath;
+    bucketContext.accessKeyId = S3Auth.accessKeyId;
+    bucketContext.secretAccessKey = S3Auth.secretAccessKey;
+
     S3PutObjectHandler putObjectHandler = {
       { &responsePropertiesCallback, &responseCompleteCallback },
       &putObjectDataCallback
@@ -347,7 +360,11 @@ myS3Init (void)
 
     S3Initialized = 1;
 
+#ifdef libs3_3_1_4
     if ((status = S3_initialize ("s3", S3_INIT_ALL)) != S3StatusOK) {
+#else
+    if ((status = S3_initialize ("s3", S3_INIT_ALL, NULL)) != S3StatusOK) {
+#endif
         status = myS3Error (status, S3_INIT_ERROR);
     }
 
@@ -458,15 +475,24 @@ const char *delimiter, int maxkeys, int allDetails, s3Stat_t *s3Stat)
 {
     int status;
     callback_data_t data;
+    S3BucketContext bucketContext;
 
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
-    S3BucketContext bucketContext =
       /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
       /* XXXXX using S3UriStyleVirtualHost causes operation containing
        * the sub-string "S3" to fail. use S3UriStylePath instead */
+      /* this initialization failed for 3-2.0 because of the hostName
+       * element
+      S3BucketContext bucketContext =
       {bucketName,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId,
-        S3Auth.secretAccessKey};
+        S3Auth.secretAccessKey}; */
+    bzero (&bucketContext, sizeof (bucketContext));
+    bucketContext.bucketName = bucketName;
+    bucketContext.protocol = S3ProtocolHTTPS;
+    bucketContext.uriStyle = S3UriStylePath;
+    bucketContext.accessKeyId = S3Auth.accessKeyId;
+    bucketContext.secretAccessKey = S3Auth.secretAccessKey;
 
     S3ListBucketHandler listBucketHandler = {
         { &responsePropertiesCallback, &responseCompleteCallback },
@@ -530,6 +556,7 @@ getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 #endif
     char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
     callback_data_t data;
+    S3BucketContext bucketContext;
 
 
     bzero (&data, sizeof (data));
@@ -549,12 +576,21 @@ getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
-    S3BucketContext bucketContext =
       /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
       /* XXXXX using S3UriStyleVirtualHost causes operation containing
        * the sub-string "S3" to fail. use S3UriStylePath instead */
+      /* this initialization failed for 3-2.0 because of the hostName
+       * element
+      S3BucketContext bucketContext =
       {myBucket,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId,
-        S3Auth.secretAccessKey};
+        S3Auth.secretAccessKey}; */
+    bzero (&bucketContext, sizeof (bucketContext));
+    bucketContext.bucketName = myBucket;
+    bucketContext.protocol = S3ProtocolHTTPS;
+    bucketContext.uriStyle = S3UriStylePath;
+    bucketContext.accessKeyId = S3Auth.accessKeyId;
+    bucketContext.secretAccessKey = S3Auth.secretAccessKey;
+
     S3GetObjectHandler getObjectHandler = {
       { &responsePropertiesCallback, &responseCompleteCallback },
       &getObjectDataCallback
@@ -596,6 +632,7 @@ copyS3Obj (char *srcObj, char *destObj)
     callback_data_t data;
     int64_t lastModified;
     char eTag[256];
+    S3BucketContext bucketContext;
 
 
 
@@ -607,12 +644,21 @@ copyS3Obj (char *srcObj, char *destObj)
 
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
-    S3BucketContext bucketContext =
       /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
       /* XXXXX using S3UriStyleVirtualHost causes operation containing
        * the sub-string "S3" to fail. use S3UriStylePath instead */
+      /* this initialization failed for 3-2.0 because of the hostName 
+       * element 
+      S3BucketContext bucketContext =
       {srcBucket,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId,
-        S3Auth.secretAccessKey};
+        S3Auth.secretAccessKey}; */
+    bzero (&bucketContext, sizeof (bucketContext));
+    bucketContext.bucketName = srcBucket;
+    bucketContext.protocol = S3ProtocolHTTPS;
+    bucketContext.uriStyle = S3UriStylePath;
+    bucketContext.accessKeyId = S3Auth.accessKeyId;
+    bucketContext.secretAccessKey = S3Auth.secretAccessKey;
+   
 
     S3ResponseHandler responseHandler = {
         &responsePropertiesCallback,
