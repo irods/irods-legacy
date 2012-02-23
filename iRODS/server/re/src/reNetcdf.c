@@ -29,6 +29,7 @@ ruleExecInfo_t *rei)
       return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+    rsComm = rei->rsComm;
     if (inpParam1 == NULL) {
         rodsLog (LOG_ERROR,
           "msiNcOpen: input inpParam1 is NULL");
@@ -83,7 +84,7 @@ msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
         "msiNcClose: input rei or rsComm is NULL");
       return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
-
+    rsComm = rei->rsComm;
     if (inpParam1 == NULL) {
         rodsLog (LOG_ERROR,
           "msiNcClose: input inpParam1 is NULL");
@@ -131,6 +132,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         "msiNcInqId: input rei or rsComm is NULL");
       return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
+    rsComm = rei->rsComm;
 
     if (inpParam1 == NULL) {
         rodsLog (LOG_ERROR,
@@ -189,6 +191,7 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
         "msiNcInqWithId: input rei or rsComm is NULL");
       return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
+    rsComm = rei->rsComm;
 
     if (inpParam1 == NULL) {
         rodsLog (LOG_ERROR,
@@ -249,6 +252,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         "msiNcGetVarsByType: input rei or rsComm is NULL");
       return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
+    rsComm = rei->rsComm;
 
     if (dataTypeParam == NULL) {
         rodsLog (LOG_ERROR,
