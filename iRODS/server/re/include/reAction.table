@@ -429,4 +429,15 @@ microsdef_t MicrosTable[] = {
   {"msiDboExec",10,(funcPtr) msiDboExec},
   {"msiExit",2,(funcPtr) msiExit},
   {"msiSysMetaModify",2,(funcPtr) msiSysMetaModify},
+#ifdef NETCDF_API
+  {"msiNcOpen",3,(funcPtr) msiNcOpen},
+  {"msiNcCreate",3,(funcPtr) msiNcCreate},
+  {"msiNcClose",1,(funcPtr) msiNcClose},
+  {"msiNcInqId",4,(funcPtr) msiNcInqId},
+  {"msiNcInqWithId",4,(funcPtr) msiNcInqWithId},
+  {"msiNcGetVarsByType",8,(funcPtr) msiNcGetVarsByType},
+#ifdef LIB_CF
+  {"msiNccfGetVara",10,(funcPtr) msiNccfGetVara},
+#endif
+#endif
 
