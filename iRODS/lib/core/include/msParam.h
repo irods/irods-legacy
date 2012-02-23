@@ -19,6 +19,7 @@
 #ifdef NETCDF_API
 #include "ncInqId.h"
 #include "ncGetVarsByType.h"
+#include "nccfGetVara.h"
 #endif
 
 #ifdef  __cplusplus
@@ -67,6 +68,8 @@ extern "C" {
 #define NcCloseInp_MS_T		"NcCloseInp_PI"
 #define NcGetVarInp_MS_T	"NcGetVarInp_PI"
 #define NcGetVarOut_MS_T	"NcGetVarOut_PI"
+#define NccfGetVarInp_MS_T	"NccfGetVarInp_PI"
+#define NccfGetVarOut_MS_T	"NccfGetVarOut_PI"
 
 /* micro service input/output parameter */
 typedef struct MsParam {
@@ -189,6 +192,8 @@ int
 parseMspForPosInt (msParam_t *inpParam);
 char *
 parseMspForStr (msParam_t *inpParam);
+float
+parseMspForFloat (msParam_t *inpParam);
 int
 parseMspForDataObjCopyInp (msParam_t *inpParam,
 dataObjCopyInp_t *dataObjCopyInpCache, dataObjCopyInp_t **outDataObjCopyInp);
@@ -238,6 +243,8 @@ parseStrToNcType (char *myStr);
 int
 parseStrMspForLongArray (msParam_t *inpParam, int *ndim, 
 rodsLong_t **longArray);
+int
+parseMspForNccfGetVarInp (msParam_t *inpParam, nccfGetVarInp_t *nccfGetVarInp);
 #endif
 #ifdef  __cplusplus
 }

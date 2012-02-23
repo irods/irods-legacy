@@ -338,4 +338,86 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+int
+msiNccfGetVara (msParam_t *ncidParam, msParam_t *varidParam, 
+msParam_t *lvlIndexParam, msParam_t *timestepParam, 
+msParam_t *latRange0Param, msParam_t *latRange1Param,
+msParam_t *lonRange0Param, msParam_t *lonRange1Param,
+msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    nccfGetVarInp_t nccfGetVarInp;
+    nccfGetVarOut_t *nccfGetVarOut = NULL;
+
+    RE_TEST_MACRO ("    Calling msiNccfGetVara")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR,
+        "msiNccfGetVara: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    rsComm = rei->rsComm;
+
+    if (ncidParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNccfGetVara: input ncidParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    /* parse for dataType or nccfGetVarInp_t */
+    rei->status = parseMspForNccfGetVarInp (ncidParam, &nccfGetVarInp);
+
+    if (rei->status < 0) return rei->status;
+
+    if (varidParam != NULL) { 
+        /* parse for varid */ 
+        nccfGetVarInp.varid = parseMspForPosInt (varidParam);
+        if (nccfGetVarInp.varid < 0) return nccfGetVarInp.varid;
+    }
+
+    if (lvlIndexParam != NULL) { 
+        /* parse for ndim */
+        nccfGetVarInp.lvlIndex = parseMspForPosInt (lvlIndexParam);
+        if (nccfGetVarInp.lvlIndex < 0) return nccfGetVarInp.lvlIndex;
+    }
+
+    if (timestepParam != NULL) { 
+        /* parse for ndim */
+        nccfGetVarInp.timestep = parseMspForPosInt (timestepParam);
+        if (nccfGetVarInp.timestep < 0) return nccfGetVarInp.timestep;
+    }
+
+    if (latRange0Param != NULL) {
+        nccfGetVarInp.latRange[0] = parseMspForFloat (latRange0Param);
+        if (nccfGetVarInp.latRange[0] < 0) return nccfGetVarInp.latRange[0];
+    }
+
+    if (latRange1Param != NULL) {
+        nccfGetVarInp.latRange[1] = parseMspForFloat (latRange1Param);
+        if (nccfGetVarInp.latRange[1] < 0) return nccfGetVarInp.latRange[1];
+    }
+
+    if (lonRange0Param != NULL) {
+        nccfGetVarInp.lonRange[0] = parseMspForFloat (lonRange0Param);
+        if (nccfGetVarInp.lonRange[0] < 0) return nccfGetVarInp.lonRange[0];
+    }
+
+    if (lonRange1Param != NULL) {
+        nccfGetVarInp.lonRange[1] = parseMspForFloat (lonRange1Param);
+        if (nccfGetVarInp.lonRange[1] < 0) return nccfGetVarInp.lonRange[1];
+    }
+
+    rei->status = rsNccfGetVara (rsComm, &nccfGetVarInp, &nccfGetVarOut);
+    clearKeyVal (&nccfGetVarInp.condInput);
+    if (rei->status >= 0) {
+	fillMsParam (outParam, NULL, NccfGetVarOut_MS_T, nccfGetVarOut, NULL);
+    } else {
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiNccfGetVara: rsNccfGetVara failed, status = %d",
+        rei->status);
+    }
+
+    return (rei->status);
+}
+
 
