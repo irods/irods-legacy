@@ -594,7 +594,7 @@ copyS3Obj (char *srcObj, char *destObj)
     char srcKey[MAX_NAME_LEN], srcBucket[MAX_NAME_LEN];
     char destKey[MAX_NAME_LEN], destBucket[MAX_NAME_LEN];
     callback_data_t data;
-    rodsLong_t lastModified;
+    int64_t lastModified;
     char eTag[256];
 
 
