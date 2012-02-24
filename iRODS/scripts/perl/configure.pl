@@ -884,7 +884,7 @@ if ( $thisOS =~ /linux/i )
 }
 elsif ( $thisOS =~ /(sunos)|(solaris)/i )
 {
-	if ( $thisProcessor =~ /i.86/i )	# such as i386, i486, i586, i686
+	if ( $thisProcessor =~ /86/i )	# such as i386, i486, i586, i686, i86pc
 	{
 		$configMkVariables{ "OS_platform" } = "solaris_pc_platform";
 		printStatus( "Host OS is Solaris (PC).\n" );
