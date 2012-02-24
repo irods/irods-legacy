@@ -49,7 +49,7 @@ extern "C" {
  *   ncOpenInp_t *ncOpenInp - generic nc open/create input. Relevant items are:
  *	objPath - the path of the data object.
  *      mode - the mode of the open - valid values are given in netcdf.h -
- *       NC_NOWRITE, NC_WRITE
+ *       NC_NOWRITE (0), NC_WRITE (1)
  *	condInput - condition input (not used).
  * OutPut - 
  *   int the ncid of the opened object - an integer descriptor.   
