@@ -380,7 +380,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     rei->status = rsNcGetVarsByType (rsComm, &ncGetVarInp, &ncGetVarOut);
-    clearKeyVal (&ncGetVarInp.condInput);
+    clearNcGetVarInp (&ncGetVarInp);
     if (rei->status >= 0) {
 	fillMsParam (outParam, NULL, NcGetVarOut_MS_T, ncGetVarOut, NULL);
     } else {
@@ -443,23 +443,34 @@ msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if (latRange0Param != NULL) {
-        nccfGetVarInp.latRange[0] = parseMspForFloat (latRange0Param);
-        if (nccfGetVarInp.latRange[0] < 0) return nccfGetVarInp.latRange[0];
+        rei->status = parseMspForFloat (latRange0Param, 
+	  &nccfGetVarInp.latRange[0]);
+	if (rei->status < 0) return rei->status;
     }
 
     if (latRange1Param != NULL) {
-        nccfGetVarInp.latRange[1] = parseMspForFloat (latRange1Param);
-        if (nccfGetVarInp.latRange[1] < 0) return nccfGetVarInp.latRange[1];
+	rei->status = parseMspForFloat (latRange1Param,
+          &nccfGetVarInp.latRange[1]); 
+	if (rei->status < 0) return rei->status;
     }
 
     if (lonRange0Param != NULL) {
-        nccfGetVarInp.lonRange[0] = parseMspForFloat (lonRange0Param);
-        if (nccfGetVarInp.lonRange[0] < 0) return nccfGetVarInp.lonRange[0];
+	rei->status  = parseMspForFloat (lonRange0Param,
+          &nccfGetVarInp.lonRange[0]); 
+	if (rei->status < 0) return rei->status;
     }
 
     if (lonRange1Param != NULL) {
-        nccfGetVarInp.lonRange[1] = parseMspForFloat (lonRange1Param);
-        if (nccfGetVarInp.lonRange[1] < 0) return nccfGetVarInp.lonRange[1];
+	rei->status = parseMspForFloat (lonRange1Param,
+          &nccfGetVarInp.lonRange[1]);
+	if (rei->status < 0) return rei->status;
+    }
+
+    if (maxOutArrayLenParam != NULL) {
+        /* parse for maxOutArrayLen */
+        nccfGetVarInp.maxOutArrayLen = parseMspForPosInt (maxOutArrayLenParam);
+        if (nccfGetVarInp.maxOutArrayLen < 0) 
+	  return nccfGetVarInp.maxOutArrayLen;
     }
 
     rei->status = rsNccfGetVara (rsComm, &nccfGetVarInp, &nccfGetVarOut);

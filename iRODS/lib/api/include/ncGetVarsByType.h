@@ -92,6 +92,8 @@ rcNcGetVarsByType (rcComm_t *conn,  ncGetVarInp_t *ncGetVarInp,
 ncGetVarOut_t **ncGetVarOut);
 int
 freeNcGetVarOut (ncGetVarOut_t **ncGetVarOut);
+int
+clearNcGetVarInp (ncGetVarInp_t *ncGetVarInp);
 #ifdef  __cplusplus
 }
 #endif

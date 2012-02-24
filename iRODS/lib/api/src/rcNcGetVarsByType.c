@@ -30,3 +30,24 @@ freeNcGetVarOut (ncGetVarOut_t **ncGetVarOut)
     *ncGetVarOut = NULL;
     return 0;
 }
+
+int
+clearNcGetVarInp (ncGetVarInp_t *ncGetVarInp)
+{
+    if (ncGetVarInp == NULL) return USER__NULL_INPUT_ERR;
+    if (ncGetVarInp->start != NULL) {
+	free (ncGetVarInp->start);
+	ncGetVarInp->start = NULL;
+    }
+    if (ncGetVarInp->count != NULL) {
+        free (ncGetVarInp->count);
+        ncGetVarInp->count = NULL;
+    }
+    if (ncGetVarInp->stride != NULL) {
+        free (ncGetVarInp->stride);
+        ncGetVarInp->stride = NULL;
+    }
+    clearKeyVal (&ncGetVarInp->condInput);
+    return 0;
+}
+

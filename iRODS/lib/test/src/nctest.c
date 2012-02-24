@@ -5,7 +5,7 @@
 #include "rodsClient.h" 
 
 /* a copy of sfc_pres_temp.nc can be found in ../netcdf/sfc_pres_temp.nc */
-#define TEST_PATH1 "/oneZone/home/rods/netcdf/sfc_pres_temp.nc"
+#define TEST_PATH1 "/wanZone/home/rods/netcdf/sfc_pres_temp.nc"
 
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
@@ -230,7 +230,7 @@ main(int argc, char **argv)
     count[0] = latdimlen1;
     count[1] = londimlen1;
     stride[0] = 1;
-    stride[2] = 1;
+    stride[1] = 1;
     ncGetVarInp.dataType = temptype1;
     ncGetVarInp.varid = tempvarid1;
     ncGetVarInp.ndim = tempndim;

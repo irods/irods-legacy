@@ -935,27 +935,27 @@ parseMspForStr (msParam_t *inpParam)
     return (char *)(inpParam->inOutStruct);
 }
 
-float
-parseMspForFloat (msParam_t *inpParam) 
+int
+parseMspForFloat (msParam_t *inpParam, float *floatout) 
 {
-    float myFloat;
 
+    if (inpParam == NULL || floatout == NULL) return SYS_NULL_INPUT;
     if (strcmp (inpParam->type, STR_MS_T) == 0) {
         /* str input */
 	if (strcmp ((char *) inpParam->inOutStruct, "null") == 0) {
 	    return (SYS_NULL_INPUT);
 	}
-	myFloat = strtof ((const char*)inpParam->inOutStruct, NULL);
+	*floatout = strtof ((const char*)inpParam->inOutStruct, NULL);
     } else if (strcmp (inpParam->type, INT_MS_T) == 0 || 
       strcmp (inpParam->type, BUF_LEN_MS_T) == 0) {
-        myFloat = *(float *)inpParam->inOutStruct;
+        *floatout = *(float *)inpParam->inOutStruct;
     } else {
         rodsLog (LOG_ERROR, 
           "parseMspForPosFloat: Unsupported input Param type %s",
           inpParam->type);
         return (USER_PARAM_TYPE_ERR);
     }
-    return (myFloat);
+    return 0;
 }
 
 int

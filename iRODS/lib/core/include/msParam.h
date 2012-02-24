@@ -192,8 +192,8 @@ int
 parseMspForPosInt (msParam_t *inpParam);
 char *
 parseMspForStr (msParam_t *inpParam);
-float
-parseMspForFloat (msParam_t *inpParam);
+int
+parseMspForFloat (msParam_t *inpParam, float *floatout);
 int
 parseMspForDataObjCopyInp (msParam_t *inpParam,
 dataObjCopyInp_t *dataObjCopyInpCache, dataObjCopyInp_t **outDataObjCopyInp);
