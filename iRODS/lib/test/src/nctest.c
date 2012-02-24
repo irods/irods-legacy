@@ -1,11 +1,11 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* nctest.c - test the high level api */
+/* nctest.c - test the iRODS NETCDF api */
 
 #include "rodsClient.h" 
 
+/* a copy of sfc_pres_temp.nc can be found in ../netcdf/sfc_pres_temp.nc */
 #define TEST_PATH1 "/oneZone/home/rods/netcdf/sfc_pres_temp.nc"
-#define TEST_PATH2 "/oneZone/home/rods/netcdf/coads_climatology.nc"
 
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
