@@ -117,7 +117,7 @@ ncInqWithIdOut_t **ncInqWithIdOut)
 	*ncInqWithIdOut = (ncInqWithIdOut_t *) calloc (1, sizeof 
 	  (ncInqWithIdOut_t)); 
 	(*ncInqWithIdOut)->mylong = mylong;
-	(*ncInqWithIdOut)->type = mytype;
+	(*ncInqWithIdOut)->dataType = mytype;
 	(*ncInqWithIdOut)->natts = mynatts;
         if (myndim > 0) {
 	    int len = sizeof (int) * myndim;

@@ -436,6 +436,11 @@ microsdef_t MicrosTable[] = {
   {"msiNcInqId",4,(funcPtr) msiNcInqId},
   {"msiNcInqWithId",4,(funcPtr) msiNcInqWithId},
   {"msiNcGetVarsByType",8,(funcPtr) msiNcGetVarsByType},
+  {"msiNcGetArrayLen",2,(funcPtr) msiNcGetArrayLen},
+  {"msiNcGetNumDim",2,(funcPtr) msiNcGetNumDim},
+  {"msiNcGetDataType",2,(funcPtr) msiNcGetDataType},
+  {"msiNcGetElementInArray",3,(funcPtr) msiNcGetElementInArray},
+  {"msiFloatToString",2,(funcPtr) msiFloatToString},
 #ifdef LIB_CF
   {"msiNccfGetVara",10,(funcPtr) msiNccfGetVara},
 #endif

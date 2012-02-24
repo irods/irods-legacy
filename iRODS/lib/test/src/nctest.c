@@ -377,13 +377,13 @@ myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim)
 	return status;
     } else {
         printf ("%s ---- type = %d natts = %d, ndim = %d", ncInqIdInp.name,
-          ncInqWithIdOut->type, ncInqWithIdOut->natts, ncInqWithIdOut->ndim);
+          ncInqWithIdOut->dataType, ncInqWithIdOut->natts, ncInqWithIdOut->ndim);
         printf ("   dimid:");
         for (i = 0; i <  ncInqWithIdOut->ndim; i++) {
             printf ("    %d",  ncInqWithIdOut->intArray[i]);
         }
         printf ("\n");
-	*dataType = ncInqWithIdOut->type;
+	*dataType = ncInqWithIdOut->dataType;
 	*ndim = ncInqWithIdOut->ndim;
 	if (ncInqWithIdOut->intArray != NULL) free (ncInqWithIdOut->intArray);
 	free (ncInqWithIdOut);

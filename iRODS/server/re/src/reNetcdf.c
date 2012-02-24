@@ -487,4 +487,211 @@ msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei)
 }
 #endif	
 
+int
+msiNcGetArrayLen (msParam_t *inpParam, msParam_t *outParam, 
+ruleExecInfo_t *rei)
+{
+#if 0	/* should use rodsLong_t, but some problem with rule engine */
+    rodsLong_t arrayLen;
+#endif
+    int arrayLen;
 
+    if (inpParam == NULL || outParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (inpParam->type, NcInqWithIdOut_MS_T) == 0) {
+	ncInqWithIdOut_t *ncInqWithIdOut;
+        ncInqWithIdOut = (ncInqWithIdOut_t *) inpParam->inOutStruct;
+	arrayLen = ncInqWithIdOut->mylong;
+    } else if (strcmp (inpParam->type, NcGetVarOut_MS_T) == 0) {
+        ncGetVarOut_t *ncGetVarOut;
+        ncGetVarOut = (ncGetVarOut_t *) inpParam->inOutStruct;
+        if (ncGetVarOut == NULL || ncGetVarOut->dataArray == NULL)
+            return USER__NULL_INPUT_ERR;
+        arrayLen = ncGetVarOut->dataArray->len;
+    } else if (strcmp (inpParam->type, NccfGetVarOut_MS_T) == 0) {
+        nccfGetVarOut_t *nccfGetVarOut;
+        nccfGetVarOut = (nccfGetVarOut_t *) inpParam->inOutStruct;
+        if (nccfGetVarOut == NULL || nccfGetVarOut->dataArray == NULL)
+            return USER__NULL_INPUT_ERR;
+        arrayLen = nccfGetVarOut->dataArray->len;
+    } else {
+        rodsLog (LOG_ERROR, 
+          "msiNcGetArrayLen: Unsupported input Param type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    fillIntInMsParam (outParam, arrayLen);
+    return 0;
+}
+
+int
+msiNcGetNumDim (msParam_t *inpParam, msParam_t *outParam,
+ruleExecInfo_t *rei)
+{
+    int ndim;
+
+    if (inpParam == NULL || outParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (inpParam->type, NcInqWithIdOut_MS_T) == 0) {
+        ncInqWithIdOut_t *ncInqWithIdOut;
+        ncInqWithIdOut = (ncInqWithIdOut_t *) inpParam->inOutStruct;
+        ndim = ncInqWithIdOut->ndim;
+    } else if (strcmp (inpParam->type, NcGetVarInp_MS_T) == 0) {
+        ncGetVarInp_t *ncGetVarInp;
+        ncGetVarInp = (ncGetVarInp_t *) inpParam->inOutStruct;
+        ndim = ncGetVarInp->ndim;
+    } else {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNumDim: Unsupported input Param type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    fillIntInMsParam (outParam, ndim);
+    return 0;
+}
+
+int
+msiNcGetDataType (msParam_t *inpParam, msParam_t *outParam,
+ruleExecInfo_t *rei)
+{
+    int dataType;
+
+    if (inpParam == NULL || outParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (inpParam->type, NcInqWithIdOut_MS_T) == 0) {
+        ncInqWithIdOut_t *ncInqWithIdOut;
+        ncInqWithIdOut = (ncInqWithIdOut_t *) inpParam->inOutStruct;
+        dataType = ncInqWithIdOut->dataType;
+    } else if (strcmp (inpParam->type, NcGetVarInp_MS_T) == 0) {
+        ncGetVarInp_t *ncGetVarInp;
+        ncGetVarInp = (ncGetVarInp_t *) inpParam->inOutStruct;
+        dataType = ncGetVarInp->dataType;
+    } else if (strcmp (inpParam->type, NcGetVarOut_MS_T) == 0) {
+        ncGetVarOut_t *ncGetVarOut;
+        ncGetVarOut = (ncGetVarOut_t *) inpParam->inOutStruct;
+	if (ncGetVarOut == NULL || ncGetVarOut->dataArray == NULL)
+	    return USER__NULL_INPUT_ERR;
+        dataType = ncGetVarOut->dataArray->type;
+    } else if (strcmp (inpParam->type, NccfGetVarOut_MS_T) == 0) {
+        nccfGetVarOut_t *nccfGetVarOut;
+        nccfGetVarOut = (nccfGetVarOut_t *) inpParam->inOutStruct;
+        if (nccfGetVarOut == NULL || nccfGetVarOut->dataArray == NULL)
+            return USER__NULL_INPUT_ERR;
+        dataType = nccfGetVarOut->dataArray->type;
+    } else {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNumDim: Unsupported input Param type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    fillIntInMsParam (outParam, dataType);
+    return 0;
+}
+
+int
+msiNcGetElementInArray (msParam_t *arrayStructParam, msParam_t *indexParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    int myindex;
+    void *myarray;
+    int dataType;
+    int arrayLen;
+    char *charArray;
+    int *intArray;
+    float *floatArray;
+    rodsLong_t *longArray;
+    char **strArray;
+
+    if (arrayStructParam == NULL || indexParam == NULL ||
+      outParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (arrayStructParam->type, NcInqWithIdOut_MS_T) == 0) {
+	/* intArray for the id array */
+        ncInqWithIdOut_t *ncInqWithIdOut;
+        ncInqWithIdOut = (ncInqWithIdOut_t *) arrayStructParam->inOutStruct;
+        dataType = NC_INT;
+        myarray = (void *) ncInqWithIdOut->intArray;
+	arrayLen = ncInqWithIdOut->ndim;
+    } else if (strcmp (arrayStructParam->type, NcGetVarOut_MS_T) == 0) {
+        ncGetVarOut_t *ncGetVarOut;
+        ncGetVarOut = (ncGetVarOut_t *) arrayStructParam->inOutStruct;
+        if (ncGetVarOut == NULL || ncGetVarOut->dataArray == NULL)
+            return USER__NULL_INPUT_ERR;
+        dataType = ncGetVarOut->dataArray->type;
+        myarray = ncGetVarOut->dataArray->buf;
+	arrayLen = ncGetVarOut->dataArray->len;
+    } else if (strcmp (arrayStructParam->type, NccfGetVarOut_MS_T) == 0) {
+        nccfGetVarOut_t *nccfGetVarOut;
+        nccfGetVarOut = (nccfGetVarOut_t *) arrayStructParam->inOutStruct;
+        if (nccfGetVarOut == NULL || nccfGetVarOut->dataArray == NULL)
+            return USER__NULL_INPUT_ERR;
+        dataType = nccfGetVarOut->dataArray->type;
+        myarray = nccfGetVarOut->dataArray->buf;
+	arrayLen = nccfGetVarOut->dataArray->len;
+    } else {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNumDim: Unsupported input Param type %s",
+          arrayStructParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    myindex = parseMspForPosInt (indexParam);
+    if (myindex < 0 || myindex >= arrayLen) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetElementInArray: input index %d out of range. arrayLen = %d",
+          myindex, arrayLen);
+        return (NETCDF_DIM_MISMATCH_ERR);
+    }
+
+    switch (dataType) {
+      case NC_CHAR:
+      case NC_BYTE:
+      case NC_UBYTE:
+	charArray = (char *) myarray;
+	fillCharInMsParam (outParam, charArray[myindex]);
+	break;
+      case NC_STRING:
+	strArray = (char **) myarray;
+	fillStrInMsParam (outParam, strArray[myindex]);
+	break;
+      case NC_INT:
+      case NC_UINT:
+	intArray = (int *) myarray;
+        fillIntInMsParam (outParam, intArray[myindex]);
+        break;
+      case NC_FLOAT:
+	floatArray = (float *) myarray;
+        fillFloatInMsParam (outParam, floatArray[myindex]);
+        break;
+      case NC_INT64:
+      case NC_UINT64:
+      case NC_DOUBLE:
+	longArray = (rodsLong_t *) myarray;
+        fillDoubleInMsParam (outParam, longArray[myindex]);
+        break;
+      default:
+        rodsLog (LOG_ERROR,
+          "msiNcGetElementInArray: Unknow dataType %d", dataType);
+        return (NETCDF_INVALID_DATA_TYPE);
+    }
+    return 0;
+}
+
+int
+msiFloatToString (msParam_t *floatParam, msParam_t *stringParam,
+ruleExecInfo_t *rei)
+{
+    char floatStr[NAME_LEN];
+    float *myfloat;
+    if (floatParam == NULL || stringParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (floatParam->type, FLOAT_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiFloatToString: floatParam type %s error", floatParam->type);
+	return USER_PARAM_TYPE_ERR;
+    }
+    myfloat = (float *) floatParam->inOutStruct;
+    snprintf (floatStr, NAME_LEN, "%f", *myfloat);
+    fillStrInMsParam (stringParam, floatStr);
+
+    return 0;
+}

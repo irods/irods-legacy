@@ -40,4 +40,19 @@ msParam_t *latRange0Param, msParam_t *latRange1Param,
 msParam_t *lonRange0Param, msParam_t *lonRange1Param,
 msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei);
 #endif
+int
+msiNcGetArrayLen (msParam_t *inpParam, msParam_t *outParam,
+ruleExecInfo_t *rei);
+int
+msiNcGetNumDim (msParam_t *inpParam, msParam_t *outParam,
+ruleExecInfo_t *rei);
+int
+msiNcGetDataType (msParam_t *inpParam, msParam_t *outParam,
+ruleExecInfo_t *rei);
+int
+msiNcGetElementInArray (msParam_t *arrayStructParam, msParam_t *indexParam,
+msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiFloatToString (msParam_t *floatParam, msParam_t *stringParam,
+ruleExecInfo_t *rei);
 #endif	/* RE_NETCDF_H */

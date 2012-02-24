@@ -17,18 +17,18 @@
 #include "ncInqId.h"
 
 /* valid dataType are:
-NC_BYTE         signed 1 byte integer 
-NC_CHAR         ISO/ASCII character   - uchar, text
-NC_SHORT        signed 2 byte integer
-NC_INT          signed 4 byte integer 
-NC_FLOAT        single precision floating point number 
-NC_DOUBLE       double precision floating point number
-NC_UBYTE        unsigned 1 byte int
-NC_USHORT       unsigned 2-byte int
-NC_UINT         unsigned 4-byte int
-NC_INT64        signed 8-byte int
-NC_UINT64       unsigned 8-byte int
-NC_STRING       string - only for netcdf librarysupports HDF
+NC_BYTE     1   signed 1 byte integer 
+NC_CHAR     2   ISO/ASCII character   - uchar, text
+NC_SHORT    3   signed 2 byte integer
+NC_INT      4   signed 4 byte integer 
+NC_FLOAT    5   single precision floating point number 
+NC_DOUBLE   6   double precision floating point number
+NC_UBYTE    7   unsigned 1 byte int
+NC_USHORT   8   unsigned 2-byte int
+NC_UINT     9   unsigned 4-byte int
+NC_INT64    10  signed 8-byte int
+NC_UINT64   11  unsigned 8-byte int
+NC_STRING   12  string - only for netcdf librarysupports HDF
 */
 
 typedef struct {

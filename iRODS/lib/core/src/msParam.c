@@ -265,6 +265,45 @@ fillIntInMsParam (msParam_t *msParam, int myInt)
 }
 
 int
+fillFloatInMsParam (msParam_t *msParam, float myFloat)
+{
+    float *myInOutStruct;
+
+    if (msParam != NULL) {
+        myInOutStruct = (float *)malloc (sizeof (float));
+        *myInOutStruct = myFloat;
+        fillMsParam (msParam, NULL, FLOAT_MS_T, myInOutStruct, NULL);
+    }
+    return (0);
+}
+
+int
+fillDoubleInMsParam (msParam_t *msParam, rodsLong_t myDouble)
+{
+    rodsLong_t *myInOutStruct;
+
+    if (msParam != NULL) {
+        myInOutStruct = (rodsLong_t *)malloc (sizeof (rodsLong_t));
+        *myInOutStruct = myDouble;
+        fillMsParam (msParam, NULL, DOUBLE_MS_T, myInOutStruct, NULL);
+    }
+    return (0);
+}
+
+int
+fillCharInMsParam (msParam_t *msParam, char myChar)
+{
+    char *myInOutStruct;
+
+    if (msParam != NULL) {
+        myInOutStruct = (char *)malloc (sizeof (char));
+        *myInOutStruct = myChar;
+        fillMsParam (msParam, NULL, CHAR_MS_T, myInOutStruct, NULL);
+    }
+    return (0);
+}
+
+int
 fillStrInMsParam (msParam_t *msParam, char *myStr)
 {
 
@@ -902,6 +941,9 @@ parseMspForPosInt (msParam_t *inpParam)
     } else if (strcmp (inpParam->type, INT_MS_T) == 0 || 
       strcmp (inpParam->type, BUF_LEN_MS_T) == 0) {
         myInt = *(int *)inpParam->inOutStruct;
+    } else if (strcmp (inpParam->type, DOUBLE_MS_T) == 0) {
+	rodsLong_t myLong = *(rodsLong_t *)inpParam->inOutStruct;
+	myInt = (int) myLong;
     } else {
         rodsLog (LOG_ERROR, 
           "parseMspForPosInt: Unsupported input Param type %s",
@@ -947,7 +989,7 @@ parseMspForFloat (msParam_t *inpParam, float *floatout)
 	}
 	*floatout = strtof ((const char*)inpParam->inOutStruct, NULL);
     } else if (strcmp (inpParam->type, INT_MS_T) == 0 || 
-      strcmp (inpParam->type, BUF_LEN_MS_T) == 0) {
+      strcmp (inpParam->type, FLOAT_MS_T) == 0) {
         *floatout = *(float *)inpParam->inOutStruct;
     } else {
         rodsLog (LOG_ERROR, 

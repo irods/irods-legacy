@@ -18,8 +18,8 @@
 
 typedef struct {
     rodsLong_t mylong;	/* an int output.content depends on paramType.For 
-			 * NC_DIM_T, this is dimLen. not used for NC_VAR_T */
-    int type;		/* data type for NC_VAR_T. */
+			 * NC_DIM_T, this is arrayLen. not used for NC_VAR_T */
+    int dataType;		/* data type for NC_VAR_T. */
     int natts;		/* no. of attrs for NC_VAR_T */
     char name[MAX_NAME_LEN];
     int myint;		/* not used */
@@ -27,7 +27,7 @@ typedef struct {
     int *intArray;	/* int array of ndim length */
 } ncInqWithIdOut_t;
     
-#define NcInqWithIdOut_PI "double mylong; int type; int natts; str name[MAX_NAME_LEN];int myint; int ndim; int *intArray(ndim);"
+#define NcInqWithIdOut_PI "double mylong; int dataType; int natts; str name[MAX_NAME_LEN];int myint; int ndim; int *intArray(ndim);"
 #if defined(RODS_SERVER)
 #define RS_NC_INQ_WITH_ID rsNcInqWithId
 /* prototype for the server handler */

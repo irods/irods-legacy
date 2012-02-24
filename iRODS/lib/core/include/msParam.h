@@ -29,9 +29,11 @@ extern "C" {
 /* some commonly used MS (micro service) type */
 #define STR_MS_T                "STR_PI"
 #define INT_MS_T                "INT_PI"
+#define CHAR_MS_T               "CHAR_PI"
 #define BUF_LEN_MS_T            "BUF_LEN_PI"    /* an integer indication the
                                                  * length of BBuf */
 #define DOUBLE_MS_T             "DOUBLE_PI"
+#define FLOAT_MS_T              "FLOAT_PI"
 #define DataObjInp_MS_T         "DataObjInp_PI"
 #define DataObjCloseInp_MS_T    "DataObjCloseInp_PI"
 #define DataObjCopyInp_MS_T     "DataObjCopyInp_PI"
@@ -171,6 +173,12 @@ int
 clearMsParamArray (msParamArray_t *msParamArray, int freeStruct);
 int 
 fillIntInMsParam (msParam_t *msParam, int myInt);
+int
+fillFloatInMsParam (msParam_t *msParam, float myFloat);
+int
+fillCharInMsParam (msParam_t *msParam, char myChar);
+int
+fillDoubleInMsParam (msParam_t *msParam, rodsLong_t myDouble);
 int
 fillStrInMsParam (msParam_t *msParam, char *myStr);
 int
