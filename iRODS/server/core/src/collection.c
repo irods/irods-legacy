@@ -382,9 +382,16 @@ rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl)
         /* something may be added by rsCollCreate */
         clearKeyVal (&collCreateInp.condInput);
         if (status < 0) {
-            rodsLog (LOG_ERROR,
-             "rsMkCollR: rsCollCreate failed for %s, status =%d",
-              tmpPath, status);
+	    if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+                rodsLog (LOG_DEBUG,
+                 "rsMkCollR: rsCollCreate - coll %s already exist.stat = %d",
+                 tmpPath, status);
+		status = 0;
+	    } else {
+                rodsLog (LOG_ERROR,
+                 "rsMkCollR: rsCollCreate failed for %s, status =%d",
+                  tmpPath, status);
+	    }
             return status;
         }
         while (tmpLen && tmpPath[tmpLen] != '\0')
