@@ -632,6 +632,7 @@ getCollectionACL(collInp_t *myCollInp, char *label, bytesBuf_t *mybuf, rsComm_t 
 	genQueryInp_t genQueryInp;
 	genQueryOut_t *genQueryOut;
 	char condStr[MAX_NAME_LEN];
+	rodsLong_t collId;
 	int printCount=0;
 	int status;
 	
@@ -641,162 +642,137 @@ getCollectionACL(collInp_t *myCollInp, char *label, bytesBuf_t *mybuf, rsComm_t 
 		return (SYS_INTERNAL_NULL_INPUT_ERR);
 	}
 
+	/* Check if collection exists */
+	status = isColl (rsComm, myCollInp->collName, &collId);
+	if (status == CAT_NO_ROWS_FOUND)
+	{
+		rodsLog (LOG_ERROR, "getCollectionACL: collection %s not found.", myCollInp->collName);
+		return (status);
+	}
 
-	/* if we're in recursive mode we must get both collection and data Obj ACLs in separate queries */
-	if (label && !strcmp(label, "recursive")) {
-		
-		/* first ICAT call to get collection ACLs */
-		memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-		
-		/* wanted fields */	
-		addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);	
-		addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
-		addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_NAME, 1);
-		
-	
-		/* conditions */
-		snprintf (condStr, MAX_NAME_LEN, " like '%s\%\%'", myCollInp->collName);
-		addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
-		
-		/* Currently necessary since other namespaces exist in the token table */
-		snprintf (condStr, MAX_NAME_LEN, "='%s'", "access_type");
-		addInxVal (&genQueryInp.sqlCondInp, COL_DATA_TOKEN_NAMESPACE, condStr);
-		
-		
-		genQueryInp.maxRows = MAX_SQL_ROWS;
-	
-		/* ICAT call to get ACL tokens */
-		status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-		
-		
-		if (status == CAT_NO_ROWS_FOUND) {
-			/* check if collection exists */
-			addInxIval (&genQueryInp.selectInp, COL_D_DATA_PATH, 1);
-			genQueryInp.selectInp.len = 1;
-			status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-			
-			if (status == CAT_NO_ROWS_FOUND) {
-				rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, status,
-						"getCollectionACL: collection %s not found. status = %d", myCollInp->collName, status);
-				return (status);
-			}
-			
-			printCount+=extractACLQueryResults(genQueryOut, mybuf, 1);
-		}
-		
-		else {
-			printCount+=extractACLQueryResults(genQueryOut, mybuf, 1);
-		}
-		
-		while (status==0 && genQueryOut->continueInx > 0) {
-			genQueryInp.continueInx=genQueryOut->continueInx;
-			status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-			printCount+= extractACLQueryResults(genQueryOut, mybuf, 1);
-		}
+
+	/*** Get ACLs on collection ***/
+
+	/* Init genQueryInp */
+	memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+
+	/* wanted fields */
+	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_COLL_USER_ZONE, 1);
+	addInxIval (&genQueryInp.selectInp, COL_COLL_ACCESS_NAME, 1);
+
+	/* conditions */
+	snprintf (condStr, MAX_NAME_LEN, " = '%s'", myCollInp->collName);
+	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+	/* Not sure if this is still required... */
+	snprintf (condStr, MAX_NAME_LEN, "='%s'", "access_type");
+	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_TOKEN_NAMESPACE, condStr);
 
 	
-		/* second ICAT call to get data object ACLs */
-		memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-		
-		/* wanted fields */	
-		addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);	
-		addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
-		addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
-		addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_NAME, 1);
-		
+	/* ICAT call to get ACL tokens */
+	status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
 	
-		/* conditions */
-		snprintf (condStr, MAX_NAME_LEN, " like '%s\%\%'", myCollInp->collName);
-		addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
-		
-		/* Currently necessary since other namespaces exist in the token table */
-		snprintf (condStr, MAX_NAME_LEN, "='%s'", "access_type");
-		addInxVal (&genQueryInp.sqlCondInp, COL_DATA_TOKEN_NAMESPACE, condStr);
-		
-		
-		genQueryInp.maxRows = MAX_SQL_ROWS;
 	
-		/* ICAT call to get ACL tokens */
+	/* Extract results and get more rows */
+	printCount+=writeCollAclToBBuf(genQueryOut, mybuf);
+	
+	while (status==0 && genQueryOut->continueInx > 0) {
+		genQueryInp.continueInx=genQueryOut->continueInx;
+		freeGenQueryOut (&genQueryOut);
 		status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-		
-		
-		if (status == CAT_NO_ROWS_FOUND) {
-			/* check if collection exists */
-			addInxIval (&genQueryInp.selectInp, COL_D_DATA_PATH, 1);
-			genQueryInp.selectInp.len = 1;
-			status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-			
-			if (status == CAT_NO_ROWS_FOUND) {
-				rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, status,
-					"getCollectionACL: collection %s not found. status = %d", myCollInp->collName, status);
-				return (status);
-			}
-			
-			printCount+=extractACLQueryResults(genQueryOut, mybuf, 0);
-		}
-		
-		else {
-			printCount+=extractACLQueryResults(genQueryOut, mybuf, 0);
-		}
-		
-		while (status==0 && genQueryOut->continueInx > 0) {
-			genQueryInp.continueInx=genQueryOut->continueInx;
-			status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-			printCount+= extractACLQueryResults(genQueryOut, mybuf, 0);
-		}
+		printCount+= writeCollAclToBBuf(genQueryOut, mybuf);
 	}
-	else {
-		/* simple collection ACL query */
-		memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-		
-		/* wanted fields */	
-		addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);	
-		addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
-		addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_NAME, 1);
-		
 	
-		/* conditions */
-		snprintf (condStr, MAX_NAME_LEN, "='%s'", myCollInp->collName);
-		addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
-		
-		/* Currently necessary since other namespaces exist in the token table */
-		snprintf (condStr, MAX_NAME_LEN, "='%s'", "access_type");
-		addInxVal (&genQueryInp.sqlCondInp, COL_DATA_TOKEN_NAMESPACE, condStr);
-		
-		
-		genQueryInp.maxRows = MAX_SQL_ROWS;
-	
-		/* ICAT call to get ACL tokens */
+	/* Cleanup */
+	freeGenQueryOut (&genQueryOut);
+
+	/* If not in recursive mode, we're done here. */
+	if (!label || strcmp(label, "recursive"))
+	{
+		return (status);
+	}
+
+
+	/*** Get ACLs on subcollections ***/
+
+	/* Init genQueryInp */
+	memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+
+	/* wanted fields */
+	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_COLL_USER_ZONE, 1);
+	addInxIval (&genQueryInp.selectInp, COL_COLL_ACCESS_NAME, 1);
+
+	/* conditions */
+	snprintf (condStr, MAX_NAME_LEN, " like '%s/%%'", myCollInp->collName);
+	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+	/* Not sure if this is still required... */
+	snprintf (condStr, MAX_NAME_LEN, "='%s'", "access_type");
+	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_TOKEN_NAMESPACE, condStr);
+
+
+	/* ICAT call to get ACL tokens */
+	status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+
+
+	/* Extract results and get more rows */
+	printCount+=writeCollAclToBBuf(genQueryOut, mybuf);
+
+	while (status==0 && genQueryOut->continueInx > 0) {
+		genQueryInp.continueInx=genQueryOut->continueInx;
+		freeGenQueryOut (&genQueryOut);
 		status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-		
-		
-		if (status == CAT_NO_ROWS_FOUND) {
-			/* check if collection exists */
-			addInxIval (&genQueryInp.selectInp, COL_D_DATA_PATH, 1);
-			genQueryInp.selectInp.len = 1;
-			status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-			
-			if (status == CAT_NO_ROWS_FOUND) {
-				rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, status,
-						"getCollectionACL: collection %s not found. status = %d", myCollInp->collName, status);
-				return (status);
-			}
-			
-			printCount+=extractACLQueryResults(genQueryOut, mybuf, 1);
-		}
-		
-		else {
-			printCount+=extractACLQueryResults(genQueryOut, mybuf, 1);
-		}
-		
-		while (status==0 && genQueryOut->continueInx > 0) {
-			genQueryInp.continueInx=genQueryOut->continueInx;
-			status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-			printCount+= extractACLQueryResults(genQueryOut, mybuf, 1);
-		}	
-	
-	
+		printCount+= writeCollAclToBBuf(genQueryOut, mybuf);
 	}
+	
+	/* Cleanup */
+	freeGenQueryOut (&genQueryOut);
+
+
+	/*** Now get ACLs on data objects ***/
+
+	/* Init genQueryInp */
+	memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+
+	/* wanted fields */
+	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
+	addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_NAME, 1);
+
+	/* conditions */
+	snprintf (condStr, MAX_NAME_LEN, " like '%s/%%'", myCollInp->collName);
+	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+	/* Not sure if this is still required... */
+	snprintf (condStr, MAX_NAME_LEN, "='%s'", "access_type");
+	addInxVal (&genQueryInp.sqlCondInp, COL_DATA_TOKEN_NAMESPACE, condStr);
+
+
+	/* ICAT call to get ACL tokens */
+	status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+
+
+	/* Extract results and get more rows */
+	printCount+=writeDataAclToBBuf(genQueryOut, mybuf);
+
+	while (status==0 && genQueryOut->continueInx > 0) {
+		genQueryInp.continueInx=genQueryOut->continueInx;
+		freeGenQueryOut (&genQueryOut);
+		status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+		printCount+= writeDataAclToBBuf(genQueryOut, mybuf);
+	}
+
+	/* Cleanup */
+	freeGenQueryOut (&genQueryOut);
 	
 	return (status);
 }
@@ -1205,6 +1181,133 @@ extractACLQueryResults(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, int coll_f
 	return (i);
 }
 
+
+/*
+ * Modified version of printDataAcl() to write the results
+ * of a data object ACL query to a bytesBuf_t*.
+ */
+int
+writeDataAclToBBuf(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf)
+{
+	int i;
+    sqlResult_t *collName, *dataName, *userName, *userZone, *dataAccess;
+    char *collNameStr, *dataNameStr, *userNameStr, *userZoneStr, *dataAccessStr;
+    char ACLStr[MAX_NAME_LEN];
+
+    /* Extract column results from genQueryOut */
+    if ((collName = getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeDataAclToBBuf: getSqlResultByInx for COL_COLL_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeDataAclToBBuf: getSqlResultByInx for COL_DATA_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((userName = getSqlResultByInx (genQueryOut, COL_USER_NAME)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeDataAclToBBuf: getSqlResultByInx for COL_USER_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((userZone = getSqlResultByInx (genQueryOut, COL_USER_ZONE)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeDataAclToBBuf: getSqlResultByInx for COL_USER_ZONE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataAccess = getSqlResultByInx (genQueryOut, COL_DATA_ACCESS_NAME)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeDataAclToBBuf: getSqlResultByInx for COL_DATA_ACCESS_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+
+    /* Extract results for each row */
+	for (i=0;i<genQueryOut->rowCnt;i++)
+	{
+
+		memset(ACLStr,'\0', MAX_NAME_LEN);
+
+		collNameStr = &collName->value[collName->len * i];
+		dataNameStr = &dataName->value[dataName->len * i];
+		userNameStr = &userName->value[userName->len * i];
+		userZoneStr = &userZone->value[userZone->len * i];
+		dataAccessStr = &dataAccess->value[dataAccess->len * i];
+
+		snprintf(ACLStr, MAX_NAME_LEN, "%s/%s|%s#%s|%s\n", collNameStr, dataNameStr, userNameStr, userZoneStr, dataAccessStr);
+		appendStrToBBuf(mybuf, ACLStr);
+
+	}
+
+	return (i);
+}
+
+
+
+/*
+ * Modified version of printCollAcl() to write the results
+ * of a collection ACL query to a bytesBuf_t*.
+ */
+int
+writeCollAclToBBuf(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf)
+{
+	int i;
+    sqlResult_t *collName, *userName, *userZone, *collAccess;
+    char *collNameStr, *userNameStr, *userZoneStr, *collAccessStr;
+    char ACLStr[MAX_NAME_LEN];
+
+    /* Extract column results from genQueryOut */
+    if ((collName = getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeCollAclToBBuf: getSqlResultByInx for COL_COLL_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((userName = getSqlResultByInx (genQueryOut, COL_COLL_USER_NAME)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeCollAclToBBuf: getSqlResultByInx for COL_COLL_USER_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((userZone = getSqlResultByInx (genQueryOut, COL_COLL_USER_ZONE)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeCollAclToBBuf: getSqlResultByInx for COL_COLL_USER_ZONE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((collAccess = getSqlResultByInx (genQueryOut, COL_COLL_ACCESS_NAME)) == NULL)
+    {
+        rodsLog (LOG_ERROR,
+          "writeCollAclToBBuf: getSqlResultByInx for COL_COLL_ACCESS_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+
+    /* Extract results for each row */
+	for (i=0;i<genQueryOut->rowCnt;i++)
+	{
+
+		memset(ACLStr,'\0', MAX_NAME_LEN);
+
+		collNameStr = &collName->value[collName->len * i];
+		userNameStr = &userName->value[userName->len * i];
+		userZoneStr = &userZone->value[userZone->len * i];
+		collAccessStr = &collAccess->value[collAccess->len * i];
+
+		snprintf(ACLStr, MAX_NAME_LEN, "%s|%s#%s|%s\n", collNameStr, userNameStr, userZoneStr, collAccessStr);
+		appendStrToBBuf(mybuf, ACLStr);
+
+	}
+
+	return (i);
+}
 
 
 /*
