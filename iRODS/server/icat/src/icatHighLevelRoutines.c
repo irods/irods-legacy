@@ -5189,7 +5189,7 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
    else {
       if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 2");
       status = cmlGetIntegerValueFromSql(
-         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit IS NULL",
+         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and (meta_attr_unit='' or meta_attr_unit IS NULL)",
          &iVal, attribute, value, 0, 0, 0, &icss);
    }
    if (status == 0) {
