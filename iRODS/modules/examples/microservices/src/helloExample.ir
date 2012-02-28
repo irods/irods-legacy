@@ -1,4 +1,0 @@
-myTestRule||msiHello(*name,*message)|nop
-*name=John
-*message%ruleExecOut
-
