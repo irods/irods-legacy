@@ -1268,7 +1268,7 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
 	/* buffer init */
 	mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
 	memset (mybuf, 0, sizeof (bytesBuf_t));	
-	appendToByteBuf(mybuf, "");  // avoids NULL results
+//	appendToByteBuf(mybuf, "");  // avoids NULL results
 
 	/* parse inpParam1 */
 	rei->status = parseMspForCollInp (inpParam1, &collInpCache, &outCollInp, 0);
@@ -1279,17 +1279,19 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
 		return (rei->status);
 	}
 
-	
 	/* call getCollectionACL() */
 	rei->status = getCollectionACL(outCollInp, (char*)inpParam2->inOutStruct, mybuf, rsComm);
 	
+	/* problem? */
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiGetCollectionACL: getCollectionACL error. Status = %d", rei->status);
+		return (rei->status);
+	}
 
 	/* send results out to outParam */
 	fillBufLenInMsParam (outParam, strlen((char*)mybuf->buf), mybuf);
-
-	
-//	return (rei->status);
-	return 0;
+	return (rei->status);
 
 }
 
