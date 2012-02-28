@@ -1,0 +1,4 @@
+myTestRule||msiGetRescAddr(*name,*address)|nop
+*name=demoResc7
+*address%ruleExecOut
+

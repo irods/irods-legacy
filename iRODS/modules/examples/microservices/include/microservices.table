@@ -1,0 +1,4 @@
+/* Properties module microservices */
+/* Service name			# args		Service function */
+{ "msiHello",	2,		(funcPtr) msiHello },
+{ "msiGetRescAddr",	2,	(funcPtr) msiGetRescAddr },
