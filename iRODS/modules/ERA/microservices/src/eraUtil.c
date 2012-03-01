@@ -633,7 +633,6 @@ getCollectionACL(collInp_t *myCollInp, char *label, bytesBuf_t *mybuf, rsComm_t 
 	genQueryOut_t *genQueryOut;
 	char condStr[MAX_NAME_LEN];
 	rodsLong_t collId;
-	int printCount=0;
 	int status;
 	
 	
@@ -677,22 +676,28 @@ getCollectionACL(collInp_t *myCollInp, char *label, bytesBuf_t *mybuf, rsComm_t 
 	
 	
 	/* Extract results and get more rows */
-	printCount+=writeCollAclToBBuf(genQueryOut, mybuf);
+	writeCollAclToBBuf(genQueryOut, mybuf);
 	
 	while (status==0 && genQueryOut->continueInx > 0) {
 		genQueryInp.continueInx=genQueryOut->continueInx;
 		freeGenQueryOut (&genQueryOut);
 		status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-		printCount+= writeCollAclToBBuf(genQueryOut, mybuf);
+		writeCollAclToBBuf(genQueryOut, mybuf);
 	}
 	
 	/* Cleanup */
 	freeGenQueryOut (&genQueryOut);
 
+	/* check for query errors */
+	if (status < 0)
+	{
+		return (status);
+	}
+
 	/* If not in recursive mode, we're done here. */
 	if (!label || strcmp(label, "recursive"))
 	{
-		return (status);
+		return (0);
 	}
 
 
@@ -722,17 +727,24 @@ getCollectionACL(collInp_t *myCollInp, char *label, bytesBuf_t *mybuf, rsComm_t 
 
 
 	/* Extract results and get more rows */
-	printCount+=writeCollAclToBBuf(genQueryOut, mybuf);
+	writeCollAclToBBuf(genQueryOut, mybuf);
 
 	while (status==0 && genQueryOut->continueInx > 0) {
 		genQueryInp.continueInx=genQueryOut->continueInx;
 		freeGenQueryOut (&genQueryOut);
 		status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-		printCount+= writeCollAclToBBuf(genQueryOut, mybuf);
+		writeCollAclToBBuf(genQueryOut, mybuf);
 	}
 	
 	/* Cleanup */
 	freeGenQueryOut (&genQueryOut);
+
+	/* check for query errors */
+	/* CAT_NO_ROWS_FOUND is ok here, means there were no sub-collections */
+	if (status < 0 && status != CAT_NO_ROWS_FOUND)
+	{
+		return (status);
+	}
 
 
 	/*** Now get ACLs on data objects ***/
@@ -762,19 +774,26 @@ getCollectionACL(collInp_t *myCollInp, char *label, bytesBuf_t *mybuf, rsComm_t 
 
 
 	/* Extract results and get more rows */
-	printCount+=writeDataAclToBBuf(genQueryOut, mybuf);
+	writeDataAclToBBuf(genQueryOut, mybuf);
 
 	while (status==0 && genQueryOut->continueInx > 0) {
 		genQueryInp.continueInx=genQueryOut->continueInx;
 		freeGenQueryOut (&genQueryOut);
 		status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-		printCount+= writeDataAclToBBuf(genQueryOut, mybuf);
+		writeDataAclToBBuf(genQueryOut, mybuf);
 	}
 
 	/* Cleanup */
 	freeGenQueryOut (&genQueryOut);
 	
-	return (status);
+	/* check for query errors */
+	/* CAT_NO_ROWS_FOUND is ok here, means there were no files */
+	if (status < 0 && status != CAT_NO_ROWS_FOUND)
+	{
+		return (status);
+	}
+
+	return (0);
 }
 
 
@@ -1253,6 +1272,7 @@ writeDataAclToBBuf(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf)
 /*
  * Modified version of printCollAcl() to write the results
  * of a collection ACL query to a bytesBuf_t*.
+ * Careful when using return value as status when empty results are not an error.
  */
 int
 writeCollAclToBBuf(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf)
