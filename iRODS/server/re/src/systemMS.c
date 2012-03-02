@@ -1142,6 +1142,8 @@ msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
 
   if (memoryParam->inpOutBuf != NULL)
     free(memoryParam->inpOutBuf);
+  if (memoryParam->inOutStruct != NULL)
+    free(memoryParam->inOutStruct);
   memoryParam->inpOutBuf = NULL;
   return(0);
   

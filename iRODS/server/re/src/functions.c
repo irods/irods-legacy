@@ -169,23 +169,22 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     if(getNodeType(init) == N_ERROR) {
         res = init;
         cpEnv(env, r);
-        res = cpRes(res, r);
+        res = cpRes2(res, rnew, r);
         region_free(rnew);
         return res;
     }
     GC_BEGIN
     while(1) {
 
-        cond = evaluateExpression3((Node *)params[1], 0, 1,rei,reiSaveFlag, env,errmsg,rnew);
+        cond = evaluateExpression3((Node *)params[1], 0, 1,rei,reiSaveFlag, env,errmsg,GC_REGION);
         if(getNodeType(cond) == N_ERROR) {
-            res = cond;
             break;
         }
         if(RES_BOOL_VAL(cond) == 0) {
             res = newIntRes(r, 0);
             break;
         }
-        res = evaluateActions((Node *)params[3],(Node *)params[4], 0, rei,reiSaveFlag, env,errmsg,rnew);
+        res = evaluateActions((Node *)params[3],(Node *)params[4], 0, rei,reiSaveFlag, env,errmsg,GC_REGION);
         if(getNodeType(res) == N_ERROR) {
             break;
         } else
@@ -197,9 +196,8 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
         if(TYPE(res) == T_SUCCESS) {
             break;
         }
-        step = evaluateExpression3((Node *)params[2], 0,1,rei,reiSaveFlag, env,errmsg,rnew);
+        step = evaluateExpression3((Node *)params[2], 0,1,rei,reiSaveFlag, env,errmsg,GC_REGION);
         if(getNodeType(step) == N_ERROR) {
-            res = step;
             break;
         }
         GC_ON(env);
@@ -264,10 +262,15 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 		int i;
 		Res* elem;
 		int len = getCollectionSize(coll->exprType->text, RES_UNINTER_STRUCT(coll), r);
+		GC_BEGIN
 		for(i=0;i<len;i++) {
-				elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, r);
-				setVariableValue(varName, elem, rei, env, errmsg, r);
-				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], 0, rei,reiSaveFlag,  env,errmsg,r);
+			GC_ON(env);
+				elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, GC_REGION);
+				setVariableValue(varName, elem, rei, env, errmsg, GC_REGION);
+				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], 0, rei,reiSaveFlag,  env,errmsg,GC_REGION);
+                clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
+                free(RES_UNINTER_STRUCT(elem));
+
 				if(getNodeType(res) == N_ERROR) {
 						break;
 				}
@@ -275,6 +278,9 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 						break;
 				}
 		}
+		cpEnv(env, r);
+		res = cpRes(res, r);
+		GC_END
 		if(getNodeType(res) != N_ERROR) {
 			res = newIntRes(r,0);
 		}
@@ -314,10 +320,15 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
             int i;
             Res* elem;
             int len = getCollectionSize(coll->exprType->text, RES_UNINTER_STRUCT(coll), r);
+            GC_BEGIN
             for(i=0;i<len;i++) {
-                    elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, r);
-                    setVariableValue(varName, elem, rei, env, errmsg, r);
-                    res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], 0, rei,reiSaveFlag,  env,errmsg,r);
+            	GC_ON(env);
+            		elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, GC_REGION);
+                    setVariableValue(varName, elem, rei, env, errmsg, GC_REGION);
+                    res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], 0, rei,reiSaveFlag,  env,errmsg,GC_REGION);
+                    clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
+                    free(RES_UNINTER_STRUCT(elem));
+
                     if(getNodeType(res) == N_ERROR) {
                             break;
                     }
@@ -325,6 +336,9 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
                             break;
                     }
             }
+            cpEnv(env, r);
+            res = cpRes(res, r);
+            GC_END
             if(getNodeType(res) != N_ERROR) {
                 res = newIntRes(r,0);
             }

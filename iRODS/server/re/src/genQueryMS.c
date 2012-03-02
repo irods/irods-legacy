@@ -578,6 +578,12 @@ msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExe
 	/* free memory allocated for previous results */
 	freeGenQueryOut (&genQueryOut);
 
+	if(genQueryInp->continueInx == 0) {
+		/* query already closed */
+		rei->status = 0;
+		return rei->status;
+	}
+
 	/* close query */
 	rei->status = rsGenQuery(rei->rsComm, genQueryInp, &genQueryOut);
 
