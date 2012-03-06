@@ -276,7 +276,7 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
 #ifdef USE_BOOST_FS
         if (!exists (p)) {
 #else
-        status = stat (subfilePath, &statbuf);
+        status = lstat (subfilePath, &statbuf);
 
         if (status != 0) {
 #endif
@@ -288,6 +288,17 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
 	    continue;
         }
 
+#ifdef USE_BOOST_FS
+	if (is_symlink (p)) {
+#else
+	if ((statbuf.st_mode & S_IFLNK) == S_IFLNK) {
+#endif
+            rodsLogError (LOG_ERROR, SYMLINKED_BUNFILE_NOT_ALLOWED,
+              "regUnbunSubfiles: %s is a symlink",
+              subfilePath);
+            savedStatus = SYMLINKED_BUNFILE_NOT_ALLOWED;
+            continue;
+        }
 #ifdef USE_BOOST_FS
         path childPath = p.filename();
         snprintf (subObjPath, MAX_NAME_LEN, "%s/%s",
