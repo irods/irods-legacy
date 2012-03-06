@@ -469,6 +469,9 @@ rescInfo_t *rescInfo)
     rodsStat_t *myStat = NULL;
     rodsObjStat_t *rodsObjStatOut = NULL;
 
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH)
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
     if (status < 0) return status;
 
