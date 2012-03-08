@@ -454,6 +454,27 @@ runCmd(0, "imeta mod -r $Resc aaaaa bbbbb n:a1");
 runCmd(2, "imeta rm -r $Resc aaaaa bbbbb");
 runCmd(0, "imeta rm -r $Resc a1 bbbbb");
 
+# imeta set
+runCmd(1, "imeta rm -d $F1 setAttr1 y z");
+runCmd(0, "iadmin rum");
+unlink($F2);
+`ls -l > $F2`;
+runCmd(0, "iput -f $F2");
+runCmd(0, "imeta set -d $F1 setAttr1 y z");
+runCmd(0, "imeta set -d $F1 setAttr1 y2 z");
+runCmd(0, "imeta set -d $F1 setAttr1 y z");
+runCmd(0, "imeta set -d $F2 setAttr1 y z");
+runCmd(0, "imeta set -d $F1 setAttr1 y3 z");
+runCmd(0, "imeta rm -d $F2 setAttr1 y z");
+runCmd(0, "imeta rm -d $F1 setAttr1 y3 z");
+runCmd(0, "iadmin rum");
+runCmd(0, "imeta set -d $F1 setAttr2 1");
+runCmd(0, "imeta set -d $F1 setAttr2 2");
+runCmd(0, "imeta set -d $F2 setAttr3 3");
+runCmd(0, "imeta set -d $F1 setAttr3 3");
+runCmd(0, "imeta rm -d $F1 setAttr2 2");
+runCmd(0, "irm -f $F2");
+
 # basic test of imeta addw
 runCmd(0, "imeta addw -d $F1 a4 b4 c4");
 runCmd(0, "imeta rm -d $F1 a4 b4 c4");

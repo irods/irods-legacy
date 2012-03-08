@@ -88,6 +88,8 @@ int msiGetObjType(msParam_t *objNameP, msParam_t *objTypeP,
 	      ruleExecInfo_t *rei);
 int msiAssociateKeyValuePairsToObj(msParam_t *mDP, msParam_t* objP,  msParam_t* typP,
 				   ruleExecInfo_t *rei);
+int msiSetKeyValuePairsToObj(msParam_t *mDP, msParam_t* objP,  msParam_t* typP,
+    				 ruleExecInfo_t *rei);
 int msiExtractTemplateMDFromBuf(msParam_t* sOP, msParam_t* tSP, 
 			   msParam_t *mDP, ruleExecInfo_t *rei);
 int msiReadMDTemplateIntoTagStruct(msParam_t* sOP, msParam_t* tSP, ruleExecInfo_t *rei);
@@ -288,6 +290,7 @@ microsdef_t MicrosTable[] = {
 #endif
   {"msiGetObjType",2,(funcPtr) msiGetObjType},
   {"msiAssociateKeyValuePairsToObj",3,(funcPtr) msiAssociateKeyValuePairsToObj},
+  {"msiSetKeyValuePairsToObj",3,(funcPtr) msiSetKeyValuePairsToObj},
   {"msiExtractTemplateMDFromBuf",3,(funcPtr) msiExtractTemplateMDFromBuf},
   {"msiReadMDTemplateIntoTagStruct",2,(funcPtr) msiReadMDTemplateIntoTagStruct},
   {"msiDataObjPut",4,(funcPtr) msiDataObjPut},

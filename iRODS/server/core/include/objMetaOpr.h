@@ -48,6 +48,9 @@ int
 addAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
                            keyValPair_t *kVP);
 int
+setAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
+                           keyValPair_t *kVP);
+int
 removeAVUMetadataFromKVPairs(rsComm_t *rsComm, char *objName, char *inObjType,
                            keyValPair_t *kVP);
 int

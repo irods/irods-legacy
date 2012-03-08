@@ -5168,6 +5168,33 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
    
    return(objId);
 }
+/*
+ Find existing AVU triplet.
+ Return code is error or the AVU ID.
+*/
+rodsLong_t
+findAVU(char *attribute, char *value, char *units) {
+   rodsLong_t status;
+   rodsLong_t iVal;
+   iVal=0;
+   if (*units!='\0') {
+      if (logSQL!=0) rodsLog(LOG_SQL, "findAVU SQL 1");
+      status = cmlGetIntegerValueFromSql(
+            "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
+	    &iVal, attribute, value, units, 0, 0, &icss);
+   }
+   else {
+      if (logSQL!=0) rodsLog(LOG_SQL, "findAVU SQL 2");
+      status = cmlGetIntegerValueFromSql(
+         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and (meta_attr_unit='' or meta_attr_unit IS NULL)",
+         &iVal, attribute, value, 0, 0, 0, &icss);
+   }
+   if (status == 0) {
+      status = iVal; /* use existing R_META_MAIN row */
+      return(status);
+   }
+   return(status);
+}
 
 /*
  Find existing or insert a new AVU triplet.
@@ -5179,24 +5206,11 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
    char myTime[50];
    rodsLong_t status, seqNum;
    rodsLong_t iVal;
-   iVal=0;
-   if (*units!='\0') {
-      if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 1");
-      status = cmlGetIntegerValueFromSql(
-            "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
-	    &iVal, attribute, value, units, 0, 0, &icss);
+   iVal = findAVU(attribute, value, units);
+   if (iVal > 0) {
+	return iVal;
    }
-   else {
-      if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 2");
-      status = cmlGetIntegerValueFromSql(
-         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and (meta_attr_unit='' or meta_attr_unit IS NULL)",
-         &iVal, attribute, value, 0, 0, 0, &icss);
-   }
-   if (status == 0) {
-      status = iVal; /* use existing R_META_MAIN row */
-      return(status);
-   }
-   if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 3");
+   if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 1");
    status = cmlGetNextSeqVal(&icss);
    if (status < 0) {
       rodsLog(LOG_NOTICE, "findOrInsertAVU cmlGetNextSeqVal failure %d",
@@ -5216,7 +5230,7 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 10");
+   if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 2");
    status =  cmlExecuteNoAnswerSql(
              "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
 	     &icss);
@@ -5226,6 +5240,145 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
    }
    return(seqNum);
 }
+
+
+/* Add or modify an Attribute-Value pair metadata item of an object*/
+int chlSetAVUMetadata(rsComm_t *rsComm, char *type, 
+		      char *name, char *attribute, char *newValue,
+		      char *newUnit) {
+   int status;
+   char myTime[50];
+   rodsLong_t objId, iVal;
+   char metaIdStr[MAX_NAME_LEN*2]; /* twice as needed to query multiple */
+   char objIdStr[MAX_NAME_LEN];
+   char newMetaIdStr[MAX_NAME_LEN];
+
+   memset(metaIdStr, 0, sizeof(metaIdStr));
+   if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata");
+
+   if (!icss.status) {
+     return(CATALOG_NOT_CONNECTED);
+   }
+
+   if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 1 ");
+   objId = checkAndGetObjectId(rsComm, type, name, ACCESS_CREATE_METADATA);
+   if (objId < 0) return objId;
+   snprintf(objIdStr, MAX_NAME_LEN, "%lld", objId);
+
+   if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 2");
+   /* Query to see if the attribute exists for this object */
+   status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_OBJT_METAMAP where meta_id in (select meta_id from R_META_MAIN where meta_attr_name=? AND meta_id in (select meta_id from R_OBJT_METAMAP where object_id=?))",
+		metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, &icss);
+   
+   if (status <= 0) {
+     if (status == CAT_NO_ROWS_FOUND) { 
+       /* Need to add the metadata */
+       status = chlAddAVUMetadata(rsComm, 0, type, name, attribute, 
+				  newValue, newUnit);
+     } else {
+       rodsLog(LOG_NOTICE,
+          "chlSetAVUMetadata cmlGetMultiRowStringValuesFromSql failure %d",
+	  status);
+     }
+     return status;
+   }
+
+   if (status > 1) {
+     /* More than one AVU, need to do a delete with wildcards then add */
+     status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute, "%",
+				   "%", 1);
+     if (status != 0) {
+       _rollback("chlSetAVUMetadata");
+       return(status);
+     }
+     status = chlAddAVUMetadata(rsComm, 0, type, name, attribute, 
+				newValue, newUnit);
+     return status;
+   }
+
+   /* Only one metaId for this Attribute and Object has been found */
+
+   rodsLog(LOG_NOTICE, "chlSetAVUMetadata found metaId %s", metaIdStr);
+   /* Check if there are other objects are using this AVU  */
+   if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 4");
+   status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_META_MAIN where meta_attr_name=?",
+	    metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, &icss);
+   if (status <= 0) {
+     rodsLog(LOG_NOTICE,
+	      "chlSetAVUMetadata cmlGetMultiRowStringValueFromSql failure %d",
+	     status);
+     return(status);
+   }
+   if (status > 1) {
+     /* Can't modify in place, need to delete and add,
+         which will reuse matching AVUs if they exist.
+     */
+     status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute,
+				   "%", "%", 1);
+     if (status != 0) {
+       _rollback("chlSetAVUMetadata");
+       return(status);
+     }
+     status = chlAddAVUMetadata(rsComm, 0, type, name, attribute,
+				newValue, newUnit);
+   }
+   else {
+     getNowStr(myTime);
+     cllBindVarCount = 0;
+     cllBindVars[cllBindVarCount++] = newValue;
+     if (newUnit != NULL && *newUnit!='\0') {
+       cllBindVars[cllBindVarCount++] = newUnit;
+     }
+     cllBindVars[cllBindVarCount++] = myTime;
+     cllBindVars[cllBindVarCount++] = attribute;
+     cllBindVars[cllBindVarCount++] = metaIdStr;
+     if (newUnit != NULL && *newUnit!='\0') {
+       if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 5");
+       status = cmlExecuteNoAnswerSql(
+	      "update R_META_MAIN set meta_attr_value=?,meta_attr_unit=?,modify_ts=? where meta_attr_name=? and meta_id=?",
+	      &icss);
+     } 
+     else {
+       if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 6");
+       status = cmlExecuteNoAnswerSql(
+		"update R_META_MAIN set meta_attr_value=?,modify_ts=? where meta_attr_name=? and meta_id=?",
+		 &icss);
+     }
+     if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+	       "chlSetAVUMetadata cmlExecuteNoAnswerSql update failure %d",
+	       status);
+	 _rollback("chlSetAVUMetadata");
+	 return(status);
+     }
+   }
+
+   /* Audit */
+   status = cmlAudit3(AU_ADD_AVU_METADATA,  
+		      objIdStr,
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
+                      type,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlSetAVUMetadata cmlAudit3 failure %d",
+	      status);
+      _rollback("chlSetAVUMetadata");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlSetAVUMetadata cmlExecuteNoAnswerSql commit failure %d",
+	      status);
+      return(status);
+   }
+
+   return(status);
+}
+
 
 /* Add an Attribute-Value [Units] pair/triple metadata item to one or
    more data objects.  This is the Wildcard version, where the

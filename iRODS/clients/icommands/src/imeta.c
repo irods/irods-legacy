@@ -1274,6 +1274,12 @@ doCommand(char *cmdToken[]) {
 		     cmdToken[6], cmdToken[7], cmdToken[8]);
       return(0);
    }
+   if (strcmp(cmdToken[0],"set") == 0) {
+      modAVUMetadata("set", cmdToken[1], cmdToken[2], 
+		     cmdToken[3], cmdToken[4], cmdToken[5],
+		     cmdToken[6], cmdToken[7], "");
+      return(0);
+   }
    doLs=0;
    if (strcmp(cmdToken[0],"lsw") == 0) {
       doLs=1;
@@ -1548,6 +1554,7 @@ void usageMain()
 " rmw -d|C|R|G|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)", 
 " mod -d|C|R|G|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]", 
 "      (modify AVU; new name (n:), value(v:), and/or units(u:)",
+" set -d|C|R|G|u Name AttName newValue [newUnits] (Assign a single value)", 
 " ls  -[l]d|C|R|G|u Name [AttName] (List existing AVUs for item Name)", 
 " lsw -[l]d|C|R|G|u Name [AttName] (List existing AVUs, use Wildcards)", 
 " qu -d|C|R|G|u AttName Op AttVal [...] (Query objects with matching AVUs)", 
@@ -1737,6 +1744,26 @@ usage(char *subOpt)
 	    printf("%s\n",msgs[i]);
 	 }
       }
+
+      if (strcmp(subOpt,"set")==0) {
+	char *msgs[]={
+" set -d|C|R|G|u Name AttName newValue [newUnits]  (assign a single value)", 
+"Set the newValue (and newUnit) of an AVU of a dataobj (-d), collection(-C),",
+"     resource(-R), resource group(-G) or user(-u).",
+" ",
+"'set' modifies an AVU if it exists, or creates one if it does not.",
+"If the AttName does not exist, or is used by multiple objects, the AVU for",
+"this object is added.",
+"If the AttName is used only by this one object, the AVU (row) is modified",
+"with the new values, reducing the database overhead (unused rows).",
+"Example: set -d file1 distance 12",
+""};
+	 for (i=0;;i++) {
+	   if (strlen(msgs[i])==0) return(0);
+ 	    printf("%s\n",msgs[i]);
+ 	 }
+      }
+
       if (strcmp(subOpt,"qu")==0) {
 	 char *msgs[]={
 " qu -d|C|R|G|u AttName Op AttVal [...] (Query objects with matching AVUs)", 
