@@ -362,6 +362,7 @@ rescInfo_t *rescInfo)
 	  MAX_NAME_LEN);
         /* create the coll just in case it does not exist */
         status = rsCollCreate (rsComm, &collCreateInp);
+	clearKeyVal (&collCreateInp.condInput);
 	if (status < 0) return status;
     } else if (rodsObjStatOut->specColl != NULL) {
         freeRodsObjStat (rodsObjStatOut);
@@ -401,6 +402,7 @@ rescInfo_t *rescInfo)
 
         if (strcmp (rodsDirent->d_name, ".") == 0 ||
           strcmp (rodsDirent->d_name, "..") == 0) {
+	    free (rodsDirent);
             continue;
         }
 
@@ -417,6 +419,7 @@ rescInfo_t *rescInfo)
             rodsLog (LOG_ERROR,
 	      "dirPathReg: rsFileStat failed for %s, status = %d",
 	      fileStatInp.fileName, status);
+	    free (rodsDirent);
 	    return (status);
 	}
 
@@ -429,6 +432,7 @@ rescInfo_t *rescInfo)
 		/* check if it already exists */
 	        if (isData (rsComm, subPhyPathRegInp.objPath, NULL) >= 0) {
 		    free (myStat);
+	            free (rodsDirent);
 		    continue;
 		}
 	    }
@@ -447,6 +451,7 @@ rescInfo_t *rescInfo)
               fileStatInp.fileName, rescInfo);
 	}
 	free (myStat);
+	free (rodsDirent);
     }
     if (status == -1) {         /* just EOF */
         status = 0;
