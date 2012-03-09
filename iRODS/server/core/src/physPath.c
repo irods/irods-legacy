@@ -1098,7 +1098,8 @@ int
 getDefFileMode ()
 {
     int defFileMode;
-    if (getenv ("DefFileMode") != NULL) {
+    char *modeStr;
+    if ((modeStr = getenv ("DefFileMode")) != NULL && *modeStr == '0') {
         defFileMode = strtol (getenv ("DefFileMode"), 0, 0);
     } else {
         defFileMode = DEFAULT_FILE_MODE;
@@ -1110,7 +1111,8 @@ int
 getDefDirMode ()
 {
     int defDirMode;
-    if (getenv ("DefDirMode") != NULL) { 
+    char *modeStr;
+    if ((modeStr = getenv ("DefDirMode")) != NULL && *modeStr == '0') {
         defDirMode = strtol (getenv ("DefDirMode"), 0, 0);
     } else {
         defDirMode = DEFAULT_DIR_MODE;
