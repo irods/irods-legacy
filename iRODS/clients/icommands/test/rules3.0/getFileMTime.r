@@ -1,8 +1,8 @@
 ###############################################################################################
-###			getFileMTime.r: Simple example of retrieving file stat info and storing it		###
-###			as user defined metadata. Can be used as a template for similar rules.			###
-###			Assumes a link to /usr/bin/stat in <iRODS_DIR>/server/bin/cmd/					###
-###			AdT, 03/08/12																	###
+###		getFileMTime.r: Simple example of retrieving file stat info and storing it
+###		as user defined metadata. Can be used as a template for similar rules.
+###		Assumes a link to /usr/bin/stat in <iRODS_DIR>/server/bin/cmd/
+###		AdT, 03/08/12
 ###############################################################################################
 getFileMTime {
 
