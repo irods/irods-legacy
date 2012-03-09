@@ -42,7 +42,7 @@ use Cwd;
 use Cwd 'abs_path';
 use Config;
 
-$version{"configure.pl"} = "February 2012";
+$version{"configure.pl"} = "March 2012";
 
 my $output;
 my $status;
