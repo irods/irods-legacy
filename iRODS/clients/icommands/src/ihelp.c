@@ -8,14 +8,14 @@
 #include "parseCommandLine.h"
 
 char *icmds[]={
-   "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",
-   "ierror", "iexecmd", "iexit", "iget", "igetwild.sh",
-   "ihelp", "iinit", "ils", "ilsresc",
-   "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
-   "iphybun", "iphymv", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
-   "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
-   "iscan", "isysmeta", "itrim", "iuserinfo",
-   ""};
+  "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",
+  "ierror", "iexecmd", "iexit", "iget", "igetwild.sh", "igroupadmin",
+  "ihelp", "iinit", "ils", "ilsresc",
+  "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
+  "iphybun", "iphymv", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
+  "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
+  "iscan", "isysmeta", "iticket", "itrim", "iuserinfo",
+  ""};
 
 void usage ();
 
@@ -41,6 +41,7 @@ printMainHelp()
 "ifsck    - check if local files/directories are consistent with the associated objects/collections in iRODS.",
 "iget     - get a file from iRODS.",
 "igetwild.sh - get one or more files from iRODS using wildcard characters.",
+"igroupadmin - perform group-admin functions:mkuser, add/remove from group, etc.",
 "ihelp    - display a synopsis list of the i-commands.",
 "iinit    - initialize a session, so you don't need to retype your password.",
 "ilocate  - search for data-object(s) OR collections (via a script).",
@@ -70,6 +71,7 @@ printMainHelp()
 "irule    - submit a rule to be executed by the iRODS server.",
 "iscan    - check if local file or directory is registered in irods.",
 "isysmeta - show or modify system metadata.",
+"iticket  - create, delete, modify & list tickets (alternative access strings).",
 "itrim    - trim down the number of replicas of data-objects.",
 "iuserinfo- show information about your iRODS user account.",
 "ixmsg    - send/receive iRODS xMessage System messages.",
