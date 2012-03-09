@@ -19,6 +19,8 @@ create table R_TICKET_MAIN
    restrictions        varchar(16),
    create_ts           varchar(32),
    modify_ts           varchar(32)
+);
+
 create table R_TICKET_ALLOWED_HOSTS
 (
    ticket_id           bigint not null,
@@ -56,4 +58,4 @@ insert into R_TOKN_MAIN values ('data_type',1704,'zipFile bundle','','','','','1
 
 delete from R_RESC_MAIN where resc_id=9100 and resc_name='bundleResc';
 
-insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unix file system', 'bundle', 'localhost', '/bundle', '', '', '', '', '\', '1250100000','1250100000');
+insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unix file system', 'bundle', 'localhost', '/bundle', '', '', '', '', '', '1250100000','1250100000');
