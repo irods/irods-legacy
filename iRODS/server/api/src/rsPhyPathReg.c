@@ -360,6 +360,8 @@ rescInfo_t *rescInfo)
         memset (&collCreateInp, 0, sizeof (collCreateInp));
         rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, 
 	  MAX_NAME_LEN);
+	/* no need to resolve sym link */
+	addKeyVal (&collCreateInp.condInput, TRANSLATED_PATH_KW, "");
         /* create the coll just in case it does not exist */
         status = rsCollCreate (rsComm, &collCreateInp);
 	clearKeyVal (&collCreateInp.condInput);
