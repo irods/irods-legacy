@@ -5248,10 +5248,9 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
 		      char *newUnit) {
    int status;
    char myTime[50];
-   rodsLong_t objId, iVal;
+   rodsLong_t objId;
    char metaIdStr[MAX_NAME_LEN*2]; /* twice as needed to query multiple */
    char objIdStr[MAX_NAME_LEN];
-   char newMetaIdStr[MAX_NAME_LEN];
 
    memset(metaIdStr, 0, sizeof(metaIdStr));
    if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata");
