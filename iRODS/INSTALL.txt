@@ -1,5 +1,5 @@
 		Scripts for installing and uninstalling iRODS
-			Last updated August 2011
+			Last updated March 2012
 
 
 The iRODS distribution uses several configuration files and shell/Perl
@@ -16,18 +16,19 @@ the patch file for either PostgreSQL, Oracle, or MySQL to make some
 needed updates to tables (if any).  Assuming your iCAT database is
 named ICAT, this would be, for example:
 
-        psql ICAT < server/icat/patches/psg-patch-v2.5tov3.0.sql
+        psql ICAT < server/icat/patches/psg-patch-v3.0tov3.1.sql
 
     or 
         sqlplus name@instance
-        @server/icat/patches/ora-patch-v2.5tov3.0.sql
+        @server/icat/patches/ora-patch-v3.0tov3.1.sql
 
     or
-        mysql ICAT < server/icat/patches/mys-patch-v2.5tov3.0.sql
+        mysql ICAT < server/icat/patches/mys-patch-v3.0tov3.1.sql
 
-For 3.0 the patch sql script will add some tables for the
-rules-in-the-icat feature, add an index for better performance of some
-operations, and add some tokens related to the MSO feature.
+For 3.1 the patch sql script will add some tables and indexes for the
+ticket feature, add another index for better performance of 'iscan'
+operations, and add tokens related to the ibun/iphybun compression
+feature for zip, gzip and bzip2.
 
 If you are upgrading from an older version, you'll need to apply the
 patch file for each released version that has one, in sequence.
