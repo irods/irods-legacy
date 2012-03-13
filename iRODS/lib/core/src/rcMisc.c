@@ -4420,6 +4420,7 @@ mySetenvStr (char *envname, char *envval)
     myBuf = (char *)malloc (len);
     snprintf (myBuf, len, "%s=%s", envname, envval);
     status = putenv (myBuf);
+    free(myBuf);	// cppcheck - Memory leak: myBuf
 #endif
     return status;
 }
@@ -4442,6 +4443,7 @@ mySetenvInt (char *envname, int envval)
     myBuf = (char *)malloc (len);
     snprintf (myBuf, len, "%s=%d", envname, envval);
     status = putenv (myBuf);
+    free(myBuf);	// cppcheck - Memory leak: myBuf
 #endif
     return status;
 }

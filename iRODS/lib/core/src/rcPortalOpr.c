@@ -1199,6 +1199,14 @@ writeLfRestartFile (char *infoFile, fileRestartInfo_t *info)
           info->fileName, status);
 	return status;
     }
+
+    if (packedBBuf == NULL) {
+        rodsLog (LOG_ERROR,
+         "writeLfRestartFile: packStruct error for %s, status = %d",
+          info->fileName, status);
+	    return status;
+    }	// cppcheck - Possible null pointer dereference: packedBBuf
+
     /* write it to a file */
     fd = open (infoFile, O_CREAT|O_TRUNC|O_WRONLY, 0640);
     if (fd < 0) {
@@ -1299,7 +1307,7 @@ readLfRestartFile (char *infoFile, fileRestartInfo_t **info)
          "readLfRestartFile: unpackStruct error for %s, status = %d",
           infoFile, status);
     }
-    close (fd);
+//    close (fd);	// cppcheck - Deallocating a deallocated pointer: fd
     free (buf);
     return (status);
 }

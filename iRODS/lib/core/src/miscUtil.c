@@ -1872,7 +1872,12 @@ operProgress_t *operProgress)
           srcDir, myDirent->d_name);
 #endif
 
-	if (isPathSymlink (rodsArgs, srcChildPath) > 0) return 0;
+	if (isPathSymlink (rodsArgs, srcChildPath) > 0) {
+#ifndef USE_BOOST_FS
+		closedir(dirPtr);	// cppcheck - Resource leak: dirPtr
+#endif
+		return 0;
+	}
 
 #ifdef USE_BOOST_FS
 #if 0
@@ -1916,7 +1921,12 @@ operProgress_t *operProgress)
         } else if (statbuf.st_mode & S_IFDIR) {
             status = getDirSizeForProgStat (rodsArgs, srcChildPath, 
 	      operProgress);
-            if (status < 0) return (status);
+            if (status < 0) {
+#ifndef USE_BOOST_FS
+            	closedir(dirPtr);	// cppcheck - Resource leak: dirPtr
+#endif
+            	return (status);
+            }
 
 	}
 #endif	/* USE_BOOST_FS */
