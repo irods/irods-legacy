@@ -161,6 +161,30 @@ transferStat_t **transStat)
     srcDataObjInp = L1desc[srcL1descInx].dataObjInp;
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
+    // JMC mods
+    // cppcheck will still complain of redundant check(s), safe to ignore
+    if (destDataObjInp == NULL) {
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInp is NULL" );
+		return SYS_INTERNAL_NULL_INPUT_ERR;
+	}
+    if (destDataObjInfo == NULL) {
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInfo is NULL" );
+		return SYS_INTERNAL_NULL_INPUT_ERR;
+	}
+    if (srcL1descInx == NULL) {
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcL1descInx is NULL" );
+		return SYS_INTERNAL_NULL_INPUT_ERR;
+	}
+    if (srcDataObjInp == NULL) {
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInp is NULL" );
+		return SYS_INTERNAL_NULL_INPUT_ERR;
+	}
+    if (srcDataObjInfo == NULL) {
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInfo is NULL" );
+		return SYS_INTERNAL_NULL_INPUT_ERR;
+	}
+    // end JMC mods
+
     if (L1desc[srcL1descInx].l3descInx <= 2) {
         /* no physical file was opened */
         status = l3DataCopySingleBuf (rsComm, destL1descInx);

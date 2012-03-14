@@ -30,7 +30,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     char *rescGroupName;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    char phyBunDir[MAX_NAME_LEN];
+    char phyBunDir[MAX_NAME_LEN], *tmpStr;
     int flags = 0;
 #if 0
     dataObjInp_t dirRegInp;
@@ -114,8 +114,9 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
 
     if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
 	/* rename the phyBunDir */
-	snprintf (phyBunDir, MAX_NAME_LEN, "%s.%-d", 
-	 phyBunDir, (int) random ());
+    tmpStr = strdup(phyBunDir); // cppcheck - Undefined behavior: same parameter and destination in snprintf().
+	snprintf (phyBunDir, MAX_NAME_LEN, "%s.%-d", tmpStr, (int) random ());
+	free(tmpStr);
         status = unbunPhyBunFile (rsComm, dataObjInp.objPath, rescInfo,
           dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0);
     }

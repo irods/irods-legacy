@@ -616,7 +616,10 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
             cacheDataObjInfo = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
 	    status = stageDataFromCompToCache (rsComm, inpSrcDataObjInfo,
 	      cacheDataObjInfo);
-	    if (status < 0) return status;
+	    if (status < 0) {
+	    	free(cacheDataObjInfo);	// cppcheck - Memory leak: cacheDataObjInfo
+	    	return status;
+	    }
 	    /* srcRescClass is now CACHE_CL */
 	    srcRescClass = getRescClass (cacheDataObjInfo->rescInfo);
 	}
@@ -1194,7 +1197,7 @@ dataObjInfo_t *outCacheObjInfo)
     return status;
 }
 
-/* stageAndRequeDataToCache - stage the compund copy in compObjInfoHead
+/* stageAndRequeDataToCache - stage the compound copy in compObjInfoHead
  * to a cache resource. Put the cache copy on to on the compObjInfoHead
  * queue
  */ 

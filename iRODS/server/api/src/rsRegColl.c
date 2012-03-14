@@ -23,11 +23,11 @@ rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp)
 #endif
     status = rsObjStat (rsComm, &dataObjInp, &rodsObjStatOut);
     if (status >= 0) {
-        if (rodsObjStatOut->specColl != NULL) {
+        if (rodsObjStatOut != NULL && rodsObjStatOut->specColl != NULL) {	// cppcheck - Possible null pointer dereference: rodsObjStatOut
             rodsLog (LOG_ERROR,
              "rsRegColl: Reg path %s is in spec coll",
               dataObjInp.objPath);
-	    if (rodsObjStatOut != NULL) freeRodsObjStat (rodsObjStatOut);
+            freeRodsObjStat (rodsObjStatOut);
             return (SYS_REG_OBJ_IN_SPEC_COLL);
 	}
 	freeRodsObjStat (rodsObjStatOut);
