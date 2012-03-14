@@ -138,6 +138,7 @@ char *cacheFilename,  rodsLong_t dataSize)
 	    printf (
 	      "wosSyncToArchPP: bytesRead %d != dataSize %lld\n", 
 	      bytesRead, dataSize);
+	    free(myBuf); // cppcheck - Memory leak: myBuf
 	    return SYS_COPY_LEN_ERR;
 	}
 	wosObj = WosObj::Create();

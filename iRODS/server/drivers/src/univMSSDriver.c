@@ -197,7 +197,7 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
 	
-	if (status == 0) {
+	if (status == 0 && execCmdOut) { // cppcheck - Possible null pointer dereference: execCmdOut
 		if ( execCmdOut->stdoutBuf.buf != NULL) {
 			outputStr = (char*)execCmdOut->stdoutBuf.buf;
 			memset(&splchain1, 0, sizeof(splchain1));

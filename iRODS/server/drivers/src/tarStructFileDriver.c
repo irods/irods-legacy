@@ -369,7 +369,7 @@ int whence)
     fileLseekInp.whence = whence;
     status = rsFileLseek (rsComm, &fileLseekInp, &fileLseekOut);
 
-    if (status < 0) {
+    if (status < 0 || !fileLseekOut) { // cppcheck - Possible null pointer dereference: fileLseekOut
         return ((rodsLong_t) status);
     } else {
         rodsLong_t offset = fileLseekOut->offset;
@@ -687,6 +687,7 @@ rmTmpDirAll (char *myDir)
         rmTmpDirAll (childDir);
     }
     rmdir (myDir);
+    closedir(dp);	// cppcheck - Resource leak: dp
 
     return (0);
 }
@@ -1017,7 +1018,7 @@ irodsTarOpen (char *pathname, int oflags, int mode)
     /* the upper most 4 bits of mode is the structFileInx */ 
     decodeIrodsTarfd (mode, &structFileInx, &myMode); 
     status = verifyStructFileDesc (structFileInx, pathname, &specColl);
-    if (status < 0) return -1;	/* tar lib looks for -1 return */
+    if (status < 0 || !specColl) return -1;	/* tar lib looks for -1 return */ // cppcheck - Possible null pointer dereference: specColl
 
     rescInfo = StructFileDesc[structFileInx].rescInfo;
     rescTypeInx = rescInfo->rescTypeInx;
@@ -1386,7 +1387,7 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
 
     status = rsFileStat (rsComm, &fileStatInp, &fileStatOut);
 
-    if (status < 0) {
+    if (status < 0 || !fileStatOut) {	// cppcheck - Possible null pointer dereference: fileStatOut
        rodsLog (LOG_ERROR,
           "syncCacheDirToTarfile: rsFileStat error for %s, status = %d",
           specColl->phyPath, status);
