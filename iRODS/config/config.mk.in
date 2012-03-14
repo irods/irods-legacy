@@ -168,6 +168,12 @@ endif
 ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
 DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
 DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
+
+ifneq ($(findstring /xe/, $(ORACLE_HOME)),)
+# For Oracle xe, also need nnz10 library
+DBMS_LIB+= -lnnz10
+endif
+
 endif
 
 
