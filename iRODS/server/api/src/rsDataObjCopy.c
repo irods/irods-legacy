@@ -171,10 +171,6 @@ transferStat_t **transStat)
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInfo is NULL" );
 		return SYS_INTERNAL_NULL_INPUT_ERR;
 	}
-    if (srcL1descInx == NULL) {
-        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcL1descInx is NULL" );
-		return SYS_INTERNAL_NULL_INPUT_ERR;
-	}
     if (srcDataObjInp == NULL) {
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInp is NULL" );
 		return SYS_INTERNAL_NULL_INPUT_ERR;
