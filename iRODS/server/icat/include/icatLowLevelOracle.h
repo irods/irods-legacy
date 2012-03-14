@@ -15,7 +15,7 @@
 #define MAX_BIND_VARS 120
 
 extern int cllBindVarCount;
-extern char *cllBindVars[40];
+extern char *cllBindVars[MAX_BIND_VARS];
 
 
 int cllOpenEnv(icatSessionStruct *icss);
