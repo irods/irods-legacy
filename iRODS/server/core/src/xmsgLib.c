@@ -769,6 +769,7 @@ initXmsgHashQue ()
     outXmsgTicketInfo->flag = 1;
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+    free(outXmsgTicketInfo);	// cppcheck - Memory leak: outXmsgTicketInfo
     
     outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
@@ -777,6 +778,7 @@ initXmsgHashQue ()
     outXmsgTicketInfo->flag = 1;
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+    free(outXmsgTicketInfo);	// cppcheck - Memory leak: outXmsgTicketInfo
 
     outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
@@ -785,6 +787,7 @@ initXmsgHashQue ()
     outXmsgTicketInfo->flag = 1;
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+    free(outXmsgTicketInfo);	// cppcheck - Memory leak: outXmsgTicketInfo
 
     outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
@@ -793,6 +796,7 @@ initXmsgHashQue ()
     outXmsgTicketInfo->flag = 1;
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+    free(outXmsgTicketInfo);	// cppcheck - Memory leak: outXmsgTicketInfo
 
     outXmsgTicketInfo = (xmsgTicketInfo_t*)calloc (1, sizeof (xmsgTicketInfo_t));
     outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
@@ -801,6 +805,7 @@ initXmsgHashQue ()
     outXmsgTicketInfo->flag = 1;
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+    free(outXmsgTicketInfo);	// cppcheck - Memory leak: outXmsgTicketInfo
 
     addMsParam(&XMsgMsParamArray, "*XHDR",STR_MS_T, NULL,NULL);
     addMsParam(&XMsgMsParamArray, "*XUSER",STR_MS_T, NULL,NULL);

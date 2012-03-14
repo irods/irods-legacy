@@ -1352,10 +1352,12 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 		tmpStr = (char*)malloc (strlen (wosHost) + 40);
                 snprintf (tmpStr, MAX_NAME_LEN, "%s=%s", WOS_HOST_ENV, wosHost);
                 putenv (tmpStr);
+                free(tmpStr);	// cppcheck - Memory leak: tmpStr
 		tmpStr = (char*)malloc (strlen (wosPolicy) + 40);
                 snprintf (tmpStr, MAX_NAME_LEN, "%s=%s", 
 		  WOS_POLICY_ENV, wosPolicy);
                 putenv (tmpStr);
+                free(tmpStr);	// cppcheck - Memory leak: tmpStr
 		if (ProcessType == SERVER_PT) {
 		    rodsLog (LOG_NOTICE,
 		     "Set WOS env wosHost=%s, wosPolicy=%s", 
