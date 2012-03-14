@@ -252,6 +252,10 @@ else
 LDADD +=		-lrt
 endif
 
+ifdef ORA_DBMS
+LDADD +=	 -lnnz10
+endif
+
 SVR_RE_OBJS =	\
 		$(svrReObjDir)/extractAvuMS.o \
 		$(svrReObjDir)/genQueryMS.o \
