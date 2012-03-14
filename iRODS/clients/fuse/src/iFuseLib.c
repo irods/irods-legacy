@@ -788,6 +788,7 @@ off_t offset)
                  path, errno);
 		close (IFuseDesc[descInx].iFd);
                 rmPathFromCache ((char *) path, PathArray);
+                free(mybuf);	// cppcheck - Memory leak: mybuf
                 return (errno ? (-1 * errno) : -1);
             }
             dataObjWriteInpBBuf.buf = (void *) mybuf;
@@ -1806,6 +1807,7 @@ irodsOpenWithReadCache (iFuseConn_t *iFuseConn, char *path, int flags)
     if (descInx < 0) {
         rodsLogError (LOG_ERROR, descInx,
           "irodsOpenWithReadCache: allocIFuseDesc of %s error", path);
+        close(fd);	// cppcheck - Resource leak: fd
         return -ENOENT;
     }
     fillIFuseDesc (descInx, iFuseConn, fd, dataObjInp.objPath,

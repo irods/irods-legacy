@@ -740,7 +740,7 @@ doAccCheck(rcComm_t *Conn, char *user, char *zone, char *coll,
    int i, status;
    int printCount;
    char accStr[300];
-   char condStr[300];
+   char condStr[MAX_NAME_LEN];	// cppcheck - snprintf size is out of bounds
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
