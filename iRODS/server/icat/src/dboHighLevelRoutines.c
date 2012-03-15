@@ -962,12 +962,18 @@ dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName,
 
    if (ix < 0) {
       ix = dbrOpen(dbrName);
-      if (ix) return(ix);
+      if (ix) {
+    	  free(myOutBuf); // cppcheck - Memory leak: myOutBuf
+    	  return(ix);
+      }
       didOpen=1;
    }
 
    status = getDboSql(rsComm, dboName, dboSQL, dboFormat);
-   if (status) return(status);
+   if (status) {
+	   free(myOutBuf); // cppcheck - Memory leak: myOutBuf
+	   return(status);
+   }
 
    if (dboLogSQL) rodsLog(LOG_SQL, "dboExecute SQL: %s\n", dboSQL);
 

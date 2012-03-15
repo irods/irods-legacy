@@ -406,7 +406,10 @@ readRdaConfig(char *rdaName, char **DBUser, char**DBPasswd) {
 	       endOfLine=0;
 	       if (foundLine[i]=='\n') endOfLine=1;
 	       foundLine[i]='\0';
-	       if (endOfLine && state<6) return(0);
+	       if (endOfLine && state<6) {
+	    	   fclose(fptr); // cppcheck - Resource leak: fptr
+	    	   return(0);
+	       }
 	       if (state==0) state=1;
 	       if (state==2) state=3;
 	       if (state==4) state=5;
@@ -414,6 +417,7 @@ readRdaConfig(char *rdaName, char **DBUser, char**DBPasswd) {
 		  static char unscrambledPw[NAME_LEN];
 		  obfDecodeByKey(*DBPasswd, DBKey, unscrambledPw);
 		  *DBPasswd=unscrambledPw;
+		  fclose(fptr); // cppcheck - Resource leak: fptr
 		  return(0);
 	       }
 	    }

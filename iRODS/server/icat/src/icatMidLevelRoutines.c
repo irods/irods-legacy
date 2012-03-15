@@ -24,7 +24,7 @@
 #define AUDIT_COMMENT_MAX_SIZE       1000
 
 int logSQL_CML=0;
-int auditEnabled=0;  /* Set this to 2 and rebuild to enable iRODS
+int auditEnabled=2;  /* Set this to 2 and rebuild to enable iRODS
                         auditing (non-zero means auditing but 1 will
                         allow cmlDebug to modify it, so 2 means
                         permanently enabled).  We plan to change this
@@ -984,9 +984,10 @@ cmlCheckTicketRestrictions(char *ticketId, char *ticketHost,
    int groupOK=0;
    char myUser[NAME_LEN];
 
-   strncpy(myUser,userName,sizeof(myUser));
-   strncat(myUser,"#",sizeof(myUser));
-   strncat(myUser,userZone,sizeof(myUser));
+   strncpy(myUser,userName,NAME_LEN);
+   myUser[NAME_LEN-1]='\0'; // cppcheck - Dangerous usage of 'myUser' (strncpy doesn't always 0-terminate it)
+   strncat(myUser,"#",NAME_LEN);
+   strncat(myUser,userZone,NAME_LEN);
 
    /* first, check if there are any host restrictions, and if so
       return error if the connected client host is not in the list */

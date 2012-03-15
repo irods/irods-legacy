@@ -292,7 +292,7 @@ chlGetLocalZone() {
 int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 		      keyValPair_t *regParam) {
    int i, j, status, upCols;
-   rodsLong_t iVal;
+   rodsLong_t iVal = 0; // cppcheck -  Uninitialized variable: iVal
    int status2;
 
    int mode=0;
@@ -421,7 +421,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 logicalDirName, 0, 0, 0, 0, &icss);
 
       if (status != 0) {
-	 int i;
+	 //int i; // unused
 	 char errMsg[105];
 	 snprintf(errMsg, 100, "collection '%s' is unknown", 
 	       logicalDirName);
@@ -466,7 +466,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 theVal = getValByKey(regParam, ACL_COLLECTION_KW);
 	 if (theVal != NULL && dataObjInfo->objPath != NULL &&
 	     upCols==1 && strcmp(updateCols[0],"data_path")==0) {
-	    int len, iVal;
+	    int len, iVal=0; // cppcheck - Uninitialized variable: iVal
 /*
  In this case, the user is doing a 'imv' of a collection but one of
  the sub-files is not owned by them.  We decided this should be
@@ -2300,6 +2300,11 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    char iValStr[60];
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModColl");
+
+   if (!collInfo) { // cppcheck - Possible null pointer dereference: collInfo
+	   rodsLog(LOG_ERROR, "chlModColl: collInfo is NULL");
+	   return SYS_INTERNAL_NULL_INPUT_ERR;
+   }
 
    if (!icss.status) {
       return(CATALOG_NOT_CONNECTED);
@@ -6430,6 +6435,7 @@ int chlModAccessControlResc(rsComm_t *rsComm, int recursiveFlag,
    int debug=0;
    
    strncpy(myAccessStr,accessLevel+strlen(MOD_RESC_PREFIX),LONG_NAME_LEN);
+   myAccessStr[LONG_NAME_LEN-1]='\0'; // cppcheck - Dangerous usage of 'myAccessStr' (strncpy doesn't always 0-terminate it)
 
    if (debug>0) {
      printf("accessLevel: %s\n", accessLevel);
