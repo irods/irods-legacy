@@ -1056,8 +1056,9 @@ void keyNode(Node *node, char *keyBuf) {
 }
 void keyBuf(unsigned char *buf, int size, char *keyBuf) {
 	if(size * 2 + 1 <= KEY_SIZE) {
+		int i;
 		char *p = keyBuf;
-		for(int i=0;i<size;i++) {
+		for(i=0;i<size;i++) {
 			*(p++) = 'A' + (buf[i] & (unsigned char) 0xf);
 			*(p++) = 'A' + (buf[i] & (unsigned char) 0xf0);
 		}
