@@ -32,11 +32,11 @@ struct bucket *newBucket2(char* key, void* value, Region *r) {
  */
 Hashtable *newHashTable(int size) {
 	Hashtable *h = (Hashtable *)malloc(sizeof (Hashtable));
-	memset(h, 0, sizeof(Hashtable));
-
-	if(h==NULL) {
+	if(h==NULL) { // cppcheck - Possible null pointer dereference: h
 		return NULL;
 	}
+	memset(h, 0, sizeof(Hashtable));
+
 	h->dynamic = 0;
 	h->bucketRegion = NULL;
 	h->size = size;
@@ -56,11 +56,13 @@ Hashtable *newHashTable(int size) {
 Hashtable *newHashTable2(int size, Region *r) {
 
 	Hashtable *h = (Hashtable *)region_alloc(r, sizeof (Hashtable));
-	memset(h, 0, sizeof(Hashtable));
-
-	if(h==NULL) {
+	if(h==NULL) { // cppcheck - Possible null pointer dereference: h
 		return NULL;
 	}
+
+	memset(h, 0, sizeof(Hashtable));
+
+
 	h->dynamic = 1;
 	h->bucketRegion = r;
 	h->size = size;

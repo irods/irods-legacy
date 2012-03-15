@@ -232,8 +232,7 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
     if (rei == NULL) {
         rodsLog (LOG_ERROR,
           "msiAddKeyValToMspStr: input rei is NULL");
-        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return (rei->status);
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     rei->status = addKeyValToMspStr (keyStr, valStr, msKeyValStr);
@@ -286,8 +285,7 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
     if (rei == NULL) {
         rodsLog (LOG_ERROR,
           "msiSplitPath: input rei is NULL");
-        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return (rei->status);
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     if ( inpPath == NULL ) {
@@ -422,7 +420,7 @@ msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
     } else {
         char *outStr = NULL;
 	rei->status = getSessionVarValue ("", inpVarStr, rei, &outStr);
-	if (rei->status >= 0) {
+	if (rei->status >= 0 && outStr) { // cppcheck - Possible null pointer dereference: outStr
 	    if (strcmp (outputModeStr, "server") == 0 ||
 	      strcmp (outputModeStr, "all") == 0) {
 	        printf ("msiGetSessionVarValue: %s=%s\n", inpVarStr, outStr);
@@ -481,8 +479,7 @@ msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei)
     if (rei == NULL) {
         rodsLog (LOG_ERROR,
           "msiStrlen: input rei is NULL");
-        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return (rei->status);
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     if (stringIn == NULL) {
@@ -549,8 +546,7 @@ msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
     if (rei == NULL) {
         rodsLog (LOG_ERROR,
           "msiStrchop: input rei is NULL");
-        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return (rei->status);
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     if (stringIn == NULL) {
@@ -635,8 +631,7 @@ msParam_t *stringOut, ruleExecInfo_t *rei)
     if (rei == NULL) {
         rodsLog (LOG_ERROR,
           "msiSubstr: input rei is NULL");
-        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return (rei->status);
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     if (stringIn == NULL || offset == NULL) {

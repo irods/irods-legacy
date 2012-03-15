@@ -561,6 +561,7 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiMakeGenQuery: replaceVariablesAndMsParams failed.");
+		free(rawQuery); // cppcheck - Memory leak: rawQuery
 		return(rei->status);
 	}
 
@@ -575,6 +576,7 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiMakeGenQuery: fillGenQueryInpFromStrCond failed.");
+		free(rawQuery); // cppcheck - Memory leak: rawQuery
 		return(rei->status);
 	}
 

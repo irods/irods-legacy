@@ -791,8 +791,16 @@ readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleEx
 	  if(errcode<0) {
 		  /* deleteEnv(env, 3); */
 		  freeGenQueryOut (&genQueryOut);
+		  free(ruleHead); // cppcheck - Memory leak: ruleHead
+		  free(ruleCondition); // cppcheck - Memory leak: ruleCondition
+		  free(ruleAction); // cppcheck - Memory leak: ruleAction
+		  free(ruleRecovery); // cppcheck - Memory leak: ruleRecovery
 		  return errcode;
 	  }
+	  free(ruleHead); // cppcheck - Memory leak: ruleHead
+	  free(ruleCondition); // cppcheck - Memory leak: ruleCondition
+	  free(ruleAction); // cppcheck - Memory leak: ruleAction
+	  free(ruleRecovery); // cppcheck - Memory leak: ruleRecovery
     }
     genQueryInp.continueInx =  genQueryOut->continueInx;
     freeGenQueryOut (&genQueryOut);

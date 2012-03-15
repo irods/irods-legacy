@@ -558,7 +558,7 @@ intChkRechkRecompChkSum4DatObjVol2  (rsComm_t * rsComm, char *strFullDataPath,
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut;
   sqlResult_t *chksumStr, *modTimVal, *creaTimVal, *sqltColDataSize;
-  char *objPath;
+  char *objPath = NULL; // cppcheck - Uninitialized variable: objPath
   int iIterSqlQuery = 0;
   char *tmpChksumStr, *strModTime, *strCreaTime;
   char collQCond[MAX_NAME_LEN];
@@ -921,11 +921,13 @@ int intAddChkSumDateAvuMetadataVol2 (rsComm_t * rsComm, char *objPath, time_t t1
   char mytime[256], *chrPtr1;
 
   chrPtr1 = strrchr (objPath, '/');
+  if(!chrPtr1) { // cppcheck - Possible null pointer dereference: chrPtr1
+	  return SYS_INVALID_FILE_PATH;
+  }
   printf
     ("GJK-P P.1.0.1. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), objPath=(%s)\n",
      chrPtr1, objPath);
-  if (chrPtr1 != NULL && *chrPtr1 == '/'
-      && chrPtr1[strlen (chrPtr1) - 1] == '/')
+  if (*chrPtr1 == '/' && chrPtr1[strlen (chrPtr1) - 1] == '/')
     *chrPtr1 = 0;		// replace '/' in /myzone/foo/'
   printf
     ("GJK-P P.1.0.2. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), objPath=(%s)\n",
@@ -1204,11 +1206,13 @@ intGetDataObjChksumsTimeStampsFromAVUVol2 (collInp_t * ptrInpColl,
   genQueryOut_t *genQueryOut;
 
   chrPtr1 = strrchr (ptrInpColl->collName, '/');
+  if(!chrPtr1) { // cppcheck - Possible null pointer dereference: chrPtr1
+	  return SYS_INVALID_FILE_PATH;
+  }
   printf
     ("GJK-P P.21.0.1. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
      chrPtr1, ptrInpColl->collName);
-  if (chrPtr1 != NULL && *chrPtr1 == '/'
-      && (ptrInpColl->collName[strlen (ptrInpColl->collName) - 1] == '/'))
+  if (*chrPtr1 == '/' && (ptrInpColl->collName[strlen (ptrInpColl->collName) - 1] == '/'))
     *chrPtr1 = 0;		// replace '/' in /myzone/foo/'
 /*
   else printf
