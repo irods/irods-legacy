@@ -971,7 +971,7 @@ cllGetRowCount(icatSessionStruct *icss, int statementNumber) {
    /* malloc it so that it's aligned properly, else can get
       bus errors when doing 64-bit addressing */
    pUb4 = (ub4 *)malloc(sizeof(rowCount));
-   memset(pUb4, 0, sizeof(rowCount));
+   memset(pUb4, 0, sizeof(rowCount)); // cppcheck -  Uninitialized variable: pUb4
 
    myStatement=icss->stmtPtr[statementNumber];
    p_statement = (OCIStmt *)myStatement->stmtPtr;
