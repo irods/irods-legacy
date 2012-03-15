@@ -309,7 +309,7 @@ acPostProcForDelete { }
 #         registering. Registration of path inside iRODS resource vault
 #         path is allowed if the vault path belong to the user. 
 # acSetChkFilePathPerm {msiSetChkFilePathPerm("doChkPathPerm"); }
-acSetChkFilePathPerm {msiSetChkFilePathPerm("doChkPathPerm"); }
+acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 #
 # 13) acTrashPolicy - This rule set the policy for whether the trash can
 # should be used. The default policy is the trash can will be used. Only
