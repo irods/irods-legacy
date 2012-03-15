@@ -297,19 +297,25 @@ int
 isValidFilePath (char *path) 
 {
     char *tmpPtr = NULL;
+    char *tmpPath = path;
 
+#if 0
     if (strstr (path, "/../") != NULL) {
         /* don't allow /../ in the path */
         rodsLog (LOG_ERROR,
           "isValidFilePath: input fileName %s contains /../", path);
         return SYS_INVALID_FILE_PATH;
     }
-    if ((tmpPtr = strstr (path, "/..")) != NULL) {
-	if (strlen (tmpPtr) == 3) {
-	    /* end with "/.." */
+#endif
+    while ((tmpPtr = strstr (tmpPath, "/..")) != NULL) {
+	if (tmpPtr[3] == '\0' || tmpPtr[3] == '/') {
+	    /* "/../" or end with "/.."  */
             rodsLog (LOG_ERROR,
-          "isValidFilePath: input fileName %s ends with /..", path);
+              "isValidFilePath: inp fileName %s contains /../ or ends with /..",
+	    path);
             return SYS_INVALID_FILE_PATH;
+	} else {
+	    tmpPath += 3;
 	}
     }
     return 0;
