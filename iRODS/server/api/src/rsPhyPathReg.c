@@ -632,6 +632,10 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     specCollCache_t *specCollCache = NULL;
     rescInfo_t *rescInfo = NULL;
 
+    /* make it a privileged call for now */
+    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH)
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+
     if ((structFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
       == NULL) {
         rodsLog (LOG_ERROR,
