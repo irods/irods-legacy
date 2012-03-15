@@ -288,9 +288,15 @@ acDataDeletePolicy { }
 # for this rule.
 acPostProcForDelete { }
 #
-# 12) acSetChkFilePathPerm - This rule replaces acNoChkFilePathPerm. It sets 
+# 12) acSetChkFilePathPerm - This rule replaces acNoChkFilePathPerm. 
+# For now, the only safe setting is the default,
+# msiSetChkFilePathPerm("disallowPathReg"), which prevents non-admin
+# users from using imcoll and ireg.  In the next release (after 3.1)
+# we expect to be able to offer the other settings described below.
+# You can experiment with the other settings, but we do not 
+# recommend them for production at this time.  The rule sets 
 # the policy for checking the file path permission when registering physical 
-# file path using commands such as ireg and imcoll. This rule also set the 
+# file path using commands such as ireg and imcoll. This rule also sets the 
 # policy for checking the file path when unregistering a data object without 
 # deleting the physical file.
 # Normally, a normal user cannot unregister a data object if the physical
