@@ -100,8 +100,8 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
 	foutput = fopen(fname, "a");
 	if (foutput != NULL) {
 		fprintf(foutput, "time=%i %s", timestamp, msg);
+		fclose(foutput); // cppcheck - Possible null pointer dereference: foutput
 	}
-	fclose(foutput);
 	
 	rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
 	rc2 = rsGeneralAdmin(rei->rsComm, &generalAdminInp1);
@@ -382,13 +382,17 @@ int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
                   iok = 0;
                 }
               }
-              if ( iok == 1 ) { return (0); }
+              if ( iok == 1 ) {
+            	  fclose(fp); // cppcheck - Resource leak: fp
+            	  return (0);
+              }
             }
           }
         }
       }
     }
   }
+  fclose(fp); // cppcheck - Resource leak: fp
   return (-1);
 }
 

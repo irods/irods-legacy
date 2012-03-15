@@ -410,6 +410,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       if(t < 0)
       {
          rodsLog(LOG_NOTICE,"msiAutoReplicateService():process_single_obj():get_resource_path failed, status=%d", t);
+         free(pReplicaStatus); // cppcheck - Memory leak: pReplicaStatus
          return t;
       }
       
@@ -446,7 +447,8 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       {
          /* fprintf(stderr,"%d. %s/%s, %d failed to open and has checksum status=%d\n", i, parColl, fileName, rn, t); */
          if(t == SYS_OUT_OF_FILE_DESC) {
-            return t;
+        	 free(pReplicaStatus); // cppcheck - Memory leak: pReplicaStatus
+        	 return t;
          }
          else {
             pReplicaStatus[i].chksum_status = t;
@@ -501,6 +503,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
          UnixSendEmail(emailToNotify, msg_sub, msg_body);
       }
 #endif
+      free(pReplicaStatus); // cppcheck - Memory leak: pReplicaStatus
       return 0;
    }
 
@@ -560,6 +563,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
             }
             else  {
                rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjUnlink() for %s:%d failed. errStat=%d", myDataObjInp.objPath, rn, t);
+               free(pReplicaStatus); // cppcheck - Memory leak: pReplicaStatus
                return t;
             }
          }
@@ -594,6 +598,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
                rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjRepl(): input msKeyValStr error. status = %d", t);
             }
 
+            free(pReplicaStatus); // cppcheck - Memory leak: pReplicaStatus
             return t;
          }        
 
@@ -602,12 +607,13 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
          {
             rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjRepl() failed for %s/%s:%d into '%s'. err code=%d.", parColl, fileName, rn, grpRescForReplication, t);
             repl_storage_error = 1;
+            free(pReplicaStatus);  // cppcheck - Memory leak: pReplicaStatus
             return t;
          }
          if (transStat != NULL) free (transStat);
       }
    }
-
+   free(pReplicaStatus); // cppcheck - Memory leak: pReplicaStatus
    return 0;
 }
 
@@ -650,7 +656,7 @@ static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath)
       return(t);
    } 
 
-   if(genQueryOut->rowCnt < 0)
+   if(!genQueryOut || genQueryOut->rowCnt < 0) // cppcheck - Possible null pointer dereference: genQueryOut
    {
       return -1;
    }
@@ -882,6 +888,8 @@ int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *in
    if(t < 0)
    {
       rodsLog(LOG_ERROR, "msiDataObjAutoMove: fillGenQueryInpFromStrCond() failed. errStatus=%d", t);
+	  free(new_obj_path); // cppcheck - Memory leak: new_obj_path
+	  free(new_truct_path); // cppcheck - Memory leak: new_truct_path
       return t;
    }
    genQueryInp.maxRows= MAX_SQL_ROWS;
@@ -894,14 +902,18 @@ int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *in
       else {
          rodsLog(LOG_ERROR, "msiDataObjAutoMove: rsGenQuery() failed. errStatus=%d", t);
       }
+	  free(new_obj_path); // cppcheck - Memory leak: new_obj_path
+	  free(new_truct_path); // cppcheck - Memory leak: new_truct_path
       return t;
    }
 
    /* separate new_obj_path with path and name */
    t = splitPathByKey(new_obj_path, new_obj_parent, obj_name, '/');
    if(t < 0) {
-      rodsLog(LOG_ERROR, "msiDataObjAutoMove: splitPathByKey() failed for splitting '%s'. errStatus=%d.", new_obj_path, t);
-      return t;
+	rodsLog(LOG_ERROR, "msiDataObjAutoMove: splitPathByKey() failed for splitting '%s'. errStatus=%d.", new_obj_path, t);
+	free(new_obj_path); // cppcheck - Memory leak: new_obj_path
+	free(new_truct_path); // cppcheck - Memory leak: new_truct_path  
+	return t;
    }
    
    /* fprintf(stderr,"msiDataObjAutoMove: newpar=%s, obj_name=%s, from=%s\n", new_obj_parent, obj_name, obj_path); */
@@ -915,8 +927,10 @@ int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *in
       t = rsCollCreate(rsconn, &collCreateInp);
       if(t < 0)
       {
-         rodsLog(LOG_ERROR, "msiDataObjAutoMove: rsCollCreate() failed for %s. errStatus=%d.", new_obj_parent, t);
-         return t;
+      	rodsLog(LOG_ERROR, "msiDataObjAutoMove: rsCollCreate() failed for %s. errStatus=%d.", new_obj_parent, t);
+	  	free(new_obj_path); // cppcheck - Memory leak: new_obj_path
+	  	free(new_truct_path); // cppcheck - Memory leak: new_truct_path
+      	return t;
       }
    }
 
@@ -927,8 +941,10 @@ int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *in
    rstrcpy(dataObjRenameInp.srcDataObjInp.objPath, obj_path, MAX_NAME_LEN);
    t = rsDataObjRename(rsconn, &dataObjRenameInp);
    if(t < 0) {
-      rodsLog(LOG_ERROR, "msiDataObjAutoMove: rsDataObjRename() failed. errStatus=%d.", t);
-      return t;
+		rodsLog(LOG_ERROR, "msiDataObjAutoMove: rsDataObjRename() failed. errStatus=%d.", t);
+		free(new_obj_path); // cppcheck - Memory leak: new_obj_path
+		free(new_truct_path); // cppcheck - Memory leak: new_truct_path
+		return t;
    }
 
    memset(&myModAccessCntlInp, 0, sizeof(modAccessControlInp_t));
@@ -975,5 +991,6 @@ int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *in
    }
 #endif
 
-   return 0;
+	free(new_truct_path); // cppcheck - Memory leak: new_truct_path
+	return 0;
 }

@@ -541,24 +541,47 @@ fillSubmitConditions (char *action, char *inDelayCondition,
    if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
    */
    i= copyTaggedValue(delayCondition,"EA", ruleSubmitInfo->exeAddress,NAME_LEN);
-   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
+   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX){
+	   free(delayCondition); // cppcheck - Memory leak: delayCondition
+	   return(i);
+   }
    i= copyTaggedValue(delayCondition,"ET", ruleSubmitInfo->exeTime,NAME_LEN);
-   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
+   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  {
+	   free(delayCondition); // cppcheck - Memory leak: delayCondition
+	   return(i);
+   }
    else if (i == 0) {
      i  = checkDateFormat(ruleSubmitInfo->exeTime);
-     if (i != 0)
-       return(i);
+     if (i != 0) {
+    	 free(delayCondition); // cppcheck - Memory leak: delayCondition
+    	 return(i);
+     }
    }
    i= copyTaggedValue(delayCondition,"EF", ruleSubmitInfo->exeFrequency,NAME_LEN);
-   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
+   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  {
+	   free(delayCondition); // cppcheck - Memory leak: delayCondition
+	   return(i);
+   }
    i= copyTaggedValue(delayCondition,"PRI",ruleSubmitInfo->priority,NAME_LEN);
-   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
+   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  {
+	   free(delayCondition); // cppcheck - Memory leak: delayCondition
+	   return(i);
+   }
    i= copyTaggedValue(delayCondition,"EET",ruleSubmitInfo->estimateExeTime,NAME_LEN);
-   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
+   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  {
+	   free(delayCondition); // cppcheck - Memory leak: delayCondition
+	   return(i);
+   }
    i= copyTaggedValue(delayCondition,"NA", ruleSubmitInfo->notificationAddr,NAME_LEN);
-   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
+   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  {
+	   free(delayCondition); // cppcheck - Memory leak: delayCondition
+	   return(i);
+   }
    i= copyTaggedValue(delayCondition,"PLUSET", kwp,NAME_LEN * 2);
-   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
+   if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  {
+	   free(delayCondition); // cppcheck - Memory leak: delayCondition
+	   return(i);
+   }
    else if (i == 0) {
      i  = checkDateFormat(kwp);
      if (i != 0)

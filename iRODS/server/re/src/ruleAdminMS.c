@@ -1599,10 +1599,12 @@ msiGetMSrvcsFromDBIntoStruct(msParam_t *inStatus, msParam_t *outCoreMsrvcStruct,
       stat = atoi((char *) inStatus->inOutStruct);
     }
     else {
-      return(USER_PARAM_TYPE_ERR);
+    	free(coreMsrvcStrct); // cppcheck - Memory leak: coreMsrvcStrct
+    	return(USER_PARAM_TYPE_ERR);
     }
   }
   else {
+	free(coreMsrvcStrct); // cppcheck - Memory leak: coreMsrvcStrct
     return(PARAOPR_EMPTY_IN_STRUCT_ERR);
   }
   i = readMsrvcStructFromDB( stat, coreMsrvcStrct, rei);
