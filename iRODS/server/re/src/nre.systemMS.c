@@ -1592,7 +1592,7 @@ msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei)
  * \fn msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,
  *          msParam_t* inpFormatParam, ruleExecInfo_t *rei)
  *
- * \brief Returns the local system time
+ * \brief Returns the local system time, formatted
  *
  * \module core
  *

@@ -166,6 +166,20 @@ This documentation is generated from the iRODS code.
   - #msiSendMail   - Sends email
   - #msiSendStdoutAsEmail - Sends rei's stdout as email
 
+ \subsection msinetcdf NetCDF Microservices
+  - #msiNcOpen
+  - #msiNcCreate
+  - #msiNcClose
+  - #msiNcInqId
+  - #msiNcInqWithId
+  - #msiNcGetVarsByType
+  - #msiNccfGetVara
+  - #msiNcGetArrayLen
+  - #msiNcGetNumDim
+  - #msiNcGetDataType
+  - #msiNcGetElementInArray
+  - #msiFloatToString
+
  \subsection msikv Key-Value (Attr-Value) Microservices
   - #writeKeyValPairs - Writes key-value pairs to stdout or stderr and with given separator
   - #msiPrintKeyValPair - Prints key-value pairs to rei's stdout separated by =
@@ -186,6 +200,7 @@ This documentation is generated from the iRODS code.
   - #writePosInt  - Writes an integer to stdout or stderr
   - #msiGetDiffTime - Returns the difference between two system timestamps given in unix format (stored in string)
   - #msiGetSystemTime - Returns the local system time of server
+  - #msiGetFormattedSystemTime - Returns the local system time, formatted
   - #msiHumanToSystemTime - Converts a human readable date to a system timestamp
   - #msiGetIcatTime - Returns the system time for the iCAT server
   - #msiGetTaggedValueFromString  - Gets the value from a file in tagged-format (psuedo-XML), given a tag-name
@@ -209,7 +224,8 @@ This documentation is generated from the iRODS code.
   - #msiSysReplDataObj - Replicates a data object
   - #msiSysMetaModify - Modifies system metadata
   - #msiStageDataObj - Stages the data object to the specified resource before operation
-  - #msiNoChkFilePathPerm - Does not check file path permission when registering
+  - #msiNoChkFilePathPerm - Does not check file path permission when registering a file
+  - #msiSetChkFilePathPerm - Sets the check type for file path permission check when registering a file
   - #msiNoTrashCan - Sets the policy to no trash can
   - #msiSetPublicUserOpr - Sets a list of operations that can be performed by the user "public"
   - #msiCheckHostAccessControl - Sets the access control policy
@@ -321,9 +337,6 @@ This documentation is generated from the iRODS code.
   - #msiConvertCurrency - Returns conversion rate for currencies from one country to another using web service provided by http://www.webserviceX.NET/
   - #msiObjByName - Returns position and type of an astronomical object given a name from the NASA/IPAC Extragalactic Database (NED) using web service at http://voservices.net/NED/ws_v2_0/NED.asmx
   - #msiSdssImgCutout_GetJpeg - Returns an image buffer given a position and cutout from the SDSS Image Cut Out service using web service provided by http://skyserver.sdss.org
-
- \subsection msiguinot Guinot
-  - #msiGetFormattedSystemTime - Returns the local system time
 
  \subsection msiz3950 Z3950
   - #msiz3950Submit - Retrieves a record from a Z39.50 server

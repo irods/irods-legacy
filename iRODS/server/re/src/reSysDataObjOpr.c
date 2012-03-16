@@ -989,6 +989,8 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
  *
  * \brief  This microservice does not check file path permissions when registering a file. This microservice is REPLACED by msiSetChkFilePathPerm 
  *
+ * \deprecated Since 3.1, #msiSetChkFilePathPerm should be used.
+ *
  * \module core
  *
  * \since pre-2.1
