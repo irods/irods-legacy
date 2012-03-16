@@ -567,6 +567,7 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
 	    {
 	    	rodsLog (LOG_ERROR, "msiGetCollectionSize: Collection %s was not found. Status = %d",
 	    			outCollInp->collName, rei->status);
+	    	free(res);
 	    	return (rei->status);
 	    }
 	}
@@ -827,7 +828,7 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 	{
 		
 		/* Skip collection entries */
-		if (collEnt->objType == DATA_OBJ_T)
+		if (collEnt && collEnt->objType == DATA_OBJ_T)
 		{
 			/* Write our current object's path in dataObjInp, where the inOutStruct in 'objects' points to */
 			memset(dataObjInp, 0, sizeof(dataObjInp_t));

@@ -69,6 +69,7 @@ msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam
 	if ((userID = parseMspForStr (inpParam1)) == NULL) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 			"msiGetAuditTrailInfoByUserID: parseMspForStr error for param 1.");
+		free(mybuf);
 		return (rei->status);
 	}
 
@@ -159,6 +160,7 @@ msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	if ((objectID = parseMspForStr (inpParam1)) == NULL) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 			"msiGetAuditTrailInfoByObjectID: parseMspForStr error for param 1.");
+		free(mybuf);
 		return (rei->status);
 	}
 
@@ -249,6 +251,7 @@ msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	if ((actionID = parseMspForStr (inpParam1)) == NULL) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 			"msiGetAuditTrailInfoByActionID: parseMspForStr error for param 1.");
+		free(mybuf);
 		return (rei->status);
 	}
 
@@ -339,6 +342,7 @@ msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	if ((commentStr = parseMspForStr (inpParam1)) == NULL) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 			"msiGetAuditTrailInfoByKeywords: parseMspForStr error for param 1.");
+		free(mybuf);
 		return (rei->status);
 	}
 

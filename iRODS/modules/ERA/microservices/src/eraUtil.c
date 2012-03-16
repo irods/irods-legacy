@@ -1774,7 +1774,7 @@ parseGenAdminLine(char *inpLine, generalAdminInp_t *generalAdminInp, rsComm_t *r
 			char buf2[MAX_PASSWORD_LEN+10];
 			char rand[]="1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs"; 
 
-			strncpy(buf0, newValue, MAX_PASSWORD_LEN);
+			snprintf(buf0, MAX_PASSWORD_LEN+1, "%s", newValue);
 			len = strlen(newValue);
 			lcopy = MAX_PASSWORD_LEN-10-len;
 			if (lcopy > 15) {  /* server will look for 15 characters of random string */

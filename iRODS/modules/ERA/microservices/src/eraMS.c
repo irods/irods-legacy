@@ -1196,6 +1196,7 @@ msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 	if (rei->status < 0) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 			"msiGetDataObjACL: input inpParam1 error. status = %d", rei->status);
+		free(mybuf);
 		return (rei->status);
 	}
 
@@ -1275,6 +1276,7 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
 	if (rei->status < 0) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 			"msiGetCollectionACL: input inpParam1 error. status = %d", rei->status);
+		free(mybuf);
 		return (rei->status);
 	}
 
@@ -1355,6 +1357,7 @@ msiGetUserInfo(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 	if ((userNameInp = parseMspForStr (inpParam1)) == NULL) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 			"msiGetUserInfo: parseMspForStr error for param 1.");
+		free(mybuf);
 		return (rei->status);
 	}
 
@@ -1743,6 +1746,7 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
 	if ((userNameInp = parseMspForStr (inpParam1)) == NULL) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 			"msiGetUserACL: parseMspForStr error for param 1.");
+		free(mybuf);
 		return (rei->status);
 	}
 
