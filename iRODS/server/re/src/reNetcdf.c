@@ -9,6 +9,10 @@
 #include "collection.h"
 #include "reNetcdf.h"
 
+/**
+ * \fn msiNcOpen (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcOpen (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 ruleExecInfo_t *rei)
@@ -67,6 +71,10 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiNcCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 ruleExecInfo_t *rei)
@@ -125,6 +133,10 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
 {
@@ -171,6 +183,10 @@ msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiNcInqId (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcInqId (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -230,6 +246,10 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiNcInqWithId (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcInqWithId (msParam_t *inpParam1, msParam_t *inpParam2, 
 msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -288,6 +308,10 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiNcGetVarsByType (msParam_t *dataTypeParam, msParam_t *ncidParam,  msParam_t *varidParam, msParam_t *ndimParam, msParam_t *startParam,  msParam_t *countParam, msParam_t *strideParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcGetVarsByType (msParam_t *dataTypeParam, msParam_t *ncidParam, 
 msParam_t *varidParam, msParam_t *ndimParam, msParam_t *startParam, 
@@ -393,6 +417,10 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 }
 
 #ifdef LIB_CF
+/**
+ * \fn msiNccfGetVara (msParam_t *ncidParam, msParam_t *varidParam, msParam_t *lvlIndexParam, msParam_t *timestepParam,  msParam_t *latRange0Param, msParam_t *latRange1Param, msParam_t *lonRange0Param, msParam_t *lonRange1Param, msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNccfGetVara (msParam_t *ncidParam, msParam_t *varidParam, 
 msParam_t *lvlIndexParam, msParam_t *timestepParam, 
@@ -487,6 +515,10 @@ msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei)
 }
 #endif	
 
+/**
+ * \fn msiNcGetArrayLen (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcGetArrayLen (msParam_t *inpParam, msParam_t *outParam, 
 ruleExecInfo_t *rei)
@@ -524,6 +556,10 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetNumDim (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcGetNumDim (msParam_t *inpParam, msParam_t *outParam,
 ruleExecInfo_t *rei)
@@ -550,6 +586,10 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetDataType (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcGetDataType (msParam_t *inpParam, msParam_t *outParam,
 ruleExecInfo_t *rei)
@@ -588,6 +628,10 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetElementInArray (msParam_t *arrayStructParam, msParam_t *indexParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiNcGetElementInArray (msParam_t *arrayStructParam, msParam_t *indexParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -676,6 +720,10 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiFloatToString (msParam_t *floatParam, msParam_t *stringParam, ruleExecInfo_t *rei)
+ *
+**/
 int
 msiFloatToString (msParam_t *floatParam, msParam_t *stringParam,
 ruleExecInfo_t *rei)

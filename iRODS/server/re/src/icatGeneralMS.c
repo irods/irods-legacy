@@ -29,26 +29,21 @@ This documentation is generated from the iRODS code.
   - #msiAdmAppendToTopOfCoreIRB - Prepends another irb file to the core.irb file
   - #msiAdmAddAppRuleStruct - Adds application level IRB rules and DVM and FNM mappings to the rule engine
   - #msiAdmClearAppRuleStruct - Clears application level IRB rules and DVM and FNM mappings that were loaded into the rule engine
-
   - #msiAdmShowIRB      - Displays the currently loaded rules
   - #msiAdmShowDVM      - Displays the currently loaded data variable mappings
   - #msiAdmShowFNM      - Displays the currently loaded microservices and action (function) name mappings
-
   - #msiAdmReadRulesFromFileIntoStruct - Reads a rule configuration file into a rule structure
   - #msiAdmInsertRulesFromStructIntoDB - Writes a rule structure into the current rule base
   - #msiGetRulesFromDBIntoStruct - Populates a rule structure with rules from the given base name
   - #msiAdmWriteRulesFromStructIntoFile - Writes to file the rules within a given rule structure
-
   - #msiAdmReadDVMapsFromFileIntoStruct - Reads a DVM configuration file into a DVM structure
   - #msiAdmInsertDVMapsFromStructIntoDB - Writes a DVM structure into the current DVM base
   - #msiGetDVMapsFromDBIntoStruct - Populates a DVM structure with DVMs from the given base name
   - #msiAdmWriteDVMapsFromStructIntoFile - Writes to file the DVMs within a given DVM structure
-
   - #msiAdmReadFNMapsFromFileIntoStruct - Reads a FNM configuration file into a FNM structure
   - #msiAdmInsertFNMapsFromStructIntoDB - Writes an FNM structure into the current FNM base
   - #msiGetFNMapsFromDBIntoStruct - Populates an FNM structure with FNMs from the given base name
   - #msiAdmWriteFNMapsFromStructIntoFile - Writes to file the FNMs within a given FNM structure
-
   - #msiAdmReadMSrvcsFromFileIntoStruct - Reads a microservice configuration file into a microservice structure
   - #msiAdmInsertMSrvcsFromStructIntoDB - Writes a microservice structure into the current microservices base
   - #msiGetMSrvcsFromDBIntoStruct - Populates a microservice structure with microservices from the given base name
@@ -165,20 +160,6 @@ This documentation is generated from the iRODS code.
  \subsection msiemail Email Microservices
   - #msiSendMail   - Sends email
   - #msiSendStdoutAsEmail - Sends rei's stdout as email
-
- \subsection msinetcdf NetCDF Microservices
-  - #msiNcOpen
-  - #msiNcCreate
-  - #msiNcClose
-  - #msiNcInqId
-  - #msiNcInqWithId
-  - #msiNcGetVarsByType
-  - #msiNccfGetVara
-  - #msiNcGetArrayLen
-  - #msiNcGetNumDim
-  - #msiNcGetDataType
-  - #msiNcGetElementInArray
-  - #msiFloatToString
 
  \subsection msikv Key-Value (Attr-Value) Microservices
   - #writeKeyValPairs - Writes key-value pairs to stdout or stderr and with given separator
@@ -343,7 +324,22 @@ This documentation is generated from the iRODS code.
 
 **/
 
-
+/**
+For Inclusion above, later
+\subsection msinetcdf NetCDF Microservices
+ - #msiNcOpen
+ - #msiNcCreate
+ - #msiNcClose
+ - #msiNcInqId
+ - #msiNcInqWithId
+ - #msiNcGetVarsByType
+ - #msiNccfGetVara
+ - #msiNcGetArrayLen
+ - #msiNcGetNumDim
+ - #msiNcGetDataType
+ - #msiNcGetElementInArray
+ - #msiFloatToString
+**/
 
 
 
