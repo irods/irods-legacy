@@ -118,6 +118,7 @@ int getFileFromS3(char *s3ObjName, char *fileName)
   if ((status = S3_initialize("s3", S3_INIT_ALL))
       != S3StatusOK) {
     printf("Failed to initialize libs3: %s\n",S3_get_status_name(status));
+    fclose(fd); // cppcheck - Resource leak: fd
     return(-1);
   }
 

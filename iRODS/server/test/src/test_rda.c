@@ -59,6 +59,7 @@ main(int argc, char **argv) {
         rodsLog (LOG_SYS_FATAL,
 		 "test_rda: rdaopen Error. Status = %d",
 		 status);
+        free(Comm); // cppcheck - Memory leak: Comm
         return (status);
    }
 

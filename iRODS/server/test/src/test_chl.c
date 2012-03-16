@@ -254,9 +254,10 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
    response[i++]=0xeb;
    response[i++]=0x00;
 
-   strncpy(userNameAndZone, testAdminUser, sizeof userNameAndZone);
-   strncat(userNameAndZone, "#", sizeof userNameAndZone);
-   strncat(userNameAndZone, testUserZone, sizeof userNameAndZone);
+   strncpy(userNameAndZone, testAdminUser, NAME_LEN*2);
+   userNameAndZone[NAME_LEN*2-1]='\0'; // cppcheck - Dangerous usage of 'userNameAndZone' (strncpy doesn't always 0-terminate it)
+   strncat(userNameAndZone, "#", NAME_LEN*2);
+   strncat(userNameAndZone, testUserZone, NAME_LEN*2);
 
    status = chlCheckAuth(rsComm, challenge, response,
 			 userNameAndZone,
@@ -920,6 +921,7 @@ main(int argc, char **argv) {
         rodsLog (LOG_SYS_FATAL,
 		 "initInfoWithRcat: chlopen Error. Status = %d",
 		 status);
+        free(Comm); // cppcheck - Memory leak: Comm
         return (status);
    }
 
