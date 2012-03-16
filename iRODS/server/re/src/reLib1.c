@@ -390,10 +390,12 @@ _applyRule(char *inAction, msParamArray_t *inMsParamArray,
   char action[MAX_ACTION_SIZE];  
   msParamArray_t *outMsParamArray;
 
+  if (!rei) { // cppcheck - Possible null pointer dereference: rei
+	  rodsLog (LOG_ERROR, "_applyRule: input rei is NULL");
+	  return (SYS_INTERNAL_NULL_INPUT_ERR);
+  }
 
   ruleInx = -1; /* new rule */
-
-
 
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
@@ -780,6 +782,8 @@ _execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
   ruleAction = strdup(l1);  /** function calls **/
   ruleRecovery = strdup(l2);  /** rollback calls **/
   if (strlen(ruleAction) == 0 && strlen(ruleRecovery) == 0) {
+	free(ruleRecovery); // cppcheck - Memory leak: ruleRecovery
+	free(ruleAction); // cppcheck - Memory leak: ruleAction
     ruleRecovery = ruleCondition;
     ruleAction = inAction;
     inAction = strdup("");
@@ -797,8 +801,11 @@ _execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
   */
 
   i = parseAction(inAction,action,args, &argc);
-  if (i != 0)
-    return(i);
+  if (i != 0) {
+	  free(ruleBase); // cppcheck - Memory leak: ruleBase
+	  free(ruleHead); // cppcheck - Memory leak: ruleHead
+	  return(i);
+  }
   
   freeRuleArgs (args, argc);
 
@@ -826,10 +833,14 @@ _execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
     if (status < 0) {
       rodsLog (LOG_NOTICE,"execMyRule %s Failed with status %i",ruleDef, status);
     }
+    free(ruleBase); // cppcheck - Memory leak: ruleBase
+    free(ruleHead); // cppcheck - Memory leak: ruleHead
     return(status);
   }
   else {
     rodsLog (LOG_NOTICE,"execMyRule %s Failed  with status %i",ruleDef, i);
+    free(ruleBase); // cppcheck - Memory leak: ruleBase
+    free(ruleHead); // cppcheck - Memory leak: ruleHead
     return (RULE_FAILED_ERR);
   }
 }

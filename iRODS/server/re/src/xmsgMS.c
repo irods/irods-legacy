@@ -570,7 +570,7 @@ int _readXMsg(int streamId, char *condRead, int *msgNum, int *seqNum,
   rcvXmsgInp.msgNumber = 0;
   strncpy(rcvXmsgInp.msgCondition, condRead, MAX_NAME_LEN);
   i = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
-  if (i < 0) {
+  if (i < 0 || !rcvXmsgOut) { // cppcheck - Possible null pointer dereference: rcvXmsgOut
     /*  rcDisconnect(conn); */
     rodsLog (LOG_NOTICE,"_readXmsg: Unable to receive message from stream  %i\n", streamId);
     return(i);
