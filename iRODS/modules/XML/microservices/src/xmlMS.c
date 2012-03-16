@@ -182,6 +182,11 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 	/* Get size of XML file */
 	rei->status = rsObjStat (rsComm, &xmlDataObjInp, &rodsObjStatOut);
+	if (rei->status < 0 || !rodsObjStatOut)
+	{
+		rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: Cannot stat XML data object. status = %d", rei->status);
+		return (rei->status);
+	}
 
 
 	/* xmlBuf init */
@@ -422,6 +427,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: input xmlObj error. status = %d", rei->status);
+		free(errBuf);
 		return (rei->status);
 	}
 
@@ -431,6 +437,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: input xsdObj error. status = %d", rei->status);
+		free(errBuf);
 		return (rei->status);
 	}
 
@@ -441,12 +448,19 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if ((xmlObjID = rsDataObjOpen(rsComm, &xmlObjInp)) < 0) 
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Cannot open XML data object. status = %d", xmlObjID);
+		free(errBuf);
 		return (xmlObjID);
 	}
 
 
 	/* Get size of XML file */
 	rei->status = rsObjStat (rsComm, &xmlObjInp, &rodsObjStatOut);
+	if (rei->status < 0 || !rodsObjStatOut)
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Cannot stat XML data object. status = %d", rei->status);
+		free(errBuf);
+		return (rei->status);
+	}
 
 
 	/* xmlBuf init */
@@ -484,7 +498,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (doc == NULL)
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: XML document cannot be loaded or is not well-formed.");
-
+		free(errBuf);
 	    xmlCleanupParser();
 
 	    return (USER_INPUT_FORMAT_ERR);
@@ -498,7 +512,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if ((xsdObjID = rsDataObjOpen(rsComm, &xsdObjInp)) < 0) 
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Cannot open XSD data object. status = %d", xsdObjID);
-
+		free(errBuf);
 		xmlFreeDoc(doc);
 	    xmlCleanupParser();
 
@@ -539,7 +553,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (xsd_doc == NULL)
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: XML Schema cannot be loaded or is not well-formed.");
-
+		free(errBuf);
 		xmlFreeDoc(doc);
 		xmlCleanupParser();
 
@@ -555,7 +569,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (parser_ctxt == NULL)
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Unable to create a parser context for the schema.");
-
+		free(errBuf);
 		xmlFreeDoc(xsd_doc);
 		xmlFreeDoc(doc);
 	    xmlCleanupParser();
@@ -569,7 +583,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (schema == NULL) 
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Invalid schema.");
-
+		free(errBuf);
 		xmlSchemaFreeParserCtxt(parser_ctxt);
 		xmlFreeDoc(doc);
 		xmlFreeDoc(xsd_doc);
@@ -584,7 +598,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (valid_ctxt == NULL) 
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Unable to create a validation context for the schema.");
-
+		free(errBuf);
 		xmlSchemaFree(schema);
 		xmlSchemaFreeParserCtxt(parser_ctxt);
 		xmlFreeDoc(xsd_doc);

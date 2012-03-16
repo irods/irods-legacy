@@ -4,5 +4,5 @@ xmlValidate {
 	writeLine("stdout","");
 	writeBytesBuf("stdout",*status);
 }
-INPUT *xmlObj="/pho27/home/rods/tst.xml",*xsdObj="/pho27/home/rods/tst.xsd"
+INPUT *xmlObj="/pho27/home/rods/meta/metadata.xml",*xsdObj="/pho27/home/rods/meta/metadata.xsd"
 OUTPUT ruleExecOut

@@ -126,6 +126,11 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 	/* Get size of XSLT file */
 	rei->status = rsObjStat (rsComm, &xsltDataObjInp, &rodsObjStatOut);
+	if (rei->status < 0 || !rodsObjStatOut)
+	{
+		rodsLog (LOG_ERROR, "msiXsltApply: Cannot stat XSLT data object. status = %d", rei->status);
+		return (rei->status);
+	}
 
 
 	/* xsltBuf init */
