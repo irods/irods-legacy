@@ -1036,7 +1036,7 @@ disconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint)
 
     status = getRcatHost (rcatType, rcatZoneHint, &rodsServerHost);
 
-    if (status < 0) {
+    if (status < 0 || !rodsServerHost) { // cppcheck - Possible null pointer dereference: rodsServerHost
         return (status);
     }
 
@@ -1065,7 +1065,7 @@ resetRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint)
 
     status = getRcatHost (rcatType, rcatZoneHint, &rodsServerHost);
 
-    if (status < 0) {
+    if (status < 0 || !rodsServerHost) { // cppcheck - Possible null pointer dereference: rodsServerHost
         return (status);
     }
 

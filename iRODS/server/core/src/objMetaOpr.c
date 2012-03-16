@@ -469,10 +469,10 @@ checkPermitForDataObject(rsComm_t *rsComm, char *objName, int userId, int operId
 {
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut = NULL;
-  char t1[NAME_LEN];
-  char t11[NAME_LEN];
-  char t2[NAME_LEN];
-  char t3[NAME_LEN];
+  char t1[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
+  char t11[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
+  char t2[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
+  char t3[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
   char logicalEndName[MAX_NAME_LEN];
   char logicalParentDirName[MAX_NAME_LEN];
   int status;
@@ -506,9 +506,9 @@ checkPermitForCollection(rsComm_t *rsComm, char *objName, int userId, int operId
 {
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut = NULL;
-  char t1[NAME_LEN];
-  char t2[NAME_LEN];
-  char t4[NAME_LEN];
+  char t1[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
+  char t2[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
+  char t4[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
   int status;
 
   snprintf (t1, MAX_NAME_LEN, " = '%s'", objName);
@@ -536,9 +536,9 @@ checkPermitForResource(rsComm_t *rsComm, char *objName, int userId, int operId)
 {
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut = NULL;
-  char t1[NAME_LEN];
-  char t2[NAME_LEN];
-  char t4[NAME_LEN];
+  char t1[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
+  char t2[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
+  char t4[MAX_NAME_LEN]; // cppcheck - snprintf size is out of bounds
   int status;
 
   snprintf (t1, MAX_NAME_LEN, " = '%s'", objName);
