@@ -304,7 +304,7 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 	       snprintf(tmpStr2,tmpLen,"irodsServerDn=%s", 
 			rodsEnvArg->rodsServerDn);
 	       putenv(tmpStr2);
-	       free(tmpStr2);	// cppcheck - Memory leak: tmpStr2
+//	       free(tmpStr2);	// don't free or environment is lost
 	    }
 	 }
 	 key=strstr(buf, "irodsLogLevel");
