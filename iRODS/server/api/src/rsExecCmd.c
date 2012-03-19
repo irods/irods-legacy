@@ -240,7 +240,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 	    char *myStr = (char*)malloc (NAME_LEN + 20);
 	    snprintf (myStr, NAME_LEN + 20, "%s=%s", EXEC_CMD_RULE_KW, tmpStr);
 	    putenv(myStr);
-		free(myStr);	// cppcheck - Memory leak: myStr
+//		free(myStr);	// don't free or environment is lost
 	}
 	close (stdoutFd[0]);
 	close (stderrFd[0]);
