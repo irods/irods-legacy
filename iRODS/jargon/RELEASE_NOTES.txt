@@ -1,10 +1,10 @@
 
-Jargon 3.0.x Release Notes
+Jargon 3.1.0 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 10/01/2011
-Release Version: Jargon 3.0.X work in progress
+Date: 3/15/2011
+Release Version: Jargon 3.1.0
 ================================================================================================
 
 News
@@ -25,7 +25,7 @@ Requirements
 
 -Jargon depends on Java 1.5+
 -Jargon is built using Apache ANT
--Jargon has been tested against iRODS2.2, iRODS2.3, iRODS2.4, iRODS2.4.1, and iRODS2.5
+-Jargon has been tested against iRODS2.2, iRODS2.3, iRODS2.4, iRODS2.4.1, iRODS2.5, iRODS3.0, iRODS3.1
 
 libraries
 ---------
@@ -39,6 +39,8 @@ libraries
 ================================================================================================
 Features and Changes
 
+
+-Remove legacy unit tests
 ================================================================================================
 Outstanding Issues
 

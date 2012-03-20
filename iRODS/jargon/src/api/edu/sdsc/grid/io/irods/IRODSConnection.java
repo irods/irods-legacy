@@ -620,9 +620,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	Tag readMessage(final boolean decode) throws IOException {
 		log.info("reading message");
 		Tag header = readHeader();
-		/*
-		 * if (log.isDebugEnabled()) { log.debug("header:" + header); }
-		 */
+		
 		if (header == null) {
 			log.error("encountered a null header alue when reading a message");
 			throw new RuntimeException("header was null when reading a message");
@@ -631,7 +629,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		Tag message = null;
 
 		// print how long this function call took
-		log.info("{} millisecs", (new Date().getTime() - date));
+		//log.info("{} millisecs", (new Date().getTime() - date));
 
 		int messageLength = header.tags[1].getIntValue();
 		int errorLength = header.tags[2].getIntValue();
@@ -673,6 +671,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 					byte[] errorMessage = new byte[errorLength];
 					read(errorMessage, 0, errorLength);
 					Tag errorTag = Tag.readNextTag(errorMessage, encoding);
+					log.info("errorTag:{}", errorTag);
 					log.error("IRODS error occured "
 							+ errorTag.getTag(IRODSConstants.RErrMsg_PI)
 									.getTag(IRODSConstants.msg) + " info:"

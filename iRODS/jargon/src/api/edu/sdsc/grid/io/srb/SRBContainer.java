@@ -47,12 +47,23 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
 import java.io.IOException;
-import java.util.Vector;
 import java.net.URI;
+import java.util.Vector;
+
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralMetaData;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.RemoteFile;
+import edu.sdsc.grid.io.ResourceMetaData;
+import edu.sdsc.grid.io.StandardMetaData;
+import edu.sdsc.grid.io.UserMetaData;
+import edu.sdsc.grid.io.local.LocalFile;
 
 //import java.io.FilenameFilter;
 //import java.io.FileFilter;
@@ -998,7 +1009,7 @@ public class SRBContainer extends SRBFile {
 		RegistrationThread(SRBFileSystem fileSystem, int catType,
 				String bloadFilePath) throws IOException {
 			this.fileSystem = fileSystem;
-			this.catalogType = catalogType;
+			this.catalogType = catType;
 			this.bloadFilePath = bloadFilePath;
 		}
 

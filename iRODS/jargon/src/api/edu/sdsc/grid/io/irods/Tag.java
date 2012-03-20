@@ -311,14 +311,15 @@ public class Tag implements Cloneable {
 
 	public static Tag readNextTag(byte[] data, boolean decode, String encoding)
 			throws UnsupportedEncodingException {
-		if (data == null)
+		if (data == null) {
+			log.debug("tag info is null");
 			return null;
+		}
 
 		String d = new String(data, encoding);
 
-		if (log.isTraceEnabled()) {
-			log.trace(d);
-		}
+		log.debug("string from tag read:{}", d);
+		
 		// remove the random '\n'
 		// had to find the end, sometimes '\n' is there, sometimes not.
 		d = d.replaceAll(CLOSE_END_TAG + "\n", "" + CLOSE_END_TAG);
