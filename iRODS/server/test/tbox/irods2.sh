@@ -127,6 +127,9 @@ fi
 #    doJavaTest=0
 #fi
 
+# No longer build and test Jargon
+doJavaTest=0
+
 if [ $doJavaTest -eq 1 ] ; then
     # 1st, clean up possible remaining collection from prev test
     clients/icommands/bin/irm -rf myJargonTestDir
