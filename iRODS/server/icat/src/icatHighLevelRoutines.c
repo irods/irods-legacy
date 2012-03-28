@@ -5912,6 +5912,7 @@ int chlModAVUMetadata(rsComm_t *rsComm, char *type,
    int status, atype;
    char myUnits[MAX_NAME_LEN]="";
    char *addAttr="", *addValue="", *addUnits="";
+   int newUnits=0;
    if (unitsOrArg0 == NULL || *unitsOrArg0=='\0') 
       return(CAT_INVALID_ARGUMENT);
    atype = checkModArgType(unitsOrArg0);
@@ -5965,6 +5966,7 @@ int chlModAVUMetadata(rsComm_t *rsComm, char *type,
    }
    if (atype==3) {
       addUnits=arg3+2;
+      newUnits=1;
    }
 
    if (*addAttr=='\0' &&
@@ -5976,7 +5978,7 @@ int chlModAVUMetadata(rsComm_t *rsComm, char *type,
 
    if (*addAttr=='\0') addAttr=attribute;
    if (*addValue=='\0') addValue=value;
-   if (*addUnits=='\0') addUnits=myUnits;
+   if (*addUnits=='\0' && newUnits==0) addUnits=myUnits;
 
    status = chlAddAVUMetadata(rsComm, 0, type, name, addAttr, addValue,
 			      addUnits);
