@@ -147,7 +147,7 @@ static int _ikrbWriteAll(int fd, char *buf, unsigned int nbyte)
         }
     }
     if (ikrbDebugFlag > 0)
-        fprintf(stderr, "_ikrbWriteAll, wrote=%d\n", ptr - buf);
+        fprintf(stderr, "_ikrbWriteAll, wrote=%td\n", ptr - buf);
     return (ptr - buf);
 }
 #endif
@@ -188,7 +188,7 @@ int _krbSendToken(int fd, gss_buffer_t tok)
     int status;
 
     if (ikrbDebugFlag > 0)
-        fprintf(stderr, "sending tok->length=%d\n", tok->length);
+        fprintf(stderr, "sending tok->length=%zu\n", tok->length);
 
     if (ikrbTokenHeaderMode) {
         len = htonl(tok->length);
@@ -429,7 +429,7 @@ void _ikrbPrintToken(gss_buffer_t tok)
 {
     unsigned int i, j;
     unsigned char *p = (unsigned char *)tok->value;
-    fprintf(stderr, "_ikrbPrintToken, length=%d\n", tok->length);
+    fprintf(stderr, "_ikrbPrintToken, length=%zu\n", tok->length);
     j = 0;
     for (i = 0; i < tok->length; i++, p++) {
         if (i < 16 || i > tok->length - 16) {
@@ -631,7 +631,7 @@ int ikrbEstablishContextServerside(rsComm_t *rsComm, char *clientName,
             return status;
         }
         if (ikrbDebugFlag > 0) {
-            fprintf(stderr, "Received token (size=%d): \n",
+            fprintf(stderr, "Received token (size=%zu): \n",
                     recv_buffer.length);
             _ikrbPrintToken(&recv_buffer);
         }
@@ -657,7 +657,7 @@ int ikrbEstablishContextServerside(rsComm_t *rsComm, char *clientName,
         if (send_buffer.length != 0) {
             if (ikrbDebugFlag > 0) {
                 fprintf(stderr,
-                        "Sending accept_sec_context token (size=%d):\n",
+                        "Sending accept_sec_context token (size=%zu):\n",
                         send_buffer.length);
                 _ikrbPrintToken(&send_buffer);
             }

@@ -197,6 +197,10 @@ $gsiAuth		= 0;
 $globusLocation         = undef;
 $gsiInstallType         = undef;
 
+# Kerberos
+$krbAuth                = 0;
+$krbLocation            = undef;
+
 # Audit extension
 $auditExt               = 0;
 
@@ -301,6 +305,9 @@ if ( -e $irodsConfig )
 	$gsiAuth           = $GSI_AUTH;
 	$globusLocation    = $GLOBUS_LOCATION;
 	$gsiInstallType    = $GSI_INSTALL_TYPE;
+
+        $krbAuth           = $KRB_AUTH;
+        $krbLocation       = $KRB_LOCATION;
 
 	$auditExt          = $AUDIT_EXT;
 
@@ -819,6 +826,34 @@ sub promptForIrodsConfigurationPart2( )
 		    printError("Warning, $globusLocation/include/$gsiInstallType does not exist, build will fail.\n");
 		}
 	}
+
+       printNotice(
+                "\n",
+                "iRODS can make use of the MIT Kerberos authentication\n",
+                "system in addition to the iRODS secure password system.\n",
+                "Both the clients and servers need to be built with Kerberos\n",
+                "and then users can select it by setting\n",
+                "irodsAuthScheme 'KRB' in their .irodsEnv files (or still use\n",
+                "the iRODS password system if they want).\n",
+                "\n" );
+        # KRB ?
+        $krbAuth = promptYesNo(
+                "Include Kerberos",
+                (($krbAuth == 1) ? "yes" : "no") );
+        if ( $krbAuth == 1 ) {
+                printNotice(
+                       "If your Kerberos library installation is in a nonstandard location\n",
+                       "specify it now.\n\n"
+                       );
+                $krbLocation = promptString(
+                       "KRB_LOCATION",
+                       ((!defined($krbLocation)||$krbLocation eq "") ?
+                                "" : $krbLocation),
+                       1 );
+                if (!-e $krbLocation) {
+                       printError("Warning, $krblocation does not exist, build may fail.\n");
+                }
+        }
 
 	# NCCS Audit ?
 	printNotice(
@@ -1759,6 +1794,20 @@ sub promptForConfirmation( )
 			"        gsiInstallType   $gsiInstallType\n\n");
 	}
 
+   # KRB
+        if ($krbAuth == 0) {
+                 printNotice(
+                        "    Kerberos not selected\n\n");
+   } else {
+                 printNotice (
+                        "    Kerberos enabled\n",
+                        (defined($krbLocation) && $krbLocation ne "" ?
+                        "        Location         $krbLocation\n" :
+                        ""),
+                        "\n");
+        }
+
+
    # Audit Extension
 	if ($auditExt == 0) {
 		 printNotice(
@@ -1829,6 +1878,9 @@ sub configureIrods( )
 		"GSI_AUTH",			$gsiAuth,
 		"GLOBUS_LOCATION",		$globusLocation,
 		"GSI_INSTALL_TYPE",		$gsiInstallType,
+
+                "KRB_AUTH",                     $krbAuth,
+                "KRB_LOCATION",                 $krbLocation,
 
 		"AUDIT_EXT",			$auditExt,
 

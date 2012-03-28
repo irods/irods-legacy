@@ -114,7 +114,9 @@ endif
 
 # Kerberos
 ifdef KRB_AUTH
-INCLUDES += 	-I$(KRB_LOC)/include/gssapi -I$(KRB_LOC)/include
+ifdef KRB_LOCATION
+INCLUDES += 	-I$(KRB_LOCATION)/include
+endif
 endif
 
 # API (see api.mk, which is automatically generated)

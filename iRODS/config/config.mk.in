@@ -326,9 +326,9 @@ COMPAT_201=1
 
 # Kerberos authentication
 # KRB_AUTH = 1
-ifdef KRB_AUTH
-KRB_LOC=/usr/kerberos
-endif
+#ifdef KRB_AUTH
+#KRB_LOCATION=/usr/kerberos
+#endif
 
 # Syslog logging
 # Uncomment this line to log into syslog instead of the usual

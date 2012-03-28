@@ -77,11 +77,12 @@ sub promptYesNo( $$ )
 #
 # @param	$prompt		the prompt string
 # @param	$default	the default
+# @param        $allowempty     whether to allow an empty string to be returned
 # @return			the answer string
 #
 sub promptString( $$ )
 {
-	my ($prompt,$default) = @_;
+	my ($prompt,$default,$allowempty) = @_;
 
 	my $promptString = "    $prompt";
 	if ( !defined( $default ) )
@@ -93,7 +94,6 @@ sub promptString( $$ )
 		$promptString .= " [$default]";
 	}
 	$promptString .= "? ";
-
 
 	my $tryAgain;
 	for ( $tryAgain = 0; $tryAgain < $TRY_TOO_MANY; $tryAgain++ )
@@ -112,7 +112,7 @@ sub promptString( $$ )
 		{
 			$answer = $default;
 		}
-		return $answer if ( $answer ne "" );
+		return $answer if ( $answer ne "" || $allowempty == 1 );
 
 		# The answer is invalid.
 		printError(

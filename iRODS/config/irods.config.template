@@ -131,6 +131,8 @@ $GSI_AUTH = '';
 $GLOBUS_LOCATION = '';
 $GSI_INSTALL_TYPE = '';
 
+$KRB_AUTH = '';
+$KRB_LOCATION = '';
 
 # NCCS Audit Extensions
 # $AUDIT_EXT is 1 if these Audit Extensions are selected.

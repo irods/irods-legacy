@@ -196,9 +196,14 @@ LDFLAGS += $(LIB_GSI_AUTH)
 endif
 
 ifdef KRB_AUTH
+ifdef KRB_LOCATION
 LIB_KRB_AUTH = \
-        -L$(KRB_LOC)/lib \
+        -L$(KRB_LOCATION)/lib \
         -lgssapi_krb5
+else
+LIB_KRB_AUTH = \
+        -lgssapi_krb5
+endif
 ifdef GSI_AUTH
 LIB_KRB_AUTH += -ldl
 endif

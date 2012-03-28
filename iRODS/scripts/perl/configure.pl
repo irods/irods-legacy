@@ -253,6 +253,9 @@ foreach $arg ( @ARGV )
 	printNotice( "    --gsi-install-type=<TYPE>   Globus/GSI installation type\n" );
 	printNotice( "                                See \$GLOBUS_LOCATION/include\n" );
 	printNotice( "    --disable-gsi               Disable GSI authentication\n" );
+        printNotice( "    --enable-krb                Enable Kerberos authentication\n" );
+        printNotice( "    --krb-location=<DIR>        Where Kerberos is installed\n" );
+        printNotice( "    --disable-krb               Disable Kerberos authentication\n" );
 	if ( scalar keys %modules > 0 )
 	{
 		printNotice( "\n" );
@@ -381,6 +384,11 @@ if ($GSI_AUTH == 1) {
 	if ( ! -e $testLib ) {
 	    $configMkVariables{ "GSI_CRYPTO" } = crypto;
 	}
+}
+
+if ($KRB_AUTH == 1) {
+        $configMkVariables{ "KRB_AUTH" } = $KRB_AUTH;
+        $configMkVariables{ "KRB_LOCATION" } = $KRB_LOCATION;
 }
 
 if ( $DATABASE_ODBC_TYPE =~ /unix/i )
@@ -606,6 +614,24 @@ foreach $arg ( @ARGV )
 		$configMkVariables{ "GSI_INSTALL_TYPE" } = $1;
 		next;
 	}
+
+        # Kerberos
+        if ( $arg =~ /--enable-krb/ )
+        {
+                $configMkVariables{ "KRB_AUTH" } = "1";
+                next;
+        }
+        if ( $arg =~ /--disable-krb/ )
+        {
+                $configMkVariables{ "KRB_AUTH" } = "";
+                next;
+        }
+        if ( $arg =~ /--kerberos-location=(.*)/ )
+        {
+                $configMkVariables{ "KRB_AUTH" } = "1";
+                $configMkVariables{ "KRB_LOCATION" } = $1;
+                next;
+        }
 
 	# Modules
 	my $modargfound = 0;
