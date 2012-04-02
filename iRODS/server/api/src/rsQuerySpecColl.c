@@ -97,7 +97,7 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
     if (l3descInx < 0) {
         rodsLog (LOG_NOTICE,
           "openSpecColl: specCollOpendir error for %s, status = %d",
-          dataObjInp->objPath, status);
+          dataObjInp->objPath, l3descInx);
         return (l3descInx);
     }
     specCollInx = allocSpecCollDesc ();
@@ -434,7 +434,7 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             status = rsFileOpendir (rsComm, &fileOpendirInp);
             if (status < 0) {
                rodsLog (LOG_ERROR,
-                  "specCollOpendir: rsFileOpendir for %s error, status = %d",
+                  "l3Opendir: rsFileOpendir for %s error, status = %d",
                   dataObjInfo->filePath, status);
             }
             break;

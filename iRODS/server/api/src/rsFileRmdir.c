@@ -117,6 +117,12 @@ _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp)
 	    status = fileStat (fileRmdirInp->fileType, rsComm, 
 	      myPath, &statbuf);
 	    if (status < 0) {
+		/* a hack for now since we don't support lstat in driver */
+		if (fileRmdirInp->fileType == UNIX_FILE_TYPE) {
+		    status = lstat (myPath, &statbuf);
+		}
+	    }
+	    if (status < 0) {
                 rodsLog (LOG_NOTICE,
                   "_rsFileRmdir: fileStat for %s, status = %d",
                   myPath, status);

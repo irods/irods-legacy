@@ -288,6 +288,8 @@ int *outDataMode, char **outChksum);
 int
 getPathStMode (path & p);
 #endif
+int
+hasSymlinkInDir (char *mydir);
 #ifdef  __cplusplus
 }
 #endif

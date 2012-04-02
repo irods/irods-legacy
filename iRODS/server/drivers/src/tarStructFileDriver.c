@@ -1176,6 +1176,32 @@ extractTarFile (int structFileInx)
         status = extractTarFileWithLib (structFileInx);
 #endif
     }
+    if (status >= 0) {
+        specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+        rescInfo_t *rescInfo = StructFileDesc[structFileInx].rescInfo;
+        rsComm_t *rsComm = StructFileDesc[structFileInx].rsComm;
+
+	if (hasSymlinkInDir (specColl->cacheDir)) {
+            fileRmdirInp_t fileRmdirInp;
+            rodsLog (LOG_ERROR,
+              "extractTarFile: cacheDir %s has symlink in it",
+              specColl->cacheDir);
+            /* remove cache */
+            memset (&fileRmdirInp, 0, sizeof (fileRmdirInp));
+            fileRmdirInp.fileType = UNIX_FILE_TYPE;  /* the type for cache */
+            rstrcpy (fileRmdirInp.dirName, specColl->cacheDir,
+              MAX_NAME_LEN);
+            rstrcpy (fileRmdirInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+            fileRmdirInp.flags = RMDIR_RECUR;
+            status = rsFileRmdir (rsComm, &fileRmdirInp);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "extractTarFile: Rmdir error for %s, status = %d",
+                  specColl->cacheDir, status);
+	    }
+	    status = SYMLINKED_BUNFILE_NOT_ALLOWED;
+	}
+    }
     return status;
 }
 
