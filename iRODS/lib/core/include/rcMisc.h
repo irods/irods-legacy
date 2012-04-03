@@ -290,6 +290,10 @@ getPathStMode (path & p);
 #endif
 int
 hasSymlinkInDir (char *mydir);
+int
+hasSymlinkInPath (char *myPath);
+int
+hasSymlinkInPartialPath (char *myPath, int pos);
 #ifdef  __cplusplus
 }
 #endif
