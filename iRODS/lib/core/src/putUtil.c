@@ -440,9 +440,11 @@ rodsRestart_t *rodsRestart)
 		}
 	    }
 	}
-    } else if (rodsArgs->retries == True) {
+    }
+    if (rodsArgs->retries == True && rodsArgs->restart == False &&
+      rodsArgs->lfrestart == False) {
         rodsLog (LOG_ERROR,
-          "initCondForPut: --retries must be used with -X option");
+        "initCondForPut: --retries must be used with -X or --lfrestart option");
 	return USER_INPUT_OPTION_ERR;
     }
 
