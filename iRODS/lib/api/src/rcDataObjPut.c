@@ -199,6 +199,9 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
     }
     free (portalOprOut);
 
+    if (status >= 0 && conn->fileRestart.info.numSeg > 0) {   /* file restart */
+        clearLfRestartFile (&conn->fileRestart);
+    }
     return (status);
 }
 
