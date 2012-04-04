@@ -1313,24 +1313,23 @@ moveKeyVal (keyValPair_t *destKeyVal, keyValPair_t *srcKeyVal)
 }
 
 int
-getUnixUid (char *inUserName)
+getUnixUid (char *userName)
 {
 #ifndef _WIN32
     struct passwd *pw;
     int myuid;
-    char *userName;
+    char *splitPos;
 
 
-    if ((userName = strstr (inUserName, "@")) != NULL) {
-	userName++;	/* skip @ */
-    } else {
-	userName = inUserName;
+    if ((splitPos = strchr (userName, '@')) != NULL) {
+	*splitPos = '\0';	/* skip @ */
     }
     if (!(pw = getpwnam(userName))) {
         myuid = -1;
     } else {
         myuid = (int) pw->pw_uid;
     }
+    if (splitPos != NULL) *splitPos = '@';
     return (myuid);
 #else
     return (-1);
