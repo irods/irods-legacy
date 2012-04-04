@@ -203,6 +203,8 @@ typedef struct DataObjInfo {
     char backupRescName[NAME_LEN];
     char subPath[MAX_NAME_LEN];
     specColl_t *specColl;
+    int regUid;		/* the UNIX uid the registering user */
+    int otherFlags;	/* not used for now */
     struct DataObjInfo *next;
 } dataObjInfo_t;
 
