@@ -153,6 +153,7 @@ create table R_DATA_MAIN
    data_map_id         INT64TYPE DEFAULT 0,
    data_mode           varchar(32),
    r_comment           varchar(1000),
+   data_reg_user_id    INTEGER DEFAULT 0,
    create_ts           varchar(32),
    modify_ts           varchar(32)
  );
