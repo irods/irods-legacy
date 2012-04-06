@@ -5,17 +5,63 @@
 #include "rodsClient.h" 
 
 /* a copy of sfc_pres_temp.nc can be found in ../netcdf/sfc_pres_temp.nc */
-#define TEST_PATH1 "/wanZone/home/rods/netcdf/sfc_pres_temp.nc"
+#define TEST_PATH1 "/oneZone/home/rods/netcdf/sfc_pres_temp.nc"
+#define TEST_PATH2 "/oneZone/home/rods/netcdf/pres_temp_4D.nc"
 
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
+int
+nctest (rcComm_t *conn, char *ncpath);
+
 int
 main(int argc, char **argv)
 {
     rcComm_t *conn;
     rodsEnv myRodsEnv;
-    int status, i;
     rErrMsg_t errMsg;
+    int status;
+
+    status = getRodsEnv (&myRodsEnv);
+
+    if (status < 0) {
+        fprintf (stderr, "getRodsEnv error, status = %d\n", status);
+        exit (1);
+    }
+
+
+    conn = rcConnect (myRodsEnv.rodsHost, myRodsEnv.rodsPort,
+      myRodsEnv.rodsUserName, myRodsEnv.rodsZone, 0, &errMsg);
+
+    if (conn == NULL) {
+        fprintf (stderr, "rcConnect error\n");
+        exit (1);
+    }
+
+    status = clientLogin(conn);
+    if (status != 0) {
+        fprintf (stderr, "clientLogin error\n");
+       rcDisconnect(conn);
+       exit (2);
+    }
+    status = nctest (conn, TEST_PATH1);
+    if (status < 0) {
+	fprintf (stderr, "nctest of %s failed. status = %d\n", 
+        TEST_PATH1, status);
+    }
+    status = nctest (conn, TEST_PATH2);
+
+    if (status < 0) {
+        fprintf (stderr, "nctest of %s failed. status = %d\n", 
+        TEST_PATH2, status);
+    }
+
+    exit (0);
+}
+
+int
+nctest (rcComm_t *conn, char *ncpath)
+{
+    int status, i;
     ncOpenInp_t ncOpenInp;
     ncCloseInp_t ncCloseInp;
     ncInqIdInp_t ncInqIdInp;
@@ -43,32 +89,11 @@ main(int argc, char **argv)
     float *mydata;
 #endif
 
-    status = getRodsEnv (&myRodsEnv);
-
-    if (status < 0) {
-	fprintf (stderr, "getRodsEnv error, status = %d\n", status);
-	exit (1);
-    }
-
-
-    conn = rcConnect (myRodsEnv.rodsHost, myRodsEnv.rodsPort, 
-      myRodsEnv.rodsUserName, myRodsEnv.rodsZone, 0, &errMsg);
-
-    if (conn == NULL) {
-        fprintf (stderr, "rcConnect error\n");
-        exit (1);
-    }
-
-    status = clientLogin(conn);
-    if (status != 0) {
-        fprintf (stderr, "clientLogin error\n");
-       rcDisconnect(conn);
-       exit (1);
-    }
+    printf ("----- nctest for %s ------\n\n\n", ncpath);
 
     /* open an nc object */
     bzero (&ncOpenInp, sizeof (ncOpenInp_t));
-    rstrcpy (ncOpenInp.objPath, TEST_PATH1, MAX_NAME_LEN);
+    rstrcpy (ncOpenInp.objPath, ncpath, MAX_NAME_LEN);
     ncOpenInp.mode = NC_NOWRITE;
 
     status = rcNcOpen (conn, &ncOpenInp, &ncid1);
@@ -76,7 +101,7 @@ main(int argc, char **argv)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "rcNcOpen error for %s", ncOpenInp.objPath);
-	exit (2);
+	return status;
     }
 
     /* inq the dimension length */
@@ -89,7 +114,7 @@ main(int argc, char **argv)
         rodsLogError (LOG_ERROR, status,
           "rcNcInqId error for dim %s of %s", ncInqIdInp.name,
 	  ncOpenInp.objPath);
-        exit (3);
+        return status;
     }
 
     ncInqIdInp.myid = *londimid1;
@@ -98,7 +123,7 @@ main(int argc, char **argv)
         rodsLogError (LOG_ERROR, status,
           "rcNcInqWithId error for dim %s of %s", ncInqIdInp.name,
           ncOpenInp.objPath);
-        exit (3);
+        return status;
     } else {
 	printf ("%s ---- dim length = %lld\n", ncInqIdInp.name, 
 	  ncInqWithIdOut->mylong);
@@ -113,7 +138,7 @@ main(int argc, char **argv)
         rodsLogError (LOG_ERROR, status,
           "rcNcInqId error for dim %s of %s", ncInqIdInp.name,
 	  ncOpenInp.objPath);
-        exit (3);
+        return status;
     }
 
     ncInqIdInp.myid = *latdimid1;
@@ -122,7 +147,7 @@ main(int argc, char **argv)
         rodsLogError (LOG_ERROR, status,
           "rcNcInqWithId error for dim %s of %s", ncInqIdInp.name,
           ncOpenInp.objPath);
-        exit (3);
+        return status;
     } else {
         printf ("%s ---- dim length = %lld\n", ncInqIdInp.name,
           ncInqWithIdOut->mylong);
@@ -133,16 +158,16 @@ main(int argc, char **argv)
 
     /* do the variables */
     lonvarid1 = myInqVar (conn, ncid1, "longitude", &lontype1, &lonndim);
-    if (lonvarid1 < 0)  exit (3);
+    if (lonvarid1 < 0)  return status;
 
     latvarid1 = myInqVar (conn, ncid1, "latitude", &lattype1, &latndim);
-    if (latvarid1 < 0)  exit (3);
+    if (latvarid1 < 0)  return status;
 
     tempvarid1 = myInqVar (conn, ncid1, "temperature", &temptype1, &tempndim);
-    if (tempvarid1 < 0)  exit (3);
+    if (tempvarid1 < 0)  return status;
 
     presvarid1 = myInqVar (conn, ncid1, "pressure", &prestype1, &presndim);
-    if (presvarid1 < 0)  exit (3);
+    if (presvarid1 < 0)  return status;
 
     /* get the variable values */
     start[0] = 0;
@@ -163,7 +188,7 @@ main(int argc, char **argv)
         rodsLogError (LOG_ERROR, status,
           "rcNcGetVarsByType error for longitude of %s", ncInqIdInp.name,
           ncOpenInp.objPath);
-        exit (3);
+        return status;
     } else {
 	printf ("longitude value: \n");
 	for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
@@ -187,7 +212,7 @@ main(int argc, char **argv)
         rodsLogError (LOG_ERROR, status,
           "rcNcGetVarsByType error for latitude of %s", ncInqIdInp.name,
           ncOpenInp.objPath);
-        exit (3);
+        return status;
     } else {
         printf ("latitude value: \n");
         for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
@@ -214,7 +239,7 @@ main(int argc, char **argv)
         rodsLogError (LOG_ERROR, status,
           "rcNcGetVarsByType error for pressure of %s", ncInqIdInp.name,
           ncOpenInp.objPath);
-        exit (3);
+        return status;
     } else {
         printf ("pressure value: \n");
         for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
@@ -241,7 +266,7 @@ main(int argc, char **argv)
         rodsLogError (LOG_ERROR, status,
           "rcNcGetVarsByType error for temperature of %s", ncInqIdInp.name,
           ncOpenInp.objPath);
-        exit (3);
+        return status;
     } else {
         printf ("temperature value: \n");
         for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
@@ -259,7 +284,7 @@ main(int argc, char **argv)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "rcNcClose error for %s", ncOpenInp.objPath);
-        exit (9);
+        return status;
     }
 
 #ifdef LIB_CF
@@ -273,14 +298,14 @@ main(int argc, char **argv)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "rcNcOpen error for %s", ncOpenInp.objPath);
-        exit (2);
+        return status;
     }
 
     tempvarid1 = myInqVar (conn, ncid1, "temperature", &temptype1, &tempndim);
-    if (tempvarid1 < 0)  exit (3);
+    if (tempvarid1 < 0)  return status;
 
     presvarid1 = myInqVar (conn, ncid1, "pressure", &prestype1, &presndim);
-    if (presvarid1 < 0)  exit (3);
+    if (presvarid1 < 0)  return status;
 
     /* pressure subset */
     bzero (&nccfGetVarInp, sizeof (nccfGetVarInp));
@@ -297,7 +322,7 @@ main(int argc, char **argv)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "rcNccfGetVara error for %s", ncOpenInp.objPath);
-        exit (2);
+        return status;
     }
 
     printf (
@@ -320,7 +345,7 @@ main(int argc, char **argv)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "rcNccfGetVara error for %s", ncOpenInp.objPath);
-        exit (2);
+        return status;
     }
 
     printf (
@@ -342,11 +367,10 @@ main(int argc, char **argv)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "rcNcClose error for %s", ncOpenInp.objPath);
-        exit (9);
+        return status;
     }
 #endif
-
-    exit (0);
+    return 0;
 } 
 
 int

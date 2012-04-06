@@ -431,4 +431,7 @@ ifdef LIB_CF
 SVR_API_OBJS += $(svrApiObjDir)/rsNccfGetVara.o
 LIB_API_OBJS += $(libApiObjDir)/rcNccfGetVara.o
 endif
+SVR_API_OBJS += $(svrApiObjDir)/rsNcInq.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcInq.o
 endif
+
