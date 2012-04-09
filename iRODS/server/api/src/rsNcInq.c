@@ -185,6 +185,14 @@ inqAtt (int ncid, int varid, int natt, ncGenAttOut_t **attOut)
             free (myAttOut);
             return status;
         }   
+	status = getAttValue (ncid, varid, myAttOut[i].name, dataType, length,
+	  &myAttOut[i].value);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "inqAtt: getAttValue error for ncid %d, varid %d", ncid, varid);
+            free (myAttOut);
+            return status;
+        }  
 	myAttOut[i].dataType = dataType;
 	myAttOut[i].length = length;
 	myAttOut[i].id = i;
@@ -193,3 +201,88 @@ inqAtt (int ncid, int varid, int natt, ncGenAttOut_t **attOut)
     
     return 0;
 }
+
+int
+getAttValue (int ncid, int varid, char *name, int dataType, int length,
+ncGetVarOut_t *value)
+{
+    int status;
+
+    (value)->dataArray = (dataArray_t *) calloc (1, sizeof (dataArray_t));
+    (value)->dataArray->len = length;
+    (value)->dataArray->type = dataType;
+    switch (dataType) {
+      case NC_CHAR:
+        value->dataArray->buf = calloc (length + 1, sizeof (char));
+        rstrcpy (value->dataType_PI, "charDataArray_PI", NAME_LEN);
+        status = nc_get_att_text (ncid, varid, name,
+          (char *) (value)->dataArray->buf);
+	(value)->dataArray->len = length + 1;
+        break;
+      case NC_BYTE:
+      case NC_UBYTE:
+        value->dataArray->buf = calloc (length, sizeof (char));
+        rstrcpy (value->dataType_PI, "charDataArray_PI", NAME_LEN);
+        status = nc_get_att_uchar (ncid, varid, name,
+          (unsigned char *) (value)->dataArray->buf);
+        break;
+#ifdef NETCDF_HDF
+      case NC_STRING:
+        (value)->dataArray->buf = calloc (length + 1, sizeof (char *));
+        rstrcpy ((value)->dataType_PI, "strDataArray_PI", NAME_LEN);
+        status = nc_get_att_string (ncid, varid, name,
+          (char **) (value)->dataArray->buf);
+        break;
+#endif
+      case NC_INT:
+       (value)->dataArray->buf = calloc (length, sizeof (int));
+        rstrcpy ((value)->dataType_PI, "intDataArray_PI", NAME_LEN);
+        status = nc_get_att_int (ncid, varid, name,
+          (int *) (value)->dataArray->buf);
+        break;
+      case NC_UINT:
+       (value)->dataArray->buf = calloc (length, sizeof (unsigned int));
+        rstrcpy ((value)->dataType_PI, "intDataArray_PI", NAME_LEN);
+        status = nc_get_att_uint (ncid, varid, name,
+          (unsigned int *) (value)->dataArray->buf);
+        break;
+      case NC_INT64:
+        (value)->dataArray->buf = calloc (length, sizeof (long long));
+        rstrcpy ((value)->dataType_PI, "int64DataArray_PI", NAME_LEN);
+        status = nc_get_att_longlong (ncid, varid, name,
+          (long long *) (value)->dataArray->buf);
+        break;
+      case NC_UINT64:
+        (value)->dataArray->buf = calloc (length, sizeof (unsigned long long));
+        rstrcpy ((value)->dataType_PI, "int64DataArray_PI", NAME_LEN);
+        status = nc_get_att_ulonglong (ncid, varid, name,
+          (unsigned long long *) (value)->dataArray->buf);
+        break;
+      case NC_FLOAT:
+        (value)->dataArray->buf = calloc (length, sizeof (float));
+        rstrcpy ((value)->dataType_PI, "intDataArray_PI", NAME_LEN);
+        status = nc_get_att_float (ncid, varid, name,
+          (float *) (value)->dataArray->buf);
+        break;
+      case NC_DOUBLE:
+        (value)->dataArray->buf = calloc (length, sizeof (double));
+        rstrcpy ((value)->dataType_PI, "int64DataArray_PI", NAME_LEN);
+        status = nc_get_att_double (ncid, varid, name,
+          (double *) (value)->dataArray->buf);
+        break;
+      default:
+        rodsLog (LOG_ERROR,
+          "getAttValue: Unknow dataType %d", dataType);
+        return (NETCDF_INVALID_DATA_TYPE);
+    }
+
+    if (status != NC_NOERR) {
+        clearNcGetVarOut (value);
+        rodsLog (LOG_ERROR,
+          "getAttValue:  nc_get_att err varid %d dataType %d. %s ",
+          varid, dataType, nc_strerror(status));
+        status = NETCDF_GET_ATT_ERR - status;
+    }
+    return status;
+}
+

@@ -88,6 +88,7 @@ nctest (rcComm_t *conn, char *ncpath)
     nccfGetVarOut_t *nccfGetVarOut = NULL;
     float *mydata;
 #endif
+    ncInqOut_t *ncInqOut = NULL;
 
     printf ("----- nctest for %s ------\n\n\n", ncpath);
 
@@ -102,6 +103,16 @@ nctest (rcComm_t *conn, char *ncpath)
         rodsLogError (LOG_ERROR, status,
           "rcNcOpen error for %s", ncOpenInp.objPath);
 	return status;
+    }
+
+    /* do the general inq */
+    bzero (&ncInqIdInp, sizeof (ncInqIdInp));
+    ncInqIdInp.ncid = ncid1;
+    status = rcNcInq (conn, &ncInqIdInp, &ncInqOut);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcInq error for %s", ncOpenInp.objPath);
+        return status;
     }
 
     /* inq the dimension length */

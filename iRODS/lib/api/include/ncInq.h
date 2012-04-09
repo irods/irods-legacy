@@ -16,6 +16,7 @@
 #include "dataObjInpOut.h"
 #include "ncOpen.h"
 #include "ncInqId.h"
+#include "ncGetVarsByType.h"
 
 typedef struct {
     rodsLong_t arrayLen;
@@ -32,9 +33,10 @@ typedef struct {
     int length;
     int myint;  /* not used */
     char name[LONG_NAME_LEN];
+    ncGetVarOut_t value;
 } ncGenAttOut_t;
 
-#define NcGenAttOut_PI "int dataType; int id; int length;  int myint; str name[LONG_NAME_LEN];"
+#define NcGenAttOut_PI "int dataType; int id; int length;  int myint; str name[LONG_NAME_LEN]; struct NcGetVarOut_PI;"
 
 typedef struct {
     int natts;
@@ -71,6 +73,9 @@ int
 _rsNcInq (rsComm_t *rsComm, int ncid, ncInqOut_t **ncInqOut);
 int
 inqAtt (int ncid, int varid, int natt, ncGenAttOut_t **attOut);
+int
+getAttValue (int ncid, int varid, char *name, int dataType, int length,
+ncGetVarOut_t *value);
 #else
 #define RS_NC_INQ NULL
 #endif

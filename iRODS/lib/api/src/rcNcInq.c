@@ -24,10 +24,15 @@ ncInqOut_t **ncInqOut)
     (*ncInqOut)->unlimdimid = unlimdimid;
     (*ncInqOut)->format = format;
 
-    (*ncInqOut)->dim = (ncGenDimOut_t *) calloc (ndims, sizeof (ncGenDimOut_t));
-    (*ncInqOut)->var = (ncGenVarOut_t *) calloc (nvars, sizeof (ncGenVarOut_t));
-    (*ncInqOut)->gatt = 
-      (ncGenAttOut_t *) calloc (ngatts, sizeof (ncGenAttOut_t));
+    if (ndims > 0)
+        (*ncInqOut)->dim = (ncGenDimOut_t *) 
+	  calloc (ndims, sizeof (ncGenDimOut_t));
+    if (nvars > 0) 
+        (*ncInqOut)->var = (ncGenVarOut_t *) 
+	  calloc (nvars, sizeof (ncGenVarOut_t));
+    if (ngatts > 0)
+        (*ncInqOut)->gatt = (ncGenAttOut_t *) 
+	  calloc (ngatts, sizeof (ncGenAttOut_t));
 
     return 0;
 }
@@ -44,6 +49,7 @@ freeNcInqOut (ncInqOut_t **ncInqOut)
     if ((*ncInqOut)->var != NULL) {
 	for (i = 0; i < (*ncInqOut)->nvars; i++) {
 	    if ((*ncInqOut)->var[i].att != NULL) {
+		clearNcGetVarOut (&(*ncInqOut)->var[i].att->value);
 		free ((*ncInqOut)->var[i].att);
 	    }
 	}

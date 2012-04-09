@@ -93,6 +93,8 @@ ncGetVarOut_t **ncGetVarOut);
 int
 freeNcGetVarOut (ncGetVarOut_t **ncGetVarOut);
 int
+clearNcGetVarOut (ncGetVarOut_t *ncGetVarOut);
+int
 clearNcGetVarInp (ncGetVarInp_t *ncGetVarInp);
 #ifdef  __cplusplus
 }
