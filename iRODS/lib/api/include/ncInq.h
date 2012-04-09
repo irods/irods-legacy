@@ -69,6 +69,8 @@ int
 rsNcInq (rsComm_t *rsComm, ncInqIdInp_t *ncInqInp, ncInqOut_t **ncInqOut);
 int
 _rsNcInq (rsComm_t *rsComm, int ncid, ncInqOut_t **ncInqOut);
+int
+inqAtt (int ncid, int varid, int natt, ncGenAttOut_t **attOut);
 #else
 #define RS_NC_INQ NULL
 #endif
@@ -92,7 +94,7 @@ int
 initNcInqOut (int ndims, int nvars, int ngatts, int unlimdimid, int format,
 ncInqOut_t **ncInqOut);
 int
-clearNcInqOut (ncInqOut_t **ncInqOut);
+freeNcInqOut (ncInqOut_t **ncInqOut);
 
 #ifdef  __cplusplus
 }

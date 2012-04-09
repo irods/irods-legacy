@@ -115,7 +115,7 @@ _rsNcInq (rsComm_t *rsComm, int ncid, ncInqOut_t **ncInqOut)
             rodsLog (LOG_ERROR,
               "_rsNcInq: nc_inq_dim error.  %s ", nc_strerror(status));
             status = NETCDF_INQ_DIM_ERR - status;
-	    clearNcInqOut (ncInqOut);
+	    freeNcInqOut (ncInqOut);
             return status;
 	}
     }
@@ -123,26 +123,73 @@ _rsNcInq (rsComm_t *rsComm, int ncid, ncInqOut_t **ncInqOut)
     /* inq variables */
     var = (*ncInqOut)->var;
     for (i = 0; i < nvars; i++) {
+        var[i].id = i;
         status = nc_inq_var (ncid, i, var[i].name, &var[i].dataType, &myndim, 
           intArray, &var[i].natts);
         if (status == NC_NOERR) {
-            var[i].id = i;
 	    /* fill in att */
+	    if (var[i].natts > 0) {
+	        status = inqAtt (ncid, i, var[i].natts, &var[i].att);
+	        if (status < 0) {
+                    freeNcInqOut (ncInqOut);
+                    return status;
+		}
+	    }
         } else {
             rodsLog (LOG_ERROR,
               "_rsNcInq: nc_inq_var error.  %s ", nc_strerror(status));
             status = NETCDF_INQ_VARS_ERR - status;
-            clearNcInqOut (ncInqOut);
+            freeNcInqOut (ncInqOut);
             return status;
         }
     }
 
     /* inq attributes */
     gatt = (*ncInqOut)->gatt;
-    for (i = 0; i < ngatts; i++) {
-    }
+    status = inqAtt (ncid, NC_GLOBAL, ngatts, &gatt);
 
     return status;
 }
 
+int
+inqAtt (int ncid, int varid, int natt, ncGenAttOut_t **attOut)
+{
+    int status, i;
+    ncGenAttOut_t *myAttOut;
+    nc_type dataType;
+    size_t length;
 
+    if (attOut == NULL) return USER__NULL_INPUT_ERR;
+
+    if (natt <= 0) return 0;
+
+    *attOut = NULL;
+    myAttOut = (ncGenAttOut_t *) calloc (natt, sizeof (ncGenAttOut_t));
+
+    for (i = 0; i < natt; i++) {
+	status = nc_inq_attname (ncid, varid, i, myAttOut[i].name);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "inqAtt: nc_inq_attname error for ncid %d, varid %d, %s", 
+	      ncid, varid, nc_strerror(status));
+            status = NETCDF_INQ_ATT_ERR - status;
+	    free (myAttOut);
+            return status;
+        }
+	status = nc_inq_att (ncid, varid, myAttOut[i].name, &dataType, &length);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "inqAtt: nc_inq_att error for ncid %d, varid %d, %s", 
+              ncid, varid, nc_strerror(status));
+            status = NETCDF_INQ_ATT_ERR - status;
+            free (myAttOut);
+            return status;
+        }   
+	myAttOut[i].dataType = dataType;
+	myAttOut[i].length = length;
+	myAttOut[i].id = i;
+    }
+    *attOut = myAttOut;
+    
+    return 0;
+}

@@ -33,14 +33,22 @@ ncInqOut_t **ncInqOut)
 }
 
 int
-clearNcInqOut (ncInqOut_t **ncInqOut)
+freeNcInqOut (ncInqOut_t **ncInqOut)
 {
+    int i;
+
     if (ncInqOut == NULL || *ncInqOut == NULL) return USER__NULL_INPUT_ERR;
 
     if ((*ncInqOut)->dim != NULL) free ((*ncInqOut)->dim);
-    if ((*ncInqOut)->var != NULL) free ((*ncInqOut)->var);
     if ((*ncInqOut)->gatt != NULL) free ((*ncInqOut)->gatt);
-
+    if ((*ncInqOut)->var != NULL) {
+	for (i = 0; i < (*ncInqOut)->nvars; i++) {
+	    if ((*ncInqOut)->var[i].att != NULL) {
+		free ((*ncInqOut)->var[i].att);
+	    }
+	}
+	free ((*ncInqOut)->var);
+    }
     free (*ncInqOut);
     *ncInqOut = NULL;
 
