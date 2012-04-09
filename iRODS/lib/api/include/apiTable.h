@@ -402,7 +402,7 @@ apidef_t RcApiTable[] = {
     {NCCF_GET_VARA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NccfGetVarInp_PI", 0, "NccfGetVarOut_PI", 0, (funcPtr) RS_NCCF_GET_VARA},
     {NC_INQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
-      "NcInqIdInp_PI", 0, "NcGenVarOut_PI", 0, (funcPtr) RS_NC_INQ},
+      "NcInqIdInp_PI", 0, "NcInqOut_PI", 0, (funcPtr) RS_NC_INQ},
 #endif
 #endif
 };
