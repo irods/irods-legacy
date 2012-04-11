@@ -40,6 +40,8 @@ char            errbuf[100];
 int             errcode;
 text  oraErrorMsg[250];
 
+static int noResultRowCount=0;
+
 /*
   call SQLError to get error information and log it
  */
@@ -518,6 +520,9 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
    ub4 rows_affected;
    ub4 *pUb4;
 
+   noResultRowCount=0;
+   rows_affected=0;
+
    stat = convertSqlToOra(sqlInput, sql);
    if (stat!=0) {
       rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQL too long");
@@ -622,6 +627,8 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
       return(CAT_SUCCESS_BUT_WITH_NO_INFO);
    }
 
+   noResultRowCount=rows_affected;
+
    return(stat2);
 
 }
@@ -636,6 +643,8 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
    int nCols, stat;
 
    icatStmtStrct *myStatement;
+
+   if (statementNumber < 0) return(noResultRowCount);
 
    myStatement=icss->stmtPtr[statementNumber];
    nCols = myStatement->numOfCols;
