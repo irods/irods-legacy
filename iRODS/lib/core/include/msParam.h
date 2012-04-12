@@ -32,6 +32,9 @@ extern "C" {
 #define CHAR_MS_T               "CHAR_PI"
 #define BUF_LEN_MS_T            "BUF_LEN_PI"    /* an integer indication the
                                                  * length of BBuf */
+#define STREAM_MS_T		"INT_PI"    /* value from bindStreamToIRods.
+					     * Caller should use rcStreamRead 
+					     * and rcStreamClose to read */
 #define DOUBLE_MS_T             "DOUBLE_PI"
 #define FLOAT_MS_T              "FLOAT_PI"
 #define DataObjInp_MS_T         "DataObjInp_PI"
