@@ -17,11 +17,11 @@ netcdfTest () {
 	    if (msiNcGetArrayLen (*inqOut, *lonArrayLen) == 0) {
 		writeLine ("stdout", "lonArrayLen = *lonArrayLen");
 	    } else {
-                writeLine("stdout", "msiNcGetNumDim failed");
+                writeLine("stdout", "msiNcGetArrayLen failed");
                 fail;
 	    }
         } else {
-            writeLine("stdout", "msiNcGetArrayLen failed");
+            writeLine("stdout", "msiNcInqWithId failed");
             fail;
         } 
 # inq latitude
