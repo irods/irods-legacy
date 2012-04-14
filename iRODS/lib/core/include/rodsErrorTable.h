@@ -618,6 +618,7 @@
 #define NETCDF_INQ_DIM_ERR		-2012000
 #define NETCDF_INQ_ATT_ERR		-2013000
 #define NETCDF_GET_ATT_ERR		-2014000
+#define NETCDF_GET_VAR_COUNT_IS_ZERO	-2015000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

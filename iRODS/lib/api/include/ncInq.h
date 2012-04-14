@@ -42,12 +42,13 @@ typedef struct {
     int natts;
     int dataType;
     int id;
-    int myint;  /* not used */
+    int nvdims; 
     char name[LONG_NAME_LEN];
     ncGenAttOut_t *att;		/* array of natts length */
+    int *dimId;			/* arrays of dim id */
 } ncGenVarOut_t;
 
-#define NcGenVarOut_PI "int natts; int dataType; int id; int myint; str name[LONG_NAME_LEN]; struct *NcGenAttOut_PI(natts);"
+#define NcGenVarOut_PI "int natts; int dataType; int id; int nvdims; str name[LONG_NAME_LEN]; struct *NcGenAttOut_PI(natts); int *dimId(nvdims);"
 
 typedef struct {
     int ndims;
@@ -100,7 +101,12 @@ initNcInqOut (int ndims, int nvars, int ngatts, int unlimdimid, int format,
 ncInqOut_t **ncInqOut);
 int
 freeNcInqOut (ncInqOut_t **ncInqOut);
-
+int
+dumpNcInqOut (rcComm_t *conn, int ncid, int dumpVarFlag, ncInqOut_t *ncInqOut);
+int
+getNcTypeStr (int dataType, char *outString);
+int
+ncValueToStr (int dataType, void **value, char *outString);
 #ifdef  __cplusplus
 }
 #endif

@@ -84,7 +84,6 @@ _rsNcInq (rsComm_t *rsComm, int ncid, ncInqOut_t **ncInqOut)
     ncGenAttOut_t *gatt;
     size_t mylong = 0;
     int intArray[NC_MAX_VAR_DIMS];
-    int myndim;
 
     *ncInqOut = NULL;
     status = nc_inq (ncid, &ndims, &nvars, &ngatts, &unlimdimid);
@@ -124,8 +123,8 @@ _rsNcInq (rsComm_t *rsComm, int ncid, ncInqOut_t **ncInqOut)
     var = (*ncInqOut)->var;
     for (i = 0; i < nvars; i++) {
         var[i].id = i;
-        status = nc_inq_var (ncid, i, var[i].name, &var[i].dataType, &myndim, 
-          intArray, &var[i].natts);
+        status = nc_inq_var (ncid, i, var[i].name, &var[i].dataType, 
+	  &var[i].nvdims, intArray, &var[i].natts);
         if (status == NC_NOERR) {
 	    /* fill in att */
 	    if (var[i].natts > 0) {
@@ -133,6 +132,14 @@ _rsNcInq (rsComm_t *rsComm, int ncid, ncInqOut_t **ncInqOut)
 	        if (status < 0) {
                     freeNcInqOut (ncInqOut);
                     return status;
+		}
+	    }
+	    /* fill in dimId */
+	    if (var[i].nvdims > 0) {
+		int j;
+	        var[i].dimId = (int *) calloc (var[i].nvdims, sizeof (int));
+		for (j = 0; j < var[i].nvdims; j++) {
+		    var[i].dimId[j] = intArray[j];
 		}
 	    }
         } else {

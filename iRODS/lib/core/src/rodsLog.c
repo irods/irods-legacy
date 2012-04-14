@@ -582,6 +582,7 @@
     NETCDF_INQ_DIM_ERR, 
     NETCDF_INQ_ATT_ERR, 
     NETCDF_GET_ATT_ERR, 
+    NETCDF_GET_VAR_COUNT_IS_ZERO, 
     SYS_NULL_INPUT, 
     SYS_HANDLER_DONE_WITH_ERROR, 
     SYS_HANDLER_DONE_NO_ERROR, 
@@ -1140,12 +1141,13 @@
     "NETCDF_INQ_DIM_ERR", 
     "NETCDF_INQ_ATT_ERR", 
     "NETCDF_GET_ATT_ERR", 
+    "NETCDF_GET_VAR_COUNT_IS_ZERO", 
     "SYS_NULL_INPUT", 
     "SYS_HANDLER_DONE_WITH_ERROR", 
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 556;
+int irodsErrorCount= 557;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

@@ -11,7 +11,9 @@
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
 int
-nctest (rcComm_t *conn, char *ncpath);
+nctest1 (rcComm_t *conn, char *ncpath);
+int
+nctest2 (rcComm_t *conn, char *ncpath);
 
 int
 main(int argc, char **argv)
@@ -43,15 +45,27 @@ main(int argc, char **argv)
        rcDisconnect(conn);
        exit (2);
     }
-    status = nctest (conn, TEST_PATH1);
+    status = nctest1 (conn, TEST_PATH1);
     if (status < 0) {
-	fprintf (stderr, "nctest of %s failed. status = %d\n", 
+	fprintf (stderr, "nctest1 of %s failed. status = %d\n", 
         TEST_PATH1, status);
     }
-    status = nctest (conn, TEST_PATH2);
+    status = nctest1 (conn, TEST_PATH2);
 
     if (status < 0) {
-        fprintf (stderr, "nctest of %s failed. status = %d\n", 
+        fprintf (stderr, "nctest1 of %s failed. status = %d\n", 
+        TEST_PATH2, status);
+    }
+
+    status = nctest2 (conn, TEST_PATH1);
+    if (status < 0) {
+        fprintf (stderr, "nctest2 of %s failed. status = %d\n",
+        TEST_PATH1, status);
+    }
+    status = nctest2 (conn, TEST_PATH2);
+
+    if (status < 0) {
+        fprintf (stderr, "nctest2 of %s failed. status = %d\n",
         TEST_PATH2, status);
     }
 
@@ -59,7 +73,7 @@ main(int argc, char **argv)
 }
 
 int
-nctest (rcComm_t *conn, char *ncpath)
+nctest1 (rcComm_t *conn, char *ncpath)
 {
     int status, i;
     ncOpenInp_t ncOpenInp;
@@ -69,6 +83,10 @@ nctest (rcComm_t *conn, char *ncpath)
     ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
     int ncid1 = 0;
+    int *levdimid1 = NULL;
+    int levdimlen1 = 0;
+    int *timedimid1 = NULL;
+    int timedimlen1 = 0;
     int *londimid1 = NULL;
     int londimlen1 = 0;
     int lontype1 = 0;
@@ -88,9 +106,8 @@ nctest (rcComm_t *conn, char *ncpath)
     nccfGetVarOut_t *nccfGetVarOut = NULL;
     float *mydata;
 #endif
-    ncInqOut_t *ncInqOut = NULL;
 
-    printf ("----- nctest for %s ------\n\n\n", ncpath);
+    printf ("----- nctest1 for %s ------\n\n\n", ncpath);
 
     /* open an nc object */
     bzero (&ncOpenInp, sizeof (ncOpenInp_t));
@@ -105,14 +122,56 @@ nctest (rcComm_t *conn, char *ncpath)
 	return status;
     }
 
-    /* do the general inq */
+    /* inq the time length */
     bzero (&ncInqIdInp, sizeof (ncInqIdInp));
+    ncInqIdInp.paramType = NC_DIM_T;
     ncInqIdInp.ncid = ncid1;
-    status = rcNcInq (conn, &ncInqIdInp, &ncInqOut);
+    rstrcpy (ncInqIdInp.name, "time", MAX_NAME_LEN);
+    status = rcNcInqId (conn, &ncInqIdInp, &timedimid1);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "rcNcInq error for %s", ncOpenInp.objPath);
-        return status;
+        printf ("No time dim\n");
+        timedimlen1 = 0;
+    } else {
+        ncInqIdInp.myid = *timedimid1;
+        status = rcNcInqWithId (conn, &ncInqIdInp, &ncInqWithIdOut);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "rcNcInqWithId error for dim %s of %s", ncInqIdInp.name,
+              ncOpenInp.objPath);
+            return status;
+        } else {
+            printf ("%s ---- dim length = %lld\n", ncInqIdInp.name,
+              ncInqWithIdOut->mylong);
+            timedimlen1 = ncInqWithIdOut->mylong;
+            free (ncInqWithIdOut);
+            ncInqWithIdOut = NULL;
+        }
+    }
+
+    /* inq the level length */
+    bzero (&ncInqIdInp, sizeof (ncInqIdInp));
+    ncInqIdInp.paramType = NC_DIM_T;
+    ncInqIdInp.ncid = ncid1;
+    rstrcpy (ncInqIdInp.name, "level", MAX_NAME_LEN);
+    status = rcNcInqId (conn, &ncInqIdInp, &levdimid1);
+    if (status < 0) {
+	printf ("No level dim\n");
+	levdimlen1 = 0;
+    } else {
+        ncInqIdInp.myid = *levdimid1;
+        status = rcNcInqWithId (conn, &ncInqIdInp, &ncInqWithIdOut);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "rcNcInqWithId error for dim %s of %s", ncInqIdInp.name,
+              ncOpenInp.objPath);
+            return status;
+        } else {
+            printf ("%s ---- dim length = %lld\n", ncInqIdInp.name,
+              ncInqWithIdOut->mylong);
+            levdimlen1 = ncInqWithIdOut->mylong;
+            free (ncInqWithIdOut);
+            ncInqWithIdOut = NULL;
+        }
     }
 
     /* inq the dimension length */
@@ -234,12 +293,27 @@ nctest (rcComm_t *conn, char *ncpath)
 	freeNcGetVarOut (&ncGetVarOut);
     }
 
-    start[0] = 0;
-    start[1] = 0;
-    count[0] = latdimlen1;
-    count[1] = londimlen1;
-    stride[0] = 1;
-    stride[2] = 1;
+    if (timedimlen1 > 0) {
+        start[0] = 0;
+        start[1] = 0;
+        start[2] = 0;
+        start[3] = 0;
+	count[0] = timedimlen1;
+	count[1] = levdimlen1;
+        count[2] = latdimlen1;
+        count[3] = londimlen1;
+        stride[0] = 1;
+        stride[1] = 1;
+        stride[2] = 1;
+        stride[3] = 1;
+    } else {
+        start[0] = 0;
+        start[1] = 0;
+        count[0] = latdimlen1;
+        count[1] = londimlen1;
+        stride[0] = 1;
+        stride[1] = 1;
+    }
     ncGetVarInp.dataType = prestype1;
     ncGetVarInp.varid = presvarid1;
     ncGetVarInp.ndim = presndim;
@@ -261,12 +335,6 @@ nctest (rcComm_t *conn, char *ncpath)
 	freeNcGetVarOut (&ncGetVarOut);
     }
 
-    start[0] = 0;
-    start[1] = 0;
-    count[0] = latdimlen1;
-    count[1] = londimlen1;
-    stride[0] = 1;
-    stride[1] = 1;
     ncGetVarInp.dataType = temptype1;
     ncGetVarInp.varid = tempvarid1;
     ncGetVarInp.ndim = tempndim;
@@ -382,6 +450,57 @@ nctest (rcComm_t *conn, char *ncpath)
     }
 #endif
     return 0;
+} 
+
+int
+nctest2 (rcComm_t *conn, char *ncpath)
+{
+    int status;
+    ncOpenInp_t ncOpenInp;
+    ncCloseInp_t ncCloseInp;
+    int ncid1 = 0;
+    ncInqIdInp_t ncInqInp;
+    ncInqOut_t *ncInqOut = NULL;
+
+    printf ("----- nctest2 for %s ------\n\n\n", ncpath);
+
+    /* open an nc object */
+    bzero (&ncOpenInp, sizeof (ncOpenInp_t));
+    rstrcpy (ncOpenInp.objPath, ncpath, MAX_NAME_LEN);
+    ncOpenInp.mode = NC_NOWRITE;
+
+    status = rcNcOpen (conn, &ncOpenInp, &ncid1);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcOpen error for %s", ncOpenInp.objPath);
+	return status;
+    }
+
+    /* do the general inq */
+    bzero (&ncInqInp, sizeof (ncInqInp));
+    ncInqInp.ncid = ncid1;
+    status = rcNcInq (conn, &ncInqInp, &ncInqOut);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcInq error for %s", ncOpenInp.objPath);
+        return status;
+    }
+    status = dumpNcInqOut (conn, ncid1, 1, ncInqOut);
+
+    freeNcInqOut (&ncInqOut);
+
+    /* close the file */
+    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
+    ncCloseInp.ncid = ncid1;
+    status = rcNcClose (conn, &ncCloseInp);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcClose error for %s", ncOpenInp.objPath);
+        return status;
+    }
+
+    return status;
 } 
 
 int
