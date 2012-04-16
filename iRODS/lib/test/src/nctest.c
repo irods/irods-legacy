@@ -459,7 +459,7 @@ nctest2 (rcComm_t *conn, char *ncpath)
     ncOpenInp_t ncOpenInp;
     ncCloseInp_t ncCloseInp;
     int ncid1 = 0;
-    ncInqIdInp_t ncInqInp;
+    ncInqInp_t ncInqInp;
     ncInqOut_t *ncInqOut = NULL;
 
     printf ("----- nctest2 for %s ------\n\n\n", ncpath);
@@ -480,6 +480,9 @@ nctest2 (rcComm_t *conn, char *ncpath)
     /* do the general inq */
     bzero (&ncInqInp, sizeof (ncInqInp));
     ncInqInp.ncid = ncid1;
+    ncInqInp.paramType = NC_ALL_TYPE;
+    ncInqInp.flags = NC_ALL_FLAG;
+
     status = rcNcInq (conn, &ncInqInp, &ncInqOut);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,

@@ -18,6 +18,27 @@
 #include "ncInqId.h"
 #include "ncGetVarsByType.h"
 
+/* definition for paramType, can be or'ed to inquire more than 1 type */
+
+#define NC_VAR_TYPE            0x1     /* nc variable */
+#define NC_DIM_TYPE            0x2     /* nc dimension */
+#define NC_ATT_TYPE            0x4     /* nc attribute */
+#define NC_ALL_TYPE     (NC_VAR_TYPE|NC_DIM_TYPE|NC_ATT_TYPE) /* all types */
+
+/* definition for flags */
+#define NC_ALL_FLAG		0x1	/* inquire all items in each type, 
+					 * myid and name are ignored */ 
+typedef struct {
+    int paramType;
+    int ncid;
+    int myid;           /* for NC_ALL_FLAG == 0, the id of the type */
+    int flags;         
+    char name[MAX_NAME_LEN];  /* for NC_ALL_FLAG == 0, the name */
+    keyValPair_t condInput;
+} ncInqInp_t;
+   
+#define NcInqInp_PI "int paramType; int ncid; int myId; int flags; str name[MAX_NAME_LEN]; struct KeyValPair_PI;"
+
 typedef struct {
     rodsLong_t arrayLen;
     int id;
@@ -69,11 +90,12 @@ typedef struct {
 #define RS_NC_INQ rsNcInq
 /* prototype for the server handler */
 int
-rsNcInq (rsComm_t *rsComm, ncInqIdInp_t *ncInqInp, ncInqOut_t **ncInqOut);
+rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
 int
-_rsNcInq (rsComm_t *rsComm, int ncid, ncInqOut_t **ncInqOut);
+_rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
 int
-inqAtt (int ncid, int varid, int natt, ncGenAttOut_t **attOut);
+inqAtt (int ncid, int varid, int natt, char *name, int id, int allFlag,
+ncGenAttOut_t *attOut);
 int
 getAttValue (int ncid, int varid, char *name, int dataType, int length,
 ncGetVarOut_t *value);
@@ -88,13 +110,13 @@ extern "C" {
 /* rcNcInq - general netcdf inq for id (equivalent to nc_inq + nc_inq_format
  * Input - 
  *   rcComm_t *conn - The client connection handle.
- *   ncInqIdInp_t struct:
+ *   ncInqInp_t struct:
  *     ncid - the the ncid.   
  * OutPut - ncInqOut_t.
  */
 /* prototype for the client call */
 int
-rcNcInq (rcComm_t *conn, ncInqIdInp_t *ncInqInp, ncInqOut_t **ncInqOut);
+rcNcInq (rcComm_t *conn, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
 
 int
 initNcInqOut (int ndims, int nvars, int ngatts, int unlimdimid, int format,

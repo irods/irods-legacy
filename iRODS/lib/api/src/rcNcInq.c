@@ -4,7 +4,7 @@
 #include "ncInq.h"
 
 int
-rcNcInq (rcComm_t *conn, ncInqIdInp_t *ncInqInp, ncInqOut_t **ncInqOut)
+rcNcInq (rcComm_t *conn, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
 {
     int status;
     status = procApiRequest (conn, NC_INQ_AN, ncInqInp, NULL, 
