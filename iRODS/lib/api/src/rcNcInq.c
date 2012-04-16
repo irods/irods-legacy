@@ -64,7 +64,8 @@ freeNcInqOut (ncInqOut_t **ncInqOut)
 }
 
 int
-dumpNcInqOut (rcComm_t *conn, int ncid, int dumpVarFlag, ncInqOut_t *ncInqOut)
+dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarFlag, 
+ncInqOut_t *ncInqOut)
 {
     int i, j, dimId, status;
     char tempStr[NAME_LEN];
@@ -72,6 +73,16 @@ dumpNcInqOut (rcComm_t *conn, int ncid, int dumpVarFlag, ncInqOut_t *ncInqOut)
     ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
     void *bufPtr;
+    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+
+    if (fileName == NULL || splitPathByKey (fileName, myDir, myFile, '/') < 0) {
+	printf ("netcdf UNKNOWN_FILE {\n");
+    } else {
+	int len = strlen (myFile);
+	char *myptr = myFile + len - 3;
+	if (strcmp (myptr, ".nc") == 0) *myptr = '\0'; 
+	printf ("netcdf %s {\n", myFile);
+    }
 
     /* attrbutes */
     for (i = 0; i < ncInqOut->ngatts; i++) {
@@ -170,6 +181,7 @@ dumpNcInqOut (rcComm_t *conn, int ncid, int dumpVarFlag, ncInqOut_t *ncInqOut)
 	    freeNcGetVarOut (&ncGetVarOut);
 	}
     }
+    printf ("}\n");
     return 0;
 }
 

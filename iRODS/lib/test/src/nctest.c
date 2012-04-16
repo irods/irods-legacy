@@ -486,7 +486,7 @@ nctest2 (rcComm_t *conn, char *ncpath)
           "rcNcInq error for %s", ncOpenInp.objPath);
         return status;
     }
-    status = dumpNcInqOut (conn, ncid1, 1, ncInqOut);
+    status = dumpNcInqOut (conn, ncpath, ncid1, 1, ncInqOut);
 
     freeNcInqOut (&ncInqOut);
 
