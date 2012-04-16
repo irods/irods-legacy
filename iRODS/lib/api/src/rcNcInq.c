@@ -126,7 +126,7 @@ dumpNcInqOut (rcComm_t *conn, int ncid, int dumpVarFlag, ncInqOut_t *ncInqOut)
     printf ("data:\n\n");
     for (i = 0; i < ncInqOut->nvars; i++) {
 	printf (" %s = ", ncInqOut->var[i].name);
-	if (ncInqOut->var[i].nvdims > 1) printf ("\n");
+	if (ncInqOut->var[i].nvdims > 1) printf ("\n  ");
 	for (j = 0; j < ncInqOut->var[i].nvdims; j++) {
 	    int dimId = ncInqOut->var[i].dimId[j];
 	    start[j] = 0;
@@ -161,7 +161,7 @@ dumpNcInqOut (rcComm_t *conn, int ncid, int dumpVarFlag, ncInqOut_t *ncInqOut)
 		    printf ("%s ;\n", tempStr);
 		} else if (outCnt >= lastDimLen) {
 		    /* reset */
-                    printf ("%s,\n", tempStr);
+                    printf ("%s,\n  ", tempStr);
 		    outCnt = 0;
 		} else {
                     printf ("%s, ", tempStr);
@@ -248,7 +248,7 @@ ncValueToStr (int dataType, void **invalue, char *outString)
 	    *ptr+= sizeof (rodsULong_t);	/* advance pointer */
 	    break;
 	case NC_FLOAT:
-	    snprintf (outString, NAME_LEN, "%f", *(float *) value);
+	    snprintf (outString, NAME_LEN, "%.2f", *(float *) value);
 	    *ptr+= sizeof (float);	/* advance pointer */
 	    break;
 	case NC_DOUBLE:
