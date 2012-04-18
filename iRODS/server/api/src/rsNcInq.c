@@ -101,17 +101,17 @@ _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
     }
 
     if (ncInqInp->paramType == 0) ncInqInp->paramType = NC_ALL_TYPE;
-    if ((ncInqInp->paramType | NC_DIM_TYPE) == 0) {
+    if ((ncInqInp->paramType & NC_DIM_TYPE) == 0) {
 	dimType = ndims = 0;
     } else {
 	dimType = 1;
     }
-    if ((ncInqInp->paramType | NC_ATT_TYPE) == 0) {
+    if ((ncInqInp->paramType & NC_ATT_TYPE) == 0) {
         attType = ngatts = 0;
     } else {
         attType = 1;
     }
-    if ((ncInqInp->paramType | NC_VAR_TYPE) == 0) {
+    if ((ncInqInp->paramType & NC_VAR_TYPE) == 0) {
         varType = nvars = 0;
     } else {
         varType = 1;
@@ -122,7 +122,7 @@ _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
 	 * type */
 	allFlag = NC_ALL_FLAG;
     } else {
-	allFlag = ncInqInp->flags | NC_ALL_FLAG;
+	allFlag = ncInqInp->flags & NC_ALL_FLAG;
     }
 
     if (allFlag == 0) {
