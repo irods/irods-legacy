@@ -55,4 +55,6 @@ msParam_t *outParam, ruleExecInfo_t *rei);
 int
 msiFloatToString (msParam_t *floatParam, msParam_t *stringParam,
 ruleExecInfo_t *rei);
+int
+msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei);
 #endif	/* RE_NETCDF_H */

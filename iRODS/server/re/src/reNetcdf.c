@@ -743,3 +743,47 @@ ruleExecInfo_t *rei)
 
     return 0;
 }
+
+/**
+ * \fn msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
+int
+msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    ncInqInp_t ncInqInp;
+    ncInqOut_t *ncInqOut = NULL;;
+
+    RE_TEST_MACRO ("    Calling msiNcInq")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR,
+        "msiNcInq: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    rsComm = rei->rsComm;
+
+    if (ncidParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcInq: input ncidParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    bzero (&ncInqInp, sizeof (ncInqInp));
+
+    ncInqInp.ncid = parseMspForPosInt (ncidParam);
+
+    rei->status = rsNcInq (rsComm, &ncInqInp, &ncInqOut);
+
+    clearKeyVal (&ncInqInp.condInput);
+    if (rei->status >= 0) {
+	fillMsParam (outParam, NULL, NcInqOut_MS_T, ncInqOut, NULL);
+    } else {
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiNcInq: rsNcInq failed for ncid %d, status = %d",
+        ncInqInp.ncid, rei->status);
+    }
+
+    return (rei->status);
+}
+
