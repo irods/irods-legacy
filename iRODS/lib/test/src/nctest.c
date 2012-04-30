@@ -5,8 +5,8 @@
 #include "rodsClient.h" 
 
 /* a copy of sfc_pres_temp.nc can be found in ../netcdf/sfc_pres_temp.nc */
-#define TEST_PATH1 "/wanZone/home/rods/netcdf/sfc_pres_temp.nc"
-#define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc"
+#define TEST_PATH1 "/oneZone/home/rods/netcdf/sfc_pres_temp.nc"
+#define TEST_PATH2 "/oneZone/home/rods/netcdf/pres_temp_4D.nc"
 
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);

@@ -71,6 +71,8 @@ typedef struct {
 
 #define NcGenVarOut_PI "int natts; int dataType; int id; int nvdims; str name[LONG_NAME_LEN]; struct *NcGenAttOut_PI(natts); int *dimId(nvdims);"
 
+#define UNLIMITED_DIM_INX	-1	/* used in msiNcGetDimNameInInqOut
+					 * to inq name of unlimdim */
 typedef struct {
     int ndims;
     int nvars;

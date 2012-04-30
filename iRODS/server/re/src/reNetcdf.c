@@ -528,6 +528,8 @@ ruleExecInfo_t *rei)
 #endif
     int arrayLen;
 
+    RE_TEST_MACRO ("    Calling msiNcGetArrayLen")
+
     if (inpParam == NULL || outParam == NULL) return USER__NULL_INPUT_ERR;
 
     if (strcmp (inpParam->type, NcInqWithIdOut_MS_T) == 0) {
@@ -566,6 +568,8 @@ ruleExecInfo_t *rei)
 {
     int ndim;
 
+    RE_TEST_MACRO ("    Calling msiNcGetNumDim")
+
     if (inpParam == NULL || outParam == NULL) return USER__NULL_INPUT_ERR;
 
     if (strcmp (inpParam->type, NcInqWithIdOut_MS_T) == 0) {
@@ -595,6 +599,8 @@ msiNcGetDataType (msParam_t *inpParam, msParam_t *outParam,
 ruleExecInfo_t *rei)
 {
     int dataType;
+
+    RE_TEST_MACRO ("    Calling msiNcGetDataType")
 
     if (inpParam == NULL || outParam == NULL) return USER__NULL_INPUT_ERR;
 
@@ -645,6 +651,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     float *floatArray;
     rodsLong_t *longArray;
     char **strArray;
+
+    RE_TEST_MACRO ("    Calling msiNcGetElementInArray")
 
     if (arrayStructParam == NULL || indexParam == NULL ||
       outParam == NULL) return USER__NULL_INPUT_ERR;
@@ -730,6 +738,9 @@ ruleExecInfo_t *rei)
 {
     char floatStr[NAME_LEN];
     float *myfloat;
+
+    RE_TEST_MACRO ("    Calling msiFloatToString")
+
     if (floatParam == NULL || stringParam == NULL) return USER__NULL_INPUT_ERR;
 
     if (strcmp (floatParam->type, FLOAT_MS_T) != 0) {
@@ -786,4 +797,354 @@ msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
     return (rei->status);
 }
+
+int
+msiNcGetNdimsInInqOut (msParam_t *ncInqOutParam, msParam_t *nameParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    int ndims = -1;
+    ncInqOut_t *ncInqOut;
+    char *name;
+
+    RE_TEST_MACRO ("    Calling msiNcGetNdimInInqOut")
+
+    if (ncInqOutParam == NULL || nameParam == NULL || outParam == NULL) 
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNdimsInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+	ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+    if (strcmp (nameParam->type, STR_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNdimsInInqOut: nameParam must be STR_MS_T. %s",
+          nameParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        name = (char*) nameParam->inOutStruct;
+    }
+
+    if (strcmp (name, "null") == 0) {
+	/* global ndims */
+	ndims = ncInqOut->ndims;
+    } else {
+	int i;
+	/* variable vndims */
+	for (i = 0; i < ncInqOut->nvars; i++) {
+	    if (strcmp (ncInqOut->var[i].name, name) == 0) {
+		ndims = ncInqOut->var[i].nvdims;
+		break;
+	    }
+	}
+	if (ndims < 0) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetNdimInInqOut: Unmatch variable name %s.", name);
+	    return NETCDF_UNMATCHED_NAME_ERR;
+	}
+    }
+    fillIntInMsParam (outParam, ndims);
+
+    return 0;
+}
+
+int
+msiNcGetNattsInInqOut (msParam_t *ncInqOutParam, msParam_t *nameParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    int natts = -1;
+    ncInqOut_t *ncInqOut;
+    char *name;
+
+    RE_TEST_MACRO ("    Calling msiNcGetNattsInInqOut")
+
+    if (ncInqOutParam == NULL || nameParam == NULL || outParam == NULL) 
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNattsInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+	ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+    if (strcmp (nameParam->type, STR_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNattsInInqOut: nameParam must be STR_MS_T. %s",
+          nameParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        name = (char*) nameParam->inOutStruct;
+    }
+
+    if (strcmp (name, "null") == 0) {
+	/* global ndims */
+	natts = ncInqOut->ngatts;
+    } else {
+	int i;
+	/* variable vndims */
+	for (i = 0; i < ncInqOut->nvars; i++) {
+	    if (strcmp (ncInqOut->var[i].name, name) == 0) {
+		natts = ncInqOut->var[i].natts;
+		break;
+	    }
+	}
+	if (natts < 0) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetNdimInInqOut: Unmatch variable name %s.", name);
+	    return NETCDF_UNMATCHED_NAME_ERR;
+	}
+    }
+    fillIntInMsParam (outParam, natts);
+
+    return 0;
+}
+
+int
+msiNcGetNvarsInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam, 
+ruleExecInfo_t *rei)
+{
+    ncInqOut_t *ncInqOut;
+
+    RE_TEST_MACRO ("    Calling msiNcGetNvarsInInqOut")
+
+    if (ncInqOutParam == NULL || outParam == NULL) 
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNattsInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+	ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+
+    /* global nvars */
+    fillIntInMsParam (outParam, ncInqOut->nvars);
+
+    return 0;
+}
+
+int
+msiNcGetFormatInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam, 
+ruleExecInfo_t *rei)
+{
+    ncInqOut_t *ncInqOut;
+
+    RE_TEST_MACRO ("    Calling msiNcGetFormatInInqOut")
+
+    if (ncInqOutParam == NULL || outParam == NULL) 
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetFormatInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+	ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+
+    /* global nvars */
+    fillIntInMsParam (outParam, ncInqOut->format);
+
+    return 0;
+}
+
+int
+msiNcGetVarNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    ncInqOut_t *ncInqOut;
+    int inx;
+
+    RE_TEST_MACRO ("    Calling msiNcGetVarNameInInqOut")
+
+    if (ncInqOutParam == NULL || inxParam == NULL || outParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetVarNameInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+    inx = parseMspForPosInt (inxParam);
+    if (inx < 0 || inx >= ncInqOut->nvars) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetVarNameInInqOut: input inx %d is out of range. nvars  = %d",
+          inx, ncInqOut->nvars);
+        return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+    }
+
+    /* global nvars */
+    fillStrInMsParam (outParam, ncInqOut->var[inx].name);
+
+    return 0;
+}
+
+int
+msiNcGetDimNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    ncInqOut_t *ncInqOut;
+    int inx, i;
+    char *name = NULL;
+
+    RE_TEST_MACRO ("    Calling msiNcGetDimNameInInqOut")
+
+    if (ncInqOutParam == NULL || inxParam == NULL || outParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetDimNameInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+    inx = parseMspForPosInt (inxParam);
+    if (inx < UNLIMITED_DIM_INX || inx >= ncInqOut->nvars) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetDimNameInInqOut: input inx %d is out of range. nvars  = %d",
+          inx, ncInqOut->nvars);
+        return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+    }
+
+    if (inx == UNLIMITED_DIM_INX) {
+	/* get the name of unlimdim */
+	if (ncInqOut->unlimdimid < 0) return NETCDF_NO_UNLIMITED_DIM;
+	for (i = 0; i < ncInqOut->ndims; i++) {
+	    if (ncInqOut->unlimdimid == ncInqOut->dim[i].id) {
+		name = ncInqOut->dim[i].name;
+		break;
+	    }
+	}
+	if (name == NULL) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetDimNameInInqOut: no match for unlimdimid %d",
+              ncInqOut->unlimdimid);
+            return NETCDF_NO_UNLIMITED_DIM;
+	}
+    } else {
+	char *varName;
+        if (varNameParam == NULL) return USER__NULL_INPUT_ERR;
+        if (strcmp (varNameParam->type, STR_MS_T) != 0) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetDimNameInInqOut: nameParam must be STR_MS_T. %s",
+              varNameParam->type);
+            return (USER_PARAM_TYPE_ERR);
+        } else {
+            varName = (char*) varNameParam->inOutStruct;
+        }
+	if (strcmp (varName, "null") == 0) {
+	    /* use the global for inx */
+	    name = ncInqOut->dim[inx].name;
+	} else {
+	    /* match the varName first */
+	    for (i = 0; i < ncInqOut->nvars; i++) {
+		int dimId, j;
+		if (strcmp (varName, ncInqOut->var[i].name) == 0) { 
+		    /* a match in var name */
+		    dimId = ncInqOut->var[i].dimId[inx];
+		    /* try to match dimId */
+		    for (j = 0; j <  ncInqOut->ndims; j++) {
+			if (ncInqOut->dim[j].id == dimId) {
+			    name = ncInqOut->dim[j].name;
+			    break;
+			}
+		    }
+		}
+	    }
+	    if (name == NULL) {
+                rodsLog (LOG_ERROR,
+                  "msiNcGetDimNameInInqOut: unmatched varName %s and ix %d",
+                  varName, inx);
+                return NETCDF_UNMATCHED_NAME_ERR;
+	    }
+	}
+    }
+    fillStrInMsParam (outParam, name);
+
+    return 0;
+}
+
+int
+msiNcGetAttNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    ncInqOut_t *ncInqOut;
+    int inx, i;
+    char *varName;
+    char *name = NULL;
+
+    RE_TEST_MACRO ("    Calling msiNcGetAttNameInInqOut")
+
+    if (ncInqOutParam == NULL || inxParam == NULL || outParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetAttNameInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+    inx = parseMspForPosInt (inxParam);
+
+    if (varNameParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (varNameParam->type, STR_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetAttNameInInqOut: nameParam must be STR_MS_T. %s",
+          varNameParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        varName = (char*) varNameParam->inOutStruct;
+    }
+
+    if (strcmp (varName, "null") == 0) {
+	/* use the global att */
+	if (inx < 0 || inx >= ncInqOut->ngatts) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetAttNameInInqOut: input inx %d out of range. ngatts = %d",
+              inx, ncInqOut->ngatts);
+            return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+        }
+	name = ncInqOut->gatt[inx].name;
+    } else {
+	/* match the varName first */
+	for (i = 0; i < ncInqOut->nvars; i++) {
+	    if (strcmp (varName, ncInqOut->var[i].name) == 0) { 
+		/* a match in var name */
+		break;
+	    }
+        }
+	if (i >= ncInqOut->nvars) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetAttNameInInqOut: unmatched varName %s", varName);
+            return NETCDF_UNMATCHED_NAME_ERR;
+        }
+        if (inx < 0 || inx >= ncInqOut->var[i].natts) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetAttNameInInqOut: input inx %d out of range. natts = %d",
+              inx, ncInqOut->var[i].natts);
+            return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+        }
+        name = ncInqOut->var[i].att[inx].name;
+    }
+    fillStrInMsParam (outParam, name);
+
+    return 0;
+}
+
 

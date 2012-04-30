@@ -70,6 +70,8 @@ extern "C" {
 #define NcOpenInp_MS_T		"NcOpenInp_PI"
 #define NcInqIdInp_MS_T		"NcInqIdInp_PI"
 #define NcInqWithIdOut_MS_T	"NcInqWithIdOut_PI"
+#define NcInqInp_MS_T		"NcInqInp_PI"
+#define NcInqOut_MS_T		"NcInqOut_PI"
 #define NcCloseInp_MS_T		"NcCloseInp_PI"
 #define NcGetVarInp_MS_T	"NcGetVarInp_PI"
 #define NcGetVarOut_MS_T	"NcGetVarOut_PI"

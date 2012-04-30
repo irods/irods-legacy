@@ -93,7 +93,7 @@ ncGetVarOut_t **ncGetVarOut)
 	start[i] = ncGetVarInp->start[i];
 	count[i] = ncGetVarInp->count[i];
 	stride[i] = ncGetVarInp->stride[i];
-	if (count[i] <= 0) return NETCDF_GET_VAR_COUNT_IS_ZERO;
+	if (count[i] <= 0) return NETCDF_VAR_COUNT_OUT_OF_RANGE;
 	/* cal dataArray->len */
 	if (stride[i] <= 0) {
 	    stride[i] = 1;
