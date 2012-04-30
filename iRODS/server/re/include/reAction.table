@@ -431,6 +431,7 @@ microsdef_t MicrosTable[] = {
   {"msiDbrRollback", 1, (funcPtr) msiDbrRollback},
   {"msiDboExec",10,(funcPtr) msiDboExec},
   {"msiExit",2,(funcPtr) msiExit},
+  {"msiStrCat",2,(funcPtr) msiStrCat},
   {"msiSysMetaModify",2,(funcPtr) msiSysMetaModify},
 #ifdef NETCDF_API
   {"msiNcOpen",3,(funcPtr) msiNcOpen},
@@ -445,6 +446,13 @@ microsdef_t MicrosTable[] = {
   {"msiNcGetElementInArray",3,(funcPtr) msiNcGetElementInArray},
   {"msiFloatToString",2,(funcPtr) msiFloatToString},
   {"msiNcInq",2,(funcPtr) msiNcInq},
+  {"msiNcGetNdimsInInqOut",3,(funcPtr) msiNcGetNdimsInInqOut},
+  {"msiNcGetNattsInInqOut",3,(funcPtr) msiNcGetNattsInInqOut},
+  {"msiNcGetNvarsInInqOut",2,(funcPtr) msiNcGetNvarsInInqOut},
+  {"msiNcGetFormatInInqOut",2,(funcPtr) msiNcGetFormatInInqOut},
+  {"msiNcGetVarNameInInqOut",3,(funcPtr) msiNcGetVarNameInInqOut},
+  {"msiNcGetDimNameInInqOut",4,(funcPtr) msiNcGetDimNameInInqOut},
+  {"msiNcGetAttNameInInqOut",4,(funcPtr) msiNcGetAttNameInInqOut},
 #ifdef LIB_CF
   {"msiNccfGetVara",10,(funcPtr) msiNccfGetVara},
 #endif

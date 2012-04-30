@@ -785,3 +785,36 @@ msiExit (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
     /* return (rei->status); */
 }
 
+int
+msiStrCat (msParam_t *targParam, msParam_t *srcParam, ruleExecInfo_t *rei)
+{
+    char *targ, *src, *newTarg;
+    int targLen, srcLen;
+
+    RE_TEST_MACRO ("    Calling msiStrCat")
+
+    if (targParam == NULL || srcParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (targParam->type, STR_MS_T) != 0 ||
+      strcmp (srcParam->type, STR_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiStrCat: targParam and srcParam must be STR_MS_T. targ %s, src %s",
+          targParam->type, srcParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        targ = (char*) targParam->inOutStruct;
+        src = (char*) srcParam->inOutStruct;
+    }
+
+    targLen = strlen (targ);
+    srcLen = strlen (src);
+    newTarg = (char *) calloc (1, targLen + srcLen + 10);
+    if (targLen > 0) rstrcpy (newTarg, targ, targLen + 1);
+    if (srcLen > 0) rstrcpy (newTarg + targLen, src, srcLen + 1);
+    free (targParam->inOutStruct);
+    targParam->inOutStruct = newTarg;
+
+    return 0;
+}
+

@@ -57,4 +57,25 @@ msiFloatToString (msParam_t *floatParam, msParam_t *stringParam,
 ruleExecInfo_t *rei);
 int
 msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcGetNdimsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcGetNattsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcGetNvarsInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam,
+ruleExecInfo_t *rei);
+int
+msiNcGetFormatInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam,
+ruleExecInfo_t *rei);
+int
+msiNcGetVarNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcGetDimNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcGetAttNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
 #endif	/* RE_NETCDF_H */

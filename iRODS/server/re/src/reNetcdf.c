@@ -799,7 +799,7 @@ msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
 }
 
 int
-msiNcGetNdimsInInqOut (msParam_t *ncInqOutParam, msParam_t *nameParam,
+msiNcGetNdimsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
     int ndims = -1;
@@ -808,7 +808,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     RE_TEST_MACRO ("    Calling msiNcGetNdimInInqOut")
 
-    if (ncInqOutParam == NULL || nameParam == NULL || outParam == NULL) 
+    if (ncInqOutParam == NULL || varNameParam == NULL || outParam == NULL) 
         return USER__NULL_INPUT_ERR;
 
     if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
@@ -819,13 +819,13 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     } else {
 	ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
     }
-    if (strcmp (nameParam->type, STR_MS_T) != 0) {
+    if (strcmp (varNameParam->type, STR_MS_T) != 0) {
         rodsLog (LOG_ERROR,
-          "msiNcGetNdimsInInqOut: nameParam must be STR_MS_T. %s",
-          nameParam->type);
+          "msiNcGetNdimsInInqOut: varNameParam must be STR_MS_T. %s",
+          varNameParam->type);
         return (USER_PARAM_TYPE_ERR);
     } else {
-        name = (char*) nameParam->inOutStruct;
+        name = (char*) varNameParam->inOutStruct;
     }
 
     if (strcmp (name, "null") == 0) {
@@ -852,7 +852,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 }
 
 int
-msiNcGetNattsInInqOut (msParam_t *ncInqOutParam, msParam_t *nameParam,
+msiNcGetNattsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
     int natts = -1;
@@ -861,7 +861,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     RE_TEST_MACRO ("    Calling msiNcGetNattsInInqOut")
 
-    if (ncInqOutParam == NULL || nameParam == NULL || outParam == NULL) 
+    if (ncInqOutParam == NULL || varNameParam == NULL || outParam == NULL) 
         return USER__NULL_INPUT_ERR;
 
     if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
@@ -872,13 +872,13 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     } else {
 	ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
     }
-    if (strcmp (nameParam->type, STR_MS_T) != 0) {
+    if (strcmp (varNameParam->type, STR_MS_T) != 0) {
         rodsLog (LOG_ERROR,
-          "msiNcGetNattsInInqOut: nameParam must be STR_MS_T. %s",
-          nameParam->type);
+          "msiNcGetNattsInInqOut: varNameParam must be STR_MS_T. %s",
+          varNameParam->type);
         return (USER_PARAM_TYPE_ERR);
     } else {
-        name = (char*) nameParam->inOutStruct;
+        name = (char*) varNameParam->inOutStruct;
     }
 
     if (strcmp (name, "null") == 0) {
