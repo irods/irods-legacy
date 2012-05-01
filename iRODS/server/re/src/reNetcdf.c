@@ -1361,3 +1361,50 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+int
+msiAddToNcArray (msParam_t *elementParam, msParam_t *ncArrayParam,
+ruleExecInfo_t *rei)
+{
+    ncGetVarOut_t *ncArray;
+
+    RE_TEST_MACRO ("    Calling msiAddToNcArray")
+
+    if (elementParam == NULL || ncArrayParam == NULL) 
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (elementParam->type, INT_MS_T) == 0) {
+	int *intArray;
+	int len;
+	if (ncArrayParam->inOutStruct == NULL) {
+	    /* first time */
+	    ncArray = (ncGetVarOut_t *) calloc (1, sizeof (ncGetVarOut_t));
+	    ncArray->dataArray = (dataArray_t *) 
+	        calloc (1, sizeof (dataArray_t));
+	    ncArray->dataArray->type = NC_INT;
+	    rstrcpy (ncArray->dataType_PI, "intDataArray_PI", NAME_LEN);
+	    ncArray->dataArray->buf  = calloc (1, sizeof (int) * NC_MAX_DIMS);
+	    fillMsParam (ncArrayParam, NULL, NcGetVarOut_MS_T, ncArray, NULL);
+	} else {
+	    ncArray = (ncGetVarOut_t *) ncArrayParam->inOutStruct;
+	    if (strcmp (ncArray->dataType_PI, "intDataArray_PI") != 0) {
+                rodsLog (LOG_ERROR, 
+                  "msiAddToNcArray: wrong dataType_PI for INT_MS_T %s",
+                  ncArray->dataType_PI);
+                return (USER_PARAM_TYPE_ERR);
+	    }
+        }
+	intArray = (int *) ncArray->dataArray->buf;
+	len = ncArray->dataArray->len;
+	if (len >= NC_MAX_DIMS) return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+	intArray[len] = *((int *) elementParam->inOutStruct);
+	ncArray->dataArray->len++;
+    } else {
+	/* only do INT_MS_T for now */
+        rodsLog (LOG_ERROR,
+          "msiAddToNcArray: Unsupported input dataTypeParam type %s",
+          elementParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    return 0;
+}
+

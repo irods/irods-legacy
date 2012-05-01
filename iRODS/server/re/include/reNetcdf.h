@@ -90,4 +90,7 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int
 _msiNcGetAttValInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
 msParam_t *varNameParam, ncGetVarOut_t **ncGetVarOut);
+int
+msiAddToNcArray (msParam_t *elementParam, msParam_t *ncArrayParam,
+ruleExecInfo_t *rei);
 #endif	/* RE_NETCDF_H */
