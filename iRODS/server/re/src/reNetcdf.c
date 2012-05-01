@@ -1147,4 +1147,217 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+int
+msiNcGetAttValStrInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    int status;
+    ncGetVarOut_t *value = NULL;
+    char tempStr[NAME_LEN];
+    void *bufPtr;
+
+    RE_TEST_MACRO ("    Calling msiNcGetAttValStrInInqOut")
+    status = _msiNcGetAttValInInqOut (ncInqOutParam, whichAttParam, 
+      varNameParam, &value);
+
+    if (status < 0) return status;
+
+    bufPtr = value->dataArray->buf;
+    status = ncValueToStr (value->dataArray->type, &bufPtr, tempStr);
+
+    if (status < 0) return status;
+
+    fillStrInMsParam (outParam, tempStr);
+
+    return status;
+}
+
+int
+_msiNcGetAttValInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
+msParam_t *varNameParam, ncGetVarOut_t **ncGetVarOut)
+{
+    ncInqOut_t *ncInqOut;
+    int i;
+    int inx;
+    char *varName, *attName;
+    ncGetVarOut_t *value = NULL;
+
+    if (ncInqOutParam == NULL || whichAttParam == NULL || ncGetVarOut == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    *ncGetVarOut = NULL;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "_msiNcGetAttValInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+    /* whichAttParam can be inx or attName */
+    if (strcmp (whichAttParam->type, STR_MS_T) == 0) {
+	attName = (char *)whichAttParam->inOutStruct;
+	inx = -1;
+    } else if (strcmp (whichAttParam->type, INT_MS_T) == 0) {
+	inx = *((int *) whichAttParam->inOutStruct);
+	attName = NULL;
+    } else {
+        rodsLog (LOG_ERROR,
+          "_msiNcGetAttValInInqOut:whichAttParam must be INT_MS_T/STR_MS_T. %s",
+          whichAttParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    if (varNameParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (varNameParam->type, STR_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "_msiNcGetAttValInInqOut: varNameParam must be STR_MS_T. %s",
+          varNameParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        varName = (char*) varNameParam->inOutStruct;
+    }
+
+    if (strcmp (varName, "null") == 0) {
+	/* use the global att */
+	if (attName == NULL) {
+	    if (inx < 0 || inx >= ncInqOut->ngatts) {
+                rodsLog (LOG_ERROR,
+                  "_msiNcGetAttValInInqOut:inp inx %d out of range. ngatts=%d",
+                  inx, ncInqOut->ngatts);
+                return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+            }
+	    value = &ncInqOut->gatt[inx].value;
+	} else {
+	    /* input is a att name */
+	    for (i = 0; i < ncInqOut->ngatts; i++) {
+		if (strcmp (attName, ncInqOut->gatt[i].name) == 0) {
+		    value = &ncInqOut->gatt[i].value;
+		    break;
+		}
+	    }
+	    if (value == NULL) {
+                rodsLog (LOG_ERROR,
+                  "_msiNcGetAttValInInqOut: unmatched attName %s", attName);
+                return NETCDF_UNMATCHED_NAME_ERR;
+            }
+	}
+    } else {
+	/* match the varName first */
+	for (i = 0; i < ncInqOut->nvars; i++) {
+	    if (strcmp (varName, ncInqOut->var[i].name) == 0) { 
+		/* a match in var name */
+		break;
+	    }
+        }
+	if (i >= ncInqOut->nvars) {
+            rodsLog (LOG_ERROR,
+              "_msiNcGetAttValInInqOut: unmatched varName %s", varName);
+            return NETCDF_UNMATCHED_NAME_ERR;
+        }
+        if (attName == NULL) {
+            if (inx < 0 || inx >= ncInqOut->var[i].natts) {
+                rodsLog (LOG_ERROR,
+                  "_msiNcGetAttNameInInqOut:inp inx %d out of range. natts=%d",
+                  inx, ncInqOut->var[i].natts);
+                return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+            }
+            value = &ncInqOut->var[i].att[inx].value;
+        } else {
+            /* input is a att name */
+	    int j;
+            for (j = 0; j < ncInqOut->ngatts; j++) {
+                if (strcmp (attName, ncInqOut->var[i].att[j].name) == 0) {
+                    value = &ncInqOut->var[i].att[j].value;
+                    break;
+                }
+            }
+            if (value == NULL) {
+                rodsLog (LOG_ERROR,
+                  "_msiNcGetAttValInInqOut: unmatched attName %s", attName);
+                return NETCDF_UNMATCHED_NAME_ERR;
+            }
+	}
+    }
+    *ncGetVarOut = value;
+
+    return 0;
+}
+
+int
+msiNcGetVarTypeInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam, 
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    ncInqOut_t *ncInqOut;
+    int i;
+    char *varName;
+
+    RE_TEST_MACRO ("    Calling msiNcGetVarTypeInInqOut")
+
+    if (ncInqOutParam == NULL || outParam == NULL || varNameParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetVarTypeInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+
+    if (strcmp (varNameParam->type, STR_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetAttNameInInqOut: nameParam must be STR_MS_T. %s",
+          varNameParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        varName = (char*) varNameParam->inOutStruct;
+    }
+
+    /* match the varName */
+    for (i = 0; i < ncInqOut->nvars; i++) {
+        if (strcmp (varName, ncInqOut->var[i].name) == 0) { 
+            /* a match in var name */
+	    break;
+	}
+    }
+    if (i >= ncInqOut->nvars) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetAttNameInInqOut: unmatched varName %s", varName);
+        return NETCDF_UNMATCHED_NAME_ERR;
+    }
+    fillIntInMsParam (outParam, ncInqOut->var[i].dataType);
+
+    return 0;
+}
+
+int
+msiNcIntDataTypeToStr (msParam_t *dataTypeParam, msParam_t *outParam, 
+ruleExecInfo_t *rei)
+{
+    int dataType;
+    char dataTypeStr[NAME_LEN];
+    int status;
+
+    RE_TEST_MACRO ("    Calling msiNcIntDataTypeToStr")
+
+    if (dataTypeParam == NULL || outParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (dataTypeParam->type, INT_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcIntDataTypeToStr: Unsupported input dataTypeParam type %s",
+          dataTypeParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+
+    dataType = *((int *) dataTypeParam->inOutStruct);
+
+    if ((status = getNcTypeStr (dataType, dataTypeStr)) < 0) return status; 
+
+    fillStrInMsParam (outParam, dataTypeStr);
+
+    return 0;
+}
 

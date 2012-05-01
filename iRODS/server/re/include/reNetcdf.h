@@ -78,4 +78,16 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int
 msiNcGetAttNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
 msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcGetVarTypeInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcIntDataTypeToStr (msParam_t *dataTypeParam, msParam_t *outParam,
+ruleExecInfo_t *rei);
+int
+msiNcGetAttValStrInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
+int
+_msiNcGetAttValInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
+msParam_t *varNameParam, ncGetVarOut_t **ncGetVarOut);
 #endif	/* RE_NETCDF_H */

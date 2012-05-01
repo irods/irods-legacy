@@ -74,16 +74,28 @@ netcdfTest () {
 		        }
 		    }
 		}
-                writeLine("stdout", "    *varName (*dimNameStr)");
+		if (msiNcGetVarTypeInInqOut (*ncInqOut, *varName, *dataType) != 0) {
+		    writeLine("stdout", "msiNcGetVarTypeInInqOut failed");
+                    fail;
+                }
+
+		if (msiNcIntDataTypeToStr (*dataType, *dataTypeStr) != 0) {
+                    writeLine("stdout", "msiNcIntDataTypeToStr failed");
+                    fail;
+                }
+                writeLine("stdout", "    *dataTypeStr *varName (*dimNameStr) ;");
 		if (msiNcGetNattsInInqOut (*ncInqOut, *varName, *natts) == 0) {
-		     writeLine("stdout", "      attributes:");
 		    for(*J=0;*J<*natts;*J=*J+1) {
-			if (msiNcGetAttNameInInqOut (*ncInqOut, *J, *varName, *attName) == 0) {
-                            writeLine("stdout", "        *J = *attName");
-                        } else {
+			if (msiNcGetAttNameInInqOut (*ncInqOut, *J, *varName, *attName) != 0) {
                             writeLine("stdout", "msiNcGetAttNameInInqOut failed");
                             fail;
                         }
+			if (msiNcGetAttValStrInInqOut (*ncInqOut, *J, *varName, *attValStr) != 0) {
+                            writeLine("stdout", "msiNcGetAttValStrInInqOut failed");
+                            fail;
+                        }
+
+                        writeLine("stdout", "        *varName:*attName = *attValStr");
                     }
 	        }
             } else {
