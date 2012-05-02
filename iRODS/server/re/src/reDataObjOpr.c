@@ -686,7 +686,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     if (inpParam2 != NULL) {
       if (strcmp (inpParam2->type, STR_MS_T) == 0) {
         tmpBBuf.len = myDataObjWriteInp->len = 
-          strlen ((char*)inpParam2->inOutStruct) + 1;
+          strlen ((char*)inpParam2->inOutStruct);
         tmpBBuf.buf = inpParam2->inOutStruct;
         myBBuf = &tmpBBuf;
       } else {
