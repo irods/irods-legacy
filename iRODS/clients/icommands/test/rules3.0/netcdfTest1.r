@@ -103,6 +103,46 @@ netcdfTest () {
                 fail;
 	    }
         }
+	writeLine("stdout", "Data:");
+        for(*I=0;*I<*ngvars;*I=*I+1) {
+            msiNcGetVarTypeInInqOut (*ncInqOut, *varName, *dataType);
+            msiNcGetVarNameInInqOut (*ncInqOut, *I, *varName); 
+            if (msiNcGetVarIdInInqOut (*ncInqOut, *varName, *varId) != 0) {
+                writeLine("stdout", "msiNcGetVarIdInInqOut failed");
+                fail;
+            }
+	    writeLine("stdout", "  *varName =");
+            msiNcGetNdimsInInqOut (*ncInqOut, *varName, *ndims);
+            for(*J=0;*J<*ndims;*J=*J+1) {
+                if (msiNcGetDimLenInInqOut (*ncInqOut, *J, *varName, *dimLen) != 0) {
+                    writeLine("stdout", "msiNcGetDimLenInInqOut failed");
+                    fail;
+		}
+                msiAddToNcArray (0, *J, *startArray);
+                msiAddToNcArray (*dimLen, *J, *countArray);
+                msiAddToNcArray (1, *J, *strideArray);
+            }
+            if (msiNcGetVarsByType (*dataType, *ncid, *varId, *ndims, *startArray, *countArray, *strideArray, *getVarsOut) != 0) {
+                writeLine("stdout", "msiNcGetVarsByType failed");
+	    }
+	    if (msiNcGetArrayLen (*getVarsOut, *varArrayLen) != 0) {
+		writeLine("stdout", "msiNcGetArrayLen failed");
+            }
+            for(*K=0;*K<*varArrayLen;*K=*K+1) {
+                msiNcGetElementInArray (*getVarsOut, *K, *element);
+                if (*dataType == 5) {
+# float. writeLine cannot handle float yet.
+                    msiFloatToString (*element, *floatStr);
+                    writeLine("stdout", "      *K: *floatStr");
+                } else {
+                    writeLine("stdout", "      *K: *element");
+                }
+            }
+	    msiFreeNcStruct (*getVarsOut);
+	    msiFreeNcStruct (*startArray);
+	    msiFreeNcStruct (*countArray);
+	    msiFreeNcStruct (*strideArray);
+	}
         if (msiNcClose (*ncid) == 0) {
             writeLine("stdout", "msiNcClose success, ncid = *ncid");
         } else {
@@ -110,5 +150,5 @@ netcdfTest () {
             fail;
         }
 }
-INPUT *ncTestPath="/oneZone/home/rods/netcdf/pres_temp_4D.nc"
+INPUT *ncTestPath="/wanZone/home/rods/netcdf/pres_temp_4D.nc"
 OUTPUT ruleExecOut,*ncInqOut

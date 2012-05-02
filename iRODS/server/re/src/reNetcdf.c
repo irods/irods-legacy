@@ -991,6 +991,70 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 }
 
 int
+msiNcGetVarIdInInqOut (msParam_t *ncInqOutParam, msParam_t *whichVarParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    ncInqOut_t *ncInqOut;
+    int inx;
+    char *varName;
+    int id = -1;
+
+    RE_TEST_MACRO ("    msiNcGetVarIdInInqOut msiNcGetVarNameInInqOut")
+
+    if (ncInqOutParam == NULL || whichVarParam == NULL || outParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetVarIdInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+   /* whichVarParam can be inx or attName */
+    if (strcmp (whichVarParam->type, STR_MS_T) == 0) {
+        varName = (char *)whichVarParam->inOutStruct;
+        inx = -1;
+    } else if (strcmp (whichVarParam->type, INT_MS_T) == 0) {
+        inx = *((int *) whichVarParam->inOutStruct);
+        varName = NULL;
+    } else {
+        rodsLog (LOG_ERROR,
+          "msiNcGetVarIdInInqOut:whichVarParam must be INT_MS_T/STR_MS_T. %s",
+          whichVarParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+
+    if (varName == NULL) {
+        if (inx < 0 || inx >= ncInqOut->nvars) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetVarIdInInqOut:inp inx %d out of range. nvars=%d",
+              inx, ncInqOut->nvars);
+            return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+        }
+        id = ncInqOut->var[inx].id;
+    } else {
+        /* input is a var name */
+	int i;
+        for (i = 0; i < ncInqOut->nvars; i++) {
+            if (strcmp (varName, ncInqOut->var[i].name) == 0) {
+                id = ncInqOut->var[i].id;
+                break;
+            }
+        }
+        if (id < 0) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetVarIdInInqOut: unmatched varName %s", varName);
+            return NETCDF_UNMATCHED_NAME_ERR;
+        }
+    }
+    fillIntInMsParam (outParam, id);
+
+    return 0;
+}
+
+int
 msiNcGetDimNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
 msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1073,6 +1137,92 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
 	}
     }
     fillStrInMsParam (outParam, name);
+
+    return 0;
+}
+int
+msiNcGetDimLenInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    ncInqOut_t *ncInqOut;
+    int inx, i;
+    int arrayLen = -1;
+
+    RE_TEST_MACRO ("    Calling msiNcGetDimLenInInqOut")
+
+    if (ncInqOutParam == NULL || inxParam == NULL || outParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqOutParam->type, NcInqOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetDimLenInInqOut: ncInqOutParam must be NcInqOut_MS_T. %s",
+          ncInqOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+    }
+    inx = parseMspForPosInt (inxParam);
+    if (inx < UNLIMITED_DIM_INX || inx >= ncInqOut->nvars) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetDimLenInInqOut: input inx %d is out of range. nvars  = %d",
+          inx, ncInqOut->nvars);
+        return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+    }
+
+    if (inx == UNLIMITED_DIM_INX) {
+	/* get the name of unlimdim */
+	if (ncInqOut->unlimdimid < 0) return NETCDF_NO_UNLIMITED_DIM;
+	for (i = 0; i < ncInqOut->ndims; i++) {
+	    if (ncInqOut->unlimdimid == ncInqOut->dim[i].id) {
+		arrayLen = ncInqOut->dim[i].arrayLen;
+		break;
+	    }
+	}
+	if (arrayLen == -1) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetDimLenInInqOut: no match for unlimdimid %d",
+              ncInqOut->unlimdimid);
+            return NETCDF_NO_UNLIMITED_DIM;
+	}
+    } else {
+	char *varName;
+        if (varNameParam == NULL) return USER__NULL_INPUT_ERR;
+        if (strcmp (varNameParam->type, STR_MS_T) != 0) {
+            rodsLog (LOG_ERROR,
+              "msiNcGetDimLenInInqOut: nameParam must be STR_MS_T. %s",
+              varNameParam->type);
+            return (USER_PARAM_TYPE_ERR);
+        } else {
+            varName = (char*) varNameParam->inOutStruct;
+        }
+	if (strcmp (varName, "null") == 0) {
+	    /* use the global for inx */
+	    arrayLen = ncInqOut->dim[inx].arrayLen;
+	} else {
+	    /* match the varName first */
+	    for (i = 0; i < ncInqOut->nvars; i++) {
+		int dimId, j;
+		if (strcmp (varName, ncInqOut->var[i].name) == 0) { 
+		    /* a match in var name */
+		    dimId = ncInqOut->var[i].dimId[inx];
+		    /* try to match dimId */
+		    for (j = 0; j <  ncInqOut->ndims; j++) {
+			if (ncInqOut->dim[j].id == dimId) {
+			    arrayLen = ncInqOut->dim[j].arrayLen;
+			    break;
+			}
+		    }
+		}
+	    }
+	    if (arrayLen == -1) {
+                rodsLog (LOG_ERROR,
+                  "msiNcGetDimLenInInqOut: unmatched varName %s and ix %d",
+                  varName, inx);
+                return NETCDF_UNMATCHED_NAME_ERR;
+	    }
+	}
+    }
+    fillIntInMsParam (outParam, arrayLen);
 
     return 0;
 }
@@ -1362,19 +1512,28 @@ ruleExecInfo_t *rei)
 }
 
 int
-msiAddToNcArray (msParam_t *elementParam, msParam_t *ncArrayParam,
-ruleExecInfo_t *rei)
+msiAddToNcArray (msParam_t *elementParam, msParam_t *inxParam, 
+msParam_t *ncArrayParam, ruleExecInfo_t *rei)
 {
     ncGetVarOut_t *ncArray;
+    int inx;
 
     RE_TEST_MACRO ("    Calling msiAddToNcArray")
 
     if (elementParam == NULL || ncArrayParam == NULL) 
         return USER__NULL_INPUT_ERR;
 
+    inx = parseMspForPosInt (inxParam);
+    if (inx < 0 || inx >= NC_MAX_DIMS) {
+        rodsLog (LOG_ERROR,
+          "msiAddToNcArray: input inx %d is out of range. max  = %d",
+          inx, NC_MAX_DIMS);
+        return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+    }
+
     if (strcmp (elementParam->type, INT_MS_T) == 0) {
 	int *intArray;
-	int len;
+
 	if (ncArrayParam->inOutStruct == NULL) {
 	    /* first time */
 	    ncArray = (ncGetVarOut_t *) calloc (1, sizeof (ncGetVarOut_t));
@@ -1394,10 +1553,9 @@ ruleExecInfo_t *rei)
 	    }
         }
 	intArray = (int *) ncArray->dataArray->buf;
-	len = ncArray->dataArray->len;
-	if (len >= NC_MAX_DIMS) return NETCDF_VAR_COUNT_OUT_OF_RANGE;
-	intArray[len] = *((int *) elementParam->inOutStruct);
-	ncArray->dataArray->len++;
+	intArray[inx] = *((int *) elementParam->inOutStruct);
+	if (ncArray->dataArray->len < inx + 1)
+	    ncArray->dataArray->len = inx + 1;
     } else {
 	/* only do INT_MS_T for now */
         rodsLog (LOG_ERROR,
@@ -1408,3 +1566,27 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+int
+msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei)
+{
+    ncGetVarOut_t *ncArray;
+
+    RE_TEST_MACRO ("    Calling msiFreeNcStruct")
+
+    if (inpParam == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (inpParam->type, NcGetVarOut_MS_T) == 0) {
+	ncArray = (ncGetVarOut_t *) inpParam->inOutStruct;
+	if (ncArray != NULL) {
+	    freeNcGetVarOut (&ncArray);
+	    inpParam->inOutStruct = NULL;
+	}
+    } else {
+        rodsLog (LOG_ERROR,
+          "msiFreeNcStruct: inpParam must be NcGetVarOut_MS_T. %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+
+    return 0;
+}

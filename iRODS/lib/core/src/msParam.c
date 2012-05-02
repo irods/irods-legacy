@@ -1638,27 +1638,45 @@ rodsLong_t **longArrayOut)
     int status, i;
     rodsLong_t *longArray;
 
-    if (strcmp (inpParam->type, STR_MS_T) != 0) {
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        strPtr = (char *) inpParam->inOutStruct;
+        memset (&strArray, 0, sizeof (strArray));
+
+        status = parseMultiStr (strPtr, &strArray);
+
+        if (status <= 0) return (SYS_INVALID_INPUT_PARAM);
+
+        *ndimOut = strArray.len;
+        value = strArray.value;
+        *longArrayOut = longArray = (rodsLong_t *) 
+          calloc (1, strArray.len * sizeof (rodsLong_t));
+        for (i = 0; i < strArray.len; i++) {
+	    longArray[i] = atoi (&value[i * strArray.size]);
+        }
+        if (value != NULL) free (value);
+    } else if (strcmp (inpParam->type, NcGetVarOut_MS_T) == 0) {
+        ncGetVarOut_t *ncArray;
+	int *inArray;
+	int len;
+	ncArray = (ncGetVarOut_t *) inpParam->inOutStruct;
+	if (ncArray == NULL || ncArray->dataArray == NULL || 
+	  ncArray->dataArray->buf == NULL) return USER__NULL_INPUT_ERR;
+	inArray = (int *) ncArray->dataArray->buf;
+	len = ncArray->dataArray->len;
+	if (len <= 0) return SYS_INVALID_INPUT_PARAM;
+	*longArrayOut = longArray = (rodsLong_t *) 
+          calloc (1, len * sizeof (rodsLong_t));
+	for (i = 0; i < len; i++) {
+	    longArray[i] = inArray[i];
+	}
+	*ndimOut = len;
+    } else {
         rodsLog (LOG_ERROR,
           "parseStrMspForLongArray: Unsupported input Param type %s",
           inpParam->type);
         return (USER_PARAM_TYPE_ERR);
     }
-    strPtr = (char *) inpParam->inOutStruct;
-    memset (&strArray, 0, sizeof (strArray));
 
-    status = parseMultiStr (strPtr, &strArray);
-
-    if (status <= 0) return (SYS_INVALID_INPUT_PARAM);
-
-    *ndimOut = strArray.len;
-    value = strArray.value;
-    *longArrayOut = longArray = (rodsLong_t *) 
-      calloc (1, strArray.len * sizeof (rodsLong_t));
-    for (i = 0; i < strArray.len; i++) {
-	longArray[i] = atoi (&value[i * strArray.size]);
-    }
-    if (value != NULL) free (value);
     return 0;
 }
 

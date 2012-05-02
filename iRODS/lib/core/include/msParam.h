@@ -77,6 +77,7 @@ extern "C" {
 #define NcGetVarOut_MS_T	"NcGetVarOut_PI"
 #define NccfGetVarInp_MS_T	"NccfGetVarInp_PI"
 #define NccfGetVarOut_MS_T	"NccfGetVarOut_PI"
+#define NcInqOut_MS_T		"NcInqOut_PI"
 
 /* micro service input/output parameter */
 typedef struct MsParam {
