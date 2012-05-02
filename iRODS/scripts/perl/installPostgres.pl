@@ -2199,6 +2199,57 @@ sub setupPostgres
 			}
 		}
 	} 
+
+
+	# Adjust the Postgres configuration file for all OSes, if
+	# standard_conforming_strings = on by default (pg 9.1+)
+	# 
+	printStatus( "Possibly adjusting postgresql.conf for 9.1+...\n" );
+	printLog( "Possibly adjusting postgresql.conf for 9.1+...\n" );
+
+	my $copyPsqlconf = createTempFilePath( "psqlconf" );
+	if ( copy( $psqlconf, $copyPsqlconf ) != 1 )
+	{
+	    printError( "Could not update postgresql.conf.\n" );
+	    printError( "Trying to continue anyway.\n" );
+	    printLog( "Could not update postgresql.conf.\n" );
+	    printLog( "Trying to continue anyway.\n" );
+	}
+	else
+	{
+	    # Read the copy and write to the original.
+	    # Opening the original for writing truncates
+	    # it, and then we add lines back in.
+	    open( COPY, "<$copyPsqlconf" );
+	    open( ORIG, ">$psqlconf" );	# Truncates
+
+	    # Copy lines back in, watching for the
+	    # one to change.
+	    my $lineFound = 0;
+	    foreach $line ( <COPY> )
+	    {
+		    if ( $line =~ /^#standard_conforming_strings = on/i )
+		    {
+			# If the pg default is now on (pg 9.1.0+), set it off
+			$line =~ s/#standard/standard/i;
+			$line =~ s/= on/= off/i;
+			$lineFound = 1;
+		    }
+		    print( ORIG $line );
+	    }
+	    close( COPY );
+	    close( ORIG );
+
+	    # The copy isn't needed any more.
+	    unlink( $copyPsqlconf );
+		
+	    if ( $lineFound )
+	    {
+		# The line was found and changed.
+		printStatus( "    Updated standard_conforming_strings to be off.\n" );
+		printLog( "    Updated standard_conforming_strings to be off.\n" );
+	    }
+	} 
 }
 
 
