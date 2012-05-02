@@ -142,5 +142,7 @@ int
 changeToRootUser ();
 int 
 changeToServiceUser ();
+int
+changeToUser (uid_t uid);
 #endif
 #endif	/* MISC_SERVER_FUNCT_H */
