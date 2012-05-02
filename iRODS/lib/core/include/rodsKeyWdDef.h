@@ -117,6 +117,14 @@
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
+#define FILE_UID_KW             "fileUid"
+#define FILE_OWNER_KW           "fileOwner"
+#define FILE_GID_KW             "fileGid"
+#define FILE_GROUP_KW           "fileGroup"
+#define FILE_MODE_KW            "fileMode"
+#define FILE_CTIME_KW           "fileCtime"
+#define FILE_MTIME_KW           "fileMtime" 
+#define FILE_SOURCE_PATH_KW     "fileSourcePath"    
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */
