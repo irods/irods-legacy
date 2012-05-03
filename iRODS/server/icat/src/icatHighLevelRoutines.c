@@ -751,7 +751,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
        cllBindVars[9]=myTime;
        cllBindVars[10]=myTime;
        cllBindVarCount=11;
-       if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 9");
+       if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj xSQL 1");
        status = cmlExecuteNoAnswerSql(
                                       "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                                       &icss);
@@ -1164,7 +1164,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
           /* and remove source file OS metadata */
           cllBindVars[0]=dataObjNumber;
           cllBindVarCount=1;
-          if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 6");
+          if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj xSQL 1");
           status = cmlExecuteNoAnswerSql(
                    "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss);
 #endif
@@ -2314,7 +2314,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
        snprintf(tSQL, MAX_SQL_SIZE,
                 "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (%s, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 currStr2);
-       if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 7");
+       if (logSQL) rodsLog(LOG_SQL, "chlRegColl xSQL 1");
        status = cmlExecuteNoAnswerSql(tSQL, &icss);
        if (status != 0) {
            rodsLog(LOG_NOTICE, 
@@ -3202,7 +3202,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
 #ifdef FILESYSTEM_META
    /* remove any filesystem metadata entries */
    cllBindVars[cllBindVarCount++]=collIdNum;
-   if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin SQL 4");
+   if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin xSQL 1");
    status =  cmlExecuteNoAnswerSql(
 		   "delete from R_OBJT_FILESYSTEM_META where object_id=?",
 		   &icss);
@@ -3377,7 +3377,7 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 #ifdef FILESYSTEM_META
    /* remove any filesystem metadata entries */
    cllBindVars[cllBindVarCount++]=collIdNum;
-   if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin SQL 4");
+   if (logSQL) rodsLog(LOG_SQL, "_delColl xSQL14");
    status =  cmlExecuteNoAnswerSql(
 		   "delete from R_OBJT_FILESYSTEM_META where object_id=?",
 		   &icss);
@@ -3385,7 +3385,7 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
        /* error might indicate that this wasn't set
           which isn't a problem. Fall through. */
       rodsLog(LOG_NOTICE,
-	      "chlDelCollByAdmin delete filesystem meta failure %d",
+	      "_delColl delete filesystem meta failure %d",
 	      status);
    }
 #endif
