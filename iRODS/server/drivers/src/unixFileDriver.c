@@ -8,7 +8,7 @@
 #include "unixFileDriver.h"
 
 int
-unixFileCreate (rsComm_t *rsComm, char *fileName, int mode, rodsLong_t mySize)
+unixFileCreate (rsComm_t *rsComm, char *fileName, int mode, rodsLong_t mySize, keyValPair_t *condInput)
 {
     int fd;
     mode_t myMask;
@@ -42,7 +42,7 @@ unixFileCreate (rsComm_t *rsComm, char *fileName, int mode, rodsLong_t mySize)
 }
 
 int
-unixFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode)
+unixFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode, keyValPair_t *condInput)
 {
     int fd;
 
@@ -335,7 +335,7 @@ unixFileFsync (rsComm_t *rsComm, int fd)
 }
 
 int
-unixFileMkdir (rsComm_t *rsComm, char *filename, int mode)
+unixFileMkdir (rsComm_t *rsComm, char *filename, int mode, keyValPair_t *condInput)
 {
     int status;
     mode_t myMask;

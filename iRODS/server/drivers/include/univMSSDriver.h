@@ -20,7 +20,7 @@
 int
 univMSSFileUnlink (rsComm_t *rsComm, char *filename);
 int
-univMSSFileMkdir (rsComm_t *rsComm, char *filename, int mode);
+univMSSFileMkdir (rsComm_t *rsComm, char *filename, int mode, keyValPair_t *condInput);
 int
 univMSSFileChmod (rsComm_t *rsComm, char *filename, int mode);
 int univMSSFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf);

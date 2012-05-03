@@ -21,9 +21,10 @@ typedef struct {
     rodsHostAddr_t addr;
     char dirName[MAX_NAME_LEN];
     int mode;
+    keyValPair_t condInput;
 } fileMkdirInp_t;
     
-#define fileMkdirInp_PI "int fileType; struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; int mode;"
+#define fileMkdirInp_PI "int fileType; struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; int mode; keyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_MKDIR rsFileMkdir

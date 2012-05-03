@@ -98,7 +98,7 @@ rodsServerHost_t *rodsServerHost)
     }
 
     fd = fileCreate (fileCreateInp->fileType, rsComm, fileCreateInp->fileName,
-     fileCreateInp->mode, fileCreateInp->dataSize);
+     fileCreateInp->mode, fileCreateInp->dataSize, &fileCreateInp->condInput);
 
     if (fd < 0) {
 	if (getErrno (fd) == ENOENT) {
@@ -107,7 +107,7 @@ rodsServerHost_t *rodsServerHost)
 	      "/", fileCreateInp->fileName, getDefDirMode ()); 
 	    fd = fileCreate (fileCreateInp->fileType, rsComm, 
 	      fileCreateInp->fileName, fileCreateInp->mode, 
-	      fileCreateInp->dataSize);
+              fileCreateInp->dataSize, &fileCreateInp->condInput);
 	    if (fd < 0) {
 		if (getErrno (fd) == EEXIST) {
                     rodsLog (LOG_DEBUG1,
@@ -125,7 +125,7 @@ rodsServerHost_t *rodsServerHost)
 	     fileCreateInp->fileName);
             fd = fileCreate (fileCreateInp->fileType, rsComm,
               fileCreateInp->fileName, fileCreateInp->mode,
-              fileCreateInp->dataSize);
+              fileCreateInp->dataSize, &fileCreateInp->condInput);
 	} else {
             if (getErrno (fd) == EEXIST) {
                 rodsLog (LOG_DEBUG1,

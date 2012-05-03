@@ -34,8 +34,8 @@ int noSupportStructeExtract( rsComm_t*, structFileOprInp_t* );
 
 // =-=-=-=-=-=-=-
 // used within "server/drivers/include/fileDriverTable.h"
-int        noSupportFsFileCreate( rsComm_t*, char*, int, rodsLong_t ); 
-int        noSupportFsFileOpen( rsComm_t*, char*, int, int );
+int        noSupportFsFileCreate( rsComm_t*, char*, int, rodsLong_t, keyValPair_t* ); 
+int        noSupportFsFileOpen( rsComm_t*, char*, int, int, keyValPair_t* );
 int        noSupportFsFileRead( rsComm_t*, int, void*, int );
 int        noSupportFsFileWrite( rsComm_t*, int, void*, int );
 int        noSupportFsFileClose( rsComm_t*, int );
@@ -44,7 +44,7 @@ int        noSupportFsFileStat( rsComm_t*, char*, struct stat* );
 int        noSupportFsFileFstat( rsComm_t*, int, struct stat* ); 
 rodsLong_t noSupportFsFileLseek( rsComm_t*, int, rodsLong_t, int ); 
 int        noSupportFsFileFsync( rsComm_t*, int ); 
-int        noSupportFsFileMkdir( rsComm_t*, char *, int );
+int        noSupportFsFileMkdir( rsComm_t*, char *, int, keyValPair_t* );
 int        noSupportFsFileChmod( rsComm_t*, char*, int );
 int        noSupportFsFileRmdir( rsComm_t*, char* ); 
 int        noSupportFsFileOpendir( rsComm_t*, char*, void** ); 

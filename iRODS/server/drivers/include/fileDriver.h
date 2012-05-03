@@ -20,8 +20,8 @@
 
 typedef struct {
     fileDriverType_t	driverType; 
-    int         	(*fileCreate)( rsComm_t*, char*, int, rodsLong_t ); /* JMC */
-    int         	(*fileOpen)( rsComm_t*, char*, int, int ); /* JMC */
+    int         	(*fileCreate)( rsComm_t*, char*, int, rodsLong_t, keyValPair_t* ); /* JMC */
+    int         	(*fileOpen)( rsComm_t*, char*, int, int, keyValPair_t* ); /* JMC */
     int         	(*fileRead)( rsComm_t*, int, void*, int ); /* JMC */
     int         	(*fileWrite)( rsComm_t*, int, void*, int ); /* JMC */
     int         	(*fileClose)( rsComm_t*, int ); /* JMC */
@@ -30,7 +30,7 @@ typedef struct {
     int         	(*fileFstat)( rsComm_t*, int, struct stat* ); /* JMC */
     rodsLong_t  	(*fileLseek)( rsComm_t*, int, rodsLong_t, int ); /* JMC */
     int         	(*fileFsync)( rsComm_t*, int ); /* JMC */
-    int         	(*fileMkdir)( rsComm_t*, char *, int ); /* JMC */
+    int         	(*fileMkdir)( rsComm_t*, char *, int, keyValPair_t* ); /* JMC */
     int         	(*fileChmod)( rsComm_t*, char*, int ); /* JMC */
     int         	(*fileRmdir)( rsComm_t*, char* ); /* JMC */
     int         	(*fileOpendir)( rsComm_t*, char*, void** ); /* JMC */
@@ -50,9 +50,10 @@ int
 fileIndexLookup (fileDriverType_t myType);
 int
 fileCreate (fileDriverType_t myType, rsComm_t *rsComm, char *fileName,
-int mode, rodsLong_t mySize);
+int mode, rodsLong_t mySize, keyValPair_t *condInput);
 int
-fileOpen (fileDriverType_t myType, rsComm_t *rsComm, char *fileName, int flags, int mode);
+fileOpen (fileDriverType_t myType, rsComm_t *rsComm, char *fileName, 
+int flags, int mode, keyValPair_t *condInput);
 int
 fileRead (fileDriverType_t myType, rsComm_t *rsComm, int fd, void *buf,
 int len);
@@ -73,7 +74,8 @@ rodsLong_t
 fileLseek (fileDriverType_t myType, rsComm_t *rsComm, int fd,
 rodsLong_t offset, int whence);
 int
-fileMkdir (fileDriverType_t myType, rsComm_t *rsComm, char *filename, int mode);
+fileMkdir (fileDriverType_t myType, rsComm_t *rsComm, char *filename, 
+int mode, keyValPair_t *condInput);
 int
 fileChmod (fileDriverType_t myType, rsComm_t *rsComm, char *filename, int mode);
 int

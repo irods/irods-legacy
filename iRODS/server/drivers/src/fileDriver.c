@@ -8,7 +8,7 @@
 
 int 
 fileCreate (fileDriverType_t myType, rsComm_t *rsComm, char *fileName, 
-int mode, rodsLong_t mySize)
+int mode, rodsLong_t mySize, keyValPair_t *condInput)
 {
     int fileInx;
     int fd;
@@ -17,12 +17,13 @@ int mode, rodsLong_t mySize)
 	return (fileInx);
     }
 
-    fd = FileDriverTable[fileInx].fileCreate (rsComm, fileName, mode, mySize);  
+    fd = FileDriverTable[fileInx].fileCreate (rsComm, fileName, mode, mySize, condInput);  
     return (fd);
 }
 
 int
-fileOpen (fileDriverType_t myType, rsComm_t *rsComm, char *fileName, int flags, int mode)
+fileOpen (fileDriverType_t myType, rsComm_t *rsComm, char *fileName, 
+int flags, int mode, keyValPair_t *condInput)
 {
     int fileInx;
     int fd;
@@ -31,7 +32,7 @@ fileOpen (fileDriverType_t myType, rsComm_t *rsComm, char *fileName, int flags, 
         return (fileInx);
     }
 
-    fd = FileDriverTable[fileInx].fileOpen (rsComm, fileName, flags, mode);
+    fd = FileDriverTable[fileInx].fileOpen (rsComm, fileName, flags, mode, condInput);
     return (fd);
 }
 
@@ -153,7 +154,8 @@ fileFsync (fileDriverType_t myType, rsComm_t *rsComm, int fd)
 }
 
 int
-fileMkdir (fileDriverType_t myType, rsComm_t *rsComm, char *filename, int mode)
+fileMkdir (fileDriverType_t myType, rsComm_t *rsComm, char *filename, 
+int mode, keyValPair_t *condInput)
 {
     int fileInx;
     int status;
@@ -162,7 +164,7 @@ fileMkdir (fileDriverType_t myType, rsComm_t *rsComm, char *filename, int mode)
         return (fileInx);
     }
 
-    status = FileDriverTable[fileInx].fileMkdir (rsComm, filename, mode);
+    status = FileDriverTable[fileInx].fileMkdir (rsComm, filename, mode, condInput);
     return (status);
 }
 

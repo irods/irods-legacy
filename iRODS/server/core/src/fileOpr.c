@@ -160,7 +160,7 @@ char *destDir, int mode)
     while (tmpLen < pathLen) {
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
-       status = fileMkdir ((fileDriverType_t)fileType, rsComm, tmpPath, mode);
+        status = fileMkdir ((fileDriverType_t)fileType, rsComm, tmpPath, mode, NULL);
         if (status < 0 && (getErrno (status) != EEXIST)) {
 	    rodsLog (LOG_NOTICE,
              "mkFileDirR: mkdir failed for %s, status =%d",

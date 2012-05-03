@@ -112,7 +112,7 @@ _rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
 	fileOpenInp->flags &= ~(O_WRONLY);
     }
     fd = fileOpen (fileOpenInp->fileType, rsComm, fileOpenInp->fileName,
-     fileOpenInp->flags, fileOpenInp->mode);
+     fileOpenInp->flags, fileOpenInp->mode, &fileOpenInp->condInput);
 
     if (fd < 0) {
 	rodsLog (LOG_NOTICE, 

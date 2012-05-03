@@ -59,9 +59,9 @@
 #define NB_WRITE_TOUT_SEC	60	/* 60 sec timeout */
 
 int
-unixFileCreate (rsComm_t *rsComm, char *fileName, int mode, rodsLong_t mySize);
+unixFileCreate (rsComm_t *rsComm, char *fileName, int mode, rodsLong_t mySize, keyValPair_t *condInput);
 int
-unixFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode);
+unixFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode, keyValPair_t *condInput);
 int
 unixFileRead (rsComm_t *rsComm, int fd, void *buf, int len);
 int
@@ -77,7 +77,7 @@ unixFileFstat (rsComm_t *rsComm, int fd, struct stat *statbuf);
 int
 unixFileFsync (rsComm_t *rsComm, int fd);
 int
-unixFileMkdir (rsComm_t *rsComm, char *filename, int mode);
+unixFileMkdir (rsComm_t *rsComm, char *filename, int mode, keyValPair_t *condInput);
 int
 unixFileChmod (rsComm_t *rsComm, char *filename, int mode);
 int

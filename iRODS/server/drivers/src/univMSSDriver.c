@@ -25,7 +25,7 @@ int univMSSSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 	lenDir = strlen(filename) - strlen(lastpart);
 	strncpy(dirname, filename, lenDir);
 	
-	status = univMSSFileMkdir (rsComm, dirname, mode);
+	status = univMSSFileMkdir (rsComm, dirname, mode, NULL);
 	if ( status == 0 ) {
 		rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 		strcat(cmdArgv, "syncToArch");
@@ -110,7 +110,7 @@ int univMSSFileUnlink (rsComm_t *rsComm, char *filename) {
 
 /* univMSSFileMkdir - This function is to create a directory in the MSS. 
  */
-int univMSSFileMkdir (rsComm_t *rsComm, char *dirname, int mode) {
+int univMSSFileMkdir (rsComm_t *rsComm, char *dirname, int mode, keyValPair_t *condInput) {
 	
 	int status;
 	execCmd_t execCmdInp;

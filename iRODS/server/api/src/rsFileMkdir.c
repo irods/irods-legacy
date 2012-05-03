@@ -68,7 +68,7 @@ _rsFileMkdir (rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp)
     int status;
 
     status = fileMkdir (fileMkdirInp->fileType, rsComm, fileMkdirInp->dirName,
-     fileMkdirInp->mode);
+     fileMkdirInp->mode, &fileMkdirInp->condInput);
 
     if (status < 0) {
 	if (getErrno (status) != EEXIST)

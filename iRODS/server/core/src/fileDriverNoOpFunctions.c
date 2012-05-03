@@ -62,10 +62,10 @@ int noSupportStructeExtract( rsComm_t* a, structFileOprInp_t* b ) {
 
 // =-=-=-=-=-=-=-
 // used within "server/drivers/include/fileDriverTable.h"
-int        noSupportFsFileCreate( rsComm_t* a, char* b, int c, rodsLong_t d ) {
+int        noSupportFsFileCreate( rsComm_t* a, char* b, int c, rodsLong_t d, keyValPair_t* e ) {
     return 0;
 } 
-int        noSupportFsFileOpen( rsComm_t* a, char* b, int c, int d ) {
+int        noSupportFsFileOpen( rsComm_t* a, char* b, int c, int d, keyValPair_t* e ) {
     return 0;
 }
 int        noSupportFsFileRead( rsComm_t* a, int b, void* c, int d ) {
@@ -92,7 +92,7 @@ rodsLong_t noSupportFsFileLseek( rsComm_t* a, int b, rodsLong_t c, int d ) {
 int        noSupportFsFileFsync( rsComm_t* a, int b ) {
     return 0;
 } 
-int        noSupportFsFileMkdir( rsComm_t* a, char* b, int c ) {
+int        noSupportFsFileMkdir( rsComm_t* a, char* b, int c, keyValPair_t* d ) {
     return 0;
 }
 int        noSupportFsFileChmod( rsComm_t* a, char* b, int c ) {

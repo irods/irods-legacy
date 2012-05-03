@@ -99,7 +99,7 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     rodsLong_t bytesRead = 0;	/* XXXX debug */
 #endif
 
-    if ((fd = fileOpen ((fileDriverType_t)fileType, rsComm, fileName, O_RDONLY, 0)) < 0) {
+    if ((fd = fileOpen ((fileDriverType_t)fileType, rsComm, fileName, O_RDONLY, 0, NULL)) < 0) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLog (LOG_NOTICE,
         "fileChksum; fileOpen failed for %s. status = %d", fileName, status);
