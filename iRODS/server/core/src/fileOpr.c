@@ -8,6 +8,7 @@
 #include "fileStat.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
+#include "collection.h"
 
 int
 initFileDesc ()
@@ -128,6 +129,16 @@ char *destDir, int mode)
     int pathLen, tmpLen;
     char tmpPath[MAX_NAME_LEN];
     struct stat statbuf;
+#ifdef DIRECT_ACCESS_VAULT
+    rodsHostAddr_t addr;
+    rodsServerHost_t *rodsServerHost;
+    char *zoneName;
+    char *outVaultPath;
+    int vp_len;
+    char collName[MAX_NAME_LEN];
+    keyValPair_t condInput;
+#endif
+
 
     startLen = strlen (startDir);
     pathLen = strlen (destDir);
@@ -156,11 +167,33 @@ char *destDir, int mode)
         tmpPath[tmpLen] = '\0';
     }
 
+#ifdef DIRECT_ACCESS_VAULT
+    if (fileType == DIRECT_ACCESS_FILE_TYPE) {
+        zoneName = getLocalZoneName();
+        addr.hostAddr[0] = '\0';
+        resolveHost(&addr, &rodsServerHost);
+        vp_len = matchVaultPath(rsComm, destDir, rodsServerHost, &outVaultPath);
+        if (vp_len == 0) {
+            outVaultPath = NULL;
+        }
+    }
+#endif    
+
     /* Now we go forward and make the required dir */
     while (tmpLen < pathLen) {
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
+#ifdef DIRECT_ACCESS_VAULT
+        memset(&condInput, 0, sizeof(condInput));
+        if (fileType == DIRECT_ACCESS_FILE_TYPE) {
+            snprintf(collName, MAX_NAME_LEN, "/%s%s", 
+                     zoneName, tmpPath + vp_len);
+            status = rsQueryDirectoryMeta(rsComm, collName, &condInput);
+        }
+        status = fileMkdir ((fileDriverType_t)fileType, rsComm, tmpPath, mode, &condInput);
+#else
         status = fileMkdir ((fileDriverType_t)fileType, rsComm, tmpPath, mode, NULL);
+#endif
         if (status < 0 && (getErrno (status) != EEXIST)) {
 	    rodsLog (LOG_NOTICE,
              "mkFileDirR: mkdir failed for %s, status =%d",

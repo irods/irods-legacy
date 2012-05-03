@@ -98,6 +98,10 @@ ifdef HPSS
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hpssFileDriver.o
 endif
 
+ifdef DIRECT_ACCESS_VAULT
+SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/directAccessFileDriver.o
+endif
+
 INCLUDES +=	-I$(svrDriversIncDir)
 
 

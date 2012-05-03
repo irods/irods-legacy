@@ -446,3 +446,11 @@ endif
 # and directories added to iRODS via iput and ireg. Only supported
 # on UNIX/Linux-type systems. 
 # FILESYSTEM_META = 1
+
+# DIRECT_ACCESS_VAULT - build in support for a resource type that
+# will allow users to directly access files in the vault of this 
+# type of resource. Intended for use in environments where there is a
+# need for an "iRODS overlay" of an existing high-performance
+# filesystem (e.g. a parallel file system NAS). It requires that the
+# RUN_SERVER_AS_ROOT and FILESYSTEM_META features are turned on.
+# DIRECT_ACCESS_VAULT = 1

@@ -19,3 +19,5 @@ create table R_OBJT_FILESYSTEM_META
 );
 
 create unique index idx_obj_filesystem_meta1 on R_OBJT_FILESYSTEM_META (object_id);
+
+insert into R_TOKN_MAIN values ('resc_type',407,'direct access file system','','','','','1311740184','1311740184');

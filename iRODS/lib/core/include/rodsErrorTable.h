@@ -288,6 +288,9 @@
 #define WOS_STAT_ERR                    -756000
 #define WOS_CONNECT_ERR                 -757000
 
+/* Direct Access vault error */
+#define DIRECT_ACCESS_FILE_USER_INVALID_ERR -770000
+
 /* 800,000 to 880,000 - Catalog library errors  */
 #define CATALOG_NOT_CONNECTED           -801000
 #define CAT_ENV_ERR                     -802000

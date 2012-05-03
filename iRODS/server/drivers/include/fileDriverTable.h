@@ -28,6 +28,9 @@
 #include "wosFileDriver.h"
 #endif
 #include "msoFileDriver.h"
+#ifdef DIRECT_ACCESS_VAULT
+#include "directAccessFileDriver.h"
+#endif
 
 // =-=-=-=-=-=-=-
 // JMC - moving from intNoSupport to no-op fcns with matching signatures for g++
@@ -204,6 +207,19 @@ fileDriver_t FileDriverTable[] = {
      unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
      unixFileGetFsFreeSpace, unixFileTruncate, noSupportFsFileStageToCache,
       noSupportFsFileSyncToArch},
+#ifdef DIRECT_ACCESS_VAULT
+    {DIRECT_ACCESS_FILE_TYPE, directAccessFileCreate, directAccessFileOpen, 
+     directAccessFileRead, directAccessFileWrite, directAccessFileClose, 
+     directAccessFileUnlink, directAccessFileStat, directAccessFileFstat, 
+     directAccessFileLseek, directAccessFileFsync, directAccessFileMkdir, 
+     directAccessFileChmod, directAccessFileRmdir, directAccessFileOpendir, 
+     directAccessFileClosedir, directAccessFileReaddir, directAccessFileStage, 
+     directAccessFileRename, directAccessFileGetFsFreeSpace, 
+     directAccessFileTruncate, noSupportFsFileStageToCache, 
+     noSupportFsFileSyncToArch},
+#else
+    {DIRECT_ACCESS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
 
 };
 
