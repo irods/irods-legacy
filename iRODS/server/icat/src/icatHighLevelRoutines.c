@@ -735,6 +735,36 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
       }
    }
 
+#ifdef FILESYSTEM_META
+   /* we can track the filesystem metadata from the file which 
+      this data object was put or registered from */
+   if (getValByKey(&dataObjInfo->condInput, FILE_UID_KW)) {
+       cllBindVars[0]=dataIdNum;
+       cllBindVars[1]=getValByKey(&dataObjInfo->condInput, FILE_UID_KW);
+       cllBindVars[2]=getValByKey(&dataObjInfo->condInput, FILE_GID_KW);
+       cllBindVars[3]=getValByKey(&dataObjInfo->condInput, FILE_OWNER_KW);
+       cllBindVars[4]=getValByKey(&dataObjInfo->condInput, FILE_GROUP_KW);
+       cllBindVars[5]=getValByKey(&dataObjInfo->condInput, FILE_MODE_KW);
+       cllBindVars[6]=getValByKey(&dataObjInfo->condInput, FILE_CTIME_KW);
+       cllBindVars[7]=getValByKey(&dataObjInfo->condInput, FILE_MTIME_KW);
+       cllBindVars[8]=getValByKey(&dataObjInfo->condInput, FILE_SOURCE_PATH_KW);
+       cllBindVars[9]=myTime;
+       cllBindVars[10]=myTime;
+       cllBindVarCount=11;
+       if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 9");
+       status = cmlExecuteNoAnswerSql(
+                                      "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                      &icss);
+       if (status != 0) {
+           rodsLog(LOG_NOTICE, 
+                   "chlRegDataObj cmlExecuteNoAnswerSql insert filesystem_meta failure %d",
+                   status);
+           _rollback("chlRegDataObj");
+           return(status);
+       }
+   }
+#endif /* FILESYSTEM_META */
+
    status = cmlAudit3(AU_REGISTER_DATA_OBJ, dataIdNum,
 		      rsComm->clientUser.userName, 
 		      rsComm->clientUser.rodsZone, "", &icss);
@@ -1130,6 +1160,14 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	       "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss);
       if (status == 0) {
 	  removeMetaMapAndAVU(dataObjNumber); /* remove AVU metadata, if any */
+#ifdef FILESYSTEM_META
+          /* and remove source file OS metadata */
+          cllBindVars[0]=dataObjNumber;
+          cllBindVarCount=1;
+          if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 6");
+          status = cmlExecuteNoAnswerSql(
+                   "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss);
+#endif
       }
    }
 
@@ -2097,6 +2135,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    rodsLong_t status;
    char tSQL[MAX_SQL_SIZE];
    int inheritFlag;
+   char *tmpStr;
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegColl");
 
@@ -2257,6 +2296,35 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       _rollback("chlRegColl");
       return(status);
    }
+
+#ifdef FILESYSTEM_META
+   /* we can track the filesystem metadata from the directory
+      from which this collection was put or registered from */
+   if (getValByKey(&collInfo->condInput, FILE_UID_KW) != NULL) {
+       cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_UID_KW);
+       cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_GID_KW);
+       cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_OWNER_KW);
+       cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_GROUP_KW);
+       cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_MODE_KW);
+       cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_CTIME_KW);
+       cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_MTIME_KW);
+       cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_SOURCE_PATH_KW);
+       cllBindVars[cllBindVarCount++]=myTime;
+       cllBindVars[cllBindVarCount++]=myTime;
+       snprintf(tSQL, MAX_SQL_SIZE,
+                "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (%s, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                currStr2);
+       if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 7");
+       status = cmlExecuteNoAnswerSql(tSQL, &icss);
+       if (status != 0) {
+           rodsLog(LOG_NOTICE, 
+                   "chlRegColl cmlExecuteNoAnswerSql insert filesystem_meta failure %d",
+                   status);
+           _rollback("chlRegColl");
+           return(status);
+       }
+   }
+#endif /* FILESYSTEM_META */
 
    /* Audit */
    status = cmlAudit4(AU_REGISTER_COLL,  
@@ -3131,6 +3199,22 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
    snprintf(collIdNum, MAX_NAME_LEN, "%lld", iVal);
    removeMetaMapAndAVU(collIdNum);
 
+#ifdef FILESYSTEM_META
+   /* remove any filesystem metadata entries */
+   cllBindVars[cllBindVarCount++]=collIdNum;
+   if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin SQL 4");
+   status =  cmlExecuteNoAnswerSql(
+		   "delete from R_OBJT_FILESYSTEM_META where object_id=?",
+		   &icss);
+   if (status) {  
+       /* error might indicate that this wasn't set
+          which isn't a problem. Fall through. */
+      rodsLog(LOG_NOTICE,
+	      "chlDelCollByAdmin delete filesystem meta failure %d",
+	      status);
+   }
+#endif
+
    /* Audit (before it's deleted) */
    status = cmlAudit4(AU_DELETE_COLL_BY_ADMIN,  
 		      "select coll_id from R_COLL_MAIN where coll_name=?",
@@ -3289,6 +3373,22 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 
    /* Remove associated AVUs, if any */
    removeMetaMapAndAVU(collIdNum);
+
+#ifdef FILESYSTEM_META
+   /* remove any filesystem metadata entries */
+   cllBindVars[cllBindVarCount++]=collIdNum;
+   if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin SQL 4");
+   status =  cmlExecuteNoAnswerSql(
+		   "delete from R_OBJT_FILESYSTEM_META where object_id=?",
+		   &icss);
+   if (status) {  
+       /* error might indicate that this wasn't set
+          which isn't a problem. Fall through. */
+      rodsLog(LOG_NOTICE,
+	      "chlDelCollByAdmin delete filesystem meta failure %d",
+	      status);
+   }
+#endif
 
    /* Audit */
    status = cmlAudit3(AU_DELETE_COLL,

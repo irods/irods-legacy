@@ -30,9 +30,10 @@ typedef struct {
     int flags;
     int mode;
     rodsLong_t dataSize;
+    keyValPair_t condInput;
 } fileOpenInp_t;
     
-#define fileOpenInp_PI "int fileType; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize;"
+#define fileOpenInp_PI "int fileType; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_OPEN rsFileOpen

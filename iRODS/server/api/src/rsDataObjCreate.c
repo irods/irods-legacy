@@ -424,6 +424,10 @@ dataObjInfo_t *dataObjInfo)
 	rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
 	fileCreateInp.mode = getFileMode (dataObjInp);
         chkType = getchkPathPerm (rsComm, dataObjInp, dataObjInfo);
+#ifdef FILESYSTEM_META
+        copyFilesystemMetadata(&dataObjInfo->condInput,
+                               &fileCreateInp.condInput);
+#endif
         if (chkType == DISALLOW_PATH_REG) {
             return PATH_REG_NOT_ALLOWED;
         } else if (chkType == NO_CHK_PATH_PERM) {

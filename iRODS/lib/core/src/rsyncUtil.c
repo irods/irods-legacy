@@ -71,6 +71,10 @@ rodsPathInp_t *rodsPathInp)
             if (isPathSymlink (myRodsArgs, srcPath->outPath) > 0)
                 continue;
 	    dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
+#ifdef FILESYSTEM_META
+            getFileMetaFromPath(rodsPathInp->srcPath[i].outPath,
+                                &dataObjOprInp.condInput);
+#endif            
             status = rsyncFileToDataUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjOprInp);
         } else if (srcType == DATA_OBJ_T && targType == DATA_OBJ_T) {
@@ -662,6 +666,9 @@ dataObjInp_t *dataObjOprInp)
               mySrcPath.outPath, errno);
             return (USER_INPUT_PATH_ERR);
         }
+#ifdef FILESYSTEM_META
+        getFileMetaFromPath(mySrcPath.outPath, &dataObjOprInp->condInput);
+#endif
 	bzero (&myTargPath, sizeof (myTargPath));
 #ifdef USE_BOOST_FS
         path childPath = p.filename();
@@ -706,14 +713,19 @@ dataObjInp_t *dataObjOprInp)
 #else
         } else if ((statbuf.st_mode & S_IFDIR) != 0) {      /* a directory */
 #endif
-			status = 0;
-			/* only do the sync if no -l option specified */
-			if ( rodsArgs->longOption != True ) {
+            status = 0;
+            /* only do the sync if no -l option specified */
+            if ( rodsArgs->longOption != True ) {
+#ifdef FILESYSTEM_META
+                status = mkCollRWithDirMeta (conn, targColl,
+                                             myTargPath.outPath, mySrcPath.outPath);
+#else
             	status = mkCollR (conn, targColl, myTargPath.outPath);
-			}
+#endif
+            }
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
-                  "rsyncDirToCollUtil: mkColl error for %s", 
+                  "rsyncDirToCollUtil: mkCollR error for %s", 
 		  myTargPath.outPath);
             } else {
                 myTargPath.objType = COLL_OBJ_T;
@@ -900,7 +912,11 @@ dataObjCopyInp_t *dataObjCopyInp)
 
 
 	    if ( rodsArgs->longOption != True ) {   /* only do the sync if no -l option specified */
+#ifdef FILESYSTEM_META
+                mkCollWithSrcCollMeta (conn, targChildPath, collEnt.collName);
+#else
             	mkColl (conn, targChildPath);
+#endif
 	    }
 
 #if 0

@@ -112,6 +112,10 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
 	    if (isPathSymlink (myRodsArgs, rodsPathInp->srcPath[i].outPath) > 0)
 		continue;
 	    dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
+#ifdef FILESYSTEM_META
+            getFileMetaFromPath(rodsPathInp->srcPath[i].outPath,
+                                &dataObjOprInp.condInput);
+#endif
 	    status = putFileUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	      targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv, 
 	       myRodsArgs, &dataObjOprInp);
@@ -629,6 +633,11 @@ bulkOprInfo_t *bulkOprInfo)
         snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
           targColl, myDirent->d_name);
 #endif	/* USE_BOOST_FS */
+
+#ifdef FILESYSTEM_META
+        getFileMetaFromPath(srcChildPath, &dataObjOprInp->condInput);
+#endif
+
 #if 0
         if (isPathSymlink (rodsArgs, srcChildPath) > 0) {
 	    if (childObjType == COLL_OBJ_T)
@@ -702,7 +711,11 @@ bulkOprInfo_t *bulkOprInfo)
 		}
 	    }
         } else {      /* a directory */
+#ifdef FILESYSTEM_META
+            status = mkCollWithDirMeta (conn, targChildPath, srcChildPath);
+#else
 	    status = mkColl (conn, targChildPath);
+#endif
 	    if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "putDirUtil: mkColl error for %s", targChildPath);

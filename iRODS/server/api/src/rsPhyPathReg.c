@@ -297,14 +297,25 @@ rescInfo_t *rescInfo)
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
 
     if (dataObjInfo.dataSize <= 0 && 
+#ifdef FILESYSTEM_META
+      (dataObjInfo.dataSize = getFileMetadataFromVault (rsComm, &dataObjInfo)) < 0 &&
+#else
       (dataObjInfo.dataSize = getSizeInVault (rsComm, &dataObjInfo)) < 0 &&
+#endif
       dataObjInfo.dataSize != UNKNOWN_FILE_SZ) {
 	status = (int) dataObjInfo.dataSize;
         rodsLog (LOG_ERROR,
+#ifdef FILESYSTEM_META
+         "filePathReg: getFileMetadataFromVault for %s failed, status = %d",
+#else
          "filePathReg: getSizeInVault for %s failed, status = %d",
+#endif
           dataObjInfo.objPath, status);
 	return (status);
     }
+#ifdef FILESYSTEM_META
+    addKeyVal(&dataObjInfo.condInput, FILE_SOURCE_PATH_KW, filePath);
+#endif
 
     if ((chksum = getValByKey (&phyPathRegInp->condInput, 
       REG_CHKSUM_KW)) != NULL) {
@@ -354,6 +365,10 @@ rescInfo_t *rescInfo)
     rodsDirent_t *rodsDirent = NULL;
     rodsObjStat_t *rodsObjStatOut = NULL;
     int forceFlag;
+    fileStatInp_t fileStatInp;
+    rodsStat_t *myStat = NULL;
+
+    rescTypeInx = rescInfo->rescTypeInx;
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
     if (status < 0) {
@@ -362,6 +377,25 @@ rescInfo_t *rescInfo)
 	  MAX_NAME_LEN);
 	/* no need to resolve sym link */
 	addKeyVal (&collCreateInp.condInput, TRANSLATED_PATH_KW, "");
+#ifdef FILESYSTEM_META
+        /* stat the source directory to track the         */
+        /* original directory meta-data                   */
+        memset (&fileStatInp, 0, sizeof (fileStatInp));
+        rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
+        fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+        rstrcpy (fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+
+        status = rsFileStat (rsComm, &fileStatInp, &myStat);
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+	      "dirPathReg: rsFileStat failed for %s, status = %d",
+	      filePath, status);
+	    return (status);
+        }
+        getFileMetaFromStat (myStat, &collCreateInp.condInput);
+        addKeyVal(&collCreateInp.condInput, FILE_SOURCE_PATH_KW, filePath);
+        free (myStat);
+#endif /* FILESYSTEM_META */
         /* create the coll just in case it does not exist */
         status = rsCollCreate (rsComm, &collCreateInp);
 	clearKeyVal (&collCreateInp.condInput);
@@ -376,7 +410,6 @@ rescInfo_t *rescInfo)
 
     memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
 
-    rescTypeInx = rescInfo->rescTypeInx;
     rstrcpy (fileOpendirInp.dirName, filePath, MAX_NAME_LEN);
     fileOpendirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileOpendirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
@@ -399,8 +432,6 @@ rescInfo_t *rescInfo)
 
     while ((status = rsFileReaddir (rsComm, &fileReaddirInp, &rodsDirent))
       >= 0) {
-        fileStatInp_t fileStatInp;
-	rodsStat_t *myStat = NULL;
 
         if (strcmp (rodsDirent->d_name, ".") == 0 ||
           strcmp (rodsDirent->d_name, "..") == 0) {
@@ -415,6 +446,7 @@ rescInfo_t *rescInfo)
 
         fileStatInp.fileType = fileOpendirInp.fileType; 
 	fileStatInp.addr = fileOpendirInp.addr;
+        myStat = NULL;
         status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
 	if (status != 0) {

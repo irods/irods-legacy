@@ -97,6 +97,12 @@ transferStat_t **transStat)
         addKeyVal (&destDataObjInp->condInput, NO_OPEN_FLAG_KW, "");
     }
 
+#ifdef FILESYSTEM_META
+    /* copy file metadata if the source object has it */
+    copyFilesystemMetadata(&(L1desc[srcL1descInx].dataObjInfo->condInput),
+                            &destDataObjInp->condInput);
+#endif    
+
     destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
     if (destL1descInx == CAT_UNKNOWN_COLLECTION) {
         /* collection does not exist. make one */

@@ -416,6 +416,10 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode (dataObjInp);
+#ifdef FILESYSTEM_META
+        copyFilesystemMetadata(&dataObjInfo->condInput,
+                               &filePutInp.condInput);
+#endif
         subFile.flags = O_WRONLY | dataObjInp->openFlags;
 #if 0
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {

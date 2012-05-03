@@ -396,7 +396,11 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
             snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
               targColl, childPath);
 #endif
+#ifdef FILESYSTEM_META
+            mkCollRWithSrcCollMeta (conn, targColl, targChildPath, collEnt.collName);
+#else
             mkCollR (conn, targColl, targChildPath);
+#endif
 
             if (rodsArgs->verbose == True) {
                 fprintf (stdout, "C- %s:\n", targChildPath);
