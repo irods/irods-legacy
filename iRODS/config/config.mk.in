@@ -441,3 +441,8 @@ LIB_CF_LIB_DIR=/usr/local/lib
 endif
 endif
 
+# FILESYSTEM_META - turn on functionality that collects the 
+# filesystem meta-data (i.e. 'stat' information) from files 
+# and directories added to iRODS via iput and ireg. Only supported
+# on UNIX/Linux-type systems. 
+# FILESYSTEM_META = 1

@@ -97,6 +97,10 @@ int
 getDataObjLockPath (char *objPath, char **outLockPath);
 int
 fsDataObjLock (char *objPath, int cmd, int type, int infd);
+#ifdef FILESYSTEM_META
+rodsLong_t 
+getFileMetadataFromVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+#endif
 #ifdef  __cplusplus
 }
 #endif

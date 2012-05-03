@@ -1314,3 +1314,65 @@ fsDataObjLock (char *objPath, int cmd, int type, int infd)
     return (myFd);
 }
 
+#ifdef FILESYSTEM_META
+rodsLong_t 
+getFileMetadataFromVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
+{
+    static char fname[] = "getFileMetadataFromVault";
+    rodsStat_t *myStat = NULL;
+    int status;
+    rodsLong_t mysize;
+    char name_buf[NAME_LEN];
+    char sstr_buf[SHORT_STR_LEN];
+    char time_buf[TIME_LEN];
+
+    status = l3Stat (rsComm, dataObjInfo, &myStat);
+
+    if (status < 0) {
+	rodsLog (LOG_DEBUG,
+	  "getFileMetaFromVault: l3Stat error for %s. status = %d",
+	  dataObjInfo->filePath, status);
+	return (status);
+    }
+    
+    if (myStat->st_mode & S_IFDIR) {
+        free(myStat);
+        return ((rodsLong_t) SYS_PATH_IS_NOT_A_FILE);
+    }
+    
+    status = getUnixUsername(myStat->st_uid, name_buf, NAME_LEN);
+    if (status) {
+        rodsLog(LOG_ERROR, "%s: could not retrieve username for uid %d",
+                fname, myStat->st_uid);
+        return status;
+    }
+    addKeyVal(&dataObjInfo->condInput, FILE_OWNER_KW, name_buf);
+
+    status = getUnixGroupname(myStat->st_gid, name_buf, NAME_LEN);
+    if (status) {
+        rodsLog(LOG_ERROR, "%s: could not retrieve groupname for gid %d",
+                fname, myStat->st_gid);
+        return status;
+    }
+    addKeyVal(&dataObjInfo->condInput, FILE_GROUP_KW, name_buf);
+    
+    snprintf(sstr_buf, SHORT_STR_LEN, "%u", myStat->st_uid);
+    addKeyVal(&dataObjInfo->condInput, FILE_UID_KW, sstr_buf);
+
+    snprintf(sstr_buf, SHORT_STR_LEN, "%u", myStat->st_gid);
+    addKeyVal(&dataObjInfo->condInput, FILE_GID_KW, sstr_buf);
+
+    snprintf(sstr_buf, SHORT_STR_LEN, "%u", myStat->st_mode);
+    addKeyVal(&dataObjInfo->condInput, FILE_MODE_KW, sstr_buf);
+
+    snprintf(time_buf, TIME_LEN, "%u", myStat->st_ctim);
+    addKeyVal(&dataObjInfo->condInput, FILE_CTIME_KW, time_buf);
+
+    snprintf(time_buf, TIME_LEN, "%u", myStat->st_mtim);
+    addKeyVal(&dataObjInfo->condInput, FILE_MTIME_KW, time_buf);
+    
+    mysize = myStat->st_size;
+    free (myStat);
+    return (mysize);
+}
+#endif /* FILESYSTEM_META */
