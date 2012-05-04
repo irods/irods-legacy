@@ -152,7 +152,13 @@ unixFileWrite (rsComm_t *rsComm, int fd, void *buf, int len)
 {
     int status;
 
-    status = write (fd, buf, len);
+    if (len == 0) {
+        /* some write(2) calls don't like to be sent '0' bytes */
+        status = 0;
+    }
+    else {
+        status = write (fd, buf, len);
+    }
 
     if (status < 0) {
         status = UNIX_FILE_WRITE_ERR - errno;
