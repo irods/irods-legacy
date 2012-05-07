@@ -199,11 +199,11 @@ acSetMultiReplPerResc { }
 # 4) acPostProcForPut - Rule for post processing the put operation.
 # 5) acPostProcForCopy - Rule for post processing the copy operation.
 # 6) acPostProcForFilePathReg - Rule for post processing the registration
+# of a physical file path (e.g. - ireg command).
 # 7) acPostProcForCreate - Rule for post processing of data object create.
 # 8) acPostProcForOpen - Rule for post processing of data object open.
 # 8a) acPostProcForPhymv - Rule for post processing of data object phymv.
 # 8b) acPostProcForRepl - Rule for post processing of data object repl.
-# of a physical file path (e.g. - ireg command).
 # 
 # Currently, three post processing functions can be used individually or
 # in sequence by these rules. 
