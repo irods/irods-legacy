@@ -35,7 +35,7 @@ purgeDiskCache {
 					if ( *usedSpace < *MaxSpAlwd ) {
 						break;
 					}
-					msiDataObjTrim(*C/*D,*CacheRescName,"null","1","1",*status);
+					msiDataObjTrim(*C/*D,"*CacheRescName","null","1","1",*status);
 					writeLine("stdout","*C/*D on *CacheRescName has been purged");
 				}
 				if ( *usedSpace < *MaxSpAlwd ) { 
