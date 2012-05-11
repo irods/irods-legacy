@@ -114,4 +114,8 @@ dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
 int
 getDataObjByClass (dataObjInfo_t *dataObjInfoHead, int rescClass,
 dataObjInfo_t **outDataObjInfo);
+#ifdef FILESYSTEM_META
+int
+getDataObjFileMeta (rsComm_t *rsComm, char *data_id, keyValPair_t *condInput);
+#endif
 #endif	/* DATA_OBJ_OPR_H */

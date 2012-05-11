@@ -23,6 +23,134 @@
 #include "rodsClient.h"
 #include "rsIcatOpr.h"
 
+#ifdef FILESYSTEM_META
+int
+getDataObjFileMeta (rsComm_t *rsComm, char *data_id, keyValPair_t *condInput)
+{
+    static char fname[] = "getDataObjFileMeta";
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    int status;
+    char condStr[MAX_NAME_LEN];
+    sqlResult_t *objectId;
+    sqlResult_t *fileUid;
+    sqlResult_t *fileGid;
+    sqlResult_t *fileOwner;
+    sqlResult_t *fileGroup;
+    sqlResult_t *fileMode;
+    sqlResult_t *fileCtime;
+    sqlResult_t *fileMtime;
+    sqlResult_t *fileSourcePath;
+
+    if (data_id == NULL || condInput == NULL) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp));
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", data_id);
+    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_FILEMETA_OBJ_ID, condStr);
+
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_OBJ_ID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_UID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_GID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_OWNER, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_GROUP, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_MODE, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_CTIME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_MTIME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_SOURCE_PATH, 1);
+    
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+    if (status >= 0) {
+        if ((objectId = getSqlResultByInx(genQueryOut, 
+                   COL_DATA_FILEMETA_OBJ_ID)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_OBJ_ID failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        if ((fileUid = getSqlResultByInx(genQueryOut, 
+                 COL_DATA_FILEMETA_UID)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_UID failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        if ((fileGid = getSqlResultByInx(genQueryOut, 
+                 COL_DATA_FILEMETA_GID)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_GID failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        if ((fileOwner = getSqlResultByInx(genQueryOut,
+                 COL_DATA_FILEMETA_OWNER)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_OWNER failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        if ((fileGroup = getSqlResultByInx(genQueryOut, 
+                 COL_DATA_FILEMETA_GROUP)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_GROUP failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        if ((fileMode = getSqlResultByInx(genQueryOut, 
+                 COL_DATA_FILEMETA_MODE)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_MODE failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        if ((fileCtime = getSqlResultByInx(genQueryOut, 
+                 COL_DATA_FILEMETA_CTIME)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_CTIME failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        if ((fileMtime = getSqlResultByInx(genQueryOut, 
+                 COL_DATA_FILEMETA_MTIME)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_MTIME failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        if ((fileSourcePath = getSqlResultByInx(genQueryOut, 
+                 COL_DATA_FILEMETA_SOURCE_PATH)) == NULL) {
+            rodsLog (LOG_ERROR,
+                     "%s: getSqlResultByInx for COL_DATA_FILEMETA_SOURCE_PATH failed",
+                     fname);
+            return (UNMATCHED_KEY_OR_INDEX);
+        } 
+        
+        addKeyVal(condInput, FILE_UID_KW, fileUid->value);
+        addKeyVal(condInput, FILE_GID_KW, fileGid->value);
+        addKeyVal(condInput, FILE_OWNER_KW, fileOwner->value);
+        addKeyVal(condInput, FILE_GROUP_KW, fileGroup->value);
+        addKeyVal(condInput, FILE_MODE_KW, fileMode->value);
+        addKeyVal(condInput, FILE_CTIME_KW, fileCtime->value);
+        addKeyVal(condInput, FILE_MTIME_KW, fileMtime->value);
+        addKeyVal(condInput, FILE_SOURCE_PATH_KW, fileSourcePath->value);
+
+    }
+    else if (status != CAT_NO_ROWS_FOUND) {
+        rodsLog (LOG_NOTICE, "%s: rsGenQuery error, status = %d", fname, status);
+    }
+
+    clearGenQueryInp (&genQueryInp);
+    freeGenQueryOut (&genQueryOut);
+
+    return status;
+}
+#endif /* FILESYSTEM_META */
+    
 int
 getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
@@ -42,12 +170,6 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
       *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString, 
       *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments, 
       *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName;
-#ifdef FILESYSTEM_META
-    sqlResult_t *fileUid, *fileGid, *fileOwner, *fileGroup, *fileMode, 
-      *fileCtime, *fileMtime, *fileSourcePath;
-    char *tmpFileUid, *tmpFileGid, *tmpFileOwner, *tmpFileGroup, *tmpFileMode,
-      *tmpFileCtime, *tmpFileMtime, *tmpFileSourcePath;
-#endif
     char accStr[LONG_NAME_LEN];
     int qcondCnt;
     int writeFlag;
@@ -92,16 +214,6 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
     addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_MODIFY_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_MODE, 1);
-#ifdef FILESYSTEM_META
-    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_UID, 1);
-    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_GID, 1);
-    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_OWNER, 1);
-    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_GROUP, 1);
-    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_MODE, 1);
-    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_CTIME, 1);
-    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_MTIME, 1);
-    addInxIval (&genQueryInp.selectInp, COL_DATA_FILEMETA_SOURCE_PATH, 1);
-#endif
 
     if (accessPerm != NULL) {
         snprintf (accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName);
@@ -288,64 +400,6 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
-#ifdef FILESYSTEM_META
-    if ((fileUid =
-      getSqlResultByInx (genQueryOut, COL_DATA_FILEMETA_UID)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getDataObjInfo: getSqlResultByInx for COL_DATA_FILEMETA_UID failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((fileGid =
-      getSqlResultByInx (genQueryOut, COL_DATA_FILEMETA_GID)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getDataObjInfo: getSqlResultByInx for COL_DATA_FILEMETA_GID failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((fileOwner =
-      getSqlResultByInx (genQueryOut, COL_DATA_FILEMETA_OWNER)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getDataObjInfo: getSqlResultByInx for COL_DATA_FILEMETA_OWNER failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((fileGroup =
-      getSqlResultByInx (genQueryOut, COL_DATA_FILEMETA_GROUP)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getDataObjInfo: getSqlResultByInx for COL_DATA_FILEMETA_GROUP failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((fileMode =
-      getSqlResultByInx (genQueryOut, COL_DATA_FILEMETA_MODE)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getDataObjInfo: getSqlResultByInx for COL_DATA_FILEMETA_MODE failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((fileCtime =
-      getSqlResultByInx (genQueryOut, COL_DATA_FILEMETA_CTIME)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getDataObjInfo: getSqlResultByInx for COL_DATA_FILEMETA_CTIME failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((fileMtime =
-      getSqlResultByInx (genQueryOut, COL_DATA_FILEMETA_MTIME)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getDataObjInfo: getSqlResultByInx for COL_DATA_FILEMETA_MTIME failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((fileSourcePath =
-      getSqlResultByInx (genQueryOut, COL_DATA_FILEMETA_SOURCE_PATH)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getDataObjInfo: getSqlResultByInx for COL_DATA_FILEMETA_SOURCE_PATH failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-#endif /* FILESYSTEM_META */
-
     writeFlag = getWriteFlag (dataObjInp->openFlags);
 
    for (i = 0;i < genQueryOut->rowCnt; i++) {
@@ -374,16 +428,6 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         tmpDataMode = &dataMode->value[dataMode->len * i];
         tmpDataName = &dataName->value[dataName->len * i];
         tmpCollName = &collName->value[collName->len * i];
-#ifdef FILESYSTEM_META
-        tmpFileUid = &fileUid->value[fileUid->len * i];
-        tmpFileGid = &fileGid->value[fileGid->len * i];
-        tmpFileOwner = &fileOwner->value[fileOwner->len * i];
-        tmpFileGroup = &fileGroup->value[fileGroup->len * i];
-        tmpFileMode = &fileMode->value[fileMode->len * i];
-        tmpFileCtime = &fileCtime->value[fileCtime->len * i];
-        tmpFileMtime = &fileMtime->value[fileMtime->len * i];
-        tmpFileSourcePath = &fileSourcePath->value[fileSourcePath->len * i];
-#endif
 
         snprintf (dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
 	  tmpCollName, tmpDataName);
@@ -416,17 +460,11 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 	rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, NAME_LEN);
 	rstrcpy (dataObjInfo->dataModify, tmpDataModify, NAME_LEN);
 	rstrcpy (dataObjInfo->dataMode, tmpDataMode, NAME_LEN);
-#ifdef FILESYSTEM_META
-        addKeyVal(&dataObjInfo->condInput, FILE_UID_KW, tmpFileUid);
-        addKeyVal(&dataObjInfo->condInput, FILE_GID_KW, tmpFileGid);
-        addKeyVal(&dataObjInfo->condInput, FILE_OWNER_KW, tmpFileOwner);
-        addKeyVal(&dataObjInfo->condInput, FILE_GROUP_KW, tmpFileGroup);
-        addKeyVal(&dataObjInfo->condInput, FILE_MODE_KW, tmpFileMode);
-        addKeyVal(&dataObjInfo->condInput, FILE_CTIME_KW, tmpFileCtime);
-        addKeyVal(&dataObjInfo->condInput, FILE_MTIME_KW, tmpFileMtime);
-        addKeyVal(&dataObjInfo->condInput, FILE_SOURCE_PATH_KW, tmpFileSourcePath);
-#endif
 	dataObjInfo->writeFlag = writeFlag;
+
+#ifdef FILESYSTEM_META
+        getDataObjFileMeta(rsComm, tmpDataId, &dataObjInfo->condInput);
+#endif
 
 	queDataObjInfo (dataObjInfoHead, dataObjInfo, 1, 0);
     }
