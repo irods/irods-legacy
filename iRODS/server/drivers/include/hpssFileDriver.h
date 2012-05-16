@@ -115,7 +115,7 @@ hpssFileUnlink (rsComm_t *rsComm, char *filename);
 int
 hpssFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf);
 int
-hpssFileMkdir (rsComm_t *rsComm, char *filename, int mode);
+hpssFileMkdir (rsComm_t *rsComm, char *filename, int mode, keyValPair_t *condInput);
 int
 hpssFileChmod (rsComm_t *rsComm, char *filename, int mode);
 int

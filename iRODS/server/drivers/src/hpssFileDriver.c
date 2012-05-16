@@ -55,7 +55,7 @@ hpssFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf)
 }
 
 int
-hpssFileMkdir (rsComm_t *rsComm, char *filename, int mode)
+hpssFileMkdir (rsComm_t *rsComm, char *filename, int mode, keyValPair_t *condInput)
 {
     int status;
 

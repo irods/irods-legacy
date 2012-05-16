@@ -84,7 +84,7 @@ s3FileUnlink (rsComm_t *rsComm, char *filename);
 int
 s3FileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf);
 int
-s3FileMkdir (rsComm_t *rsComm, char *filename, int mode);
+s3FileMkdir (rsComm_t *rsComm, char *filename, int mode, keyValPair_t *condInput);
 int
 s3FileChmod (rsComm_t *rsComm, char *filename, int mode);
 int
