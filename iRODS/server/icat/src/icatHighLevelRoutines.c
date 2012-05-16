@@ -60,12 +60,27 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #define MAX_PASSWORDS 40
 /* TEMP_PASSWORD_TIME is the number of seconds the temporary, one-time
    password can be used.  chlCheckAuth also checks for this column
-   to be < 1000 to differentiate the row from regular passwords.
+   to be < TEMP_PASSWORD_MAX_TIME (1000) to differentiate the row 
+   from regular passwords and IRODS_PAM passwords.
    This time, 120 seconds, should be long enough to give the iDrop and
    iDrop-lite applets enough time to download and go through their
    startup sequence.  iDrop and iDrop-lite disconnect when idle to
    reduce the number of open connections and active agents.  */
 #define TEMP_PASSWORD_TIME 120
+#define TEMP_PASSWORD_MAX_TIME 1000
+
+/* IRODS_PAM_PASSWORD_TIME (the iRODS=PAM password lifetime) must not
+   be equal TEMP_PASSWORD_TIME to avoid the possibility that the logic
+   for temporary passwords would be applied.  This should be fine as
+   IRODS-PAM passwords will typically be valid on the order of a
+   couple weeks compared to a couple minutes for temporary one-time
+   passwords.
+ */
+#define IRODS_PAM_PASSWORD_LEN 20
+#if 0
+#define IRODS_PAM_PASSWORD_TIME "1209600"  /* two weeks in seconds */
+#endif
+#define IRODS_PAM_PASSWORD_TIME "10"  /* for testing */
 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
@@ -2135,7 +2150,6 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    rodsLong_t status;
    char tSQL[MAX_SQL_SIZE];
    int inheritFlag;
-   char *tmpStr;
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegColl");
 
@@ -3432,10 +3446,12 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    int i, OK, k;
    char userType[MAX_NAME_LEN];
    static int prevFailure=0;
-   char pwInfoArray[MAX_PASSWORD_LEN*MAX_PASSWORDS*3];
+   char pwInfoArray[MAX_PASSWORD_LEN*MAX_PASSWORDS*4];
    char goodPw[MAX_PASSWORD_LEN+10];
+   char lastPw[MAX_PASSWORD_LEN+10];
    char goodPwExpiry[MAX_PASSWORD_LEN+10];
    char goodPwTs[MAX_PASSWORD_LEN+10];
+   char goodPwModTs[MAX_PASSWORD_LEN+10];
    rodsLong_t expireTime;
    char *cpw;
    int nPasswords;
@@ -3509,11 +3525,11 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
 
    status = cmlGetMultiRowStringValuesFromSql(
-	    "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+	    "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
 	    pwInfoArray, MAX_PASSWORD_LEN,
-	    MAX_PASSWORDS*3,  /* three strings per password returned */
+	    MAX_PASSWORDS*4,  /* four strings per password returned */
 	    userName2, myUserZone, &icss);
-   if (status < 3) {
+   if (status < 4) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
 	 if (strncmp(ANONYMOUS_USER, userName2, NAME_LEN)==0) {
@@ -3524,14 +3540,16 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       return(status);
    }
 
-   nPasswords=status/3;    /* three strings per password returned */
+   nPasswords=status/4;    /* four strings per password returned */
    goodPwExpiry[0]='\0';
    goodPwTs[0]='\0';
+   goodPwModTs[0]='\0';
 
    cpw=pwInfoArray;
    for (k=0;k<MAX_PASSWORDS && k<nPasswords;k++) {
       memset(md5Buf, 0, sizeof(md5Buf));
       strncpy(md5Buf, challenge, CHALLENGE_LEN);
+      rstrcpy(lastPw, cpw, MAX_PASSWORD_LEN);
       icatDescramble(cpw);
       strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
 
@@ -3557,9 +3575,11 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 rstrcpy(goodPwExpiry, cpw, MAX_PASSWORD_LEN);
 	 cpw+=MAX_PASSWORD_LEN;
 	 rstrcpy(goodPwTs, cpw, MAX_PASSWORD_LEN);
+	 cpw+=MAX_PASSWORD_LEN;
+	 rstrcpy(goodPwModTs, cpw, MAX_PASSWORD_LEN);
 	 break;
       }
-      cpw+=MAX_PASSWORD_LEN*3;
+      cpw+=MAX_PASSWORD_LEN*4;
    }
    memset(pwInfoArray, 0, sizeof(pwInfoArray));
 
@@ -3571,8 +3591,43 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    expireTime=atoll(goodPwExpiry);
    getNowStr(myTime);
    nowTime=atoll(myTime);
-   if (expireTime < 1000) {
+#ifdef PAM_AUTH
+   if (strncmp(goodPwExpiry, IRODS_PAM_PASSWORD_TIME,10)==0) {
+      time_t modTime;
+      /* check if it's expired */
 
+      getNowStr(myTime);
+      nowTime=atoll(myTime);
+      modTime=atoll(goodPwModTs);
+      if (modTime+expireTime < nowTime) {
+	 cllBindVars[cllBindVarCount++]=lastPw;
+	 cllBindVars[cllBindVarCount++]=goodPwTs;
+	 cllBindVars[cllBindVarCount++]=userName2;
+	 cllBindVars[cllBindVarCount++]=myUserZone;
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth xSQL 2");
+	 status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where rcat_password=? and create_ts=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)", &icss);
+	 memset(goodPw, 0, sizeof(goodPw));
+	 memset(lastPw, 0, sizeof(lastPw));
+	 if (status != 0) {
+	    rodsLog(LOG_NOTICE,
+		    "chlCheckAuth cmlExecuteNoAnswerSql delete expired password failure %d",
+		    status);
+	    return(status);
+	 }
+	 status =  cmlExecuteNoAnswerSql("commit", &icss);
+	 if (status != 0) {
+	    rodsLog(LOG_NOTICE,
+		 "chlCheckAuth cmlExecuteNoAnswerSql commit failure %d",
+		    status);
+	    return(status);
+	 }
+	 return(CAT_PASSWORD_EXPIRED);
+      }
+   }
+#endif
+
+   if (expireTime < TEMP_PASSWORD_MAX_TIME &&
+       strncmp(goodPwExpiry, IRODS_PAM_PASSWORD_TIME,10)!=0) {
       /* in the form used by temporary, one-time passwords */
 
       time_t createTime;
@@ -3897,6 +3952,114 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
    strcpy(out, upassword);
    memset(upassword, 0, MAX_PASSWORD_LEN);
 
+   return(0);
+}
+
+
+/*
+ Add or update passwords for use in the PAM authentication mode.
+ User has been PAM-authenticated when this is called.
+ This function adds a irods password valid for a few days and returns that.
+ If one already exists, the expire time is updated, and it's value is returned.
+ Passwords created are pseudo-random strings, unrelated to the PAM password.
+ */
+int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
+			      char *username, char **irodsPassword) {
+   char myTime[50];
+   char rBuf[200];
+   int i, j;
+   char randomPw[50];
+   char randomPwEncoded[50];
+   int status;
+   char passwordInIcat[MAX_PASSWORD_LEN+2];
+   char passwordModifyTime[50];
+   char *cVal[3];
+   int iVal[3];
+
+   char selUserId[MAX_NAME_LEN];
+
+   status = getLocalZone();
+   if (status != 0) return(status);
+
+   getNowStr(myTime);
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "cmlUpdateIrodsPamPassword xSQL 1 ");
+   status = cmlGetStringValueFromSql(
+      "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
+      selUserId, MAX_NAME_LEN, username, localZone, 0, &icss);
+   if (status==CAT_NO_ROWS_FOUND) return (CAT_INVALID_USER);
+   if (status) return(status);
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "cmlUpdateIrodsPamPassword xSQL 1 ");
+   cVal[0]=passwordInIcat;
+   iVal[0]=MAX_PASSWORD_LEN;
+   cVal[1]=passwordModifyTime;
+   iVal[1]=sizeof(passwordModifyTime);
+   status = cmlGetStringValuesFromSql(
+	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts = ?",
+	    cVal, iVal, 2,
+	    selUserId, 
+	    IRODS_PAM_PASSWORD_TIME,
+            0, &icss);
+   if (status==0) {
+      if (logSQL!=0) rodsLog(LOG_SQL, "cmlUpdateIrodsPamPassword xSQL 1 ");
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=selUserId;
+      cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_TIME;
+      cllBindVars[cllBindVarCount++]=passwordInIcat;
+      status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=? where user_id = ? and pass_expiry_ts = ? and rcat_password = ?",
+				      &icss);
+      if (status) return(status);
+
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
+		 status);
+	 return(status);
+      }
+
+      icatDescramble(passwordInIcat);
+      strncpy(*irodsPassword, passwordInIcat, IRODS_PAM_PASSWORD_LEN);
+      return(0);
+   }
+
+
+   j=0;
+   get64RandomBytes(rBuf);
+   for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
+      char c;
+      c = rBuf[i] &0x7f;
+      if (c < '0') c+='0';
+      if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
+           (c > '0' && c < '9') ){
+         randomPw[j++]=c;
+      }
+   }
+   randomPw[j]='\0';
+
+   strncpy(randomPwEncoded, randomPw, 50);
+   icatScramble(randomPwEncoded); 
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "cmlUpdateIrodsPamPassword xSQL 2 ");
+   cllBindVars[cllBindVarCount++]=selUserId;
+   cllBindVars[cllBindVarCount++]=randomPwEncoded;
+   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_TIME;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+   status =  cmlExecuteNoAnswerSql("insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values (?, ?, ?, ?, ?)", 
+				   &icss);
+   if (status) return(status);
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	  "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
+	  status);
+      return(status);
+   }
+
+   strncpy(*irodsPassword, randomPw, IRODS_PAM_PASSWORD_LEN);
    return(0);
 }
 
@@ -4717,7 +4880,6 @@ int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
    char rescId[MAX_NAME_LEN];
    int status, len, rows;
    char *cptr;
-//   char userId[NAME_LEN]="";
    char userZone[NAME_LEN];
    char zoneToUse[NAME_LEN];
    char userName2[NAME_LEN];

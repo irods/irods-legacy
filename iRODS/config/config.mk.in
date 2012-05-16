@@ -419,6 +419,14 @@ OS_AUTH_KEYFILE = /etc/irods.key
 # OS_AUTH_NO_UID = 1
 endif
 
+# PAM_AUTH - build in support for PAM/LDAP authentication. This form
+# of authentication uses the user's system password and authenticates
+# via the Pluggable Authentication System on the server side.  The
+# password is securely transferred to the server (encrypted) and subsequent
+# authentications makes use of a new irods-pam password for use only
+# in iRODS.
+# PAM_AUTH = 1
+
 # NETCDF_API - specify whether to compile the NETCDF API
 # NETCDF_DIR - the install directory of NETCDF. NETCDF_HDF defines whether
 # the netcdf library has been built to support HDF

@@ -435,3 +435,6 @@ SVR_API_OBJS += $(svrApiObjDir)/rsNcInq.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInq.o
 endif
 
+
+SVR_API_OBJS += $(svrApiObjDir)/rsPamAuthRequest.o
+LIB_API_OBJS += $(libApiObjDir)/rcPamAuthRequest.o

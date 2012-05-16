@@ -149,4 +149,5 @@
 #include "ncGetVarsByType.h"
 #include "nccfGetVara.h"
 #include "ncInq.h"
+#include "pamAuthRequest.h"
 #endif	/* API_HEADER_ALL_H */

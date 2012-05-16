@@ -219,6 +219,8 @@ cleanRcComm (rcComm_t *conn);
 /* XXXX putting clientLogin here for now. Should be in clientLogin.h */
 int
 clientLogin(rcComm_t *conn);
+int
+clientLoginPam(rcComm_t *conn, char *password);
 
 char *
 getSessionSignitureClientside();

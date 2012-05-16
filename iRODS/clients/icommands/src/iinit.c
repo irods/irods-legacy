@@ -184,6 +184,16 @@ main(int argc, char **argv)
        doPassword=0;
     }
 #endif
+    if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
+	strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
+#if defined(PAM_AUTH)
+       doPassword=0;
+#else 
+       rodsLog (LOG_ERROR,
+	    "PAM_AUTH_NOT_BUILT_INTO_CLIENT, will try iRODS password",
+	     status);
+#endif
+    }
 
     if (strcmp(myEnv.rodsUserName, ANONYMOUS_USER)==0) {
        doPassword=0;
@@ -214,6 +224,16 @@ main(int argc, char **argv)
 	       myEnv.rodsHost);
        exit(2);
     }
+
+#ifdef PAM_AUTH
+    if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
+	strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
+       status = clientLoginPam(Conn, password);
+       if (status != 0) exit(8);
+       /* if this succeeded, do the regular login below to check that the
+	generated password works properly.  */
+    }
+#endif
 
     /* and check that the user/password is OK */
     status = clientLogin(Conn);

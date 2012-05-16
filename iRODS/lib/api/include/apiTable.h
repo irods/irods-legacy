@@ -171,6 +171,9 @@ apidef_t RcApiTable[] = {
     {GET_TEMP_PASSWORD_FOR_OTHER_AN, RODS_API_VERSION, 
        LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH, 
        "getTempPasswordForOtherInp_PI", 0,  "getTempPasswordForOtherOut_PI", 0, (funcPtr) RS_GET_TEMP_PASSWORD_FOR_OTHER},
+    {PAM_AUTH_REQUEST_AN, RODS_API_VERSION,
+       NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 
+       "pamAuthRequestInp_PI", 0,  "pamAuthRequestOut_PI", 0, (funcPtr) RS_PAM_AUTH_REQUEST},
     {OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION},
 #ifdef COMPAT_201

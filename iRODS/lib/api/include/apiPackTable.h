@@ -121,6 +121,8 @@ packInstructArray_t ApiPackTable[] = {
 	{"NcInqOut_PI", NcInqOut_PI},
 #endif
         /* endof NETCDF PI */
+        {"pamAuthRequestInp_PI", pamAuthRequestInp_PI},
+        {"pamAuthRequestOut_PI", pamAuthRequestOut_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

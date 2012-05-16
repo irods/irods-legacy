@@ -195,6 +195,9 @@ endif
 ifdef KRB_AUTH
 CFLAGS +=       -DKRB_AUTH
 endif
+ifdef PAM_AUTH
+CFLAGS +=       -DPAM_AUTH
+endif
 ifdef IRODS_SYSLOG
 CFLAGS +=		-DIRODS_SYSLOG
 endif
