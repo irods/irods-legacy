@@ -50,6 +50,7 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
+		$(svrCoreObjDir)/pamAuth.o \
 		$(svrCoreObjDir)/fileDriverNoOpFunctions.o
 
 INCLUDES +=	-I$(svrCoreIncDir)
@@ -197,6 +198,7 @@ CFLAGS +=       -DKRB_AUTH
 endif
 ifdef PAM_AUTH
 CFLAGS +=       -DPAM_AUTH
+LDFLAGS+=       -lpam
 endif
 ifdef IRODS_SYSLOG
 CFLAGS +=		-DIRODS_SYSLOG

@@ -7,6 +7,7 @@
 #include "genQuery.h"
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
+#include "pamAuth.h"
 
 
 
@@ -40,7 +41,7 @@ rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 int
 _rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 		   pamAuthRequestOut_t **pamAuthRequestOut) {
-    int status;
+    int status = 0;
     pamAuthRequestOut_t *result;
 
     *pamAuthRequestOut = (pamAuthRequestOut_t *)
@@ -59,6 +60,11 @@ _rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     status = PAM_AUTH_NOT_BUILT_INTO_SERVER;
     if (status) return(status);
 
+    status = pamAuthenticate(pamAuthRequestInp->pamUser,
+                             pamAuthRequestInp->pamPassword);
+    if (status) {
+      return(status);
+    }
 
     result->irodsPamPassword = (char*)malloc(100);
     if (result->irodsPamPassword == 0) return (SYS_MALLOC_ERR);
