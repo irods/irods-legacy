@@ -21,6 +21,7 @@
 #define DEPOSIT_OP			"deposit"
 #define BUY_BOND_OP			"buy_bonds"
 #define ACCOUNT_ID_KW			"account_id"
+#define ACCOUNT_TYPE_KW			"account_type"
 #define NAME_KW				"name"
 #define AMOUNT_KW			"amount"
 #define CASH_AMOUNT_KW			"cash_amount"
@@ -36,9 +37,16 @@ typedef struct {
 int 
 runBankTest ();
 int
+doNewAccount (CURL *easyhandle, char *account_type, char *name,
+char **accountIDOut);
+int
 doDeposit (CURL *easyhandle, char *account_id, float ammount);
+int
+doBuyBond (CURL *easyhandle, char *account_id, float cash_amount);
 size_t
 decodeDepositOut (void *buffer, size_t size, size_t nmemb, void *userp);
+size_t
+newAccountOut (void *buffer, size_t size, size_t nmemb, void *userp);
 
 int
 main(int argc, char **argv)
@@ -57,18 +65,86 @@ int
 runBankTest ()
 {
     CURL *easyhandle;
-    CURLcode res;
-    char myUrl[MAX_NAME_LEN];
     int status;
+    char *account_id;
 
     easyhandle = curl_easy_init();
     if(!easyhandle) {
         printf("Curl Error: Initialization failed\n");
         return(-1);
     } 
-    status = doDeposit (easyhandle, "1c231090c69b4eceae1c469f85da10ea", 125.0);
+
+    status = doNewAccount (easyhandle, "Savings", "John", &account_id);
+
+    if (status < 0) return status;
+
+    status = doDeposit (easyhandle, account_id, 500.0);
+
+    if (status < 0) return status;
+
+    status = doBuyBond (easyhandle, account_id, 200.0);
+
+    free (account_id);
 
     return status;
+}
+
+int
+doNewAccount (CURL *easyhandle, char *account_type, char *name, 
+char **accountIDOut)
+{
+    /* account_type can be Checking or Savings */
+    json_t *obj;
+    CURLcode res;
+    char myUrl[MAX_NAME_LEN];
+    char postStr[MAX_NAME_LEN];
+    char *objStr;
+    bankOprOut_t bankOprOut;
+
+    obj = json_pack ("{s:{s:s,s:s,s:{s:s,s:s}}}",
+                          "serviceRequest",
+                          "serviceName", BANK_SERVICE_NAME,
+                          "serviceOp", NEW_ACCOUNT_OP,
+                          "params",
+                          ACCOUNT_TYPE_KW, account_type,
+                          NAME_KW, name);
+    if (obj == NULL) {
+        rodsLog (LOG_ERROR, "doNewAccount: json_pack error");
+        return -2;
+    }
+
+    objStr = json_dumps (obj, 0);
+
+    if (objStr == NULL) {
+        rodsLog (LOG_ERROR, "doNewAccount: json_dumps error");
+        return -2;
+    }
+
+    snprintf (postStr, MAX_NAME_LEN, "payload=%s", objStr);
+    /* deposit */
+    snprintf (myUrl, MAX_NAME_LEN, "%s:%s/%s/%s/%s",
+      OOI_GATEWAY_URL, OOI_GATEWAY_PORT, ION_SERVICE, BANK_SERVICE_NAME,
+      NEW_ACCOUNT_OP);
+    printf ("%s\n", myUrl);
+
+    curl_easy_setopt(easyhandle, CURLOPT_POSTFIELDS, postStr);
+    curl_easy_setopt(easyhandle, CURLOPT_URL, myUrl);
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, newAccountOut);
+    bzero (&bankOprOut, sizeof (bankOprOut));
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &bankOprOut);
+
+    res = curl_easy_perform (easyhandle);
+    free (obj);
+    free (objStr);
+    if (res != CURLE_OK) {
+        rodsLog (LOG_ERROR, "doNewAccount: curl_easy_perform error: %d", res);
+        return -1;
+    }
+    printf ("output = %s\n", bankOprOut.account_id);
+    *accountIDOut = strdup (bankOprOut.account_id);
+    
+
+    return 0;
 }
 
 int
@@ -81,13 +157,15 @@ doDeposit (CURL *easyhandle, char *account_id, float ammount)
     char *objStr;
     bankOprOut_t bankOprOut;
 
+    printf ("Depositing $ %10.2f\n", ammount);
+
     obj = json_pack ("{s:{s:s,s:s,s:{s:s,s:f}}}",
                           "serviceRequest",
                           "serviceName", BANK_SERVICE_NAME,
                           "serviceOp", DEPOSIT_OP,
                           "params",
                           ACCOUNT_ID_KW, account_id,
-                          AMOUNT_KW, 125.00); 
+                          AMOUNT_KW, ammount); 
     if (obj == NULL) {
         rodsLog (LOG_ERROR, "doDeposit: json_pack error");
         return -2;
@@ -113,34 +191,72 @@ doDeposit (CURL *easyhandle, char *account_id, float ammount)
     bzero (&bankOprOut, sizeof (bankOprOut));
     curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &bankOprOut); 
 
-    res = curl_easy_perform(easyhandle); 
+    res = curl_easy_perform (easyhandle); 
     free (obj);
     free (objStr);
     if (res != CURLE_OK) {
-        rodsLog (LOG_ERROR, "runBankTest: deposit error: %d", res);
+        rodsLog (LOG_ERROR, "doDeposit: curl_easy_perform error: %d", res);
         return -1;
     }
-    printf ("output = %s\n", bankOprOut.reponseStr);
+    printf ("doDeposit output = %s\n", bankOprOut.reponseStr);
 
     return 0;
 }
-#if 0
-    /* buy_bonds */
-    snprintf (myUrl, MAX_NAME_LEN, "%s:%s/%s/%s/%s", 
-      OOI_GATEWAY_URL, OOI_GATEWAY_PORT, ION_SERVICE, BANK_SERVICE_NAME, 
-      BUY_BOND_OP_KW);
 
-    curl_easy_setopt(easyhandle, CURLOPT_POSTFIELDS, BUY_BOND_PAYLOAD); 
+int
+doBuyBond (CURL *easyhandle, char *account_id, float cash_amount)
+{
+    json_t *obj;
+    CURLcode res;
+    char myUrl[MAX_NAME_LEN];
+    char postStr[MAX_NAME_LEN];
+    char *objStr;
+    bankOprOut_t bankOprOut;
+
+    printf ("Buying $ %10.2f bonds\n", cash_amount);
+
+    obj = json_pack ("{s:{s:s,s:s,s:{s:s,s:f}}}",
+                          "serviceRequest",
+                          "serviceName", BANK_SERVICE_NAME,
+                          "serviceOp", BUY_BOND_OP,
+                          "params",
+                          ACCOUNT_ID_KW, account_id,
+                          CASH_AMOUNT_KW, cash_amount);
+    if (obj == NULL) {
+        rodsLog (LOG_ERROR, "doBuyBond: json_pack error");
+        return -2;
+    }
+    objStr = json_dumps (obj, 0);
+
+    if (objStr == NULL) {
+        rodsLog (LOG_ERROR, "doBuyBond: json_dumps error");
+        return -2;
+    }
+
+    snprintf (postStr, MAX_NAME_LEN, "payload=%s", objStr);
+    /* deposit */
+    snprintf (myUrl, MAX_NAME_LEN, "%s:%s/%s/%s/%s",
+      OOI_GATEWAY_URL, OOI_GATEWAY_PORT, ION_SERVICE, BANK_SERVICE_NAME,
+      BUY_BOND_OP);
+    printf ("%s\n", myUrl);
+
+    curl_easy_setopt(easyhandle, CURLOPT_POSTFIELDS, postStr);
     curl_easy_setopt(easyhandle, CURLOPT_URL, myUrl);
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, decodeDepositOut);
+    bzero (&bankOprOut, sizeof (bankOprOut));
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &bankOprOut);
 
-    res = curl_easy_perform(easyhandle); 
+    res = curl_easy_perform (easyhandle);
+    free (obj);
+    free (objStr);
     if (res != CURLE_OK) {
-        rodsLog (LOG_ERROR, "runBankTest: buy_bonds error: %d", res);
+        rodsLog (LOG_ERROR, "doBuyBond: curl_easy_perform error: %d", res);
         return -1;
     }
+    printf ("doBuyBond output = %s\n", bankOprOut.reponseStr);
+
     return 0;
 }
-#endif
 
 size_t
 decodeDepositOut (void *buffer, size_t size, size_t nmemb, void *userp)
@@ -173,6 +289,42 @@ decodeDepositOut (void *buffer, size_t size, size_t nmemb, void *userp)
     responseStr = json_string_value (responseObj);
     bankOprOut = (bankOprOut_t *) userp;
     strncpy (bankOprOut->reponseStr, responseStr, MAX_NAME_LEN);
+    free (root);
+
+    return nmemb*size;
+}
+
+size_t
+newAccountOut (void *buffer, size_t size, size_t nmemb, void *userp)
+{
+    json_t *root, *dataObj, *responseObj;
+    json_error_t jerror;
+    const char *responseStr;
+    bankOprOut_t *bankOprOut;
+
+    root = json_loads((const char*) buffer, 0, &jerror);
+    if (!root) {
+        rodsLog (LOG_ERROR,
+          "decodeDepositOut: json_loads error. %s", jerror.text);
+        return 0;
+    } 
+    dataObj = json_object_get(root, "data");
+    if (!dataObj) {
+       rodsLog (LOG_ERROR,
+          "decodeDepositOut: json_object_get data failed.");
+	free (root);
+        return 0;
+    }
+    responseObj = json_object_get(dataObj, "GatewayResponse");
+    if (!responseObj) {
+       rodsLog (LOG_ERROR,
+          "decodeDepositOut: json_object_get GatewayResponse failed.");
+	free (root);
+        return 0;
+    }
+    responseStr = json_string_value (responseObj);
+    bankOprOut = (bankOprOut_t *) userp;
+    strncpy (bankOprOut->account_id, responseStr, MAX_NAME_LEN);
     free (root);
 
     return nmemb*size;

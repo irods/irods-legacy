@@ -1,6 +1,7 @@
 ifndef buildDir
 buildDir = ../..
 endif
+# OOI_TEST=1
 
 include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk
@@ -18,12 +19,22 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 -I$(buildDir)/lib/api/include -I$(buildDir)/lib/md5/include
 
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
+ifdef OOI_TEST
+LDFLAGS+= -ljansson
+endif
 
 TESTOBJS = luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o listcoll.o nctest.o
+ifdef OOI_TEST
+TESTOBJS+=  ooitest.o
+endif
+
 
 TARGETS = luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
 xmsgtest listcoll nctest
+ifdef OOI_TEST
+TARGETS+= ooitest
+endif
 
 ifdef TAR_STRUCT_FILE
 # TARGETS+=tartest
@@ -113,6 +124,11 @@ listcoll: listcoll.o
 
 nctest: nctest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+
+ifdef OOI_TEST
+ooitest: ooitest.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+endif
 
 ifdef TAR_STRUCT_FILE
 tartest: tartest.o
