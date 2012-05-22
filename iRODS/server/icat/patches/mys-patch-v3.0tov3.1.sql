@@ -1,5 +1,12 @@
 --- Run these SQL statements using the MySQL client mysql
 --- to upgrade from a 3.0 MySQL ICAT to 3.1.
+---
+--- Note: the string 'tempZone' in the last insert should be changed
+--- to your zone name.  You need to do this manually for updates but
+--- this is handled automatically when installing a new ICAT as the
+--- script modifies tempZone to your zone name.  For this change, we
+--- should have used an 'update' instead of the 'drop' and 'insert'
+--- but this comment is being added post-release.
 
 create table R_TICKET_MAIN
 (
