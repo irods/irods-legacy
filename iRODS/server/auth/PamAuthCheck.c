@@ -25,48 +25,23 @@
   check   auth       required     pam_unix_auth.so
   check   account    required     pam_unix_acct.so
 
-  Loosely based on PAM example programs: check_user.c and ckpasswd.c.
+  Loosely based on various PAM examples.
 */
 
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
 #include <stdio.h>
 
+const char pam_service[] = "irods";
+struct pam_response *reply;
 
-/*
-**  The PAM conversation function.
-**
-**  Since we already have all the information and can't ask the user
-**  questions, we can't quite follow the real PAM protocol.  Instead, we just
-**  return the password in response to every question that PAM asks.  There
-**  appears to be no generic way to determine whether the message in question
-**  is indeed asking for the password....
-**
-**  This function allocates an array of struct pam_response to return to the
-**  PAM libraries that's never freed.  For this program, this isn't much of an
-**  issue, since it will likely only be called once and then the program will
-**  exit.  This function uses malloc and strdup instead of xmalloc and xstrdup
-**  intentionally so that the PAM conversation will be closed cleanly if we
-**  run out of memory rather than simply terminated.
-**
-**  appdata_ptr contains the password we were given.
-*/
-static int
-pass_conv(int num_msg, const struct pam_message **msgm,
-          struct pam_response **response, void *appdata_ptr)
-{
-    int i;
-
-    *response = malloc(num_msg * sizeof(struct pam_response));
-    if (*response == NULL)
-        return PAM_CONV_ERR;
-    for (i = 0; i < num_msg; i++) {
-        (*response)[i].resp = strdup((char *)appdata_ptr);
-        (*response)[i].resp_retcode = 0;
-    }
-    return PAM_SUCCESS;
+int 
+null_conv(int num_msg, const struct pam_message **msg, 
+	  struct pam_response **resp, void *appdata_ptr) {
+  *resp = reply;
+  return PAM_SUCCESS;
 }
-
+ 
 int main(int argc, char *argv[])
 {
     pam_handle_t *pamh=NULL;
@@ -76,15 +51,15 @@ int main(int argc, char *argv[])
 
     static char password[500];
 
-    static char *user="nobody";
-    struct pam_conv conv;
-
+    static char *username="nobody";
+    static struct pam_conv conv = { null_conv, NULL };
+ 
     if(argc == 2) {
-	user = argv[1];
+	username = argv[1];
     }
     else {
 	fprintf(stderr, "Usage: PamAuthCheck username\n");
-	exit(1);
+	exit(2);
     }
 
     /* read the pw from stdin */
@@ -92,15 +67,25 @@ int main(int argc, char *argv[])
     if (debug>0) printf("nb=%d\n",nb);
     if (password[nb-1]=='\n') password[nb-1]='\0';
 
-    conv.conv = pass_conv;
-    conv.appdata_ptr = (void *)&password;
-    retval = pam_start("check", user, &conv, &pamh);
+    retval = pam_start(pam_service, username, &conv, &pamh);
     if (debug>0) printf("retval 1=%d\n",retval);
-	
-    if (retval == PAM_SUCCESS) {
-        retval = pam_authenticate(pamh, 0);    /* check username-password */
-	if (debug>0) printf("retval 2=%d\n",retval);
+
+    if (retval != PAM_SUCCESS) {
+	fprintf(stderr, "PamAuthCheck: pam_start error\n");
+        exit(3);
     }
+
+    reply = (struct pam_response*)malloc(sizeof(struct pam_response));
+    if (reply == NULL) {
+	fprintf(stderr, "PamAuthCheck: malloc error\n");
+        exit(4);
+    }
+    
+    reply[0].resp = strdup(password);
+    reply[0].resp_retcode = 0;
+    	
+    retval = pam_authenticate(pamh, 0);    /* check username-password */
+    if (debug>0) printf("retval 2=%d\n",retval);
 
     strcpy(password, "                    ");
 
@@ -113,7 +98,7 @@ int main(int argc, char *argv[])
     if (pam_end(pamh,retval) != PAM_SUCCESS) {   /* close Linux-PAM */
 	pamh = NULL;
 	fprintf(stderr, "PamAuthCheck: failed to release authenticator\n");
-	exit(1);
+	exit(5);
     }
 
     return ( retval == PAM_SUCCESS ? 0:1 );   /* indicate success (valid

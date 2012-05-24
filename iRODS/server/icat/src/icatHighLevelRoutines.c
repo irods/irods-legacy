@@ -77,10 +77,8 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
    passwords.
  */
 #define IRODS_PAM_PASSWORD_LEN 20
-#if 0
+
 #define IRODS_PAM_PASSWORD_TIME "1209600"  /* two weeks in seconds */
-#endif
-#define IRODS_PAM_PASSWORD_TIME "10"  /* for testing */
 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
