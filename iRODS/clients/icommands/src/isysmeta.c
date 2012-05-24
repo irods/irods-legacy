@@ -439,6 +439,8 @@ main(int argc, char **argv)
       }
    }
 
+   printErrorStack(Conn->rError);
+
    rcDisconnect(Conn);
 
    if (didOne==0) {

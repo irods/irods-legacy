@@ -549,6 +549,8 @@ main(int argc, char **argv) {
       }
    }
 
+   printErrorStack(Conn->rError);
+
    rcDisconnect(Conn);
 
    if (lastCommandStatus != 0) exit(4);

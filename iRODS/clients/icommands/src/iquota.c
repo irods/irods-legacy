@@ -555,6 +555,8 @@ main(int argc, char **argv) {
       printf("Information was set at %s\n", quotaTime);
    }
    
+   printErrorStack(Conn->rError);
+
    rcDisconnect(Conn);
 
    exit(0);

@@ -100,6 +100,8 @@ main(int argc, char **argv) {
       }
    }
 
+   printErrorStack(Conn->rError);
+
    rcDisconnect(Conn);
 
    if (status) exit(4);

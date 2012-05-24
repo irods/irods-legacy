@@ -72,6 +72,8 @@ main(int argc, char **argv) {
 	freeGenQueryOut (&procStatOut);
     }
 
+    printErrorStack(conn->rError);
+
     rcDisconnect(conn);
 
     if (status < 0) {

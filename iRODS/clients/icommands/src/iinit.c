@@ -242,6 +242,8 @@ main(int argc, char **argv)
        exit (7);
     }
 
+    printErrorStack(Conn->rError);
+
     rcDisconnect(Conn);
 
     /* Save updates to .irodsEnv. */

@@ -72,6 +72,8 @@ main(int argc, char **argv) {
 
     status = trimUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
+    printErrorStack(conn->rError);
+
     rcDisconnect(conn);
 
     if (status < 0) {
