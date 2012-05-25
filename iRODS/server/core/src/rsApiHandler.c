@@ -49,8 +49,14 @@ bytesBuf_t *bsBBuf)
 	rodsLog (LOG_ERROR,
 	  "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber);
 	/* cannot use sendApiReply because it does not know apiInx */
-	sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL, NULL, NULL,
-	  apiInx, rsComm->irodsProt);
+#ifdef USE_SSL
+        if (rsComm->ssl_on)
+            sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL, NULL, NULL,
+                            apiInx, rsComm->irodsProt, rsComm->ssl);
+        else
+#endif
+            sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL, NULL, NULL,
+                         apiInx, rsComm->irodsProt);
 	return (apiInx);
     }
  
@@ -263,8 +269,14 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
        if (status < 0) {
             rodsLog (LOG_NOTICE,
              "sendApiReply: packStruct error, status = %d", status);
-            sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
-              NULL, NULL, status, rsComm->irodsProt);
+#ifdef USE_SSL
+            if (rsComm->ssl_on) 
+                sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
+                             NULL, NULL, status, rsComm->irodsProt, rsComm->ssl);
+            else
+#endif
+                sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
+                             NULL, NULL, status, rsComm->irodsProt);
 //#ifndef windows_platform
             svrChkReconnAtSendEnd (rsComm);
 //#endif
@@ -287,8 +299,14 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
        if (status < 0) {
             rodsLog (LOG_NOTICE,
              "sendApiReply: packStruct error, status = %d", status);
-            sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
-              NULL, NULL, status, rsComm->irodsProt);
+#ifdef USE_SSL
+            if (rsComm->ssl_on) 
+                sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
+                             NULL, NULL, status, rsComm->irodsProt, rsComm->ssl);
+            else
+#endif
+                sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
+                             NULL, NULL, status, rsComm->irodsProt);
 //#ifndef windows_platform
             svrChkReconnAtSendEnd (rsComm);
 //#endif
@@ -300,8 +318,14 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
         myRErrorBBuf = NULL;
     }
 
-    status = sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, myOutStructBBuf,
-      myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt);
+#ifdef USE_SSL
+    if (rsComm->ssl_on) 
+        status = sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, myOutStructBBuf,
+                              myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt, rsComm->ssl);
+    else
+#endif
+        status = sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, myOutStructBBuf,
+                              myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt);
 	
     if (status < 0) {
 	int status1;
@@ -329,9 +353,16 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 	        /* should not be here */
                 rodsLog (LOG_NOTICE,
                   "sendApiReply: Switch connection and retry sendRodsMsg");
-	        status = sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, 
-	          myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, 
-	          rsComm->irodsProt);
+#ifdef USE_SSL
+                if (rsComm->ssl_on) 
+                    status = sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, 
+                                          myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, 
+                                          rsComm->irodsProt, rsComm->ssl);
+                else
+#endif
+                    status = sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, 
+                                          myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, 
+                                          rsComm->irodsProt);
 	        if (status >= 0) {
 		    rodsLog (LOG_NOTICE,
                       "sendApiReply: retry sendRodsMsg succeeded");
@@ -481,7 +512,12 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
         tv.tv_sec = READ_HEADER_TIMEOUT_IN_SEC;
         tv.tv_usec = 0;
         while (1) {
-            status = readMsgHeader (rsComm->sock, &myHeader, &tv);
+#ifdef USE_SSL
+            if (rsComm->ssl_on)
+                status = sslReadMsgHeader (rsComm->sock, &myHeader, &tv, rsComm->ssl);
+            else
+#endif
+                status = readMsgHeader (rsComm->sock, &myHeader, &tv);
 	    if (status < 0) {
 		if (isL1descInuse () && retryCnt < MAX_READ_HEADER_RETRY) {
                     rodsLogError (LOG_ERROR, status,
@@ -501,7 +537,12 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
         }
 #endif
     } else {
-        status = readMsgHeader (rsComm->sock, &myHeader, NULL);
+#ifdef USE_SSL
+        if (rsComm->ssl_on)
+            status = sslReadMsgHeader (rsComm->sock, &myHeader, NULL, rsComm->ssl);
+        else
+#endif
+            status = readMsgHeader (rsComm->sock, &myHeader, NULL);
     }
 //#endif
 
@@ -529,7 +570,12 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 	    svrSwitchConnect (rsComm);
 	    pthread_mutex_unlock (&rsComm->lock);
 #endif
-	    status = readMsgHeader (rsComm->sock, &myHeader, NULL);
+#ifdef USE_SSL
+            if (rsComm->ssl_on)
+                status = sslReadMsgHeader (rsComm->sock, &myHeader, NULL, rsComm->ssl);
+            else
+#endif
+                status = readMsgHeader (rsComm->sock, &myHeader, NULL);
 	    if (status < 0) {
                 svrChkReconnAtReadEnd (rsComm);
 	        return (savedStatus);
@@ -550,8 +596,14 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
             initSysTiming ("irodsAgent", "recv request", 0);
     }
 #endif
-    status = readMsgBody (rsComm->sock, &myHeader, &inputStructBBuf,
-      &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL);
+#ifdef USE_SSL
+    if (rsComm->ssl_on)
+        status = sslReadMsgBody (rsComm->sock, &myHeader, &inputStructBBuf,
+                              &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL, rsComm->ssl);
+    else
+#endif
+        status = readMsgBody (rsComm->sock, &myHeader, &inputStructBBuf,
+                              &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL);
     if (status < 0) {
         rodsLog (LOG_NOTICE,
           "agentMain: readMsgBody error. status = %d", status);

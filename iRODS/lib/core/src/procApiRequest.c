@@ -142,8 +142,15 @@ bytesBuf_t *inputBsBBuf)
         inputBsBBuf = NULL;
     }
 
-    status = sendRodsMsg (conn->sock, RODS_API_REQ_T, myInputStructBBuf,
-      inputBsBBuf, NULL, RcApiTable[apiInx].apiNumber, conn->irodsProt);
+#ifdef USE_SSL
+    if (conn->ssl_on)
+        status = sslSendRodsMsg (conn->sock, RODS_API_REQ_T, myInputStructBBuf,
+                              inputBsBBuf, NULL, RcApiTable[apiInx].apiNumber, 
+                              conn->irodsProt, conn->ssl);
+    else
+#endif
+        status = sendRodsMsg (conn->sock, RODS_API_REQ_T, myInputStructBBuf,
+                              inputBsBBuf, NULL, RcApiTable[apiInx].apiNumber, conn->irodsProt);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -170,9 +177,17 @@ bytesBuf_t *inputBsBBuf)
                 /* should not be here */
                 rodsLog (LOG_NOTICE,
                   "sendApiRequest: Switch connection and retry sendRodsMsg");
-        	status = sendRodsMsg (conn->sock, RODS_API_REQ_T, 
-		  myInputStructBBuf, inputBsBBuf, NULL, 
-		    RcApiTable[apiInx].apiNumber, conn->irodsProt);
+#ifdef USE_SSL
+                if (conn->ssl_on) 
+                    status = sslSendRodsMsg (conn->sock, RODS_API_REQ_T, 
+                                          myInputStructBBuf, inputBsBBuf, NULL, 
+                                             RcApiTable[apiInx].apiNumber, conn->irodsProt,
+                                             conn->ssl);
+                else
+#endif
+                    status = sendRodsMsg (conn->sock, RODS_API_REQ_T, 
+                                          myInputStructBBuf, inputBsBBuf, NULL, 
+                                          RcApiTable[apiInx].apiNumber, conn->irodsProt);
                 if (status >= 0) {
                     rodsLog (LOG_NOTICE,
                       "sendApiRequest: retry sendRodsMsg succeeded");
@@ -229,7 +244,12 @@ bytesBuf_t *outBsBBuf)
         return (USER_API_INPUT_ERR);
     }
 
-    status = readMsgHeader (conn->sock, &myHeader, NULL);
+#ifdef USE_SSL
+    if (conn->ssl_on) 
+        status = sslReadMsgHeader (conn->sock, &myHeader, NULL, conn->ssl);
+    else
+#endif
+        status = readMsgHeader (conn->sock, &myHeader, NULL);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -254,7 +274,12 @@ bytesBuf_t *outBsBBuf)
 #else
             pthread_mutex_unlock (&conn->lock);
 #endif
-            status = readMsgHeader (conn->sock, &myHeader, NULL);
+#ifdef USE_SSL
+            if (conn->ssl_on)
+                status = sslReadMsgHeader (conn->sock, &myHeader, NULL, conn->ssl);
+            else
+#endif
+                status = readMsgHeader (conn->sock, &myHeader, NULL);
             if (status < 0) {
                 cliChkReconnAtReadEnd (conn);
                 return (savedStatus);
@@ -268,8 +293,14 @@ bytesBuf_t *outBsBBuf)
 #endif
     }
 
-    status = readMsgBody (conn->sock, &myHeader, &outStructBBuf, outBsBBuf,
-      &errorBBuf, conn->irodsProt, NULL);
+#ifdef USE_SSL
+    if (conn->ssl_on)
+        status = sslReadMsgBody (conn->sock, &myHeader, &outStructBBuf, outBsBBuf,
+                              &errorBBuf, conn->irodsProt, NULL, conn->ssl);
+    else
+#endif
+        status = readMsgBody (conn->sock, &myHeader, &outStructBBuf, outBsBBuf,
+                              &errorBBuf, conn->irodsProt, NULL);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "readAndProcApiReply: readMsgBody error. status = %d", status);

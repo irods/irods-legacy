@@ -27,6 +27,10 @@
 #include <boost/thread/condition.hpp>
 #endif
 
+#ifdef USE_SSL
+#include <openssl/ssl.h>
+#endif
+
 #ifdef USE_BOOST_ASIO
 // =-=-=-=-=-=-=-
 // JMC :: my wrapper around boost::asio tcp & udp sockets
@@ -128,6 +132,11 @@ typedef struct {
     procState_t reconnThrState;
     operProgress_t operProgress;
     fileRestart_t fileRestart;
+#ifdef USE_SSL
+    int ssl_on;
+    SSL_CTX *ssl_ctx;
+    SSL *ssl;
+#endif
 } rcComm_t;
 
 typedef struct {
@@ -181,6 +190,13 @@ typedef struct {
     procState_t clientState;
     procState_t reconnThrState;
     int gsiRequest;
+#ifdef USE_SSL
+    int ssl_on;
+    SSL_CTX *ssl_ctx;
+    SSL *ssl;
+    int ssl_do_accept;
+    int ssl_do_shutdown;
+#endif
 } rsComm_t;
 
 void rcPipSigHandler ();

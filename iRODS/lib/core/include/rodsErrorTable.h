@@ -630,6 +630,14 @@
 #define NETCDF_UNMATCHED_NAME_ERR	-2016000
 #define NETCDF_NO_UNLIMITED_DIM		-2017000
 
+/* SSL protocol error codes */
+
+#define SSL_NOT_BUILT_INTO_CLIENT       -2100000
+#define SSL_NOT_BUILT_INTO_SERVER       -2101000
+#define SSL_INIT_ERROR                  -2102000
+#define SSL_HANDSHAKE_ERROR             -2103000
+#define SSL_SHUTDOWN_ERROR              -2104000
+
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996
 #define SYS_HANDLER_DONE_WITH_ERROR		-99999997

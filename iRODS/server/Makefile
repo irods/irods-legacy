@@ -200,6 +200,9 @@ ifdef PAM_AUTH
 CFLAGS +=       -DPAM_AUTH
 LDFLAGS+=       -lpam
 endif
+ifdef USE_SSL
+CFLAGS +=	-DUSE_SSL
+endif
 ifdef IRODS_SYSLOG
 CFLAGS +=		-DIRODS_SYSLOG
 endif
@@ -412,6 +415,10 @@ LIB_KRB_AUTH = \
 endif
 
 LDFLAGS += $(LIB_KRB_AUTH)
+endif
+
+ifdef USE_SSL
+LDFLAGS+=       -lssl -lcrypto
 endif
 
 #

@@ -66,7 +66,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/phybunUtil.o \
 		$(libCoreObjDir)/scanUtil.o \
 		$(libCoreObjDir)/fsckUtil.o \
-		$(libCoreObjDir)/osauth.o
+		$(libCoreObjDir)/osauth.o \
+		$(libCoreObjDir)/sslSockComm.o
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 
@@ -151,6 +152,9 @@ CFLAGS_OPTIONS += -D KRB_AUTH
 endif
 ifdef PAM_AUTH
 CFLAGS_OPTIONS += -D PAM_AUTH
+endif
+ifdef USE_SSL
+CFLAGS_OPTIONS += -D USE_SSL
 endif
 ifdef IRODS_SYSLOG
 CFLAGS_OPTIONS += -D IRODS_SYSLOG

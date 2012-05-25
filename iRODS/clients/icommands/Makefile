@@ -155,6 +155,9 @@ endif
 ifdef PAM_AUTH
 CFLAGS_OPTIONS += -D PAM_AUTH
 endif
+ifdef USE_SSL
+CFLAGS_OPTIONS += -D USE_SSL
+endif
 
 CFLAGS =	$(CFLAGS_OPTIONS) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 
@@ -218,6 +221,9 @@ ifdef CCMALLOC
 LDFLAGS += -L$(CCMALLOC_DIR)/lib
 endif
 
+ifdef USE_SSL
+LDFLAGS        += -lssl -lcrypto
+endif
 
 # JMC :: BOOST	Not needed MW
 # LDFLAGS += -L/home/jasonc/dev/lib/boost/boost_1_45_0/stage/lib -lboost_thread

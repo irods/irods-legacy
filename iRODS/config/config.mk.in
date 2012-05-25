@@ -427,6 +427,13 @@ endif
 # in iRODS.
 # PAM_AUTH = 1
 
+# USE_SSL - build in support for using SSL over the client/server 
+# communication socket. This support consists of two iRODS API calls 
+# that ask the server to "turn on" and "turn off" the SSL protocol 
+# on a given connection. Right now this is only used for the PAM_AUTH 
+# mode, so must be turned on for the PAM_AUTH support to function properly.
+# USE_SSL = 1
+
 # NETCDF_API - specify whether to compile the NETCDF API
 # NETCDF_DIR - the install directory of NETCDF. NETCDF_HDF defines whether
 # the netcdf library has been built to support HDF
