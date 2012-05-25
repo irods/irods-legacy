@@ -30,7 +30,6 @@ static struct pam_conv conv = { null_conv, NULL };
 int
 pamAuthenticate(char *username, char *password)
 {
-    static char fname[] = "pamAuthenticate";
 #ifdef PAM_AUTH
     pam_handle_t *pamh = NULL;
     int rc = 0;
