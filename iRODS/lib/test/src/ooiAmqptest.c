@@ -4,14 +4,12 @@
 #include <stdint.h>
 #include <amqp.h>
 #include <amqp_framing.h>
-#include "utils.h"
 #include <time.h>
 #include <msgpack.h>
+#include "rodsClient.h"
 
-typedef struct BytesBuf {   /* have to add BytesBuf to get Doxygen working */
-    int len;    /* len in bytes in buf */
-    void *buf;
-} bytesBuf_t;
+#define PROD_CHAN	1
+#define CONS_CHAN	2
 
 int 
 initOoiReqProp (amqp_basic_properties_t *props, char *replyQueueName,
@@ -25,6 +23,10 @@ recvApiReplyBody (amqp_connection_state_t conn, int channel,
 amqp_frame_t *frame, bytesBuf_t **extBytesBuf);
 int
 printAmqpHeaders (amqp_table_t *headers);
+int 
+clearProp (amqp_basic_properties_t *props);
+int
+amqp_status (amqp_rpc_reply_t x);
 
 #define NUM_OOI_HEADER_ENTRIES	20
 
@@ -48,27 +50,57 @@ int main(int argc, char const * const *argv) {
   amqp_basic_properties_t *p;
   msgpack_unpacked unpackedRes;
   msgpack_object *unpackedObj;
-  size_t offset = 0;
+  size_t offset;
   char bankId[1204];
+  char apiResult[1204];
+  amqp_rpc_reply_t astatus;
 
   hostname = "localhost";
   port = 5672;
   exchange = "ion_mwan-hp";
   routingkey = "bank";
   replyRoutingkey = "myAPIReply";
+  bzero (&props, sizeof (props));
 
   conn = amqp_new_connection();
 
-  die_on_error(sockfd = amqp_open_socket(hostname, port), "Opening socket");
+  sockfd = amqp_open_socket(hostname, port);
+  if (sockfd < 0) {
+    fprintf(stderr, "amqp_open_socket error, staus = %d\n", sockfd);
+    exit(1);
+  }
   amqp_set_sockfd(conn, sockfd);
-  die_on_amqp_error(amqp_login(conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, "guest", "guest"),
-		    "Logging in");
-  amqp_channel_open(conn, 1);
-  die_on_amqp_error(amqp_get_rpc_reply(conn), "Opening channel");
+  astatus = amqp_login(conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, 
+    "guest", "guest");
+  status = amqp_status (astatus);
+  if (status < 0) {
+    fprintf(stderr, "amqp_login of guest error, staus = %d\n", status);
+    exit(2);
+  }
 
-  queue_declare_ret = amqp_queue_declare(conn, 1, amqp_empty_bytes, 0, 0, 0, 1,
-                                                    amqp_empty_table);
-  die_on_amqp_error(amqp_get_rpc_reply(conn), "Declaring queue");
+  amqp_channel_open(conn, PROD_CHAN);
+  astatus = amqp_get_rpc_reply(conn);
+  status = amqp_status (astatus);
+  if (status < 0) {
+    fprintf(stderr, "amqp_channel_open PROD_CHAN error, staus = %d\n", status);
+    exit(2);
+  }
+  amqp_channel_open(conn, CONS_CHAN);
+  astatus = amqp_get_rpc_reply(conn);
+  status = amqp_status (astatus);
+  if (status < 0) {
+    fprintf(stderr, "amqp_channel_open CONS_CHAN error, staus = %d\n", status);
+    exit(2);
+  }
+
+  queue_declare_ret = amqp_queue_declare(conn, CONS_CHAN, amqp_empty_bytes, 
+                       0, 0, 0, 1, amqp_empty_table);
+  astatus = amqp_get_rpc_reply(conn);
+  status = amqp_status (astatus);
+  if (status < 0) {
+    fprintf(stderr, "queue_declare_ret error, staus = %d\n", status);
+    exit(2);
+  }
   replyQueue = amqp_bytes_malloc_dup(queue_declare_ret->queue);
   if (replyQueue.bytes == NULL) {
     fprintf(stderr, "Out of memory while copying queue name");
@@ -76,9 +108,12 @@ int main(int argc, char const * const *argv) {
   } else {
     printf ("replyQueue name:%s\n", (char *) replyQueue.bytes);
   }
-  amqp_queue_bind(conn, 1, replyQueue, amqp_cstring_bytes(exchange), 
+  amqp_queue_bind(conn, CONS_CHAN, replyQueue, amqp_cstring_bytes(exchange), 
     amqp_cstring_bytes(replyRoutingkey), amqp_empty_table);
-  amqp_basic_consume(conn, 1, replyQueue, amqp_empty_bytes, 0, 0, 0, amqp_empty_table);
+  /* XXXXXX setting no_ack in amqp_basic_consume is important because it does
+   * not work with ack */
+  amqp_basic_consume(conn, CONS_CHAN, replyQueue, amqp_empty_bytes, 0, 1, 0, 
+    amqp_empty_table);
 
   snprintf (receiverStr, 128, "%s,%s", exchange, routingkey);
   snprintf (tsStr, 128, "%d", (int) time (0));
@@ -104,18 +139,20 @@ int main(int argc, char const * const *argv) {
 
   printf ("len=%d, data=%s\n", message_bytes.len, (char *) message_bytes.bytes);
 
-  die_on_error(amqp_basic_publish (conn,
-				    1,
+  status = amqp_basic_publish (conn, PROD_CHAN,
 				    amqp_cstring_bytes(exchange),
 				    amqp_cstring_bytes(routingkey),
 				    0,
 				    0,
 				    &props,
-				    message_bytes),
-		 "Publishing");
-
+				    message_bytes);
+  if (status < 0) {
+    fprintf(stderr, "amqp_basic_publish error, staus = %d\n", status);
+    exit(2);
+  }
   msgpack_sbuffer_free(buffer);
   msgpack_packer_free (pk);
+  clearProp (&props);
   status = initRecvApiReply (conn, &frame);
   if (status < 0) return status;
 
@@ -125,11 +162,11 @@ int main(int argc, char const * const *argv) {
   p = (amqp_basic_properties_t *) frame.payload.properties.decoded;
   printAmqpHeaders (&p->headers);
 
-  status = recvApiReplyBody (conn, 1, &frame, &extBytesBuf);
+  status = recvApiReplyBody (conn, CONS_CHAN, &frame, &extBytesBuf);
   if (status < 0) return status;
 
   msgpack_unpacked_init(&unpackedRes);
-
+  offset = 0;
   while (msgpack_unpack_next(&unpackedRes, 
    (const char*) frame.payload.body_fragment.bytes, 
     frame.payload.body_fragment.len, &offset)) {
@@ -152,10 +189,168 @@ int main(int argc, char const * const *argv) {
     puts("");
 #endif
   }
+  snprintf (tsStr, 128, "%d", (int) time (0));
+  initOoiReqProp (&props, (char *) replyToStr, receiverStr,
+      (char *) "deposit", (char *) "bank_deposit_in", tsStr);
+
+  /* creates buffer and serializer instance. */
+  buffer = msgpack_sbuffer_new();
+  pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
+  msgpack_pack_map (pk, 2);
+  msgpack_pack_raw (pk, strlen ("account_id"));
+  msgpack_pack_raw_body (pk, "account_id", strlen ("account_id"));
+  msgpack_pack_raw (pk, strlen (bankId));
+  msgpack_pack_raw_body (pk, bankId, strlen (bankId));
+  msgpack_pack_raw (pk, strlen ("amount"));
+  msgpack_pack_raw_body (pk, "amount", strlen ("amount"));
+  msgpack_pack_float (pk, 150.0);
+
+  message_bytes.len = buffer->size;
+  message_bytes.bytes = buffer->data;
+
+  printf ("len=%d, data=%s\n", message_bytes.len, (char *) message_bytes.bytes);
+
+  status = amqp_basic_publish (conn,
+                                    PROD_CHAN,
+                                    amqp_cstring_bytes(exchange),
+                                    amqp_cstring_bytes(routingkey),
+                                    0,
+                                    0,
+                                    &props,
+                                    message_bytes);
+
+  if (status < 0) {
+    fprintf(stderr, "amqp_basic_publish error, staus = %d\n", status);
+    exit(2);
+  }
+
+  msgpack_sbuffer_free(buffer);
+  msgpack_packer_free (pk);
+  clearProp (&props);
+
+  status = initRecvApiReply (conn, &frame);
+  if (status < 0) return status;
+
+  status = recvApiReplyProp (conn, &frame);
+  if (status < 0) return status;
+
+  p = (amqp_basic_properties_t *) frame.payload.properties.decoded;
+  printAmqpHeaders (&p->headers);
+
+  status = recvApiReplyBody (conn, CONS_CHAN, &frame, &extBytesBuf);
+  if (status < 0) return status;
+
+  msgpack_unpacked_init(&unpackedRes);
+
+  offset = 0;
+  while (msgpack_unpack_next(&unpackedRes,
+   (const char*) frame.payload.body_fragment.bytes,
+    frame.payload.body_fragment.len, &offset)) {
+    unpackedObj = &unpackedRes.data;
+    /* expect a str return */
+    if (unpackedObj->type != MSGPACK_OBJECT_RAW) {
+      fprintf (stderr, "unexpected unpacked type %d\n", unpackedObj->type);
+    } else {
+      if (unpackedObj->via.raw.size >= 1024) {
+        fprintf (stderr, "unpackedObj size %d too large\n",
+          unpackedObj->via.raw.size);
+      } else {
+          strncpy (apiResult, unpackedObj->via.raw.ptr, unpackedObj->via.raw.size);
+          apiResult[unpackedObj->via.raw.size] = '\0';
+          printf ("apiResult = %s\n", apiResult);
+      }
+    }
+  }
+
+  /* list account */
+  snprintf (tsStr, 128, "%d", (int) time (0));
+  initOoiReqProp (&props, (char *) replyToStr, receiverStr,
+      (char *) "list_accounts", (char *) "bank_list_accounts_in", tsStr);
+
+  /* creates buffer and serializer instance. */
+  buffer = msgpack_sbuffer_new();
+  pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
+  msgpack_pack_map (pk, 1);
+  msgpack_pack_raw (pk, strlen ("name"));
+  msgpack_pack_raw_body (pk, "name", strlen ("name"));
+  msgpack_pack_raw (pk, strlen ("John"));
+  msgpack_pack_raw_body (pk, "John", strlen ("John"));
+
+  message_bytes.len = buffer->size;
+  message_bytes.bytes = buffer->data;
+
+  printf ("len=%d, data=%s\n", message_bytes.len, (char *) message_bytes.bytes);
+
+  status = amqp_basic_publish (conn,
+                                    PROD_CHAN,
+                                    amqp_cstring_bytes(exchange),
+                                    amqp_cstring_bytes(routingkey),
+                                    0,
+                                    0,
+                                    &props,
+                                    message_bytes);
+  if (status < 0) {
+    fprintf(stderr, "amqp_basic_publish error, staus = %d\n", status);
+    exit(2);
+  }
+  msgpack_sbuffer_free(buffer);
+  msgpack_packer_free (pk);
+  clearProp (&props);
+  status = initRecvApiReply (conn, &frame);
+  if (status < 0) return status;
+
+  status = recvApiReplyProp (conn, &frame);
+  if (status < 0) return status;
+  p = (amqp_basic_properties_t *) frame.payload.properties.decoded;
+  printAmqpHeaders (&p->headers);
+
+  status = recvApiReplyBody (conn, CONS_CHAN, &frame, &extBytesBuf);
+  if (status < 0) return status;
+
+  msgpack_unpacked_init(&unpackedRes);
+  offset = 0;
+  while (msgpack_unpack_next(&unpackedRes,
+   (const char*) frame.payload.body_fragment.bytes,
+    frame.payload.body_fragment.len, &offset)) {
+    unpackedObj = &unpackedRes.data;
+    /* expect a str return */
+    if (unpackedObj->type == MSGPACK_OBJECT_RAW) {
+      if (unpackedObj->via.raw.size >= 1024) {
+        fprintf (stderr, "unpackedObj size %d too large\n",
+          unpackedObj->via.raw.size);
+      } else {
+          strncpy (bankId, unpackedObj->via.raw.ptr, unpackedObj->via.raw.size);
+          bankId[unpackedObj->via.raw.size] = '\0';
+          printf ("bankId = %s\n", bankId);
+      }
+    } else if (unpackedObj->type == MSGPACK_OBJECT_ARRAY) {
+      msgpack_object_print (stdout, *unpackedObj);
+    } else {
+      msgpack_object_print (stdout, *unpackedObj);
+    }
+  }
+
+
   amqp_maybe_release_buffers(conn);
-  die_on_amqp_error(amqp_channel_close(conn, 1, AMQP_REPLY_SUCCESS), "Closing channel");
-  die_on_amqp_error(amqp_connection_close(conn, AMQP_REPLY_SUCCESS), "Closing connection");
-  die_on_error(amqp_destroy_connection(conn), "Ending connection");
+  astatus = amqp_channel_close(conn, PROD_CHAN, AMQP_REPLY_SUCCESS);
+  status = amqp_status (astatus);
+  if (status < 0) {
+    fprintf(stderr, "amqp_channel_close PROD_CHAN error, staus = %d\n", status);
+  }
+  astatus = amqp_channel_close(conn, CONS_CHAN, AMQP_REPLY_SUCCESS);
+  status = amqp_status (astatus);
+  if (status < 0) {
+    fprintf(stderr, "amqp_channel_close CONS_CHAN error, staus = %d\n", status);
+  }
+  astatus = amqp_connection_close(conn, AMQP_REPLY_SUCCESS);
+  status = amqp_status (astatus);
+  if (status < 0) {
+    fprintf(stderr, "amqp_connection_close error, staus = %d\n", status);
+  }
+  status = amqp_destroy_connection(conn);
+  if (status < 0) {
+    fprintf(stderr, "amqp_destroy_connection error, staus = %d\n", status);
+  }
 
   return 0;
 }
@@ -253,7 +448,9 @@ amqp_frame_t *frame, bytesBuf_t **extBytesBuf)
 #endif
     }
     d = (amqp_basic_deliver_t *) frame->payload.method.decoded;
+#if 0
     amqp_basic_ack(conn, channel, d->delivery_tag, 0);
+#endif
     if (body_received != body_target) {
       /* Can only happen when amqp_simple_wait_frame returns <= 0 */
       /* We break here to close the connection */
@@ -363,6 +560,12 @@ char *receiver, char *op, char *format, char *ts)
   return 0;
 }
 
+int clearProp (amqp_basic_properties_t *props)
+{
+    if (props->headers.entries != NULL) free (props->headers.entries);
+    return 0;
+}
+
 int
 printAmqpHeaders (amqp_table_t *headers)
 {
@@ -398,10 +601,10 @@ printAmqpHeaders (amqp_table_t *headers)
               printf ("%d", headers->entries[i].value.value.u32);
               break;
           case AMQP_FIELD_KIND_I64:
-              printf ("%d", headers->entries[i].value.value.i64);
+              printf ("%lld", headers->entries[i].value.value.i64);
               break;
           case AMQP_FIELD_KIND_U64:
-              printf ("%d", headers->entries[i].value.value.u64);
+              printf ("%lld", headers->entries[i].value.value.u64);
               break;
           case AMQP_FIELD_KIND_F32:
               printf ("%f", headers->entries[i].value.value.f32);
@@ -429,3 +632,41 @@ printAmqpHeaders (amqp_table_t *headers)
     return 0;
 }
 
+int 
+amqp_status (amqp_rpc_reply_t x) {
+  switch (x.reply_type) {
+    case AMQP_RESPONSE_NORMAL:
+      return 0;
+
+    case AMQP_RESPONSE_NONE:
+      fprintf(stderr, "missing RPC reply type!\n");
+      return -1;
+    case AMQP_RESPONSE_LIBRARY_EXCEPTION:
+      fprintf(stderr, "%s\n", amqp_error_string(x.library_error));
+      return -2;
+
+    case AMQP_RESPONSE_SERVER_EXCEPTION:
+      switch (x.reply.id) {
+        case AMQP_CONNECTION_CLOSE_METHOD: {
+          amqp_connection_close_t *m = (amqp_connection_close_t *) x.reply.decoded;
+          fprintf(stderr, "server connection error %d, message: %.*s\n",
+                  m->reply_code,
+                  (int) m->reply_text.len, (char *) m->reply_text.bytes);
+          return -3;
+        }
+        case AMQP_CHANNEL_CLOSE_METHOD: {
+          amqp_channel_close_t *m = (amqp_channel_close_t *) x.reply.decoded;
+          fprintf(stderr, "server channel error %d, message: %.*s\n",
+                  m->reply_code,
+                  (int) m->reply_text.len, (char *) m->reply_text.bytes);
+          return -4;
+        }
+        default:
+          fprintf(stderr, "unknown server error, method id 0x%08X\n", 
+            x.reply.id);
+          return -5;
+      }
+      break;
+  }
+  return 0;
+}

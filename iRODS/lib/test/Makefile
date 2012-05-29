@@ -20,20 +20,20 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 ifdef OOI_TEST
-LDFLAGS+= -ljansson
+LDFLAGS+= -ljansson -lrabbitmq -lmsgpack
 endif
 
 TESTOBJS = luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o listcoll.o nctest.o
 ifdef OOI_TEST
-TESTOBJS+=  ooitest.o
+TESTOBJS+=  ooitest.o ooiAmqptest.o
 endif
 
 
 TARGETS = luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
 xmsgtest listcoll nctest
 ifdef OOI_TEST
-TARGETS+= ooitest
+TARGETS+= ooitest ooiAmqptest
 endif
 
 ifdef TAR_STRUCT_FILE
@@ -127,6 +127,9 @@ nctest: nctest.o
 
 ifdef OOI_TEST
 ooitest: ooitest.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+
+ooiAmqptest: ooiAmqptest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 endif
 
