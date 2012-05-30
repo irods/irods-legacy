@@ -122,6 +122,7 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 	char *tmpChksumStr;
 	dataObjInfo_t *outDataObjInfo = NULL;
 	int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
+#if 0
 	if (rescClass  == COMPOUND_CL) {
 	    /* do we have a good cache copy ? */
             if ((status = getCacheDataInfoForRepl (rsComm, *dataObjInfoHead,
@@ -131,6 +132,8 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 		continue;
 	    }
 	} else if (rescClass == BUNDLE_CL) {
+#endif
+        if (rescClass == BUNDLE_CL) {
 	    /* don't do BUNDLE_CL. should be done on the bundle file */
             tmpDataObjInfo = tmpDataObjInfo->next;
             status = 0;
