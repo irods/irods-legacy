@@ -36,6 +36,7 @@ rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
 	return status;
     }
     l1descInx = ncCloseInp->ncid;
+
     if (l1descInx < 2 || l1descInx >= NUM_L1_DESC) {
         rodsLog (LOG_ERROR,
           "rsNcClose: l1descInx %d out of range",
@@ -52,6 +53,11 @@ rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
 	/* the remote zone resc will do the registration */
 	freeL1desc (l1descInx);
     } else {
+        if (L1desc[l1descInx].oprType == NC_OPEN_GROUP) {
+            /* group open. Just free the L1desc */
+	    freeL1desc (l1descInx);
+	    return 0;
+	}
         remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
 	  L1desc[l1descInx].dataObjInfo, &rodsServerHost);
         if (remoteFlag < 0) {

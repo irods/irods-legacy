@@ -19,15 +19,16 @@
 #endif
 
 typedef struct {
-    char objPath[MAX_NAME_LEN];
+    char objPath[MAX_NAME_LEN];	/* for ncOpenGroup, this is the full group
+				 * path */
     int mode;
-    int flags;		/* not used */
+    int rootNcid;		/* used only for ncOpenGroup */
     rodsULong_t	intialsz;	/* used for nc__open, nc__create */
     rodsULong_t bufrsizehint;	/* used for nc__open, nc__create */
     keyValPair_t condInput;	/* not used */
 } ncOpenInp_t;
 
-#define NcOpenInp_PI "str objPath[MAX_NAME_LEN]; int mode; int flags; double intialsz; double bufrsizehint; struct KeyValPair_PI;"
+#define NcOpenInp_PI "str objPath[MAX_NAME_LEN]; int mode; int rootNcid; double intialsz; double bufrsizehint; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_NC_OPEN rsNcOpen

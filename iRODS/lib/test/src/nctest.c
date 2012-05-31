@@ -5,13 +5,17 @@
 #include "rodsClient.h" 
 
 /* a copy of sfc_pres_temp.nc can be found in ../netcdf/sfc_pres_temp.nc */
-#define TEST_PATH1 "/oneZone/home/rods/netcdf/sfc_pres_temp.nc"
-#define TEST_PATH2 "/oneZone/home/rods/netcdf/pres_temp_4D.nc"
+#if 0
+#define TEST_PATH1 "/wanZone/home/rods/hdf5/SDS.h5"
+#define TEST_PATH1 "/wanZone/home/rods/netcdf/sfc_pres_temp.nc"
+#endif
+#define TEST_PATH1 "/wanZone/home/rods/hdf5/group.h5"
+#define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc"
 
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
 int
-nctest1 (rcComm_t *conn, char *ncpath);
+nctest1 (rcComm_t *conn, char *ncpath, char *grpPath);
 int
 nctest2 (rcComm_t *conn, char *ncpath);
 int
@@ -49,18 +53,19 @@ main(int argc, char **argv)
        rcDisconnect(conn);
        exit (2);
     }
-    status = nctest1 (conn, TEST_PATH1);
+    status = nctest1 (conn, TEST_PATH1, "/Data_new");
     if (status < 0) {
 	fprintf (stderr, "nctest1 of %s failed. status = %d\n", 
         TEST_PATH1, status);
     }
-    status = nctest1 (conn, TEST_PATH2);
+    status = nctest1 (conn, TEST_PATH2, NULL);
 
     if (status < 0) {
         fprintf (stderr, "nctest1 of %s failed. status = %d\n", 
         TEST_PATH2, status);
     }
 
+#if 0
     status = nctest2 (conn, TEST_PATH1);
     if (status < 0) {
         fprintf (stderr, "nctest2 of %s failed. status = %d\n",
@@ -72,6 +77,8 @@ main(int argc, char **argv)
         fprintf (stderr, "nctest2 of %s failed. status = %d\n",
         TEST_PATH2, status);
     }
+#endif
+    rcDisconnect(conn);
 
     exit (0);
 }
@@ -457,12 +464,14 @@ nctestold (rcComm_t *conn, char *ncpath)
 } 
 
 int
-nctest1 (rcComm_t *conn, char *ncpath)
+nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
 {
     int status;
     ncOpenInp_t ncOpenInp;
     ncCloseInp_t ncCloseInp;
+    int ncid = 0;
     int ncid1 = 0;
+    int grpNcid = 0;
     ncInqInp_t ncInqInp;
     ncInqOut_t *ncInqOut = NULL;
 
@@ -473,7 +482,7 @@ nctest1 (rcComm_t *conn, char *ncpath)
     rstrcpy (ncOpenInp.objPath, ncpath, MAX_NAME_LEN);
     ncOpenInp.mode = NC_NOWRITE;
 
-    status = rcNcOpen (conn, &ncOpenInp, &ncid1);
+    status = rcNcOpen (conn, &ncOpenInp, &ncid);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -481,6 +490,19 @@ nctest1 (rcComm_t *conn, char *ncpath)
 	return status;
     }
 
+    if (grpPath != NULL) {
+        rstrcpy (ncOpenInp.objPath, grpPath, MAX_NAME_LEN);
+        ncOpenInp.rootNcid = ncid;
+        status = rcNcOpenGroup (conn, &ncOpenInp, &grpNcid);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "rcNcOpenGroup error for %s", ncOpenInp.objPath);
+            return status;
+        }
+	ncid1 = grpNcid;
+    } else {
+	ncid1 = ncid;
+    }
     /* do the general inq */
     bzero (&ncInqInp, sizeof (ncInqInp));
     ncInqInp.ncid = ncid1;
@@ -506,7 +528,16 @@ nctest1 (rcComm_t *conn, char *ncpath)
           "rcNcClose error for %s", ncOpenInp.objPath);
         return status;
     }
-
+    if (grpNcid == ncid1) {
+        /* close the root ncid */
+        ncCloseInp.ncid = ncid;
+        status = rcNcClose (conn, &ncCloseInp);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "rcNcClose error for %s", ncOpenInp.objPath);
+            return status;
+        }
+    }
     return status;
 } 
 

@@ -404,9 +404,11 @@ apidef_t RcApiTable[] = {
 #ifdef LIB_CF
     {NCCF_GET_VARA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NccfGetVarInp_PI", 0, "NccfGetVarOut_PI", 0, (funcPtr) RS_NCCF_GET_VARA},
+#endif
     {NC_INQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NcInqInp_PI", 0, "NcInqOut_PI", 0, (funcPtr) RS_NC_INQ},
-#endif
+    {NC_OPEN_GROUP_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+      "NcOpenInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_OPEN_GROUP},
 #endif
     {SSL_START_AN, RODS_API_VERSION,
        NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 

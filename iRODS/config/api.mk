@@ -408,7 +408,7 @@ LIB_API_OBJS += $(libApiObjDir)/rcTicketAdmin.o
 SVR_API_OBJS += $(svrApiObjDir)/rsGetTempPasswordForOther.o
 LIB_API_OBJS += $(libApiObjDir)/rcGetTempPasswordForOther.o
 
-ifdef NETCDF_DIR
+ifdef NETCDF_API
 SVR_API_OBJS += $(svrApiObjDir)/rsNcOpen.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcOpen.o
 
@@ -427,6 +427,9 @@ LIB_API_OBJS += $(libApiObjDir)/rcNcInqWithId.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcGetVarsByType.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcGetVarsByType.o
 
+SVR_API_OBJS += $(svrApiObjDir)/rsNcOpenGroup.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
+
 ifdef LIB_CF
 SVR_API_OBJS += $(svrApiObjDir)/rsNccfGetVara.o
 LIB_API_OBJS += $(libApiObjDir)/rcNccfGetVara.o
@@ -444,3 +447,4 @@ LIB_API_OBJS += $(libApiObjDir)/rcSslStart.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsSslEnd.o
 LIB_API_OBJS += $(libApiObjDir)/rcSslEnd.o
+
