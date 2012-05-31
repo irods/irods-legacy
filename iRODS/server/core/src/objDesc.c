@@ -631,8 +631,9 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
     dataObjInfo = L1desc[l1descInx].dataObjInfo =
       (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     bzero (dataObjInfo, sizeof (dataObjInfo_t));
-    rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
-
+    if (dataObjInp != NULL) {
+        rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
+    }
     if (openStat != NULL) {
 	dataObjInfo->dataSize = openStat->dataSize;
 	rstrcpy (dataObjInfo->dataMode, openStat->dataMode, SHORT_STR_LEN);
