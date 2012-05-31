@@ -170,12 +170,12 @@ int
 fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
 dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize)
 {
-    keyValPair_t *condInput;
+    keyValPair_t *condInput = NULL;
     char *tmpPtr;
 
-    condInput = &dataObjInp->condInput;
 
     if (dataObjInp != NULL) { 
+        condInput = &dataObjInp->condInput;
 #if 0
         if (getValByKey (&dataObjInp->condInput, REPL_DATA_OBJ_INP_KW) != 
           NULL) {
@@ -619,9 +619,14 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
     L1desc[l1descInx].dataObjInp = dataObjInp;
 #else
     /* always repl the .dataObjInp */
-    L1desc[l1descInx].dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));
-    replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
-    L1desc[l1descInx].dataObjInpReplFlag = 1;
+    if (dataObjInp != NULL) {
+        L1desc[l1descInx].dataObjInp = (dataObjInp_t*)malloc 
+          (sizeof (dataObjInp_t));
+        replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
+        L1desc[l1descInx].dataObjInpReplFlag = 1;
+    } else {
+        L1desc[l1descInx].dataObjInp = NULL;
+    }
 #endif
     dataObjInfo = L1desc[l1descInx].dataObjInfo =
       (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
