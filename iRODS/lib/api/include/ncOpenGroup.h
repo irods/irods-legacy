@@ -34,16 +34,16 @@ rsNcOpenGroup (rsComm_t *rsComm, ncOpenInp_t *ncOpenGroupInp, int **ncid);
 extern "C" {
 #endif
 
-/* rcNcOpenGroup - netcdf open an iRODS data object (equivalent to nc_open.
+/* rcNcOpenGroup - open a HDF5 group. On the server, the nc_inq_grp_full_ncid
+ * is call to get the grp_ncid which will be used for future processing.
  * Input - 
  *   rcComm_t *conn - The client connection handle.
  *   ncOpenInp_t *ncOpenGroupInp - generic nc open/create input. Relevant items are:
- *	objPath - the path of the data object.
- *      mode - the mode of the open - valid values are given in netcdf.h -
- *       NC_NOWRITE (0), NC_WRITE (1)
+ *	objPath - the full group path.
+ *      rootNcid - the ncid of the root group (obtained by the rcNcOpen call.
  *	condInput - condition input (not used).
  * OutPut - 
- *   int the ncid of the opened object - an integer descriptor.   
+ *   int the ncid of the opened group - an integer descriptor.   
  */
 
 /* prototype for the client call */
