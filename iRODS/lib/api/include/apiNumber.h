@@ -179,6 +179,7 @@
 #define NCCF_GET_VARA_AN 			1006
 #define NC_INQ_AN 			1007
 #define NC_OPEN_GROUP_AN 			1008
+#define NC_INQ_GRPS_AN 			1009
 
 /* 1100 - 1200 - SSL API calls */
 #define SSL_START_AN 			1100

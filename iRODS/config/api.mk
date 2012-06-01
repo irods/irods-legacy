@@ -427,17 +427,20 @@ LIB_API_OBJS += $(libApiObjDir)/rcNcInqWithId.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcGetVarsByType.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcGetVarsByType.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsNcOpenGroup.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
-
 ifdef LIB_CF
 SVR_API_OBJS += $(svrApiObjDir)/rsNccfGetVara.o
 LIB_API_OBJS += $(libApiObjDir)/rcNccfGetVara.o
 endif
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInq.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInq.o
-endif
 
+SVR_API_OBJS += $(svrApiObjDir)/rsNcOpenGroup.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsNcInqGrps.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcInqGrps.o
+
+endif
 
 SVR_API_OBJS += $(svrApiObjDir)/rsPamAuthRequest.o
 LIB_API_OBJS += $(libApiObjDir)/rcPamAuthRequest.o

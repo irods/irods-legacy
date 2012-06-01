@@ -153,4 +153,5 @@
 #include "sslStart.h"
 #include "sslEnd.h"
 #include "ncOpenGroup.h"
+#include "ncInqGrps.h"
 #endif	/* API_HEADER_ALL_H */

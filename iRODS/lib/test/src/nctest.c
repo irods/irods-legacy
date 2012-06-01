@@ -53,7 +53,10 @@ main(int argc, char **argv)
        rcDisconnect(conn);
        exit (2);
     }
+#if 0	/* specify a specific group name */
     status = nctest1 (conn, TEST_PATH1, "/Data_new");
+#endif
+    status = nctest1 (conn, TEST_PATH1, "INQ");
     if (status < 0) {
 	fprintf (stderr, "nctest1 of %s failed. status = %d\n", 
         TEST_PATH1, status);
@@ -491,7 +494,28 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
     }
 
     if (grpPath != NULL) {
-        rstrcpy (ncOpenInp.objPath, grpPath, MAX_NAME_LEN);
+	if (strcmp (grpPath, "INQ") == 0) {
+	     /* inq the group name */
+            ncInqGrpsInp_t ncInqGrpsInp;
+            ncInqGrpsOut_t *ncInqGrpsOut = NULL;
+
+	    bzero (&ncInqGrpsInp, sizeof (ncInqGrpsInp));
+	    ncInqGrpsInp.ncid = ncid;
+	    status = rcNcInqGrps (conn, &ncInqGrpsInp, &ncInqGrpsOut);
+	    if (status < 0) {
+                rodsLogError (LOG_ERROR, status, "rcNcInqGrps error");
+                return status;
+            }
+	    if (ncInqGrpsOut->ngrps <= 0) {
+               rodsLogError (LOG_ERROR, status, "rcNcInqGrps ngrps <= 0");
+                return status;
+            }
+	    rstrcpy (ncOpenInp.objPath, ncInqGrpsOut->grpName[0], MAX_NAME_LEN);
+	    freeNcInqGrpsOut (&ncInqGrpsOut);
+	} else {
+            rstrcpy (ncOpenInp.objPath, grpPath, MAX_NAME_LEN);
+	}
+	printf ("opening group %s\n", ncOpenInp.objPath);
         ncOpenInp.rootNcid = ncid;
         status = rcNcOpenGroup (conn, &ncOpenInp, &grpNcid);
         if (status < 0) {
