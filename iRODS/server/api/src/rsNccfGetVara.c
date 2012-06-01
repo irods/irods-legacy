@@ -99,12 +99,10 @@ nccfGetVarOut_t ** nccfGetVarOut)
 	typeSize = sizeof (char);
 	dataType_PI = "charDataArray_PI";
 	break;
-#ifdef NETCDF_HDF
       case NC_STRING:
 	typeSize = sizeof (char *);
 	dataType_PI = "strDataArray_PI";
 	break;
-#endif
       case NC_INT:
       case NC_UINT:
       case NC_FLOAT:

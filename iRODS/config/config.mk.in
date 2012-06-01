@@ -435,8 +435,7 @@ endif
 # USE_SSL = 1
 
 # NETCDF_API - specify whether to compile the NETCDF API
-# NETCDF_DIR - the install directory of NETCDF. NETCDF_HDF defines whether
-# the netcdf library has been built to support HDF
+# NETCDF_DIR - the install directory of NETCDF. 
 # LIB_CF - specify whether higher level libCF is present. libCF, uses the
 # netCDF API to aid in the creation, processing and sharing of scientific
 # data files which conform to the Climate and Forecast (CF) conventions
@@ -448,7 +447,6 @@ endif
 # NETCDF_API=1
 # LIB_CF=1
 ifdef NETCDF_API
-# NETCDF_HDF=1
 NETCDF_DIR=/usr/local
 ifdef LIB_CF
 LIB_CF_INC_DIR=/usr/local/include

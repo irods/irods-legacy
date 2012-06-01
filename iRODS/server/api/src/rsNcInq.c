@@ -321,14 +321,12 @@ ncGetVarOut_t *value)
         status = nc_get_att_uchar (ncid, varid, name,
           (unsigned char *) (value)->dataArray->buf);
         break;
-#ifdef NETCDF_HDF
       case NC_STRING:
         (value)->dataArray->buf = calloc (length + 1, sizeof (char *));
         rstrcpy ((value)->dataType_PI, "strDataArray_PI", NAME_LEN);
         status = nc_get_att_string (ncid, varid, name,
           (char **) (value)->dataArray->buf);
         break;
-#endif
       case NC_INT:
        (value)->dataArray->buf = calloc (length, sizeof (int));
         rstrcpy ((value)->dataType_PI, "intDataArray_PI", NAME_LEN);

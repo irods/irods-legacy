@@ -132,7 +132,6 @@ ncGetVarOut_t **ncGetVarOut)
               (unsigned char *) (*ncGetVarOut)->dataArray->buf);
         }
         break;
-#ifdef NETCDF_HDF
       case NC_STRING:
         (*ncGetVarOut)->dataArray->buf = calloc (1, sizeof (char *) * len);
         rstrcpy ((*ncGetVarOut)->dataType_PI, "strDataArray_PI", NAME_LEN);
@@ -144,7 +143,6 @@ ncGetVarOut_t **ncGetVarOut)
               (char **) (*ncGetVarOut)->dataArray->buf);
         }
         break;
-#endif
       case NC_INT:
        (*ncGetVarOut)->dataArray->buf = calloc (1, sizeof (int) * len);
         rstrcpy ((*ncGetVarOut)->dataType_PI, "intDataArray_PI", NAME_LEN);
