@@ -101,4 +101,9 @@ msiNcGetVarIdInInqOut (msParam_t *ncInqOutParam, msParam_t *whichVarParam,
 msParam_t *outParam, ruleExecInfo_t *rei);
 int
 msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei);
+int
+msiNcOpenGroup (msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei);
 #endif	/* RE_NETCDF_H */

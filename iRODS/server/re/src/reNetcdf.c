@@ -1590,3 +1590,98 @@ msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei)
 
     return 0;
 }
+
+/**
+ * \fn msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
+int
+msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    ncInqGrpsInp_t ncInqGrpsInp;
+    ncInqGrpsOut_t *ncInqGrpsOut = NULL;
+
+    RE_TEST_MACRO ("    Calling msiNcInqGrps")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR,
+        "msiNcInqGrps: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    rsComm = rei->rsComm;
+
+    if (ncidParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcInqGrps: input ncidParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    bzero (&ncInqGrpsInp, sizeof (ncInqGrpsInp));
+
+    ncInqGrpsInp.ncid = parseMspForPosInt (ncidParam);
+
+    rei->status = rsNcInqGrps (rsComm, &ncInqGrpsInp, &ncInqGrpsOut);
+
+    clearKeyVal (&ncInqGrpsInp.condInput);
+    if (rei->status >= 0) {
+        fillMsParam (outParam, NULL, NcInqGrpsOut_MS_T, ncInqGrpsOut, NULL);
+    } else {
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiNcInqGrps: rsNcInqGrps failed for ncid %d, status = %d",
+        ncInqGrpsInp.ncid, rei->status);
+    }
+    return (rei->status);
+}
+
+/**
+ * \fn msiNcOpenGroup (msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+**/
+int
+msiNcOpenGroup (msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    ncOpenInp_t ncOpenInp;
+    int *grpNcid = NULL;
+
+    RE_TEST_MACRO ("    Calling msiNcOpenGroup")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR,
+        "msiNcOpenGroup: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    rsComm = rei->rsComm;
+
+    bzero (&ncOpenInp, sizeof (ncOpenInp));
+    if (rootNcidParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcOpenGroup: input rootNcidParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    ncOpenInp.rootNcid = parseMspForPosInt (rootNcidParam);
+    if (strcmp (fullGrpNameParam->type, STR_MS_T) == 0) {
+        rstrcpy (ncOpenInp.objPath, (char*)fullGrpNameParam->inOutStruct,
+          MAX_NAME_LEN);
+    } else {
+        rodsLog (LOG_ERROR,
+          "msiNcOpenGroup: Unsupported input fullGrpNameParam type %s",
+          fullGrpNameParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    rei->status = rsNcOpenGroup (rsComm, &ncOpenInp, &grpNcid);
+
+    clearKeyVal (&ncOpenInp.condInput);
+    if (rei->status >= 0) {
+        fillIntInMsParam (outParam, *grpNcid);
+        free (grpNcid);
+    } else {
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiNcOpenGroup: rsNcOpenGroup failed for rootNcid %d, status = %d",
+        ncOpenInp.rootNcid, rei->status);
+    }
+    return (rei->status);
+}
+
