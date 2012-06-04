@@ -40,6 +40,7 @@ rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 }
 
 
+#ifdef RODS_CAT
 /*
  Fork and exec the PamAuthCheck program, which is setuid root, to do
  do the PAM authentication.  The username is on the command line but
@@ -127,3 +128,4 @@ _rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     return (status);
 #endif
 } 
+#endif /* RODS_CAT */
