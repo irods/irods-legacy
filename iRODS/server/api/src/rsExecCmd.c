@@ -327,8 +327,19 @@ execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd)
     char cmdPath[LONG_NAME_LEN];
     char *av[LONG_NAME_LEN];
     int status;
+    char *cmdDir;
 
-    snprintf (cmdPath, LONG_NAME_LEN, "%s/%s", CMD_DIR, execCmdInp->cmd); 
+    cmdDir = getenv("irodsServerCmdDir");
+    if (cmdDir) {
+        if (cmdDir[strlen(cmdDir)-1] == '/') {
+            cmdDir[strlen(cmdDir)-1] = 0;
+        }
+    }
+    else {
+        cmdDir = CMD_DIR;
+    }
+
+    snprintf (cmdPath, LONG_NAME_LEN, "%s/%s", cmdDir, execCmdInp->cmd); 
 
     initCmdArg (av, execCmdInp->cmdArgv, cmdPath);
 
