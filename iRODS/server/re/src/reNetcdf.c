@@ -1685,3 +1685,29 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+int
+msiNcGetNGrpsInInqOut (msParam_t *ncInqGrpsOutParam, msParam_t *outParam,
+ruleExecInfo_t *rei)
+{
+    ncInqGrpsOut_t *ncInqGrpsOut;
+
+    RE_TEST_MACRO ("    Calling msiNcGetNGrpsInInqOut")
+
+    if (ncInqGrpsOutParam == NULL || outParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqGrpsOutParam->type, NcInqGrpsOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetNGrpsInInqOut: ncInqGrpsOutParam must be NcInqGrpsOut_MS_T. %s",
+          ncInqGrpsOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqGrpsOut = (ncInqGrpsOut_t *) ncInqGrpsOutParam->inOutStruct;
+    }
+
+    /* global nvars */
+    fillIntInMsParam (outParam, ncInqGrpsOut->ngrps);
+
+    return 0;
+}
+
