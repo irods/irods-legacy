@@ -1,7 +1,7 @@
 ifndef buildDir
 buildDir = ../..
 endif
-# OOI_TEST=1
+OOI_TEST=1
 
 include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk

@@ -462,6 +462,8 @@ microsdef_t MicrosTable[] = {
   {"msiFreeNcStruct",1,(funcPtr) msiFreeNcStruct},
   {"msiNcOpenGroup",3,(funcPtr) msiNcOpenGroup},
   {"msiNcInqGrps",2,(funcPtr) msiNcInqGrps},
+  {"msiNcGetNGrpsInInqOut",2,(funcPtr) msiNcGetNGrpsInInqOut},
+  {"msiNcGetGrpInInqOut",3,(funcPtr) msiNcGetGrpInInqOut},
 #ifdef LIB_CF
   {"msiNccfGetVara",10,(funcPtr) msiNccfGetVara},
 #endif

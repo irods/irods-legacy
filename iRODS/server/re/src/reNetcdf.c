@@ -1076,10 +1076,10 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
         ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
     }
     inx = parseMspForPosInt (inxParam);
-    if (inx < UNLIMITED_DIM_INX || inx >= ncInqOut->nvars) {
+    if (inx < UNLIMITED_DIM_INX || inx >= ncInqOut->ndims) {
         rodsLog (LOG_ERROR,
-          "msiNcGetDimNameInInqOut: input inx %d is out of range. nvars  = %d",
-          inx, ncInqOut->nvars);
+          "msiNcGetDimNameInInqOut: input inx %d is out of range. ndims  = %d",
+          inx, ncInqOut->ndims);
         return NETCDF_VAR_COUNT_OUT_OF_RANGE;
     }
 
@@ -1707,6 +1707,40 @@ ruleExecInfo_t *rei)
 
     /* global nvars */
     fillIntInMsParam (outParam, ncInqGrpsOut->ngrps);
+
+    return 0;
+}
+
+int
+msiNcGetGrpInInqOut (msParam_t *ncInqGrpsOutParam, 
+msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    ncInqGrpsOut_t *ncInqGrpsOut;
+    int inx;
+
+    RE_TEST_MACRO ("    Calling msiNcGetGrpInInqOut")
+
+    if (ncInqGrpsOutParam == NULL || inxParam == NULL || outParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (ncInqGrpsOutParam->type, NcInqGrpsOut_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetGrpInInqOut: ncInqGrpsOutParam must be NcInqGrpsOut_MS_T. %s",
+          ncInqGrpsOutParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        ncInqGrpsOut = (ncInqGrpsOut_t *) ncInqGrpsOutParam->inOutStruct;
+    }
+    inx = parseMspForPosInt (inxParam);
+    if (inx < 0 || inx >= ncInqGrpsOut->ngrps) {
+        rodsLog (LOG_ERROR,
+          "msiNcGetGrpInInqOut: input inx %d is out of range. ngrps  = %d",
+          inx, ncInqGrpsOut->ngrps);
+        return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+    }
+
+    /* global nvars */
+    fillStrInMsParam (outParam, ncInqGrpsOut->grpName[inx]);
 
     return 0;
 }

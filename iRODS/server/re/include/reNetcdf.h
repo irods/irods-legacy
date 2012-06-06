@@ -106,4 +106,10 @@ msiNcOpenGroup (msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
 msParam_t *outParam, ruleExecInfo_t *rei);
 int
 msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcGetNGrpsInInqOut (msParam_t *ncInqGrpsOutParam, msParam_t *outParam,
+ruleExecInfo_t *rei);
+int
+msiNcGetGrpInInqOut (msParam_t *ncInqGrpsOutParam,
+msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei);
 #endif	/* RE_NETCDF_H */
