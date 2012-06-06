@@ -204,6 +204,9 @@ $krbLocation            = undef;
 # Audit extension
 $auditExt               = 0;
 
+# UNICODE
+$unicode                = undef;
+
 # Actions to take
 $installDataServer	= 1;				# Prompt.
 $installCatalogServer	= 1;				# Prompt.
@@ -231,8 +234,19 @@ printNotice(
 	"This script prompts you for key iRODS configuration options.\n",
 	"Default values (if any) are shown in square brackets [ ] at each\n",
 	"prompt.  Press return to use the default, or enter a new value.\n",
-	"\n",
 	"\n" );
+printNotice(
+	"After this completes, other configuration options can be selected by\n",
+        "editing the config/config.mk file and running 'make' again.\n",
+	"\n");
+
+if ($isUpgrade eq "upgrade" ) {
+    printNotice(    
+	     "For upgrades, after the upgrade is complete you might compare the old and\n",
+	     "new config/config.mk files and if you have other site-specific configuration\n",
+	     "settings, edit the new config.mk file and run 'make' again.\n",
+	     "\n" );
+}
 
 if ($isUpgrade eq "upgrade" ) {
     if ( !-e $irodsConfig ) {
@@ -310,6 +324,8 @@ if ( -e $irodsConfig )
         $krbLocation       = $KRB_LOCATION;
 
 	$auditExt          = $AUDIT_EXT;
+
+	$unicode           = $UNICODE;
 
 	$databaseServerType      = $DATABASE_TYPE;
 	$databaseServerOdbcType  = $DATABASE_ODBC_TYPE;
@@ -865,6 +881,20 @@ sub promptForIrodsConfigurationPart2( )
 	$auditExt = promptYesNo(
 		"Include the NCCS Auditing extensions",
 		(($auditExt == 1) ? "yes" : "no") );
+
+        # Unicode?
+        if ( $advanced ) {
+	    printNotice(
+		"\n",
+		"[Advanced option]\n",
+		"UNICODE can be select to build the sytem with UNICODE character encoding\n",
+		"if desired.  This is especially useful for non-English languages with an\n",
+		"extended character set.\n",
+		"\n" );
+	    $unicode = promptYesNo(
+		"Use UNICODE?",
+		(($UNICODE == 1) ? "yes" : "no") );
+	}
 
 }
 
@@ -1817,6 +1847,18 @@ sub promptForConfirmation( )
 			"    NCCS Audit Extensions will be enabled\n\n");
 	}
 
+    # UNICODE
+	if ( $advanced )
+	{
+	    if ($UNICODE == 0) {
+		 printNotice(
+			"    UNICODE not selected\n\n");
+	    } else {
+		 printNotice (
+			"    UNICODE will be enabled\n\n");
+	    }
+	}
+
 	# Commands
 	printNotice(
 		"    Build iRODS command-line tools\n",
@@ -1883,6 +1925,8 @@ sub configureIrods( )
                 "KRB_LOCATION",                 $krbLocation,
 
 		"AUDIT_EXT",			$auditExt,
+
+		"UNICODE",			$unicode,
 
 		"DATABASE_TYPE",		$databaseServerType,
 		"DATABASE_ODBC_TYPE",		((!defined($databaseServerOdbcType)) ? "" : $databaseServerOdbcType),

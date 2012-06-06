@@ -139,6 +139,9 @@ $KRB_LOCATION = '';
 # See server/icat/auditExtensions for more information.
 $AUDIT_EXT = '';
 
+# UNICODE
+# $UNICODE is 1 if UNICODE is selected.
+$UNICODE = '';
 
 # Build configuration (optional)
 #	The iRODS configuration script automatically finds the C compiler,

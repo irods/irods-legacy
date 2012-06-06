@@ -433,6 +433,12 @@ else
 	$configMkVariables{ "MYICAT" }  = ""; # Disable MySQL iCAT
 }
 
+if ($UNICODE == 1) {
+    $configMkVariables{ "UNI_CODE" }  = "1";    # Enable UNICODE
+}
+if ($UNICODE == 0) {
+    $configMkVariables{ "UNI_CODE" } = "";      # Disable UNICODE
+}
 
 
 
