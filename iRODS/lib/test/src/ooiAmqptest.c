@@ -28,7 +28,7 @@ clearProp (amqp_basic_properties_t *props);
 int
 amqp_status (amqp_rpc_reply_t x);
 
-#define NUM_OOI_HEADER_ENTRIES	20
+#define NUM_OOI_HEADER_ENTRIES	16
 
 int main(int argc, char const * const *argv) {
   char const *hostname;
@@ -57,7 +57,8 @@ int main(int argc, char const * const *argv) {
 
   hostname = "localhost";
   port = 5672;
-  exchange = "ion_mwan-hp";
+  /* exchange = "ion_mwan-hp"; */
+  exchange = "ion_one";
   routingkey = "bank";
   replyRoutingkey = "myAPIReply";
   bzero (&props, sizeof (props));
@@ -119,7 +120,8 @@ int main(int argc, char const * const *argv) {
   snprintf (tsStr, 128, "%d", (int) time (0));
   snprintf (replyToStr, 128, "%s,%s", exchange, replyRoutingkey);
   initOoiReqProp (&props, (char *) replyToStr, receiverStr, 
-      (char *) "new_account", (char *) "bank_new_account_in", tsStr);
+      /* (char *) "new_account", (char *) "bank_new_account_in", tsStr); */
+      (char *) "new_account", (char *) "dict", tsStr);
 
   /* creates buffer and serializer instance. */
   buffer = msgpack_sbuffer_new();
@@ -191,7 +193,8 @@ int main(int argc, char const * const *argv) {
   }
   snprintf (tsStr, 128, "%d", (int) time (0));
   initOoiReqProp (&props, (char *) replyToStr, receiverStr,
-      (char *) "deposit", (char *) "bank_deposit_in", tsStr);
+      /* (char *) "deposit", (char *) "bank_deposit_in", tsStr); */
+      (char *) "deposit", (char *) "dict", tsStr);
 
   /* creates buffer and serializer instance. */
   buffer = msgpack_sbuffer_new();
@@ -265,7 +268,8 @@ int main(int argc, char const * const *argv) {
   /* list account */
   snprintf (tsStr, 128, "%d", (int) time (0));
   initOoiReqProp (&props, (char *) replyToStr, receiverStr,
-      (char *) "list_accounts", (char *) "bank_list_accounts_in", tsStr);
+      /* (char *) "list_accounts", (char *) "bank_list_accounts_in", tsStr); */
+      (char *) "list_accounts", (char *) "dict", tsStr);
 
   /* creates buffer and serializer instance. */
   buffer = msgpack_sbuffer_new();
@@ -465,6 +469,7 @@ int initOoiReqProp (amqp_basic_properties_t *props, char *replyToStr,
 char *receiver, char *op, char *format, char *ts)
 {
   amqp_table_entry_t *entries;
+  int i = 0;
   bzero (props, sizeof (amqp_basic_properties_t));
   props->_flags = AMQP_BASIC_CONTENT_TYPE_FLAG | 
     AMQP_BASIC_DELIVERY_MODE_FLAG | AMQP_BASIC_HEADERS_FLAG;
@@ -477,85 +482,106 @@ char *receiver, char *op, char *format, char *ts)
   props->headers.entries = entries = (amqp_table_entry_t *) calloc 
 	(NUM_OOI_HEADER_ENTRIES, sizeof (amqp_table_entry_t));
 
-  entries[0].key = amqp_cstring_bytes("protocol");
-  entries[0].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[0].value.value.bytes = amqp_cstring_bytes("rpc");
+  entries[i].key = amqp_cstring_bytes("protocol");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("rpc");
+  i++;
 
-  entries[1].key = amqp_cstring_bytes("sender-name");
-  entries[1].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[1].value.value.bytes = amqp_cstring_bytes("service_gateway");
+  entries[i].key = amqp_cstring_bytes("sender-name");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("John");
+  i++;
 
-  entries[2].key = amqp_cstring_bytes("encoding");
-  entries[2].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[2].value.value.bytes = amqp_cstring_bytes("msgpack");
+  entries[i].key = amqp_cstring_bytes("encoding");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("msgpack");
+  i++;
 
-  entries[3].key = amqp_cstring_bytes("reply-by");
-  entries[3].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[3].value.value.bytes = amqp_cstring_bytes("todo");
+  entries[i].key = amqp_cstring_bytes("reply-by");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("todo");
+  i++;
 
-  entries[4].key = amqp_cstring_bytes("expiry");
-  entries[4].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[4].value.value.bytes = amqp_cstring_bytes("0");
+  entries[i].key = amqp_cstring_bytes("expiry");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("0");
+  i++;
 
-  entries[5].key = amqp_cstring_bytes("ion-actor-id");
-  entries[5].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[5].value.value.bytes = amqp_cstring_bytes("anonymous");
+#if 0
+  entries[i].key = amqp_cstring_bytes("ion-actor-id");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("anonymous");
+  i++;
+#endif
 
-  entries[6].key = amqp_cstring_bytes("reply-to");
-  entries[6].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[6].value.value.bytes = amqp_cstring_bytes(replyToStr);
+  entries[i].key = amqp_cstring_bytes("reply-to");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes(replyToStr);
+  i++;
 
-  entries[7].key = amqp_cstring_bytes("conv-id");
-  entries[7].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[7].value.value.bytes = amqp_cstring_bytes("one_8347-1");
+  entries[i].key = amqp_cstring_bytes("conv-id");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("one_8347-1");
+  i++;
 
-  entries[8].key = amqp_cstring_bytes("conv-seq");
-  entries[8].value.kind = AMQP_FIELD_KIND_I32;
-  entries[8].value.value.i32 = 10;
+  entries[i].key = amqp_cstring_bytes("conv-seq");
+  entries[i].value.kind = AMQP_FIELD_KIND_I32;
+  entries[i].value.value.i32 = 1;
+  i++;
 
-  entries[9].key = amqp_cstring_bytes("origin-container-id");
-  entries[9].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[9].value.value.bytes = amqp_cstring_bytes("one_8347");
+#if 0
+  entries[i].key = amqp_cstring_bytes("origin-container-id");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("one_8347");
+  i++;
+#endif
 
-  entries[10].key = amqp_cstring_bytes("sender");
-  entries[10].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[10].value.value.bytes = amqp_cstring_bytes("one_8347");
+  entries[i].key = amqp_cstring_bytes("sender");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("C_client");
+  i++;
 
-  entries[11].key = amqp_cstring_bytes("language");
-  entries[11].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[11].value.value.bytes = amqp_cstring_bytes("ion-r2");
+  entries[i].key = amqp_cstring_bytes("language");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("ion-r2");
+  i++;
 
-  entries[12].key = amqp_cstring_bytes("sender-type");
-  entries[12].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[12].value.value.bytes = amqp_cstring_bytes("service");
+  entries[i].key = amqp_cstring_bytes("sender-type");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("service");
+  i++;
 
-  entries[13].key = amqp_cstring_bytes("sender-service");
-  entries[13].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[13].value.value.bytes = amqp_cstring_bytes("ion_one,service_gateway");
+#if 0
+  entries[i].key = amqp_cstring_bytes("sender-service");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("ion_one,service_gateway");
+  i++;
+#endif
 
-  entries[14].key = amqp_cstring_bytes("sender-service");
-  entries[14].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[14].value.value.bytes = amqp_cstring_bytes("ion_one,service_gateway");
+  entries[i].key = amqp_cstring_bytes("ts");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes(ts);
+  i++;
 
-  entries[15].key = amqp_cstring_bytes("ts");
-  entries[15].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[15].value.value.bytes = amqp_cstring_bytes(ts);
+  entries[i].key = amqp_cstring_bytes("receiver");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes(receiver);
+  i++;
 
-  entries[16].key = amqp_cstring_bytes("receiver");
-  entries[16].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[16].value.value.bytes = amqp_cstring_bytes(receiver);
+  entries[i].key = amqp_cstring_bytes("format");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes(format);
+  i++;
 
-  entries[17].key = amqp_cstring_bytes("format");
-  entries[17].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[17].value.value.bytes = amqp_cstring_bytes(format);
+  entries[i].key = amqp_cstring_bytes("performative");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes("request");
+  i++;
 
-  entries[18].key = amqp_cstring_bytes("performative");
-  entries[18].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[18].value.value.bytes = amqp_cstring_bytes("request");
-
-  entries[19].key = amqp_cstring_bytes("op");
-  entries[19].value.kind = AMQP_FIELD_KIND_UTF8;
-  entries[19].value.value.bytes = amqp_cstring_bytes(op);
+  entries[i].key = amqp_cstring_bytes("op");
+  entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
+  entries[i].value.value.bytes = amqp_cstring_bytes(op);
+  i++;
 
   return 0;
 }
