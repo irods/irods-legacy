@@ -7,8 +7,10 @@ extern "C" {
 #endif
 
 #define OS_AUTH_FLAG     "##OS_AUTH"
-#define OS_AUTH_CMD      "genOSAuth"
 #define OS_AUTH_ENV_USER "OSAUTH_USERNAME"
+#ifndef OS_AUTH_CMD
+#define OS_AUTH_CMD      "genOSAuth"
+#endif
 
 int osauthGetAuth(char *challenge, char *username, char *authenticator, int authenticator_buflen);
 int osauthVerifyResponse(char *challenge, char *username, char *response);

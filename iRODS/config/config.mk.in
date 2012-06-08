@@ -412,6 +412,9 @@ endif
 # OS_AUTH = 1
 ifdef OS_AUTH
 OS_AUTH_KEYFILE = /etc/irods.key
+# Set OS_AUTH_CMD if you don't want to look for genOSAuth
+# in the PATH.
+#OS_AUTH_CMD = /usr/lib/irods/genOSAuth
 # Some environments don't have a uniform username/uid
 # space between the IES and the clients. Uncomment
 # OS_AUTH_NO_UID if this is the case, so the uid will
