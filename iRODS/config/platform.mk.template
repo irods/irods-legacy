@@ -304,3 +304,7 @@ endif
 ifdef CMD_DIR
 MY_CFLAG+= -DCMD_DIR=\"$(CMD_DIR)\"
 endif
+
+ifdef PAM_AUTH_CHECK_PROG
+MY_CFLAG+= -DPAM_AUTH_CHECK_PROG=\"$(PAM_AUTH_CHECK_PROG)\"
+endif

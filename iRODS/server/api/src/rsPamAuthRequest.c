@@ -46,7 +46,9 @@ rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
  do the PAM authentication.  The username is on the command line but
  the password is sent on a pipe to be more secure.
  */
+#ifndef PAM_AUTH_CHECK_PROG
 #define PAM_AUTH_CHECK_PROG  "../auth/PamAuthCheck"
+#endif
 int
 runPamAuthCheck(char *username, char *password) 
 {
