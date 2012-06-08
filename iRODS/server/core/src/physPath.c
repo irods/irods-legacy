@@ -1244,10 +1244,10 @@ getDataObjLockPath (char *objPath, char **outLockPath)
         objPathPtr++;
     }
 
-    len = strlen (getConfigDir()) + strlen (LOCK_FILE_DIR) + 
+    len = strlen (getStateDir()) + strlen (LOCK_FILE_DIR) + 
      strlen (tmpPath) + strlen (LOCK_FILE_TRAILER) + 10;
     *outLockPath = (char *) malloc (len); 
-    snprintf (*outLockPath, len, "%-s/%-s/%-s.%-s", getConfigDir(), 
+    snprintf (*outLockPath, len, "%-s/%-s/%-s.%-s", getStateDir(), 
       LOCK_FILE_DIR, tmpPath, LOCK_FILE_TRAILER);
 
     return 0;

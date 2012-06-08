@@ -470,3 +470,13 @@ endif
 # filesystem (e.g. a parallel file system NAS). It requires that the
 # RUN_SERVER_AS_ROOT and FILESYSTEM_META features are turned on.
 # DIRECT_ACCESS_VAULT = 1
+
+# Override default paths for config files, logs, and state.
+#
+# location of irodsHost, server.config, reConfigs, etc
+#DEF_CONFIG_DIR=../config
+# location of packedRei and lockFileDir
+#DEF_STATE_DIR=../config
+# location of the log files
+#DEF_LOG_DIR=../log
+

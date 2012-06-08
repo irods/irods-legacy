@@ -159,6 +159,8 @@ char *
 getConfigDir();
 char *
 getLogDir();
+char *
+getStateDir();
 rodsServerHost_t *
 mkServerHost (char *myHostAddr, char *zoneName);
 int

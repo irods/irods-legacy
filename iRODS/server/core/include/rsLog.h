@@ -12,8 +12,15 @@
 #define RULE_EXEC_LOGFILE     "reLog"
 #define XMSG_SVR_LOGFILE     "xmsgLog"
 
+#ifndef DEF_CONFIG_DIR
 #define DEF_CONFIG_DIR	"../config"
+#endif
+#ifndef DEF_STATE_DIR
+#define DEF_STATE_DIR	"../config"
+#endif
+#ifndef DEF_LOG_DIR
 #define DEF_LOG_DIR	"../log"
+#endif
 #define PROC_LOG_DIR_NAME	"proc"
 
 #define DEF_LOGFILE_INT 5             /* default interval in days */

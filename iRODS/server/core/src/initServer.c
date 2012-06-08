@@ -819,6 +819,21 @@ getLogDir()
 #endif
 }
 
+char *
+getStateDir()
+{
+#ifndef windows_platform
+    char *myDir;
+
+    if ((myDir = (char *) getenv("irodsStateDir")) != (char *) NULL) {
+        return (myDir);
+    }
+    return (DEF_STATE_DIR);
+#else
+	return iRODSNtGetServerConfigPath();
+#endif
+}
+
 /* getAndConnRcatHost - get the rcat enabled host (result given in
  * rodsServerHost) based on the rcatZoneHint.  
  * rcatZoneHint is the hint for which zone to go it. It can be :
@@ -2609,7 +2624,7 @@ purgeLockFileDir (int chkLockFlag)
     struct flock myflock;
     uint purgeTime;
 
-    snprintf (lockFileDir, MAX_NAME_LEN, "%-s/%-s", getConfigDir(),
+    snprintf (lockFileDir, MAX_NAME_LEN, "%-s/%-s", getStateDir(),
       LOCK_FILE_DIR);
 
     dirPtr = opendir (lockFileDir);

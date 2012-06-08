@@ -140,7 +140,7 @@ getReiFilePath (char *reiFilePath, char *userName)
     } 
 
     snprintf (reiFilePath, MAX_NAME_LEN,
-     "%-s/%-s/%-s.%-s.%-d", getConfigDir(), PACKED_REI_DIR,
+     "%-s/%-s/%-s.%-s.%-d", getStateDir(), PACKED_REI_DIR,
        REI_FILE_NAME, myUserName, (uint) random());
 
     return (0);
