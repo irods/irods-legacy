@@ -19,7 +19,9 @@
 #include "initServer.h"
 #include "dataObjInpOut.h"
 
+#ifndef CMD_DIR
 #define CMD_DIR		"cmd"
+#endif
 /* for backward compatibility */
 typedef struct {
     char cmd[LONG_NAME_LEN];

@@ -471,7 +471,7 @@ endif
 # RUN_SERVER_AS_ROOT and FILESYSTEM_META features are turned on.
 # DIRECT_ACCESS_VAULT = 1
 
-# Override default paths for config files, logs, and state.
+# Override default paths for config files, logs, state and server commands.
 #
 # location of irodsHost, server.config, reConfigs, etc
 #DEF_CONFIG_DIR=../config
@@ -479,4 +479,6 @@ endif
 #DEF_STATE_DIR=../config
 # location of the log files
 #DEF_LOG_DIR=../log
+# location of commands for rsExecCmd
+#CMD_DIR=cmd
 

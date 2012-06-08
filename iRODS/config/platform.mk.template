@@ -301,3 +301,6 @@ endif
 ifdef DEF_LOG_DIR
 MY_CFLAG+= -DDEF_LOG_DIR=\"$(DEF_LOG_DIR)\"
 endif
+ifdef CMD_DIR
+MY_CFLAG+= -DCMD_DIR=\"$(CMD_DIR)\"
+endif
