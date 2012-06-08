@@ -167,6 +167,8 @@ cllConnect(icatSessionStruct *icss) {
 
    HDBC myHdbc;
 
+   char *odbcEntryName;
+
    stat = SQLAllocConnect(icss->environPtr,
 			  &myHdbc);
    if (stat != SQL_SUCCESS) {
@@ -174,14 +176,19 @@ cllConnect(icatSessionStruct *icss) {
       return (-1);
    }
 
-   stat = SQLConnect(myHdbc, (unsigned char *)CATALOG_ODBC_ENTRY_NAME, SQL_NTS,
+   odbcEntryName = getenv("irodsOdbcDSN");
+   if (odbcEntryName == NULL) {
+       odbcEntryName = CATALOG_ODBC_ENTRY_NAME;
+   }
+
+   stat = SQLConnect(myHdbc, (unsigned char *)odbcEntryName, SQL_NTS,
 		     (unsigned char *)icss->databaseUsername, SQL_NTS, 
 		     (unsigned char *)icss->databasePassword, SQL_NTS);
    if (stat != SQL_SUCCESS) {
       rodsLog(LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat);
       rodsLog(LOG_ERROR, 
           "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
-	  CATALOG_ODBC_ENTRY_NAME,icss->databaseUsername, 
+	  odbcEntryName,icss->databaseUsername, 
 	  icss->databasePassword);
       while (SQLError(icss->environPtr,myHdbc , 0, sqlstate, &sqlcode, buffer,
                     SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
