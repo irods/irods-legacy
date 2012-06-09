@@ -144,5 +144,7 @@ int
 changeToServiceUser ();
 int
 changeToUser (uid_t uid);
+int
+dropRootPrivilege ();
 #endif
 #endif	/* MISC_SERVER_FUNCT_H */

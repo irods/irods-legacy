@@ -358,6 +358,16 @@ execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd)
     close (stdOutFd);
     close (stdErrFd);
 
+#ifdef RUN_SERVER_AS_ROOT
+    /* if we're running with root real uid, drop all root
+       privilege and setuid() to the irods service user
+       before running the request command */
+    status = dropRootPrivilege();
+    if (status < 0) {
+        return (status);
+    }
+#endif
+
     status = execv (av[0], av);
 
 #else /* Windows: Can Windows redirect the stdin, etc, to a pipe? */
