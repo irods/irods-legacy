@@ -146,6 +146,8 @@ int
 initCondForRmtrash (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjInp, collInp_t *collInp)
 {
+    char tmpStr[NAME_LEN];
+
     if (dataObjInp == NULL) {
        rodsLog (LOG_ERROR,
           "initCondForRmtrash: NULL dataObjInp input");
@@ -178,6 +180,10 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
 	addKeyVal (&dataObjInp->condInput, ZONE_KW, rodsArgs->zoneName);
     }
 
+    if (rodsArgs->age == True) {
+        snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->agevalue);
+        addKeyVal (&dataObjInp->condInput, AGE_KW, tmpStr);
+    }
 
     seedRandom ();
 

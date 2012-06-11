@@ -193,6 +193,7 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
     int handleInx;
     dataObjInp_t dataObjInp;
     collInp_t tmpCollInp;
+    char *tmpValue;
     int rmtrashFlag =0;
     int savedStatus = 0;
     int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
@@ -221,6 +222,10 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
     dataObjInp.oprType = tmpCollInp.oprType = rmCollInp->oprType;
     addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
     addKeyVal (&tmpCollInp.condInput, FORCE_FLAG_KW, "");
+    if ((tmpValue = getValByKey (&rmCollInp->condInput, AGE_KW)) != NULL) {
+        addKeyVal (&dataObjInp.condInput, AGE_KW, tmpValue);
+        addKeyVal (&tmpCollInp.condInput, AGE_KW, tmpValue);
+    }
     if (getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL) {
         if (isTrashPath (rmCollInp->collName) == False) {
             return (SYS_INVALID_FILE_PATH);

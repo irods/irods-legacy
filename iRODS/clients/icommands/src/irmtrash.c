@@ -111,6 +111,7 @@ usage ()
 " -v  verbose",
 " -V  Very verbose",
 " -z  zoneName - the zone where the rm trash will be carried out",
+" --age age_in_minutes - The minimum age of the copy in minutes for removal.",
 " -h  this help",
 ""};
    int i;
