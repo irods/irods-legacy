@@ -182,6 +182,7 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
 
     if (rodsArgs->age == True) {
         snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->agevalue);
+	addKeyVal (&collInp->condInput, AGE_KW, tmpStr);
         addKeyVal (&dataObjInp->condInput, AGE_KW, tmpStr);
     }
 

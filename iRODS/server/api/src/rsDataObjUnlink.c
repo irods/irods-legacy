@@ -71,7 +71,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         int ageLimit;
         if ((tmpAge = getValByKey (&dataObjUnlinkInp->condInput, AGE_KW))
           != NULL) {
-	    ageLimit = atoi (tmpAge);
+	    ageLimit = atoi (tmpAge) * 60;
 	    if ((time (0) - atoi (dataObjInfoHead->dataModify)) < ageLimit) {
 		/* younger than ageLimit. Nothing to do */
     		freeAllDataObjInfo (dataObjInfoHead);
