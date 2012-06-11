@@ -862,6 +862,25 @@ testGetLocalZone(rsComm_t *rsComm, char *expectedZone) {
    return(0);
 }
 
+int 
+testGetPamPw(rsComm_t *rsComm, char *username, char *testTime) {
+   char *irodsPamPassword;
+   int status;
+
+   irodsPamPassword = (char*)malloc(100);
+   memset(irodsPamPassword,0,100);
+
+   status = chlUpdateIrodsPamPassword(rsComm, username, testTime,
+				      &irodsPamPassword);
+   if (status==0) {
+      printf("status=%d pw=%s \n",status,irodsPamPassword);
+   }
+   else {
+      printf("status=%d\n",status);
+   }
+   return(0);
+}
+
 
 int
 main(int argc, char **argv) {
@@ -1166,6 +1185,10 @@ main(int argc, char **argv) {
    }
    if (strcmp(argv[1],"getlocalzone")==0) {
       status = testGetLocalZone(Comm, argv[2]);
+      didOne=1;
+   }
+   if (strcmp(argv[1],"getpampw")==0) {
+      status = testGetPamPw(Comm, argv[2], argv[3]);
       didOne=1;
    }
 

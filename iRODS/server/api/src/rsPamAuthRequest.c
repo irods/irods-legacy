@@ -122,7 +122,7 @@ _rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     result->irodsPamPassword = (char*)malloc(100);
     if (result->irodsPamPassword == 0) return (SYS_MALLOC_ERR);
     status = chlUpdateIrodsPamPassword(rsComm, 
-				       pamAuthRequestInp->pamUser, 
+				       pamAuthRequestInp->pamUser, NULL,
 				       &result->irodsPamPassword);
     return(status);
 #else
