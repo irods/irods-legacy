@@ -4104,6 +4104,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    char form4[]="insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)";
    char form5[]="insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
    char form6[]="delete from R_USER_AUTH where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name = ?";
+   char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
    char myTime[50];
    rodsLong_t iVal;
 
@@ -4237,7 +4238,15 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 5");
       auditId = AU_DELETE_USER_AUTH_NAME;
       strncpy(auditComment, newValue, 100);
-
+   }
+   if (strncmp(option, "rmPamPw", 9)==0) {
+      rstrcpy(tSQL, form7, MAX_SQL_SIZE);
+      cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_TIME;
+      cllBindVars[cllBindVarCount++]=userName2;
+      cllBindVars[cllBindVarCount++]=zoneName;
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 6");
+      auditId = AU_MOD_USER_PASSWORD;
+      strncpy(auditComment, "Deleted user iRODS-PAM password (if any)", 100);
    }
 
    if (strcmp(option,"info")==0 ||
@@ -4248,7 +4257,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneName;
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 6");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 7");
       auditId = AU_MOD_USER_INFO;
       strncpy(auditComment, newValue, 100);
    }
@@ -4260,7 +4269,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneName;
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 7");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 8");
       auditId = AU_MOD_USER_COMMENT;
       strncpy(auditComment, newValue, 100);
    }
@@ -4272,7 +4281,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       icatScramble(decoded); 
 
       if (i) return(i);
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 8");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 9");
       i = cmlGetStringValueFromSql(
 	       "select R_USER_PASSWORD.user_id from R_USER_PASSWORD, R_USER_MAIN where R_USER_MAIN.user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
 	       userIdStr, MAX_NAME_LEN, userName2, zoneName, 0, &icss);
@@ -4286,7 +4295,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 cllBindVars[cllBindVarCount++]=decoded;
 	 cllBindVars[cllBindVarCount++]=myTime;
 	 cllBindVars[cllBindVarCount++]=userIdStr;
-	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 9");
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 10");
       }
       else {
 	 opType=4;
@@ -4297,7 +4306,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 cllBindVars[cllBindVarCount++]="9999-12-31-23.59.01";
 	 cllBindVars[cllBindVarCount++]=myTime;
 	 cllBindVars[cllBindVarCount++]=myTime;
-	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 10");
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 11");
       }
       auditId = AU_MOD_USER_PASSWORD;
    }
@@ -4312,7 +4321,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    if (status != 0 ) {  /* error */
       if (opType==1) { /* doing a type change, check if user_type problem */
 	 int status2;
-	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 11");
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 12");
 	 status2 = cmlGetIntegerValueFromSql(
              "select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?", 
 	     &iVal, newValue, 0, 0, 0, 0, &icss);
@@ -4332,7 +4341,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 /* check if user exists */
 	 int status2;
 	 _rollback("chlModUser");
-	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 12");
+	 if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 13");
 	 status2 = cmlGetIntegerValueFromSql(
            "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 	   &iVal, userName2, zoneName, 0, 0, 0, &icss);

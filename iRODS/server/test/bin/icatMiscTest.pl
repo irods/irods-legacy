@@ -317,6 +317,7 @@ delete $ENV{'irodsUserName'};
 delete $ENV{'irodsAuthFileName'};
 runCmd(0, "test_chl getpampw $User2"); # create a normal one
 runCmd(0, "test_chl getpampw $User2"); # do a second one to get an existing pw
+runCmd(0, "iadmin rpp $User2");   # exercise the remove irods-PAM pw SQL
 
 # clean up
 runCmd(0, "iadmin rmuser $UserAdmin2");
