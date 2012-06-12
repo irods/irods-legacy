@@ -152,6 +152,18 @@ dataObjInp_t *dataObjOprInp)
         return (USER__NULL_INPUT_ERR);
     }
 
+    /* check the age */
+    if (myRodsArgs->age == True) {
+	if (srcPath->rodsObjStat == NULL) {
+	    /* print a warning msg for now */
+            rodsLog (LOG_NOTICE,
+              "rsyncDataToFileUtil: NULL srcPath->rodsObjStat for %s",
+              srcPath->outPath);
+	} else {
+	    int age = time (0) - atoi (srcPath->rodsObjStat->modifyTime);
+	    if (age > myRodsArgs->agevalue) return 0;
+        }
+    }
     if (myRodsArgs->verbose == True) {
         (void) gettimeofday(&startTime, (struct timezone *)0);
 	bzero (&conn->transStat, sizeof (transStat_t));
@@ -250,6 +262,25 @@ dataObjInp_t *dataObjOprInp)
        rodsLog (LOG_ERROR,
           "rsyncFileToDataUtil: NULL srcPath or targPath input");
         return (USER__NULL_INPUT_ERR);
+    }
+    /* check the age */
+    if (myRodsArgs->age == True) {
+        int age;
+#ifndef windows_platform
+        struct stat statbuf;
+        status = stat (srcPath->outPath, &statbuf);
+#else
+        struct irodsntstat statbuf;
+        status = iRODSNt_stat(srcPath->outPath, &statbuf);
+#endif
+	if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "rsyncFileToDataUtil: stat error for %s, errno = %d\n",
+              srcPath->outPath, errno);
+            return (USER_INPUT_PATH_ERR);
+        }
+        age = time (0) - statbuf.st_mtime;
+        if (age > myRodsArgs->agevalue) return 0;
     }
 
     if (myRodsArgs->verbose == True) {
@@ -353,7 +384,18 @@ dataObjCopyInp_t *dataObjCopyInp)
           "rsyncDataToDataUtil: NULL srcPath or targPath input");
         return (USER__NULL_INPUT_ERR);
     }
-
+    /* check the age */
+    if (myRodsArgs->age == True) {
+        if (srcPath->rodsObjStat == NULL) {
+            /* print a warning msg for now */
+            rodsLog (LOG_NOTICE,
+              "rsyncDataToDataUtil: NULL srcPath->rodsObjStat for %s",
+              srcPath->outPath);
+        } else {
+            int age = time (0) - atoi (srcPath->rodsObjStat->modifyTime);
+            if (age > myRodsArgs->agevalue) return 0;
+        }
+    }
     if (myRodsArgs->verbose == True) {
         (void) gettimeofday(&startTime, (struct timezone *)0);
         bzero (&conn->transStat, sizeof (transStat_t));
@@ -958,6 +1000,7 @@ initCondForRsync (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 dataObjInp_t *dataObjInp)
 {
     char *myResc = NULL;
+    char tmpStr[NAME_LEN];
 
     if (dataObjInp == NULL) {
        rodsLog (LOG_ERROR,
@@ -1009,8 +1052,10 @@ dataObjInp_t *dataObjInp)
         addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
           myRodsEnv->rodsDefResource);
     }
-
-
+    if (rodsArgs->age == True) {
+        snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->agevalue);
+        addKeyVal (&dataObjInp->condInput, AGE_KW, tmpStr);
+    }
     return (0);
 }
 
