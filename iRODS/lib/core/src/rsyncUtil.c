@@ -8,6 +8,10 @@
 #include "rodsLog.h"
 #include "rsyncUtil.h"
 #include "miscUtil.h"
+static int CurrentTime = 0;
+int
+ageExceeded (int ageLimit, int myTime, int verbose, char *objPath, 
+rodsLong_t fileSize);
 
 int
 rsyncUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -154,14 +158,10 @@ dataObjInp_t *dataObjOprInp)
 
     /* check the age */
     if (myRodsArgs->age == True) {
-	if (srcPath->rodsObjStat == NULL) {
-	    /* print a warning msg for now */
-            rodsLog (LOG_NOTICE,
-              "rsyncDataToFileUtil: NULL srcPath->rodsObjStat for %s",
-              srcPath->outPath);
-	} else {
-	    int age = time (0) - atoi (srcPath->rodsObjStat->modifyTime);
-	    if (age > myRodsArgs->agevalue) return 0;
+	if (srcPath->rodsObjStat != NULL) {
+	    if (ageExceeded (myRodsArgs->agevalue, 
+	      atoi (srcPath->rodsObjStat->modifyTime), myRodsArgs->verbose,
+              srcPath->outPath, srcPath->size)) return 0;
         }
     }
     if (myRodsArgs->verbose == True) {
@@ -240,7 +240,7 @@ dataObjInp_t *dataObjOprInp)
             printTiming (conn, srcPath->outPath, srcPath->size, 
 	      targPath->outPath, &startTime, &endTime);
 	} else {
-	    printNoSync (srcPath->outPath, srcPath->size);
+	    printNoSync (srcPath->outPath, srcPath->size, "a match");
 	}
     }
 
@@ -265,7 +265,6 @@ dataObjInp_t *dataObjOprInp)
     }
     /* check the age */
     if (myRodsArgs->age == True) {
-        int age;
 #ifndef windows_platform
         struct stat statbuf;
         status = stat (srcPath->outPath, &statbuf);
@@ -279,8 +278,8 @@ dataObjInp_t *dataObjOprInp)
               srcPath->outPath, errno);
             return (USER_INPUT_PATH_ERR);
         }
-        age = time (0) - statbuf.st_mtime;
-        if (age > myRodsArgs->agevalue) return 0;
+	if (ageExceeded (myRodsArgs->agevalue, statbuf.st_mtime,
+          myRodsArgs->verbose, srcPath->outPath, srcPath->size)) return 0;
     }
 
     if (myRodsArgs->verbose == True) {
@@ -362,7 +361,7 @@ dataObjInp_t *dataObjOprInp)
             printTiming (conn, srcPath->outPath, srcPath->size,
               targPath->outPath, &startTime, &endTime);
         } else {
-            printNoSync (srcPath->outPath, srcPath->size);
+            printNoSync (srcPath->outPath, srcPath->size, "a match");
         }
     }
 
@@ -386,14 +385,10 @@ dataObjCopyInp_t *dataObjCopyInp)
     }
     /* check the age */
     if (myRodsArgs->age == True) {
-        if (srcPath->rodsObjStat == NULL) {
-            /* print a warning msg for now */
-            rodsLog (LOG_NOTICE,
-              "rsyncDataToDataUtil: NULL srcPath->rodsObjStat for %s",
-              srcPath->outPath);
-        } else {
-            int age = time (0) - atoi (srcPath->rodsObjStat->modifyTime);
-            if (age > myRodsArgs->agevalue) return 0;
+        if (srcPath->rodsObjStat != NULL) {
+           if (ageExceeded (myRodsArgs->agevalue,
+              atoi (srcPath->rodsObjStat->modifyTime), myRodsArgs->verbose,
+              srcPath->outPath, srcPath->size)) return 0;
         }
     }
     if (myRodsArgs->verbose == True) {
@@ -458,7 +453,7 @@ dataObjCopyInp_t *dataObjCopyInp)
             printTiming (conn, srcPath->outPath, srcPath->size, 
 	      targPath->outPath, &startTime, &endTime);
 	} else {
-            printNoSync (srcPath->outPath, srcPath->size);
+            printNoSync (srcPath->outPath, srcPath->size, "a match");
         }
     }
 
@@ -526,6 +521,11 @@ dataObjInp_t *dataObjOprInp)
 #endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
+	    if (rodsArgs->age == True) {
+                if (ageExceeded (rodsArgs->agevalue,
+                  atoi (collEnt.modifyTime), rodsArgs->verbose,
+                  collEnt.dataName, collEnt.dataSize)) continue;
+            }
 #if 0
             snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
               targDir, collEnt.collName + collLen,
@@ -707,6 +707,11 @@ dataObjInp_t *dataObjOprInp)
               "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
               mySrcPath.outPath, errno);
             return (USER_INPUT_PATH_ERR);
+        }
+        if ((statbuf.st_mode & S_IFREG) != 0 && rodsArgs->age == True) {
+            if (ageExceeded (rodsArgs->agevalue, statbuf.st_mtime,
+              rodsArgs->verbose, mySrcPath.outPath, statbuf.st_size)) 
+                continue;
         }
 #ifdef FILESYSTEM_META
         getFileMetaFromPath(mySrcPath.outPath, &dataObjOprInp->condInput);
@@ -896,6 +901,11 @@ dataObjCopyInp_t *dataObjCopyInp)
 #endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
+            if (rodsArgs->age == True) {
+                if (ageExceeded (rodsArgs->agevalue,
+                  atoi (collEnt.modifyTime), rodsArgs->verbose,
+                  collEnt.dataName, collEnt.dataSize)) continue;
+            }
 #if 0
             snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
               targColl, collEnt.collName + collLen,
@@ -1120,3 +1130,18 @@ dataObjCopyInp_t *dataObjCopyInp)
     return (0);
 }
 
+int
+ageExceeded (int ageLimit, int myTime, int verbose, char *objPath, 
+rodsLong_t fileSize)
+{
+    int age;
+
+    if (CurrentTime == 0) CurrentTime = time (0);
+    age = CurrentTime - myTime;
+    if (age > ageLimit * 60) { 
+        printNoSync (objPath, fileSize, "age");
+        return 1;
+    } else {
+        return 0;
+    }
+}

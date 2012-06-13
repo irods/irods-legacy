@@ -579,7 +579,7 @@ printSysTiming (char *procName, char *action, int envVarFlag)
 #endif
 
 int
-printNoSync (char *objPath, rodsLong_t fileSize)
+printNoSync (char *objPath, rodsLong_t fileSize, char *reason)
 {
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     float sizeInMb;
@@ -600,7 +600,8 @@ printNoSync (char *objPath, rodsLong_t fileSize)
     }
 
     fprintf (stdout,
-      "   %-25.25s  %10.3f MB --- no sync required \n", myFile, sizeInMb);
+      "   %-25.25s  %10.3f MB --- %s, no sync required \n", 
+      myFile, sizeInMb, reason);
 
     return (0);
 }

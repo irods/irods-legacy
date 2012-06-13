@@ -137,5 +137,6 @@ netcdfTest () {
             fail;
         }
 }
-INPUT *ncTestPath="/oneZone/home/rods/netcdf/sfc_pres_temp.nc"
+# INPUT *ncTestPath="/wanZone/home/rods/netcdf/sfc_pres_temp.nc"
+INPUT *ncTestPath="/wanZone/home/rods/netcdf/pres_temp_4D.nc"
 OUTPUT ruleExecOut,*tempVaraOut
