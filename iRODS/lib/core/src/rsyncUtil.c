@@ -206,6 +206,9 @@ dataObjInp_t *dataObjOprInp)
     }
 
     if (getFlag + syncFlag > 0) {
+        if (myRodsArgs->verifyChecksum == True) {
+            addKeyVal (&dataObjOprInp->condInput, VERIFY_CHKSUM_KW, "");
+        }
         rstrcpy (dataObjOprInp->objPath, srcPath->outPath, MAX_NAME_LEN);
         dataObjOprInp->dataSize = srcPath->size;
         dataObjOprInp->openFlags = O_RDONLY;
@@ -306,6 +309,10 @@ dataObjInp_t *dataObjOprInp)
         } else {
 	    chksum = getValByKey (&dataObjOprInp->condInput, RSYNC_CHKSUM_KW);
 	    if (strcmp (chksum, targPath->chksum) != 0) {
+                if (myRodsArgs->verifyChecksum == True) {
+		    addKeyVal (&dataObjOprInp->condInput, VERIFY_CHKSUM_KW,
+                      chksum);
+                }
 		putFlag = 1;
 	    }
 	}
@@ -319,6 +326,10 @@ dataObjInp_t *dataObjOprInp)
               srcPath->outPath, status);
             return (status);
         } else {
+            chksum = getValByKey (&dataObjOprInp->condInput, RSYNC_CHKSUM_KW);
+            if (myRodsArgs->verifyChecksum == True) {
+                addKeyVal (&dataObjOprInp->condInput, VERIFY_CHKSUM_KW, chksum);
+            }
 	    syncFlag = 1;
 	}
     }
@@ -1066,6 +1077,7 @@ dataObjInp_t *dataObjInp)
         snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->agevalue);
         addKeyVal (&dataObjInp->condInput, AGE_KW, tmpStr);
     }
+
     return (0);
 }
 
@@ -1131,6 +1143,12 @@ dataObjCopyInp_t *dataObjCopyInp)
         snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->agevalue);
         addKeyVal (&dataObjCopyInp->destDataObjInp.condInput, AGE_KW, tmpStr);
     }
+
+    if (rodsArgs->verifyChecksum == True) {
+        addKeyVal (&dataObjCopyInp->destDataObjInp.condInput,
+         VERIFY_CHKSUM_KW, "");
+    }
+
 
     return (0);
 }
