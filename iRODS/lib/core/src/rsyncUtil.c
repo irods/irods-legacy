@@ -1073,6 +1073,7 @@ int
 initCondForIrodsToIrodsRsync (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjCopyInp_t *dataObjCopyInp)
 {
+    char tmpStr[NAME_LEN];
     char *myResc = NULL;
 
     if (dataObjCopyInp == NULL) {
@@ -1126,6 +1127,10 @@ dataObjCopyInp_t *dataObjCopyInp)
         }
     }
 #endif
+    if (rodsArgs->age == True) {
+        snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->agevalue);
+        addKeyVal (&dataObjCopyInp->destDataObjInp.condInput, AGE_KW, tmpStr);
+    }
 
     return (0);
 }
