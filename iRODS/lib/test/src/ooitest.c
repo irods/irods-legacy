@@ -105,13 +105,15 @@ doNewAccount (CURL *easyhandle, char *account_type, char *name,
 char **accountIDOut)
 {
     /* account_type can be Checking or Savings */
-    json_t *obj;
+    json_t *obj, *paramObj;
     CURLcode res;
     char myUrl[MAX_NAME_LEN];
     char postStr[MAX_NAME_LEN];
     char *objStr;
     bankOprOut_t bankOprOut;
+    int status;
 
+#if 0
     obj = json_pack ("{s:{s:s,s:s,s:{s:s,s:s}}}",
                           "serviceRequest",
                           "serviceName", BANK_SERVICE_NAME,
@@ -123,6 +125,34 @@ char **accountIDOut)
         rodsLog (LOG_ERROR, "doNewAccount: json_pack error");
         return -2;
     }
+#endif
+    paramObj = json_object ();
+    status = json_object_set_new (paramObj, ACCOUNT_TYPE_KW, 
+      json_string (account_type));
+
+    if (status != 0) {
+        rodsLog (LOG_ERROR, "doNewAccount: son_object_set paramObj error");
+	json_decref (paramObj);
+        return -2;
+    }
+    status = json_object_set_new (paramObj, NAME_KW, json_string (name));
+
+    if (status != 0) {
+        rodsLog (LOG_ERROR, "doNewAccount: son_object_set paramObj error");
+        json_decref (paramObj);
+        return -2;
+    }
+
+    obj = json_pack ("{s:{s:s,s:s,s:o}}",
+                          "serviceRequest",
+                          "serviceName", BANK_SERVICE_NAME,
+                          "serviceOp", NEW_ACCOUNT_OP,
+                          "params", paramObj);
+
+    if (obj == NULL) {
+        rodsLog (LOG_ERROR, "doNewAccount: json_pack error");
+        return -2;
+    }
 
     objStr = json_dumps (obj, 0);
 
@@ -130,6 +160,8 @@ char **accountIDOut)
         rodsLog (LOG_ERROR, "doNewAccount: json_dumps error");
         return -2;
     }
+
+    printf ("jsonStr : %s\n", objStr);
 
     snprintf (postStr, MAX_NAME_LEN, "payload=%s", objStr);
     /* deposit */
@@ -145,7 +177,7 @@ char **accountIDOut)
     curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &bankOprOut);
 
     res = curl_easy_perform (easyhandle);
-    free (obj);
+    json_decref (obj);
     free (objStr);
     if (res != CURLE_OK) {
         rodsLog (LOG_ERROR, "doNewAccount: curl_easy_perform error: %d", res);
@@ -375,8 +407,6 @@ listAccountsOut (void *buffer, size_t size, size_t nmemb, void *userp)
 {
     json_t *root, *dataObj, *responseObj, *keyValObj;
     json_error_t jerror;
-    const char *responseStr;
-    bankOprOut_t *bankOprOut;
     int i;
 
     root = json_loads((const char*) buffer, 0, &jerror);
