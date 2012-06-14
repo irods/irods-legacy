@@ -20,6 +20,7 @@
 #define NEW_ACCOUNT_OP			"new_account"
 #define DEPOSIT_OP			"deposit"
 #define BUY_BOND_OP			"buy_bonds"
+#define LIST_ACCOUNTS_OP		"list_accounts"
 #define ACCOUNT_ID_KW			"account_id"
 #define ACCOUNT_TYPE_KW			"account_type"
 #define NAME_KW				"name"
@@ -43,10 +44,16 @@ int
 doDeposit (CURL *easyhandle, char *account_id, float ammount);
 int
 doBuyBond (CURL *easyhandle, char *account_id, float cash_amount);
+int
+doListAccounts (CURL *easyhandle);
 size_t
 decodeDepositOut (void *buffer, size_t size, size_t nmemb, void *userp);
 size_t
 newAccountOut (void *buffer, size_t size, size_t nmemb, void *userp);
+size_t
+listAccountsOut (void *buffer, size_t size, size_t nmemb, void *userp);
+int
+printKeyValJsonObj (json_t *keyValObj);
 
 int
 main(int argc, char **argv)
@@ -83,8 +90,12 @@ runBankTest ()
     if (status < 0) return status;
 
     status = doBuyBond (easyhandle, account_id, 200.0);
-
     free (account_id);
+
+    if (status < 0) return status;
+
+    status = doListAccounts (easyhandle);
+
 
     return status;
 }
@@ -276,20 +287,20 @@ decodeDepositOut (void *buffer, size_t size, size_t nmemb, void *userp)
     if (!dataObj) {
        rodsLog (LOG_ERROR,
           "decodeDepositOut: json_object_get data failed.");
-	free (root);
+	json_decref (root);
         return 0;
     }
     responseObj = json_object_get(dataObj, "GatewayResponse");
     if (!responseObj) {
        rodsLog (LOG_ERROR,
           "decodeDepositOut: json_object_get GatewayResponse failed.");
-	free (root);
+	json_decref (root);
         return 0;
     }
     responseStr = json_string_value (responseObj);
     bankOprOut = (bankOprOut_t *) userp;
     strncpy (bankOprOut->reponseStr, responseStr, MAX_NAME_LEN);
-    free (root);
+    json_decref (root);
 
     return nmemb*size;
 }
@@ -312,20 +323,145 @@ newAccountOut (void *buffer, size_t size, size_t nmemb, void *userp)
     if (!dataObj) {
        rodsLog (LOG_ERROR,
           "decodeDepositOut: json_object_get data failed.");
-	free (root);
+	json_decref (root);
         return 0;
     }
     responseObj = json_object_get(dataObj, "GatewayResponse");
     if (!responseObj) {
        rodsLog (LOG_ERROR,
           "decodeDepositOut: json_object_get GatewayResponse failed.");
-	free (root);
+	json_decref (root);
         return 0;
     }
     responseStr = json_string_value (responseObj);
     bankOprOut = (bankOprOut_t *) userp;
     strncpy (bankOprOut->account_id, responseStr, MAX_NAME_LEN);
-    free (root);
+    json_decref (root);
 
     return nmemb*size;
+}
+
+int
+doListAccounts (CURL *easyhandle)
+{
+    CURLcode res;
+    char myUrl[MAX_NAME_LEN];
+    bankOprOut_t *bankOprOut;
+
+    snprintf (myUrl, MAX_NAME_LEN, "%s:%s/%s/%s/%s",
+      OOI_GATEWAY_URL, OOI_GATEWAY_PORT, ION_SERVICE, BANK_SERVICE_NAME,
+      LIST_ACCOUNTS_OP);
+    printf ("%s\n", myUrl);
+
+    curl_easy_reset(easyhandle);	/* reset to clean out POST option */
+    curl_easy_setopt(easyhandle, CURLOPT_URL, myUrl);
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, listAccountsOut);
+    bzero (&bankOprOut, sizeof (bankOprOut));
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &bankOprOut);
+
+    res = curl_easy_perform (easyhandle);
+    if (res != CURLE_OK) {
+        rodsLog (LOG_ERROR, "listAccounts: curl_easy_perform error: %d", res);
+        return -1;
+    }
+#if 0
+    printf ("output = %s\n", bankOprOut.account_id);
+    *accountIDOut = strdup (bankOprOut.account_id);
+#endif
+    return 0;
+}
+size_t
+listAccountsOut (void *buffer, size_t size, size_t nmemb, void *userp)
+{
+    json_t *root, *dataObj, *responseObj, *keyValObj;
+    json_error_t jerror;
+    const char *responseStr;
+    bankOprOut_t *bankOprOut;
+    int i;
+
+    root = json_loads((const char*) buffer, 0, &jerror);
+    if (!root) {
+        rodsLog (LOG_ERROR,
+          "listAccountsOut: json_loads error. %s", jerror.text);
+        return 0;
+    }
+    dataObj = json_object_get(root, "data");
+    if (!dataObj) {
+       rodsLog (LOG_ERROR,
+          "listAccountsOut: json_object_get data failed.");
+        json_decref (root);
+        return 0;
+    }
+    responseObj = json_object_get(dataObj, "GatewayResponse");
+    if (!responseObj) {
+       rodsLog (LOG_ERROR,
+          "listAccountsOut: json_object_get GatewayResponse failed.");
+        json_decref (root);
+        return 0;
+    }
+
+    if(!json_is_array(responseObj)) {
+       rodsLog (LOG_ERROR,
+          "listAccountsOut: responseObj is not an array.");
+        json_decref (root);
+        return 0;
+    }
+
+    for(i = 0; i < (int) json_array_size(responseObj); i++) {
+        keyValObj = json_array_get(responseObj, i);
+        if(!json_is_object(keyValObj)) {
+            rodsLog (LOG_ERROR,
+              "listAccountsOut: responseObj is not an array.");
+            json_decref (root);
+            return 0;
+        }
+	printKeyValJsonObj (keyValObj);
+    }
+    return nmemb*size;
+}
+
+int 
+printKeyValJsonObj (json_t *keyValObj)
+{
+    void *iter;
+    const char *key;
+    json_t *value;
+
+    printf ("keys: Value Object\n  {\n");
+    iter = json_object_iter(keyValObj);
+
+    while (iter) {
+	json_type myType;
+	char valueStr[NAME_LEN];
+
+        key = json_object_iter_key(iter);
+        value = json_object_iter_value(iter);
+	myType = json_typeof (value);
+	switch (myType) {
+	  case JSON_STRING:
+	    snprintf (valueStr, NAME_LEN, "%s", json_string_value (value));
+	    break;
+          case JSON_INTEGER:
+            snprintf (valueStr, NAME_LEN, "%d", 
+              (int) json_integer_value (value));
+            break;
+          case JSON_REAL:
+            snprintf (valueStr, NAME_LEN, "%f", 
+              (float) json_real_value (value));
+            break;
+          case JSON_TRUE:
+            snprintf (valueStr, NAME_LEN, "TRUE");
+            break;
+          case JSON_FALSE:
+            snprintf (valueStr, NAME_LEN, "FALSE");
+            break;
+          default:
+            snprintf (valueStr, NAME_LEN, "Unknown json_type: %d", myType);
+	}
+	printf ("    %s: %s\n", key, valueStr);
+        iter = json_object_iter_next(keyValObj, iter);
+    }
+    printf ("  }\n");
+
+    return 0;
 }
