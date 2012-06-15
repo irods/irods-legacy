@@ -788,6 +788,8 @@ dataObjInfo_t *dataObjInfo, char *acLCollection)
     modDataObjMeta_t modDataObjMetaInp;
     keyValPair_t regParam;
     vaultPathPolicy_t vaultPathPolicy;
+    char tmpStr[NAME_LEN];
+
 
     if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0)
 	return 0;
@@ -867,6 +869,8 @@ dataObjInfo_t *dataObjInfo, char *acLCollection)
 
     /* register the change */
     memset (&regParam, 0, sizeof (regParam));
+    snprintf (tmpStr, NAME_LEN, "%d", (int) time (NULL));
+    addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
     addKeyVal (&regParam, FILE_PATH_KW, fileRenameInp.newFileName);
     if (acLCollection != NULL)
       addKeyVal (&regParam, ACL_COLLECTION_KW, acLCollection);
