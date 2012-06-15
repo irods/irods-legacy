@@ -130,6 +130,11 @@ packInstructArray_t RodsPackTable[] = {
         {"MsrvcStruct_PI", MsrvcStruct_PI},
         {"DataSeg_PI", DataSeg_PI},
         {"FileRestartInfo_PI", FileRestartInfo_PI},
+#ifdef OOI_CI
+        {"DictValue_PI", DictValue_PI},
+        {"Dictionary_PI", Dictionary_PI},
+        {"DictArray_PI", DictArray_PI},
+#endif
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 
