@@ -33,10 +33,11 @@ typedef struct Dictionary {
 /* array of dictionary */
 typedef struct DictArray {
     int len;
+    int flags;		/* not used */
     dictionary_t **dictionary;
 } dictArray_t;
 
-#define DictArray_PI "int dictArrayLen; struct *Dictionary_PI[dictArrayLen];" 
+#define DictArray_PI "int dictArrayLen; int flags; struct *Dictionary_PI(dictArrayLen);" 
 
 int
 dictSetAttr (dictionary_t *dictionary, char *key, char *type_PI, 
