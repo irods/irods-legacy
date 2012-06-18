@@ -52,6 +52,10 @@ CCFLAGS += -fprofile-arcs -ftest-coverage
 LDRFLAGS += -lgcov
 endif
 
+ifdef OOI_CI
+CCFLAGS += -DOOI_CI
+endif
+
 ifdef CCFLAGS
 MY_CFLAG += $(CCFLAGS)
 endif

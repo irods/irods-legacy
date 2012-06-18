@@ -12,6 +12,9 @@
 #include "rodsGenQuery.h"
 #include "reGlobalsExtern.h"
 #include "apiHeaderAll.h"
+#ifdef OOI_CI
+#include "ooiCi.h"
+#endif
 
 #define UNKNOWN_SIZE	-1
 

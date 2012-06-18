@@ -7,11 +7,7 @@
 #ifndef OOI_CI_H
 #define OOI_CI_H
 
-#include "rodsType.h"
-#include "rodsUser.h"
-
-/* this defines the "copies" condition */
-#define ALL_COPIES	-1	/* "all" */ 
+#include "rods.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -27,7 +23,7 @@ typedef struct DictValue {
 typedef struct Dictionary {
     int len;
     char **key;     		/* array of keyword */
-    dictValue_t **value;        /* pointer to an array of values */
+    dictValue_t *value;        /* pointer to an array of values */
 } dictionary_t;
 
 #define Dictionary_PI "int dictLen; str *key[dictLen]; struct *DictValue_PI[dictLen];" 
@@ -41,8 +37,14 @@ typedef struct DictArray {
 #define DictArray_PI "int dictArrayLen; struct *Dictionary_PI[dictArrayLen];" 
 
 int
-setDictionary (dictionary_t *dictionary, char *key, char *type_PI, 
+dictSetAttr (dictionary_t *dictionary, char *key, char *type_PI, 
 void *valptr);
+dictValue_t *
+dictGetAttr (dictionary_t *dictionary, char *key);
+int
+dictDelAttr (dictionary_t *dictionary, char *key);
+int
+clearDictionary (dictionary_t *dictionary);
 #ifdef  __cplusplus
 }
 #endif

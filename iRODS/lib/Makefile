@@ -90,6 +90,10 @@ CFLAGS +=	-DEXTENDED_ICAT
 INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
 
+ifdef OOI_CI
+LIB_CORE_OBJS += $(libCoreObjDir)/ooiCi.o
+endif
+
 # Logging (automatically generated source)
 LOG_SRC =	$(libCoreSrcDir)/rodsLog.c
 

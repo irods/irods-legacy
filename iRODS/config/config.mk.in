@@ -485,3 +485,6 @@ endif
 # location of commands for rsExecCmd
 #CMD_DIR=cmd
 
+# OOI_CI - specify whether to compile the OOI CI modules
+OOI_CI=1
+
