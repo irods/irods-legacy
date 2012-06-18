@@ -15,10 +15,12 @@ extern "C" {
 
 typedef struct DictValue {
     char type_PI[NAME_LEN];   /* the packing instruction of the ptr */
+    int len;		      /* > 0 if ptr is an array */
+    int flags;		      /* not used */
     void *ptr;
 } dictValue_t;
 
-#define DictValue_PI "piStr type_PI[NAME_LEN]; ?type_PI *ptr;"
+#define DictValue_PI "piStr type_PI[NAME_LEN]; int arrLen, int flags; ?type_PI *ptr(arrLen);"
 
 typedef struct Dictionary {
     int len;
@@ -26,7 +28,7 @@ typedef struct Dictionary {
     dictValue_t *value;        /* pointer to an array of values */
 } dictionary_t;
 
-#define Dictionary_PI "int dictLen; str *key[dictLen]; struct *DictValue_PI[dictLen];" 
+#define Dictionary_PI "int dictLen; str *key[dictLen]; struct *DictValue_PI(dictLen);" 
 
 /* array of dictionary */
 typedef struct DictArray {
@@ -38,7 +40,7 @@ typedef struct DictArray {
 
 int
 dictSetAttr (dictionary_t *dictionary, char *key, char *type_PI, 
-void *valptr);
+void *valptr, int arrLen);
 dictValue_t *
 dictGetAttr (dictionary_t *dictionary, char *key);
 int
