@@ -486,5 +486,5 @@ endif
 #CMD_DIR=cmd
 
 # OOI_CI - specify whether to compile the OOI CI modules
-OOI_CI=1
+# OOI_CI=1
 
