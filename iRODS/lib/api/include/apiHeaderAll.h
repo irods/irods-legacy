@@ -141,6 +141,7 @@
 #include "dataObjLock.h"
 #include "ticketAdmin.h"
 #include "getTempPasswordForOther.h"
+#ifdef NETCDF_API
 #include "ncOpen.h"
 #include "ncCreate.h"
 #include "ncClose.h"
@@ -149,10 +150,13 @@
 #include "ncGetVarsByType.h"
 #include "nccfGetVara.h"
 #include "ncInq.h"
+#include "ncOpenGroup.h"
+#include "ncInqGrps.h"
+#endif
 #include "pamAuthRequest.h"
 #include "sslStart.h"
 #include "sslEnd.h"
-#include "ncOpenGroup.h"
-#include "ncInqGrps.h"
+#ifdef OOI_CI
 #include "ooiGenServReq.h"
+#endif
 #endif	/* API_HEADER_ALL_H */
