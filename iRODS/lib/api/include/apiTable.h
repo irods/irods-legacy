@@ -411,6 +411,8 @@ apidef_t RcApiTable[] = {
       "NcOpenInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_OPEN_GROUP},
     {NC_INQ_GRPS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NcInqGrpsInp_PI", 0, "NcInqGrpsOut_PI", 0, (funcPtr) RS_NC_INQ_GRPS},
+    {OOI_GEN_SERV_REQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+      "OoiGenServReqInp_PI", 0, "DictValue_PI", 0, (funcPtr) RS_OOI_GEN_SERV_REQ},
 #endif
     {SSL_START_AN, RODS_API_VERSION,
        NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 

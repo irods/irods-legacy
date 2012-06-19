@@ -638,6 +638,9 @@
 #define SSL_HANDSHAKE_ERROR             -2103000
 #define SSL_SHUTDOWN_ERROR              -2104000
 
+/* OOI CI error codes */
+#define OOI_CURL_EASY_INIT_ERR		-2200000
+
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996
 #define SYS_HANDLER_DONE_WITH_ERROR		-99999997

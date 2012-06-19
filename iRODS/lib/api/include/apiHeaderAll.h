@@ -154,4 +154,5 @@
 #include "sslEnd.h"
 #include "ncOpenGroup.h"
 #include "ncInqGrps.h"
+#include "ooiGenServReq.h"
 #endif	/* API_HEADER_ALL_H */

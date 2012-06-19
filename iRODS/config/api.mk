@@ -451,3 +451,7 @@ LIB_API_OBJS += $(libApiObjDir)/rcSslStart.o
 SVR_API_OBJS += $(svrApiObjDir)/rsSslEnd.o
 LIB_API_OBJS += $(libApiObjDir)/rcSslEnd.o
 
+ifdef OOI_CI
+SVR_API_OBJS += $(svrApiObjDir)/rsOoiGenServReq.o
+LIB_API_OBJS += $(libApiObjDir)/rcOoiGenServReq.o
+endif

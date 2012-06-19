@@ -8,6 +8,8 @@
 #define OOI_CI_H
 
 #include "rods.h"
+#include <jansson.h>
+#include <curl/curl.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -48,6 +50,8 @@ int
 dictDelAttr (dictionary_t *dictionary, char *key);
 int
 clearDictionary (dictionary_t *dictionary);
+int
+jsonPackDictionary (dictionary_t *dictionary, json_t **outObj);
 #ifdef  __cplusplus
 }
 #endif

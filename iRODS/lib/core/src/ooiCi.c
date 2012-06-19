@@ -127,3 +127,19 @@ clearDictionary (dictionary_t *dictionary)
     return(0);
 }
 
+int
+jsonPackDictionary (dictionary_t *dictionary, json_t **outObj)
+{
+    json_t *paramObj;
+    int i;
+
+    if (dictionary == NULL || outObj == NULL) return USER__NULL_INPUT_ERR;
+
+    paramObj = json_object ();
+
+    for (i = 0; i < dictionary->len; i++) {
+    }
+
+    return 0;
+}
+
