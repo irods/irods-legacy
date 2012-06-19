@@ -15,6 +15,12 @@
 extern "C" {
 #endif
 
+#define SERVICE_REQUEST_STR	"serviceRequest"
+#define SERVICE_NAME_STR	"serviceName"
+#define SERVICE_OP_STR		"serviceOp"
+#define PARAMS_STR		"params"
+#define ION_SERVICE_STR		"ion-service"
+
 typedef struct DictValue {
     char type_PI[NAME_LEN];   /* the packing instruction of the ptr */
     int len;		      /* > 0 if ptr is an array */
@@ -52,6 +58,12 @@ int
 clearDictionary (dictionary_t *dictionary);
 int
 jsonPackDictionary (dictionary_t *dictionary, json_t **outObj);
+int
+jsonPackOoiServReq (char *servName, char *servOpr, dictionary_t *param,
+char **outStr);
+int
+jsonPackOoiServReqForPost (char *servName, char *servOpr, dictionary_t *params,
+char **outStr);
 #ifdef  __cplusplus
 }
 #endif

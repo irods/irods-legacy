@@ -35,6 +35,8 @@ ooiGenServReqOut_t **ooiGenServReqOut);
 int
 _rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
 ooiGenServReqOut_t **ooiGenServReqOut);
+size_t
+ooiGenServReqOutFunc (void *buffer, size_t size, size_t nmemb, void *userp);
 #else
 #define RS_OOI_GEN_SERV_REQ NULL
 #endif

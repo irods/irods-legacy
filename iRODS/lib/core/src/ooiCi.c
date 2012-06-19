@@ -196,3 +196,53 @@ jsonPackDictionary (dictionary_t *dictionary, json_t **outObj)
     return 0;
 }
 
+int
+jsonPackOoiServReq (char *servName, char *servOpr, dictionary_t *params,
+char **outStr)
+{
+    json_t *paramObj, *obj; 
+    int status;
+
+    if (servName == NULL || servOpr == NULL || params == NULL ||
+      outStr == NULL) return USER__NULL_INPUT_ERR;
+
+    status = jsonPackDictionary (params, &paramObj);
+
+    if (status < 0) return status;
+
+    obj = json_pack ("{s:{s:s,s:s,s:o}}",
+                          SERVICE_REQUEST_STR,
+                          SERVICE_NAME_STR, servName,
+                          SERVICE_OP_STR, servOpr,
+                          "params", paramObj);
+
+    if (obj == NULL) {
+        rodsLog (LOG_ERROR, "jsonPackOoiServReq: json_pack error");
+        return OOI_JSON_PACK_ERR;
+    }
+    *outStr = json_dumps (obj, 0);
+    json_decref (obj);
+    if (*outStr == NULL) {
+        rodsLog (LOG_ERROR, "jsonPackOoiServReq: json_dumps error");
+        return OOI_JSON_DUMP_ERR;
+    }
+    return 0;
+}
+
+int
+jsonPackOoiServReqForPost (char *servName, char *servOpr, dictionary_t *params,
+char **outStr)
+{
+    char *tmpOutStr = NULL;
+    int status, len;
+
+    status = jsonPackOoiServReq (servName, servOpr, params, &tmpOutStr);
+
+    if (status < 0) return status;
+
+    len = strlen (tmpOutStr) + 20;
+    *outStr = (char *)malloc (len);
+    snprintf (*outStr, len, "payload=%s", tmpOutStr);
+    free (tmpOutStr);
+    return 0;
+}
