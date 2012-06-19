@@ -4,6 +4,7 @@
 /* ooiCi.c - OOI CI routines
  */
 #include "ooiCi.h"
+#include "msParam.h"
 
 /* dictSetAttr - set a key/value pair. For non array, arrLen = 0 */ 
 int
@@ -131,14 +132,66 @@ int
 jsonPackDictionary (dictionary_t *dictionary, json_t **outObj)
 {
     json_t *paramObj;
-    int i;
+    int i, status;
 
     if (dictionary == NULL || outObj == NULL) return USER__NULL_INPUT_ERR;
 
     paramObj = json_object ();
 
     for (i = 0; i < dictionary->len; i++) {
+	char *type_PI = dictionary->value[i].type_PI;
+
+        if (strcmp (type_PI, STR_MS_T) == 0) {
+            status = json_object_set_new (paramObj, dictionary->key[i],
+              json_string ((char *) dictionary->value[i].ptr));
+        } else if (strcmp (type_PI, INT_MS_T) == 0) {
+#if JSON_INTEGER_IS_LONG_LONG
+            rodsLong_t myInt = *(int *) dictionary->value[i].ptr;
+#else
+            int myInt = *(int *) dictionary->value[i].ptr;
+#endif
+            status = json_object_set_new (paramObj, dictionary->key[i],
+              json_integer (myInt));
+        } else if (strcmp (type_PI, FLOAT_MS_T) == 0) {
+#if JSON_INTEGER_IS_LONG_LONG
+            double myFloat = *(float *) dictionary->value[i].ptr;
+#else
+            float myFloat = *(float *) dictionary->value[i].ptr;
+#endif
+            status = json_object_set_new (paramObj, dictionary->key[i],
+              json_real (myFloat));
+        } else if (strcmp (type_PI, DOUBLE_MS_T) == 0) {
+            /* DOUBLE_MS_T in iRODS is longlong */
+#if JSON_INTEGER_IS_LONG_LONG
+            rodsLong_t myInt = *(rodsLong_t *) dictionary->value[i].ptr;
+#else
+            int myInt = *(rodsLong_t *) dictionary->value[i].ptr;
+#endif
+            status = json_object_set_new (paramObj, dictionary->key[i],
+              json_integer (myInt));
+        } else if (strcmp (type_PI, BOOL_MS_T) == 0) {
+            int myInt = *(int *) dictionary->value[i].ptr;
+	    if (myInt == 0) {
+                status = json_object_set_new (paramObj, dictionary->key[i],
+                  json_false ());
+            } else {
+                status = json_object_set_new (paramObj, dictionary->key[i],
+                  json_true ());
+            }
+        } else {
+            rodsLog (LOG_ERROR, 
+              "jsonPackDictionary: type_PI %s not supported", type_PI);
+            json_decref (paramObj);
+            return OOI_DICT_TYPE_NOT_SUPPORTED;
+        }
+        if (status != 0) {
+            rodsLog (LOG_ERROR, 
+              "jsonPackDictionary: son_object_set paramObj error");
+            json_decref (paramObj);
+            return OOI_JSON_OBJ_SET_ERR;
+	}
     }
+    *outObj = paramObj;
 
     return 0;
 }

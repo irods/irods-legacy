@@ -37,6 +37,7 @@ extern "C" {
 					     * and rcStreamClose to read */
 #define DOUBLE_MS_T             "DOUBLE_PI"
 #define FLOAT_MS_T              "FLOAT_PI"
+#define BOOL_MS_T               "BOOL_PI"
 #define DataObjInp_MS_T         "DataObjInp_PI"
 #define DataObjCloseInp_MS_T    "DataObjCloseInp_PI"
 #define DataObjCopyInp_MS_T     "DataObjCopyInp_PI"

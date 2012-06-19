@@ -640,6 +640,8 @@
 
 /* OOI CI error codes */
 #define OOI_CURL_EASY_INIT_ERR		-2200000
+#define OOI_JSON_OBJ_SET_ERR		-2201000
+#define OOI_DICT_TYPE_NOT_SUPPORTED	-2202000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996
