@@ -14,17 +14,36 @@
 #include "apiNumber.h"
 #include "initServer.h"
 
-#define ION_SERVICE                     "ion-service"
-
+/* definition for outType */
+#define OOI_STR_TYPE		0
+#define OOI_DICT_TYPE		1
+#define OOI_DICT_ARRAY_TYPE	2	/* array of dict */
+#define OOI_DICT_ARRAY_IN_ARRAY 3       /* array of dict in an array.
+                                         * outInx is the inx in this array */
 typedef struct {
     char servName[NAME_LEN];
     char servOpr[NAME_LEN];
+    int outType;
+    int outInx;
     dictionary_t params;
 } ooiGenServReqInp_t;
    
-#define OoiGenServReqInp_PI "str servName[NAME_LEN]; str servOpr[NAME_LEN]; struct Dictionary_PI;"
+#define OoiGenServReqInp_PI "str servName[NAME_LEN]; str servOpr[NAME_LEN]; int outType; int outInx; struct Dictionary_PI;"
 
-typedef dictValue_t ooiGenServReqOut_t;
+typedef struct {
+    char type_PI[NAME_LEN];   /* the packing instruction of the ptr */
+    void *ptr;
+} ooiGenServReqOut_t;
+
+#define OoiGenServReqOut_PI "piStr outType_PI[NAME_LEN]; ?outType_PI *ptr;"
+
+/* this struct is used for the post processing of the curl call */
+
+typedef struct {
+    int outType;
+    int outInx;
+    ooiGenServReqOut_t *ooiGenServReqOut;
+} ooiGenServReqStruct_t;
 
 #if defined(RODS_SERVER)
 #define RS_OOI_GEN_SERV_REQ rsOoiGenServReq
@@ -36,7 +55,7 @@ int
 _rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
 ooiGenServReqOut_t **ooiGenServReqOut);
 size_t
-ooiGenServReqOutFunc (void *buffer, size_t size, size_t nmemb, void *userp);
+ooiGenServReqFunc (void *buffer, size_t size, size_t nmemb, void *userp);
 #else
 #define RS_OOI_GEN_SERV_REQ NULL
 #endif

@@ -20,6 +20,9 @@ extern "C" {
 #define SERVICE_OP_STR		"serviceOp"
 #define PARAMS_STR		"params"
 #define ION_SERVICE_STR		"ion-service"
+#define OOI_DATA_TAG            "data"  /* tag for HTTP response */
+#define OOI_GATEWAY_RESPONSE_TAG "GatewayResponse" /* tag for HTTP response */
+
 
 typedef struct DictValue {
     char type_PI[NAME_LEN];   /* the packing instruction of the ptr */
@@ -42,7 +45,7 @@ typedef struct Dictionary {
 typedef struct DictArray {
     int len;
     int flags;		/* not used */
-    dictionary_t **dictionary;
+    dictionary_t *dictionary;
 } dictArray_t;
 
 #define DictArray_PI "int dictArrayLen; int flags; struct *Dictionary_PI(dictArrayLen);" 
@@ -64,6 +67,19 @@ char **outStr);
 int
 jsonPackOoiServReqForPost (char *servName, char *servOpr, dictionary_t *params,
 char **outStr);
+int
+jsonUnpackOoiRespStr (void *buffer, char **outStr);
+int
+jsonUnpackOoiRespDict (void *buffer, dictionary_t **outDict);
+int
+jsonUnpackDict (json_t *dictObj, dictionary_t *outDict);
+int
+clearDictArray (dictionary_t *dictArray, int len);
+int
+jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray);
+int
+jsonUnpackOoiRespDictArrInArr (void *buffer, dictArray_t **outDictArray,
+int outInx);
 #ifdef  __cplusplus
 }
 #endif

@@ -34,6 +34,7 @@ ooiGenServReqOut_t **ooiGenServReqOut)
     char myUrl[MAX_NAME_LEN];
     int status;
     char *postStr = NULL;
+    ooiGenServReqStruct_t ooiGenServReqStruct;
 
     easyhandle = curl_easy_init();
     if(!easyhandle) {
@@ -56,10 +57,12 @@ ooiGenServReqOut_t **ooiGenServReqOut)
 
     curl_easy_setopt(easyhandle, CURLOPT_POSTFIELDS, postStr);
     curl_easy_setopt(easyhandle, CURLOPT_URL, myUrl);
-    curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, ooiGenServReqOutFunc);
-    *ooiGenServReqOut = (ooiGenServReqOut_t *)
-      calloc (1, sizeof (ooiGenServReqOut_t));
-    curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, *ooiGenServReqOut);
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, ooiGenServReqFunc);
+    bzero (&ooiGenServReqStruct, sizeof (ooiGenServReqStruct));
+    ooiGenServReqStruct.outType = ooiGenServReqInp->outType;
+    ooiGenServReqStruct.outInx = ooiGenServReqInp->outInx;
+
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &ooiGenServReqStruct);
 
     res = curl_easy_perform (easyhandle);
     free (postStr);
@@ -77,8 +80,46 @@ ooiGenServReqOut_t **ooiGenServReqOut)
 }
 
 size_t
-ooiGenServReqOutFunc (void *buffer, size_t size, size_t nmemb, void *userp)
+ooiGenServReqFunc (void *buffer, size_t size, size_t nmemb, void *userp)
 {
+    char *type_PI;
+    int status;
+    void *ptr = NULL;
+    ooiGenServReqStruct_t *ooiGenServReqStruct = 
+      (ooiGenServReqStruct_t *) userp;
+
+    switch (ooiGenServReqStruct->outType) {
+      case OOI_STR_TYPE:
+	type_PI = STR_MS_T;
+        status = jsonUnpackOoiRespStr (buffer, (char **) &ptr);
+        break;
+      case OOI_DICT_TYPE:
+	type_PI = Dictionary_MS_T;
+        status = jsonUnpackOoiRespDict (buffer, (dictionary_t **) &ptr);
+        break;
+      case OOI_DICT_ARRAY_TYPE:
+	type_PI = DictArray_MS_T;
+        status = jsonUnpackOoiRespDictArray (buffer, (dictArray_t **) &ptr);
+        break;
+      case OOI_DICT_ARRAY_IN_ARRAY:
+	type_PI = DictArray_MS_T;
+       status = jsonUnpackOoiRespDictArrInArr (buffer, (dictArray_t **) &ptr,
+         ooiGenServReqStruct->outInx);
+        break;
+      default:
+        rodsLog (LOG_ERROR,
+          "ooiGenServReqFunc: outType %d not supported", 
+          ooiGenServReqStruct->outType);
+        status = OOI_JSON_TYPE_ERR;
+    }
+    if (status < 0) return 0;
+
+    ooiGenServReqStruct->ooiGenServReqOut =
+      (ooiGenServReqOut_t *) calloc (1, sizeof (ooiGenServReqOut_t));
+
+    rstrcpy (ooiGenServReqStruct->ooiGenServReqOut->type_PI, type_PI, NAME_LEN);
+    ooiGenServReqStruct->ooiGenServReqOut->ptr = ptr;
+
     return nmemb*size;
 }
 

@@ -123,6 +123,10 @@ packInstructArray_t ApiPackTable[] = {
 	{"NcInqGrpsOut_PI", NcInqGrpsOut_PI},
 #endif
         /* endof NETCDF PI */
+#ifdef OOI_CI
+        {"OoiGenServReqInp_PI", OoiGenServReqInp_PI},
+        {"OoiGenServReqOut_PI", OoiGenServReqOut_PI},
+#endif
         {"pamAuthRequestInp_PI", pamAuthRequestInp_PI},
         {"pamAuthRequestOut_PI", pamAuthRequestOut_PI},
         {"sslStartInp_PI", sslStartInp_PI},

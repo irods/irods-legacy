@@ -645,6 +645,11 @@
 #define OOI_JSON_PACK_ERR		-2203000
 #define OOI_JSON_DUMP_ERR		-2204000
 #define OOI_CURL_EASY_PERFORM_ERR	-2205000
+#define OOI_JSON_LOAD_ERR		-2206000
+#define OOI_JSON_GET_ERR		-2207000
+#define OOI_JSON_NO_ANSWER_ERR		-2208000
+#define OOI_JSON_TYPE_ERR		-2209000
+#define OOI_JSON_INX_OUT_OF_RANGE	-2210000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996
