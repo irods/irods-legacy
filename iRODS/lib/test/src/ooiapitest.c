@@ -83,6 +83,29 @@ main(int argc, char **argv)
     printf ("New account ID = %s\n", (char *) ooiGenServReqOut->ptr);
     freeOoiGenServReqOut (&ooiGenServReqOut);
 
+    clearDictionary (&ooiGenServReqInp.params);
+
+    /* list account */
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, BANK_SERVICE_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, LIST_ACCOUNTS_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_DICT_ARRAY_TYPE;
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "main: rcOoiGenServReq error");
+        exit (5);
+    }
+
+    if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "main: NULL output for %s", NEW_ACCOUNT_OP);
+        exit (6);
+    }
+
+    printDictArray ((dictArray_t *) ooiGenServReqOut->ptr);
+    clearDictArray ((dictArray_t *) ooiGenServReqOut->ptr);
 
     rcDisconnect(conn);
 

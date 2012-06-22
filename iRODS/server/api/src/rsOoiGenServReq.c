@@ -42,20 +42,22 @@ ooiGenServReqOut_t **ooiGenServReqOut)
           "_rsOoiGenServReq: curl_easy_init error");
         return OOI_CURL_EASY_INIT_ERR;
     }
-    status = jsonPackOoiServReqForPost (ooiGenServReqInp->servName,
-                                        ooiGenServReqInp->servOpr,
-                                        &ooiGenServReqInp->params, &postStr);
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "_rsOoiGenServReq: jsonPackOoiServReq error");
-        return status;
-    }
-
     snprintf (myUrl, MAX_NAME_LEN, "%s:%s/%s/%s/%s",
-      OOI_GATEWAY_URL, OOI_GATEWAY_PORT, ION_SERVICE_STR, 
+      OOI_GATEWAY_URL, OOI_GATEWAY_PORT, ION_SERVICE_STR,
         ooiGenServReqInp->servName, ooiGenServReqInp->servOpr);
 
-    curl_easy_setopt(easyhandle, CURLOPT_POSTFIELDS, postStr);
+    if (ooiGenServReqInp->params.len > 0) {
+        /* do POST */
+        status = jsonPackOoiServReqForPost (ooiGenServReqInp->servName,
+                                        ooiGenServReqInp->servOpr,
+                                        &ooiGenServReqInp->params, &postStr);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "_rsOoiGenServReq: jsonPackOoiServReq error");
+            return status;
+        }
+        curl_easy_setopt(easyhandle, CURLOPT_POSTFIELDS, postStr);
+    }
     curl_easy_setopt(easyhandle, CURLOPT_URL, myUrl);
     curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, ooiGenServReqFunc);
     bzero (&ooiGenServReqStruct, sizeof (ooiGenServReqStruct));
@@ -76,6 +78,7 @@ ooiGenServReqOut_t **ooiGenServReqOut)
         return OOI_CURL_EASY_PERFORM_ERR - res;
     }
     *ooiGenServReqOut = ooiGenServReqStruct.ooiGenServReqOut;
+    curl_easy_cleanup (easyhandle);
 
     return 0;
 }

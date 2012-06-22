@@ -451,7 +451,7 @@ jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray)
               "jsonUnpackOoiRespDictArray: Obj type %d not an object",
               json_typeof (dictObj));
             json_decref (root);
-            clearDictArray (dictArray, arrayLen);
+            _clearDictArray (dictArray, arrayLen);
             free (dictArray);
             return OOI_JSON_TYPE_ERR;
         }
@@ -460,7 +460,7 @@ jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray)
             rodsLogError (LOG_ERROR, status,
               "jsonUnpackOoiRespDictArray: jsonUnpackDict failed");
             json_decref (root);
-            clearDictArray (dictArray, arrayLen);
+            _clearDictArray (dictArray, arrayLen);
             free (dictArray);
             return status;
         }
@@ -536,7 +536,7 @@ int outInx)
               "jsonUnpackOoiRespDictArrInArr: Obj type %d not an object",
             json_typeof (dictObj));
             json_decref (root);
-            clearDictArray (dictArray, arrayLen);
+            _clearDictArray (dictArray, arrayLen);
             free (dictArray);
             return OOI_JSON_TYPE_ERR;
         }
@@ -545,7 +545,7 @@ int outInx)
             rodsLogError (LOG_ERROR, status,
               "jsonUnpackOoiRespDictArrInArr: jsonUnpackDict failed");
             json_decref (root);
-            clearDictArray (dictArray, arrayLen);
+            _clearDictArray (dictArray, arrayLen);
             free (dictArray);
             return status;
         }
@@ -558,8 +558,19 @@ int outInx)
     return 0;
 }
 
+int
+clearDictArray (dictArray_t *dictArray)
+{
+    _clearDictArray (dictArray->dictionary, dictArray->len);
+    if (dictArray->dictionary != NULL) {
+        free (dictArray->dictionary);
+        dictArray->dictionary = NULL;
+    }
+    return 0;
+}
+
 int 
-clearDictArray (dictionary_t *dictArray, int len)
+_clearDictArray (dictionary_t *dictArray, int len)
 {
     int i;
 
@@ -571,3 +582,51 @@ clearDictArray (dictionary_t *dictArray, int len)
     return 0;
 }
 
+int
+printDictArray (dictArray_t *dictArray)
+{
+    int i;
+
+    if (dictArray == NULL) return 0;
+
+    for (i = 0; i < dictArray->len; i++) {
+        printDict (&dictArray->dictionary[i]);
+    }
+    return 0;
+}
+
+int
+printDict (dictionary_t *dictionary) 
+{
+    int i;
+
+    printf ("Dict key: Value\n  {\n");
+
+    for (i = 0; i < dictionary->len; i++) {
+        char valueStr[NAME_LEN];
+        if (strcmp (dictionary->value[i].type_PI, STR_MS_T) == 0) {
+            snprintf (valueStr, NAME_LEN, "%s", 
+              (char *)dictionary->value[i].ptr);
+        } else if (strcmp (dictionary->value[i].type_PI, INT_MS_T) == 0) {
+            snprintf (valueStr, NAME_LEN, "%d",
+              *(int *)dictionary->value[i].ptr);
+        } else if (strcmp (dictionary->value[i].type_PI, FLOAT_MS_T) == 0) {
+            snprintf (valueStr, NAME_LEN, "%f",
+              *(float *)dictionary->value[i].ptr);
+        } else if (strcmp (dictionary->value[i].type_PI, BOOL_MS_T) == 0) {
+            if (*(int *) dictionary->value[i].ptr == 0) {
+                snprintf (valueStr, NAME_LEN, "FALSE");
+            } else {
+                snprintf (valueStr, NAME_LEN, "TRUE");
+            }
+        } else {
+            snprintf (valueStr, NAME_LEN, "Unknown type: %s", 
+              dictionary->value[i].type_PI);
+        }
+        printf ("    %s: %s\n", dictionary->key[i], valueStr);
+    }
+    printf ("  }\n");
+
+    return (0);
+}
+    

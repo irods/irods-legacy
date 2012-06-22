@@ -74,12 +74,18 @@ jsonUnpackOoiRespDict (void *buffer, dictionary_t **outDict);
 int
 jsonUnpackDict (json_t *dictObj, dictionary_t *outDict);
 int
-clearDictArray (dictionary_t *dictArray, int len);
+clearDictArray (dictArray_t *dictArray);
+int
+_clearDictArray (dictionary_t *dictArray, int len);
 int
 jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray);
 int
 jsonUnpackOoiRespDictArrInArr (void *buffer, dictArray_t **outDictArray,
 int outInx);
+int
+printDictArray (dictArray_t *dictArray);
+int
+printDict (dictionary_t *dictionary);
 #ifdef  __cplusplus
 }
 #endif
