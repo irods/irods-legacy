@@ -13,3 +13,18 @@ ooiGenServReqOut_t **ooiGenServReqOut)
 
     return (status);
 }
+
+int
+freeOoiGenServReqOut (ooiGenServReqOut_t **ooiGenServReqOut)
+{
+    if (ooiGenServReqOut == NULL || *ooiGenServReqOut == NULL ||
+     (*ooiGenServReqOut)->ptr == NULL) return 0;
+
+    free ((*ooiGenServReqOut)->ptr);
+    free (*ooiGenServReqOut);
+    *ooiGenServReqOut = NULL;
+
+    return 0;
+}
+
+

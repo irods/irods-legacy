@@ -31,7 +31,7 @@ typedef struct DictValue {
     void *ptr;
 } dictValue_t;
 
-#define DictValue_PI "piStr type_PI[NAME_LEN]; int arrLen, int flags; ?type_PI *ptr(arrLen);"
+#define DictValue_PI "piStr type_PI[NAME_LEN]; int arrLen; int flags; ?type_PI *ptr(arrLen);"
 
 typedef struct Dictionary {
     int len;

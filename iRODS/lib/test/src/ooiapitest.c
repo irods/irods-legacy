@@ -75,6 +75,15 @@ main(int argc, char **argv)
         exit (5);
     }
 
+    if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "main: NULL output for %s", NEW_ACCOUNT_OP);
+        exit (6);
+    } 
+    printf ("New account ID = %s\n", (char *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
+
+
     rcDisconnect(conn);
 
     exit (0);

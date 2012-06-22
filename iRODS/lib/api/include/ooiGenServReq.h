@@ -77,6 +77,9 @@ extern "C" {
 int
 rcOoiGenServReq (rcComm_t *conn, ooiGenServReqInp_t *ooiGenServReqInp, 
 ooiGenServReqOut_t **ooiGenServReqOut);
+int
+freeOoiGenServReqOut (ooiGenServReqOut_t **ooiGenServReqOut);
+
 #ifdef  __cplusplus
 }
 #endif

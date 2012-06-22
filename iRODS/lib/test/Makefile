@@ -25,14 +25,14 @@ endif
 TESTOBJS = luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o listcoll.o nctest.o
 ifdef OOI_CI
-TESTOBJS+=  ooitest.o ooiAmqptest.o ooiDeployTest.o ooiapitest.o
+TESTOBJS+=  ooitest.o ooiAmqptest.o ooiapitest.o
 endif
 
 
 TARGETS = luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
 xmsgtest listcoll nctest
 ifdef OOI_CI
-TARGETS+= ooitest ooiAmqptest ooiDeployTest ooiapitest
+TARGETS+= ooitest ooiAmqptest ooiapitest
 endif
 
 ifdef TAR_STRUCT_FILE

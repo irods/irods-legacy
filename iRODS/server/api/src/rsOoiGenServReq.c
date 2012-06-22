@@ -75,6 +75,7 @@ ooiGenServReqOut_t **ooiGenServReqOut)
         *ooiGenServReqOut = NULL;
         return OOI_CURL_EASY_PERFORM_ERR - res;
     }
+    *ooiGenServReqOut = ooiGenServReqStruct.ooiGenServReqOut;
 
     return 0;
 }
