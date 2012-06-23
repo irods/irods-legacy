@@ -22,6 +22,7 @@ extern "C" {
 #define ION_SERVICE_STR		"ion-service"
 #define OOI_DATA_TAG            "data"  /* tag for HTTP response */
 #define OOI_GATEWAY_RESPONSE_TAG "GatewayResponse" /* tag for HTTP response */
+#define OOI_GATEWAY_ERROR_TAG "GatewayError" /* tag for HTTP error */
 
 
 typedef struct DictValue {
@@ -68,9 +69,11 @@ int
 jsonPackOoiServReqForPost (char *servName, char *servOpr, dictionary_t *params,
 char **outStr);
 int
-jsonUnpackOoiRespStr (void *buffer, char **outStr);
+jsonUnpackOoiRespStr (json_t *responseObj, char **outStr);
 int
-jsonUnpackOoiRespDict (void *buffer, dictionary_t **outDict);
+jsonUnpackOoiRespDict (json_t *responseObj, dictionary_t **outDict);
+int
+jsonUnpackOoiRespList (json_t *responseObj, dictionary_t **outDict);
 int
 jsonUnpackDict (json_t *dictObj, dictionary_t *outDict);
 int
@@ -78,14 +81,20 @@ clearDictArray (dictArray_t *dictArray);
 int
 _clearDictArray (dictionary_t *dictArray, int len);
 int
-jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray);
+jsonUnpackOoiRespDictArray (json_t *responseObj, dictArray_t **outDictArray);
 int
-jsonUnpackOoiRespDictArrInArr (void *buffer, dictArray_t **outDictArray,
+jsonUnpackOoiRespDictArrInArr (json_t *responseObj, dictArray_t **outDictArray,
 int outInx);
 int
 printDictArray (dictArray_t *dictArray);
 int
 printDict (dictionary_t *dictionary);
+int
+printList (dictionary_t *dictionary);
+int
+jsonUnpackList (json_t *listObj, dictionary_t *outList);
+int
+getStrByType_PI (char *type_PI, void *valuePtr, char *valueStr);
 #ifdef  __cplusplus
 }
 #endif

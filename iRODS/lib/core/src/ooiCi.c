@@ -24,7 +24,7 @@ int arrLen)
     /* check if the keyword exists */
 
     for (i = 0; i < dictionary->len; i++) {
-        if (strcmp (key, dictionary->key[i]) == 0) {
+        if (key[0] != '\0' && strcmp (key, dictionary->key[i]) == 0) {
             free ( dictionary->value[i].ptr);
             dictionary->value[i].ptr = valptr;
             rstrcpy (dictionary->value[i].type_PI, type_PI, NAME_LEN);
@@ -248,42 +248,23 @@ char **outStr)
 }
 
 int
-jsonUnpackOoiRespStr (void *buffer, char **outStr)
+jsonUnpackOoiRespStr (json_t *responseObj, char **outStr)
 {
-    json_t *root, *dataObj, *responseObj;
-    json_error_t jerror;
     const char *responseStr;
     int status;
 
-    root = json_loads((const char*) buffer, 0, &jerror);
-    if (!root) {
-        rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespStr: json_loads error. %s", jerror.text);
-        return OOI_JSON_LOAD_ERR;
-    }
-    dataObj = json_object_get (root, OOI_DATA_TAG);
-    if (!dataObj) {
-       rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespStr: json_object_get data failed.");
-        json_decref (root);
-        return OOI_JSON_GET_ERR;
-    }
-    responseObj = json_object_get(dataObj, OOI_GATEWAY_RESPONSE_TAG);
-    if (!responseObj) {
-       rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespStr: json_object_get GatewayResponse failed.");
-        json_decref (root);
-        return OOI_JSON_GET_ERR;
-    } 
     if (!json_is_string (responseObj)) {
-	rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespStr: responseObj type %d is not JSON_STRING.",
-          json_typeof (responseObj));
-        json_decref (root);
-        return OOI_JSON_TYPE_ERR;
+        if (json_is_null (responseObj)) {
+	    responseStr = "";
+        } else {
+	    rodsLog (LOG_ERROR,
+              "jsonUnpackOoiRespStr: responseObj type %d is not JSON_STRING.",
+              json_typeof (responseObj));
+            return OOI_JSON_TYPE_ERR;
+        }
+    } else {
+        responseStr = json_string_value (responseObj);
     }
-
-    responseStr = json_string_value (responseObj);
 
     if (responseStr != NULL) {
         *outStr = strdup (responseStr);
@@ -291,46 +272,40 @@ jsonUnpackOoiRespStr (void *buffer, char **outStr)
     } else {
         status = OOI_JSON_NO_ANSWER_ERR;
     }
-    json_decref (root);
     return status;
 }
 
 int
-jsonUnpackOoiRespDict (void *buffer, dictionary_t **outDict)
+jsonUnpackOoiRespDict (json_t *responseObj, dictionary_t **outDict)
 {
-    json_t *root, *dataObj, *responseObj;
-    json_error_t jerror;
     int status;
 
-    root = json_loads((const char*) buffer, 0, &jerror);
-    if (!root) {
-        rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespDict: json_loads error. %s", jerror.text);
-        return OOI_JSON_LOAD_ERR;
-    }
-    dataObj = json_object_get (root, OOI_DATA_TAG);
-    if (!dataObj) {
-       rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespDict: json_object_get data failed.");
-        json_decref (root);
-        return OOI_JSON_GET_ERR;
-    }
-    responseObj = json_object_get(dataObj, OOI_GATEWAY_RESPONSE_TAG);
-    if (!responseObj) {
-       rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespDict: json_object_get GatewayResponse failed.");
-        json_decref (root);
-        return OOI_JSON_GET_ERR;
-    }
     if (!json_is_object (responseObj)) {
         rodsLog (LOG_ERROR,
           "jsonUnpackOoiRespDict: responseObj type %d is not JSON_OBJECT.",
           json_typeof (responseObj));
-        json_decref (root);
         return OOI_JSON_TYPE_ERR;
     }
     *outDict = (dictionary_t *) calloc (1, sizeof (dictionary_t));
     status = jsonUnpackDict (responseObj, *outDict);
+    if (status < 0) free (*outDict);
+
+    return status;
+}
+
+int
+jsonUnpackOoiRespList (json_t *responseObj, dictionary_t **outDict)
+{
+    int status;
+
+    if (!json_is_array (responseObj)) {
+        rodsLog (LOG_ERROR,
+          "jsonUnpackOoiRespDict: responseObj type %d is not JSON_OBJECT.",
+          json_typeof (responseObj));
+        return OOI_JSON_TYPE_ERR;
+    }
+    *outDict = (dictionary_t *) calloc (1, sizeof (dictionary_t));
+    status = jsonUnpackList (responseObj, *outDict);
     if (status < 0) free (*outDict);
 
     return status;
@@ -403,40 +378,90 @@ jsonUnpackDict (json_t *dictObj, dictionary_t *outDict)
     return status;
 }
 
+/* jsonUnpackList - unpack a list. Use the dictionary_t to contain the 
+ * output for Now. The "key" value is not used.
+ */
 int
-jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray)
+jsonUnpackList (json_t *listObj, dictionary_t *outList) 
 {
-    json_t *root, *dataObj, *responseObj, *dictObj;
-    json_error_t jerror;
+    void *tmpOut;
+    int *tmpInt;
+    float *tmpFloat;
+    json_t *value;
+    int status;
+    int i, len;
+
+    if (listObj == NULL || outList == NULL) {
+        rodsLog (LOG_ERROR,
+          "jsonUnpackList: NULL input");
+        return USER__NULL_INPUT_ERR;
+    }
+    bzero (outList, sizeof (dictionary_t));
+    if (!json_is_array (listObj)) {
+       rodsLog (LOG_ERROR,
+          "jsonUnpackList: Obj type %d is not JSON_ARRAY.",
+          json_typeof (listObj));
+        return OOI_JSON_TYPE_ERR;
+    }
+
+    len = json_array_size (listObj);
+    for (i = 0; i < len; i++) {
+        json_type myType;
+
+        value = json_array_get (listObj, i);
+        myType = json_typeof (value);
+        switch (myType) {
+          case JSON_STRING:
+            tmpOut = strdup (json_string_value (value));
+            status = dictSetAttr (outList, (char *) "", STR_MS_T, 
+              tmpOut, 0);
+            break;
+          case JSON_INTEGER:
+	    tmpInt = (int *) calloc (1, sizeof (int));
+            *tmpInt = (int) json_integer_value (value);
+            status = dictSetAttr (outList, (char *) "", INT_MS_T,
+              (void *) tmpInt, 0);
+            break;
+          case JSON_REAL:
+	    tmpFloat = (float *) calloc (1, sizeof (float));
+            *tmpFloat = (float) json_real_value (value);
+            status = dictSetAttr (outList, (char *) "", FLOAT_MS_T,
+              (void *) tmpFloat, 0);
+            break;
+          case JSON_TRUE:
+	    tmpInt = (int *) calloc (1, sizeof (int));
+            *tmpInt = 1;
+            status = dictSetAttr (outList, (char *) "", BOOL_MS_T,
+              (void *) tmpInt, 0);
+            break;
+          case JSON_FALSE:
+	    tmpInt = (int *) calloc (1, sizeof (int));
+            *tmpInt = 0;
+            status = dictSetAttr (outList, (char *) "", BOOL_MS_T,
+              (void *) tmpInt, 0);
+            break;
+          default:
+            rodsLog (LOG_ERROR,
+              "ooiGenServReqFunc: myType %d not supported", myType);
+	    status = OOI_JSON_TYPE_ERR;
+        }
+    }
+    if (status < 0) clearDictionary (outList);
+
+    return status;
+}
+
+int
+jsonUnpackOoiRespDictArray (json_t *responseObj, dictArray_t **outDictArray)
+{
     int status, i;
     int arrayLen;
     dictionary_t *dictArray;
 
-    root = json_loads((const char*) buffer, 0, &jerror);
-    if (!root) {
-        rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespDictArray: json_loads error. %s", jerror.text);
-        return OOI_JSON_LOAD_ERR;
-    }
-    dataObj = json_object_get (root, OOI_DATA_TAG);
-    if (!dataObj) {
-       rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespDictArray: json_object_get data failed.");
-        json_decref (root);
-        return OOI_JSON_GET_ERR;
-    }
-    responseObj = json_object_get(dataObj, OOI_GATEWAY_RESPONSE_TAG);
-    if (!responseObj) {
-       rodsLog (LOG_ERROR,
-         "jsonUnpackOoiRespDictArray: json_object_get GatewayResponse failed.");
-        json_decref (root);
-        return OOI_JSON_GET_ERR;
-    }
     if (!json_is_array (responseObj)) {
         rodsLog (LOG_ERROR,
           "jsonUnpackOoiRespDictArray: responseObj type %d is not JSON_ARRAY.",
           json_typeof (responseObj));
-        json_decref (root);
         return OOI_JSON_TYPE_ERR;
     }
     arrayLen = (int ) json_array_size(responseObj);
@@ -445,12 +470,11 @@ jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray)
 
     dictArray = (dictionary_t *) calloc (arrayLen, sizeof (dictionary_t));
     for(i = 0; i < arrayLen; i++) {
-        dictObj = json_array_get(responseObj, i);
+        json_t *dictObj = json_array_get(responseObj, i);
         if(!json_is_object(dictObj)) {
             rodsLog (LOG_ERROR,
               "jsonUnpackOoiRespDictArray: Obj type %d not an object",
               json_typeof (dictObj));
-            json_decref (root);
             _clearDictArray (dictArray, arrayLen);
             free (dictArray);
             return OOI_JSON_TYPE_ERR;
@@ -459,13 +483,11 @@ jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray)
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "jsonUnpackOoiRespDictArray: jsonUnpackDict failed");
-            json_decref (root);
             _clearDictArray (dictArray, arrayLen);
             free (dictArray);
             return status;
         }
     }
-    json_decref (root);
     *outDictArray = (dictArray_t *) calloc (1, sizeof (dictArray_t));
     (*outDictArray)->len = arrayLen;
     (*outDictArray)->dictionary = dictArray;
@@ -474,40 +496,18 @@ jsonUnpackOoiRespDictArray (void *buffer, dictArray_t **outDictArray)
 }
 
 int
-jsonUnpackOoiRespDictArrInArr (void *buffer, dictArray_t **outDictArray,
+jsonUnpackOoiRespDictArrInArr (json_t *responseObj, dictArray_t **outDictArray,
 int outInx)
 {
-    json_t *root, *dataObj, *responseObj, *myDictArrayObj, *dictObj;
-    json_error_t jerror;
+    json_t *myDictArrayObj, *dictObj;
     int status, i;
     int arrayLen;
     dictionary_t *dictArray;
 
-    root = json_loads((const char*) buffer, 0, &jerror);
-    if (!root) {
-        rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespDictArrInArr: json_loads error. %s", jerror.text);
-        return OOI_JSON_LOAD_ERR;
-    }
-    dataObj = json_object_get (root, OOI_DATA_TAG);
-    if (!dataObj) {
-       rodsLog (LOG_ERROR,
-          "jsonUnpackOoiRespDictArrInArr: json_object_get data failed");
-        json_decref (root);
-        return OOI_JSON_GET_ERR;
-    }
-    responseObj = json_object_get(dataObj, OOI_GATEWAY_RESPONSE_TAG);
-    if (!responseObj) {
-       rodsLog (LOG_ERROR,
-        "jsonUnpackOoiRespDictArrInArr:json_object_get GatewayResponse failed");
-        json_decref (root);
-        return OOI_JSON_GET_ERR;
-    }
     if (!json_is_array (responseObj)) {
         rodsLog (LOG_ERROR,
          "jsonUnpackOoiRespDictArrInArr:responseObj type %d is not JSON_ARRAY",
           json_typeof (responseObj));
-        json_decref (root);
         return OOI_JSON_TYPE_ERR;
     }
     arrayLen = (int ) json_array_size(responseObj);
@@ -518,7 +518,6 @@ int outInx)
         rodsLog (LOG_ERROR,
          "jsonUnpackOoiRespDictArrInArr: outInx %d >= arrayLen %d",
           outInx, arrayLen);
-        json_decref (root);
         return OOI_JSON_INX_OUT_OF_RANGE;
     }
 
@@ -535,7 +534,6 @@ int outInx)
             rodsLog (LOG_ERROR,
               "jsonUnpackOoiRespDictArrInArr: Obj type %d not an object",
             json_typeof (dictObj));
-            json_decref (root);
             _clearDictArray (dictArray, arrayLen);
             free (dictArray);
             return OOI_JSON_TYPE_ERR;
@@ -544,13 +542,11 @@ int outInx)
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "jsonUnpackOoiRespDictArrInArr: jsonUnpackDict failed");
-            json_decref (root);
             _clearDictArray (dictArray, arrayLen);
             free (dictArray);
             return status;
         }
     }
-    json_decref (root);
     *outDictArray = (dictArray_t *) calloc (1, sizeof (dictArray_t));
     (*outDictArray)->len = arrayLen;
     (*outDictArray)->dictionary = dictArray;
@@ -604,25 +600,8 @@ printDict (dictionary_t *dictionary)
 
     for (i = 0; i < dictionary->len; i++) {
         char valueStr[NAME_LEN];
-        if (strcmp (dictionary->value[i].type_PI, STR_MS_T) == 0) {
-            snprintf (valueStr, NAME_LEN, "%s", 
-              (char *)dictionary->value[i].ptr);
-        } else if (strcmp (dictionary->value[i].type_PI, INT_MS_T) == 0) {
-            snprintf (valueStr, NAME_LEN, "%d",
-              *(int *)dictionary->value[i].ptr);
-        } else if (strcmp (dictionary->value[i].type_PI, FLOAT_MS_T) == 0) {
-            snprintf (valueStr, NAME_LEN, "%f",
-              *(float *)dictionary->value[i].ptr);
-        } else if (strcmp (dictionary->value[i].type_PI, BOOL_MS_T) == 0) {
-            if (*(int *) dictionary->value[i].ptr == 0) {
-                snprintf (valueStr, NAME_LEN, "FALSE");
-            } else {
-                snprintf (valueStr, NAME_LEN, "TRUE");
-            }
-        } else {
-            snprintf (valueStr, NAME_LEN, "Unknown type: %s", 
-              dictionary->value[i].type_PI);
-        }
+        getStrByType_PI (dictionary->value[i].type_PI, 
+              dictionary->value[i].ptr, valueStr);
         printf ("    %s: %s\n", dictionary->key[i], valueStr);
     }
     printf ("  }\n");
@@ -630,3 +609,45 @@ printDict (dictionary_t *dictionary)
     return (0);
 }
     
+int
+printList (dictionary_t *dictionary)
+{
+    int i;
+
+    printf ("List\n  [\n");
+
+    for (i = 0; i < dictionary->len; i++) {
+        char valueStr[NAME_LEN];
+        getStrByType_PI (dictionary->value[i].type_PI,
+              dictionary->value[i].ptr, valueStr);
+        printf ("    %s\n", valueStr);
+    }
+    printf ("  ]\n");
+
+    return (0);
+}
+
+int
+getStrByType_PI (char *type_PI, void *valuePtr, char *valueStr)
+{
+    if (type_PI == NULL || valuePtr == NULL) return USER__NULL_INPUT_ERR;
+
+    if (strcmp (type_PI, STR_MS_T) == 0) {
+        snprintf (valueStr, NAME_LEN, "%s", (char *)valuePtr);
+    } else if (strcmp (type_PI, INT_MS_T) == 0) {
+        snprintf (valueStr, NAME_LEN, "%d", *(int *)valuePtr);
+    } else if (strcmp (type_PI, FLOAT_MS_T) == 0) {
+        snprintf (valueStr, NAME_LEN, "%f", *(float *)valuePtr);
+    } else if (strcmp (type_PI, BOOL_MS_T) == 0) {
+        if (*(int *) valuePtr == 0) {
+            snprintf (valueStr, NAME_LEN, "FALSE");
+        } else {
+            snprintf (valueStr, NAME_LEN, "TRUE");
+        }
+    } else {
+        snprintf (valueStr, NAME_LEN, "Unknown type: %s", type_PI);
+        return OOI_JSON_TYPE_ERR;
+    }
+
+    return 0;
+}
