@@ -650,6 +650,7 @@
 #define OOI_JSON_NO_ANSWER_ERR		-2208000
 #define OOI_JSON_TYPE_ERR		-2209000
 #define OOI_JSON_INX_OUT_OF_RANGE	-2210000
+#define OOI_REVID_NOT_FOUND		-2211000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

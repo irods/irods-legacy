@@ -28,6 +28,8 @@
 #define	UPDATE_DOC_OP			"update_doc"
 #define	DELETE_DOC_OP			"delete_doc"
 #define	DELETE_DATASTORE_OP		"delete_datastore"
+#define _ID_KW				"_id"	/* OOI internal objID */
+#define _REV_KW				"_rev"	/* OOI internal rev */
 
 #define MY_DATA_STORE_NAME		"mikestore"  /* can't have uppercase */
 #define MY_DOC_NAME			"mikedoc"
@@ -163,6 +165,8 @@ testDatastoreService (rcComm_t *conn)
     int status;
     ooiGenServReqInp_t ooiGenServReqInp;
     ooiGenServReqOut_t *ooiGenServReqOut = NULL;
+    dictionary_t *docObject;
+    char revId[NAME_LEN];
 
     /* delete datastore */
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
@@ -248,6 +252,249 @@ testDatastoreService (rcComm_t *conn)
 
     printList ((dictionary_t *) ooiGenServReqOut->ptr);
     clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+
+    /* create_doc in datastore */
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, CREATE_DOC_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_LIST_TYPE;
+
+    status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
+      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
+        return status;
+    }
+
+    status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_ID_KW,
+      STR_MS_T, strdup (MY_DOC_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", OBJECT_ID_KW);
+        return status;
+    }
+
+    /* prepare the doc_object */
+    docObject = (dictionary_t *) calloc (1, sizeof (dictionary_t));
+    dictSetAttr (docObject, "foo", STR_MS_T, strdup ("bar"), 0);
+    dictSetAttr (docObject, "color", STR_MS_T, strdup ("blue"), 0);
+    dictSetAttr (docObject, "shape", STR_MS_T, strdup ("square"), 0);
+    
+    status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_KW,
+      Dictionary_MS_T, docObject, 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", OBJECT_KW);
+        return status;
+    }
+
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: rcOoiGenServReq error");
+        return status;
+    }
+
+    if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: NULL output for %s", CREATE_DOC_OP);
+        return status;
+    }
+
+    printList ((dictionary_t *) ooiGenServReqOut->ptr);
+    status = getRevIdFromList ((dictionary_t *) ooiGenServReqOut->ptr, 
+      MY_DOC_NAME, revId);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: getRevIdFromList error for %s", MY_DOC_NAME);
+        return status;
+    }
+
+    clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+
+    /* read the object */
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, READ_DOC_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_DICT_TYPE;
+
+    status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
+      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
+        return status;
+    }
+
+    status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_ID_KW,
+      STR_MS_T, strdup (MY_DOC_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", OBJECT_ID_KW);
+        return status;
+    }
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: rcOoiGenServReq error");
+        return status;
+    }
+
+    if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: NULL output for %s", CREATE_DOC_OP);
+        return status;
+    }
+    printDict ((dictionary_t *) ooiGenServReqOut->ptr);
+    clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+
+    /* update doc */
+
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, UPDATE_DOC_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_LIST_TYPE;
+
+    status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
+      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
+        return status;
+    }
+
+    status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_ID_KW,
+      STR_MS_T, strdup (MY_DOC_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", OBJECT_ID_KW);
+        return status;
+    }
+
+    /* prepare the doc_object */
+    docObject = (dictionary_t *) calloc (1, sizeof (dictionary_t));
+    dictSetAttr (docObject, _ID_KW, STR_MS_T, strdup (MY_DOC_NAME), 0);
+    dictSetAttr (docObject, _REV_KW, STR_MS_T, strdup (revId), 0);
+    dictSetAttr (docObject, "myname", STR_MS_T, strdup ("Mike"), 0);
+    dictSetAttr (docObject, "shape", STR_MS_T, strdup ("triangle"), 0);
+
+    status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_KW,
+      Dictionary_MS_T, docObject, 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", OBJECT_KW);
+        return status;
+    }
+
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: rcOoiGenServReq error");
+        return status;
+    }
+    if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: NULL output for %s", CREATE_DOC_OP);
+        return status;
+    }
+
+    printList ((dictionary_t *) ooiGenServReqOut->ptr);
+    status = getRevIdFromList ((dictionary_t *) ooiGenServReqOut->ptr,
+      MY_DOC_NAME, revId);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: getRevIdFromList error for %s", MY_DOC_NAME);
+        return status;
+    }
+
+    clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+
+
+    /* read the object */
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, READ_DOC_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_DICT_TYPE;
+
+    status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
+      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
+        return status;
+    }
+
+    status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_ID_KW,
+      STR_MS_T, strdup (MY_DOC_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", OBJECT_ID_KW);
+        return status;
+    }
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: rcOoiGenServReq error");
+        return status;
+    }
+
+    if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: NULL output for %s", CREATE_DOC_OP);
+        return status;
+    }
+    printDict ((dictionary_t *) ooiGenServReqOut->ptr);
+    clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+
+    /* delete the object */
+
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, DELETE_DOC_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_STR_TYPE;
+
+    status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
+      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
+        return status;
+    }
+
+    docObject = (dictionary_t *) calloc (1, sizeof (dictionary_t));
+    dictSetAttr (docObject, _ID_KW, STR_MS_T, strdup (MY_DOC_NAME), 0);
+    dictSetAttr (docObject, _REV_KW, STR_MS_T, strdup (revId), 0);
+
+    status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_KW,
+      Dictionary_MS_T, docObject, 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", OBJECT_KW);
+        return status;
+    }
+
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        /* this could happen from previous run */
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: rcOoiGenServReq error");
+    } else if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: NULL output for %s", DELETE_DOC_OP);
+        return status;
+    } else {
+        printf ("delete_doc return = %s\n", (char *) ooiGenServReqOut->ptr);
+        freeOoiGenServReqOut (&ooiGenServReqOut);
+    }
+
+    clearDictionary (&ooiGenServReqInp.params);
+
 
     return status;
 }

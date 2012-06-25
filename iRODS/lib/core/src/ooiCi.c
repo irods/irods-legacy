@@ -119,6 +119,8 @@ clearDictionary (dictionary_t *dictionary)
 
     for (i = 0; i < dictionary->len; i++) {
         free (dictionary->key[i]);
+        if (strcmp (dictionary->value[i].type_PI, Dictionary_MS_T) == 0) 
+            clearDictionary ((dictionary_t *) dictionary->value[i].ptr);
         free (dictionary->value[i].ptr);
     }
 
@@ -178,6 +180,18 @@ jsonPackDictionary (dictionary_t *dictionary, json_t **outObj)
                 status = json_object_set_new (paramObj, dictionary->key[i],
                   json_true ());
             }
+        } else if (strcmp (type_PI, Dictionary_MS_T) == 0) {
+            json_t *dictObj = NULL;
+            status = jsonPackDictionary ((dictionary_t *) 
+              dictionary->value[i].ptr, &dictObj);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "jsonPackDictionary: jsonPackDictionary error");
+                json_decref (paramObj);
+                return status;
+            }
+            status = json_object_set_new (paramObj, dictionary->key[i],
+              dictObj);
         } else {
             rodsLog (LOG_ERROR, 
               "jsonPackDictionary: type_PI %s not supported", type_PI);
@@ -626,6 +640,29 @@ printList (dictionary_t *dictionary)
 
     return (0);
 }
+
+/* get the _rev from the list. the list contains 2 items, _id and _rev.
+ * _rev is the one that does not match the input objectId
+ */
+int
+getRevIdFromList (dictionary_t *dictionary, char *objectId, char *outRevId)
+{
+    int i;
+
+    for (i = 0; i < dictionary->len; i++) {
+        if (strcmp (dictionary->value[i].type_PI, STR_MS_T) == 0) {
+	    if (strcmp (objectId, (char *)  dictionary->value[i].ptr) != 0) {
+                rstrcpy (outRevId, (char *)  dictionary->value[i].ptr, 
+                 NAME_LEN);
+                return 0;
+            }
+        }
+    }
+    /* no result */
+    *outRevId = '\0';
+    return OOI_REVID_NOT_FOUND;
+}
+
 
 int
 getStrByType_PI (char *type_PI, void *valuePtr, char *valueStr)

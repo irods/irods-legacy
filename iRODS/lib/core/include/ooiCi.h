@@ -95,6 +95,8 @@ int
 jsonUnpackList (json_t *listObj, dictionary_t *outList);
 int
 getStrByType_PI (char *type_PI, void *valuePtr, char *valueStr);
+int
+getRevIdFromList (dictionary_t *dictionary, char *objectId, char *outRevId);
 #ifdef  __cplusplus
 }
 #endif
