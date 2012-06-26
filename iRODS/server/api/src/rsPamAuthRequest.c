@@ -9,6 +9,7 @@
 #include "genQuery.h"
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
+#include "miscServerFunct.h"
 #include "pamAuth.h"
 
 
@@ -19,7 +20,8 @@ rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL, &rodsServerHost);
+    status = getAndConnRcatHost(rsComm, MASTER_RCAT, 
+                                rsComm->clientUser.rodsZone, &rodsServerHost);
     if (status < 0) {
        return(status);
     }
@@ -33,8 +35,31 @@ rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 #endif
     }
     else {
+#ifdef USE_SSL
+        /* protect the PAM plain text password by
+           using an SSL connection to the remote ICAT */
+        status = sslStart(rodsServerHost->conn);
+        if (status) {
+            rodsLog(LOG_NOTICE, "rsPamAuthRequest: could not establish SSL connection, status %d",
+                    status);
+            return(status);
+        }
+#else
+        rodsLog(LOG_ERROR, "iRODS doesn't include SSL support, required for PAM authentication.");
+        return SSL_NOT_BUILT_INTO_SERVER;
+#endif /* USE_SSL */
+
        status = rcPamAuthRequest(rodsServerHost->conn, pamAuthRequestInp,
 				 pamAuthRequestOut);
+#ifdef USE_SSL
+       sslEnd(rodsServerHost->conn);
+#endif
+       rcDisconnect(rodsServerHost->conn);
+       rodsServerHost->conn = NULL;
+       if (status < 0) {
+           rodsLog(LOG_NOTICE, "rsPamAuthRequest: rcPamAuthRequest to remote server failed, status %d",
+                   status);
+       }
     }
     return (status);
 }
@@ -102,8 +127,18 @@ _rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 #if defined(PAM_AUTH)
 
 #ifdef RUN_SERVER_AS_ROOT
+    /* uid == euid == root is needed for some pam plugins
+       e.g. sssd */
+    status = changeToRootUser();
+    if (status < 0) {
+        return (status);
+    }
     status = pamAuthenticate(pamAuthRequestInp->pamUser,
                              pamAuthRequestInp->pamPassword);
+    status = changeToServiceUser();
+    if (status < 0) {
+        return (status);
+    }
 #else
     /* Normal mode, fork/exec setuid program to do the Pam check */
     status = runPamAuthCheck(pamAuthRequestInp->pamUser,
