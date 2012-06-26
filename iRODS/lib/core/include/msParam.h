@@ -82,6 +82,7 @@ extern "C" {
 #define NcInqGrpsOut_MS_T	"NcInqGrpsOut_PI"
 #define Dictionary_MS_T		"Dictionary_PI"
 #define DictArray_MS_T		"DictArray_PI"
+#define GenArray_MS_T		"GenArray_PI"
 
 /* micro service input/output parameter */
 typedef struct MsParam {

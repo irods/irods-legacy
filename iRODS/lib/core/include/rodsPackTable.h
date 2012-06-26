@@ -138,6 +138,7 @@ packInstructArray_t RodsPackTable[] = {
         {"DictValue_PI", DictValue_PI},
         {"Dictionary_PI", Dictionary_PI},
         {"DictArray_PI", DictArray_PI},
+        {"GenArray_PI", GenArray_PI},
 #endif
         {PACK_TABLE_END_PI, (char *) NULL},
 };

@@ -235,7 +235,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, LIST_DATASTORES_OP, NAME_LEN);
-    ooiGenServReqInp.outType = OOI_LIST_TYPE;
+    ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
     status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
 
     if (status < 0) {
@@ -257,7 +257,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, CREATE_DOC_OP, NAME_LEN);
-    ooiGenServReqInp.outType = OOI_LIST_TYPE;
+    ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
       STR_MS_T, strdup (MY_DATA_STORE_NAME));
@@ -356,7 +356,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, UPDATE_DOC_OP, NAME_LEN);
-    ooiGenServReqInp.outType = OOI_LIST_TYPE;
+    ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
       STR_MS_T, strdup (MY_DATA_STORE_NAME));

@@ -34,11 +34,12 @@ typedef struct DictValue {
 
 typedef struct Dictionary {
     int len;
+    int flags;			/* not used */
     char **key;     		/* array of keyword */
     dictValue_t *value;        /* pointer to an array of values */
 } dictionary_t;
 
-#define Dictionary_PI "int dictLen; str *key[dictLen]; struct *DictValue_PI(dictLen);" 
+#define Dictionary_PI "int dictLen; int flags; str *key[dictLen]; struct *DictValue_PI(dictLen);" 
 
 /* array of dictionary */
 typedef struct DictArray {
@@ -49,14 +50,28 @@ typedef struct DictArray {
 
 #define DictArray_PI "int dictArrayLen; int flags; struct *Dictionary_PI(dictArrayLen);" 
 
+/* array */
+typedef struct GenArray {
+    int len;
+    int flags;          	/* not used */
+    dictValue_t *value; 	/* pointer to an array of values */
+} genArray_t;
+
+#define GenArray_PI "int arrayLen; int flags; struct *DictValue_PI(arrayLen);" 
+
+
 int
 dictSetAttr (dictionary_t *dictionary, char *key, char *type_PI, void *valptr);
+int
+arraySet (genArray_t *genArray, char *type_PI, void *valptr);
 dictValue_t *
 dictGetAttr (dictionary_t *dictionary, char *key);
 int
 dictDelAttr (dictionary_t *dictionary, char *key);
 int
 clearDictionary (dictionary_t *dictionary);
+int
+clearGenArray (genArray_t *genArray);
 int
 jsonPackDictionary (dictionary_t *dictionary, json_t **outObj);
 int
@@ -70,7 +85,7 @@ jsonUnpackOoiRespStr (json_t *responseObj, char **outStr);
 int
 jsonUnpackOoiRespDict (json_t *responseObj, dictionary_t **outDict);
 int
-jsonUnpackOoiRespList (json_t *responseObj, dictionary_t **outDict);
+jsonUnpackOoiRespArray (json_t *responseObj, genArray_t **outArray);
 int
 jsonUnpackDict (json_t *dictObj, dictionary_t *outDict);
 int
@@ -87,9 +102,9 @@ printDictArray (dictArray_t *dictArray);
 int
 printDict (dictionary_t *dictionary);
 int
-printList (dictionary_t *dictionary);
+printGenArray (genArray_t *genArray);
 int
-jsonUnpackList (json_t *listObj, dictionary_t *outList);
+jsonUnpackArray (json_t *genArrayObj, genArray_t *genArray);
 int
 getStrByType_PI (char *type_PI, void *valuePtr, char *valueStr);
 int

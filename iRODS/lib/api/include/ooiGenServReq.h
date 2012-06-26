@@ -20,7 +20,7 @@
 #define OOI_DICT_ARRAY_TYPE	2	/* array of dict */
 #define OOI_DICT_ARRAY_IN_ARRAY 3       /* array of dict in an array.
                                          * outInx is the inx in this array */
-#define OOI_LIST_TYPE		4       /* array of Value */
+#define OOI_ARRAY_TYPE		4       /* array of Value */
 typedef struct {
     char servName[NAME_LEN];
     char servOpr[NAME_LEN];

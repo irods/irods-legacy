@@ -23,13 +23,10 @@ dictSetAttr (dictionary_t *dictionary, char *key, char *type_PI, void *valptr)
     /* check if the keyword exists */
 
     for (i = 0; i < dictionary->len; i++) {
-        if (key[0] != '\0' && strcmp (key, dictionary->key[i]) == 0) {
+        if (strcmp (key, dictionary->key[i]) == 0) {
             free ( dictionary->value[i].ptr);
             dictionary->value[i].ptr = valptr;
             rstrcpy (dictionary->value[i].type_PI, type_PI, NAME_LEN);
-#if 0
-            dictionary->value[i].len = arrLen;
-#endif
             return (0);
         }
     }
@@ -53,10 +50,38 @@ dictSetAttr (dictionary_t *dictionary, char *key, char *type_PI, void *valptr)
     dictionary->key[dictionary->len] = strdup (key);
     dictionary->value[dictionary->len].ptr = valptr;
     rstrcpy (dictionary->value[dictionary->len].type_PI, type_PI, NAME_LEN);
-#if 0
-    dictionary->value[dictionary->len].len = arrLen;
-#endif
     dictionary->len++;
+
+    return (0);
+}
+
+/* arraySet - add a value to the array */
+int
+arraySet (genArray_t *genArray, char *type_PI, void *valptr)
+{
+    /* type_PI are replicated, but valptr is stolen */
+    dictValue_t *newValue;
+    int newLen;
+    int i;
+
+    if (genArray == NULL) {
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if ((genArray->len % PTR_ARRAY_MALLOC_LEN) == 0) {
+        newLen = genArray->len + PTR_ARRAY_MALLOC_LEN;
+        newValue = (dictValue_t *) calloc (newLen,  sizeof (dictValue_t));
+        for (i = 0; i < genArray->len; i++) {
+            newValue[i] = genArray->value[i];
+        }
+        if (genArray->value != NULL)
+            free (genArray->value);
+        genArray->value = newValue;
+    }
+
+    genArray->value[genArray->len].ptr = valptr;
+    rstrcpy (genArray->value[genArray->len].type_PI, type_PI, NAME_LEN);
+    genArray->len++;
 
     return (0);
 }
@@ -129,7 +154,29 @@ clearDictionary (dictionary_t *dictionary)
 
     free (dictionary->key);
     free (dictionary->value);
-    bzero (dictionary, sizeof (keyValPair_t));
+    bzero (dictionary, sizeof (dictionary_t));
+    return(0);
+}
+
+int
+clearGenArray (genArray_t *genArray)
+{
+    int i;
+
+    if (genArray == NULL || genArray->len <= 0)
+        return (0);
+
+    for (i = 0; i < genArray->len; i++) {
+        if (strcmp (genArray->value[i].type_PI, Dictionary_MS_T) == 0)
+            clearDictionary ((dictionary_t *) genArray->value[i].ptr);
+        else if (strcmp (genArray->value[i].type_PI, GenArray_MS_T) == 0)
+            clearGenArray ((genArray_t *) genArray->value[i].ptr);
+
+        free (genArray->value[i].ptr);
+    }
+
+    free (genArray->value);
+    bzero (genArray, sizeof (genArray_t));
     return(0);
 }
 
@@ -311,7 +358,7 @@ jsonUnpackOoiRespDict (json_t *responseObj, dictionary_t **outDict)
 }
 
 int
-jsonUnpackOoiRespList (json_t *responseObj, dictionary_t **outDict)
+jsonUnpackOoiRespArray (json_t *responseObj, genArray_t **outArray)
 {
     int status;
 
@@ -321,9 +368,9 @@ jsonUnpackOoiRespList (json_t *responseObj, dictionary_t **outDict)
           json_typeof (responseObj));
         return OOI_JSON_TYPE_ERR;
     }
-    *outDict = (dictionary_t *) calloc (1, sizeof (dictionary_t));
-    status = jsonUnpackList (responseObj, *outDict);
-    if (status < 0) free (*outDict);
+    *outArray = (genArray_t *) calloc (1, sizeof (genArray_t));
+    status = jsonUnpackArray (responseObj, *outArray);
+    if (status < 0) free (*outArray);
 
     return status;
 }
@@ -394,67 +441,82 @@ jsonUnpackDict (json_t *dictObj, dictionary_t *outDict)
     return status;
 }
 
-/* jsonUnpackList - unpack a list. Use the dictionary_t to contain the 
+/* jsonUnpackList - unpack a genArray. Use the genArray_t to contain the 
  * output for Now. The "key" value is not used.
  */
 int
-jsonUnpackList (json_t *listObj, dictionary_t *outList) 
+jsonUnpackArray (json_t *genArrayObj, genArray_t *genArray) 
 {
     void *tmpOut;
     int *tmpInt;
     float *tmpFloat;
+    dictionary_t *tmpDict;
+    genArray_t *tmpGenArray;
     json_t *value;
     int status;
     int i, len;
 
-    if (listObj == NULL || outList == NULL) {
+    if (genArrayObj == NULL || genArray == NULL) {
         rodsLog (LOG_ERROR,
           "jsonUnpackList: NULL input");
         return USER__NULL_INPUT_ERR;
     }
-    bzero (outList, sizeof (dictionary_t));
-    if (!json_is_array (listObj)) {
+    bzero (genArray, sizeof (genArray_t));
+    if (!json_is_array (genArrayObj)) {
        rodsLog (LOG_ERROR,
           "jsonUnpackList: Obj type %d is not JSON_ARRAY.",
-          json_typeof (listObj));
+          json_typeof (genArrayObj));
         return OOI_JSON_TYPE_ERR;
     }
 
-    len = json_array_size (listObj);
+    len = json_array_size (genArrayObj);
     for (i = 0; i < len; i++) {
         json_type myType;
 
-        value = json_array_get (listObj, i);
+        value = json_array_get (genArrayObj, i);
         myType = json_typeof (value);
         switch (myType) {
+          case JSON_OBJECT:
+            tmpDict = (dictionary_t *) calloc (1, sizeof (dictionary_t));
+            status = jsonUnpackDict (value, tmpDict);
+	    if (status < 0) {
+		free (tmpDict);
+            } else {
+                status = arraySet (genArray, Dictionary_MS_T, tmpDict);
+            }
+            break;
+          case JSON_ARRAY:
+            tmpGenArray = (genArray_t *) calloc (1, sizeof (genArray_t));
+            status = jsonUnpackArray (value, tmpGenArray);
+            if (status < 0) {
+                free (tmpGenArray);
+            } else {
+                status = arraySet (genArray, GenArray_MS_T, tmpGenArray);
+            }
+            break;
           case JSON_STRING:
             tmpOut = strdup (json_string_value (value));
-            status = dictSetAttr (outList, (char *) "", STR_MS_T, 
-              tmpOut);
+            status = arraySet (genArray, STR_MS_T, tmpOut);
             break;
           case JSON_INTEGER:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = (int) json_integer_value (value);
-            status = dictSetAttr (outList, (char *) "", INT_MS_T,
-              (void *) tmpInt);
+            status = arraySet (genArray, INT_MS_T, (void *) tmpInt);
             break;
           case JSON_REAL:
 	    tmpFloat = (float *) calloc (1, sizeof (float));
             *tmpFloat = (float) json_real_value (value);
-            status = dictSetAttr (outList, (char *) "", FLOAT_MS_T,
-              (void *) tmpFloat);
+            status = arraySet (genArray, FLOAT_MS_T, (void *) tmpFloat);
             break;
           case JSON_TRUE:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = 1;
-            status = dictSetAttr (outList, (char *) "", BOOL_MS_T,
-              (void *) tmpInt);
+            status = arraySet (genArray, BOOL_MS_T, (void *) tmpInt);
             break;
           case JSON_FALSE:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = 0;
-            status = dictSetAttr (outList, (char *) "", BOOL_MS_T,
-              (void *) tmpInt);
+            status = arraySet (genArray, BOOL_MS_T, (void *) tmpInt);
             break;
           default:
             rodsLog (LOG_ERROR,
@@ -462,7 +524,7 @@ jsonUnpackList (json_t *listObj, dictionary_t *outList)
 	    status = OOI_JSON_TYPE_ERR;
         }
     }
-    if (status < 0) clearDictionary (outList);
+    if (status < 0) clearGenArray (genArray);
 
     return status;
 }
@@ -612,7 +674,7 @@ printDict (dictionary_t *dictionary)
 {
     int i;
 
-    printf ("Dict key: Value\n  {\n");
+    printf ("  {\n");
 
     for (i = 0; i < dictionary->len; i++) {
         char valueStr[NAME_LEN];
@@ -626,17 +688,24 @@ printDict (dictionary_t *dictionary)
 }
     
 int
-printList (dictionary_t *dictionary)
+printGenArray (genArray_t *genArray)
 {
     int i;
 
-    printf ("List\n  [\n");
+    printf ("  [\n");
 
-    for (i = 0; i < dictionary->len; i++) {
-        char valueStr[NAME_LEN];
-        getStrByType_PI (dictionary->value[i].type_PI,
-              dictionary->value[i].ptr, valueStr);
-        printf ("    %s\n", valueStr);
+    for (i = 0; i < genArray->len; i++) {
+        printf ("  ");
+	if (strcmp (genArray->value[i].type_PI, Dictionary_MS_T) == 0) {
+	    printDict ((dictionary_t *) genArray->value[i].ptr);
+        } else if (strcmp (genArray->value[i].type_PI, GenArray_MS_T) == 0) {
+            printGenArray ((genArray_t *) genArray->value[i].ptr);
+        } else {
+            char valueStr[NAME_LEN];
+            getStrByType_PI (genArray->value[i].type_PI,
+              genArray->value[i].ptr, valueStr);
+            printf ("  %s\n", valueStr);
+        }
     }
     printf ("  ]\n");
 
