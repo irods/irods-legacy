@@ -27,18 +27,10 @@ extern "C" {
 
 typedef struct DictValue {
     char type_PI[NAME_LEN];   /* the packing instruction of the ptr */
-#if 0
-    int len;		      /* > 0 if ptr is an array */
-    int flags;		      /* not used */
-#endif
     void *ptr;
 } dictValue_t;
 
-#if 0
-#define DictValue_PI "piStr type_PI[NAME_LEN]; int arrLen; int flags; ?type_PI *ptr(arrLen);"
-#else
 #define DictValue_PI "piStr type_PI[NAME_LEN]; ?type_PI *ptr;"
-#endif
 
 typedef struct Dictionary {
     int len;
