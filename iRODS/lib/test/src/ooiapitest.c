@@ -101,7 +101,7 @@ testBankService (rcComm_t *conn)
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, ACCOUNT_TYPE_KW,
-      STR_MS_T, strdup ("Savings"), 0);
+      STR_MS_T, strdup ("Savings"));
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -109,7 +109,7 @@ testBankService (rcComm_t *conn)
         return status;
     }
     status = dictSetAttr (&ooiGenServReqInp.params, NAME_KW,
-      STR_MS_T, strdup ("Mike"), 0);
+      STR_MS_T, strdup ("Mike"));
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -175,7 +175,7 @@ testDatastoreService (rcComm_t *conn)
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
-      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+      STR_MS_T, strdup (MY_DATA_STORE_NAME));
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -206,7 +206,7 @@ testDatastoreService (rcComm_t *conn)
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
-      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+      STR_MS_T, strdup (MY_DATA_STORE_NAME));
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -260,7 +260,7 @@ testDatastoreService (rcComm_t *conn)
     ooiGenServReqInp.outType = OOI_LIST_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
-      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+      STR_MS_T, strdup (MY_DATA_STORE_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
@@ -268,7 +268,7 @@ testDatastoreService (rcComm_t *conn)
     }
 
     status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_ID_KW,
-      STR_MS_T, strdup (MY_DOC_NAME), 0);
+      STR_MS_T, strdup (MY_DOC_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", OBJECT_ID_KW);
@@ -277,12 +277,12 @@ testDatastoreService (rcComm_t *conn)
 
     /* prepare the doc_object */
     docObject = (dictionary_t *) calloc (1, sizeof (dictionary_t));
-    dictSetAttr (docObject, "foo", STR_MS_T, strdup ("bar"), 0);
-    dictSetAttr (docObject, "color", STR_MS_T, strdup ("blue"), 0);
-    dictSetAttr (docObject, "shape", STR_MS_T, strdup ("square"), 0);
+    dictSetAttr (docObject, "foo", STR_MS_T, strdup ("bar"));
+    dictSetAttr (docObject, "color", STR_MS_T, strdup ("blue"));
+    dictSetAttr (docObject, "shape", STR_MS_T, strdup ("square"));
     
     status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_KW,
-      Dictionary_MS_T, docObject, 0);
+      Dictionary_MS_T, docObject);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", OBJECT_KW);
@@ -321,7 +321,7 @@ testDatastoreService (rcComm_t *conn)
     ooiGenServReqInp.outType = OOI_DICT_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
-      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+      STR_MS_T, strdup (MY_DATA_STORE_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
@@ -329,7 +329,7 @@ testDatastoreService (rcComm_t *conn)
     }
 
     status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_ID_KW,
-      STR_MS_T, strdup (MY_DOC_NAME), 0);
+      STR_MS_T, strdup (MY_DOC_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", OBJECT_ID_KW);
@@ -359,7 +359,7 @@ testDatastoreService (rcComm_t *conn)
     ooiGenServReqInp.outType = OOI_LIST_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
-      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+      STR_MS_T, strdup (MY_DATA_STORE_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
@@ -367,7 +367,7 @@ testDatastoreService (rcComm_t *conn)
     }
 
     status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_ID_KW,
-      STR_MS_T, strdup (MY_DOC_NAME), 0);
+      STR_MS_T, strdup (MY_DOC_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", OBJECT_ID_KW);
@@ -376,13 +376,13 @@ testDatastoreService (rcComm_t *conn)
 
     /* prepare the doc_object */
     docObject = (dictionary_t *) calloc (1, sizeof (dictionary_t));
-    dictSetAttr (docObject, _ID_KW, STR_MS_T, strdup (MY_DOC_NAME), 0);
-    dictSetAttr (docObject, _REV_KW, STR_MS_T, strdup (revId), 0);
-    dictSetAttr (docObject, "myname", STR_MS_T, strdup ("Mike"), 0);
-    dictSetAttr (docObject, "shape", STR_MS_T, strdup ("triangle"), 0);
+    dictSetAttr (docObject, _ID_KW, STR_MS_T, strdup (MY_DOC_NAME));
+    dictSetAttr (docObject, _REV_KW, STR_MS_T, strdup (revId));
+    dictSetAttr (docObject, "myname", STR_MS_T, strdup ("Mike"));
+    dictSetAttr (docObject, "shape", STR_MS_T, strdup ("triangle"));
 
     status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_KW,
-      Dictionary_MS_T, docObject, 0);
+      Dictionary_MS_T, docObject);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", OBJECT_KW);
@@ -421,7 +421,7 @@ testDatastoreService (rcComm_t *conn)
     ooiGenServReqInp.outType = OOI_DICT_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
-      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+      STR_MS_T, strdup (MY_DATA_STORE_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
@@ -429,7 +429,7 @@ testDatastoreService (rcComm_t *conn)
     }
 
     status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_ID_KW,
-      STR_MS_T, strdup (MY_DOC_NAME), 0);
+      STR_MS_T, strdup (MY_DOC_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", OBJECT_ID_KW);
@@ -459,7 +459,7 @@ testDatastoreService (rcComm_t *conn)
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
-      STR_MS_T, strdup (MY_DATA_STORE_NAME), 0);
+      STR_MS_T, strdup (MY_DATA_STORE_NAME));
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", DATASTORE_NAME_KW);
@@ -467,11 +467,11 @@ testDatastoreService (rcComm_t *conn)
     }
 
     docObject = (dictionary_t *) calloc (1, sizeof (dictionary_t));
-    dictSetAttr (docObject, _ID_KW, STR_MS_T, strdup (MY_DOC_NAME), 0);
-    dictSetAttr (docObject, _REV_KW, STR_MS_T, strdup (revId), 0);
+    dictSetAttr (docObject, _ID_KW, STR_MS_T, strdup (MY_DOC_NAME));
+    dictSetAttr (docObject, _REV_KW, STR_MS_T, strdup (revId));
 
     status = dictSetAttr (&ooiGenServReqInp.params, OBJECT_KW,
-      Dictionary_MS_T, docObject, 0);
+      Dictionary_MS_T, docObject);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "testDatastoreService: dictSetAttr of %s error", OBJECT_KW);

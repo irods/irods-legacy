@@ -8,8 +8,7 @@
 
 /* dictSetAttr - set a key/value pair. For non array, arrLen = 0 */ 
 int
-dictSetAttr (dictionary_t *dictionary, char *key, char *type_PI, void *valptr,
-int arrLen)
+dictSetAttr (dictionary_t *dictionary, char *key, char *type_PI, void *valptr)
 {
     /* key and type_PI are replicated, but valptr is stolen */
     char **newKey;
@@ -28,7 +27,9 @@ int arrLen)
             free ( dictionary->value[i].ptr);
             dictionary->value[i].ptr = valptr;
             rstrcpy (dictionary->value[i].type_PI, type_PI, NAME_LEN);
+#if 0
             dictionary->value[i].len = arrLen;
+#endif
             return (0);
         }
     }
@@ -52,7 +53,9 @@ int arrLen)
     dictionary->key[dictionary->len] = strdup (key);
     dictionary->value[dictionary->len].ptr = valptr;
     rstrcpy (dictionary->value[dictionary->len].type_PI, type_PI, NAME_LEN);
+#if 0
     dictionary->value[dictionary->len].len = arrLen;
+#endif
     dictionary->len++;
 
     return (0);
@@ -353,32 +356,31 @@ jsonUnpackDict (json_t *dictObj, dictionary_t *outDict)
         switch (myType) {
           case JSON_STRING:
             tmpOut = strdup (json_string_value (value));
-            status = dictSetAttr (outDict, (char *) key, STR_MS_T, 
-              tmpOut, 0);
+            status = dictSetAttr (outDict, (char *) key, STR_MS_T, tmpOut);
             break;
           case JSON_INTEGER:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = (int) json_integer_value (value);
             status = dictSetAttr (outDict, (char *) key, INT_MS_T,
-              (void *) tmpInt, 0);
+              (void *) tmpInt);
             break;
           case JSON_REAL:
 	    tmpFloat = (float *) calloc (1, sizeof (float));
             *tmpFloat = (float) json_real_value (value);
             status = dictSetAttr (outDict, (char *) key, FLOAT_MS_T,
-              (void *) tmpFloat, 0);
+              (void *) tmpFloat);
             break;
           case JSON_TRUE:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = 1;
             status = dictSetAttr (outDict, (char *) key, BOOL_MS_T,
-              (void *) tmpInt, 0);
+              (void *) tmpInt);
             break;
           case JSON_FALSE:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = 0;
             status = dictSetAttr (outDict, (char *) key, BOOL_MS_T,
-              (void *) tmpInt, 0);
+              (void *) tmpInt);
             break;
           default:
             rodsLog (LOG_ERROR,
@@ -428,31 +430,31 @@ jsonUnpackList (json_t *listObj, dictionary_t *outList)
           case JSON_STRING:
             tmpOut = strdup (json_string_value (value));
             status = dictSetAttr (outList, (char *) "", STR_MS_T, 
-              tmpOut, 0);
+              tmpOut);
             break;
           case JSON_INTEGER:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = (int) json_integer_value (value);
             status = dictSetAttr (outList, (char *) "", INT_MS_T,
-              (void *) tmpInt, 0);
+              (void *) tmpInt);
             break;
           case JSON_REAL:
 	    tmpFloat = (float *) calloc (1, sizeof (float));
             *tmpFloat = (float) json_real_value (value);
             status = dictSetAttr (outList, (char *) "", FLOAT_MS_T,
-              (void *) tmpFloat, 0);
+              (void *) tmpFloat);
             break;
           case JSON_TRUE:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = 1;
             status = dictSetAttr (outList, (char *) "", BOOL_MS_T,
-              (void *) tmpInt, 0);
+              (void *) tmpInt);
             break;
           case JSON_FALSE:
 	    tmpInt = (int *) calloc (1, sizeof (int));
             *tmpInt = 0;
             status = dictSetAttr (outList, (char *) "", BOOL_MS_T,
-              (void *) tmpInt, 0);
+              (void *) tmpInt);
             break;
           default:
             rodsLog (LOG_ERROR,
