@@ -125,6 +125,9 @@ endif
 LDFLAGS += $(LIB_KRB_AUTH)
 endif
 
+ifdef USE_SSL
+LDFLAGS        += -lssl -lcrypto
+endif
 
 #
 # Principal Targets
