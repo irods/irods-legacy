@@ -401,6 +401,26 @@ jsonUnpackDict (json_t *dictObj, dictionary_t *outDict)
         value = json_object_iter_value (iter);
         myType = json_typeof (value);
         switch (myType) {
+          case JSON_OBJECT:
+            tmpDict = (dictionary_t *) calloc (1, sizeof (dictionary_t));
+            status = jsonUnpackDict (value, tmpDict);
+            if (status < 0) {
+                free (tmpDict);
+            } else {
+                status = dictSetAttr (genArray, (char *) key, Dictionary_MS_T, 
+                  tmpDict);
+            }
+            break;
+          case JSON_ARRAY:
+            tmpGenArray = (genArray_t *) calloc (1, sizeof (genArray_t));
+            status = jsonUnpackArray (value, tmpGenArray);
+            if (status < 0) {
+                free (tmpGenArray);
+            } else {
+                status = dictSetAttr (genArray, (char *) key, GenArray_MS_T, 
+                  tmpGenArray);
+            }
+            break;
           case JSON_STRING:
             tmpOut = strdup (json_string_value (value));
             status = dictSetAttr (outDict, (char *) key, STR_MS_T, tmpOut);
@@ -441,7 +461,7 @@ jsonUnpackDict (json_t *dictObj, dictionary_t *outDict)
     return status;
 }
 
-/* jsonUnpackList - unpack a genArray. Use the genArray_t to contain the 
+/* jsonUnpackArray - unpack a genArray. Use the genArray_t to contain the 
  * output for Now. The "key" value is not used.
  */
 int
@@ -458,13 +478,13 @@ jsonUnpackArray (json_t *genArrayObj, genArray_t *genArray)
 
     if (genArrayObj == NULL || genArray == NULL) {
         rodsLog (LOG_ERROR,
-          "jsonUnpackList: NULL input");
+          "jsonUnpackArray: NULL input");
         return USER__NULL_INPUT_ERR;
     }
     bzero (genArray, sizeof (genArray_t));
     if (!json_is_array (genArrayObj)) {
        rodsLog (LOG_ERROR,
-          "jsonUnpackList: Obj type %d is not JSON_ARRAY.",
+          "jsonUnpackArray: Obj type %d is not JSON_ARRAY.",
           json_typeof (genArrayObj));
         return OOI_JSON_TYPE_ERR;
     }
@@ -520,7 +540,7 @@ jsonUnpackArray (json_t *genArrayObj, genArray_t *genArray)
             break;
           default:
             rodsLog (LOG_ERROR,
-              "ooiGenServReqFunc: myType %d not supported", myType);
+              "jsonUnpackArray: myType %d not supported", myType);
 	    status = OOI_JSON_TYPE_ERR;
         }
     }
@@ -529,6 +549,7 @@ jsonUnpackArray (json_t *genArrayObj, genArray_t *genArray)
     return status;
 }
 
+#if 0
 int
 jsonUnpackOoiRespDictArray (json_t *responseObj, dictArray_t **outDictArray)
 {
@@ -631,6 +652,7 @@ int outInx)
 
     return 0;
 }
+#endif
 
 int
 clearDictArray (dictArray_t *dictArray)
@@ -695,7 +717,6 @@ printGenArray (genArray_t *genArray)
     printf ("  [\n");
 
     for (i = 0; i < genArray->len; i++) {
-        printf ("  ");
 	if (strcmp (genArray->value[i].type_PI, Dictionary_MS_T) == 0) {
 	    printDict ((dictionary_t *) genArray->value[i].ptr);
         } else if (strcmp (genArray->value[i].type_PI, GenArray_MS_T) == 0) {
@@ -716,14 +737,14 @@ printGenArray (genArray_t *genArray)
  * _rev is the one that does not match the input objectId
  */
 int
-getRevIdFromList (dictionary_t *dictionary, char *objectId, char *outRevId)
+getRevIdFromArray (genArray_t *genArray, char *objectId, char *outRevId)
 {
     int i;
 
-    for (i = 0; i < dictionary->len; i++) {
-        if (strcmp (dictionary->value[i].type_PI, STR_MS_T) == 0) {
-	    if (strcmp (objectId, (char *)  dictionary->value[i].ptr) != 0) {
-                rstrcpy (outRevId, (char *)  dictionary->value[i].ptr, 
+    for (i = 0; i < genArray->len; i++) {
+        if (strcmp (genArray->value[i].type_PI, STR_MS_T) == 0) {
+	    if (strcmp (objectId, (char *)  genArray->value[i].ptr) != 0) {
+                rstrcpy (outRevId, (char *)  genArray->value[i].ptr, 
                  NAME_LEN);
                 return 0;
             }

@@ -108,7 +108,7 @@ jsonUnpackArray (json_t *genArrayObj, genArray_t *genArray);
 int
 getStrByType_PI (char *type_PI, void *valuePtr, char *valueStr);
 int
-getRevIdFromList (dictionary_t *dictionary, char *objectId, char *outRevId);
+getRevIdFromArray (genArray_t *genArray, char *objectId, char *outRevId);
 #ifdef  __cplusplus
 }
 #endif

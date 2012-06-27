@@ -138,7 +138,10 @@ testBankService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, BANK_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, LIST_ACCOUNTS_OP, NAME_LEN);
+#if 0
     ooiGenServReqInp.outType = OOI_DICT_ARRAY_TYPE;
+#endif
+    ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
     status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
 
     if (status < 0) {
@@ -153,8 +156,12 @@ testBankService (rcComm_t *conn)
         return status;
     }
 
+#if 0
     printDictArray ((dictArray_t *) ooiGenServReqOut->ptr);
     clearDictArray ((dictArray_t *) ooiGenServReqOut->ptr);
+#endif
+    printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
 
     return status;
 }
@@ -193,7 +200,8 @@ testDatastoreService (rcComm_t *conn)
           "testDatastoreService: NULL output for %s", DELETE_DATASTORE_OP);
         return status;
     } else {
-        printf ("delete_datastore return = %s\n", (char *) ooiGenServReqOut->ptr);
+        printf ("delete_datastore returned = %s\n", 
+          (char *) ooiGenServReqOut->ptr);
         freeOoiGenServReqOut (&ooiGenServReqOut);
     }
 
@@ -226,7 +234,7 @@ testDatastoreService (rcComm_t *conn)
           "testDatastoreService: NULL output for %s", CREATE_DATASTORE_OP);
         return status;
     }
-    printf ("create_datastore return = %s\n", (char *) ooiGenServReqOut->ptr);
+    printf ("create_datastore returned = %s\n", (char *) ooiGenServReqOut->ptr);
     freeOoiGenServReqOut (&ooiGenServReqOut);
 
     clearDictionary (&ooiGenServReqInp.params);
@@ -250,8 +258,9 @@ testDatastoreService (rcComm_t *conn)
         return status;
     }
 
-    printList ((dictionary_t *) ooiGenServReqOut->ptr);
-    clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+    printf ("list datastores returned:\n");
+    printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
 
     /* create_doc in datastore */
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
@@ -303,16 +312,17 @@ testDatastoreService (rcComm_t *conn)
         return status;
     }
 
-    printList ((dictionary_t *) ooiGenServReqOut->ptr);
-    status = getRevIdFromList ((dictionary_t *) ooiGenServReqOut->ptr, 
+    printf ("create_doc returned:\n");
+    printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    status = getRevIdFromArray ((genArray_t *) ooiGenServReqOut->ptr, 
       MY_DOC_NAME, revId);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "testDatastoreService: getRevIdFromList error for %s", MY_DOC_NAME);
+          "testDatastoreService: getRevIdFromArray error for %s", MY_DOC_NAME);
         return status;
     }
 
-    clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+    clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
 
     /* read the object */
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
@@ -348,6 +358,7 @@ testDatastoreService (rcComm_t *conn)
           "testDatastoreService: NULL output for %s", CREATE_DOC_OP);
         return status;
     }
+    printf ("read_doc returned:\n");
     printDict ((dictionary_t *) ooiGenServReqOut->ptr);
     clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
 
@@ -402,16 +413,17 @@ testDatastoreService (rcComm_t *conn)
         return status;
     }
 
-    printList ((dictionary_t *) ooiGenServReqOut->ptr);
-    status = getRevIdFromList ((dictionary_t *) ooiGenServReqOut->ptr,
+    printf ("update_doc returned:\n");
+    printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    status = getRevIdFromArray ((genArray_t *) ooiGenServReqOut->ptr,
       MY_DOC_NAME, revId);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "testDatastoreService: getRevIdFromList error for %s", MY_DOC_NAME);
+          "testDatastoreService: getRevIdFromArray error for %s", MY_DOC_NAME);
         return status;
     }
 
-    clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+    clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
 
 
     /* read the object */
@@ -448,6 +460,7 @@ testDatastoreService (rcComm_t *conn)
           "testDatastoreService: NULL output for %s", CREATE_DOC_OP);
         return status;
     }
+    printf ("read_doc returned:\n");
     printDict ((dictionary_t *) ooiGenServReqOut->ptr);
     clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
 
@@ -489,12 +502,43 @@ testDatastoreService (rcComm_t *conn)
           "testDatastoreService: NULL output for %s", DELETE_DOC_OP);
         return status;
     } else {
-        printf ("delete_doc return = %s\n", (char *) ooiGenServReqOut->ptr);
+        printf ("delete_doc returned = %s\n", (char *) ooiGenServReqOut->ptr);
         freeOoiGenServReqOut (&ooiGenServReqOut);
     }
 
     clearDictionary (&ooiGenServReqInp.params);
 
+    /* list resource for resType=UserRole */
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, "resource_registry", NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, "find_resources", NAME_LEN);
+    ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
+
+    status = dictSetAttr (&ooiGenServReqInp.params, "restype",
+      STR_MS_T, strdup ("UserRole"));
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: dictSetAttr of %s error", "find_resources");
+        return status;
+    }
+
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: rcOoiGenServReq error");
+        return status;
+    }
+
+    if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDatastoreService: NULL output for %s", "find_resources");
+        return status;
+    }
+
+    printf ("find_resources returned:\n");
+    printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
 
     return status;
 }

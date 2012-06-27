@@ -17,10 +17,12 @@
 /* definition for outType */
 #define OOI_STR_TYPE		0
 #define OOI_DICT_TYPE		1
+#define OOI_ARRAY_TYPE		2       /* array of Value */
+#if 0	/* just use OOI_ARRAY_TYPE */
 #define OOI_DICT_ARRAY_TYPE	2	/* array of dict */
-#define OOI_DICT_ARRAY_IN_ARRAY 3       /* array of dict in an array.
+#define OOI_DICT_ARRAY_IN_ARRAY 3       /* An element in an array.
                                          * outInx is the inx in this array */
-#define OOI_ARRAY_TYPE		4       /* array of Value */
+#endif
 typedef struct {
     char servName[NAME_LEN];
     char servOpr[NAME_LEN];

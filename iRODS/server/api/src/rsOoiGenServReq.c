@@ -139,6 +139,7 @@ ooiGenServReqFunc (void *buffer, size_t size, size_t nmemb, void *userp)
 	type_PI = Dictionary_MS_T;
         status = jsonUnpackOoiRespDict (responseObj, (dictionary_t **) &ptr);
         break;
+#if 0	/* use OOI_ARRAY_TYPE */
       case OOI_DICT_ARRAY_TYPE:
 	type_PI = DictArray_MS_T;
         status = jsonUnpackOoiRespDictArray (responseObj, 
@@ -149,9 +150,10 @@ ooiGenServReqFunc (void *buffer, size_t size, size_t nmemb, void *userp)
        status = jsonUnpackOoiRespDictArrInArr (responseObj, 
            (dictArray_t **) &ptr, ooiGenServReqStruct->outInx);
         break;
-      case OOI_LIST_TYPE:
-        type_PI = Dictionary_MS_T;
-        status = jsonUnpackOoiRespList (responseObj, (dictionary_t **) &ptr);
+#endif
+      case OOI_ARRAY_TYPE:
+        type_PI = GenArray_MS_T;
+        status = jsonUnpackOoiRespArray (responseObj, (genArray_t **) &ptr);
         break;
       default:
         rodsLog (LOG_ERROR,
