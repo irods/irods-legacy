@@ -83,6 +83,12 @@ char **outStr);
 int
 jsonUnpackOoiRespStr (json_t *responseObj, char **outStr);
 int
+jsonUnpackOoiRespInt (json_t *responseObj, int **outInt);
+int
+jsonUnpackOoiRespFloat (json_t *responseObj, float **outFloat);
+int
+jsonUnpackOoiRespBool (json_t *responseObj, int **outBool);
+int
 jsonUnpackOoiRespDict (json_t *responseObj, dictionary_t **outDict);
 int
 jsonUnpackOoiRespArray (json_t *responseObj, genArray_t **outArray);

@@ -340,6 +340,65 @@ jsonUnpackOoiRespStr (json_t *responseObj, char **outStr)
 }
 
 int
+jsonUnpackOoiRespInt (json_t *responseObj, int **outInt)
+{
+    int myInt;
+
+    if (!json_is_integer (responseObj)) {
+        rodsLog (LOG_ERROR,
+          "jsonUnpackOoiRespInt: responseObj type %d is not JSON_INTEGER",
+          json_typeof (responseObj));
+        return OOI_JSON_TYPE_ERR;
+    } else {
+        myInt = json_integer_value (responseObj);
+    }
+
+    *outInt = (int *) malloc (sizeof (int));
+    *(*outInt) = myInt;
+    return 0;
+}
+
+int
+jsonUnpackOoiRespFloat (json_t *responseObj, float **outFloat)
+{
+    float myFloat;
+
+    if (!json_is_real (responseObj)) {
+        rodsLog (LOG_ERROR,
+          "jsonUnpackOoiRespInt: responseObj type %d is not JSON_REAL",
+          json_typeof (responseObj));
+        return OOI_JSON_TYPE_ERR;
+    } else {
+        myFloat = json_real_value (responseObj);
+    }
+
+    *outFloat = (float *) malloc (sizeof (float));
+    *(*outFloat) = myFloat;
+    return 0;
+}
+
+int
+jsonUnpackOoiRespBool (json_t *responseObj, int **outBool)
+{
+    int myInt;
+
+    if (json_is_true (responseObj)) {
+        myInt = 1;
+    } else if (json_is_false (responseObj)) {
+        myInt = 0;
+    } else {
+        rodsLog (LOG_ERROR,
+          "jsonUnpackOoiRespFloat: responseObj type %d is not JSON_TRUE/FALSE",
+          json_typeof (responseObj));
+        return OOI_JSON_TYPE_ERR;
+    }
+
+    *outBool = (int *) malloc (sizeof (int));
+    *(*outBool) = myInt;
+    return 0;
+}
+
+int
 jsonUnpackOoiRespDict (json_t *responseObj, dictionary_t **outDict)
 {
     int status;
@@ -381,6 +440,8 @@ jsonUnpackDict (json_t *dictObj, dictionary_t *outDict)
 {
     void *iter;
     void *tmpOut;
+    dictionary_t *tmpDict;
+    genArray_t *tmpGenArray;
     int *tmpInt;
     float *tmpFloat;
     const char *key;
@@ -407,7 +468,7 @@ jsonUnpackDict (json_t *dictObj, dictionary_t *outDict)
             if (status < 0) {
                 free (tmpDict);
             } else {
-                status = dictSetAttr (genArray, (char *) key, Dictionary_MS_T, 
+                status = dictSetAttr (outDict, (char *) key, Dictionary_MS_T, 
                   tmpDict);
             }
             break;
@@ -417,7 +478,7 @@ jsonUnpackDict (json_t *dictObj, dictionary_t *outDict)
             if (status < 0) {
                 free (tmpGenArray);
             } else {
-                status = dictSetAttr (genArray, (char *) key, GenArray_MS_T, 
+                status = dictSetAttr (outDict, (char *) key, GenArray_MS_T, 
                   tmpGenArray);
             }
             break;

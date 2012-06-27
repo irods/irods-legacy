@@ -15,9 +15,13 @@
 #include "initServer.h"
 
 /* definition for outType */
-#define OOI_STR_TYPE		0
-#define OOI_DICT_TYPE		1
-#define OOI_ARRAY_TYPE		2       /* array of Value */
+#define OOI_DICT_TYPE		0
+#define OOI_ARRAY_TYPE		1       /* array of Value */
+#define OOI_STR_TYPE		2
+#define OOI_INT_TYPE		3
+#define OOI_FLOAT_TYPE		4
+#define OOI_BOOL_TYPE		5
+
 #if 0	/* just use OOI_ARRAY_TYPE */
 #define OOI_DICT_ARRAY_TYPE	2	/* array of dict */
 #define OOI_DICT_ARRAY_IN_ARRAY 3       /* An element in an array.
@@ -27,7 +31,7 @@ typedef struct {
     char servName[NAME_LEN];
     char servOpr[NAME_LEN];
     int outType;
-    int outInx;
+    int outInx;		/* not used */
     dictionary_t params;
 } ooiGenServReqInp_t;
    

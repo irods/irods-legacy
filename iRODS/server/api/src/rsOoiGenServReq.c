@@ -155,6 +155,18 @@ ooiGenServReqFunc (void *buffer, size_t size, size_t nmemb, void *userp)
         type_PI = GenArray_MS_T;
         status = jsonUnpackOoiRespArray (responseObj, (genArray_t **) &ptr);
         break;
+      case OOI_INT_TYPE:
+        type_PI = INT_MS_T;
+        status = jsonUnpackOoiRespInt (responseObj, (int **) &ptr);
+        break;
+      case OOI_FLOAT_TYPE:
+        type_PI = FLOAT_MS_T;
+        status = jsonUnpackOoiRespFloat (responseObj, (float **) &ptr);
+        break;
+      case OOI_BOOL_TYPE:
+        type_PI = BOOL_MS_T;
+        status = jsonUnpackOoiRespBool (responseObj, (int **) &ptr);
+        break;
       default:
         rodsLog (LOG_ERROR,
           "ooiGenServReqFunc: outType %d not supported", 
