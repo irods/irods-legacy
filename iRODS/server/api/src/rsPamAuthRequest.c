@@ -10,7 +10,6 @@
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 #include "miscServerFunct.h"
-#include "pamAuth.h"
 
 
 int
@@ -72,7 +71,7 @@ rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
  the password is sent on a pipe to be more secure.
  */
 #ifndef PAM_AUTH_CHECK_PROG
-#define PAM_AUTH_CHECK_PROG  "../auth/PamAuthCheck"
+#define PAM_AUTH_CHECK_PROG  "./PamAuthCheck"
 #endif
 int
 runPamAuthCheck(char *username, char *password) 
@@ -127,22 +126,18 @@ _rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 #if defined(PAM_AUTH)
 
 #ifdef RUN_SERVER_AS_ROOT
-    /* uid == euid == root is needed for some pam plugins
-       e.g. sssd */
+    /* uid == euid is needed for some plugins e.g. libpam-sss */
     status = changeToRootUser();
     if (status < 0) {
         return (status);
     }
-    status = pamAuthenticate(pamAuthRequestInp->pamUser,
-                             pamAuthRequestInp->pamPassword);
-    status = changeToServiceUser();
-    if (status < 0) {
-        return (status);
-    }
-#else
+#endif
     /* Normal mode, fork/exec setuid program to do the Pam check */
     status = runPamAuthCheck(pamAuthRequestInp->pamUser,
                              pamAuthRequestInp->pamPassword);
+#ifdef RUN_SERVER_AS_ROOT
+    changeToServiceUser();
+#endif
     if (status == 256) {
       status = PAM_AUTH_PASSWORD_FAILED;
     }
@@ -150,7 +145,7 @@ _rsPamAuthRequest (rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
       /* the exec failed or something (PamAuthCheck not built perhaps) */
       if (status != 0) status = PAM_AUTH_NOT_BUILT_INTO_SERVER;
     }
-#endif
+
     if (status) {
       return(status);
     }

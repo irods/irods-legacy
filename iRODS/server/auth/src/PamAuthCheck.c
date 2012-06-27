@@ -14,7 +14,7 @@
   sudo apt-get install libpam0g-dev
 
   To build:
-  gcc PamAuthCheck.c -L /usr/lib -l pam -l pam_misc -o PamAuthCheck
+  gcc PamAuthCheck.c -L /usr/lib -l pam -o PamAuthCheck
 
   It needs to be set UID root:
     sudo chown root PamAuthCheck
@@ -29,8 +29,10 @@
 */
 
 #include <security/pam_appl.h>
-#include <security/pam_misc.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 const char pam_service[] = "irods";
 struct pam_response *reply;
@@ -47,7 +49,7 @@ int main(int argc, char *argv[])
     pam_handle_t *pamh=NULL;
     int retval;
     int nb;
-    int debug=0;
+    int debug=1;
 
     static char password[500];
 
@@ -66,6 +68,7 @@ int main(int argc, char *argv[])
     nb = read(0, (void*)&password, sizeof(password));
     if (debug>0) printf("nb=%d\n",nb);
     if (password[nb-1]=='\n') password[nb-1]='\0';
+    if (debug>0) printf("pw=%s\n",password);
 
     retval = pam_start(pam_service, username, &conv, &pamh);
     if (debug>0) printf("retval 1=%d\n",retval);

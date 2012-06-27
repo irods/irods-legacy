@@ -50,7 +50,6 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
-		$(svrCoreObjDir)/pamAuth.o \
 		$(svrCoreObjDir)/fileDriverNoOpFunctions.o
 
 INCLUDES +=	-I$(svrCoreIncDir)
@@ -198,7 +197,6 @@ CFLAGS +=       -DKRB_AUTH
 endif
 ifdef PAM_AUTH
 CFLAGS +=       -DPAM_AUTH
-LDFLAGS+=       -lpam
 endif
 ifdef USE_SSL
 CFLAGS +=	-DUSE_SSL
@@ -318,6 +316,14 @@ endif
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
+endif
+
+# authentication support
+ifdef PAM_AUTH
+SERVER_BINS += $(serverBinDir)/PamAuthCheck
+SERVER_OBJS += $(svrAuthObjDir)/PamAuthCheck.o
+AUTH_CFLAGS += 
+AUTH_LDFLAGS += -lpam
 endif
 
 # icat Tests
@@ -596,6 +602,19 @@ $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $
 $(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
 	@echo "Link xmsg server `basename $@`..."
 	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS) $(LDFLAGS)
+
+
+#
+# Authentication support
+#
+$(svrAuthObjDir)/PamAuthCheck.o: $(svrAuthSrcDir)/PamAuthCheck.c
+	@echo "Compile PamAuthCheck utility `basename $@`..."
+	@$(CC) -c $(AUTH_CFLAGS) -o $@ $<
+
+$(serverBinDir)/PamAuthCheck: $(svrAuthObjDir)/PamAuthCheck.o
+	@echo "Link PamAuthCheck utility `basename $@`..."
+	@$(LDR) -o $@ $(svrAuthObjDir)/PamAuthCheck.o $(AUTH_LDFLAGS)
+
 
 #
 # Tests
