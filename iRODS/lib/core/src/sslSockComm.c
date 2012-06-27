@@ -674,6 +674,12 @@ sslVerifyCallback(int ok, X509_STORE_CTX *store)
         int  depth = X509_STORE_CTX_get_error_depth(store);
         int  err = X509_STORE_CTX_get_error(store);
         
+        if (err == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT) {
+            /* common testing mode ... self-signed cert 
+               just return */
+            return ok;
+        }
+
         rodsLog(LOG_ERROR, "sslVerifyCallback: error with certificate at depth: %i", depth);
         X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
         rodsLog(LOG_ERROR, "sslVerifyCallback:   issuer = %s", data);
