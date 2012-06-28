@@ -30,6 +30,11 @@
 #define	DELETE_DATASTORE_OP		"delete_datastore"
 #define _ID_KW				"_id"	/* OOI internal objID */
 #define _REV_KW				"_rev"	/* OOI internal rev */
+#define RESOURCE_REGISTRY_NAME		"resource_registry"
+#define CREATE_OP                   	"create"
+#define	READ_OP				"read"
+#define	DELETE_OP			"delete"
+
 
 #define MY_DATA_STORE_NAME		"mikestore"  /* can't have uppercase */
 #define MY_DOC_NAME			"mikedoc"
@@ -40,6 +45,8 @@
 
 int
 testDatastoreService (rcComm_t *conn);
+int
+testDataproductService (rcComm_t *conn);
 int
 testBankService (rcComm_t *conn);
 
@@ -74,14 +81,25 @@ main(int argc, char **argv)
 
 #ifdef TEST_BANK
     status = testBankService (conn);
-#else
-    status = testDatastoreService (conn);
-#endif
     if (status != 0) {
-        fprintf (stderr, "testService error\n");
+        fprintf (stderr, "testBankService error\n");
        rcDisconnect(conn);
        exit (3);
     }
+#else
+    status = testDatastoreService (conn);
+    if (status != 0) {
+        fprintf (stderr, "testDatastoreService error\n");
+       rcDisconnect(conn);
+       exit (3);
+    }
+    status = testDataproductService (conn);
+    if (status != 0) {
+        fprintf (stderr, "testDataproductService error\n");
+       rcDisconnect(conn);
+       exit (3);
+    }
+#endif
 
     rcDisconnect(conn);
 
@@ -162,6 +180,8 @@ testBankService (rcComm_t *conn)
 #endif
     printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
     clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
+
 
     return status;
 }
@@ -261,6 +281,7 @@ testDatastoreService (rcComm_t *conn)
     printf ("list datastores returned:\n");
     printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
     clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
 
     /* create_doc in datastore */
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
@@ -323,6 +344,7 @@ testDatastoreService (rcComm_t *conn)
     }
 
     clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
 
     /* read the object */
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
@@ -361,6 +383,7 @@ testDatastoreService (rcComm_t *conn)
     printf ("read_doc returned:\n");
     printDict ((dictionary_t *) ooiGenServReqOut->ptr);
     clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
 
     /* update doc */
 
@@ -424,6 +447,7 @@ testDatastoreService (rcComm_t *conn)
     }
 
     clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
 
 
     /* read the object */
@@ -463,6 +487,7 @@ testDatastoreService (rcComm_t *conn)
     printf ("read_doc returned:\n");
     printDict ((dictionary_t *) ooiGenServReqOut->ptr);
     clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
 
     /* delete the object */
 
@@ -539,7 +564,134 @@ testDatastoreService (rcComm_t *conn)
     printf ("find_resources returned:\n");
     printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
     clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
 
+    return status;
+}
+int
+testDataproductService (rcComm_t *conn)
+{
+    int status;
+    ooiGenServReqInp_t ooiGenServReqInp;
+    ooiGenServReqOut_t *ooiGenServReqOut = NULL;
+    dictionary_t *contactDict, *objectDict;
+    char objId[NAME_LEN];
+
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, RESOURCE_REGISTRY_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, CREATE_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
+
+    /* prepare the contactDict */
+    contactDict = (dictionary_t *) calloc (1, sizeof (dictionary_t));
+    dictSetAttr (contactDict, "name", STR_MS_T, strdup ("Test User"));
+    dictSetAttr (contactDict, "phone", STR_MS_T, strdup ("858-555-1212"));
+    dictSetAttr (contactDict, "city", STR_MS_T, strdup ("San Diego"));
+    dictSetAttr (contactDict, "postalcode", STR_MS_T, strdup ("92093"));
+
+    /* prepare the objectDict */
+    objectDict = (dictionary_t *) calloc (1, sizeof (dictionary_t));
+    dictSetAttr (objectDict, "contact", Dictionary_MS_T, contactDict);
+    dictSetAttr (objectDict, "type_", STR_MS_T, strdup ("DataProduct"));
+    dictSetAttr (objectDict, "provider_project", STR_MS_T, 
+      strdup ("Integration Test"));
+    dictSetAttr (objectDict, "lcstate", STR_MS_T, strdup ("DRAFT"));
+    dictSetAttr (objectDict, "description", STR_MS_T, 
+      strdup ("A test data product"));
+    dictSetAttr (objectDict, "name", STR_MS_T, strdup ("TestDataProduct"));
+
+    status = dictSetAttr (&ooiGenServReqInp.params, "object", Dictionary_MS_T, 
+      objectDict);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: dictSetAttr of %s error", "object");
+        return status;
+    }
+
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: rcOoiGenServReq error");
+        return status;
+    }
+
+    if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: NULL output for %s", CREATE_OP);
+        return status;
+    }
+
+    printf ("create dataproduct returned:\n");
+    printGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    status = getObjIdFromArray ((genArray_t *) ooiGenServReqOut->ptr, objId);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: getObjIdFromArray error");
+        return status;
+    }
+    clearGenArray ((genArray_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
+
+    /* read the dataproduct */
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, RESOURCE_REGISTRY_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, READ_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_DICT_TYPE;
+
+    status = dictSetAttr (&ooiGenServReqInp.params, "object_id", STR_MS_T,
+      objId);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: dictSetAttr of %s error", "object_id");
+        return status;
+    }
+
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: rcOoiGenServReq read error");
+        return status;
+    } else if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: NULL output for %s", READ_OP);
+        return status;
+    }
+    printf ("read dataproduct returned: \n");
+    printDict ((dictionary_t *) ooiGenServReqOut->ptr);
+    clearDictionary ((dictionary_t *) ooiGenServReqOut->ptr);
+    freeOoiGenServReqOut (&ooiGenServReqOut);
+
+    /* delete the dataproduct */
+    bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
+    rstrcpy (ooiGenServReqInp.servName, RESOURCE_REGISTRY_NAME, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.servOpr, DELETE_OP, NAME_LEN);
+    ooiGenServReqInp.outType = OOI_STR_TYPE;
+
+    status = dictSetAttr (&ooiGenServReqInp.params, "object_id", STR_MS_T,
+      objId);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: dictSetAttr of %s error", "object_id");
+        return status;
+    }
+
+    status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: rcOoiGenServReq error");
+        return status;
+    } else if (ooiGenServReqOut == NULL || ooiGenServReqOut->ptr == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "testDataproductService: NULL output for %s", DELETE_DOC_OP);
+        return status;
+    } else {
+        printf ("delete dataproduct returned = %s\n", 
+          (char *) ooiGenServReqOut->ptr);
+        freeOoiGenServReqOut (&ooiGenServReqOut);
+    }
     return status;
 }
 

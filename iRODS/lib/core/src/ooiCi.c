@@ -761,9 +761,17 @@ printDict (dictionary_t *dictionary)
 
     for (i = 0; i < dictionary->len; i++) {
         char valueStr[NAME_LEN];
-        getStrByType_PI (dictionary->value[i].type_PI, 
+        if (strcmp (dictionary->value[i].type_PI, Dictionary_MS_T) == 0) {
+            printf ("    %s: ",  dictionary->key[i]);
+            printDict ((dictionary_t *) dictionary->value[i].ptr);
+        } else if (strcmp (dictionary->value[i].type_PI, GenArray_MS_T) == 0) {
+            printf ("    %s: ",  dictionary->key[i]);
+            printGenArray ((genArray_t *) dictionary->value[i].ptr);
+        } else {
+            getStrByType_PI (dictionary->value[i].type_PI, 
               dictionary->value[i].ptr, valueStr);
-        printf ("    %s: %s\n", dictionary->key[i], valueStr);
+            printf ("    %s: %s\n", dictionary->key[i], valueStr);
+	}
     }
     printf ("  }\n");
 
@@ -816,6 +824,17 @@ getRevIdFromArray (genArray_t *genArray, char *objectId, char *outRevId)
     return OOI_REVID_NOT_FOUND;
 }
 
+/* get the _id from the list. the list contains 2 items, _id and _rev.
+ */
+int
+getObjIdFromArray (genArray_t *genArray, char *outObjId)
+{
+    if (strcmp (genArray->value[0].type_PI, STR_MS_T) != 0)
+	return OOI_JSON_TYPE_ERR;
+
+    rstrcpy (outObjId, (char *) genArray->value[0].ptr, NAME_LEN);
+    return 0;
+}
 
 int
 getStrByType_PI (char *type_PI, void *valuePtr, char *valueStr)

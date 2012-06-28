@@ -115,6 +115,8 @@ int
 getStrByType_PI (char *type_PI, void *valuePtr, char *valueStr);
 int
 getRevIdFromArray (genArray_t *genArray, char *objectId, char *outRevId);
+int
+getObjIdFromArray (genArray_t *genArray, char *outObjId);
 #ifdef  __cplusplus
 }
 #endif
