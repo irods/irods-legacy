@@ -62,7 +62,7 @@ ooiGenServReqOut_t **ooiGenServReqOut)
     curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, ooiGenServReqFunc);
     bzero (&ooiGenServReqStruct, sizeof (ooiGenServReqStruct));
     ooiGenServReqStruct.outType = ooiGenServReqInp->outType;
-    ooiGenServReqStruct.outInx = ooiGenServReqInp->outInx;
+    ooiGenServReqStruct.flags = ooiGenServReqInp->flags;
 
     curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &ooiGenServReqStruct);
 

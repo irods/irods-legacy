@@ -31,11 +31,11 @@ typedef struct {
     char servName[NAME_LEN];
     char servOpr[NAME_LEN];
     int outType;
-    int outInx;		/* not used */
+    int flags;		/* not used */
     dictionary_t params;
 } ooiGenServReqInp_t;
    
-#define OoiGenServReqInp_PI "str servName[NAME_LEN]; str servOpr[NAME_LEN]; int outType; int outInx; struct Dictionary_PI;"
+#define OoiGenServReqInp_PI "str servName[NAME_LEN]; str servOpr[NAME_LEN]; int outType; int flags; struct Dictionary_PI;"
 
 typedef struct {
     char type_PI[NAME_LEN];   /* the packing instruction of the ptr */
@@ -48,7 +48,7 @@ typedef struct {
 
 typedef struct {
     int outType;
-    int outInx;
+    int flags;
     ooiGenServReqOut_t *ooiGenServReqOut;
 } ooiGenServReqStruct_t;
 
