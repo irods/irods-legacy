@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     pam_handle_t *pamh=NULL;
     int retval;
     int nb;
-    int debug=1;
+    int debug=0;
 
     static char password[500];
 
@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
     nb = read(0, (void*)&password, sizeof(password));
     if (debug>0) printf("nb=%d\n",nb);
     if (password[nb-1]=='\n') password[nb-1]='\0';
-    if (debug>0) printf("pw=%s\n",password);
 
     retval = pam_start(pam_service, username, &conv, &pamh);
     if (debug>0) printf("retval 1=%d\n",retval);
