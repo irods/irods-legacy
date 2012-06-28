@@ -133,6 +133,7 @@ rescTypeDef_t RescTypeDef[] = {
   {"mso",FILE_CAT, MSO_FILE_TYPE, NO_CHK_PATH_PERM, NO_CREATE_PATH},
   {"nonblocking",FILE_CAT, NON_BLOCKING_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
   {"direct access", FILE_CAT, DIRECT_ACCESS_FILE_TYPE, DO_CHK_PATH_PERM, CREATE_PATH},
+  {"ooici", FILE_CAT, OOICI_FILE_TYPE, NO_CHK_PATH_PERM, NO_CREATE_PATH},
 };
 
 int NumRescTypeDef = sizeof (RescTypeDef) / sizeof (rescTypeDef_t);

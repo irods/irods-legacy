@@ -14,6 +14,9 @@
 #include "apiNumber.h"
 #include "initServer.h"
 
+#define DEF_OOI_GATEWAY_URL "http://localhost"
+#define DEF_OOI_GATEWAY_PORT "5000"
+
 /* definition for outType */
 #define OOI_DICT_TYPE		0
 #define OOI_ARRAY_TYPE		1       /* array of Value */
@@ -32,10 +35,11 @@ typedef struct {
     char servOpr[NAME_LEN];
     int outType;
     int flags;		/* not used */
+    char irodsRescName[NAME_LEN];
     dictionary_t params;
 } ooiGenServReqInp_t;
    
-#define OoiGenServReqInp_PI "str servName[NAME_LEN]; str servOpr[NAME_LEN]; int outType; int flags; struct Dictionary_PI;"
+#define OoiGenServReqInp_PI "str servName[NAME_LEN]; str servOpr[NAME_LEN]; int outType; int flags; str irodsRescName[NAME_LEN]; struct Dictionary_PI;"
 
 typedef struct {
     char type_PI[NAME_LEN];   /* the packing instruction of the ptr */
@@ -60,9 +64,12 @@ rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
 ooiGenServReqOut_t **ooiGenServReqOut);
 int
 _rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
-ooiGenServReqOut_t **ooiGenServReqOut);
+ooiGenServReqOut_t **ooiGenServReqOut, rescGrpInfo_t *rescGrpInfo);
 size_t
 ooiGenServReqFunc (void *buffer, size_t size, size_t nmemb, void *userp);
+int
+remoteOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
+ooiGenServReqOut_t **ooiGenServReqOut, rodsServerHost_t *rodsServerHost);
 #else
 #define RS_OOI_GEN_SERV_REQ NULL
 #endif

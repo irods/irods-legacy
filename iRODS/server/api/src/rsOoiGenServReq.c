@@ -8,26 +8,76 @@
 #include "rcGlobalExtern.h"
 #include "rsApiHandler.h"
 #include "specColl.h"
-#include "getRemoteZoneResc.h"
-
-/* XXXX these will be defined in a OOI resource */
-#define OOI_GATEWAY_URL "http://localhost"
-#define OOI_GATEWAY_PORT                "5000"
+#include "resource.h"
+#include "miscServerFunct.h"
 
 int
 rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
 ooiGenServReqOut_t **ooiGenServReqOut)
 {
     int status;
+    rodsServerHost_t *rodsServerHost;
+    int remoteFlag;
+    rodsHostAddr_t rescAddr;
+    rescGrpInfo_t *rescGrpInfo = NULL;
 
-    status = _rsOoiGenServReq (rsComm, ooiGenServReqInp, ooiGenServReqOut);
+    status = _getRescInfo (rsComm, ooiGenServReqInp->irodsRescName, 
+      &rescGrpInfo);
+    if (status < 0) {
+         rodsLogError (LOG_ERROR, status,
+          "rsOoiGenServReq: _getRescInfo of %s error", 
+          ooiGenServReqInp->irodsRescName);
+        return status;
+    }
+
+    bzero (&rescAddr, sizeof (rescAddr));
+    rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
+    remoteFlag = resolveHost (&rescAddr, &rodsServerHost);
+
+    if (remoteFlag == LOCAL_HOST) {
+        status = _rsOoiGenServReq (rsComm, ooiGenServReqInp, ooiGenServReqOut,
+          rescGrpInfo);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = remoteOoiGenServReq (rsComm, ooiGenServReqInp, 
+          ooiGenServReqOut, rodsServerHost);
+    } else if (remoteFlag < 0) {
+            status = remoteFlag;
+    }
+
+    return status;
+}
+
+int
+remoteOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
+ooiGenServReqOut_t **ooiGenServReqOut, rodsServerHost_t *rodsServerHost)
+{
+    int status;
+
+        if (rodsServerHost == NULL) {
+        rodsLog (LOG_NOTICE,
+          "remoteOoiGenServReq: Invalid rodsServerHost");
+        return SYS_INVALID_SERVER_HOST;
+    }
+
+    if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+        return status;
+    }
+
+
+    status = rcOoiGenServReq (rodsServerHost->conn, ooiGenServReqInp, 
+      ooiGenServReqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+         "remoteOoiGenServReq: rcOoiGenServReq failed for %s, status = %d");
+   }
 
     return status;
 }
 
 int
 _rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
-ooiGenServReqOut_t **ooiGenServReqOut)
+ooiGenServReqOut_t **ooiGenServReqOut, rescGrpInfo_t *rescGrpInfo)
 {
     CURL *easyhandle;
     CURLcode res;
@@ -35,15 +85,31 @@ ooiGenServReqOut_t **ooiGenServReqOut)
     int status;
     char *postStr = NULL;
     ooiGenServReqStruct_t ooiGenServReqStruct;
+    char *vaultPath;
+    int rescTypeInx;
 
+    if (ooiGenServReqInp == NULL || ooiGenServReqOut == NULL ||
+      rescGrpInfo == NULL) return USER__NULL_INPUT_ERR;
+
+    rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
+    if (RescTypeDef[rescTypeInx].driverType != OOICI_FILE_TYPE) {
+        status = SYS_INVALID_RESC_TYPE;
+        rodsLogError (LOG_ERROR, status,
+          "_rsOoiGenServReq: rescType %s is not ooici type", 
+          rescGrpInfo->rescInfo->rescType);
+        return status;
+    }
     easyhandle = curl_easy_init();
     if(!easyhandle) {
         rodsLog (LOG_ERROR, 
           "_rsOoiGenServReq: curl_easy_init error");
         return OOI_CURL_EASY_INIT_ERR;
     }
-    snprintf (myUrl, MAX_NAME_LEN, "%s:%s/%s/%s/%s",
-      OOI_GATEWAY_URL, OOI_GATEWAY_PORT, ION_SERVICE_STR,
+   vaultPath = rescGrpInfo->rescInfo->rescVaultPath;
+    /* the vault path must be a url e.g., http://localhost:5000 */
+
+    snprintf (myUrl, MAX_NAME_LEN, "%s/%s/%s/%s",
+      vaultPath, ION_SERVICE_STR,
         ooiGenServReqInp->servName, ooiGenServReqInp->servOpr);
 
     if (ooiGenServReqInp->params.len > 0) {

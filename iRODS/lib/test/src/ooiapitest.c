@@ -39,6 +39,7 @@
 #define MY_DATA_STORE_NAME		"mikestore"  /* can't have uppercase */
 #define MY_DOC_NAME			"mikedoc"
 
+#define OOI_RESC			"ooiresc"
 #if 0
 #define TEST_BANK 1
 #endif
@@ -116,6 +117,7 @@ testBankService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, BANK_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, NEW_ACCOUNT_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, ACCOUNT_TYPE_KW,
@@ -156,6 +158,7 @@ testBankService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, BANK_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, LIST_ACCOUNTS_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
 #if 0
     ooiGenServReqInp.outType = OOI_DICT_ARRAY_TYPE;
 #endif
@@ -199,6 +202,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, DELETE_DATASTORE_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
@@ -231,6 +235,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, CREATE_DATASTORE_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
@@ -263,6 +268,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, LIST_DATASTORES_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
     status = rcOoiGenServReq (conn, &ooiGenServReqInp, &ooiGenServReqOut);
 
@@ -287,6 +293,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, CREATE_DOC_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
@@ -350,6 +357,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, READ_DOC_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_DICT_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
@@ -390,6 +398,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, UPDATE_DOC_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
@@ -454,6 +463,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, READ_DOC_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_DICT_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
@@ -494,6 +504,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, DATASTORE_SERVICE_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, DELETE_DOC_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, DATASTORE_NAME_KW,
@@ -537,6 +548,7 @@ testDatastoreService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, "resource_registry", NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, "find_resources", NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, "restype",
@@ -580,6 +592,7 @@ testDataproductService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, RESOURCE_REGISTRY_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, CREATE_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
 
     /* prepare the contactDict */
@@ -637,6 +650,7 @@ testDataproductService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, RESOURCE_REGISTRY_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, READ_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_DICT_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, "object_id", STR_MS_T,
@@ -667,6 +681,7 @@ testDataproductService (rcComm_t *conn)
     bzero (&ooiGenServReqInp, sizeof (ooiGenServReqInp));
     rstrcpy (ooiGenServReqInp.servName, RESOURCE_REGISTRY_NAME, NAME_LEN);
     rstrcpy (ooiGenServReqInp.servOpr, DELETE_OP, NAME_LEN);
+    rstrcpy (ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN);
     ooiGenServReqInp.outType = OOI_STR_TYPE;
 
     status = dictSetAttr (&ooiGenServReqInp.params, "object_id", STR_MS_T,
