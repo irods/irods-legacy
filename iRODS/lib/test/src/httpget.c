@@ -7,7 +7,11 @@
 #include <jansson.h>
 
 
-#define PYDAP_URL 		"http://127.0.0.1:8001/nc/foo1.nc"
+#if 0
+#define PYDAP_URL 		"http://coastwatch.pfeg.noaa.gov/erddap/info/index.html"
+#else
+#define PYDAP_URL 		"http://127.0.0.1:8001/nc/coads_climatology.nc"
+#endif
 #define OUT_FILE_NAME		"foo"
 
 typedef struct {
@@ -38,6 +42,8 @@ main(int argc, char **argv)
     rstrcpy (getStruct.outfile, OUT_FILE_NAME, MAX_NAME_LEN);
     getStruct.outFd = -1;
     curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &getStruct);
+    /* this is needed for ERDDAP site */
+    curl_easy_setopt(easyhandle, CURLOPT_FOLLOWLOCATION, 1);
 
     res = curl_easy_perform (easyhandle);
     if (getStruct.outFd > 0) close (getStruct.outFd);
