@@ -291,6 +291,7 @@ typedef enum {
     NON_BLOCKING_FILE_TYPE,
     DIRECT_ACCESS_FILE_TYPE,
     OOICI_FILE_TYPE,
+    OPENDAP_FILE_TYPE,
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600
