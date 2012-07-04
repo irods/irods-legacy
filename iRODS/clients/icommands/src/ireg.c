@@ -49,7 +49,8 @@ main(int argc, char **argv) {
         exit (1);
     }
 
-    if ((*argv[optind] != '/' && strcmp (argv[optind], UNMOUNT_STR) != 0) || 
+    if ((*argv[optind] != '/' && strcmp (argv[optind], UNMOUNT_STR) != 0
+      && strncmp (argv[optind], HTTP_PREFIX, strlen (HTTP_PREFIX)) != 0) || 
       *argv[optind + 1] != '/') { 
 	rodsLog (LOG_ERROR,
 	 "Input path must be absolute");
