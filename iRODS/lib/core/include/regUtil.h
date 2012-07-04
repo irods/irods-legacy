@@ -13,6 +13,7 @@
 extern "C" {
 #endif
 
+#define HTTP_PREFIX	"http:"
 int
 regUtil (rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs, 
 rodsPathInp_t *rodsPathInp);

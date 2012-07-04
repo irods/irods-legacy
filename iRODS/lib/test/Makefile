@@ -25,14 +25,14 @@ endif
 TESTOBJS = luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o listcoll.o nctest.o
 ifdef OOI_CI
-TESTOBJS+=  httpget.o ooitest.o ooiAmqptest.o ooiapitest.o
+TESTOBJS+=  pydapdir.o httpget.o ooitest.o ooiAmqptest.o ooiapitest.o
 endif
 
 
 TARGETS = luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
 xmsgtest listcoll nctest
 ifdef OOI_CI
-TARGETS+= httpget ooitest ooiAmqptest ooiapitest
+TARGETS+= pydapdir httpget ooitest ooiAmqptest ooiapitest
 endif
 
 ifdef TAR_STRUCT_FILE
@@ -126,6 +126,8 @@ nctest: nctest.o
 
 ifdef OOI_CI
 httpget: httpget.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+pydapdir: pydapdir.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 ooitest: ooitest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
