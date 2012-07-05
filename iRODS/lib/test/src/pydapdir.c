@@ -30,38 +30,73 @@ pydapReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr);
 int
 pydapClosedir (rsComm_t *rsComm, void *dirPtr);
 int
+pydapStat (rsComm_t *rsComm, char *urlPath, struct stat *statbuf);
+int
 getNextHlink (httpDirStruct_t *httpDirStruct, char *hlink);
 int
 freeHttpDirStruct (httpDirStruct_t **httpDirStruct);
 size_t
 httpDirRespHandler (void *buffer, size_t size, size_t nmemb, void *userp);
+int
+listPydapDir (rsComm_t *rsComm, char *dirUrl);
 
 int
 main(int argc, char **argv)
+{
+    int status;
+
+    status = listPydapDir (NULL, PYDAP_URL);
+
+    if (status < 0) {
+        fprintf (stderr, "listPydapDir of %s error, status = %d\n", 
+          PYDAP_URL, status);
+        exit (1);
+    } 
+    exit (0);
+}
+
+int
+listPydapDir (rsComm_t *rsComm, char *dirUrl)
 {
     struct dirent dirent;
     int status;
     httpDirStruct_t *httpDirStruct = NULL;
 
-    status = pydapOpendir (NULL,  PYDAP_URL, (void **) &httpDirStruct);
+    status = pydapOpendir (rsComm,  dirUrl, (void **) &httpDirStruct);
     if (status < 0) {
 	fprintf (stderr, "pydapOpendir of %s error, status = %d\n", 
-          PYDAP_URL, status);
-        exit (1);
+          dirUrl, status);
+        return status;
     }
-    while (pydapReaddir (NULL, httpDirStruct, &dirent) >= 0) {
-        printf ("child: %s\n", dirent.d_name);
-    }
+    while (pydapReaddir (rsComm, httpDirStruct, &dirent) >= 0) {
+        char childUrl[MAX_NAME_LEN]; 
+        struct stat statbuf;
 
-    status = pydapClosedir (NULL, httpDirStruct);
+        snprintf (childUrl, MAX_NAME_LEN, "%s%s", dirUrl, dirent.d_name);
+        status = pydapStat (rsComm, childUrl, &statbuf);
+        if (status < 0) {
+            fprintf (stderr, "pydapStat of %s error, status = %d\n",
+              childUrl, status);
+            return status;
+        }
+        printf ("child: %s\n", childUrl);
+	if ((statbuf.st_mode & S_IFDIR) != 0) {
+            status = listPydapDir (rsComm, childUrl);
+            if (status < 0) {
+                fprintf (stderr, "listPydapDir of %s error, status = %d\n",
+                  childUrl, status);
+                pydapClosedir (rsComm, httpDirStruct);
+                return status;
+            }
+        }
+    }
+    status = pydapClosedir (rsComm, httpDirStruct);
 
     if (status < 0) {
         fprintf (stderr, "pydapClosedir of %s error, status = %d\n",
           PYDAP_URL, status);
-        exit (2);
     }
-
-    exit (0);
+    return status;
 }
 
 int
@@ -153,6 +188,8 @@ freeHttpDirStruct (httpDirStruct_t **httpDirStruct)
     if ((*httpDirStruct)->httpResponse != NULL) 
         free ((*httpDirStruct)->httpResponse);
     free (*httpDirStruct);
+
+    return 0;
 }
 
 size_t
@@ -200,3 +237,22 @@ pydapClosedir (rsComm_t *rsComm, void *dirPtr)
 
     return 0;
 }
+
+int
+pydapStat (rsComm_t *rsComm, char *urlPath, struct stat *statbuf)
+{
+    int len;
+
+    if (urlPath == NULL || statbuf == NULL) return USER__NULL_INPUT_ERR;
+    bzero (statbuf, sizeof (struct stat));
+    len = strlen (urlPath);
+    /* end with "/" ? */
+    if (urlPath[len - 1] == '/') {
+        statbuf->st_mode = DEFAULT_DIR_MODE | S_IFDIR;
+    } else {
+        statbuf->st_mode = DEFAULT_FILE_MODE | S_IFREG;
+        statbuf->st_size = -1;
+    }
+    return (0);
+}
+
