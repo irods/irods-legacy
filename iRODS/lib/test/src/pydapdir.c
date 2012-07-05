@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* packtest.c - test the basic packing routines */
+/* pydapdir.c - test the basic routine for parsing a pydap web page */
 
 #include "rodsClient.h" 
 #include "regUtil.h" 
