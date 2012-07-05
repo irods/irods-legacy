@@ -94,7 +94,7 @@ listPydapDir (rsComm_t *rsComm, char *dirUrl)
 
     if (status < 0) {
         fprintf (stderr, "pydapClosedir of %s error, status = %d\n",
-          PYDAP_URL, status);
+          dirUrl, status);
     }
     return status;
 }
