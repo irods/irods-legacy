@@ -98,6 +98,10 @@ ifdef HPSS
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hpssFileDriver.o
 endif
 
+ifdef OOI_CI
+SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/pydapDriver.o
+endif
+
 ifdef DIRECT_ACCESS_VAULT
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/directAccessFileDriver.o
 endif

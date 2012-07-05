@@ -32,6 +32,10 @@
 #include "directAccessFileDriver.h"
 #endif
 
+#ifdef OOI_CI
+#include "pydapDriver.h"
+#endif
+
 // =-=-=-=-=-=-=-
 // JMC - moving from intNoSupport to no-op fcns with matching signatures for g++
 #include "fileDriverNoOpFunctions.h"
@@ -222,7 +226,15 @@ fileDriver_t FileDriverTable[] = {
 #endif
 
     {OOICI_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
-    {OPENDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#ifdef OOI_CI
+    {TEST_STAGE_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
+     noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, pydapStat, noSupportFsFileFstat,
+     noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
+     pydapOpendir, pydapClosedir, pydapReaddir, noSupportFsFileStage, noSupportFsFileRename,
+     noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, noSupportFsFileStageToCache, noSupportFsFileSyncToArch},
+#else
+    {PYDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
 };
 
 
