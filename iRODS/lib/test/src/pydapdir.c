@@ -28,6 +28,8 @@ pydapOpendir (rsComm_t *rsComm, char *dirUrl, void **outDirPtr);
 int
 pydapReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr);
 int
+pydapClosedir (rsComm_t *rsComm, void *dirPtr);
+int
 getNextHlink (httpDirStruct_t *httpDirStruct, char *hlink);
 int
 freeHttpDirStruct (httpDirStruct_t **httpDirStruct);
@@ -49,6 +51,14 @@ main(int argc, char **argv)
     }
     while (pydapReaddir (NULL, httpDirStruct, &dirent) >= 0) {
         printf ("child: %s\n", dirent.d_name);
+    }
+
+    status = pydapClosedir (NULL, httpDirStruct);
+
+    if (status < 0) {
+        fprintf (stderr, "pydapClosedir of %s error, status = %d\n",
+          PYDAP_URL, status);
+        exit (2);
     }
 
     exit (0);
@@ -100,24 +110,18 @@ pydapReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
     char *ptr;
     httpDirStruct_t *httpDirStruct = (httpDirStruct_t *) dirPtr;
 
-    status = getNextHlink (httpDirStruct, hlink);
-    if (status < 0) return status;
+    while ((status = getNextHlink (httpDirStruct, hlink)) >= 0) {
 
-    if (strcmp (hlink, PARENT_HLINK_DIR) == 0 ||
-      strncmp (hlink, HTTP_PREFIX, strlen (HTTP_PREFIX)) == 0) {
-        status = getNextHlink (httpDirStruct, hlink);
-        if (status < 0) return status;
+        if (strcmp (hlink, PARENT_HLINK_DIR) == 0) continue;
+        if (strncmp (hlink, HTTP_PREFIX, strlen (HTTP_PREFIX)) == 0) continue;
+        /* end with .html ? */
+        len = strlen (hlink);
+        ptr = hlink +len - 5;
+        if (strcmp (ptr, ".html") == 0) continue;
+        rstrcpy (direntPtr->d_name, hlink, MAX_NAME_LEN);
+        break;
     }
-    /* end with .html ? */
-    len = strlen (hlink);
-    ptr = hlink +len - 5;
-    if (strcmp (ptr, ".html") == 0) {
-        status = getNextHlink (httpDirStruct, hlink);
-        if (status < 0) return status;
-    }
-
-    rstrcpy (direntPtr->d_name, hlink, MAX_NAME_LEN);
-    return 0;
+    return status;
 }
 
 int
@@ -180,4 +184,19 @@ httpDirRespHandler (void *buffer, size_t size, size_t nmemb, void *userp)
     httpDirStruct->curPtr = newHttpResponse;
 
     return len;
+}
+
+int
+pydapClosedir (rsComm_t *rsComm, void *dirPtr)
+{
+    httpDirStruct_t *httpDirStruct = (httpDirStruct_t *) dirPtr;
+
+    if (httpDirStruct == NULL) return 0;
+
+    if (httpDirStruct->easyhandle != NULL) {
+        curl_easy_cleanup (httpDirStruct->easyhandle);
+    }
+    freeHttpDirStruct (&httpDirStruct);
+
+    return 0;
 }
