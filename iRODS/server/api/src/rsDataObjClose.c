@@ -376,8 +376,27 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	        return (SYS_COPY_LEN_ERR);
 	    }
 	}
+    } else if (L1desc[l1descInx].stageFlag == STAGE_SRC) {
+        if (L1desc[l1descInx].dataSize != UNKNOWN_FILE_SZ) {
+            int rescTypeInx;
+            srcL1descInx = L1desc[l1descInx].srcL1descInx;
+            if (srcL1descInx > 2) {
+                srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+                rescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
+		if (RescTypeDef[rescTypeInx].sizeInfo == NO_SIZE_INFO) {
+		    /* size is not reliable */
+                    L1desc[l1descInx].dataSize = srcDataObjInfo->dataSize = 
+                      UNKNOWN_FILE_SZ;
+                }
+            }
+        }
+        /* stage from something like HTTP */
+        if (L1desc[l1descInx].dataSize == UNKNOWN_FILE_SZ) {
+            newSize = getSizeInVault (rsComm, L1desc[l1descInx].dataObjInfo);
+            if (newSize < 0) newSize = UNKNOWN_FILE_SZ;
+        }
     } else {
-	/* SYNC_DEST or STAGE_SRC operation */
+	/* SYNC_DEST operation */
 	/* newSize = L1desc[l1descInx].bytesWritten; */
 	newSize = L1desc[l1descInx].dataSize;
     }
@@ -451,7 +470,26 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
              return (SYS_FILE_DESC_OUT_OF_RANGE);
         }
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-
+        if (srcDataObjInfo->dataSize == UNKNOWN_FILE_SZ && newSize >= 0) {
+            /* HTTP type resource. update the source size */
+            snprintf (tmpStr, MAX_NAME_LEN, "%lld", newSize);
+            addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
+            if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
+              IRODS_ADMIN_KW) != NULL) {
+                addKeyVal (&regParam, IRODS_ADMIN_KW, "");
+            }
+            modDataObjMetaInp.dataObjInfo = srcDataObjInfo;
+            modDataObjMetaInp.regParam = &regParam;
+            status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+            clearKeyVal (&regParam);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "_rsDataObjClose: ModDataObjMeta source %s err. stat = %d",
+                  srcDataObjInfo->objPath, status);
+            } else {
+                srcDataObjInfo->dataSize = newSize;
+            }
+        }
         if (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) {
 	    /* repl to an existing copy */
             snprintf (tmpStr, MAX_NAME_LEN, "%d", srcDataObjInfo->replStatus);

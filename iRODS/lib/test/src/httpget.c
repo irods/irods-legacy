@@ -17,6 +17,7 @@
 typedef struct {
     rodsLong_t len;
     int outFd;
+    int mode;
     char outfile[MAX_NAME_LEN];
 } getStruct_t;
 
