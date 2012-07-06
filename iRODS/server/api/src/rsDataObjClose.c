@@ -377,23 +377,30 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	    }
 	}
     } else if (L1desc[l1descInx].stageFlag == STAGE_SRC) {
-        if (L1desc[l1descInx].dataSize != UNKNOWN_FILE_SZ) {
+        if (L1desc[l1descInx].dataSize == UNKNOWN_FILE_SZ) {
+            /* stage from something like HTTP */
+            newSize = getSizeInVault (rsComm, L1desc[l1descInx].dataObjInfo);
+            if (newSize < 0) newSize = UNKNOWN_FILE_SZ;
+        } else {
             int rescTypeInx;
             srcL1descInx = L1desc[l1descInx].srcL1descInx;
             if (srcL1descInx > 2) {
                 srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-                rescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
-		if (RescTypeDef[rescTypeInx].sizeInfo == NO_SIZE_INFO) {
-		    /* size is not reliable */
-                    L1desc[l1descInx].dataSize = srcDataObjInfo->dataSize = 
-                      UNKNOWN_FILE_SZ;
+                if (srcDataObjInfo != NULL && srcDataObjInfo->rescInfo != NULL) {
+                    rescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
+		    if (RescTypeDef[rescTypeInx].sizeInfo == NO_SIZE_INFO) {
+		        /* size is not reliable */
+                        newSize = getSizeInVault (rsComm, 
+                          L1desc[l1descInx].dataObjInfo);
+                        if (newSize < 0) {
+                            newSize = UNKNOWN_FILE_SZ;
+                        } else if (newSize != L1desc[l1descInx].dataSize) {
+                            L1desc[l1descInx].dataSize = 
+                              srcDataObjInfo->dataSize = UNKNOWN_FILE_SZ;
+                        }
+                    }
                 }
             }
-        }
-        /* stage from something like HTTP */
-        if (L1desc[l1descInx].dataSize == UNKNOWN_FILE_SZ) {
-            newSize = getSizeInVault (rsComm, L1desc[l1descInx].dataObjInfo);
-            if (newSize < 0) newSize = UNKNOWN_FILE_SZ;
         }
     } else {
 	/* SYNC_DEST operation */
