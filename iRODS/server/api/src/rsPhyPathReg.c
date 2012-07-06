@@ -432,6 +432,7 @@ rescInfo_t *rescInfo)
 
     while ((status = rsFileReaddir (rsComm, &fileReaddirInp, &rodsDirent))
       >= 0) {
+	int len;
 
         if (strcmp (rodsDirent->d_name, ".") == 0 ||
           strcmp (rodsDirent->d_name, "..") == 0) {
@@ -441,9 +442,15 @@ rescInfo_t *rescInfo)
 
 	memset (&fileStatInp, 0, sizeof (fileStatInp));
 
-        snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s/%s",
-          filePath, rodsDirent->d_name);
-
+	len = strlen (filePath);
+	if (filePath[len - 1] == '/') {
+           /* already has a '/' */
+           snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s%s",
+             filePath, rodsDirent->d_name);
+        } else {
+            snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s/%s",
+              filePath, rodsDirent->d_name);
+        }
         fileStatInp.fileType = fileOpendirInp.fileType; 
 	fileStatInp.addr = fileOpendirInp.addr;
         myStat = NULL;
@@ -481,6 +488,11 @@ rescInfo_t *rescInfo)
 	          fileStatInp.fileName, rescInfo);
 	    }
         } else if ((myStat->st_mode & S_IFDIR) != 0) {      /* a directory */
+            len = strlen (subPhyPathRegInp.objPath);
+            if (subPhyPathRegInp.objPath[len - 1] == '/') {
+                /* take out the end '/' for objPath */
+                subPhyPathRegInp.objPath[len - 1] = '\0';
+            }
             status = dirPathReg (rsComm, &subPhyPathRegInp,
               fileStatInp.fileName, rescInfo);
 	}

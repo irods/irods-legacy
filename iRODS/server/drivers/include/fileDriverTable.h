@@ -227,7 +227,7 @@ fileDriver_t FileDriverTable[] = {
 
     {OOICI_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #ifdef OOI_CI
-    {TEST_STAGE_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
+    {PYDAP_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
      noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, pydapStat, noSupportFsFileFstat,
      noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
      pydapOpendir, pydapClosedir, pydapReaddir, noSupportFsFileStage, noSupportFsFileRename,

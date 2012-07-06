@@ -158,7 +158,7 @@ pydapStat (rsComm_t *rsComm, char *urlPath, struct stat *statbuf)
         statbuf->st_mode = DEFAULT_DIR_MODE | S_IFDIR;
     } else {
         statbuf->st_mode = DEFAULT_FILE_MODE | S_IFREG;
-        statbuf->st_size = -1;
+        statbuf->st_size = UNKNOWN_FILE_SZ;
     }
     return (0);
 }
