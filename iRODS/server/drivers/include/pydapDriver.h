@@ -16,6 +16,13 @@ typedef struct {
     CURL *easyhandle;
 } httpDirStruct_t;
 
+typedef struct {
+    rodsLong_t len;
+    int outFd;
+    int mode;
+    char outfile[MAX_NAME_LEN];
+} httpDownloadStruct_t;
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -36,7 +43,12 @@ size_t
 httpDirRespHandler (void *buffer, size_t size, size_t nmemb, void *userp);
 int
 listPydapDir (rsComm_t *rsComm, char *dirUrl);
-
+int
+pydapStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType,
+int mode, int flags, char *urlPath, char *cacheFilename, rodsLong_t dataSize,
+keyValPair_t *condInput);
+int
+httpDownloadFunc (void *buffer, size_t size, size_t nmemb, void *userp);
 #ifdef  __cplusplus
 }
 #endif

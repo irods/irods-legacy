@@ -231,7 +231,7 @@ fileDriver_t FileDriverTable[] = {
      noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, pydapStat, noSupportFsFileFstat,
      noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
      pydapOpendir, pydapClosedir, pydapReaddir, noSupportFsFileStage, noSupportFsFileRename,
-     noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, noSupportFsFileStageToCache, noSupportFsFileSyncToArch},
+     noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, pydapStageToCache, noSupportFsFileSyncToArch},
 #else
     {PYDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif

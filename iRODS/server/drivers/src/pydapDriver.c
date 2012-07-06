@@ -163,6 +163,70 @@ pydapStat (rsComm_t *rsComm, char *urlPath, struct stat *statbuf)
     return (0);
 }
 
+/* pydapStageToCache - use HTTP GET to get the data */
+int
+pydapStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType,
+int mode, int flags, char *urlPath, char *cacheFilename, rodsLong_t dataSize,
+keyValPair_t *condInput)
+{
+    CURL *easyhandle;
+    CURLcode res;
+    httpDownloadStruct_t httpDownloadStruct;
+
+    easyhandle = curl_easy_init();
+    if(!easyhandle) {
+        rodsLog (LOG_ERROR,
+          "pydapStageToCache: curl_easy_init error for %s", urlPath);
+        return OOI_CURL_EASY_INIT_ERR;
+    }
+    curl_easy_setopt(easyhandle, CURLOPT_URL, urlPath);
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, httpDownloadFunc);
+    bzero (&httpDownloadStruct, sizeof (httpDownloadStruct));
+    rstrcpy (httpDownloadStruct.outfile, cacheFilename, MAX_NAME_LEN);
+    httpDownloadStruct.outFd = -1;
+    httpDownloadStruct.mode = mode;
+    curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, &httpDownloadStruct);
+    /* this is needed for ERDDAP site */
+    curl_easy_setopt(easyhandle, CURLOPT_FOLLOWLOCATION, 1);
+
+    res = curl_easy_perform (easyhandle);
+    if (httpDownloadStruct.outFd > 0) close (httpDownloadStruct.outFd);
+
+    return 0;
+
+}
+
+int
+httpDownloadFunc (void *buffer, size_t size, size_t nmemb, void *userp)
+{
+    httpDownloadStruct_t *httpDownloadStruct = (httpDownloadStruct_t *) userp;
+    rodsLong_t len = size * nmemb;
+    rodsLong_t bytesWriten;
+
+
+    if (httpDownloadStruct->outFd < 0) {
+        httpDownloadStruct->outFd = open (httpDownloadStruct->outfile,
+          O_WRONLY | O_CREAT | O_TRUNC, httpDownloadStruct->mode);
+        if (httpDownloadStruct->outFd < 0) { /* error */
+            rodsLog (LOG_ERROR,
+            "httpDownloadFunc: cannot open file %s, errno = %d",
+              httpDownloadStruct->outfile, errno);
+            return (httpDownloadStruct->outFd);
+        }
+    }
+    bytesWriten = myWrite (httpDownloadStruct->outFd, buffer, len, 
+      FILE_DESC_TYPE, NULL);
+    if (bytesWriten != len) {
+        rodsLog (LOG_ERROR,
+        "httpDownloadFunc: bytesWriten %ld does not match len %ld",
+          bytesWriten, len);
+        return (SYS_COPY_LEN_ERR);
+    }
+    httpDownloadStruct->len += bytesWriten;
+
+    return len;
+}
+
 /* listPydapDir - a test subroutine for testing pydap directory page */
 int
 listPydapDir (rsComm_t *rsComm, char *dirUrl)
