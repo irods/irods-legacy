@@ -383,6 +383,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             if (newSize < 0) newSize = UNKNOWN_FILE_SZ;
         } else {
             int rescTypeInx;
+	    newSize = L1desc[l1descInx].dataSize;
             srcL1descInx = L1desc[l1descInx].srcL1descInx;
             if (srcL1descInx > 2) {
                 srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
