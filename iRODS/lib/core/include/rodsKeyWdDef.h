@@ -115,6 +115,7 @@
 #define LOCK_FD_KW	"lockFd"	/* Lock file desc for unlock */
 #define NATIVE_NETCDF_CALL_KW "nativeNetcdfCall"  /* call netcdf natively */
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */
+#define NO_STAGING_KW			"noStaging"
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 #define FILE_UID_KW             "fileUid"

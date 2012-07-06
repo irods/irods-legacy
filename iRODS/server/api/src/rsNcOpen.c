@@ -54,6 +54,9 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
 	addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
+        if (getValByKey (&ncOpenInp->condInput, NO_STAGING_KW) != NULL)
+	    addKeyVal (&dataObjInp.condInput, NO_STAGING_KW, "");
+
 	l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
 	clearKeyVal (&dataObjInp.condInput);
         if (l1descInx < 0) return l1descInx;
