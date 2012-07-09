@@ -11,7 +11,7 @@
 #endif
 #define TEST_PATH1 "/wanZone/home/rods/hdf5/group.h5"
 /* #define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc" */
-#define TEST_PATH2 "/wanZone/home/rods/pydap/nc/coads_climatology.nc"
+#define TEST_PATH2 "/oneZone/home/rods/pydap/coastErd/esrlIcoads2gec50_8571_f367_229e.nc"
 
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
@@ -485,6 +485,7 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
     bzero (&ncOpenInp, sizeof (ncOpenInp_t));
     rstrcpy (ncOpenInp.objPath, ncpath, MAX_NAME_LEN);
     ncOpenInp.mode = NC_NOWRITE;
+    addKeyVal (&ncOpenInp.condInput, NO_STAGING_KW, "");
 
     status = rcNcOpen (conn, &ncOpenInp, &ncid);
 
@@ -502,7 +503,6 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
 
 	    bzero (&ncInqGrpsInp, sizeof (ncInqGrpsInp));
 	    ncInqGrpsInp.ncid = ncid;
-            addKeyVal (&ncInqGrpsInp.condInput, NO_STAGING_KW, "");
 	    status = rcNcInqGrps (conn, &ncInqGrpsInp, &ncInqGrpsOut);
 	    if (status < 0) {
                 rodsLogError (LOG_ERROR, status, "rcNcInqGrps error");
