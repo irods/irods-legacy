@@ -289,7 +289,13 @@ ncGenAttOut_t *attOut)
             free (attOut);
             return status;
         }  
-	attOut[i].dataType = dataType;
+        if (dataType == NC_SHORT) {
+	     attOut[i].dataType = NC_INT;
+        } else if (dataType == NC_USHORT) {
+             attOut[i].dataType = NC_UINT;
+        } else {
+	    attOut[i].dataType = dataType;
+        }
 	attOut[i].length = length;
 	attOut[i].id = i;
     }
@@ -302,6 +308,9 @@ getAttValue (int ncid, int varid, char *name, int dataType, int length,
 ncGetVarOut_t *value)
 {
     int status;
+    short myshort;
+    unsigned short myushort;
+    int *myIntPtr;
 
     (value)->dataArray = (dataArray_t *) calloc (1, sizeof (dataArray_t));
     (value)->dataArray->len = length;
@@ -320,6 +329,24 @@ ncGetVarOut_t *value)
         rstrcpy (value->dataType_PI, "charDataArray_PI", NAME_LEN);
         status = nc_get_att_uchar (ncid, varid, name,
           (unsigned char *) (value)->dataArray->buf);
+        break;
+      case NC_SHORT:
+        /* use int because we can't pack short yet. */
+        (value)->dataArray->buf = calloc (length, sizeof (int));
+        myIntPtr = (int *) (value)->dataArray->buf;
+        rstrcpy ((value)->dataType_PI, "intDataArray_PI", NAME_LEN);
+        status = nc_get_att_short (ncid, varid, name, &myshort);
+        *myIntPtr = myshort;
+        (value)->dataArray->type = NC_INT;
+        break;
+      case NC_USHORT:
+        /* use uint because we can't pack short yet. */
+        (value)->dataArray->buf = calloc (length, sizeof (int));
+        myIntPtr = (int *) (value)->dataArray->buf;
+        rstrcpy ((value)->dataType_PI, "intDataArray_PI", NAME_LEN);
+        status = nc_get_att_ushort (ncid, varid, name, &myushort);
+        *myIntPtr = myushort;
+        (value)->dataArray->type = NC_UINT;
         break;
       case NC_STRING:
         (value)->dataArray->buf = calloc (length + 1, sizeof (char *));

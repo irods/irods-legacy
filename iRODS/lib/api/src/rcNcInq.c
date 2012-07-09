@@ -49,8 +49,10 @@ freeNcInqOut (ncInqOut_t **ncInqOut)
     if ((*ncInqOut)->var != NULL) {
 	for (i = 0; i < (*ncInqOut)->nvars; i++) {
 	    if ((*ncInqOut)->var[i].att != NULL) {
+#if 0	/* this can cause core dump */
 		clearNcGetVarOut (&(*ncInqOut)->var[i].att->value);
 		free ((*ncInqOut)->var[i].att);
+#endif
 	    }
 	    if ((*ncInqOut)->var[i].dimId != NULL) 
 	        free ((*ncInqOut)->var[i].dimId);
