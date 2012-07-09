@@ -280,7 +280,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
 	if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL &&
-          getValByKey (&dataObjInp->condInput, NO_STAGING_KW) != NULL) {
+          getValByKey (&dataObjInp->condInput, NO_STAGING_KW) == NULL) {
 	    /* this check is not necessary but won't hurt */
 	    if (compDataObjInfo != tmpDataObjInfo) {
 		/* save it in otherDataObjInfo so no mem leak */
@@ -694,7 +694,7 @@ dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
     rescGrpInfo_t *myRescGrpInfo = NULL;
 
     if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL &&
-      getValByKey (&dataObjInp->condInput, NO_STAGING_KW) != NULL) {
+      getValByKey (&dataObjInp->condInput, NO_STAGING_KW) == NULL) {
         /* It is a COMPOUND_CL. Save the comp object because it can be
          * requeued by stageAndRequeDataToCache */
         *compDataObjInfo = *dataObjInfoHead;
