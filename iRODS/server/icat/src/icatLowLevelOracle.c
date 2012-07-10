@@ -975,6 +975,9 @@ cllGetRowCount(icatSessionStruct *icss, int statementNumber) {
    ub4 *pUb4;
 
    void * vptr;
+
+   if (statementNumber < 0) return(noResultRowCount);
+
    vptr = alignDouble((void *)&rowCount);
 
    /* malloc it so that it's aligned properly, else can get

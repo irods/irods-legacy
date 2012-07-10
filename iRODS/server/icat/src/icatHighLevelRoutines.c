@@ -5745,7 +5745,7 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
    /* Check if there are other objects are using this AVU  */
    if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 4");
    status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_META_MAIN where meta_attr_name=?",
-	    metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, &icss);
+	    metaIdStr, MAX_NAME_LEN, 2, attribute, 0, &icss);
    if (status <= 0) {
      rodsLog(LOG_NOTICE,
 	      "chlSetAVUMetadata cmlGetMultiRowStringValueFromSql failure %d",
@@ -8436,7 +8436,7 @@ int setOverQuota(rsComm_t *rsComm) {
    if (logSQL!=0) rodsLog(LOG_SQL, "setOverQuota SQL 2");
    status =  cmlExecuteNoAnswerSql(
 #if ORA_ICAT
-      "update R_QUOTA_MAIN set quota_over = (select R_QUOTA_USAGE.quota_usage - R_QUOTA_MAIN.quota_limit from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id) where exists (select 1 from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id)",
+      "update R_QUOTA_MAIN set quota_over = (select distinct R_QUOTA_USAGE.quota_usage - R_QUOTA_MAIN.quota_limit from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id) where exists (select 1 from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id)",
 #elif MY_ICAT
       "update R_QUOTA_MAIN, R_QUOTA_USAGE set R_QUOTA_MAIN.quota_over = R_QUOTA_USAGE.quota_usage - R_QUOTA_MAIN.quota_limit where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id",
 #else
