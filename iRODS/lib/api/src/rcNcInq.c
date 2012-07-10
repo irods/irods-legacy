@@ -65,8 +65,9 @@ freeNcInqOut (ncInqOut_t **ncInqOut)
     return 0;
 }
 
+/* dumpVarLen 0 mean dump all. > 0 means dump the specified len */
 int
-dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarFlag, 
+dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen, 
 ncInqOut_t *ncInqOut)
 {
     int i, j, dimId, status;
@@ -133,7 +134,6 @@ ncInqOut_t *ncInqOut)
 	    printf ("%s ;\n", tempStr);
         }
     }
-    if (dumpVarFlag == 0) return 0;
 
     /* data */
     printf ("data:\n\n");
@@ -143,7 +143,11 @@ ncInqOut_t *ncInqOut)
 	for (j = 0; j < ncInqOut->var[i].nvdims; j++) {
 	    int dimId = ncInqOut->var[i].dimId[j];
 	    start[j] = 0;
-	    count[j] = ncInqOut->dim[dimId].arrayLen;
+            if (dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen) {
+                count[j] = dumpVarLen;
+            } else {
+	        count[j] = ncInqOut->dim[dimId].arrayLen;
+            }
 	    stride[j] = 1;
 	}
         bzero (&ncGetVarInp, sizeof (ncGetVarInp));

@@ -126,7 +126,7 @@ ncInqOut_t **ncInqOut);
 int
 freeNcInqOut (ncInqOut_t **ncInqOut);
 int
-dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarFlag,
+dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen,
 ncInqOut_t *ncInqOut);
 int
 getNcTypeStr (int dataType, char *outString);

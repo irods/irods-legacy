@@ -8,10 +8,11 @@
 #if 0
 #define TEST_PATH1 "/wanZone/home/rods/hdf5/SDS.h5"
 #define TEST_PATH1 "/wanZone/home/rods/netcdf/sfc_pres_temp.nc"
+#define TEST_PATH2 "/oneZone/home/rods/pydap/coastErd/erdCS25h.nc"
 #endif
 #define TEST_PATH1 "/wanZone/home/rods/hdf5/group.h5"
 /* #define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc" */
-#define TEST_PATH2 "/oneZone/home/rods/pydap/coastErd/esrlIcoads2gec50_8571_f367_229e.nc"
+#define TEST_PATH2 "/oneZone/home/rods/erddap/erdCS25h.nc"
 
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
@@ -541,7 +542,7 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
           "rcNcInq error for %s", ncOpenInp.objPath);
         return status;
     }
-    status = dumpNcInqOut (conn, ncpath, ncid1, 1, ncInqOut);
+    status = dumpNcInqOut (conn, ncpath, ncid1, 20, ncInqOut);
 
     freeNcInqOut (&ncInqOut);
 

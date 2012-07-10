@@ -8,9 +8,9 @@
 
 
 #if 0
-#define PYDAP_URL 		"http://coastwatch.pfeg.noaa.gov/erddap/info/index.html"
-#else
 #define PYDAP_URL 		"http://127.0.0.1:8001/nc/coads_climatology.nc"
+#else
+#define PYDAP_URL 		"http://coastwatch.pfeg.noaa.gov/erddap/info/index.json"
 #endif
 #define OUT_FILE_NAME		"foo"
 
