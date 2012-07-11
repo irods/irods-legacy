@@ -211,6 +211,9 @@ int
 queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint,
               genQueryOut_t **genQueryOut);
 int
+queryCollAclSpecific (rcComm_t *conn, char *collName, char *zoneHint,
+              genQueryOut_t **genQueryOut);
+int
 queryCollInheritance (rcComm_t *conn, char *collName, 
 		      genQueryOut_t **genQueryOut);
 int
