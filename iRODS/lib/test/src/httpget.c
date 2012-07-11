@@ -9,8 +9,9 @@
 
 #if 0
 #define PYDAP_URL 		"http://127.0.0.1:8001/nc/coads_climatology.nc"
-#else
 #define PYDAP_URL 		"http://coastwatch.pfeg.noaa.gov/erddap/info/index.json"
+#else
+#define PYDAP_URL		"http://coastwatch.pfeg.noaa.gov/erddap/tabledap/fedCalLandings.nc?market_category,description,nominal_species,species_group,area,region,block,imported,region_caught&distinct()"
 #endif
 #define OUT_FILE_NAME		"foo"
 

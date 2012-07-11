@@ -12,7 +12,7 @@
 #endif
 #define TEST_PATH1 "/wanZone/home/rods/hdf5/group.h5"
 /* #define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc" */
-#define TEST_PATH2 "/oneZone/home/rods/erddap/erdCS25h.nc"
+#define TEST_PATH2 "/wanZone/home/rods/erddap/erdCalcofiBio"
 
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
