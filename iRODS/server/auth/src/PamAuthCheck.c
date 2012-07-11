@@ -1,11 +1,12 @@
 /*
   This program does a PAM authentication check using the username on
   the command line and reading the password from stdin (to be more
-  secure).  We plan to have the irodsAgent spawn this process and
-  write the password on stdin, for users using LDAP/PAM iRODS
-  authentication.  You can also run this manually, entering the
-  password after PamAuthCheck is started; which will be echoed:
-  $ ./PamAuthCheck testuser2
+  secure).  When PAM mode is enabled and users request LDAP/PAM
+  authentication (irodsAuthScheme of 'PAM' or 'pam'), the irodsAgent
+  spawns this process and writes the input password on stdin.  You can
+  also run this manually, entering the password after PamAuthCheck is
+  started; which will be echoed:
+  $ ./PamAuthCheck testuser2 
   asfkskdlfkd
   Authenticated
   $
@@ -13,7 +14,12 @@
   You may need to install PAM libraries, such as libpam0g-dev:
   sudo apt-get install libpam0g-dev
 
-  To build:
+  This is built when PAM is enabled (in config/config.mk, change 
+  # PAM_AUTH = 1
+  to
+  PAM_AUTH = 1
+
+  But you can also build it via:
   gcc PamAuthCheck.c -L /usr/lib -l pam -o PamAuthCheck
 
   It needs to be set UID root:
