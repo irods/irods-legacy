@@ -471,9 +471,22 @@ rescInfo_t *rescInfo)
 	}
 
 	subPhyPathRegInp = *phyPathRegInp;
-	snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
-	  phyPathRegInp->objPath, rodsDirent->d_name);
-
+        if (RescTypeDef[rescTypeInx].incParentDir == NO_INC_PARENT_DIR) {
+	    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+	    /* d_name is a full path, need to split it */
+            if ((status = splitPathByKey (rodsDirent->d_name, myDir, myFile, 
+              '/')) < 0) {
+                rodsLog (LOG_ERROR,
+                  "dirPathReg: splitPathByKey error for %s ", 
+                  rodsDirent->d_name);
+                continue;
+            }
+	    snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
+	      phyPathRegInp->objPath, myFile);
+        } else {
+	    snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
+	      phyPathRegInp->objPath, rodsDirent->d_name);
+        }
 	if ((myStat->st_mode & S_IFREG) != 0) {     /* a file */
 	    if (forceFlag > 0) {
 		/* check if it already exists */

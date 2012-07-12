@@ -100,6 +100,7 @@ endif
 
 ifdef OOI_CI
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/pydapDriver.o
+SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/erddapDriver.o
 endif
 
 ifdef DIRECT_ACCESS_VAULT

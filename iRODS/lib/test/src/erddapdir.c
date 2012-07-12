@@ -176,6 +176,7 @@ getNextHTTPlink (httpDirStruct_t *httpDirStruct, char *hlink)
         } else if (*ptr == '/') {
 	    break;
         }
+        len --;
         ptr--;
     }
     /* skip to the end of line */

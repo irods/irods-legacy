@@ -34,6 +34,7 @@
 
 #ifdef OOI_CI
 #include "pydapDriver.h"
+#include "erddapDriver.h"
 #endif
 
 // =-=-=-=-=-=-=-
@@ -232,8 +233,15 @@ fileDriver_t FileDriverTable[] = {
      noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
      pydapOpendir, pydapClosedir, pydapReaddir, noSupportFsFileStage, noSupportFsFileRename,
      noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, pydapStageToCache, noSupportFsFileSyncToArch},
+    {ERDDAP_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
+     noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, erddapStat, noSupportFsFileFstat,
+     noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
+     erddapOpendir, erddapClosedir, erddapReaddir, noSupportFsFileStage, noSupportFsFileRename,
+     noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, erddapStageToCache, noSupportFsFileSyncToArch},
+
 #else
     {PYDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+    {ERDDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
 };
 
