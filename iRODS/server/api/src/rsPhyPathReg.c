@@ -442,14 +442,20 @@ rescInfo_t *rescInfo)
 
 	memset (&fileStatInp, 0, sizeof (fileStatInp));
 
-	len = strlen (filePath);
-	if (filePath[len - 1] == '/') {
-           /* already has a '/' */
-           snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s%s",
-             filePath, rodsDirent->d_name);
+        if (RescTypeDef[rescTypeInx].incParentDir == NO_INC_PARENT_DIR) {
+	    /* don't include parent path */
+            snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s",
+             rodsDirent->d_name);
         } else {
-            snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s/%s",
-              filePath, rodsDirent->d_name);
+	    len = strlen (filePath);
+	    if (filePath[len - 1] == '/') {
+                /* already has a '/' */
+                snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s%s",
+                 filePath, rodsDirent->d_name);
+            } else {
+                snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s/%s",
+                  filePath, rodsDirent->d_name);
+            }
         }
         fileStatInp.fileType = fileOpendirInp.fileType; 
 	fileStatInp.addr = fileOpendirInp.addr;

@@ -292,6 +292,7 @@ typedef enum {
     DIRECT_ACCESS_FILE_TYPE,
     OOICI_FILE_TYPE,
     PYDAP_FILE_TYPE,
+    ERDDAP_FILE_TYPE,
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600
@@ -327,6 +328,11 @@ typedef enum {
 /* definition for sizeInfo */
 #define HAS_SIZE_INFO	0
 #define NO_SIZE_INFO    1
+
+/* definition for incParentDir */
+#define INC_PARENT_DIR	0
+#define NO_INC_PARENT_DIR 1
+
 typedef struct RescTypeDef {
     char *typeName;
     rescCat_t rescCat;
@@ -334,6 +340,7 @@ typedef struct RescTypeDef {
     int chkPathPerm;	/* whether to check path permission */
     createPath_t createPathFlag;  /* create a path in getFilePathName ? */    
     int sizeInfo;	/* whether size info is available with the stat call */
+    int incParentDir;   /* whether to include the parent dir in the abs path */
 } rescTypeDef_t;
 
 /* definition for classType */
