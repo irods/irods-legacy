@@ -31,8 +31,14 @@ main(int argc, char **argv)
     rcComm_t *conn;
     rodsEnv myRodsEnv;
     rErrMsg_t errMsg;
+    char *testPath;
     int status;
 
+    if (argc <= 1) {
+        testPath = TEST_PATH2;
+    } else {
+	testPath = argv[1];
+    }
     status = getRodsEnv (&myRodsEnv);
 
     if (status < 0) {
@@ -63,7 +69,7 @@ main(int argc, char **argv)
         TEST_PATH1, status);
     }
 #endif
-    status = nctest1 (conn, TEST_PATH2, NULL);
+    status = nctest1 (conn, testPath, NULL);
 
     if (status < 0) {
         fprintf (stderr, "nctest1 of %s failed. status = %d\n", 
