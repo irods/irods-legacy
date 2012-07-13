@@ -171,6 +171,7 @@ ncInqOut_t *ncInqOut)
 	    int outCnt = 0;
 	    int lastDimLen = count[ncInqOut->var[i].nvdims - 1];
 	    bufPtr = ncGetVarOut->dataArray->buf;
+            bzero (tempStr, sizeof (tempStr));
 	    for (j = 0; j < ncGetVarOut->dataArray->len; j++) {
                 ncValueToStr (ncInqOut->var[i].dataType, &bufPtr, tempStr);
 		outCnt++;
@@ -181,7 +182,12 @@ ncInqOut_t *ncInqOut)
                     printf ("%s,\n  ", tempStr);
 		    outCnt = 0;
 		} else {
-                    printf ("%s, ", tempStr);
+                    if (ncInqOut->var[i].dataType == NC_CHAR &&
+                      *tempStr != '\0') {
+                        printf ("%s", tempStr);
+                    } else {
+                        printf ("%s, ", tempStr);
+                    }
 		}
 	    }
 	    freeNcGetVarOut (&ncGetVarOut);
@@ -241,6 +247,9 @@ ncValueToStr (int dataType, void **invalue, char *outString)
 
     switch (dataType) {
 	case NC_CHAR:
+            *outString = *(char *) value;
+             *ptr+= sizeof (char);
+            break;
 	case NC_STRING:
 	    snprintf (outString, NAME_LEN, "\"%s\"", (char *) value);
 	    break;
