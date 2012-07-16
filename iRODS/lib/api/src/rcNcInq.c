@@ -313,11 +313,10 @@ ncValueToStr (int dataType, void **invalue, char *outString)
 }
 
 int
-dumpNcInqOutToNcFile (ncInqOut_t *ncInqOut, char *outFileName)
+dumpNcInqOutToNcFile (rcComm_t *conn, ncInqOut_t *ncInqOut, char *outFileName)
 {
     int i, j, dimId, status;
     int ncid, cmode;
-    char tempStr[NAME_LEN];
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
     ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
@@ -408,33 +407,19 @@ dumpNcInqOutToNcFile (ncInqOut_t *ncInqOut, char *outFileName)
             }
         }
     }
-#if 0
-    /* data */
-    printf ("data:\n\n");
     for (i = 0; i < ncInqOut->nvars; i++) {
-        printf (" %s = ", ncInqOut->var[i].name);
-        if (ncInqOut->var[i].nvdims > 1) printf ("\n  ");
-        for (j = 0; j < ncInqOut->var[i].nvdims; j++) {
-            int dimId = ncInqOut->var[i].dimId[j];
+        ncGenVarOut_t *var = &ncInqOut->var[i];
+        for (j = 0; j < var->nvdims; j++) {
+            int dimId = var->dimId[j];
             start[j] = 0;
-            if (dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen) {
-                /* If it is NC_CHAR, it could be a str */
-                if (ncInqOut->var[i].dataType == NC_CHAR &&
-                  j == ncInqOut->nvars -1) {
-                    count[j] = ncInqOut->dim[dimId].arrayLen;
-                } else {
-                    count[j] = dumpVarLen;
-                }
-            } else {
-                count[j] = ncInqOut->dim[dimId].arrayLen;
-            }
+            count[j] = ncInqOut->dim[dimId].arrayLen;
             stride[j] = 1;
         }
         bzero (&ncGetVarInp, sizeof (ncGetVarInp));
-        ncGetVarInp.dataType = ncInqOut->var[i].dataType;
+        ncGetVarInp.dataType = var->dataType;
         ncGetVarInp.ncid = ncid;
-        ncGetVarInp.varid =  ncInqOut->var[i].id;
-        ncGetVarInp.ndim =  ncInqOut->var[i].nvdims;
+        ncGetVarInp.varid =  var->id;
+        ncGetVarInp.ndim =  var->nvdims;
         ncGetVarInp.start = start;
         ncGetVarInp.count = count;
         ncGetVarInp.stride = stride;
@@ -445,52 +430,21 @@ dumpNcInqOutToNcFile (ncInqOut_t *ncInqOut, char *outFileName)
             rodsLogError (LOG_ERROR, status,
               "dumpNcInqOut: rcNcGetVarsByType error for %s",
               ncInqOut->var[i].name);
+            closeAndRmNeFile (ncid, outFileName);
             return status;
-        } else {
-            /* print it */
-            int outCnt = 0;
-            int lastDimLen = count[ncInqOut->var[i].nvdims - 1];
-            bufPtr = ncGetVarOut->dataArray->buf;
-            bzero (tempStr, sizeof (tempStr));
-            if (ncInqOut->var[i].dataType == NC_CHAR) {
-                int nextLastDimLen;
-                if (ncInqOut->var[i].nvdims >= 2) {
-                    nextLastDimLen = count[ncInqOut->var[i].nvdims - 2];
-                } else {
-                    nextLastDimLen = 0;
-                }
-                for (j = 0; j < ncGetVarOut->dataArray->len; j+=lastDimLen) {
-                    /* treat it as strings */
-                    if (j + lastDimLen >= ncGetVarOut->dataArray->len - 1) {
-                        printf ("%s ;\n", (char *) bufPtr);
-                    } else if (outCnt >= nextLastDimLen) {
-                        /* reset */
-                        printf ("%s,\n  ", (char *) bufPtr);
-                        outCnt = 0;
-                    } else {
-                        printf ("%s, ", (char *) bufPtr);
-                    }
-                }
-            } else {
-                for (j = 0; j < ncGetVarOut->dataArray->len; j++) {
-                    ncValueToStr (ncInqOut->var[i].dataType, &bufPtr, tempStr);
-                    outCnt++;
-                    if (j >= ncGetVarOut->dataArray->len - 1) {
-                        printf ("%s ;\n", tempStr);
-                    } else if (outCnt >= lastDimLen) {
-                        /* reset */
-                        printf ("%s,\n  ", tempStr);
-                        outCnt = 0;
-                    } else {
-                        printf ("%s, ", tempStr);
-                    }
-                }
-            }
-            freeNcGetVarOut (&ncGetVarOut);
+        }
+        status = nc_put_vars (ncid, var->myint, (size_t *) start, 
+         (size_t *) count, (ptrdiff_t *) stride, ncGetVarOut->dataArray->buf);
+        freeNcGetVarOut (&ncGetVarOut);
+        if (status != NC_NOERR) {
+            rodsLogError (LOG_ERROR, status,
+              "dumpNcInqOut: nc_put_vars error for %s",
+              ncInqOut->var[i].name);
+            closeAndRmNeFile (ncid, outFileName);
+            return NETCDF_PUT_VARS_ERR;
         }
     }
-    printf ("}\n");
-#endif
+    nc_close (ncid);
     return 0;
 }
 

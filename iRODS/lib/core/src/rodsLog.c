@@ -593,6 +593,7 @@
     NETCDF_PUT_ATT_ERR, 
     NETCDF_DEF_DIM_ERR, 
     NETCDF_DEF_VAR_ERR, 
+    NETCDF_PUT_VARS_ERR, 
     SSL_NOT_BUILT_INTO_CLIENT, 
     SSL_NOT_BUILT_INTO_SERVER, 
     SSL_INIT_ERROR, 
@@ -1179,6 +1180,7 @@
     "NETCDF_PUT_ATT_ERR", 
     "NETCDF_DEF_DIM_ERR", 
     "NETCDF_DEF_VAR_ERR", 
+    "NETCDF_PUT_VARS_ERR", 
     "SSL_NOT_BUILT_INTO_CLIENT", 
     "SSL_NOT_BUILT_INTO_SERVER", 
     "SSL_INIT_ERROR", 
@@ -1201,7 +1203,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 584;
+int irodsErrorCount= 585;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

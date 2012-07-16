@@ -632,6 +632,7 @@
 #define NETCDF_PUT_ATT_ERR		-2018000
 #define NETCDF_DEF_DIM_ERR		-2019000
 #define NETCDF_DEF_VAR_ERR		-2020000
+#define NETCDF_PUT_VARS_ERR		-2021000
 
 /* SSL protocol error codes */
 

@@ -135,7 +135,7 @@ getNcTypeStr (int dataType, char *outString);
 int
 ncValueToStr (int dataType, void **value, char *outString);
 int
-dumpNcInqOutToNcFile (ncInqOut_t *ncInqOut, char *outFileName);
+dumpNcInqOutToNcFile (rcComm_t *conn, ncInqOut_t *ncInqOut, char *outFileName);
 int
 ncFormatToCmode (int format);
 int
