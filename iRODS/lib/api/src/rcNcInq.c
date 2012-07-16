@@ -144,7 +144,13 @@ ncInqOut_t *ncInqOut)
 	    int dimId = ncInqOut->var[i].dimId[j];
 	    start[j] = 0;
             if (dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen) {
-                count[j] = dumpVarLen;
+                /* If it is NC_CHAR, it could be a str */
+                if (ncInqOut->var[i].dataType == NC_CHAR && 
+                  j == ncInqOut->nvars -1) {
+	            count[j] = ncInqOut->dim[dimId].arrayLen;
+                } else {
+                    count[j] = dumpVarLen;
+                }
             } else {
 	        count[j] = ncInqOut->dim[dimId].arrayLen;
             }
@@ -172,24 +178,40 @@ ncInqOut_t *ncInqOut)
 	    int lastDimLen = count[ncInqOut->var[i].nvdims - 1];
 	    bufPtr = ncGetVarOut->dataArray->buf;
             bzero (tempStr, sizeof (tempStr));
-	    for (j = 0; j < ncGetVarOut->dataArray->len; j++) {
-                ncValueToStr (ncInqOut->var[i].dataType, &bufPtr, tempStr);
-		outCnt++;
-		if (j >= ncGetVarOut->dataArray->len - 1) {
-		    printf ("%s ;\n", tempStr);
-		} else if (outCnt >= lastDimLen) {
-		    /* reset */
-                    printf ("%s,\n  ", tempStr);
-		    outCnt = 0;
-		} else {
-                    if (ncInqOut->var[i].dataType == NC_CHAR &&
-                      *tempStr != '\0') {
-                        printf ("%s", tempStr);
+            if (ncInqOut->var[i].dataType == NC_CHAR) {
+                int nextLastDimLen;
+                if (ncInqOut->var[i].nvdims >= 2) {
+                    nextLastDimLen = count[ncInqOut->var[i].nvdims - 2];
+                } else {
+                    nextLastDimLen = 0;
+                }
+	        for (j = 0; j < ncGetVarOut->dataArray->len; j+=lastDimLen) {
+                    /* treat it as strings */
+                    if (j + lastDimLen >= ncGetVarOut->dataArray->len - 1) {
+                        printf ("%s ;\n", (char *) bufPtr);
+                    } else if (outCnt >= nextLastDimLen) {
+                        /* reset */
+                        printf ("%s,\n  ", (char *) bufPtr);
+                        outCnt = 0;
                     } else {
-                        printf ("%s, ", tempStr);
+                        printf ("%s, ", (char *) bufPtr);
                     }
-		}
-	    }
+                }
+            } else {
+                for (j = 0; j < ncGetVarOut->dataArray->len; j++) {
+                    ncValueToStr (ncInqOut->var[i].dataType, &bufPtr, tempStr);
+		    outCnt++;
+		    if (j >= ncGetVarOut->dataArray->len - 1) {
+		        printf ("%s ;\n", tempStr);
+		    } else if (outCnt >= lastDimLen) {
+		        /* reset */
+                        printf ("%s,\n  ", tempStr);
+		        outCnt = 0;
+		    } else {
+                        printf ("%s, ", tempStr);
+		    }
+	        }
+            }
 	    freeNcGetVarOut (&ncGetVarOut);
 	}
     }
