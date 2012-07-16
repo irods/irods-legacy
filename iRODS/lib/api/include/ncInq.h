@@ -42,7 +42,7 @@ typedef struct {
 typedef struct {
     rodsLong_t arrayLen;
     int id;
-    int myint;	/* not used */
+    int myint;	/* used to store the dim id of the target if dump to a file */
     char name[LONG_NAME_LEN];
 } ncGenDimOut_t;
 
@@ -64,12 +64,14 @@ typedef struct {
     int dataType;
     int id;
     int nvdims; 
+    int myint;  /* used to store the var id of the target if dump to a file */
+    int flags;  /* not used */
     char name[LONG_NAME_LEN];
     ncGenAttOut_t *att;		/* array of natts length */
     int *dimId;			/* arrays of dim id */
 } ncGenVarOut_t;
 
-#define NcGenVarOut_PI "int natts; int dataType; int id; int nvdims; str name[LONG_NAME_LEN]; struct *NcGenAttOut_PI(natts); int *dimId(nvdims);"
+#define NcGenVarOut_PI "int natts; int dataType; int id; int nvdims; int myint; int flags; str name[LONG_NAME_LEN]; struct *NcGenAttOut_PI(natts); int *dimId(nvdims);"
 
 #define UNLIMITED_DIM_INX	-1	/* used in msiNcGetDimNameInInqOut
 					 * to inq name of unlimdim */
@@ -132,6 +134,12 @@ int
 getNcTypeStr (int dataType, char *outString);
 int
 ncValueToStr (int dataType, void **value, char *outString);
+int
+dumpNcInqOutToNcFile (ncInqOut_t *ncInqOut, char *outFileName);
+int
+ncFormatToCmode (int format);
+int
+closeAndRmNeFile (int ncid, char *outFileName);
 #ifdef  __cplusplus
 }
 #endif

@@ -311,3 +311,220 @@ ncValueToStr (int dataType, void **invalue, char *outString)
     }
     return 0;
 }
+
+int
+dumpNcInqOutToNcFile (ncInqOut_t *ncInqOut, char *outFileName)
+{
+    int i, j, dimId, status;
+    int ncid, cmode;
+    char tempStr[NAME_LEN];
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    ncGetVarInp_t ncGetVarInp;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+    void *bufPtr;
+    int dimIdArray[NC_MAX_DIMS];
+
+    cmode = ncFormatToCmode (ncInqOut->format);
+    status = nc_create (outFileName, cmode, &ncid);
+    if (status != NC_NOERR) {
+        rodsLog (LOG_ERROR,
+          "dumpNcInqOutToNcFile: nc_create error.  %s ", nc_strerror(status));
+        status = NETCDF_CREATE_ERR - status;
+        return status;
+    }
+
+    /* attrbutes */
+    for (i = 0; i < ncInqOut->ngatts; i++) {
+        bufPtr = ncInqOut->gatt[i].value.dataArray->buf;
+        status = nc_put_att (ncid, NC_GLOBAL, ncInqOut->gatt[i].name,
+          ncInqOut->gatt[i].dataType, ncInqOut->gatt[i].length, bufPtr);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "dumpNcInqOutToNcFile: nc_put_att error.  %s ", 
+              nc_strerror(status));
+            status = NETCDF_PUT_ATT_ERR - status;
+            closeAndRmNeFile (ncid, outFileName);
+            return status;
+        }
+    }
+
+    /* dimensions */
+    if (ncInqOut->ndims <= 0 || ncInqOut->dim == NULL)
+        return USER__NULL_INPUT_ERR;
+    for (i = 0; i < ncInqOut->ndims; i++) {
+        if (ncInqOut->unlimdimid == ncInqOut->dim[i].id) {
+            /* unlimited */
+            status = nc_def_dim (ncid,  ncInqOut->dim[i].name, 
+              NC_UNLIMITED, &ncInqOut->dim[i].myint);
+        } else {
+            status = nc_def_dim (ncid,  ncInqOut->dim[i].name, 
+              ncInqOut->dim[i].arrayLen, &ncInqOut->dim[i].myint);
+        }
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "dumpNcInqOutToNcFile: nc_def_dim error.  %s ", 
+              nc_strerror(status));
+            status = NETCDF_DEF_DIM_ERR - status;
+            closeAndRmNeFile (ncid, outFileName);
+            return status;
+        }
+    }
+    /* variables */
+    if (ncInqOut->nvars <= 0 || ncInqOut->var == NULL) {
+        /* no variables */
+        nc_close (ncid);
+        return 0;;
+    }
+    for (i = 0; i < ncInqOut->nvars; i++) {
+        /* define the variables */
+        for (j = 0; j < ncInqOut->var[i].nvdims;  j++) {
+            dimId = ncInqOut->var[i].dimId[j];
+            dimIdArray[j] = ncInqOut->dim[dimId].myint;
+            status = nc_def_var (ncid, ncInqOut->var[i].name, 
+              ncInqOut->var[i].dataType, ncInqOut->var[i].nvdims, 
+              dimIdArray, &ncInqOut->var[i].myint);
+            if (status != NC_NOERR) {
+                rodsLog (LOG_ERROR,
+                  "dumpNcInqOutToNcFile: nc_def_var for %s error.  %s ",
+                  ncInqOut->var[i].name, nc_strerror(status));
+                status = NETCDF_DEF_VAR_ERR - status;
+                closeAndRmNeFile (ncid, outFileName);
+                return status;
+            }
+        }
+        /* put the variable attributes */
+        for (j = 0; j < ncInqOut->var[i].natts; j++) {
+            ncGenAttOut_t *att = &ncInqOut->var[i].att[j];
+            bufPtr = att->value.dataArray->buf;
+            status = nc_put_att (ncid, ncInqOut->var[i].myint, att->name,
+              att->dataType, att->length, bufPtr);
+            if (status != NC_NOERR) {
+                rodsLog (LOG_ERROR,
+                  "dumpNcInqOutToNcFile: nc_put_att for %s error.  %s ",
+                  ncInqOut->var[i].name, nc_strerror(status));
+                status = NETCDF_PUT_ATT_ERR - status;
+                closeAndRmNeFile (ncid, outFileName);
+                return status;
+            }
+        }
+    }
+#if 0
+    /* data */
+    printf ("data:\n\n");
+    for (i = 0; i < ncInqOut->nvars; i++) {
+        printf (" %s = ", ncInqOut->var[i].name);
+        if (ncInqOut->var[i].nvdims > 1) printf ("\n  ");
+        for (j = 0; j < ncInqOut->var[i].nvdims; j++) {
+            int dimId = ncInqOut->var[i].dimId[j];
+            start[j] = 0;
+            if (dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen) {
+                /* If it is NC_CHAR, it could be a str */
+                if (ncInqOut->var[i].dataType == NC_CHAR &&
+                  j == ncInqOut->nvars -1) {
+                    count[j] = ncInqOut->dim[dimId].arrayLen;
+                } else {
+                    count[j] = dumpVarLen;
+                }
+            } else {
+                count[j] = ncInqOut->dim[dimId].arrayLen;
+            }
+            stride[j] = 1;
+        }
+        bzero (&ncGetVarInp, sizeof (ncGetVarInp));
+        ncGetVarInp.dataType = ncInqOut->var[i].dataType;
+        ncGetVarInp.ncid = ncid;
+        ncGetVarInp.varid =  ncInqOut->var[i].id;
+        ncGetVarInp.ndim =  ncInqOut->var[i].nvdims;
+        ncGetVarInp.start = start;
+        ncGetVarInp.count = count;
+        ncGetVarInp.stride = stride;
+
+        status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "dumpNcInqOut: rcNcGetVarsByType error for %s",
+              ncInqOut->var[i].name);
+            return status;
+        } else {
+            /* print it */
+            int outCnt = 0;
+            int lastDimLen = count[ncInqOut->var[i].nvdims - 1];
+            bufPtr = ncGetVarOut->dataArray->buf;
+            bzero (tempStr, sizeof (tempStr));
+            if (ncInqOut->var[i].dataType == NC_CHAR) {
+                int nextLastDimLen;
+                if (ncInqOut->var[i].nvdims >= 2) {
+                    nextLastDimLen = count[ncInqOut->var[i].nvdims - 2];
+                } else {
+                    nextLastDimLen = 0;
+                }
+                for (j = 0; j < ncGetVarOut->dataArray->len; j+=lastDimLen) {
+                    /* treat it as strings */
+                    if (j + lastDimLen >= ncGetVarOut->dataArray->len - 1) {
+                        printf ("%s ;\n", (char *) bufPtr);
+                    } else if (outCnt >= nextLastDimLen) {
+                        /* reset */
+                        printf ("%s,\n  ", (char *) bufPtr);
+                        outCnt = 0;
+                    } else {
+                        printf ("%s, ", (char *) bufPtr);
+                    }
+                }
+            } else {
+                for (j = 0; j < ncGetVarOut->dataArray->len; j++) {
+                    ncValueToStr (ncInqOut->var[i].dataType, &bufPtr, tempStr);
+                    outCnt++;
+                    if (j >= ncGetVarOut->dataArray->len - 1) {
+                        printf ("%s ;\n", tempStr);
+                    } else if (outCnt >= lastDimLen) {
+                        /* reset */
+                        printf ("%s,\n  ", tempStr);
+                        outCnt = 0;
+                    } else {
+                        printf ("%s, ", tempStr);
+                    }
+                }
+            }
+            freeNcGetVarOut (&ncGetVarOut);
+        }
+    }
+    printf ("}\n");
+#endif
+    return 0;
+}
+
+int
+ncFormatToCmode (int format)
+{
+    int cmode;
+
+    switch (format) {
+      case NC_FORMAT_CLASSIC:
+        cmode = NC_CLASSIC_MODEL;
+        break;
+      case NC_FORMAT_64BIT:
+        cmode = NC_64BIT_OFFSET;
+        break;
+      case NC_FORMAT_NETCDF4: 
+        cmode = NC_NETCDF4;
+        break;
+      case NC_FORMAT_NETCDF4_CLASSIC:
+        cmode = NC_NETCDF4|NC_CLASSIC_MODEL;
+        break;
+      default:
+        rodsLog (LOG_ERROR,
+          "ncFormatToCmode: Unknow format %d, use NC_CLASSIC_MODEL", format);
+        cmode = NC_CLASSIC_MODEL;
+    }
+    return cmode;
+}
+
+int
+closeAndRmNeFile (int ncid, char *outFileName)
+{
+    nc_close (ncid);
+    unlink (outFileName);
+    return 0;
+}
+
