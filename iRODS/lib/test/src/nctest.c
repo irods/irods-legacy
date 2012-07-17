@@ -8,12 +8,13 @@
 #if 0
 #define TEST_PATH1 "/wanZone/home/rods/hdf5/SDS.h5"
 #define TEST_PATH1 "/wanZone/home/rods/netcdf/sfc_pres_temp.nc"
-#define TEST_PATH2 "/oneZone/home/rods/pydap/coastErd/erdCS25h.nc"
+#define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc"
+#define TEST_PATH2 "/oneZone/home/rods/erddap/erdCalcofiBio"
 #endif
 #define TEST_PATH1 "/wanZone/home/rods/hdf5/group.h5"
-/* #define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc" */
-#define TEST_PATH2 "/oneZone/home/rods/erddap/erdCalcofiBio"
+#define TEST_PATH2 "/oneZone/home/rods/pydap/coastErd/erdCS25h.nc"
 
+#define NC_OUTFILE	"ncoutfile.nc"
 int
 myInqVar (rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim);
 int
@@ -549,6 +550,20 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
         return status;
     }
     status = dumpNcInqOut (conn, ncpath, ncid1, 20, ncInqOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "dumpNcInqOut error for %s", ncOpenInp.objPath);
+        return status;
+    }
+
+    status = dumpNcInqOutToNcFile (conn, ncid1, ncInqOut, NC_OUTFILE);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "dumpNcInqOutToNcFile error for %s", ncOpenInp.objPath);
+        return status;
+    }
 
     freeNcInqOut (&ncInqOut);
 

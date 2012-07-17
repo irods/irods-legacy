@@ -91,8 +91,13 @@ ncInqOut_t *ncInqOut)
     for (i = 0; i < ncInqOut->ngatts; i++) {
 	bufPtr = ncInqOut->gatt[i].value.dataArray->buf;
         printf ("%s = ", ncInqOut->gatt[i].name);
-        ncValueToStr (ncInqOut->gatt[i].dataType, &bufPtr, tempStr);
-        printf ("%s ;\n", tempStr);
+	if (ncInqOut->gatt[i].dataType == NC_CHAR) {
+            /* assume it is a string */
+            printf ("%s ;\n", (char *) bufPtr);
+        } else {
+            ncValueToStr (ncInqOut->gatt[i].dataType, &bufPtr, tempStr);
+            printf ("%s ;\n", tempStr);
+        }
     }
 
     /* dimensions */
@@ -130,8 +135,13 @@ ncInqOut_t *ncInqOut)
             printf ("                 %s:%s = ",   
 	      ncInqOut->var[i].name, att->name);
 	    bufPtr = att->value.dataArray->buf;
-	    ncValueToStr (att->dataType, &bufPtr, tempStr);
-	    printf ("%s ;\n", tempStr);
+            if (att->dataType == NC_CHAR) {
+                /* assume it is a string */
+                printf ("%s ;\n", (char *) bufPtr);
+            } else {
+	        ncValueToStr (att->dataType, &bufPtr, tempStr);
+	        printf ("%s ;\n", tempStr);
+            }
         }
     }
 
@@ -313,11 +323,14 @@ ncValueToStr (int dataType, void **invalue, char *outString)
 }
 
 int
-dumpNcInqOutToNcFile (rcComm_t *conn, ncInqOut_t *ncInqOut, char *outFileName)
+dumpNcInqOutToNcFile (rcComm_t *conn, int srcNcid, ncInqOut_t *ncInqOut, 
+char *outFileName)
 {
     int i, j, dimId, status;
     int ncid, cmode;
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    size_t lstart[NC_MAX_DIMS], lcount[NC_MAX_DIMS];
+    ptrdiff_t lstride[NC_MAX_DIMS];
     ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
     void *bufPtr;
@@ -379,17 +392,17 @@ dumpNcInqOutToNcFile (rcComm_t *conn, ncInqOut_t *ncInqOut, char *outFileName)
         for (j = 0; j < ncInqOut->var[i].nvdims;  j++) {
             dimId = ncInqOut->var[i].dimId[j];
             dimIdArray[j] = ncInqOut->dim[dimId].myint;
-            status = nc_def_var (ncid, ncInqOut->var[i].name, 
-              ncInqOut->var[i].dataType, ncInqOut->var[i].nvdims, 
-              dimIdArray, &ncInqOut->var[i].myint);
-            if (status != NC_NOERR) {
-                rodsLog (LOG_ERROR,
-                  "dumpNcInqOutToNcFile: nc_def_var for %s error.  %s ",
-                  ncInqOut->var[i].name, nc_strerror(status));
-                status = NETCDF_DEF_VAR_ERR - status;
-                closeAndRmNeFile (ncid, outFileName);
-                return status;
-            }
+        }
+        status = nc_def_var (ncid, ncInqOut->var[i].name, 
+          ncInqOut->var[i].dataType, ncInqOut->var[i].nvdims, 
+          dimIdArray, &ncInqOut->var[i].myint);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "dumpNcInqOutToNcFile: nc_def_var for %s error.  %s ",
+              ncInqOut->var[i].name, nc_strerror(status));
+            status = NETCDF_DEF_VAR_ERR - status;
+            closeAndRmNeFile (ncid, outFileName);
+            return status;
         }
         /* put the variable attributes */
         for (j = 0; j < ncInqOut->var[i].natts; j++) {
@@ -407,17 +420,21 @@ dumpNcInqOutToNcFile (rcComm_t *conn, ncInqOut_t *ncInqOut, char *outFileName)
             }
         }
     }
+    nc_enddef (ncid);
     for (i = 0; i < ncInqOut->nvars; i++) {
         ncGenVarOut_t *var = &ncInqOut->var[i];
         for (j = 0; j < var->nvdims; j++) {
-            int dimId = var->dimId[j];
+            dimId = var->dimId[j];
             start[j] = 0;
+            lstart[j] = 0;
             count[j] = ncInqOut->dim[dimId].arrayLen;
+            lcount[j] = ncInqOut->dim[dimId].arrayLen;
             stride[j] = 1;
+            lstride[j] = 1;
         }
         bzero (&ncGetVarInp, sizeof (ncGetVarInp));
         ncGetVarInp.dataType = var->dataType;
-        ncGetVarInp.ncid = ncid;
+        ncGetVarInp.ncid = srcNcid;
         ncGetVarInp.varid =  var->id;
         ncGetVarInp.ndim =  var->nvdims;
         ncGetVarInp.start = start;
@@ -428,18 +445,18 @@ dumpNcInqOutToNcFile (rcComm_t *conn, ncInqOut_t *ncInqOut, char *outFileName)
 
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-              "dumpNcInqOut: rcNcGetVarsByType error for %s",
+              "dumpNcInqOutToNcFile: rcNcGetVarsByType error for %s",
               ncInqOut->var[i].name);
             closeAndRmNeFile (ncid, outFileName);
             return status;
         }
-        status = nc_put_vars (ncid, var->myint, (size_t *) start, 
-         (size_t *) count, (ptrdiff_t *) stride, ncGetVarOut->dataArray->buf);
+        status = nc_put_vars (ncid, var->myint, lstart, 
+         lcount, lstride, ncGetVarOut->dataArray->buf);
         freeNcGetVarOut (&ncGetVarOut);
         if (status != NC_NOERR) {
             rodsLogError (LOG_ERROR, status,
-              "dumpNcInqOut: nc_put_vars error for %s",
-              ncInqOut->var[i].name);
+              "dumpNcInqOutToNcFile: nc_put_vars error for %s    %s",
+              ncInqOut->var[i].name, nc_strerror(status));
             closeAndRmNeFile (ncid, outFileName);
             return NETCDF_PUT_VARS_ERR;
         }
