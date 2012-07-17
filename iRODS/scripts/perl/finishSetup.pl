@@ -2698,7 +2698,7 @@ sub Postgres_CreateDatabase()
 	#	'psql' will list databases, or report an error
 	#	if the one we want isn't there.
 	printStatus( "Checking whether iCAT database exists...\n" );
-	printLog( "\nChecking whether iCAT database exist...\n" );
+	printLog( "\nChecking whether iCAT database exists...\n" );
 	my $needCreate = 1;
 	my ($status,$output) = run( "$psql -l $DB_NAME" );
 	if ( $output =~ /List of databases/i )
@@ -2935,7 +2935,13 @@ sub Postgres_CreateDatabase()
 		}
 	}
 
+	fixUsersOdbcIni();
+	return 1;
+}
 
+#
+# @brief	Update the user's .odbc.ini file if needed
+sub fixUsersOdbcIni() {
 	# The user's .odbc.ini file can override the system files above,
 	# which can be a problem.  Look for a section for Postgres and
 	# delete it, leaving the rest of the file alone.
@@ -3001,6 +3007,14 @@ sub Postgres_CreateDatabase()
 		my $libPath = abs_path( File::Spec->catfile(
 			      $databaseLibDir, "libodbcpsql.so" ) );
 
+		if ( $DATABASE_ODBC_TYPE =~ /system/i ) {
+		    my $libPath2 = "/usr/lib/odbc/psqlodbca.so";
+		    if (! -e $libPath2) {
+			printStatus( "ODBC will fail, $libPath2 (driver) does not exist\n" );
+			printLog( "ODBC will fail, $libPath2 (driver) does not exist\n" );
+		    }
+		    $libPath = $libPath2;
+		}
 		print ( NEWCONFIGFILE "[PostgreSQL]\n" .
 				"Driver=$libPath\n" .
 				"Debug=0\n" .
@@ -3031,7 +3045,6 @@ sub Postgres_CreateDatabase()
 			printStatus( "    Skipped.  Unused empty file deleted.\n" );
 		}
 	}
-	return 1;
 }
 
 

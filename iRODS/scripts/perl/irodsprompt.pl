@@ -1384,14 +1384,32 @@ sub promptForNewPostgresConfiguration( $ )
         # Prompt for ODBC version
 	$odbcSource = $ODBC_SOURCE;
 
-	printNotice(
+        my $OdbcLibPath = "/usr/lib/odbc/psqlodbca.so";
+        my $sysODBC = "";
+        if (-e $OdbcLibPath) {
+	    printNotice(
+		    "\n",
+		    "A System-installed ODBC $OdbcLibPath is available.\n",
+		    "Rather than compiling one, using this should work fine.",
+		    "\n" );
+	    $sysODBC = promptString(
+			"Use the system ODBC",
+			"yes" );
+            if ($sysODBC =~ /y(es)?/i ) {
+ 	 	 $databaseServerOdbcType = "system";
+                 $odbcSource = "system";
+            }
+	}
+        if ($databaseServerOdbcType ne "system" ) {
+	     printNotice(
 		    "\n",
 		    "Different versions of ODBC are also available.\n",
 		    "We recommend the default, but others may work well too.",
 		    "\n" );
-	$odbcSource = promptString(
+             $odbcSource = promptString(
 			"ODBC version",
 			$odbcSource );
+        }
 
 
 	if ( $advanced )
@@ -1477,29 +1495,50 @@ sub promptForExistingPostgresDatabase( )
 	# What type of ODBC is it using?
 	while ( 1 )
 	{
-		printNotice(
+		my $OdbcLibPath = "/usr/lib/odbc/psqlodbca.so";
+		my $sysODBC = "";
+		if (-e $OdbcLibPath) {
+		    printNotice(
+		    "\n",
+		    "A System-installed ODBC $OdbcLibPath is available.\n",
+		    "Rather than compiling one, using this should work fine.",
+		    "\n" );
+		    $sysODBC = promptString(
+			"Use the system ODBC",
+			"yes" );
+		    if ($sysODBC =~ /y(es)?/i ) {
+			$databaseServerOdbcType = "system";
+			$odbcSource = "system";
+			last;
+		    }
+		}
+		if ($databaseServerOdbcType ne "system" ) {
+
+		    printNotice(
 			"\n",
 			"To access Postgres, iRODS needs to know which type of ODBC is\n",
 			"available.  iRODS prior to 1.0 used the 'postgres' ODBC.\n",
 			"For iRODS 1.0 and beyond, the 'unix' ODBC is preferred.\n",
 			"\n" );
 
-		$databaseServerOdbcType = promptString(
+
+		    $databaseServerOdbcType = promptString(
 			"ODBC type (unix or postgres)",
 			$databaseServerOdbcType );
-		if ( $databaseServerOdbcType =~ /^u(nix)?/i )
-		{
+		    if ( $databaseServerOdbcType =~ /^u(nix)?/i )
+		    {
 			$databaseServerOdbcType = "unix";
 			last;
-		}
-		if ( $databaseServerOdbcType =~ /^p(ostgres)?/i )
-		{
+		    }
+		    if ( $databaseServerOdbcType =~ /^p(ostgres)?/i )
+		    {
 			$databaseServerOdbcType = "postgres";
 			last;
-		}
-		printError(
+		    }
+		    printError(
 			"    Sorry, but iRODS only works with UNIX or Postgres ODBC\n",
 			"    drivers.  Please select one of these two.\n" );
+		}
 	}
 
 

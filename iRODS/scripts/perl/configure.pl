@@ -391,7 +391,7 @@ if ($KRB_AUTH == 1) {
         $configMkVariables{ "KRB_LOCATION" } = $KRB_LOCATION;
 }
 
-if ( $DATABASE_ODBC_TYPE =~ /unix/i )
+if ( $DATABASE_ODBC_TYPE =~ /unix/i ||  $DATABASE_ODBC_TYPE =~ /system/i )
 {
 	$configMkVariables{ "NEW_ODBC" } = "1";	# New ODBC drivers
 }

@@ -786,13 +786,15 @@ prepare( );
 $source_dir = buildPostgres( );
 
 # 3.  Download and compile ODBC.
-if ( $unixODBC )
-{
+if ( $ODBC_SOURCE ne "system" ) {
+    if ( $unixODBC )
+    {
 	buildUNIXODBC( $source_dir );
-}
-else
-{
+    }
+    else
+    {
 	buildPostgresODBC( $source_dir );
+    }
 }
 
 # 4.  Configure Postgres.
@@ -2298,13 +2300,21 @@ sub saveIrodsConfiguration
 		# Postgres administrator password
 		"DATABASE_ADMIN_PASSWORD",    $POSTGRES_ADMIN_PASSWORD,
 	);
-	if ( $unixODBC )
+#	if ( $unixODBC || $ODBC_SOURCE eq "system" )
+	if (  $ODBC_SOURCE eq "system" )
 	{
-		$configuration{"DATABASE_ODBC_TYPE"} = "unix";
+	    $configuration{"DATABASE_ODBC_TYPE"} = "system";
 	}
-	else
+	else 
 	{
+	    if ( $unixODBC)
+	    {
+		$configuration{"DATABASE_ODBC_TYPE"} = "unix";
+	    }
+	    else
+	    {
 		$configuration{"DATABASE_ODBC_TYPE"} = "postgres";
+	    }
 	}
 
 	printLog( "    Setting variables in irods.config....\n" );
