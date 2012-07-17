@@ -156,7 +156,7 @@ ncInqOut_t *ncInqOut)
             if (dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen) {
                 /* If it is NC_CHAR, it could be a str */
                 if (ncInqOut->var[i].dataType == NC_CHAR && 
-                  j == ncInqOut->nvars -1) {
+                  j ==  ncInqOut->var[i].nvdims - 1) {
 	            count[j] = ncInqOut->dim[dimId].arrayLen;
                 } else {
                     count[j] = dumpVarLen;
