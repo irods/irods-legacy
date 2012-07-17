@@ -242,6 +242,9 @@ getNcTypeStr (int dataType, char *outString)
 	case NC_UBYTE:
 	    rstrcpy (outString, "ubyte", NAME_LEN);
 	    break;
+        case NC_SHORT:
+            rstrcpy (outString, "short", NAME_LEN);
+            break;
 	case NC_STRING:
 	    rstrcpy (outString, "string", NAME_LEN);
 	    break;
@@ -276,6 +279,7 @@ ncValueToStr (int dataType, void **invalue, char *outString)
 {
     void *value = *invalue;
     char **ptr = (char **) invalue;
+    short myshort;
 
     switch (dataType) {
 	case NC_CHAR:
@@ -289,6 +293,11 @@ ncValueToStr (int dataType, void **invalue, char *outString)
         case NC_UBYTE:
 	    snprintf (outString, NAME_LEN, "%x", *(*ptr));
 	    *ptr+= sizeof (char);	/* advance pointer */
+	    break;
+        case NC_SHORT:
+            myshort = *(short int*) value;
+	    snprintf (outString, NAME_LEN, "%hi", myshort);
+	    *ptr+= sizeof (short);	/* advance pointer */
 	    break;
 	case NC_INT:
 	    snprintf (outString, NAME_LEN, "%d", *(int *) value);
