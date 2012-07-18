@@ -557,6 +557,7 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
         return status;
     }
 
+#if 0
     status = dumpNcInqOutToNcFile (conn, ncid1, ncInqOut, NC_OUTFILE);
 
     if (status < 0) {
@@ -564,6 +565,7 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
           "dumpNcInqOutToNcFile error for %s", ncOpenInp.objPath);
         return status;
     }
+#endif
 
     freeNcInqOut (&ncInqOut);
 

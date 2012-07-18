@@ -181,7 +181,10 @@ ncInqOut_t *ncInqOut)
             rodsLogError (LOG_ERROR, status,
               "dumpNcInqOut: rcNcGetVarsByType error for %s", 
 	      ncInqOut->var[i].name);
-            return status;
+              /* don't exit yet. This could be caused by tabledap not having
+               * the variable */
+              printf (" ;\n");
+              continue;
         } else {
 	    /* print it */
 	    int outCnt = 0;
