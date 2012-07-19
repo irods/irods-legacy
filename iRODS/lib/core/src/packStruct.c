@@ -2523,7 +2523,7 @@ unpackNatInt16ToOutPtr (void **inPtr, void **outPtr, int numElement)
 
     /* align unpackedOutput to 4 bytes boundary. Will not align inPtr */
 
-    *outPtr = alignInt (*outPtr);
+    *outPtr = alignInt16 (*outPtr);
 
     memcpy (*outPtr, (void *) origIntPtr, sizeof(short) * numElement);
     free (origIntPtr);

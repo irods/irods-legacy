@@ -60,7 +60,11 @@ main(int argc, char **argv)
     keyValPair_t regParam;
     authCheckInp_t authCheckInp, *outAuthCheckInp;
     genQueryInp_t genQueryInp, *outGenQueryInp;
+#if 0
     irodsProt_t irodsProt = XML_PROT;
+#else
+    irodsProt_t irodsProt = NATIVE_PROT;
+#endif
     shortStr_t shortStr, *shortStrOut;
 
     bzero (&shortStr, sizeof (shortStr));
