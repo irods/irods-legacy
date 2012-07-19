@@ -30,7 +30,11 @@ endif
 
 
 TARGETS = luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
-xmsgtest listcoll nctest
+xmsgtest listcoll 
+ifdef NETCDF_API
+TARGETS+= nctest
+endif
+
 ifdef OOI_CI
 TARGETS+= erddapdir pydapdir httpget ooitest ooiAmqptest ooiapitest
 endif
