@@ -16,6 +16,20 @@ struct myStruct {
     keyValPair_t condInput;
 };
  
+typedef struct {
+    int i1;
+    short s1;
+    int i2;
+    rodsLong_t l1;
+    short s2;
+    rodsLong_t l2;
+    short s3;
+    short s4;
+    int i3;
+    short s5;
+    keyValPair_t condInput;
+} shortStr_t;
+
 #define TEST_PI  "int gopID; int gfid; int gobjID[OBJID_DIM]; str *gfullpath; str *dummyParent; int nGroupMembers; struct *h5Group_PF[nGroupMembers]; int nDatasetMembers; struct *h5Dataset_PF[nDatasetMembers]; int nattributes; struct *h5Attribute_PF[nattributes]; struct h5error_PF;"
 
 int
@@ -38,7 +52,9 @@ main(int argc, char **argv)
     authCheckInp_t authCheckInp, *outAuthCheckInp;
     genQueryInp_t genQueryInp, *outGenQueryInp;
     irodsProt_t irodsProt = XML_PROT;
+    shortStr_t shortStr;
 
+    bzero (&shortStr, sizeof (shortStr));
     memset (&genQueryInp, 0, sizeof (genQueryInp));
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, "=xyz");
     addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
