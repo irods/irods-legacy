@@ -15,6 +15,7 @@
 #define STR_PTR_PI "str *myStr;" 
 #define PI_STR_PI "piStr myStr[MAX_NAME_LEN];" 
 #define INT_PI "int myInt;"
+#define INT16_PI "int16 myInt;"
 #define BUF_LEN_PI "int myInt;"
 #define DOUBLE_PI "double myDouble;"
 

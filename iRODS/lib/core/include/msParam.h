@@ -29,6 +29,7 @@ extern "C" {
 /* some commonly used MS (micro service) type */
 #define STR_MS_T                "STR_PI"
 #define INT_MS_T                "INT_PI"
+#define INT16_MS_T              "INT16_PI"
 #define CHAR_MS_T               "CHAR_PI"
 #define BUF_LEN_MS_T            "BUF_LEN_PI"    /* an integer indication the
                                                  * length of BBuf */

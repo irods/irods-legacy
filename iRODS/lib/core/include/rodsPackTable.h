@@ -28,6 +28,7 @@ packType_t packTypeTable[] = {
         {"struct", PACK_STRUCT_TYPE, UNKNOWN_SIZE},
         {"?", PACK_DEPENDENT_TYPE, UNKNOWN_SIZE},
         {"%", PACK_INT_DEPENDENT_TYPE, UNKNOWN_SIZE},
+        {"int16", PACK_INT16_TYPE, 2},
 };
 
 int NumOfPackTypes = (sizeof (packTypeTable) / sizeof (packType_t));
@@ -69,6 +70,7 @@ packInstructArray_t RodsPackTable[] = {
 	{"FLOAT_PI", INT_PI},		/* pack as if it is INT_PI */
 	{"BOOL_PI", INT_PI},		/* pack as if it is INT_PI */
 	{"BUF_LEN_PI", BUF_LEN_PI},
+	{"INT16_PI", INT16_PI},
 	{"MsgHeader_PI", MsgHeader_PI},
 	{"StartupPack_PI", StartupPack_PI},
 	{"Version_PI", Version_PI},

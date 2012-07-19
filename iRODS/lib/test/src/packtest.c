@@ -16,6 +16,7 @@ struct myStruct {
     keyValPair_t condInput;
 };
  
+
 typedef struct {
     int i1;
     short s1;
@@ -27,10 +28,18 @@ typedef struct {
     short s4;
     int i3;
     short s5;
+    short s6[2];
+    short *s7;
     keyValPair_t condInput;
 } shortStr_t;
 
 #define TEST_PI  "int gopID; int gfid; int gobjID[OBJID_DIM]; str *gfullpath; str *dummyParent; int nGroupMembers; struct *h5Group_PF[nGroupMembers]; int nDatasetMembers; struct *h5Dataset_PF[nDatasetMembers]; int nattributes; struct *h5Attribute_PF[nattributes]; struct h5error_PF;"
+
+#define ShortStr_PI "int i1; int16 s1; int i2; double l1; int16 s2; double l2; int16 s3; int16 s4; int i3; int16 s5; int16 s6[2]; int16 *s7(i3); struct KeyValPair_PI;"
+packInstructArray_t MyPackTable[] = {
+	{"ShortStr_PI", ShortStr_PI},
+        {PACK_TABLE_END_PI, (char *) NULL},
+};
 
 int
 writePackedRes (bytesBuf_t *packedResult, char *outFile);
@@ -52,9 +61,34 @@ main(int argc, char **argv)
     authCheckInp_t authCheckInp, *outAuthCheckInp;
     genQueryInp_t genQueryInp, *outGenQueryInp;
     irodsProt_t irodsProt = XML_PROT;
-    shortStr_t shortStr;
+    shortStr_t shortStr, *shortStrOut;
 
     bzero (&shortStr, sizeof (shortStr));
+    shortStr.i1 = 1;
+    shortStr.s1 = 2;
+    shortStr.i2 = 3;
+    shortStr.l1 = 4;
+    shortStr.s2 = 5;
+    shortStr.l2 = 6;
+    shortStr.s3 = 7;
+    shortStr.s4 = 8;
+    shortStr.i3 = 9;
+    shortStr.s5 = 10;
+    shortStr.s6[0] = 11;
+    shortStr.s6[1] = 12;
+    shortStr.s7 = (short *) calloc (1, shortStr.i3 *sizeof (short));
+    for (i = 0; i < shortStr.i3; i++) {
+        shortStr.s7[i] = 13 + i;
+    }
+    addKeyVal (&shortStr.condInput, FILE_OWNER_KW, "John");
+    status = packStruct (&shortStr, &packedResult, "ShortStr_PI",
+      MyPackTable, 0, irodsProt);
+    printf ("packStruct ShortStr_PI, status = %d\n", status);
+
+    status = unpackStruct (packedResult->buf, (void **) &shortStrOut,
+      "ShortStr_PI", MyPackTable, irodsProt);
+    printf ("unpackStruct ShortStr_PI, status = %d\n", status);
+
     memset (&genQueryInp, 0, sizeof (genQueryInp));
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, "=xyz");
     addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
