@@ -89,6 +89,9 @@ ncGetVarOut_t **ncGetVarOut)
 
     if (ncGetVarInp == NULL || ncGetVarOut == NULL) return USER__NULL_INPUT_ERR;
 
+    bzero (start, sizeof (start));
+    bzero (count, sizeof (count));
+    bzero (stride, sizeof (stride));
     for (i = 0; i < ncGetVarInp->ndim; i++) {
 	start[i] = ncGetVarInp->start[i];
 	count[i] = ncGetVarInp->count[i];
@@ -163,6 +166,28 @@ ncGetVarOut_t **ncGetVarOut)
         } else {
             status = nc_get_vara_uint (ncid, ncGetVarInp->varid, start, count,
               (unsigned int *) (*ncGetVarOut)->dataArray->buf);
+        }
+        break;
+      case NC_SHORT:
+       (*ncGetVarOut)->dataArray->buf = calloc (1, sizeof (short) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "int16DataArray_PI", NAME_LEN);
+        if (hasStride != 0) {
+            status = nc_get_vars_short (ncid, ncGetVarInp->varid, start, count,
+              stride, (short *) (*ncGetVarOut)->dataArray->buf);
+        } else {
+            status = nc_get_vara_short (ncid, ncGetVarInp->varid, start, count,
+              (short *) (*ncGetVarOut)->dataArray->buf);
+        }
+        break;
+      case NC_USHORT:
+       (*ncGetVarOut)->dataArray->buf = calloc (1, sizeof (short) * len);
+        rstrcpy ((*ncGetVarOut)->dataType_PI, "int16DataArray_PI", NAME_LEN);
+        if (hasStride != 0) {
+            status = nc_get_vars_ushort (ncid, ncGetVarInp->varid, start, count,
+              stride, (unsigned short*) (*ncGetVarOut)->dataArray->buf);
+        } else {
+            status = nc_get_vara_ushort (ncid, ncGetVarInp->varid, start, count,
+              (unsigned short*) (*ncGetVarOut)->dataArray->buf);
         }
         break;
       case NC_INT64:

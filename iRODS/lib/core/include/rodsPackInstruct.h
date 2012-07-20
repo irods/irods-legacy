@@ -96,6 +96,7 @@
 #define charDataArray_PI "int type; int len; char *buf(len);" 
 #define strDataArray_PI "int type; int len; str *buf[len];" 
 #define intDataArray_PI "int type; int len; int *buf(len);" 
+#define int16DataArray_PI "int type; int len; int16 *buf(len);" 
 #define int64DataArray_PI "int type; int len; double *buf(len);" 
 
 #define BinBytesBuf_PI "int buflen; bin *buf(buflen);"

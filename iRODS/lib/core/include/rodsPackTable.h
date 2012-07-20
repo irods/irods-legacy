@@ -104,6 +104,7 @@ packInstructArray_t RodsPackTable[] = {
 	{"charDataArray_PI", charDataArray_PI},
 	{"strDataArray_PI", strDataArray_PI},
 	{"intDataArray_PI", intDataArray_PI},
+	{"int16DataArray_PI", int16DataArray_PI},
 	{"int64DataArray_PI", int64DataArray_PI},
 	{"BinBytesBuf_PI", BinBytesBuf_PI},
 	{"MsParam_PI", MsParam_PI},

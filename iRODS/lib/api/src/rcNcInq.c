@@ -302,12 +302,17 @@ ncValueToStr (int dataType, void **invalue, char *outString)
 	    snprintf (outString, NAME_LEN, "%hi", myshort);
 	    *ptr+= sizeof (short);	/* advance pointer */
 	    break;
+        case NC_USHORT:
+            myshort = *(short int*) value;
+            snprintf (outString, NAME_LEN, "%hu", myshort);
+            *ptr+= sizeof (short);      /* advance pointer */
+            break;
 	case NC_INT:
 	    snprintf (outString, NAME_LEN, "%d", *(int *) value);
 	    *ptr+= sizeof (int);	/* advance pointer */
 	    break;
 	case NC_UINT:
-	    snprintf (outString, NAME_LEN, "%d", *(unsigned int *) value);
+	    snprintf (outString, NAME_LEN, "%u", *(unsigned int *) value);
 	    *ptr+= sizeof (int);	/* advance pointer */
 	    break;
 	case NC_INT64:
@@ -315,7 +320,7 @@ ncValueToStr (int dataType, void **invalue, char *outString)
 	    *ptr+= sizeof (rodsLong_t);	/* advance pointer */
 	    break;
 	case NC_UINT64:
-	    snprintf (outString, NAME_LEN, "%lld", *(rodsULong_t *) value);
+	    snprintf (outString, NAME_LEN, "%llu", *(rodsULong_t *) value);
 	    *ptr+= sizeof (rodsULong_t);	/* advance pointer */
 	    break;
 	case NC_FLOAT:

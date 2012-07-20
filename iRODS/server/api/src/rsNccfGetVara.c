@@ -109,6 +109,11 @@ nccfGetVarOut_t ** nccfGetVarOut)
 	dataType_PI = "intDataArray_PI";
 	typeSize = sizeof (int);
 	break;
+      case NC_SHORT:
+      case NC_USHORT:
+        dataType_PI = "int16DataArray_PI";
+        typeSize = sizeof (short);
+        break;
       case NC_INT64:
       case NC_UINT64:
       case NC_DOUBLE:
