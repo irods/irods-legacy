@@ -440,6 +440,8 @@ LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInqGrps.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInqGrps.o
 
+SVR_API_OBJS += $(svrApiObjDir)/rsNcRegGlobalAttr.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcRegGlobalAttr.o
 endif
 
 SVR_API_OBJS += $(svrApiObjDir)/rsPamAuthRequest.o
@@ -455,3 +457,4 @@ ifdef OOI_CI
 SVR_API_OBJS += $(svrApiObjDir)/rsOoiGenServReq.o
 LIB_API_OBJS += $(libApiObjDir)/rcOoiGenServReq.o
 endif
+

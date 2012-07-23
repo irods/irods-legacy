@@ -25,6 +25,9 @@ int
 nctestold (rcComm_t *conn, char *ncpath);
 int
 printVarOut (ncGenVarOut_t *var);
+int
+regNcGlobalAttr (rcComm_t *conn, char *objPath, ncInqOut_t *ncInqOut,
+int adminFlag);
 
 int
 main(int argc, char **argv)
@@ -567,6 +570,13 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
     }
 #endif
 
+    status = regNcGlobalAttr (conn, ncOpenInp.objPath, ncInqOut, 0);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "regNcGlobalAttr error for %s", ncOpenInp.objPath);
+        return status;
+    }
+
     freeNcInqOut (&ncInqOut);
 
     /* close the file */
@@ -1020,4 +1030,73 @@ printVarOut (ncGenVarOut_t *var)
     printf ("\n");
 
     return 0;
+}
+
+int
+regNcGlobalAttr (rcComm_t *conn, char *objPath, ncInqOut_t *ncInqOut,
+int adminFlag)
+{
+    int i, status;
+    void *valuePtr;
+    modAVUMetadataInp_t modAVUMetadataInp;
+    char tempStr[NAME_LEN];
+
+    bzero (&modAVUMetadataInp, sizeof (modAVUMetadataInp));
+    if (!adminFlag) {
+        modAVUMetadataInp.arg0 = "add"; 
+    } else {
+        modAVUMetadataInp.arg0 = "adda";    /* admin mod */
+    }
+    modAVUMetadataInp.arg1 = "-d";
+    modAVUMetadataInp.arg2 = objPath;
+    modAVUMetadataInp.arg5 = "";		/* unit */
+
+    /* global attrbutes */
+    for (i = 0; i < ncInqOut->ngatts; i++) {
+        valuePtr = ncInqOut->gatt[i].value.dataArray->buf;
+        modAVUMetadataInp.arg3 = ncInqOut->gatt[i].name;
+        valuePtr = ncInqOut->gatt[i].value.dataArray->buf;
+        if (ncInqOut->gatt[i].dataType == NC_CHAR) {
+            /* assume it is a string */
+            modAVUMetadataInp.arg4 = (char *) valuePtr;
+        } else {
+            ncValueToStr (ncInqOut->gatt[i].dataType, &valuePtr, 
+              tempStr);
+            modAVUMetadataInp.arg4 = tempStr;
+        }
+        status = rcModAVUMetadata (conn, &modAVUMetadataInp);
+#if 0
+        if (status < 0) {
+            if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME &&
+              strcmp (modAVUMetadataInp.arg0, "add") == 0) {
+                modAVUMetadataInp.arg0 = "mod";
+                status = rcModAVUMetadata (conn, &modAVUMetadataInp);
+                modAVUMetadataInp.arg0 = "add";
+                if (status < 0) {
+                    rodsLogError (LOG_ERROR, status,
+                      "regNcGlobalAttr: rcModAVUMetadata err for %s, attr = %s",
+                      objPath, modAVUMetadataInp.arg3);
+                    return status;
+		}
+            } else {
+                rodsLogError (LOG_ERROR, status,
+                  "regNcGlobalAttr: rcModAVUMetadata error for %s, attr = %s", 
+                  objPath, modAVUMetadataInp.arg3);
+                return status;
+	    }
+        }
+#else
+        if (status < 0) {
+            if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+                status = 0;
+            } else {
+                rodsLogError (LOG_ERROR, status,
+                  "regNcGlobalAttr: rcModAVUMetadata error for %s, attr = %s",
+                  objPath, modAVUMetadataInp.arg3);
+                return status;
+            }
+        }
+#endif
+    }
+    return status;
 }

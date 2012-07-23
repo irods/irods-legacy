@@ -121,6 +121,7 @@ packInstructArray_t ApiPackTable[] = {
 	{"NcInqOut_PI", NcInqOut_PI},
 	{"NcInqGrpsInp_PI", NcInqGrpsInp_PI},
 	{"NcInqGrpsOut_PI", NcInqGrpsOut_PI},
+	{"NcRegGlobalAttrInp_PI", NcRegGlobalAttrInp_PI},
 #endif
         /* endof NETCDF PI */
 #ifdef OOI_CI

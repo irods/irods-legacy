@@ -180,6 +180,7 @@
 #define NC_INQ_AN 			1007
 #define NC_OPEN_GROUP_AN 			1008
 #define NC_INQ_GRPS_AN 			1009
+#define NC_REG_GLOBAL_ATTR_AN 			1010
 
 /* 1060 - 1099 - OOI API calls */
 #define OOI_GEN_SERV_REQ_AN 			1060
