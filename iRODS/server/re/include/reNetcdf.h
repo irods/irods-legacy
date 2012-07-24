@@ -112,4 +112,7 @@ ruleExecInfo_t *rei);
 int
 msiNcGetGrpInInqOut (msParam_t *ncInqGrpsOutParam,
 msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcRegGlobalAttr (msParam_t *objPathParam, msParam_t *adminParam,
+msParam_t *outParam, ruleExecInfo_t *rei);
 #endif	/* RE_NETCDF_H */

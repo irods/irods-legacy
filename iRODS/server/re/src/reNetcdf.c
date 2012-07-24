@@ -1745,3 +1745,54 @@ msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+int
+msiNcRegGlobalAttr (msParam_t *objPathParam, msParam_t *adminParam, 
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    ncRegGlobalAttrInp_t ncRegGlobalAttrInp;
+
+    RE_TEST_MACRO ("    Calling msiNcRegGlobalAttr")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR,
+        "msiNcRegGlobalAttr: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+    if (objPathParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcRegGlobalAttr: input objPathParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (strcmp (objPathParam->type, STR_MS_T) == 0) {
+        /* str input */
+	bzero (&ncRegGlobalAttrInp, sizeof (ncRegGlobalAttrInp));
+	rstrcpy (ncRegGlobalAttrInp.objPath, 
+          (char*)objPathParam->inOutStruct, MAX_NAME_LEN);
+    } else {
+        rodsLog (LOG_ERROR,
+          "msiNcRegGlobalAttr: Unsupported input objPathParam type %s",
+          objPathParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    if (adminParam != NULL) {
+	int adminFlag = parseMspForPosInt (adminParam);
+        if (adminFlag > 0) {
+	    addKeyVal (&ncRegGlobalAttrInp.condInput, IRODS_ADMIN_KW, "");
+        }
+    }
+    rei->status = rsNcRegGlobalAttr (rsComm, &ncRegGlobalAttrInp);
+    clearKeyVal (&ncRegGlobalAttrInp.condInput);
+    fillIntInMsParam (outParam, rei->status);
+    if (rei->status < 0) {
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiNcRegGlobalAttr: rscNcRegGlobalAttr failed for %s, status = %d",
+        ncRegGlobalAttrInp.objPath, rei->status);
+    }
+
+    return (rei->status);
+}
+
