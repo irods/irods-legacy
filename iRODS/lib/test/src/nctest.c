@@ -489,6 +489,7 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
     int grpNcid = 0;
     ncInqInp_t ncInqInp;
     ncInqOut_t *ncInqOut = NULL;
+    ncRegGlobalAttrInp_t ncRegGlobalAttrInp;
 
     printf ("----- nctest1 for %s ------\n\n\n", ncpath);
 
@@ -568,7 +569,6 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
           "dumpNcInqOutToNcFile error for %s", ncOpenInp.objPath);
         return status;
     }
-#endif
 
     status = regNcGlobalAttr (conn, ncOpenInp.objPath, ncInqOut, 0);
     if (status < 0) {
@@ -576,7 +576,16 @@ nctest1 (rcComm_t *conn, char *ncpath, char *grpPath)
           "regNcGlobalAttr error for %s", ncOpenInp.objPath);
         return status;
     }
+#endif
+    bzero (& ncRegGlobalAttrInp, sizeof (ncRegGlobalAttrInp));
+    rstrcpy (ncRegGlobalAttrInp.objPath, ncpath, MAX_NAME_LEN);
+    status = rcNcRegGlobalAttr (conn, &ncRegGlobalAttrInp);
 
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcRegGlobalAttr error for %s", ncRegGlobalAttrInp.objPath);
+        return status;
+    }
     freeNcInqOut (&ncInqOut);
 
     /* close the file */
