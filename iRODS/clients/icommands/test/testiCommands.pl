@@ -49,6 +49,7 @@ my @tmp_tab;
 my $username;
 my @words;
 my $tar;
+my $OS;
 
 # If noprompt_flag is set to 1, it assume iinit was done before running this
 # script and will not ask for path and password input. A "noprompt" input 
@@ -101,6 +102,18 @@ my $sfile2size;
 system ( "cat $progname $progname > $sfile2" );
 $sfile2size =  stat ($sfile2)->size;
 
+# Use gtar if it's available (needed on Solaris)
+$tar=`which gtar`;
+# Some versions of 'which' will echo the path and say it's not in                 
+# there, so check on the length to see if it's likely valid                     
+if (length($tar)<2 or length($tar)>30) {
+    $tar=`which tar`;  # otherwise try to use tar
+}
+chop($tar);
+
+# Set the OS type for some Solaris special processing
+$OS=`uname -s`;
+chomp($OS);
 
 #-- Find current working directory and make consistency path
 
@@ -336,16 +349,6 @@ system ( "irm -rvf $irodshome/icmdtestw1" );
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "iget -vIKPfr -X rsfile --retries 10 $irodshome/icmdtest $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
 if ( -e $rsfile ) { unlink( $rsfile ); }
-
-# Use gtar if it's available (needed on Solaris)
-$tar=`which gtar`;
-# Some versions of 'which' will echo the path and say it's not in                 
-# there, so check on the length to see if it's likely valid                     
-if (length($tar)<2 or length($tar)>30) {
-    $tar=`which tar`;  # otherwise try to use tar
-}
-chop($tar);
-
 runCmd( "$tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
 # my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
 runCmd( "iput $dir_w/testx.tar $irodshome/icmdtestx.tar", "", "", "", "irm -f $irodshome/icmdtestx.tar" );
@@ -356,13 +359,23 @@ runCmd( "ils -l $irodshome/icmdtestx1.tar", "", "LIST", "testx1.tar" );
 system ( "mkdir $dir_w/testx1" );
 runCmd( "iget  $irodshome/icmdtestx1.tar $dir_w/testx1.tar", "",  "", "", "rm $dir_w/testx1.tar" );
 runCmd( "$tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
-runCmd( "diff -r $dir_w/testx $dir_w/testx1/icmdtestx", "", "NOANSWER" );
+if ($OS eq "SunOS") {
+   runCmd( "diff -r $dir_w/testx $dir_w/testx1/icmdtestx|grep -v Common", "any_rc", "NOANSWER" );
+}
+else {
+   runCmd( "diff -r $dir_w/testx $dir_w/testx1/icmdtestx", "", "NOANSWER" );
+}
 if ( $doIbunZipTest =~ "yes" ) {
 # test ibun with gzip
     runCmd( "ibun -cDgzip $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestx");
     runCmd( "ibun -x $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
     runCmd( "iget -vr $irodshome/icmdtestgz $dir_w");
-    runCmd( "diff -r $dir_w/testx $dir_w/icmdtestgz/icmdtestx", "", "NOANSWER" );
+    if ($OS eq "SunOS") {
+	runCmd( "diff -r $dir_w/testx $dir_w/icmdtestgz/icmdtestx|grep -v Common", "any_rc", "NOANSWER" );
+    }
+    else {
+	runCmd( "diff -r $dir_w/testx $dir_w/icmdtestgz/icmdtestx", "", "NOANSWER" );
+    }
     system ("rm -r $dir_w/icmdtestgz");
     runCmd( "ibun --add $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
     system ("irm -rf $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestgz");
@@ -370,7 +383,12 @@ if ( $doIbunZipTest =~ "yes" ) {
     runCmd( "ibun -cDbzip2 $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestx");
     runCmd( "ibun -xb $irodshome/icmdtestx1.tar.bz2 $irodshome/icmdtestbz2");
     runCmd( "iget -vr $irodshome/icmdtestbz2 $dir_w");
-    runCmd( "diff -r $dir_w/testx $dir_w/icmdtestbz2/icmdtestx", "", "NOANSWER" );
+    if ($OS eq "SunOS") {
+	runCmd( "diff -r $dir_w/testx $dir_w/icmdtestbz2/icmdtestx|grep -v Common", "any_rc", "NOANSWER" );
+    }
+    else {
+	runCmd( "diff -r $dir_w/testx $dir_w/icmdtestbz2/icmdtestx", "", "NOANSWER" );
+    }
     system ("rm -r $dir_w/icmdtestbz2");
     system ("irm -rf $irodshome/icmdtestx1.tar.bz2");
     runCmd( "iphybun -Rresgroup -Dbzip2 $irodshome/icmdtestbz2" );
@@ -435,7 +453,12 @@ runCmd( "imkdir $irodshome/icmdtestt" );
 runCmd( "imcoll -m tar $irodshome/icmdtestx.tar $irodshome/icmdtestt" );
 runCmd( "ils -lr $irodshome/icmdtestt", "", "LIST", "foo2,foo1" );
 runCmd( "iget -vr $irodshome/icmdtestt  $dir_w/testt" );
-runCmd( "diff -r  $dir_w/testx $dir_w/testt", "", "NOANSWER" );
+if ($OS eq "SunOS") {
+    runCmd( "diff -r  $dir_w/testx $dir_w/testt|grep -v Common", "any_rc", "NOANSWER" );
+}
+else {
+    runCmd( "diff -r  $dir_w/testx $dir_w/testt", "", "NOANSWER" );
+}
 runCmd( "imkdir $irodshome/icmdtestt/mydirtt" );
 runCmd( "iput $progname $irodshome/icmdtestt/mydirtt/foo1mt" );
 runCmd( "imv $irodshome/icmdtestt/mydirtt/foo1mt $irodshome/icmdtestt/mydirtt/foo1mtx" );
@@ -683,6 +706,7 @@ exit;
 #   1- command name + arguments
 #   2- specify if it is a negative test by providing the "negtest" value, ie it is successfull if the test fails (optional).
 #   If this value is "failtest", this command is expected to fail.
+#   If this value is "any_rc", any return-code is OK.
 #   3- output line of interest (optional), if equal to "LIST" then match test the entire list of answers provided in 4-. if equal to "NOANSWER" then expect no answer.
 #   4- expected list of results separeted by ',' (optional: must be given if second argument provided else it will fail).
 #	5- command name to go back to first situation
@@ -763,6 +787,12 @@ sub runCmd {
 #-- Execute icommand
 
 	$rc = system( "$cmd > $tempFile" );
+
+	if ( $testtype eq "any_rc" ) {
+#            don't check the return code ($rc)
+#            but still check the stdout
+	    $rc = 0; # Just set it to OK
+	}
 
 #-- check that the list of answers is part of the result of the command.
 
