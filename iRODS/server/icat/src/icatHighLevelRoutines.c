@@ -1571,7 +1571,7 @@ int chlRegResc(rsComm_t *rsComm,
       return(CAT_INVALID_RESOURCE_NET_ADDR);
    }
    myHostEnt = gethostbyname(rescInfo->rescLoc);
-   if (myHostEnt <= 0) {
+   if (myHostEnt == 0) {
       int i;
       char errMsg[155];
       snprintf(errMsg, 150, 
@@ -4670,7 +4670,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    }
    if (strcmp(option, "host")==0) {
       myHostEnt = gethostbyname(optionValue);
-      if (myHostEnt <= 0) {
+      if (myHostEnt == 0) {
 	 int i;
 	 char errMsg[155];
 	 snprintf(errMsg, 150, 
@@ -4931,7 +4931,7 @@ int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
    }
 
    /* the paths must begin and end with / */
-   if (*oldPath != '/' or *newPath != '/') {
+   if (*oldPath != '/' || *newPath != '/') {
       return (CAT_INVALID_ARGUMENT);
    }
    len = strlen(oldPath);

@@ -48,6 +48,7 @@ my @summarylist;
 my @tmp_tab;
 my $username;
 my @words;
+my $tar;
 
 # If noprompt_flag is set to 1, it assume iinit was done before running this
 # script and will not ask for path and password input. A "noprompt" input 
@@ -335,7 +336,17 @@ system ( "irm -rvf $irodshome/icmdtestw1" );
 if ( -e $rsfile ) { unlink( $rsfile ); }
 runCmd( "iget -vIKPfr -X rsfile --retries 10 $irodshome/icmdtest $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
 if ( -e $rsfile ) { unlink( $rsfile ); }
-runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
+
+# Use gtar if it's available (needed on Solaris)
+$tar=`which gtar`;
+# Some versions of 'which' will echo the path and say it's not in                 
+# there, so check on the length to see if it's likely valid                     
+if (length($tar)<2 or length($tar)>30) {
+    $tar=`which tar`;  # otherwise try to use tar
+}
+chop($tar);
+
+runCmd( "$tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
 # my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
 runCmd( "iput $dir_w/testx.tar $irodshome/icmdtestx.tar", "", "", "", "irm -f $irodshome/icmdtestx.tar" );
 runCmd( "ibun -x $irodshome/icmdtestx.tar $irodshome/icmdtestx", "", "", "", "irm -rf $irodshome/icmdtestx" );
@@ -344,7 +355,7 @@ runCmd( "ibun -cDtar $irodshome/icmdtestx1.tar $irodshome/icmdtestx", "", "", ""
 runCmd( "ils -l $irodshome/icmdtestx1.tar", "", "LIST", "testx1.tar" );
 system ( "mkdir $dir_w/testx1" );
 runCmd( "iget  $irodshome/icmdtestx1.tar $dir_w/testx1.tar", "",  "", "", "rm $dir_w/testx1.tar" );
-runCmd( "tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
+runCmd( "$tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
 runCmd( "diff -r $dir_w/testx $dir_w/testx1/icmdtestx", "", "NOANSWER" );
 if ( $doIbunZipTest =~ "yes" ) {
 # test ibun with gzip

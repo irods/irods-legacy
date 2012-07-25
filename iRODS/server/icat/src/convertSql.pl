@@ -38,10 +38,24 @@ else {
 
 print ("$arg1\n");
 
-runCmd("cpp -D$arg1 icatSysTables.sql.pp | grep -v '^#' > icatSysTables.sql");
+$OS = `uname -s`;
+chomp($OS);
+if ($OS eq "SunOS") {
+    runCmd("cp -f icatSysTables.sql.pp t1.c");
+    runCmd("gcc -E -D$arg1 t1.c | grep -v '^#' > icatSysTables.sql");
+}
+else {
+    runCmd("cpp -D$arg1 icatSysTables.sql.pp | grep -v '^#' > icatSysTables.sql");
+}
 print "Preprocess icatSysTables.sql.pp to icatSysTables.sql\n";
 
-runCmd("cpp -D$arg1 icatCoreTables.sql.pp | grep -v '^#' > icatCoreTables.sql");
+if ($OS eq "SunOS") {
+    runCmd("cp -f icatCoreTables.sql.pp t2.c");
+    runCmd("gcc -E -D$arg1 t2.c | grep -v '^#' > icatCoreTables.sql");
+}
+else {
+    runCmd("cpp -D$arg1 icatCoreTables.sql.pp | grep -v '^#' > icatCoreTables.sql");
+}
 print "Preprocess icatCoreTables.sql.pp to icatCoreTables.sql\n";
 
 exit(0);

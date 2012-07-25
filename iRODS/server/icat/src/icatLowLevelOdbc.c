@@ -75,7 +75,7 @@ static int noResultRowCount=0;
 // JMC :: Needed to add this due to crash issues with the SQLBindCol + SQLFetch
 //     :: combination where the fetch fails if a var is not passed to the bind for
 //     :: the result data size
-static const short MAX_NUMBER_ICAT_COLUMS = 32;
+#define MAX_NUMBER_ICAT_COLUMS 32
 static SQLLEN resultDataSizeArray[ MAX_NUMBER_ICAT_COLUMS ];
 
 

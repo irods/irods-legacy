@@ -987,7 +987,11 @@ parseMspForFloat (msParam_t *inpParam, float *floatout)
 	if (strcmp ((char *) inpParam->inOutStruct, "null") == 0) {
 	    return (SYS_NULL_INPUT);
 	}
+#if defined(solaris_platform)
+	*floatout = (float)strtod ((const char*)inpParam->inOutStruct, NULL);
+#else
 	*floatout = strtof ((const char*)inpParam->inOutStruct, NULL);
+#endif
     } else if (strcmp (inpParam->type, INT_MS_T) == 0 || 
       strcmp (inpParam->type, FLOAT_MS_T) == 0) {
         *floatout = *(float *)inpParam->inOutStruct;

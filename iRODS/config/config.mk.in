@@ -277,10 +277,14 @@ TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
 GNU_TAR=1
 # TAR_EXTENDED_HDR = 1
+ifeq ($(OS_platform), solaris_platform)
+TAR_EXEC_PATH="`which gtar`"
+else
 ifeq ($(OS_platform), osx_platform)
 TAR_EXEC_PATH="`which tar`"
 else
 TAR_EXEC_PATH=/bin/tar
+endif
 endif
 # tarDir=/data/mwan/tar/libtar-1.2.11
 endif
