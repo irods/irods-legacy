@@ -5,6 +5,7 @@
 
 #include "ncRegGlobalAttr.h"
 #include "ncInq.h"
+#include "ncClose.h"
 #include "modAVUMetadata.h"
 #include "icatHighLevelRoutines.h"
 
@@ -37,10 +38,11 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
 {
 #ifdef RODS_CAT
     ncOpenInp_t ncOpenInp;
+    ncCloseInp_t ncCloseInp;
     int *ncidPtr = NULL;
     ncInqInp_t ncInqInp;
     ncInqOut_t *ncInqOut = NULL;
-    int i, status;
+    int i, status, status1;
     void *valuePtr;
     modAVUMetadataInp_t modAVUMetadataInp;
     char tempStr[NAME_LEN];
@@ -107,6 +109,14 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
             }
         }
     }
+    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
+    ncCloseInp.ncid = ncInqInp.ncid;
+    status1 = rsNcClose (rsComm, &ncCloseInp);
+    if (status1 < 0) {
+        rodsLogError (LOG_ERROR, status1,
+          "_rsNcRegGlobalAttr: rcNcClose error for %s", ncOpenInp.objPath);
+    }
+
     return (status);
 #else
     return (SYS_NO_RCAT_SERVER_ERR);
