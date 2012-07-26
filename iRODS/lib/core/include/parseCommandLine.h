@@ -26,6 +26,8 @@ typedef struct {
    int all;
    int accessControl;
    int admin;
+   int attr;
+   char *attrStr;
    int bulk;
    int backupMode; 
    int condition;
@@ -75,10 +77,13 @@ typedef struct {
    int bundle;
    int prompt;
    int query;
+   char *queryStr;
    int rbudp;
+   int reg;
    int recursive;
    int resource;
    char *resourceString;
+   int remove;
    int sizeFlag;
    rodsLong_t size;
    int srcResc;

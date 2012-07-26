@@ -65,8 +65,15 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 	if (remoteFlag < 0) {
             return (remoteFlag);
 	} else if (remoteFlag == LOCAL_HOST) {
+#if 0
+char myPath[MAX_NAME_LEN];
+snprintf (myPath, MAX_NAME_LEN, "%s?stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R&time>=2012-07-23", L1desc[l1descInx].dataObjInfo->filePath);
+snprintf (myPath, MAX_NAME_LEN, "%s?longitude,latitude,station_id,altitude,time,sensor_id,air_temperature&time>=2012-07-19", L1desc[l1descInx].dataObjInfo->filePath);
+status = nc_open (myPath, ncOpenInp->mode, &myncid);
+#else
             status = nc_open (L1desc[l1descInx].dataObjInfo->filePath, 
 	      ncOpenInp->mode, &myncid);
+#endif
 	    if (status != NC_NOERR) {
 		rodsLog (LOG_ERROR,
 		  "rsNcOpen: nc_open %s error, status = %d, %s",

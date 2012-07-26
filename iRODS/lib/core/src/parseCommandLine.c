@@ -175,6 +175,29 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->add=True;
             argv[i]="-Z";
          }
+#ifdef NETCDF_API
+         if (strcmp("--reg", argv[i])==0) {
+            rodsArgs->reg=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--attr", argv[i])==0) {
+            rodsArgs->attr=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--attr option needs an iput file");
+                    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->attrStr=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+         if (strcmp("--remove", argv[i])==0) {
+            rodsArgs->remove=True;
+            argv[i]="-Z";
+         }
+#endif
       }
    }
 
@@ -286,6 +309,9 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          break;
       case 'q':
          rodsArgs->query=True;
+#ifdef NETCDF_API
+         rodsArgs->queryStr = optarg;
+#endif
          break;
       case 'Q':
          rodsArgs->rbudp=True;

@@ -69,6 +69,10 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/osauth.o \
 		$(libCoreObjDir)/sslSockComm.o
 
+ifdef NETCDF_API
+LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o
+endif
+
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 
 endif

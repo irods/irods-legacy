@@ -137,6 +137,11 @@ BINS =		\
 		$(binDir)/iticket \
 		$(binDir)/igroupadmin
 
+ifdef NETCDF_API
+OBJS += $(objDir)/incattr.o
+BINS += $(binDir)/incattr
+endif
+
 #
 # Compile and link flags
 #
