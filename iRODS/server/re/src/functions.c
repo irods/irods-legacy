@@ -213,19 +213,16 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
 Res *smsi_split(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 
 Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
-	if(TYPE(coll) == T_STRING) { /* backward compatible mode only */
-		Res *paramsr[2];
-		paramsr[0] = coll;
-		paramsr[1] = newStringRes(r, ",");
-		return smsi_split(paramsr, 2, node, NULL, 0, NULL, errmsg, r);
-	} else if(TYPE(coll) != T_CONS &&
+	if(TYPE(coll) != T_STRING &&
+			TYPE(coll) != T_CONS &&
 			(TYPE(coll) != T_TUPLE || coll->degree != 2 ||
 			 TYPE(coll->subtrees[0]) != T_IRODS || strcmp(coll->subtrees[0]->exprType->text, GenQueryInp_MS_T) != 0 ||
 			 TYPE(coll->subtrees[1]) != T_IRODS || strcmp(coll->subtrees[1]->exprType->text, GenQueryOut_MS_T) != 0) &&
 		(TYPE(coll) != T_IRODS || (
 		strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
 		strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
-		strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0))) {
+		strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0 &&
+		strcmp(coll->exprType->text, CollInp_MS_T) != 0))) {
 		char errbuf[ERR_MSG_LEN];
 		snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
 		generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
@@ -235,12 +232,20 @@ Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
 	}
 }
 
-int
-msiCloseGenQuery(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int
-msiGetContInxFromGenQueryOut(msParam_t* genQueryOutParam, msParam_t* contInxParam, ruleExecInfo_t *rei);
-int
-msiGetMoreRows(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei);
+Res *collTypeBackwardCompatible(Res *coll, Node *node, rError_t *errmsg, Region *r) {
+	if(TYPE(coll) == T_STRING) { /* backward compatible mode only */
+		Res *paramsr[2];
+		paramsr[0] = coll;
+		paramsr[1] = newStringRes(r, ",");
+		return smsi_split(paramsr, 2, node, NULL, 0, NULL, errmsg, r);
+	} else {
+		return collType(coll, node, errmsg, r);
+	}
+}
+
+int msiCloseGenQuery(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
+int msiGetMoreRows(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei);
+Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 
 Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
 {
@@ -276,6 +281,8 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 		msParam_t genQInpParam;
 		msParam_t genQOutParam;
 		msParam_t contInxParam;
+		convertResToMsParam(&genQInpParam, coll->subtrees[0], errmsg);
+		convertResToMsParam(&genQOutParam, coll->subtrees[1], errmsg);
 		GC_BEGIN
 		while(cont) {
 			genQueryOut_t *genQueryOut = (genQueryOut_t*)RES_UNINTER_STRUCT(coll->subtrees[1]);
@@ -290,32 +297,17 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 				free(RES_UNINTER_STRUCT(elem));
 
 				if(getNodeType(res) == N_ERROR) {
-					convertResToMsParam(&genQInpParam, coll->subtrees[0], errmsg);
-					convertResToMsParam(&genQOutParam, coll->subtrees[1], errmsg);
-					int status = msiCloseGenQuery(&genQInpParam, &genQOutParam, rei);
-					clearMsParam(&genQInpParam, 0);
-					clearMsParam(&genQOutParam, 0);
-					if(status < 0) {
-						generateAndAddErrMsg("msiCloseGenQuery error", node, status, errmsg);
-					}
 					cont = 0;
 					break;
 				}
 				if(TYPE(res) == T_BREAK) {
-					convertResToMsParam(&genQInpParam, coll->subtrees[0], errmsg);
-					convertResToMsParam(&genQOutParam, coll->subtrees[1], errmsg);
-					int status = msiCloseGenQuery(&genQInpParam, &genQOutParam, rei);
-					clearMsParam(&genQInpParam, 0);
-					clearMsParam(&genQOutParam, 0);
-					if(status < 0) {
-						generateAndAddErrMsg("msiCloseGenQuery error", node, status, errmsg);
-					}
 					cont = 0;
 					break;
 				}
 			}
-			convertResToMsParam(&genQInpParam, coll->subtrees[0], errmsg);
-			convertResToMsParam(&genQOutParam, coll->subtrees[1], errmsg);
+			if(!cont) {
+				break;
+			}
 			memset(&contInxParam, 0, sizeof(msParam_t));
 			int status = msiGetMoreRows(&genQInpParam, &genQOutParam, &contInxParam, rei);
 			clearMsParam(&contInxParam, 1);
@@ -325,12 +317,27 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 				break;
 			}
 		}
+		int status = msiCloseGenQuery(&genQInpParam, &genQOutParam, rei);
+		clearMsParam(&genQInpParam, 0);
+		clearMsParam(&genQOutParam, 0);
+		if(status < 0) {
+			generateAndAddErrMsg("msiCloseGenQuery error", node, status, errmsg);
+		}
+
 		cpEnv(env, r);
 		res = cpRes(res, r);
 		GC_END
 		if(getNodeType(res) != N_ERROR) {
 			res = newIntRes(r,0);
 		}
+
+	} else if (TYPE(coll) == T_STRING || (TYPE(coll) == T_IRODS && strcmp(RES_IRODS_TYPE(coll), CollInp_MS_T) == 0) ) {
+		Node *subtreesNew[4];
+		subtreesNew[0] = subtrees[0]; /* variable */
+		subtreesNew[1] = coll; /* collection */
+		subtreesNew[2] = subtrees[2]; /* actions */
+		subtreesNew[3] = subtrees[3]; /* recovery actions */
+		return smsiCollectionSpider(subtreesNew, n, node, rei, reiSaveFlag, env, errmsg, r);
 
 	} else {
 		int i;
@@ -368,7 +375,7 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
     char* varName = ((Node *)subtrees[0])->text;
         Res* orig = evaluateVar3(varName, ((Node *)subtrees[0]), rei, reiSaveFlag, env, errmsg, r);
         Res *coll;
-        CASCADE_N_ERROR(coll = collType(orig, subtrees[0], errmsg, r));
+        CASCADE_N_ERROR(coll = collTypeBackwardCompatible(orig, subtrees[0], errmsg, r));
         res = newIntRes(r, 0);
         if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
             int i;
@@ -2132,6 +2139,10 @@ collInp_t **outCollInp, int outputToCache)
         return (USER_PARAM_TYPE_ERR);
     }
 }
+
+int rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp);
+int rsCloseCollection (rsComm_t *rsComm, int *handleInxInp);
+int rsReadCollection (rsComm_t *rsComm, int *handleInxInp, collEnt_t **collEnt);
 
 Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
 {
