@@ -54,6 +54,8 @@ getLine(FILE *fp, char *buf, int bufsz);
 int
 getStrInBuf (char **inbuf, char *outbuf, int *inbufLen, int outbufLen);
 int
+getNextEleInStr (char **inbuf, char *outbuf, int *inbufLen, int maxOutLen);
+int
 getZoneNameFromHint (char *rcatZoneHint, char *zoneName, int len);
 int
 freeDataObjInfo (dataObjInfo_t *dataObjInfo);

@@ -46,6 +46,11 @@ rodsPathInp_t *rodsPathInp)
             } else if (myRodsArgs->remove == True) {
                status = rmAttrDataObjUtil (conn,
                  rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs);
+            } else if (myRodsArgs->query == True) {
+                rodsLog (LOG_ERROR,
+                 "ncattrUtil: input path %s must be a collection for -q option",
+                 rodsPathInp->srcPath[i].outPath);
+                status = USER_INPUT_PATH_ERR;
             } else {
                status = listAttrDataObjUtil (conn,
                  rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs);
@@ -58,6 +63,9 @@ rodsPathInp_t *rodsPathInp)
             } else if (myRodsArgs->remove == True) {
                 status = rmAttrCollUtil (conn, rodsPathInp->srcPath[i].outPath,
                   myRodsEnv, myRodsArgs);
+            } else if (myRodsArgs->query == True) {
+                status = queryAUVForDataObj (conn, 
+                  rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs);
             } else {
                 status = listAttrCollUtil (conn, 
                   rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs);
@@ -360,7 +368,7 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs)
 
     printf ("    %s :\n", myFile);
 
-    status = queryDataObjAVU (conn, srcPath, rodsArgs, &genQueryOut);
+    status = queryDataObjForAUV (conn, srcPath, rodsArgs, &genQueryOut);
 
     if (status < 0) {
         if (status == CAT_NO_ROWS_FOUND) return 0;
@@ -490,7 +498,7 @@ rodsArguments_t *rodsArgs)
 }
 
 int
-queryDataObjAVU (rcComm_t *conn, char *objPath, rodsArguments_t *rodsArgs,
+queryDataObjForAUV (rcComm_t *conn, char *objPath, rodsArguments_t *rodsArgs,
 genQueryOut_t **genQueryOut)
 {
     genQueryInp_t genQueryInp;
@@ -516,13 +524,128 @@ genQueryOut_t **genQueryOut)
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
 
     if (rodsArgs->attr == True && rodsArgs->attrStr != NULL) {
-        snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", rodsArgs->attrStr);
+        char outBuf[MAX_NAME_LEN], tmpStr1[MAX_NAME_LEN];
+        char *inPtr = rodsArgs->attrStr;
+        int inLen = strlen (rodsArgs->attrStr);
+        status = getNextEleInStr (&inPtr, outBuf, &inLen, MAX_NAME_LEN);
+        if (status <= 0) {
+            rodsLog (LOG_ERROR,
+              "queryDataObjForAUV: No attrName for --attr");
+            clearGenQueryInp(&genQueryInp);
+            return (USER_OPTION_INPUT_ERR);
+        }
+        snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", outBuf);
+        while (getNextEleInStr (&inPtr, outBuf, &inLen, MAX_NAME_LEN) > 0) {
+            snprintf (tmpStr1, MAX_NAME_LEN, " || = '%s'", outBuf);
+            rstrcat (tmpStr, tmpStr1, MAX_NAME_LEN);
+        }
         addInxVal (&genQueryInp.sqlCondInp, COL_META_DATA_ATTR_NAME, tmpStr);
     }
     genQueryInp.maxRows = 100*MAX_SQL_ROWS;
     status =  rcGenQuery (conn, &genQueryInp, genQueryOut);
+    clearGenQueryInp (&genQueryInp);
 
     return (status);
 
 }
 
+/*
+ * queryAUVForDataObj - this is similar to queryDataObj in imeta
+ */
+int 
+queryAUVForDataObj (rcComm_t *conn, char *collPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs) 
+{
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut;
+    char attr[MAX_NAME_LEN], op[MAX_NAME_LEN], value[MAX_NAME_LEN], 
+      tmpStr[MAX_NAME_LEN];
+    char *inPtr, *outPtr;
+    int status, count, inLen;
+    int continueInx = 1;
+
+    inPtr = rodsArgs->queryStr;
+    if (inPtr == NULL) return USER__NULL_INPUT_ERR;
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+    addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+    snprintf (tmpStr, MAX_NAME_LEN, " = '%s' || like '%s/%s'", 
+      collPath, collPath, "%");
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
+
+    inLen = strlen (inPtr);
+    outPtr = attr;
+    count = 0;
+    while (getNextEleInStr (&inPtr, outPtr, &inLen, MAX_NAME_LEN) > 0) {
+        if (count == 0) {
+            snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", attr);
+            addInxVal(&genQueryInp.sqlCondInp, COL_META_DATA_ATTR_NAME, tmpStr);
+            count++;
+            outPtr = op;
+        } else if (count == 1) {
+            count++;
+            outPtr = value;
+        } else {
+            snprintf (tmpStr, MAX_NAME_LEN, "%s '%s'", op, value);
+            addInxVal(&genQueryInp.sqlCondInp, COL_META_DATA_ATTR_VALUE, tmpStr);
+            count = 0;
+            outPtr = attr;
+        }
+    }
+    if (count != 0) {
+        rodsLog (LOG_ERROR, 
+          "queryAUVForDataObj: query inp must be in attr/op/value triplet: %s",
+          rodsArgs->queryStr);
+        clearGenQueryInp(&genQueryInp);
+        return (USER_OPTION_INPUT_ERR);
+    }
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    while (continueInx > 0) {
+        sqlResult_t *dataName, *collection;
+        char *dataNameStr, *collectionStr;
+        int i;
+
+        status = rcGenQuery (conn, &genQueryInp, &genQueryOut);
+        if (status < 0) {
+            if (status != CAT_NO_ROWS_FOUND) {
+                rodsLogError (LOG_ERROR, status,
+                  "queryAUVForDataObj: rsGenQuery error for %s",
+                  collPath);
+            }
+            clearGenQueryInp (&genQueryInp);
+            return (status);
+        }
+        if ((collection = getSqlResultByInx (genQueryOut, COL_COLL_NAME)) ==
+          NULL) {
+            rodsLog (LOG_ERROR,
+              "queryAUVForDataObj: getSqlResultByInx for COL_COLL_NAME failed");
+            clearGenQueryInp (&genQueryInp);
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+        if ((dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) ==
+          NULL) {
+            rodsLog (LOG_ERROR,
+              "queryAUVForDataObj: getSqlResultByInx for COL_DATA_NAME failed");
+            clearGenQueryInp (&genQueryInp);
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+        for (i = 0;i < genQueryOut->rowCnt; i++) {
+            collectionStr = &collection->value[collection->len * i];
+            dataNameStr = &dataName->value[dataName->len * i];
+            fprintf (stdout, "    %s/%s\n",
+              collectionStr, dataNameStr);
+        }
+        if (genQueryOut != NULL) {
+            continueInx = genQueryInp.continueInx =
+            genQueryOut->continueInx;
+            freeGenQueryOut (&genQueryOut);
+        } else {
+            continueInx = 0;
+        }
+    }
+    clearGenQueryInp (&genQueryInp);
+    return (status);
+}
+ 

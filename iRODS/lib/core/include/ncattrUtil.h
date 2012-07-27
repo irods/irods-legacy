@@ -41,9 +41,10 @@ int
 listAttrCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
 rodsArguments_t *rodsArgs);
 int
-queryDataObjAVU (rcComm_t *conn, char *objPath, rodsArguments_t *rodsArgs,
+queryDataObjForAUV (rcComm_t *conn, char *objPath, rodsArguments_t *rodsArgs,
 genQueryOut_t **genQueryOut);
-
+int 
+queryAUVForDataObj (rcComm_t *conn, char *collPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs);
 #ifdef  __cplusplus
 }
 #endif
