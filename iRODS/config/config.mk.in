@@ -277,7 +277,7 @@ TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
 GNU_TAR=1
 # TAR_EXTENDED_HDR = 1
-ifeq ($(OS_platform), solaris_platform)
+ifeq ($(findstring solaris,$(OS_platform)), solaris)
 TAR_EXEC_PATH="`which gtar`"
 else
 ifeq ($(OS_platform), osx_platform)
