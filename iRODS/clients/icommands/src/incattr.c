@@ -103,7 +103,8 @@ usage ()
 " ",
 
 "The --reg option extracts and registers the global attributes of the",
-"NETCDF files.",
+"NETCDF files. If --attr is also specified, only the given global attribute",
+"names will be registered.",
 "The -q option can be used to list all data files that meet the given AVU",
 "query constraints. The constraints are given in one or more ",
 "'attr Operator value' triplet. The constraint triplets must be enclosed in",
@@ -123,7 +124,7 @@ usage ()
 " -q \"attr Operator value\" - list all data files that match the query",
 " -r  recursive operation on the collction",
 " -v  verbose mode",
-"--attr attrName - given the atrribute name, get the attribute value",
+"--attr attrName - given the atrribute names, list/register the attribute value",
 "--reg - extract and register the global attributes",
 "--remove - unregister the global attributes",
 " -h  this help",

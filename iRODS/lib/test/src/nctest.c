@@ -38,6 +38,15 @@ main(int argc, char **argv)
     char *testPath;
     int status;
 
+int ncid;
+#if 0
+status = nc_open ("http://coastwatch.pfeg.noaa.gov/erddap/tabledap/nosCoopsMAT.nc?stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R&time>=2012-07-19T00:00:00Z", NC_NETCDF4, &ncid);
+status = nc_open ("http://coastwatch.pfeg.noaa.gov/erddap/tabledap/nosCoopsMAT?stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R&time>=2012-07-23", NC_NETCDF4, &ncid);
+status = nc_open ("http://coastwatch.pfeg.noaa.gov/erddap/tabledap/nosCoopsMAT&time>=2012-07-23", NC_NETCDF4, &ncid);
+printf ("nc_open status = %d  %s\n", status,  nc_strerror(status));
+exit (0);
+#endif
+
     if (argc <= 1) {
         testPath = TEST_PATH2;
     } else {

@@ -75,6 +75,7 @@ rodsPathInp_t *rodsPathInp)
 	    rodsLog (LOG_ERROR,
 	     "ncattrUtil: invalid ncattr objType %d for %s", 
 	     rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath);
+            clearRegGlobalAttrInp (&ncRegGlobalAttrInp);
 	    return (USER_INPUT_PATH_ERR);
 	}
 	/* XXXX may need to return a global status */
@@ -85,6 +86,7 @@ rodsPathInp_t *rodsPathInp)
 	    savedStatus = status;
 	} 
     }
+    clearRegGlobalAttrInp (&ncRegGlobalAttrInp);
     if (savedStatus < 0) {
         return (savedStatus);
     } else if (status == CAT_NO_ROWS_FOUND) {
@@ -143,6 +145,21 @@ ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
 
     if (rodsArgs->admin == True) {
         addKeyVal (&ncRegGlobalAttrInp->condInput, IRODS_ADMIN_KW, "");
+    }
+
+    if (rodsArgs->reg == True && rodsArgs->attr == True && 
+      rodsArgs->attrStr != NULL) {
+        char outBuf[MAX_NAME_LEN];
+        char *inPtr = rodsArgs->attrStr;
+        int inLen = strlen (rodsArgs->attrStr);
+        ncRegGlobalAttrInp->attrNameArray = (char **) 
+          calloc (MAX_NAME_LEN, sizeof (ncRegGlobalAttrInp->attrNameArray));
+        while (getNextEleInStr (&inPtr, outBuf, &inLen, MAX_NAME_LEN) > 0) {
+            ncRegGlobalAttrInp->attrNameArray[ncRegGlobalAttrInp->numAttrName] =
+              strdup (outBuf);
+            ncRegGlobalAttrInp->numAttrName++;
+            if (ncRegGlobalAttrInp->numAttrName >= MAX_NAME_LEN) break;
+        }
     }
 
     return (0);

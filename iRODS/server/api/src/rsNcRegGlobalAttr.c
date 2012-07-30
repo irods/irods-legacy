@@ -42,7 +42,7 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
     int *ncidPtr = NULL;
     ncInqInp_t ncInqInp;
     ncInqOut_t *ncInqOut = NULL;
-    int i, status, status1;
+    int i, j, status, status1;
     void *valuePtr;
     modAVUMetadataInp_t modAVUMetadataInp;
     char tempStr[NAME_LEN];
@@ -89,6 +89,19 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
         valuePtr = ncInqOut->gatt[i].value.dataArray->buf;
         modAVUMetadataInp.arg3 = ncInqOut->gatt[i].name;
         valuePtr = ncInqOut->gatt[i].value.dataArray->buf;
+        /* see if attri name matches the input value */
+	if (ncRegGlobalAttrInp->numAttrName > 0 && 
+          ncRegGlobalAttrInp->attrNameArray != NULL) {
+	    int amatch = False;
+            for (j = 0; j < ncRegGlobalAttrInp->numAttrName; j++) {
+                if (strcmp (ncRegGlobalAttrInp->attrNameArray[j], 
+                  ncInqOut->gatt[i].name) == 0) {
+                    amatch = True;
+                    break;
+                }
+            }
+            if (amatch == False) continue;
+        }
         if (ncInqOut->gatt[i].dataType == NC_CHAR) {
             /* assume it is a string */
             modAVUMetadataInp.arg4 = (char *) valuePtr;

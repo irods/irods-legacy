@@ -20,12 +20,13 @@
 
 typedef struct {
     char objPath[MAX_NAME_LEN];
-    int flags;
-    int myInt;			/* not used */
+    int flags;		/* not used */
+    int numAttrName;	/* number of AttrName in attrNameArray */
+    char **attrNameArray;    /* array of pointers */
     keyValPair_t condInput;
 } ncRegGlobalAttrInp_t;
 
-#define NcRegGlobalAttrInp_PI "str objPath[MAX_NAME_LEN]; int flags; int myInt; struct KeyValPair_PI;"
+#define NcRegGlobalAttrInp_PI "str objPath[MAX_NAME_LEN]; int flags; int numAttrName; str *attrNameArray[numAttrName]; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_NC_REG_GLOBAL_ATTR rsNcRegGlobalAttr
@@ -57,6 +58,9 @@ extern "C" {
 /* prototype for the client call */
 int
 rcNcRegGlobalAttr (rcComm_t *conn, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
+
+int
+clearRegGlobalAttrInp (ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
 
 #ifdef  __cplusplus
 }
