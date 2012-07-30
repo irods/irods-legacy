@@ -118,10 +118,11 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
                 rodsLogError (LOG_ERROR, status,
                  "_rsNcRegGlobalAttr: rcModAVUMetadata error for %s, attr = %s",
                   ncRegGlobalAttrInp->objPath, modAVUMetadataInp.arg3);
-                return status;
+                break;
             }
         }
     }
+    freeNcInqOut (&ncInqOut);
     bzero (&ncCloseInp, sizeof (ncCloseInp_t));
     ncCloseInp.ncid = ncInqInp.ncid;
     status1 = rsNcClose (rsComm, &ncCloseInp);
@@ -129,7 +130,6 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
         rodsLogError (LOG_ERROR, status1,
           "_rsNcRegGlobalAttr: rcNcClose error for %s", ncOpenInp.objPath);
     }
-
     return (status);
 #else
     return (SYS_NO_RCAT_SERVER_ERR);

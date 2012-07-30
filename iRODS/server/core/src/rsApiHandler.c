@@ -27,6 +27,11 @@ jmp_buf Jenv;
 #endif
 #endif	/* USE_BOOST */
 
+#ifdef NETCDF_API
+#include "ncGetVarsByType.h"
+#include "ncRegGlobalAttr.h"
+#endif
+
 int
 rsApiHandler (rsComm_t *rsComm, int apiNumber, bytesBuf_t *inputStructBBuf,
 bytesBuf_t *bsBBuf)
@@ -192,6 +197,14 @@ bytesBuf_t *bsBBuf)
  	     "authResponseInp_PI")  == 0) {
             /* Added by RAJA Nov 22 2010 */
 	    clearAuthResponseInp ((void *) myInStruct);
+#ifdef NETCDF_API
+        } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
+             "NcGetVarInp_PI")  == 0) {
+            clearNcGetVarInp ((ncGetVarInp_t *) myInStruct);
+        } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
+             "NcRegGlobalAttrInp_PI")  == 0) {
+            clearRegGlobalAttrInp ((ncRegGlobalAttrInp_t *) myInStruct);
+#endif
 	} 
         free (myInStruct);
         myInStruct = NULL;
