@@ -45,7 +45,8 @@ rodsPathInp_t *rodsPathInp)
                  &ncRegGlobalAttrInp);
             } else if (myRodsArgs->remove == True) {
                status = rmAttrDataObjUtil (conn,
-                 rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs);
+                 rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs, 
+                  &ncRegGlobalAttrInp);
             } else if (myRodsArgs->query == True) {
                 rodsLog (LOG_ERROR,
                  "ncattrUtil: input path %s must be a collection for -q option",
@@ -62,7 +63,7 @@ rodsPathInp_t *rodsPathInp)
                   myRodsEnv, myRodsArgs, &ncRegGlobalAttrInp);
             } else if (myRodsArgs->remove == True) {
                 status = rmAttrCollUtil (conn, rodsPathInp->srcPath[i].outPath,
-                  myRodsEnv, myRodsArgs);
+                  myRodsEnv, myRodsArgs, &ncRegGlobalAttrInp);
             } else if (myRodsArgs->query == True) {
                 status = queryAUVForDataObj (conn, 
                   rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs);
@@ -147,8 +148,8 @@ ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
         addKeyVal (&ncRegGlobalAttrInp->condInput, IRODS_ADMIN_KW, "");
     }
 
-    if (rodsArgs->reg == True && rodsArgs->attr == True && 
-      rodsArgs->attrStr != NULL) {
+    if ((rodsArgs->reg == True || rodsArgs->remove == true) && 
+      rodsArgs->attr == True && rodsArgs->attrStr != NULL) {
         char outBuf[MAX_NAME_LEN];
         char *inPtr = rodsArgs->attrStr;
         int inLen = strlen (rodsArgs->attrStr);
@@ -244,9 +245,10 @@ rodsArguments_t *rodsArgs, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
 
 int
 rmAttrDataObjUtil (rcComm_t *conn, char *srcPath,
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs)
+rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
 {
-    int status;
+    int status, i;
     struct timeval startTime, endTime;
     modAVUMetadataInp_t modAVUMetadataInp;
 
@@ -264,7 +266,6 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs)
     modAVUMetadataInp.arg0 = "rmw";
     modAVUMetadataInp.arg1 = "-d";
     modAVUMetadataInp.arg2 = srcPath;
-    modAVUMetadataInp.arg3 = "%";
     modAVUMetadataInp.arg4 = "%";
     modAVUMetadataInp.arg5 = "";
     modAVUMetadataInp.arg6 = "";
@@ -272,20 +273,34 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs)
     modAVUMetadataInp.arg8 = "";
     modAVUMetadataInp.arg9 ="";
 
-   status = rcModAVUMetadata(conn, &modAVUMetadataInp);
 
-    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status = 0;
-    if (status >= 0 && rodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTime (conn, srcPath, &startTime, &endTime);
+    if (ncRegGlobalAttrInp->numAttrName > 0 &&
+      ncRegGlobalAttrInp->attrNameArray != NULL) {
+        for (i = 0; i < ncRegGlobalAttrInp->numAttrName; i++) {
+            modAVUMetadataInp.arg3 = ncRegGlobalAttrInp->attrNameArray[i];
+            status = rcModAVUMetadata(conn, &modAVUMetadataInp);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+                status = 0;
+            } else if (status < 0) {
+                break;
+            }
+        }
+    } else {
+        modAVUMetadataInp.arg3 = "%";
+        status = rcModAVUMetadata(conn, &modAVUMetadataInp);
+
+        if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status = 0;
+        if (status >= 0 && rodsArgs->verbose == True) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+            printTime (conn, srcPath, &startTime, &endTime);
+        }
     }
-
     return (status);
 }
 
 int
 rmAttrCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv, 
-rodsArguments_t *rodsArgs)
+rodsArguments_t *rodsArgs, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
 {
     int status;
     int savedStatus = 0;
@@ -329,7 +344,7 @@ rodsArguments_t *rodsArgs)
               collEnt.collName, collEnt.dataName);
 
             status = rmAttrDataObjUtil (conn, srcChildPath,
-             myRodsEnv, rodsArgs);
+             myRodsEnv, rodsArgs, ncRegGlobalAttrInp);
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "rmAttrCollUtil: regAttrDataObjUtil failed for %s. status = %d",
@@ -341,7 +356,7 @@ rodsArguments_t *rodsArgs)
         } else if (collEnt.objType == COLL_OBJ_T) {
             if (collEnt.specColl.collClass != NO_SPEC_COLL) continue;
             status = rmAttrCollUtil (conn, collEnt.collName, myRodsEnv,
-              rodsArgs);
+              rodsArgs, ncRegGlobalAttrInp);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {
                 savedStatus = status;
             }

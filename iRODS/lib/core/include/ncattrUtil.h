@@ -30,10 +30,11 @@ regAttrCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
 rodsArguments_t *rodsArgs, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
 int
 rmAttrDataObjUtil (rcComm_t *conn, char *srcPath,
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs);
+rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
 int
 rmAttrCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-rodsArguments_t *rodsArgs);
+rodsArguments_t *rodsArgs, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
 int
 listAttrDataObjUtil (rcComm_t *conn, char *srcPath,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs);

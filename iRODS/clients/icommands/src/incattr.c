@@ -124,7 +124,7 @@ usage ()
 " -q \"attr Operator value\" - list all data files that match the query",
 " -r  recursive operation on the collction",
 " -v  verbose mode",
-"--attr attrName - given the atrribute names, list/register the attribute value",
+"--attr attrName - given the atrribute names, list/register/remove the attribute value",
 "--reg - extract and register the global attributes",
 "--remove - unregister the global attributes",
 " -h  this help",
