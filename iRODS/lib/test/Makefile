@@ -19,13 +19,14 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 ifdef OOI_CI
-LDFLAGS+= -ljansson -lrabbitmq -lmsgpack
+CFLAGS+= -I/usr/include/libxml2
+LDFLAGS+= -ljansson -lrabbitmq -lmsgpack -lxml2
 endif
 
 TESTOBJS = luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o listcoll.o nctest.o
 ifdef OOI_CI
-TESTOBJS+=  erddapdir.o pydapdir.o httpget.o ooitest.o ooiAmqptest.o ooiapitest.o
+TESTOBJS+=  tdsdir.o erddapdir.o pydapdir.o httpget.o ooitest.o ooiAmqptest.o ooiapitest.o
 endif
 
 
@@ -36,7 +37,7 @@ TARGETS+= nctest
 endif
 
 ifdef OOI_CI
-TARGETS+= erddapdir pydapdir httpget ooitest ooiAmqptest ooiapitest
+TARGETS+= tdsdir erddapdir pydapdir httpget ooitest ooiAmqptest ooiapitest
 endif
 
 ifdef TAR_STRUCT_FILE
@@ -132,6 +133,8 @@ ifdef OOI_CI
 httpget: httpget.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 erddapdir: erddapdir.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+tdsdir: tdsdir.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 pydapdir: pydapdir.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
