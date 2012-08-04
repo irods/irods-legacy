@@ -656,6 +656,9 @@
 #define OOI_JSON_INX_OUT_OF_RANGE	-2210000
 #define OOI_REVID_NOT_FOUND		-2211000
 
+/* XML parsing and TDS error */
+#define XML_PARSING_ERR			-2300000
+
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996
 #define SYS_HANDLER_DONE_WITH_ERROR		-99999997
