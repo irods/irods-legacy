@@ -611,6 +611,7 @@
     OOI_JSON_TYPE_ERR, 
     OOI_JSON_INX_OUT_OF_RANGE, 
     OOI_REVID_NOT_FOUND, 
+    XML_PARSING_ERR, 
     SYS_NULL_INPUT, 
     SYS_HANDLER_DONE_WITH_ERROR, 
     SYS_HANDLER_DONE_NO_ERROR, 
@@ -1198,12 +1199,13 @@
     "OOI_JSON_TYPE_ERR", 
     "OOI_JSON_INX_OUT_OF_RANGE", 
     "OOI_REVID_NOT_FOUND", 
+    "XML_PARSING_ERR", 
     "SYS_NULL_INPUT", 
     "SYS_HANDLER_DONE_WITH_ERROR", 
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 585;
+int irodsErrorCount= 586;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

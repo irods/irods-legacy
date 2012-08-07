@@ -658,6 +658,8 @@
 
 /* XML parsing and TDS error */
 #define XML_PARSING_ERR			-2300000
+#define OUT_OF_URL_PATH			-2301000
+#define URL_PATH_INX_OUT_OF_RANGE	-2302000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996
