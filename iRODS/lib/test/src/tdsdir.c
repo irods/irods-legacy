@@ -12,11 +12,11 @@
 #if 0
 #define TDS_TOPDIR_FILE "tds/tdsData.xml"
 #define TDS_URL "http://hfrnet.ucsd.edu:8080/thredds/HFRADAR_USWC_hourly_RTV.xml"
-#define TDS_TOPDIR_FILE "tds/tdsDir.xml"
-#define TDS_URL         "http://hfrnet.ucsd.edu:8080/thredds/catalog.xml"
-#else
 #define TDS_TOPDIR_FILE "tds/tdsTopDir.xml"
 #define TDS_URL "http://motherlode.ucar.edu:8080/thredds/topcatalog.xml"
+#else
+#define TDS_TOPDIR_FILE "tds/tdsDir.xml"
+#define TDS_URL         "http://hfrnet.ucsd.edu:8080/thredds/catalog.xml"
 #endif
 #define THREDDS_DIR     "/thredds/"
 
