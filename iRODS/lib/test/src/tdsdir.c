@@ -10,13 +10,13 @@
 #include <libxml/parser.h>
 
 #if 0
-#define TDS_TOPDIR_FILE "tds/tdsDir.xml"
-#define TDS_URL         "http://hfrnet.ucsd.edu:8080/thredds/catalog.xml"
 #define TDS_TOPDIR_FILE "tds/tdsTopDir.xml"
 #define TDS_URL "http://motherlode.ucar.edu:8080/thredds/topcatalog.html"
-#else
 #define TDS_TOPDIR_FILE "tds/tdsData.xml"
 #define TDS_URL "http://hfrnet.ucsd.edu:8080/thredds/HFRADAR_USWC_hourly_RTV.xml"
+#else
+#define TDS_TOPDIR_FILE "tds/tdsDir.xml"
+#define TDS_URL         "http://hfrnet.ucsd.edu:8080/thredds/catalog.xml"
 #endif
 #define THREDDS_DIR     "/thredds/"
 
@@ -57,12 +57,13 @@ getTDSUrl (char *dirurl, char *urlPath, char *outurl, int isDir);
 int
 setTdsDirentName (char *myname, char *mytitle, char *myurlPath, int isDir,
 char *outPath);
+int
+parseTdsDirentName (char *direntName, char *urlName, char *urlPath);
 
 int
 main(int argc, char **argv)
 {
     int status;
-
 
     status = parseTopTDSDir (TDS_TOPDIR_FILE, TDS_URL);
 
@@ -228,20 +229,24 @@ listTdsDir (rsComm_t *rsComm, char *dirUrl)
           dirUrl, status);
         return status;
     }
-#if 0
     while (tdsReaddir (rsComm, tdsDirStruct, &dirent) >= 0) {
         char childUrl[MAX_NAME_LEN]; 
+        char urlName[MAX_NAME_LEN], urlPath[MAX_NAME_LEN];
         struct stat statbuf;
 
-        snprintf (childUrl, MAX_NAME_LEN, "%s%s", dirUrl, dirent.d_name);
-        status = tdsStat (rsComm, childUrl, &statbuf);
+        status = tdsStat (rsComm, dirent.d_name, &statbuf);
         if (status < 0) {
             fprintf (stderr, "tdsStat of %s error, status = %d\n",
               childUrl, status);
             return status;
         }
-        printf ("child: %s\n", childUrl);
+        parseTdsDirentName (dirent.d_name, urlName, urlPath);
 	if ((statbuf.st_mode & S_IFDIR) != 0) {
+            /* take out the last '/' */
+            int len = strlen (urlPath);
+            urlPath[len -1] = '\0';
+            status = getTDSUrl (dirUrl, (char *) urlPath, childUrl, True);
+            printf ("dir child : name = %s, URL = %s\n", urlName, childUrl);
             status = listTdsDir (rsComm, childUrl);
             if (status < 0) {
                 fprintf (stderr, "listTdsDir of %s error, status = %d\n",
@@ -249,6 +254,9 @@ listTdsDir (rsComm_t *rsComm, char *dirUrl)
                 tdsClosedir (rsComm, tdsDirStruct);
                 return status;
             }
+        } else {
+            status = getTDSUrl (dirUrl, (char *) urlPath, childUrl, False);
+            printf ("child : name = %s, URL = %s\n", urlName, childUrl);
         }
     }
     status = tdsClosedir (rsComm, tdsDirStruct);
@@ -257,7 +265,6 @@ listTdsDir (rsComm_t *rsComm, char *dirUrl)
         fprintf (stderr, "tdsClosedir of %s error, status = %d\n",
           dirUrl, status);
     }
-#endif
     return status;
 }
 
@@ -380,6 +387,7 @@ tdsReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
             }
             status = setTdsDirentName ((char *) myname, (char *) mytitle, 
               (char *) myhref, True, direntPtr->d_name);
+            return status;
         }
     }
     return status;
@@ -436,9 +444,11 @@ char *outPath)
     }
     if (tmpname != NULL && namelen + urlPathlen + 4 + isDir < NAME_MAX) {
         if (isDir == True) {
-            snprintf (outPath, NAME_MAX, "%s++++%s/", tmpname, myurlPath);
+            snprintf (outPath, NAME_MAX, "%s%s%s/", tmpname, MS_INP_SEP_STR,
+              myurlPath);
         } else {
-            snprintf (outPath, NAME_MAX, "%s++++%s", tmpname, myurlPath);
+            snprintf (outPath, NAME_MAX, "%s%s%s", tmpname, MS_INP_SEP_STR,
+              myurlPath);
         }
     } else {
         if (isDir == True) {
@@ -525,3 +535,25 @@ tdsStat (rsComm_t *rsComm, char *urlPath, struct stat *statbuf)
     }
     return (0);
 }
+
+/* direntName is assumed in the form urlName++++urlPath
+ */
+int
+parseTdsDirentName (char *direntName, char *urlName, char *urlPath)
+{
+    char *tmpPtr;
+
+    tmpPtr = strstr (direntName, MS_INP_SEP_STR);
+    if (tmpPtr == NULL) {
+        /* just take the last entry and hope for the best */
+        splitPathByKey (direntName, urlPath, urlName, '/');
+        rstrcpy (urlPath, direntName, MAX_NAME_LEN);
+    } else {
+        *tmpPtr = '\0';
+        rstrcpy (urlName, direntName, MAX_NAME_LEN);
+        *tmpPtr = '+';
+        tmpPtr+=strlen (MS_INP_SEP_STR);
+        rstrcpy (urlPath, tmpPtr, MAX_NAME_LEN);
+    }
+    return 0;
+} 
