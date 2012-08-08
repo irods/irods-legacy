@@ -446,6 +446,12 @@ rescInfo_t *rescInfo)
 	    /* don't include parent path */
             snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s",
              rodsDirent->d_name);
+        } else if (RescTypeDef[rescTypeInx].incParentDir == 
+          PHYPATH_IN_DIR_PTR) {
+            /* we can do this locally because this API is executed at the
+             * resource server */
+            getPhyPathInOpenedDir (dirFd, rodsDirent->d_ino, 
+              fileStatInp.fileName);
         } else {
 	    len = strlen (filePath);
 	    if (filePath[len - 1] == '/') {
@@ -470,6 +476,11 @@ rescInfo_t *rescInfo)
 	    return (status);
 	}
 
+        if (RescTypeDef[rescTypeInx].incParentDir == PHYPATH_IN_DIR_PTR) {
+            /* the st_mode is stored in the opened dir */
+            myStat->st_mode = getStModeInOpenedDir (dirFd, rodsDirent->d_ino);
+            freePhyPathInOpenedDir (dirFd, rodsDirent->d_ino);
+        }
 	subPhyPathRegInp = *phyPathRegInp;
         if (RescTypeDef[rescTypeInx].incParentDir == NO_INC_PARENT_DIR) {
 	    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];

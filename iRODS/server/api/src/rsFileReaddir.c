@@ -6,6 +6,9 @@
 #include "fileReaddir.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+#ifdef OOI_CI
+#include "tdsDriver.h"
+#endif
 
 int
 rsFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, 
@@ -108,3 +111,59 @@ rodsDirent_t **fileReaddirOut)
 
     return (status);
 } 
+
+int
+getPhyPathInOpenedDir (int dirFd, int pathInx, char *outPath)
+{
+    if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
+#ifdef OOI_CI
+        tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *) 
+          FileDesc[dirFd].driverDep;
+        if (pathInx < 0 || pathInx >= NUM_URL_PATH) 
+            return URL_PATH_INX_OUT_OF_RANGE;
+        rstrcpy (outPath, tdsDirStruct->urlPath[pathInx].path, MAX_NAME_LEN);
+        return 0;
+#else
+        return SYS_NOT_SUPPORTED;
+#endif
+    } else {
+        return SYS_NOT_SUPPORTED;
+    }
+}
+
+int
+getStModeInOpenedDir (int dirFd, int pathInx)
+{
+    if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
+#ifdef OOI_CI
+        tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *)
+          FileDesc[dirFd].driverDep;
+        if (pathInx < 0 || pathInx >= NUM_URL_PATH)
+            return URL_PATH_INX_OUT_OF_RANGE;
+        return tdsDirStruct->urlPath[pathInx].st_mode;
+#else
+        return SYS_NOT_SUPPORTED;
+#endif
+    } else {
+        return SYS_NOT_SUPPORTED;
+    }
+}
+
+int
+freePhyPathInOpenedDir (int dirFd, int pathInx)
+{
+    if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
+#ifdef OOI_CI
+        int status;
+        tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *) 
+          FileDesc[dirFd].driverDep;
+        status = freeTdsUrlPath (tdsDirStruct, pathInx);
+        return status;
+#else
+        return SYS_NOT_SUPPORTED;
+#endif
+    } else {
+        return SYS_NOT_SUPPORTED;
+    }
+}
+

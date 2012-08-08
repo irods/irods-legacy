@@ -293,6 +293,7 @@ typedef enum {
     OOICI_FILE_TYPE,
     PYDAP_FILE_TYPE,
     ERDDAP_FILE_TYPE,
+    TDS_FILE_TYPE,
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600
@@ -332,6 +333,11 @@ typedef enum {
 /* definition for incParentDir */
 #define INC_PARENT_DIR	0
 #define NO_INC_PARENT_DIR 1
+#define PHYPATH_IN_DIR_PTR 2	/* the physical path is stored in the opened
+                                 * dir pointer since the file name and the
+                                 * phyical path are different such as the
+                                 * case of TDS. The path index is stored in
+                                 * d_ino */
 
 typedef struct RescTypeDef {
     char *typeName;

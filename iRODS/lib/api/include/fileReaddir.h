@@ -34,6 +34,12 @@ rodsDirent_t **fileReaddirOut);
 int
 remoteFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
 rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost);
+int
+getPhyPathInOpenedDir (int dirFd, int pathInx, char *outPath);
+int
+getStModeInOpenedDir (int dirFd, int pathInx);
+int
+freePhyPathInOpenedDir (int dirFd, int pathInx);
 #else
 #define RS_FILE_READDIR NULL
 #endif

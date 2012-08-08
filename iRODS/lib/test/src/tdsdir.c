@@ -3,7 +3,7 @@
 /* tdsdir.c - test the basic routine for parsing a tds web page */
 
 #include "rodsClient.h" 
-#include "regUtil.h" 
+#include "regUtil.h"
 #include <curl/curl.h>
 #include <jansson.h>
 #include <libxml/xmlmemory.h>
@@ -343,7 +343,7 @@ tdsOpendir (rsComm_t *rsComm, char *dirUrl, void **outDirPtr)
 int
 tdsReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
 {
-    int status;
+    int status = -1;
     tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *) dirPtr;
     xmlAttrPtr myprop;
     const xmlChar *myname, *myurlPath, *mytitle, *myhref, *tmpname;
@@ -564,7 +564,7 @@ tdsStat (rsComm_t *rsComm, char *urlPath, struct stat *statbuf)
         statbuf->st_mode = DEFAULT_DIR_MODE | S_IFDIR;
     } else {
         statbuf->st_mode = DEFAULT_FILE_MODE | S_IFREG;
-        statbuf->st_size = -1;
+        statbuf->st_size = UNKNOWN_FILE_SZ;
     }
     return (0);
 }
