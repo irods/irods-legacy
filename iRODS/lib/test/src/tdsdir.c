@@ -38,6 +38,7 @@ typedef struct {
     xmlNodePtr rootnode; 
     xmlNodePtr curnode; 
     char dirUrl[MAX_NAME_LEN];
+    char curdir[MAX_NAME_LEN];
     CURL *easyhandle;
     urlPath_t urlPath[NUM_URL_PATH];
 } tdsDirStruct_t;
@@ -76,6 +77,8 @@ int
 allocUrlPath (tdsDirStruct_t *tdsDirStruct);
 int
 freeUrlPath (tdsDirStruct_t *tdsDirStruct, int inx);
+int
+setTdsCurdir (tdsDirStruct_t *tdsDirStruct, char *name);
 
 int
 main(int argc, char **argv)
@@ -255,8 +258,8 @@ listTdsDir (rsComm_t *rsComm, char *dirUrl)
         st_mode = tdsDirStruct->urlPath[dirent.d_ino].st_mode;
         freeUrlPath (tdsDirStruct, dirent.d_ino);
 	if ((st_mode & S_IFDIR) != 0) {
-            printf ("dir child : name = %s, URL = %s\n", dirent.d_name, 
-              childUrl);
+            printf ("dir child : name = %s, curdir = %s, URL = %s\n", 
+              dirent.d_name, tdsDirStruct->curdir, childUrl);
             status = listTdsDir (rsComm, childUrl);
             if (status < 0) {
                 fprintf (stderr, "listTdsDir of %s error, status = %d\n",
@@ -265,7 +268,8 @@ listTdsDir (rsComm_t *rsComm, char *dirUrl)
                 return status;
             }
         } else {
-            printf ("child : name = %s, URL = %s\n", dirent.d_name, childUrl);
+            printf ("child : name = %s, curdir = %s, URL = %s\n", 
+              dirent.d_name, tdsDirStruct->curdir, childUrl);
         }
     }
     status = tdsClosedir (rsComm, tdsDirStruct);
@@ -372,6 +376,7 @@ tdsReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
             }
             if (myurlPath == NULL) {
                 /* drill down */
+                setTdsCurdir (tdsDirStruct, (char *) myname);
                 continue;
             } else {
                 if ((char *)myname != NULL && strlen ((char *)myname) > 0) {
@@ -662,3 +667,47 @@ freeUrlPath (tdsDirStruct_t *tdsDirStruct, int inx)
     return 0;
 }
 
+int
+setTdsCurdir (tdsDirStruct_t *tdsDirStruct, char *name)
+{
+    xmlNodePtr mynode;
+    char myname[MAX_NAME_LEN];
+    char *tmpPtr;
+    int level = 0;
+
+    if (name == NULL || *name == '\0') return 0;
+
+    rstrcpy (myname, name, MAX_NAME_LEN);
+
+    tmpPtr = myname;
+    /* take out any '/' in the path */
+    while (*tmpPtr != '\0') {
+        if (*tmpPtr == '/') {
+            *tmpPtr = '.';
+        }
+        tmpPtr++;
+    }
+    /* find out at what level is the directory */
+    level = 0;
+    mynode = tdsDirStruct->curnode;
+    while (mynode != NULL && mynode->parent != tdsDirStruct->rootnode) {
+        mynode = mynode->parent;
+        level++;
+    }
+    /* find the starting location to append */
+    tmpPtr = tdsDirStruct->curdir;
+    while (level > 0 && *tmpPtr != '\0') {
+        if (*tmpPtr == '/') {
+            level--;
+        }
+        tmpPtr++;
+    }
+    if (level > 0) {
+        /* append to the end */
+        snprintf (tmpPtr, MAX_NAME_LEN, "/%s", myname);
+    } else {
+        snprintf (tmpPtr, MAX_NAME_LEN, "%s", myname);
+    }
+    return 0;
+}
+    
