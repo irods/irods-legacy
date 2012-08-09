@@ -429,15 +429,16 @@ LIB_API_OBJS += $(libApiObjDir)/rcNcGetVarsByType.o
 
 ifdef LIB_CF
 SVR_API_OBJS += $(svrApiObjDir)/rsNccfGetVara.o
-LIB_API_OBJS += $(libApiObjDir)/rcNccfGetVara.o
 endif
+LIB_API_OBJS += $(libApiObjDir)/rcNccfGetVara.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInq.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInq.o
 
+ifdef NETCDF4_API
 SVR_API_OBJS += $(svrApiObjDir)/rsNcOpenGroup.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInqGrps.o
+endif
+LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInqGrps.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsNcRegGlobalAttr.o

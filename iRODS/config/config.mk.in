@@ -445,6 +445,8 @@ endif
 # USE_SSL = 1
 
 # NETCDF_API - specify whether to compile the NETCDF API
+# NETCDF4_API - specify whether the NETCDF library supports NETCDF4 APIs -
+# built with --enable-netcdf-4.
 # NETCDF_DIR - the install directory of NETCDF. 
 # LIB_CF - specify whether higher level libCF is present. libCF, uses the
 # netCDF API to aid in the creation, processing and sharing of scientific
@@ -455,7 +457,12 @@ endif
 # the path for the include directory and lib directory, respectively, for
 # libcf.
 # NETCDF_API=1
+# NETCDF4_API=1
 # LIB_CF=1
+
+ifdef NETCDF4_API
+NETCDF_API=1
+endif
 ifdef NETCDF_API
 NETCDF_DIR=/usr/local
 ifdef LIB_CF
