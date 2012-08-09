@@ -458,8 +458,12 @@ char *outFileName)
         ncGetVarInp.count = count;
         ncGetVarInp.stride = stride;
 
-        status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
-
+        if (conn == NULL) {
+            /* local call */
+            status = _rsNcGetVarsByType (srcNcid, &ncGetVarInp, &ncGetVarOut);
+        } else {
+            status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+        }
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "dumpNcInqOutToNcFile: rcNcGetVarsByType error for %s",

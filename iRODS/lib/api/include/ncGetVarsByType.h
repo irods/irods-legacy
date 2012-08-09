@@ -57,9 +57,6 @@ typedef struct {
 int
 rsNcGetVarsByType (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp, 
 ncGetVarOut_t **ncGetVarOut);
-int
-_rsNcGetVarsByType (int ncid, ncGetVarInp_t *ncGetVarInp, 
-ncGetVarOut_t **ncGetVarOut);
 #else
 #define RS_NC_GET_VARS_BY_TYPE NULL
 #endif
@@ -96,6 +93,9 @@ int
 clearNcGetVarOut (ncGetVarOut_t *ncGetVarOut);
 int
 clearNcGetVarInp (ncGetVarInp_t *ncGetVarInp);
+int
+_rsNcGetVarsByType (int ncid, ncGetVarInp_t *ncGetVarInp,
+ncGetVarOut_t **ncGetVarOut);
 #ifdef  __cplusplus
 }
 #endif
