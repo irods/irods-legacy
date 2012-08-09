@@ -407,10 +407,12 @@ apidef_t RcApiTable[] = {
 #endif
     {NC_INQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NcInqInp_PI", 0, "NcInqOut_PI", 0, (funcPtr) RS_NC_INQ},
+#ifdef NETCDF4_API
     {NC_OPEN_GROUP_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NcOpenInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_OPEN_GROUP},
     {NC_INQ_GRPS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NcInqGrpsInp_PI", 0, "NcInqGrpsOut_PI", 0, (funcPtr) RS_NC_INQ_GRPS},
+#endif
     {NC_REG_GLOBAL_ATTR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NcRegGlobalAttrInp_PI", 0, NULL, 0, (funcPtr) RS_NC_REG_GLOBAL_ATTR},
 #endif

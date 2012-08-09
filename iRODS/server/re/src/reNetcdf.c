@@ -1591,6 +1591,7 @@ msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+#ifdef NETCDF4_API
 /**
  * \fn msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
@@ -1684,6 +1685,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     }
     return (rei->status);
 }
+#endif
 
 int
 msiNcGetNGrpsInInqOut (msParam_t *ncInqGrpsOutParam, msParam_t *outParam,

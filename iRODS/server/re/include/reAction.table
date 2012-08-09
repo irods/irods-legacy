@@ -460,8 +460,10 @@ microsdef_t MicrosTable[] = {
   {"msiNcGetDimLenInInqOut",4,(funcPtr) msiNcGetDimLenInInqOut},
   {"msiNcGetVarIdInInqOut",3,(funcPtr) msiNcGetVarIdInInqOut},
   {"msiFreeNcStruct",1,(funcPtr) msiFreeNcStruct},
+#ifdef NETCDF4_API
   {"msiNcOpenGroup",3,(funcPtr) msiNcOpenGroup},
   {"msiNcInqGrps",2,(funcPtr) msiNcInqGrps},
+#endif
   {"msiNcGetNGrpsInInqOut",2,(funcPtr) msiNcGetNGrpsInInqOut},
   {"msiNcGetGrpInInqOut",3,(funcPtr) msiNcGetGrpInInqOut},
   {"msiNcRegGlobalAttr",3,(funcPtr) msiNcRegGlobalAttr},
