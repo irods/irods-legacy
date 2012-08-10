@@ -367,7 +367,9 @@ rescInfo_t *rescInfo)
     int forceFlag;
     fileStatInp_t fileStatInp;
     rodsStat_t *myStat = NULL;
+    char curcoll[MAX_NAME_LEN];
 
+    *curcoll = '\0';
     rescTypeInx = rescInfo->rescTypeInx;
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
@@ -494,6 +496,26 @@ rescInfo_t *rescInfo)
             }
 	    snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
 	      phyPathRegInp->objPath, myFile);
+        } else if (RescTypeDef[rescTypeInx].incParentDir == 
+            PHYPATH_IN_DIR_PTR) {
+            char curdir[MAX_NAME_LEN];
+            *curdir = '\0';
+            getCurDirInOpenedDir (dirFd, curdir);
+            if (strlen (curdir) > 0) {
+                /* see if we have done it already */
+                int len = strlen (subPhyPathRegInp.objPath);
+                if (*curcoll == '\0'  || 
+                  strcmp (&curcoll[len + 1], curdir) != 0) {
+                    snprintf (curcoll, MAX_NAME_LEN, "%s/%s",
+                      phyPathRegInp->objPath, curdir);
+                    rsMkCollR (rsComm, phyPathRegInp->objPath, curcoll);
+                }
+	        snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
+	          curcoll, rodsDirent->d_name);
+            } else {
+                snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
+                  phyPathRegInp->objPath, rodsDirent->d_name);
+            }
         } else {
 	    snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
 	      phyPathRegInp->objPath, rodsDirent->d_name);

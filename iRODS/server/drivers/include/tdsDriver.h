@@ -27,6 +27,7 @@ typedef struct {
     xmlNodePtr rootnode;
     xmlNodePtr curnode;
     char dirUrl[MAX_NAME_LEN];
+    char curdir[MAX_NAME_LEN];
     CURL *easyhandle;
     urlPath_t urlPath[NUM_URL_PATH];
 } tdsDirStruct_t;
@@ -61,10 +62,8 @@ int
 tdsStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 int mode, int flags, char *urlPath, char *cacheFilename, rodsLong_t dataSize,
 keyValPair_t *condInput);
-#if 0
 int
-httpDownloadFunc (void *buffer, size_t size, size_t nmemb, void *userp);
-#endif
+setTdsCurdir (tdsDirStruct_t *tdsDirStruct, char *name);
 #ifdef  __cplusplus
 }
 #endif

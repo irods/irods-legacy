@@ -39,6 +39,8 @@ getPhyPathInOpenedDir (int dirFd, int pathInx, char *outPath);
 int
 getStModeInOpenedDir (int dirFd, int pathInx);
 int
+getCurDirInOpenedDir (int dirFd, char *curdir);
+int
 freePhyPathInOpenedDir (int dirFd, int pathInx);
 #else
 #define RS_FILE_READDIR NULL

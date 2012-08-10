@@ -101,6 +101,7 @@ tdsReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
             }
             if (myurlPath == NULL) {
                 /* drill down */
+                setTdsCurdir (tdsDirStruct, (char *) myname);
                 continue;
             } else {
                 if ((char *)myname != NULL && strlen ((char *)myname) > 0) {
@@ -417,5 +418,50 @@ listTdsDir (rsComm_t *rsComm, char *dirUrl)
           dirUrl, status);
     }
     return status;
+}
+
+int
+setTdsCurdir (tdsDirStruct_t *tdsDirStruct, char *name)
+{
+    xmlNodePtr mynode;
+    char myname[MAX_NAME_LEN];
+    char *tmpPtr;
+    int level = 0;
+
+    if (name == NULL || *name == '\0') return 0;
+
+    rstrcpy (myname, name, MAX_NAME_LEN);
+
+    tmpPtr = myname;
+    /* take out any '/' in the path */
+    while (*tmpPtr != '\0') {
+        if (*tmpPtr == '/') {
+            *tmpPtr = '.';
+        }
+        tmpPtr++;
+    }
+    /* find out at what level is the directory */
+    level = 0;
+    mynode = tdsDirStruct->curnode;
+    mynode = tdsDirStruct->curnode;
+    while (mynode != NULL && mynode->parent != tdsDirStruct->rootnode) {
+        mynode = mynode->parent;
+        level++;
+    }
+    /* find the starting location to append */
+    tmpPtr = tdsDirStruct->curdir;
+    while (level > 0 && *tmpPtr != '\0') {
+        if (*tmpPtr == '/') {
+            level--;
+        }
+        tmpPtr++;
+    }
+    if (level > 0) {
+        /* append to the end */
+        snprintf (tmpPtr, MAX_NAME_LEN, "/%s", myname);
+    } else {
+        snprintf (tmpPtr, MAX_NAME_LEN, "%s", myname);
+    }
+    return 0;
 }
 

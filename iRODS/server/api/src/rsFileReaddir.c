@@ -150,6 +150,23 @@ getStModeInOpenedDir (int dirFd, int pathInx)
 }
 
 int
+getCurDirInOpenedDir (int dirFd, char *curdir)
+{
+    if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
+#ifdef OOI_CI
+        tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *)
+          FileDesc[dirFd].driverDep;
+        rstrcpy (curdir, tdsDirStruct->curdir, MAX_NAME_LEN);
+        return 0;
+#else
+        return SYS_NOT_SUPPORTED;
+#endif
+    } else {
+        return SYS_NOT_SUPPORTED;
+    }
+}
+
+int
 freePhyPathInOpenedDir (int dirFd, int pathInx)
 {
     if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
