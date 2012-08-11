@@ -197,6 +197,14 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->remove=True;
             argv[i]="-Z";
          }
+         if (strcmp("--header", argv[i])==0) {
+            rodsArgs->header=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--dim", argv[i])==0) {
+            rodsArgs->dim=True;
+            argv[i]="-Z";
+         }
 #endif
       }
    }

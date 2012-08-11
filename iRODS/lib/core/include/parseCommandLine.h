@@ -35,6 +35,7 @@ typedef struct {
    int collection;
    char *collectionString;
    int dataObjects;
+   int dim;
    int dryrun;
    int echo;
    int empty;
@@ -44,6 +45,7 @@ typedef struct {
    int global;
    int rescGroup;
    char *rescGroupString;
+   int header;
    int help;
    int hostAddr;
    char *hostAddrString;
