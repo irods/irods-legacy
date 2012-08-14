@@ -278,7 +278,7 @@ int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut)
                 int numbLine = outCnt / itemsPerLine;
                 if (itemsInLine == 0) {
                     printf ("(%d - %d)  ", numbLine * itemsPerLine, 
-                      numbLine * itemsPerLine + itemsPerLine);
+                      numbLine * itemsPerLine + itemsPerLine -1);
                 }
                 itemsInLine++;
                 if (itemsInLine >= itemsPerLine) {

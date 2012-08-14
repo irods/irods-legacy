@@ -115,10 +115,16 @@ ncOpenInp_t *ncOpenInp)
         if (rodsArgs->header == True) {
             status = dumpNcHeader (conn, ncOpenInp->objPath, ncid, ncInqOut);
         }
+        if (rodsArgs->header + rodsArgs->dim + rodsArgs->var > 1)
+            printf 
+              ("===========================================================\n");
         if (rodsArgs->dim == True) {
             status = dumpNcDimVar (conn, ncOpenInp->objPath, ncid, 
               rodsArgs->ascitime, ncInqOut);
         }
+        if (rodsArgs->header + rodsArgs->dim + rodsArgs->var > 1)
+            printf 
+              ("===========================================================\n");
     } else {
         /* output is a NETCDF file */
         status = dumpNcInqOutToNcFile (conn, ncid, ncInqOut, 
