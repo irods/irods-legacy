@@ -70,7 +70,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/sslSockComm.o
 
 ifdef NETCDF_API
-LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o
+LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o $(libCoreObjDir)/ncUtil.o
 endif
 
 ifdef USE_BOOST_ASIO

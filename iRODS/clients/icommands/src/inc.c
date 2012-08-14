@@ -7,7 +7,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "ncattrUtil.h"
+#include "ncUtil.h"
 void usage ();
 
 int
@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hZ";
+    optStr = "ho:Z";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
@@ -89,17 +89,31 @@ usage ()
 {
 
    char *msgs[]={
-"Usage : inc [-hr] [--header] [--dim] dataObj|collection ... ",
+"Usage : inc [-hr] [--header] [--dim] [--ascitime] [--var]|[-o outFile]",
+"dataObj|collection ... ",
 " ",
 "Perform NETCDF operations on the input data objects. The data objects must",
 "be in NETCDF file format.",
+"The -o option specifies the variables values will be extracted and put",
+"into the file given by outFile in NETCDF format. The --header option can be",
+"used with the -o option to extract the attributes info and add them to the",
+"NETCDF output file.",
+
+"If the -o option is not used, the output will be in plain text.",
+"If no option is specified, the header and dimension info will be output.",
+" ",
 
 " ",
 "Options are:",
+"-o outFile - the variables values will be extracted and put into the file",
+"      given by outFile in NETCDF format.",
 " -r  recursive operation on the collction",
+"--ascitime - For 'time' variable, output time in asci GMT time instead of ",
+"      integer. e.g., 2006-05-01T08:30:00Z.",
 "--header - output the header info (info on atrributes, dimensions and",
-"           variables.";
+"      variables).",
 "--dim - output the values of dimension variables.", 
+"--var - output the values of variables.",
 " -h  this help",
 ""};
    int i;

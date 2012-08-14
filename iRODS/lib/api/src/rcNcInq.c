@@ -65,16 +65,11 @@ freeNcInqOut (ncInqOut_t **ncInqOut)
     return 0;
 }
 
-/* dumpVarLen 0 mean dump all. > 0 means dump the specified len */
 int
-dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen, 
-ncInqOut_t *ncInqOut)
+dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
 {
     int i, j, dimId, status;
     char tempStr[NAME_LEN];
-    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
-    ncGetVarInp_t ncGetVarInp;
-    ncGetVarOut_t *ncGetVarOut = NULL;
     void *bufPtr;
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
 
@@ -144,6 +139,179 @@ ncInqOut_t *ncInqOut)
             }
         }
     }
+    return 0;
+}
+
+int
+dumpNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
+ncInqOut_t *ncInqOut)
+{
+    int i, j, status;
+
+    /* dimensions */
+    if (ncInqOut->ndims <= 0 || ncInqOut->dim == NULL)
+        return USER__NULL_INPUT_ERR;
+    printf ("dimensions:\n");
+    for (i = 0; i < ncInqOut->ndims; i++) {
+        if (ncInqOut->unlimdimid == ncInqOut->dim[i].id) {
+            /* unlimited */
+            printf ("    %s = UNLIMITED ; // (%lld currently)\n",
+              ncInqOut->dim[i].name, ncInqOut->dim[i].arrayLen);
+        } else {
+            printf ("    %s = %lld ;\n",
+              ncInqOut->dim[i].name, ncInqOut->dim[i].arrayLen);
+        }
+        /* get the dim variables */
+        for (j = 0; j < ncInqOut->nvars; j++) {
+            if (strcmp (ncInqOut->dim[i].name, ncInqOut->var[j].name) == 0) {
+                break;
+            }
+        }
+        if (j >= ncInqOut->nvars) {
+            /* not found. should not happen */
+            rodsLogError (LOG_ERROR, status,
+              "dumpNcDimVar: unmatched dim var  %s", ncInqOut->dim[i].id);
+            return NETCDF_DIM_MISMATCH_ERR;
+        }
+        status = dumpSingleVar (conn, ncid, j, 0, 10, printAsciTime, ncInqOut);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "dumpNcDimVar: dumpSingleVar error for %s",
+              ncInqOut->var[j].name);
+            return status;
+        }
+    }
+    return status;
+}
+
+int
+dumpSingleVar (rcComm_t *conn, int ncid, int varInx, int dumpVarLen, 
+int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut)
+{
+    int j, status;
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    ncGetVarInp_t ncGetVarInp;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+    int lastDimLen;
+    char tempStr[NAME_LEN];
+    void *bufPtr;
+    int outCnt = 0;
+    int itemsInLine = 0;
+
+    for (j = 0; j < ncInqOut->var[varInx].nvdims; j++) {
+        int dimId = ncInqOut->var[varInx].dimId[j];
+        start[j] = 0;
+        if (dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen) {
+            /* If it is NC_CHAR, it could be a str */
+            if (ncInqOut->var[varInx].dataType == NC_CHAR &&
+              j ==  ncInqOut->var[varInx].nvdims - 1) {
+                count[j] = ncInqOut->dim[dimId].arrayLen;
+            } else {
+                count[j] = dumpVarLen;
+            }
+        } else {
+            count[j] = ncInqOut->dim[dimId].arrayLen;
+        }
+        stride[j] = 1;
+    }
+    bzero (&ncGetVarInp, sizeof (ncGetVarInp));
+    ncGetVarInp.dataType = ncInqOut->var[varInx].dataType;
+    ncGetVarInp.ncid = ncid;
+    ncGetVarInp.varid =  ncInqOut->var[varInx].id;
+    ncGetVarInp.ndim =  ncInqOut->var[varInx].nvdims;
+    ncGetVarInp.start = start;
+    ncGetVarInp.count = count;
+    ncGetVarInp.stride = stride;
+
+    status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "dumpNcInqOut: rcNcGetVarsByType error for %s",
+          ncInqOut->var[varInx].name);
+          return status;
+    }
+    /* print it */
+    lastDimLen = count[ncInqOut->var[varInx].nvdims - 1];
+    bufPtr = ncGetVarOut->dataArray->buf;
+    bzero (tempStr, sizeof (tempStr));
+    if (ncInqOut->var[varInx].dataType == NC_CHAR) {
+        int nextLastDimLen;
+        if (ncInqOut->var[varInx].nvdims >= 2) {
+            nextLastDimLen = count[ncInqOut->var[varInx].nvdims - 2];
+        } else {
+            nextLastDimLen = 0;
+        }
+        for (j = 0; j < ncGetVarOut->dataArray->len; j+=lastDimLen) {
+            /* treat it as strings */
+            if (j + lastDimLen >= ncGetVarOut->dataArray->len - 1) {
+                printf ("%s ;\n", (char *) bufPtr);
+            } else if (outCnt >= nextLastDimLen) {
+                /* reset */
+                printf ("%s,\n  ", (char *) bufPtr);
+                outCnt = 0;
+            } else {
+                printf ("%s, ", (char *) bufPtr);
+            }
+        }
+    } else {
+        for (j = 0; j < ncGetVarOut->dataArray->len; j++) {
+            ncValueToStr (ncInqOut->var[varInx].dataType, &bufPtr, tempStr);
+            outCnt++;
+           if (printAsciTime == True && 
+              strcasecmp (ncInqOut->var[varInx].name, "time") == 0) {
+                /* asci time */
+                time_t mytime =atoi (tempStr);
+                struct tm *mytm = gmtime (&mytime);
+                if (mytm != NULL) {
+                    snprintf (tempStr, NAME_LEN, 
+                      "%04d-%02d-%02dT%02d:%02d:%02dZ",
+                      1900+mytm->tm_year, mytm->tm_mon + 1, mytm->tm_mday,
+                      mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
+                }
+            }
+            if (j >= ncGetVarOut->dataArray->len - 1) {
+                printf ("%s ;\n", tempStr);
+            } else if (itemsPerLine > 0) {
+                int numbLine = outCnt / itemsPerLine;
+                if (itemsInLine == 0) {
+                    printf ("(%d - %d)  ", numbLine * itemsPerLine, 
+                      numbLine * itemsPerLine + itemsPerLine);
+                }
+                itemsInLine++;
+                if (itemsInLine >= itemsPerLine) {
+                    printf ("%s,\n", tempStr);
+                    itemsInLine = 0;
+                } else {
+                    printf ("%s, ", tempStr);
+                }
+            } else if (outCnt >= lastDimLen) {
+                /* reset */
+                printf ("%s,\n  ", tempStr);
+                outCnt = 0;
+            } else {
+                printf ("%s, ", tempStr);
+            }
+        }
+    }
+
+    return status;
+}
+
+/* dumpVarLen 0 mean dump all. > 0 means dump the specified len */
+int
+dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen,
+ncInqOut_t *ncInqOut)
+{
+    int i, j, status;
+    char tempStr[NAME_LEN];
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    ncGetVarInp_t ncGetVarInp;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+    void *bufPtr;
+
+    status = dumpNcHeader (conn, fileName, ncid, ncInqOut);
+    if (status < 0) return status;
 
     /* data */
     printf ("data:\n\n");

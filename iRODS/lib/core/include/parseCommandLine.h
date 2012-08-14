@@ -26,6 +26,7 @@ typedef struct {
    int all;
    int accessControl;
    int admin;
+   int ascitime;
    int attr;
    char *attrStr;
    int bulk;
@@ -102,6 +103,7 @@ typedef struct {
    int zone;
    char *zoneName;
    int verify;
+   int var;
    int extract; 
    int restart;
    char *restartFileString;

@@ -205,6 +205,15 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->dim=True;
             argv[i]="-Z";
          }
+         if (strcmp("--var", argv[i])==0) {
+            rodsArgs->var=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--ascitime", argv[i])==0) {
+            rodsArgs->ascitime=True;
+            argv[i]="-Z";
+         }
+
 #endif
       }
    }

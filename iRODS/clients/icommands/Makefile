@@ -138,8 +138,8 @@ BINS =		\
 		$(binDir)/igroupadmin
 
 ifdef NETCDF_API
-OBJS += $(objDir)/incattr.o
-BINS += $(binDir)/incattr
+OBJS += $(objDir)/incattr.o $(objDir)/inc.o
+BINS += $(binDir)/incattr $(binDir)/inc
 endif
 
 #

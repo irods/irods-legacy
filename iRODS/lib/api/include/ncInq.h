@@ -131,6 +131,14 @@ int
 dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen,
 ncInqOut_t *ncInqOut);
 int
+dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut);
+int
+dumpSingleVar (rcComm_t *conn, int ncid, int varInx, int dumpVarLen,
+int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut);
+int
+dumpNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
+ncInqOut_t *ncInqOut);
+int
 getNcTypeStr (int dataType, char *outString);
 int
 ncValueToStr (int dataType, void **value, char *outString);

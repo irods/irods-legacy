@@ -51,7 +51,6 @@ rodsPathInp_t *rodsPathInp)
 	    rodsLog (LOG_ERROR,
 	     "ncUtil: invalid nc objType %d for %s", 
 	     rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath);
-            clearRegGlobalAttrInp (&ncOpenInp);
 	    return (USER_INPUT_PATH_ERR);
 	}
 	/* XXXX may need to return a global status */
@@ -62,7 +61,6 @@ rodsPathInp_t *rodsPathInp)
 	    savedStatus = status;
 	} 
     }
-    clearRegGlobalAttrInp (&ncOpenInp);
     if (savedStatus < 0) {
         return (savedStatus);
     } else if (status == CAT_NO_ROWS_FOUND) {
@@ -77,7 +75,12 @@ ncOperDataObjUtil (rcComm_t *conn, char *srcPath,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 ncOpenInp_t *ncOpenInp)
 {
-    int status;
+    int status, status1;
+    ncCloseInp_t ncCloseInp;
+    ncInqInp_t ncInqInp;
+    ncInqOut_t *ncInqOut = NULL;
+    int ncid;
+
  
     if (srcPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -87,9 +90,50 @@ ncOpenInp_t *ncOpenInp)
 
     rstrcpy (ncOpenInp->objPath, srcPath, MAX_NAME_LEN);
 
-    status = rcNcOpen (conn, ncOpenInp);
+    status = rcNcOpen (conn, ncOpenInp, &ncid);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "ncOperDataObjUtil: rcNcOpen error for %s", ncOpenInp->objPath);
+        return status;
+    }
 
-    return (status);
+    /* do the general inq */
+    bzero (&ncInqInp, sizeof (ncInqInp));
+    ncInqInp.ncid = ncid;
+    ncInqInp.paramType = NC_ALL_TYPE;
+    ncInqInp.flags = NC_ALL_FLAG;
+
+    status = rcNcInq (conn, &ncInqInp, &ncInqOut);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "ncOperDataObjUtil: rcNcInq error for %s", ncOpenInp->objPath);
+        return status;
+    }
+
+    if (rodsArgs->option == False) {
+        /* stdout */
+        if (rodsArgs->header == True) {
+            status = dumpNcHeader (conn, ncOpenInp->objPath, ncid, ncInqOut);
+        }
+        if (rodsArgs->dim == True) {
+            status = dumpNcDimVar (conn, ncOpenInp->objPath, ncid, 
+              rodsArgs->ascitime, ncInqOut);
+        }
+    } else {
+        /* output is a NETCDF file */
+        status = dumpNcInqOutToNcFile (conn, ncid, ncInqOut, 
+          rodsArgs->optionString);
+    }
+
+    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
+    ncCloseInp.ncid = ncid;
+    status1 = rcNcClose (conn, &ncCloseInp);
+    if (status1 < 0) {
+        rodsLogError (LOG_ERROR, status1,
+          "ncOperDataObjUtil: rcNcClose error for %s", ncOpenInp->objPath);
+        return status1;
+    }
+    return status;
 }
 
 int
@@ -106,8 +150,17 @@ ncOpenInp_t *ncOpenInp)
     memset (ncOpenInp, 0, sizeof (ncOpenInp_t));
 
     if (rodsArgs == NULL) {
-	return (0);
+        return (0);
     }
+    if ((rodsArgs->dim + rodsArgs->header + rodsArgs->var + rodsArgs->option)
+      == False) {
+        rodsArgs->dim = rodsArgs->header = True;
+    }
+
+    bzero (ncOpenInp, sizeof (ncOpenInp_t));
+    ncOpenInp->mode = NC_NOWRITE;
+    addKeyVal (&ncOpenInp->condInput, NO_STAGING_KW, "");
+
     return (0);
 }
 
