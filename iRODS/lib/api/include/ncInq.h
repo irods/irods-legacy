@@ -149,6 +149,8 @@ int
 ncFormatToCmode (int format);
 int
 closeAndRmNeFile (int ncid, char *outFileName);
+int
+printNice (char *str, char *margin, int charPerLine);
 #ifdef  __cplusplus
 }
 #endif

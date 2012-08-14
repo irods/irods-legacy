@@ -85,14 +85,16 @@ dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
     /* attrbutes */
     for (i = 0; i < ncInqOut->ngatts; i++) {
 	bufPtr = ncInqOut->gatt[i].value.dataArray->buf;
-        printf ("%s = ", ncInqOut->gatt[i].name);
+        printf ("   %s = \n", ncInqOut->gatt[i].name);
 	if (ncInqOut->gatt[i].dataType == NC_CHAR) {
             /* assume it is a string */
-            printf ("%s ;\n", (char *) bufPtr);
+            /* printf ("%s ;\n", (char *) bufPtr); */
+            printNice ((char *) bufPtr, "      ", 72);
         } else {
             ncValueToStr (ncInqOut->gatt[i].dataType, &bufPtr, tempStr);
-            printf ("%s ;\n", tempStr);
+            printNice (tempStr, "      ", 72);
         }
+        printf (";\n");
     }
 
     /* dimensions */
@@ -102,10 +104,10 @@ dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
     for (i = 0; i < ncInqOut->ndims; i++) {
 	if (ncInqOut->unlimdimid == ncInqOut->dim[i].id) {
 	    /* unlimited */
-	    printf ("        %s = UNLIMITED ; // (%lld currently)\n", 
+	    printf ("   %s = UNLIMITED ; // (%lld currently)\n", 
 	      ncInqOut->dim[i].name, ncInqOut->dim[i].arrayLen);
 	} else { 
-	    printf ("        %s = %lld ;\n", 
+	    printf ("   %s = %lld ;\n", 
 	      ncInqOut->dim[i].name, ncInqOut->dim[i].arrayLen);
 	}
     }
@@ -116,7 +118,7 @@ dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
     for (i = 0; i < ncInqOut->nvars; i++) {
 	status = getNcTypeStr (ncInqOut->var[i].dataType, tempStr);
 	if (status < 0) return status;
-        printf ("        %s %s(", tempStr, ncInqOut->var[i].name);
+        printf ("   %s %s(", tempStr, ncInqOut->var[i].name);
 	for (j = 0; j < ncInqOut->var[i].nvdims - 1; j++) {
 	    dimId = ncInqOut->var[i].dimId[j];
 	    printf ("%s, ",  ncInqOut->dim[dimId].name);
@@ -127,7 +129,7 @@ dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
 	/* print the attributes */
 	for (j = 0; j < ncInqOut->var[i].natts; j++) {
 	    ncGenAttOut_t *att = &ncInqOut->var[i].att[j];
-            printf ("                 %s:%s = ",   
+            printf ("       %s:%s = ",   
 	      ncInqOut->var[i].name, att->name);
 	    bufPtr = att->value.dataArray->buf;
             if (att->dataType == NC_CHAR) {
@@ -687,4 +689,39 @@ closeAndRmNeFile (int ncid, char *outFileName)
     unlink (outFileName);
     return 0;
 }
+
+int
+printNice (char *str, char *margin, int charPerLine)
+{
+    char tmpStr[META_STR_LEN];
+    char *tmpPtr = tmpStr;
+    int len = strlen (str);
+    int c;
+
+    rstrcpy (tmpStr, str, META_STR_LEN);
+    while (len > 0) {
+        if (len > charPerLine) {
+            char *tmpPtr1 = tmpPtr;
+            c = *(tmpPtr + charPerLine);
+            *(tmpPtr + charPerLine) = '\0';	
+            /* take out any \n */
+            while (*tmpPtr1 != '\0') {
+                /* if (*tmpPtr1 == '\n') {  */
+                if (isspace (*tmpPtr1)) {
+                    *tmpPtr1 = ' ';
+                }
+                tmpPtr1++;
+            }
+            printf ("%s%s\n", margin, tmpPtr);
+            *(tmpPtr + charPerLine) = c;
+            tmpPtr += charPerLine;
+            len -= charPerLine;
+        } else {
+            printf ("%s%s", margin, tmpPtr);
+            break;
+        }
+    }
+    return 0;
+}
+
 

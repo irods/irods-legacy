@@ -398,7 +398,7 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs)
         return (status);
     }
 
-    printf ("    %s :\n", myFile);
+    printf ("%s :\n", myFile);
 
     status = queryDataObjForAUV (conn, srcPath, rodsArgs, &genQueryOut);
 
@@ -436,7 +436,9 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs)
         metaValStr = &metaVal->value[metaVal->len * i];
         metaUnitsStr = &metaUnits->value[metaUnits->len * i];
         if (rodsArgs->longOption == True || rodsArgs->attr == True) {
-            printf ("         %s = %s\n", metaAttrStr, metaValStr);
+            printf ("   %s = \n", metaAttrStr);
+            printNice (metaValStr, "      ", 72);
+            printf ("\n");
         } else {
             if (i == 0) printf ("        ");
             if (i >= genQueryOut->rowCnt - 1) {
