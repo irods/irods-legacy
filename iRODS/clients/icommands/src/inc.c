@@ -90,14 +90,15 @@ usage ()
 
    char *msgs[]={
 "Usage : inc [-hr] [--header] [--dim] [--ascitime] [--var]|[-o outFile]",
-"dataObj|collection ... ",
+"[--noattr] dataObj|collection ... ",
 " ",
 "Perform NETCDF operations on the input data objects. The data objects must",
 "be in NETCDF file format.",
 "The -o option specifies the variables values will be extracted and put",
-"into the file given by outFile in NETCDF format. The --header option can be",
-"used with the -o option to extract the attributes info and add them to the",
-"NETCDF output file.",
+"into the file given by outFile in NETCDF format."
+"The --noattr option is only meaningful with the -o option. By default,"
+"the attributes info is automatically extracted and add them to the",
+"NETCDF output file. --noattr specifies that attributes will not be added.",
 
 "If the -o option is not used, the output will be in plain text.",
 "If no option is specified, the header and dimension info will be output.",
@@ -113,6 +114,7 @@ usage ()
 "--header - output the header info (info on atrributes, dimensions and",
 "      variables).",
 "--dim - output the values of dimension variables.", 
+"--noattr - attributes will not be added to the NETCDF output file.",
 "--var - output the values of variables.",
 " -h  this help",
 ""};

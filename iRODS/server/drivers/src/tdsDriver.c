@@ -365,7 +365,7 @@ keyValPair_t *condInput)
         return status;
     }
 
-    status = dumpNcInqOutToNcFile (NULL, ncid, ncInqOut, cacheFilename);
+    status = dumpNcInqOutToNcFile (NULL, ncid, False, ncInqOut, cacheFilename);
 
     freeNcInqOut (&ncInqOut);
     if (status < 0) {

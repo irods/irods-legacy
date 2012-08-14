@@ -193,6 +193,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
                argv[i+1]="-Z";
             }
          }
+         if (strcmp("--noattr", argv[i])==0) {
+            rodsArgs->noattr=True;
+            argv[i]="-Z";
+         }
          if (strcmp("--remove", argv[i])==0) {
             rodsArgs->remove=True;
             argv[i]="-Z";

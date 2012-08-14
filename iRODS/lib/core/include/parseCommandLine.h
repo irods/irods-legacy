@@ -28,6 +28,7 @@ typedef struct {
    int admin;
    int ascitime;
    int attr;
+   int noattr;
    char *attrStr;
    int bulk;
    int backupMode; 

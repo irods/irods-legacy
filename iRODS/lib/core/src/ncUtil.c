@@ -127,7 +127,7 @@ ncOpenInp_t *ncOpenInp)
               ("===========================================================\n");
     } else {
         /* output is a NETCDF file */
-        status = dumpNcInqOutToNcFile (conn, ncid, ncInqOut, 
+        status = dumpNcInqOutToNcFile (conn, ncid, rodsArgs->noattr, ncInqOut, 
           rodsArgs->optionString);
     }
 

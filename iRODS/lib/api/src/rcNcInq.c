@@ -89,10 +89,12 @@ dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
 	if (ncInqOut->gatt[i].dataType == NC_CHAR) {
             /* assume it is a string */
             /* printf ("%s ;\n", (char *) bufPtr); */
-            printNice ((char *) bufPtr, "      ", 72);
+            if (printNice ((char *) bufPtr, "      ", 72) < 0) 
+                printf ("     %s", (char *) bufPtr);
         } else {
             ncValueToStr (ncInqOut->gatt[i].dataType, &bufPtr, tempStr);
-            printNice (tempStr, "      ", 72);
+            if (printNice (tempStr, "      ", 72) < 0)
+                printf ("     %s", (char *) bufPtr);
         }
         printf (";\n");
     }
@@ -129,16 +131,21 @@ dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
 	/* print the attributes */
 	for (j = 0; j < ncInqOut->var[i].natts; j++) {
 	    ncGenAttOut_t *att = &ncInqOut->var[i].att[j];
-            printf ("       %s:%s = ",   
+              printf ("     %s:%s =\n",   
 	      ncInqOut->var[i].name, att->name);
 	    bufPtr = att->value.dataArray->buf;
             if (att->dataType == NC_CHAR) {
                 /* assume it is a string */
-                printf ("%s ;\n", (char *) bufPtr);
+                /* printf ("%s ;\n", (char *) bufPtr); */
+                if (printNice ((char *) bufPtr, "         ", 70) < 0)
+                    printf ("     %s", (char *) bufPtr);
             } else {
 	        ncValueToStr (att->dataType, &bufPtr, tempStr);
-	        printf ("%s ;\n", tempStr);
+	        /* printf ("%s ;\n", tempStr); */
+                if (printNice (tempStr, "         ", 70) < 0) 
+                    printf ("     %s", (char *) bufPtr);
             }
+            printf (";\n");
         }
     }
     return 0;
@@ -148,7 +155,7 @@ int
 dumpNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
 ncInqOut_t *ncInqOut)
 {
-    int i, j, status;
+    int i, j, status = 0;
 
     /* dimensions */
     if (ncInqOut->ndims <= 0 || ncInqOut->dim == NULL)
@@ -170,10 +177,13 @@ ncInqOut_t *ncInqOut)
             }
         }
         if (j >= ncInqOut->nvars) {
-            /* not found. should not happen */
+            /* not found. tabledap allows this */
+            continue;
+#if 0
             rodsLogError (LOG_ERROR, status,
               "dumpNcDimVar: unmatched dim var  %s", ncInqOut->dim[i].id);
             return NETCDF_DIM_MISMATCH_ERR;
+#endif
         }
         status = dumpSingleVar (conn, ncid, j, 0, 10, printAsciTime, ncInqOut);
         if (status < 0) {
@@ -510,8 +520,8 @@ ncValueToStr (int dataType, void **invalue, char *outString)
 }
 
 int
-dumpNcInqOutToNcFile (rcComm_t *conn, int srcNcid, ncInqOut_t *ncInqOut, 
-char *outFileName)
+dumpNcInqOutToNcFile (rcComm_t *conn, int srcNcid, int noattrFlag,
+ncInqOut_t *ncInqOut, char *outFileName)
 {
     int i, j, dimId, status;
     int ncid, cmode;
@@ -533,20 +543,21 @@ char *outFileName)
     }
 
     /* attrbutes */
-    for (i = 0; i < ncInqOut->ngatts; i++) {
-        bufPtr = ncInqOut->gatt[i].value.dataArray->buf;
-        status = nc_put_att (ncid, NC_GLOBAL, ncInqOut->gatt[i].name,
-          ncInqOut->gatt[i].dataType, ncInqOut->gatt[i].length, bufPtr);
-        if (status != NC_NOERR) {
-            rodsLog (LOG_ERROR,
-              "dumpNcInqOutToNcFile: nc_put_att error.  %s ", 
-              nc_strerror(status));
-            status = NETCDF_PUT_ATT_ERR - status;
-            closeAndRmNeFile (ncid, outFileName);
-            return status;
+    if (noattrFlag == False) {
+        for (i = 0; i < ncInqOut->ngatts; i++) {
+            bufPtr = ncInqOut->gatt[i].value.dataArray->buf;
+            status = nc_put_att (ncid, NC_GLOBAL, ncInqOut->gatt[i].name,
+              ncInqOut->gatt[i].dataType, ncInqOut->gatt[i].length, bufPtr);
+            if (status != NC_NOERR) {
+                rodsLog (LOG_ERROR,
+                  "dumpNcInqOutToNcFile: nc_put_att error.  %s ", 
+                  nc_strerror(status));
+                status = NETCDF_PUT_ATT_ERR - status;
+                closeAndRmNeFile (ncid, outFileName);
+                return status;
+            }
         }
     }
-
     /* dimensions */
     if (ncInqOut->ndims <= 0 || ncInqOut->dim == NULL)
         return USER__NULL_INPUT_ERR;
@@ -592,18 +603,20 @@ char *outFileName)
             return status;
         }
         /* put the variable attributes */
-        for (j = 0; j < ncInqOut->var[i].natts; j++) {
-            ncGenAttOut_t *att = &ncInqOut->var[i].att[j];
-            bufPtr = att->value.dataArray->buf;
-            status = nc_put_att (ncid, ncInqOut->var[i].myint, att->name,
-              att->dataType, att->length, bufPtr);
-            if (status != NC_NOERR) {
-                rodsLog (LOG_ERROR,
-                  "dumpNcInqOutToNcFile: nc_put_att for %s error.  %s ",
-                  ncInqOut->var[i].name, nc_strerror(status));
-                status = NETCDF_PUT_ATT_ERR - status;
-                closeAndRmNeFile (ncid, outFileName);
-                return status;
+        if (noattrFlag == False) {
+            for (j = 0; j < ncInqOut->var[i].natts; j++) {
+                ncGenAttOut_t *att = &ncInqOut->var[i].att[j];
+                bufPtr = att->value.dataArray->buf;
+                status = nc_put_att (ncid, ncInqOut->var[i].myint, att->name,
+                  att->dataType, att->length, bufPtr);
+                if (status != NC_NOERR) {
+                    rodsLog (LOG_ERROR,
+                      "dumpNcInqOutToNcFile: nc_put_att for %s error.  %s ",
+                      ncInqOut->var[i].name, nc_strerror(status));
+                    status = NETCDF_PUT_ATT_ERR - status;
+                    closeAndRmNeFile (ncid, outFileName);
+                    return status;
+                }
             }
         }
     }
@@ -697,6 +710,8 @@ printNice (char *str, char *margin, int charPerLine)
     char *tmpPtr = tmpStr;
     int len = strlen (str);
     int c;
+
+    if (len > META_STR_LEN) return USER_STRLEN_TOOLONG;
 
     rstrcpy (tmpStr, str, META_STR_LEN);
     while (len > 0) {
