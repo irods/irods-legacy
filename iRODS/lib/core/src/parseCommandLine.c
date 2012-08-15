@@ -212,6 +212,28 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          if (strcmp("--var", argv[i])==0) {
             rodsArgs->var=True;
             argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--var option needs an iput parameter");
+                    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->varStr=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+         if (strcmp("--subset", argv[i])==0) {
+            rodsArgs->subset=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--subset option needs an iput parameter");
+                    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->subsetStr=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
          }
          if (strcmp("--ascitime", argv[i])==0) {
             rodsArgs->ascitime=True;

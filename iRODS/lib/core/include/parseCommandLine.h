@@ -92,6 +92,8 @@ typedef struct {
    rodsLong_t size;
    int srcResc;
    char *srcRescString;
+   int subset;
+   char *subsetStr;
    int test;
    int ticket;
    char *ticketString;
@@ -105,6 +107,7 @@ typedef struct {
    char *zoneName;
    int verify;
    int var;
+   char *varStr;
    int extract; 
    int restart;
    char *restartFileString;

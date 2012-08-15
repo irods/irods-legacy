@@ -315,24 +315,72 @@ int
 dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen,
 ncInqOut_t *ncInqOut)
 {
-    int i, j, status;
+    int status;
+
+    status = dumpNcHeader (conn, fileName, ncid, ncInqOut);
+    if (status < 0) return status;
+
+}
+
+int
+dumpNcVarData (rcComm_t *conn, char *fileName, int ncid, 
+ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
+{
+    int i, j, k, status;
     char tempStr[NAME_LEN];
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
     ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
     void *bufPtr;
 
-    status = dumpNcHeader (conn, fileName, ncid, ncInqOut);
-    if (status < 0) return status;
-
     /* data */
     printf ("data:\n\n");
     for (i = 0; i < ncInqOut->nvars; i++) {
+        if (ncVarSubset->numVar > 1 || (ncVarSubset->numVar == 1 && 
+          strcmp (&ncVarSubset->varName[0][LONG_NAME_LEN], "all") != 0)) {
+            /* only do those that match */
+            for (j = 0; j < ncVarSubset->numVar; j++) {
+                if (strcmp (&ncVarSubset->varName[j][LONG_NAME_LEN], 
+                  ncInqOut->var[i].name) == 0) break;
+            }
+            if (j >= ncVarSubset->numVar) continue;    /* no match */
+        }
 	printf (" %s = ", ncInqOut->var[i].name);
 	if (ncInqOut->var[i].nvdims > 1) printf ("\n  ");
 	for (j = 0; j < ncInqOut->var[i].nvdims; j++) {
 	    int dimId = ncInqOut->var[i].dimId[j];
-	    start[j] = 0;
+            int doSubset = False;
+            if (ncVarSubset->numSubset > 0) {
+                for (k = 0; k < ncVarSubset->numSubset; k++) {
+                    if (strcmp (ncInqOut->dim[dimId].name, 
+                      ncVarSubset->ncSubset[k].subsetVarName) == 0) {
+                        doSubset = True;
+                        break;
+                    }
+                }
+            }
+            if (doSubset == True) {
+                if (ncVarSubset->ncSubset[k].start >= 
+                  ncInqOut->dim[dimId].arrayLen || 
+                  ncVarSubset->ncSubset[k].end >= 
+                  ncInqOut->dim[dimId].arrayLen ||
+                  ncVarSubset->ncSubset[k].start > 
+                  ncVarSubset->ncSubset[k].end) {
+                    rodsLogError (LOG_ERROR, status,
+                     "dumpNcInqOut: start %d or end %d for %s outOfRange %lld",
+                     ncVarSubset->ncSubset[k].start,
+                     ncVarSubset->ncSubset[k].end,
+                     ncVarSubset->ncSubset[k].subsetVarName,
+                     ncInqOut->dim[dimId].arrayLen);
+                    return NETCDF_DIM_MISMATCH_ERR;
+                }  
+                start[j] = ncVarSubset->ncSubset[k].start;
+                stride[j] = ncVarSubset->ncSubset[k].stride;
+                count[j] = ncVarSubset->ncSubset[k].end - 
+                  ncVarSubset->ncSubset[k].start + 1;
+            } else {
+	        start[j] = 0;
+#if 0
             if (dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen) {
                 /* If it is NC_CHAR, it could be a str */
                 if (ncInqOut->var[i].dataType == NC_CHAR && 
@@ -344,7 +392,10 @@ ncInqOut_t *ncInqOut)
             } else {
 	        count[j] = ncInqOut->dim[dimId].arrayLen;
             }
-	    stride[j] = 1;
+#endif
+	        count[j] = ncInqOut->dim[dimId].arrayLen;
+	        stride[j] = 1;
+            }
 	}
         bzero (&ncGetVarInp, sizeof (ncGetVarInp));
         ncGetVarInp.dataType = ncInqOut->var[i].dataType;
@@ -739,4 +790,52 @@ printNice (char *str, char *margin, int charPerLine)
     return 0;
 }
 
+/* parseNcVarSubset - ncVarSubset->subsetVarName is expected to be in the
+ * form varName[start:stride:end]. Parse for integer value of start, stride
+ * and end.
+ */
+int
+parseNcSubset (ncSubset_t *ncSubset)
+{
+    char *endPtr, *tmpPtr1, *tmpPtr2;
+
+    if ((endPtr = strchr (ncSubset->subsetVarName, '[')) == NULL) {
+        rodsLog (LOG_ERROR,
+          "parseNcSubset: subset input %s format error", 
+          ncSubset->subsetVarName);
+        return USER_INPUT_FORMAT_ERR;
+    }
+ 
+    tmpPtr1 = endPtr + 1;
+    if ((tmpPtr2 = strchr (tmpPtr1, ':')) == NULL || !isdigit (*tmpPtr1)) {
+        rodsLog (LOG_ERROR,
+          "parseNcSubset: subset input %s format error", 
+          ncSubset->subsetVarName);
+        return USER_INPUT_FORMAT_ERR;
+    }
+    *tmpPtr2 = '\0';
+    ncSubset->start = atoi (tmpPtr1);
+    *tmpPtr2 = ':';
+    tmpPtr1 = tmpPtr2 + 1;
+    if ((tmpPtr2 = strchr (tmpPtr1, ':')) == NULL || !isdigit (*tmpPtr1)) {
+        rodsLog (LOG_ERROR,
+          "parseNcSubset: subset input %s format error",   
+          ncSubset->subsetVarName);
+        return USER_INPUT_FORMAT_ERR;
+    }
+    *tmpPtr2 = '\0';
+    ncSubset->stride = atoi (tmpPtr1);
+    *tmpPtr2 = ':';
+    tmpPtr1 = tmpPtr2 + 1;
+    if ((tmpPtr2 = strchr (tmpPtr1, ']')) == NULL || !isdigit (*tmpPtr1)) {
+        rodsLog (LOG_ERROR,
+          "parseNcSubset: subset input %s format error",
+          ncSubset->subsetVarName);
+        return USER_INPUT_FORMAT_ERR;
+    }
+    *tmpPtr2 = '\0';
+    ncSubset->end = atoi (tmpPtr1);
+    *endPtr = '\0'; 	/* truncate the name */
+    return 0;
+}
 

@@ -17,13 +17,14 @@ rodsPathInp_t *rodsPathInp)
     int status; 
     int savedStatus = 0;
     ncOpenInp_t ncOpenInp;
+    ncVarSubset_t ncVarSubset;
 
 
     if (rodsPathInp == NULL) {
 	return (USER__NULL_INPUT_ERR);
     }
 
-    initCondForNcOper (myRodsEnv, myRodsArgs, &ncOpenInp);
+    initCondForNcOper (myRodsEnv, myRodsArgs, &ncOpenInp, &ncVarSubset);
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
 	if (rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T) {
@@ -41,11 +42,11 @@ rodsPathInp_t *rodsPathInp)
             rmKeyVal (&ncOpenInp.condInput, TRANSLATED_PATH_KW);
 	   status = ncOperDataObjUtil (conn, 
              rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs, 
-             &ncOpenInp);
+             &ncOpenInp, &ncVarSubset);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
             addKeyVal (&ncOpenInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = ncOperCollUtil (conn, rodsPathInp->srcPath[i].outPath,
-              myRodsEnv, myRodsArgs, &ncOpenInp);
+              myRodsEnv, myRodsArgs, &ncOpenInp, &ncVarSubset);
 	} else {
 	    /* should not be here */
 	    rodsLog (LOG_ERROR,
@@ -73,7 +74,7 @@ rodsPathInp_t *rodsPathInp)
 int
 ncOperDataObjUtil (rcComm_t *conn, char *srcPath, 
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-ncOpenInp_t *ncOpenInp)
+ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
 {
     int status, status1;
     ncCloseInp_t ncCloseInp;
@@ -115,16 +116,22 @@ ncOpenInp_t *ncOpenInp)
         if (rodsArgs->header == True) {
             status = dumpNcHeader (conn, ncOpenInp->objPath, ncid, ncInqOut);
         }
-        if (rodsArgs->header + rodsArgs->dim + rodsArgs->var > 1)
+        if (rodsArgs->header + rodsArgs->dim + rodsArgs->var + 
+          rodsArgs->subset > 1)
             printf 
               ("===========================================================\n");
         if (rodsArgs->dim == True) {
             status = dumpNcDimVar (conn, ncOpenInp->objPath, ncid, 
               rodsArgs->ascitime, ncInqOut);
         }
-        if (rodsArgs->header + rodsArgs->dim + rodsArgs->var > 1)
+        if (rodsArgs->header + rodsArgs->dim + rodsArgs->var + 
+          rodsArgs->subset > 1)
             printf 
               ("===========================================================\n");
+        if (rodsArgs->var + rodsArgs->subset > 0) {
+            status = dumpNcVarData (conn, ncOpenInp->objPath, ncid,
+              ncInqOut, ncVarSubset);
+        }
     } else {
         /* output is a NETCDF file */
         status = dumpNcInqOutToNcFile (conn, ncid, rodsArgs->noattr, ncInqOut, 
@@ -144,8 +151,10 @@ ncOpenInp_t *ncOpenInp)
 
 int
 initCondForNcOper (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-ncOpenInp_t *ncOpenInp)
+ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
 {
+    int i, inLen, status = 0;
+    char *inPtr;
 
     if (ncOpenInp == NULL) {
        rodsLog (LOG_ERROR,
@@ -153,26 +162,51 @@ ncOpenInp_t *ncOpenInp)
         return (USER__NULL_INPUT_ERR);
     }
 
-    memset (ncOpenInp, 0, sizeof (ncOpenInp_t));
-
+    bzero (ncOpenInp, sizeof (ncOpenInp_t));
+    bzero (ncVarSubset, sizeof (ncVarSubset_t));
     if (rodsArgs == NULL) {
         return (0);
     }
-    if ((rodsArgs->dim + rodsArgs->header + rodsArgs->var + rodsArgs->option)
-      == False) {
+    if ((rodsArgs->dim + rodsArgs->header + rodsArgs->var + 
+      rodsArgs->option + rodsArgs->subset) == False) {
         rodsArgs->dim = rodsArgs->header = True;
     }
 
-    bzero (ncOpenInp, sizeof (ncOpenInp_t));
     ncOpenInp->mode = NC_NOWRITE;
     addKeyVal (&ncOpenInp->condInput, NO_STAGING_KW, "");
 
+    if (rodsArgs->var == True) {
+        i = 0;
+        inLen = strlen (rodsArgs->varStr);
+        inPtr = rodsArgs->varStr;
+        while (getNextEleInStr (&inPtr, 
+          &ncVarSubset->varName[i][LONG_NAME_LEN],
+          &inLen, LONG_NAME_LEN) > 0) {
+            ncVarSubset->numVar++;
+            i++;
+            if (ncVarSubset->numVar >= MAX_NUM_VAR) break;
+        }
+    }
+    if (rodsArgs->subset == True) {
+        i = 0;
+        inLen = strlen (rodsArgs->subsetStr);
+        inPtr = rodsArgs->subsetStr;
+        while (getNextEleInStr (&inPtr, 
+         ncVarSubset->ncSubset[i].subsetVarName, 
+         &inLen, LONG_NAME_LEN) > 0) {
+            status = parseNcSubset (&ncVarSubset->ncSubset[i]);
+            if (status < 0) return status;
+            ncVarSubset->numSubset++;
+            i++;
+            if (ncVarSubset->numSubset >= MAX_NUM_VAR) break;
+        }
+    }
     return (0);
 }
 
 int
 ncOperCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv, 
-rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp)
+rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
 {
     int status;
     int savedStatus = 0;
@@ -216,7 +250,7 @@ rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp)
               collEnt.collName, collEnt.dataName);
 
             status = ncOperDataObjUtil (conn, srcChildPath,
-             myRodsEnv, rodsArgs, ncOpenInp);
+             myRodsEnv, rodsArgs, ncOpenInp, ncVarSubset);
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "ncOperCollUtil: ncOperDataObjUtil failed for %s. status = %d",
@@ -230,7 +264,7 @@ rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp)
             childNcOpen = *ncOpenInp;
             if (collEnt.specColl.collClass != NO_SPEC_COLL) continue;
             status = ncOperCollUtil (conn, collEnt.collName, myRodsEnv,
-              rodsArgs, &childNcOpen);
+              rodsArgs, &childNcOpen, ncVarSubset);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {
                 savedStatus = status;
             }

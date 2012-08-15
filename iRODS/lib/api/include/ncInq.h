@@ -90,6 +90,21 @@ typedef struct {
 
 #define NcInqOut_PI "int ndims; int nvars; int ngatts; int unlimdimid; int format; int myint; struct *NcGenDimOut_PI(ndims); struct *NcGenVarOut_PI(nvars); struct *NcGenAttOut_PI(ngatts);"
 
+#define MAX_NUM_VAR	64
+typedef struct {
+    char subsetVarName[LONG_NAME_LEN];
+    int start;
+    int stride;
+    int end;
+} ncSubset_t;
+
+typedef struct {
+    int numVar;    /* number of variables in varName */
+    char varName[MAX_NUM_VAR][LONG_NAME_LEN];  
+    int numSubset;	  /* number of ncSubset */
+    ncSubset_t ncSubset[MAX_NUM_VAR];
+} ncVarSubset_t;
+
 #if defined(RODS_SERVER)
 #define RS_NC_INQ rsNcInq
 /* prototype for the server handler */
@@ -139,6 +154,9 @@ int
 dumpNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
 ncInqOut_t *ncInqOut);
 int
+dumpNcVarData (rcComm_t *conn, char *fileName, int ncid, 
+ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset);
+int
 getNcTypeStr (int dataType, char *outString);
 int
 ncValueToStr (int dataType, void **value, char *outString);
@@ -151,6 +169,8 @@ int
 closeAndRmNeFile (int ncid, char *outFileName);
 int
 printNice (char *str, char *margin, int charPerLine);
+int
+parseNcSubset (ncSubset_t *ncSubset);
 #ifdef  __cplusplus
 }
 #endif
