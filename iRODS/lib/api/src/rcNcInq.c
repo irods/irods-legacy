@@ -66,7 +66,7 @@ freeNcInqOut (ncInqOut_t **ncInqOut)
 }
 
 int
-dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
+prNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
 {
     int i, j, dimId, status;
     char tempStr[NAME_LEN];
@@ -152,7 +152,7 @@ dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
 }
 
 int
-dumpNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
+prNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
 ncInqOut_t *ncInqOut)
 {
     int i, j, status = 0;
@@ -181,14 +181,14 @@ ncInqOut_t *ncInqOut)
             continue;
 #if 0
             rodsLogError (LOG_ERROR, status,
-              "dumpNcDimVar: unmatched dim var  %s", ncInqOut->dim[i].id);
+              "prNcDimVar: unmatched dim var  %s", ncInqOut->dim[i].id);
             return NETCDF_DIM_MISMATCH_ERR;
 #endif
         }
-        status = dumpSingleVar (conn, ncid, j, 0, 10, printAsciTime, ncInqOut);
+        status = prSingleDimVar (conn, ncid, j, 10, printAsciTime, ncInqOut);
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-              "dumpNcDimVar: dumpSingleVar error for %s",
+              "prNcDimVar: prSingleDimVar error for %s",
               ncInqOut->var[j].name);
             return status;
         }
@@ -197,7 +197,7 @@ ncInqOut_t *ncInqOut)
 }
 
 int
-dumpSingleVar (rcComm_t *conn, int ncid, int varInx, int dumpVarLen, 
+prSingleDimVar (rcComm_t *conn, int ncid, int varInx, 
 int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut)
 {
     int j, status;
@@ -210,6 +210,9 @@ int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut)
     int outCnt = 0;
     int itemsInLine = 0;
 
+    status = getSingleNcVarData (conn, ncid, varInx, ncInqOut, NULL, 
+      &ncGetVarOut, start, stride, count);
+#if 0
     for (j = 0; j < ncInqOut->var[varInx].nvdims; j++) {
         int dimId = ncInqOut->var[varInx].dimId[j];
         start[j] = 0;
@@ -236,6 +239,7 @@ int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut)
     ncGetVarInp.stride = stride;
 
     status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+#endif
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -317,13 +321,13 @@ ncInqOut_t *ncInqOut)
 {
     int status;
 
-    status = dumpNcHeader (conn, fileName, ncid, ncInqOut);
+    status = prNcHeader (conn, fileName, ncid, ncInqOut);
     if (status < 0) return status;
 
 }
 
 int
-dumpNcVarData (rcComm_t *conn, char *fileName, int ncid, 
+prNcVarData (rcComm_t *conn, char *fileName, int ncid, 
 ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
 {
     int i, j, k, status;
@@ -347,6 +351,9 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
         }
 	printf (" %s = ", ncInqOut->var[i].name);
 	if (ncInqOut->var[i].nvdims > 1) printf ("\n  ");
+        status = getSingleNcVarData (conn, ncid, i, ncInqOut, ncVarSubset,
+          &ncGetVarOut, start, stride, count);
+#if 0
 	for (j = 0; j < ncInqOut->var[i].nvdims; j++) {
 	    int dimId = ncInqOut->var[i].dimId[j];
             int doSubset = False;
@@ -407,7 +414,7 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
         ncGetVarInp.stride = stride;
 
         status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
-
+#endif
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "dumpNcInqOut: rcNcGetVarsByType error for %s", 
@@ -461,6 +468,70 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
     }
     printf ("}\n");
     return 0;
+}
+
+int
+getSingleNcVarData (rcComm_t *conn, int ncid, int varInx, ncInqOut_t *ncInqOut,
+ncVarSubset_t *ncVarSubset, ncGetVarOut_t **ncGetVarOut, rodsLong_t *start, 
+rodsLong_t *stride, rodsLong_t *count)
+{
+    int j, k, status;
+    ncGetVarInp_t ncGetVarInp;
+
+    for (j = 0; j < ncInqOut->var[varInx].nvdims; j++) {
+        int dimId = ncInqOut->var[varInx].dimId[j];
+        int doSubset = False;
+        if (ncVarSubset != NULL && ncVarSubset->numSubset > 0) {
+            for (k = 0; k < ncVarSubset->numSubset; k++) {
+                if (strcmp (ncInqOut->dim[dimId].name,
+                  ncVarSubset->ncSubset[k].subsetVarName) == 0) {
+                    doSubset = True;
+                    break;
+                }
+            }
+        }
+        if (doSubset == True) {
+            if (ncVarSubset->ncSubset[k].start >=
+              ncInqOut->dim[dimId].arrayLen ||
+              ncVarSubset->ncSubset[k].end >=
+              ncInqOut->dim[dimId].arrayLen ||
+              ncVarSubset->ncSubset[k].start >
+              ncVarSubset->ncSubset[k].end) {
+                rodsLog (LOG_ERROR, 
+                 "dumpNcInqOut: start %d or end %d for %s outOfRange %lld",
+                 ncVarSubset->ncSubset[k].start,
+                 ncVarSubset->ncSubset[k].end,
+                 ncVarSubset->ncSubset[k].subsetVarName,
+                 ncInqOut->dim[dimId].arrayLen);
+                return NETCDF_DIM_MISMATCH_ERR;
+            }
+            start[j] = ncVarSubset->ncSubset[k].start;
+            stride[j] = ncVarSubset->ncSubset[k].stride;
+            count[j] = ncVarSubset->ncSubset[k].end -
+              ncVarSubset->ncSubset[k].start + 1;
+        } else {
+            start[j] = 0;
+            count[j] = ncInqOut->dim[dimId].arrayLen;
+            stride[j] = 1;
+        }
+    }
+    bzero (&ncGetVarInp, sizeof (ncGetVarInp));
+    ncGetVarInp.dataType = ncInqOut->var[varInx].dataType;
+    ncGetVarInp.ncid = ncid;
+    ncGetVarInp.varid =  ncInqOut->var[varInx].id;
+    ncGetVarInp.ndim =  ncInqOut->var[varInx].nvdims;
+    ncGetVarInp.start = start;
+    ncGetVarInp.count = count;
+    ncGetVarInp.stride = stride;
+
+    status = rcNcGetVarsByType (conn, &ncGetVarInp, ncGetVarOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "dumpNcInqOut: rcNcGetVarsByType error for %s",
+          ncInqOut->var[varInx].name);
+    }
+    return status;
 }
 
 int

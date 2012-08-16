@@ -146,16 +146,20 @@ int
 dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen,
 ncInqOut_t *ncInqOut);
 int
-dumpNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut);
+prNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut);
 int
-dumpSingleVar (rcComm_t *conn, int ncid, int varInx, int dumpVarLen,
+prSingleDimVar (rcComm_t *conn, int ncid, int varInx, 
 int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut);
 int
-dumpNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
+prNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
 ncInqOut_t *ncInqOut);
 int
-dumpNcVarData (rcComm_t *conn, char *fileName, int ncid, 
+prNcVarData (rcComm_t *conn, char *fileName, int ncid, 
 ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset);
+int
+getSingleNcVarData (rcComm_t *conn, int ncid, int varInx, ncInqOut_t *ncInqOut,
+ncVarSubset_t *ncVarSubset, ncGetVarOut_t **ncGetVarOut, rodsLong_t *start, 
+rodsLong_t *stride, rodsLong_t *count);
 int
 getNcTypeStr (int dataType, char *outString);
 int

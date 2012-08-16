@@ -114,14 +114,14 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
     if (rodsArgs->option == False) {
         /* stdout */
         if (rodsArgs->header == True) {
-            status = dumpNcHeader (conn, ncOpenInp->objPath, ncid, ncInqOut);
+            status = prNcHeader (conn, ncOpenInp->objPath, ncid, ncInqOut);
         }
         if (rodsArgs->header + rodsArgs->dim + rodsArgs->var + 
           rodsArgs->subset > 1)
             printf 
               ("===========================================================\n");
         if (rodsArgs->dim == True) {
-            status = dumpNcDimVar (conn, ncOpenInp->objPath, ncid, 
+            status = prNcDimVar (conn, ncOpenInp->objPath, ncid, 
               rodsArgs->ascitime, ncInqOut);
         }
         if (rodsArgs->header + rodsArgs->dim + rodsArgs->var + 
@@ -129,7 +129,7 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
             printf 
               ("===========================================================\n");
         if (rodsArgs->var + rodsArgs->subset > 0) {
-            status = dumpNcVarData (conn, ncOpenInp->objPath, ncid,
+            status = prNcVarData (conn, ncOpenInp->objPath, ncid,
               ncInqOut, ncVarSubset);
         }
     } else {
