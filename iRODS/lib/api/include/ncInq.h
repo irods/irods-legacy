@@ -168,6 +168,9 @@ int
 dumpNcInqOutToNcFile (rcComm_t *conn, int srcNcid, int noattrFlag,
 ncInqOut_t *ncInqOut, char *outFileName);
 int
+dumpSubsetToFile (rcComm_t *conn, int srcNcid, int noattrFlag,
+ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName);
+int
 ncFormatToCmode (int format);
 int
 closeAndRmNeFile (int ncid, char *outFileName);

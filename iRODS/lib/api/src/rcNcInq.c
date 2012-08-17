@@ -498,7 +498,7 @@ rodsLong_t *stride, rodsLong_t *count)
               ncVarSubset->ncSubset[k].start >
               ncVarSubset->ncSubset[k].end) {
                 rodsLog (LOG_ERROR, 
-                 "dumpNcInqOut: start %d or end %d for %s outOfRange %lld",
+                 "getSingleNcVarData:start %d or end %d for %s outOfRange %lld",
                  ncVarSubset->ncSubset[k].start,
                  ncVarSubset->ncSubset[k].end,
                  ncVarSubset->ncSubset[k].subsetVarName,
@@ -528,7 +528,7 @@ rodsLong_t *stride, rodsLong_t *count)
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "dumpNcInqOut: rcNcGetVarsByType error for %s",
+          "getSingleNcVarData: rcNcGetVarsByType error for %s",
           ncInqOut->var[varInx].name);
     }
     return status;
@@ -705,7 +705,7 @@ ncInqOut_t *ncInqOut, char *outFileName)
     if (ncInqOut->nvars <= 0 || ncInqOut->var == NULL) {
         /* no variables */
         nc_close (ncid);
-        return 0;;
+        return 0;
     }
     for (i = 0; i < ncInqOut->nvars; i++) {
         /* define the variables */
@@ -783,6 +783,206 @@ ncInqOut_t *ncInqOut, char *outFileName)
             rodsLogError (LOG_ERROR, status,
               "dumpNcInqOutToNcFile: nc_put_vars error for %s    %s",
               ncInqOut->var[i].name, nc_strerror(status));
+            closeAndRmNeFile (ncid, outFileName);
+            return NETCDF_PUT_VARS_ERR;
+        }
+    }
+    nc_close (ncid);
+    return 0;
+}
+
+int
+dumpSubsetToFile (rcComm_t *conn, int srcNcid, int noattrFlag,
+ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName)
+{
+    int i, j, k, dimId, nvars, status;
+    int ncid, cmode;
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    size_t lstart[NC_MAX_DIMS], lcount[NC_MAX_DIMS];
+    ptrdiff_t lstride[NC_MAX_DIMS];
+    ncGetVarInp_t ncGetVarInp;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+    void *bufPtr;
+    int dimIdArray[NC_MAX_DIMS];
+    ncInqOut_t subsetNcInqOut;
+
+    cmode = ncFormatToCmode (ncInqOut->format);
+    status = nc_create (outFileName, cmode, &ncid);
+    if (status != NC_NOERR) {
+        rodsLog (LOG_ERROR,
+          "dumpSubsetToFile: nc_create error.  %s ", nc_strerror(status));
+        status = NETCDF_CREATE_ERR - status;
+        return status;
+    }
+    /* attrbutes */
+    if (noattrFlag == False) {
+        for (i = 0; i < ncInqOut->ngatts; i++) {
+            bufPtr = ncInqOut->gatt[i].value.dataArray->buf;
+            status = nc_put_att (ncid, NC_GLOBAL, ncInqOut->gatt[i].name,
+              ncInqOut->gatt[i].dataType, ncInqOut->gatt[i].length, bufPtr);
+            if (status != NC_NOERR) {
+                rodsLog (LOG_ERROR,
+                  "dumpSubsetToFile: nc_put_att error.  %s ",
+                  nc_strerror(status));
+                status = NETCDF_PUT_ATT_ERR - status;
+                closeAndRmNeFile (ncid, outFileName);
+                return status;
+            }
+        }
+    }
+    /* dimensions */
+    if (ncInqOut->ndims <= 0 || ncInqOut->dim == NULL)
+        return USER__NULL_INPUT_ERR;
+    bzero (&subsetNcInqOut, sizeof (subsetNcInqOut));
+    subsetNcInqOut.ndims = ncInqOut->ndims;
+    subsetNcInqOut.format = ncInqOut->format;
+    subsetNcInqOut.unlimdimid = -1;
+    subsetNcInqOut.dim = (ncGenDimOut_t *)
+      calloc (ncInqOut->ndims, sizeof (ncGenDimOut_t));
+    for (i = 0; i < ncInqOut->ndims; i++) {
+         rstrcpy (subsetNcInqOut.dim[i].name, ncInqOut->dim[i].name,
+           LONG_NAME_LEN);
+        /* have to use the full arrayLen instead of subsetted length
+         * because it will be used in subsetting later */
+        subsetNcInqOut.dim[i].arrayLen = ncInqOut->dim[i].arrayLen;
+        if (ncInqOut->unlimdimid == ncInqOut->dim[i].id) {
+            /* unlimited */
+            status = nc_def_dim (ncid,  ncInqOut->dim[i].name,
+              NC_UNLIMITED, &subsetNcInqOut.dim[i].id);
+            subsetNcInqOut.unlimdimid = subsetNcInqOut.dim[i].id;
+        } else {
+            int arrayLen;
+            for (j = 0; j < ncVarSubset->numSubset; j++) {
+                if (strcmp (ncInqOut->dim[i].name,
+                  ncVarSubset->ncSubset[j].subsetVarName) == 0) {
+                    arrayLen = (ncVarSubset->ncSubset[j].end -
+                     ncVarSubset->ncSubset[j].start) /
+                     ncVarSubset->ncSubset[j].stride + 1;
+                    break;
+                }
+            }
+            if (j >= ncVarSubset->numSubset) 	/* no match */
+                arrayLen = ncInqOut->dim[i].arrayLen;
+            status = nc_def_dim (ncid,  ncInqOut->dim[i].name,
+              arrayLen, &subsetNcInqOut.dim[i].id);
+        }
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "dumpSubsetToFile: nc_def_dim error.  %s ",
+              nc_strerror(status));
+            status = NETCDF_DEF_DIM_ERR - status;
+            closeAndRmNeFile (ncid, outFileName);
+            return status;
+        }
+    }
+    /* variables */
+    if (ncInqOut->nvars <= 0 || ncInqOut->var == NULL) {
+        /* no variables */
+        nc_close (ncid);
+        return 0;
+    }
+    /* screen the variables */
+    subsetNcInqOut.var = (ncGenVarOut_t *)
+      calloc (ncInqOut->nvars, sizeof (ncGenVarOut_t));
+    nvars = 0;
+    for (i = 0; i < ncInqOut->nvars; i++) {
+        for (j = 0; j < ncVarSubset->numVar; j++) {
+            if (strcmp (&ncVarSubset->varName[j][LONG_NAME_LEN],
+              ncInqOut->var[i].name) == 0) {
+                subsetNcInqOut.var[subsetNcInqOut.nvars] = 
+                  ncInqOut->var[i];
+                subsetNcInqOut.nvars++;
+                break;
+            }
+        }
+    }
+
+    for (i = 0; i < subsetNcInqOut.nvars; i++) {
+        /* define the variables */
+        for (j = 0; j < subsetNcInqOut.var[i].nvdims;  j++) {
+            dimId = subsetNcInqOut.var[i].dimId[j];
+            dimIdArray[j] = subsetNcInqOut.dim[dimId].id;
+        }
+        status = nc_def_var (ncid, subsetNcInqOut.var[i].name,
+          subsetNcInqOut.var[i].dataType, subsetNcInqOut.var[i].nvdims,
+          dimIdArray, &subsetNcInqOut.var[i].myint);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "dumpSubsetToFile: nc_def_var for %s error.  %s ",
+              subsetNcInqOut.var[i].name, nc_strerror(status));
+            status = NETCDF_DEF_VAR_ERR - status;
+            closeAndRmNeFile (ncid, outFileName);
+            return status;
+        }
+        /* put the variable attributes */
+        if (noattrFlag == False) {
+            for (j = 0; j < subsetNcInqOut.var[i].natts; j++) {
+                ncGenAttOut_t *att = &subsetNcInqOut.var[i].att[j];
+                bufPtr = att->value.dataArray->buf;
+                status = nc_put_att (ncid, subsetNcInqOut.var[i].myint, att->name,
+                  att->dataType, att->length, bufPtr);
+                if (status != NC_NOERR) {
+                    rodsLog (LOG_ERROR,
+                      "dumpSubsetToFile: nc_put_att for %s error.  %s ",
+                      subsetNcInqOut.var[i].name, nc_strerror(status));
+                    status = NETCDF_PUT_ATT_ERR - status;
+                    closeAndRmNeFile (ncid, outFileName);
+                    return status;
+                }
+            }
+        }
+    }
+    nc_enddef (ncid);
+
+    for (i = 0; i < subsetNcInqOut.nvars; i++) {
+        status = getSingleNcVarData (conn, srcNcid, i, &subsetNcInqOut,
+          ncVarSubset, &ncGetVarOut, start, stride, count);
+#if 0
+        ncGenVarOut_t *var = &subsetNcInqOut.var[i];
+        for (j = 0; j < var->nvdims; j++) {
+            dimId = var->dimId[j];
+            start[j] = 0;
+            lstart[j] = 0;
+            count[j] = subsetNcInqOut.dim[dimId].arrayLen;
+            lcount[j] = subsetNcInqOut.dim[dimId].arrayLen;
+            stride[j] = 1;
+            lstride[j] = 1;
+        }
+        bzero (&ncGetVarInp, sizeof (ncGetVarInp));
+        ncGetVarInp.dataType = var->dataType;
+        ncGetVarInp.ncid = srcNcid;
+        ncGetVarInp.varid =  var->id;
+        ncGetVarInp.ndim =  var->nvdims;
+        ncGetVarInp.start = start;
+        ncGetVarInp.count = count;
+        ncGetVarInp.stride = stride;
+
+        if (conn == NULL) {
+            /* local call */
+            status = _rsNcGetVarsByType (srcNcid, &ncGetVarInp, &ncGetVarOut);
+        } else {
+            status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+        }
+#endif
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "dumpSubsetToFile: rcNcGetVarsByType error for %s",
+              subsetNcInqOut.var[i].name);
+            closeAndRmNeFile (ncid, outFileName);
+            return status;
+        }
+        for (j = 0; j < subsetNcInqOut.var[i].nvdims; j++) {
+            lstart[j] = (size_t) 0;
+            lstride[j] = (ptrdiff_t) 1;
+            lcount[j] = (size_t) count[j];
+        }
+        status = nc_put_vars (ncid, subsetNcInqOut.var[i].myint, lstart,
+         lcount, lstride, ncGetVarOut->dataArray->buf);
+        freeNcGetVarOut (&ncGetVarOut);
+        if (status != NC_NOERR) {
+            rodsLogError (LOG_ERROR, status,
+              "dumpSubsetToFile: nc_put_vars error for %s    %s",
+              subsetNcInqOut.var[i].name, nc_strerror(status));
             closeAndRmNeFile (ncid, outFileName);
             return NETCDF_PUT_VARS_ERR;
         }

@@ -133,9 +133,14 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
               ncInqOut, ncVarSubset);
         }
     } else {
+        if (rodsArgs->var + rodsArgs->subset > 0) {
+            status = dumpSubsetToFile (conn, ncid, rodsArgs->noattr, ncInqOut,
+                ncVarSubset, rodsArgs->optionString);
+        } else {
         /* output is a NETCDF file */
-        status = dumpNcInqOutToNcFile (conn, ncid, rodsArgs->noattr, ncInqOut, 
-          rodsArgs->optionString);
+            status = dumpNcInqOutToNcFile (conn, ncid, rodsArgs->noattr, 
+              ncInqOut, rodsArgs->optionString);
+        }
     }
 
     bzero (&ncCloseInp, sizeof (ncCloseInp_t));
