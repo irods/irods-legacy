@@ -174,7 +174,7 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
     }
     if ((rodsArgs->dim + rodsArgs->header + rodsArgs->var + 
       rodsArgs->option + rodsArgs->subset) == False) {
-        rodsArgs->dim = rodsArgs->header = True;
+        rodsArgs->header = True;
     }
 
     ncOpenInp->mode = NC_NOWRITE;

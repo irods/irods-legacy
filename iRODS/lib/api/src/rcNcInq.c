@@ -202,7 +202,6 @@ int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut)
 {
     int j, status;
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
-    ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
     int lastDimLen;
     char tempStr[NAME_LEN];
@@ -324,16 +323,37 @@ ncInqOut_t *ncInqOut)
     status = prNcHeader (conn, fileName, ncid, ncInqOut);
     if (status < 0) return status;
 
+    if (dumpVarLen > 0) {
+        int i;
+        ncVarSubset_t ncVarSubset;
+
+        bzero (&ncVarSubset, sizeof (ncVarSubset));
+        ncVarSubset.numSubset = ncInqOut->ndims;
+        for (i = 0; i < ncInqOut->ndims; i++) {
+            rstrcpy (ncVarSubset.ncSubset[i].subsetVarName, 
+              ncInqOut->dim[i].name, LONG_NAME_LEN);
+            ncVarSubset.ncSubset[i].start = 0;
+            ncVarSubset.ncSubset[i].stride = 1;
+            if (dumpVarLen > ncInqOut->dim[i].arrayLen) {
+                ncVarSubset.ncSubset[i].end = ncInqOut->dim[i].arrayLen - 1;
+            } else {
+                ncVarSubset.ncSubset[i].end = dumpVarLen -1;
+            }
+        }
+        status = prNcVarData (conn, fileName, ncid, ncInqOut, &ncVarSubset);
+    } else {
+        status = prNcVarData (conn, fileName, ncid, ncInqOut, NULL);
+    }
+    return status;
 }
 
 int
 prNcVarData (rcComm_t *conn, char *fileName, int ncid, 
 ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
 {
-    int i, j, k, status;
+    int i, j, status;
     char tempStr[NAME_LEN];
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
-    ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
     void *bufPtr;
 
@@ -795,12 +815,11 @@ int
 dumpSubsetToFile (rcComm_t *conn, int srcNcid, int noattrFlag,
 ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName)
 {
-    int i, j, k, dimId, nvars, status;
+    int i, j, dimId, nvars, status;
     int ncid, cmode;
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
     size_t lstart[NC_MAX_DIMS], lcount[NC_MAX_DIMS];
     ptrdiff_t lstride[NC_MAX_DIMS];
-    ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
     void *bufPtr;
     int dimIdArray[NC_MAX_DIMS];
@@ -885,7 +904,18 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName)
     subsetNcInqOut.var = (ncGenVarOut_t *)
       calloc (ncInqOut->nvars, sizeof (ncGenVarOut_t));
     nvars = 0;
+    /* For subsequent subsetting and writing vars to a netcdf file,
+     * subsetNcInqOut.var[i].id contains the var id of the source and
+     * subsetNcInqOut.var[i].myint contains the var id of the target 
+     */
     for (i = 0; i < ncInqOut->nvars; i++) {
+        if (ncVarSubset->numVar > 1 || (ncVarSubset->numVar == 1 &&
+          strcmp ((char *)ncVarSubset->varName, "all") == 0)) {
+            /* do all var */
+            subsetNcInqOut.var[subsetNcInqOut.nvars] = ncInqOut->var[i];
+            subsetNcInqOut.nvars++;
+            continue;
+        }  
         for (j = 0; j < ncVarSubset->numVar; j++) {
             if (strcmp (&ncVarSubset->varName[j][LONG_NAME_LEN],
               ncInqOut->var[i].name) == 0) {
@@ -937,33 +967,6 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName)
     for (i = 0; i < subsetNcInqOut.nvars; i++) {
         status = getSingleNcVarData (conn, srcNcid, i, &subsetNcInqOut,
           ncVarSubset, &ncGetVarOut, start, stride, count);
-#if 0
-        ncGenVarOut_t *var = &subsetNcInqOut.var[i];
-        for (j = 0; j < var->nvdims; j++) {
-            dimId = var->dimId[j];
-            start[j] = 0;
-            lstart[j] = 0;
-            count[j] = subsetNcInqOut.dim[dimId].arrayLen;
-            lcount[j] = subsetNcInqOut.dim[dimId].arrayLen;
-            stride[j] = 1;
-            lstride[j] = 1;
-        }
-        bzero (&ncGetVarInp, sizeof (ncGetVarInp));
-        ncGetVarInp.dataType = var->dataType;
-        ncGetVarInp.ncid = srcNcid;
-        ncGetVarInp.varid =  var->id;
-        ncGetVarInp.ndim =  var->nvdims;
-        ncGetVarInp.start = start;
-        ncGetVarInp.count = count;
-        ncGetVarInp.stride = stride;
-
-        if (conn == NULL) {
-            /* local call */
-            status = _rsNcGetVarsByType (srcNcid, &ncGetVarInp, &ncGetVarOut);
-        } else {
-            status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
-        }
-#endif
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "dumpSubsetToFile: rcNcGetVarsByType error for %s",
@@ -987,6 +990,8 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName)
             return NETCDF_PUT_VARS_ERR;
         }
     }
+    if (subsetNcInqOut.dim != NULL) free (subsetNcInqOut.dim);
+    if (subsetNcInqOut.var != NULL) free (subsetNcInqOut.var);
     nc_close (ncid);
     return 0;
 }

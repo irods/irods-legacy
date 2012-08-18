@@ -89,8 +89,9 @@ usage ()
 {
 
    char *msgs[]={
-"Usage : inc [-hr] [--header] [--dim] [--ascitime] [--var]|[-o outFile]",
-"[--noattr] dataObj|collection ... ",
+"Usage : inc [-hr] [--header] [--dim] [--ascitime] [--noattr] [-o outFile]",
+"[--var 'var1 var2 ...'] [--subset 'dimName1[start:stride:end] ...']",
+"dataObj|collection ... ",
 " ",
 "Perform NETCDF operations on the input data objects. The data objects must",
 "be in NETCDF file format.",
@@ -101,9 +102,20 @@ usage ()
 "NETCDF output file. --noattr specifies that attributes will not be added.",
 
 "If the -o option is not used, the output will be in plain text.",
-"If no option is specified, the header and dimension info will be output.",
+"If no option is specified, the header info will be output.",
 " ",
-
+"The --var option can be used to specify a list of variables for data output",
+"to the terminal in text format or to the outFile in NETCDF format if the -o",
+"option is used. e.g., ",
+"   inc --var 'pressure temperature current' myfile.nc",
+"A value of 'all' for --var means all variables. In addition, if the ",
+"-o option is used, no --var input also means all variables.", 
+" ",
+"The --subset option can be used to specify a list of subsetting conditions.", 
+"Each subetting condition must be given in the form dimName[start:stride:end]",
+"e.g.,",
+"   inc --var pressure --subset 'longitude[2:1:8] latitude[4:1:5] time[2:1:4]'",
+"   myfile.nc",
 " ",
 "Options are:",
 "-o outFile - the variables values will be extracted and put into the file",
@@ -115,7 +127,10 @@ usage ()
 "      variables).",
 "--dim - output the values of dimension variables.", 
 "--noattr - attributes will not be added to the NETCDF output file.",
-"--var - output the values of variables.",
+"--var 'var1 var2 ...' - list of variables or data output. A value of 'all'",
+"      means all variables",
+"--subset 'dimName1[start:stride:end] ...' - list of subsetting conditions in",
+"      the form dimName[start:stride:end]",
 " -h  this help",
 ""};
    int i;
