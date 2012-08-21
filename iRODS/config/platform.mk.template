@@ -279,6 +279,10 @@ LDADD += -L$(LIB_CF_LIB_DIR) -lcf_src
 endif
 endif
 
+ifdef NETCDF_CLIENT
+MY_CFLAG += -DNETCDF_CLIENT
+endif
+
 ifdef RUN_SERVER_AS_ROOT
 MY_CFLAG+= -DRUN_SERVER_AS_ROOT
 endif

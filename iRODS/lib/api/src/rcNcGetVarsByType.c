@@ -60,6 +60,7 @@ clearNcGetVarInp (ncGetVarInp_t *ncGetVarInp)
     return 0;
 }
 
+#ifdef NETCDF_API
 /* _rsNcGetVarsByType - moved from server to client because it can be
  * called by client too
  */
@@ -237,4 +238,4 @@ ncGetVarOut_t **ncGetVarOut)
     }
     return status;
 }
-
+#endif		/* NETCDF_API */

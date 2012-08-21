@@ -105,7 +105,7 @@ typedef struct {
     ncSubset_t ncSubset[MAX_NUM_VAR];
 } ncVarSubset_t;
 
-#if defined(RODS_SERVER)
+#if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_INQ rsNcInq
 /* prototype for the server handler */
 int
@@ -146,7 +146,8 @@ int
 dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen,
 ncInqOut_t *ncInqOut);
 int
-prNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut);
+prNcHeader (rcComm_t *conn, char *fileName, int ncid, int noattr,
+ncInqOut_t *ncInqOut);
 int
 prSingleDimVar (rcComm_t *conn, int ncid, int varInx, 
 int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut);
@@ -154,7 +155,7 @@ int
 prNcDimVar (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
 ncInqOut_t *ncInqOut);
 int
-prNcVarData (rcComm_t *conn, char *fileName, int ncid, 
+prNcVarData (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
 ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset);
 int
 getSingleNcVarData (rcComm_t *conn, int ncid, int varInx, ncInqOut_t *ncInqOut,

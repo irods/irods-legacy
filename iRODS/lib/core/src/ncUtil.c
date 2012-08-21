@@ -114,7 +114,8 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
     if (rodsArgs->option == False) {
         /* stdout */
         if (rodsArgs->header == True) {
-            status = prNcHeader (conn, ncOpenInp->objPath, ncid, ncInqOut);
+            status = prNcHeader (conn, ncOpenInp->objPath, ncid,
+              rodsArgs->noattr, ncInqOut);
         }
         if (rodsArgs->header + rodsArgs->dim + rodsArgs->var + 
           rodsArgs->subset > 1)
@@ -129,10 +130,11 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
             printf 
               ("===========================================================\n");
         if (rodsArgs->var + rodsArgs->subset > 0) {
-            status = prNcVarData (conn, ncOpenInp->objPath, ncid,
-              ncInqOut, ncVarSubset);
+            status = prNcVarData (conn, ncOpenInp->objPath, ncid, 
+              rodsArgs->ascitime, ncInqOut, ncVarSubset);
         }
     } else {
+#ifdef NETCDF_API
         if (rodsArgs->var + rodsArgs->subset > 0) {
             status = dumpSubsetToFile (conn, ncid, rodsArgs->noattr, ncInqOut,
                 ncVarSubset, rodsArgs->optionString);
@@ -141,6 +143,9 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
             status = dumpNcInqOutToNcFile (conn, ncid, rodsArgs->noattr, 
               ncInqOut, rodsArgs->optionString);
         }
+#else
+        return USER_OPTION_INPUT_ERR;
+#endif
     }
 
     bzero (&ncCloseInp, sizeof (ncCloseInp_t));
@@ -172,6 +177,19 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
     if (rodsArgs == NULL) {
         return (0);
     }
+    if (rodsArgs->option == True) {
+#ifndef NETCDF_API
+        rodsLog (LOG_ERROR,
+          "initCondForNcOper: -o option cannot be used if client is built with NETCDF_CLIENT only");
+        return USER_OPTION_INPUT_ERR;
+#endif
+        if (rodsArgs->recursive == True) {
+            rodsLog (LOG_ERROR,
+              "initCondForNcOper: -o and -r options cannot be used together");
+            return USER_OPTION_INPUT_ERR;
+        }
+    }
+
     if ((rodsArgs->dim + rodsArgs->header + rodsArgs->var + 
       rodsArgs->option + rodsArgs->subset) == False) {
         rodsArgs->header = True;

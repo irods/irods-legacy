@@ -28,7 +28,7 @@ typedef struct {
 
 #define NcRegGlobalAttrInp_PI "str objPath[MAX_NAME_LEN]; int flags; int numAttrName; str *attrNameArray[numAttrName]; struct KeyValPair_PI;"
 
-#if defined(RODS_SERVER)
+#if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_REG_GLOBAL_ATTR rsNcRegGlobalAttr
 /* prototype for the server handler */
 int

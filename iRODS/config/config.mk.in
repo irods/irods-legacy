@@ -444,10 +444,14 @@ endif
 # mode, so must be turned on for the PAM_AUTH support to function properly.
 # USE_SSL = 1
 
-# NETCDF_API - specify whether to compile the NETCDF API
+# NETCDF_API - specify whether to build iRODS with the NETCDF API. This 
+# option requires the installation of the NETCDF C library and header files.
 # NETCDF4_API - specify whether the NETCDF library supports NETCDF4 APIs -
 # built with --enable-netcdf-4.
 # NETCDF_DIR - the install directory of NETCDF. 
+# NETCDF_CLIENT - build only the irods client with the NETCDF API. This
+# option does not require the installation of the NETCDF C library nor
+# header files. NETCDF_API must be off with is option.
 # LIB_CF - specify whether higher level libCF is present. libCF, uses the
 # netCDF API to aid in the creation, processing and sharing of scientific
 # data files which conform to the Climate and Forecast (CF) conventions
@@ -458,12 +462,14 @@ endif
 # libcf.
 # NETCDF_API=1
 # NETCDF4_API=1
+# NETCDF_CLIENT=1
 # LIB_CF=1
 
 ifdef NETCDF4_API
 NETCDF_API=1
 endif
 ifdef NETCDF_API
+NETCDF_CLIENT=1
 NETCDF_DIR=/usr/local
 ifdef LIB_CF
 LIB_CF_INC_DIR=/usr/local/include

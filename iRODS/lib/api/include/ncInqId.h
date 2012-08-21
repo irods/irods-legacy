@@ -29,7 +29,7 @@ typedef struct {
 } ncInqIdInp_t;
     
 #define NcInqIdInp_PI "int paramType; int ncid; int myId; int flags; str name[MAX_NAME_LEN]; struct KeyValPair_PI;"
-#if defined(RODS_SERVER)
+#if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_INQ_ID rsNcInqId
 /* prototype for the server handler */
 int

@@ -105,7 +105,7 @@ packInstructArray_t ApiPackTable[] = {
         {"getTempPasswordForOtherInp_PI", getTempPasswordForOtherInp_PI},
         {"getTempPasswordForOtherOut_PI", getTempPasswordForOtherOut_PI},
         /* NETCDF PI */
-#ifdef NETCDF_API
+#ifdef NETCDF_CLIENT
         {"NcOpenInp_PI", NcOpenInp_PI},
         {"NcCloseInp_PI", NcCloseInp_PI},
         {"NcInqIdInp_PI", NcInqIdInp_PI},
@@ -123,7 +123,7 @@ packInstructArray_t ApiPackTable[] = {
 	{"NcInqGrpsOut_PI", NcInqGrpsOut_PI},
 	{"NcRegGlobalAttrInp_PI", NcRegGlobalAttrInp_PI},
 #endif
-        /* endof NETCDF PI */
+        /* endof NETCDF_CLIENT */
 #ifdef OOI_CI
         {"OoiGenServReqInp_PI", OoiGenServReqInp_PI},
         {"OoiGenServReqOut_PI", OoiGenServReqOut_PI},

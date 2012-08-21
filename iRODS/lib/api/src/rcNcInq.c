@@ -66,7 +66,8 @@ freeNcInqOut (ncInqOut_t **ncInqOut)
 }
 
 int
-prNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
+prNcHeader (rcComm_t *conn, char *fileName, int ncid, int noattr,
+ncInqOut_t *ncInqOut)
 {
     int i, j, dimId, status;
     char tempStr[NAME_LEN];
@@ -83,20 +84,22 @@ prNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
     }
 
     /* attrbutes */
-    for (i = 0; i < ncInqOut->ngatts; i++) {
-	bufPtr = ncInqOut->gatt[i].value.dataArray->buf;
-        printf ("   %s = \n", ncInqOut->gatt[i].name);
-	if (ncInqOut->gatt[i].dataType == NC_CHAR) {
-            /* assume it is a string */
-            /* printf ("%s ;\n", (char *) bufPtr); */
-            if (printNice ((char *) bufPtr, "      ", 72) < 0) 
-                printf ("     %s", (char *) bufPtr);
-        } else {
-            ncValueToStr (ncInqOut->gatt[i].dataType, &bufPtr, tempStr);
-            if (printNice (tempStr, "      ", 72) < 0)
-                printf ("     %s", (char *) bufPtr);
+    if (noattr == False) {
+        for (i = 0; i < ncInqOut->ngatts; i++) {
+            bufPtr = ncInqOut->gatt[i].value.dataArray->buf;
+            printf ("   %s = \n", ncInqOut->gatt[i].name);
+	    if (ncInqOut->gatt[i].dataType == NC_CHAR) {
+                /* assume it is a string */
+                /* printf ("%s ;\n", (char *) bufPtr); */
+                if (printNice ((char *) bufPtr, "      ", 72) < 0) 
+                    printf ("     %s", (char *) bufPtr);
+            } else {
+                ncValueToStr (ncInqOut->gatt[i].dataType, &bufPtr, tempStr);
+                if (printNice (tempStr, "      ", 72) < 0)
+                    printf ("     %s", (char *) bufPtr);
+            }
+            printf (";\n");
         }
-        printf (";\n");
     }
 
     /* dimensions */
@@ -129,23 +132,25 @@ prNcHeader (rcComm_t *conn, char *fileName, int ncid, ncInqOut_t *ncInqOut)
          dimId = ncInqOut->var[i].dimId[j];
          printf ("%s) ;\n", ncInqOut->dim[dimId].name);
 	/* print the attributes */
-	for (j = 0; j < ncInqOut->var[i].natts; j++) {
-	    ncGenAttOut_t *att = &ncInqOut->var[i].att[j];
-              printf ("     %s:%s =\n",   
-	      ncInqOut->var[i].name, att->name);
-	    bufPtr = att->value.dataArray->buf;
-            if (att->dataType == NC_CHAR) {
-                /* assume it is a string */
-                /* printf ("%s ;\n", (char *) bufPtr); */
-                if (printNice ((char *) bufPtr, "         ", 70) < 0)
-                    printf ("     %s", (char *) bufPtr);
-            } else {
-	        ncValueToStr (att->dataType, &bufPtr, tempStr);
-	        /* printf ("%s ;\n", tempStr); */
-                if (printNice (tempStr, "         ", 70) < 0) 
-                    printf ("     %s", (char *) bufPtr);
+        if (noattr == False) {
+	    for (j = 0; j < ncInqOut->var[i].natts; j++) {
+	        ncGenAttOut_t *att = &ncInqOut->var[i].att[j];
+                  printf ("     %s:%s =\n",   
+	          ncInqOut->var[i].name, att->name);
+	        bufPtr = att->value.dataArray->buf;
+                if (att->dataType == NC_CHAR) {
+                    /* assume it is a string */
+                    /* printf ("%s ;\n", (char *) bufPtr); */
+                    if (printNice ((char *) bufPtr, "         ", 70) < 0)
+                        printf ("     %s", (char *) bufPtr);
+                } else {
+	            ncValueToStr (att->dataType, &bufPtr, tempStr);
+	            /* printf ("%s ;\n", tempStr); */
+                    if (printNice (tempStr, "         ", 70) < 0) 
+                        printf ("     %s", (char *) bufPtr);
+                }
+                printf (";\n");
             }
-            printf (";\n");
         }
     }
     return 0;
@@ -320,7 +325,7 @@ ncInqOut_t *ncInqOut)
 {
     int status;
 
-    status = prNcHeader (conn, fileName, ncid, ncInqOut);
+    status = prNcHeader (conn, fileName, ncid, False, ncInqOut);
     if (status < 0) return status;
 
     if (dumpVarLen > 0) {
@@ -340,15 +345,15 @@ ncInqOut_t *ncInqOut)
                 ncVarSubset.ncSubset[i].end = dumpVarLen -1;
             }
         }
-        status = prNcVarData (conn, fileName, ncid, ncInqOut, &ncVarSubset);
+        status = prNcVarData (conn, fileName, ncid, False, ncInqOut, &ncVarSubset);
     } else {
-        status = prNcVarData (conn, fileName, ncid, ncInqOut, NULL);
+        status = prNcVarData (conn, fileName, ncid, False, ncInqOut, NULL);
     }
     return status;
 }
 
 int
-prNcVarData (rcComm_t *conn, char *fileName, int ncid, 
+prNcVarData (rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
 ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
 {
     int i, j, status;
@@ -373,68 +378,6 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
 	if (ncInqOut->var[i].nvdims > 1) printf ("\n  ");
         status = getSingleNcVarData (conn, ncid, i, ncInqOut, ncVarSubset,
           &ncGetVarOut, start, stride, count);
-#if 0
-	for (j = 0; j < ncInqOut->var[i].nvdims; j++) {
-	    int dimId = ncInqOut->var[i].dimId[j];
-            int doSubset = False;
-            if (ncVarSubset->numSubset > 0) {
-                for (k = 0; k < ncVarSubset->numSubset; k++) {
-                    if (strcmp (ncInqOut->dim[dimId].name, 
-                      ncVarSubset->ncSubset[k].subsetVarName) == 0) {
-                        doSubset = True;
-                        break;
-                    }
-                }
-            }
-            if (doSubset == True) {
-                if (ncVarSubset->ncSubset[k].start >= 
-                  ncInqOut->dim[dimId].arrayLen || 
-                  ncVarSubset->ncSubset[k].end >= 
-                  ncInqOut->dim[dimId].arrayLen ||
-                  ncVarSubset->ncSubset[k].start > 
-                  ncVarSubset->ncSubset[k].end) {
-                    rodsLogError (LOG_ERROR, status,
-                     "dumpNcInqOut: start %d or end %d for %s outOfRange %lld",
-                     ncVarSubset->ncSubset[k].start,
-                     ncVarSubset->ncSubset[k].end,
-                     ncVarSubset->ncSubset[k].subsetVarName,
-                     ncInqOut->dim[dimId].arrayLen);
-                    return NETCDF_DIM_MISMATCH_ERR;
-                }  
-                start[j] = ncVarSubset->ncSubset[k].start;
-                stride[j] = ncVarSubset->ncSubset[k].stride;
-                count[j] = ncVarSubset->ncSubset[k].end - 
-                  ncVarSubset->ncSubset[k].start + 1;
-            } else {
-	        start[j] = 0;
-#if 0
-            if (dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen) {
-                /* If it is NC_CHAR, it could be a str */
-                if (ncInqOut->var[i].dataType == NC_CHAR && 
-                  j ==  ncInqOut->var[i].nvdims - 1) {
-	            count[j] = ncInqOut->dim[dimId].arrayLen;
-                } else {
-                    count[j] = dumpVarLen;
-                }
-            } else {
-	        count[j] = ncInqOut->dim[dimId].arrayLen;
-            }
-#endif
-	        count[j] = ncInqOut->dim[dimId].arrayLen;
-	        stride[j] = 1;
-            }
-	}
-        bzero (&ncGetVarInp, sizeof (ncGetVarInp));
-        ncGetVarInp.dataType = ncInqOut->var[i].dataType;
-        ncGetVarInp.ncid = ncid;
-        ncGetVarInp.varid =  ncInqOut->var[i].id;
-        ncGetVarInp.ndim =  ncInqOut->var[i].nvdims;
-        ncGetVarInp.start = start;
-        ncGetVarInp.count = count;
-        ncGetVarInp.stride = stride;
-
-        status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
-#endif
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "dumpNcInqOut: rcNcGetVarsByType error for %s", 
@@ -471,6 +414,19 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
             } else {
                 for (j = 0; j < ncGetVarOut->dataArray->len; j++) {
                     ncValueToStr (ncInqOut->var[i].dataType, &bufPtr, tempStr);
+                    if (printAsciTime == True &&
+                      strcasecmp (ncInqOut->var[i].name, "time") == 0) { 
+                        /* asci time */
+                        time_t mytime =atoi (tempStr);
+                        struct tm *mytm = gmtime (&mytime);
+                        if (mytm != NULL) {
+                            snprintf (tempStr, NAME_LEN,
+                              "%04d-%02d-%02dT%02d:%02d:%02dZ",
+                              1900+mytm->tm_year, mytm->tm_mon + 1, 
+                              mytm->tm_mday,
+                              mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
+                        }
+                    }
 		    outCnt++;
 		    if (j >= ncGetVarOut->dataArray->len - 1) {
 		        printf ("%s ;\n", tempStr);
@@ -661,6 +617,7 @@ ncValueToStr (int dataType, void **invalue, char *outString)
     return 0;
 }
 
+#ifdef NETCDF_API
 int
 dumpNcInqOutToNcFile (rcComm_t *conn, int srcNcid, int noattrFlag,
 ncInqOut_t *ncInqOut, char *outFileName)
@@ -995,6 +952,7 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName)
     nc_close (ncid);
     return 0;
 }
+#endif
 
 int
 ncFormatToCmode (int format)
@@ -1022,6 +980,7 @@ ncFormatToCmode (int format)
     return cmode;
 }
 
+#ifdef NETCDF_API
 int
 closeAndRmNeFile (int ncid, char *outFileName)
 {
@@ -1029,6 +988,7 @@ closeAndRmNeFile (int ncid, char *outFileName)
     unlink (outFileName);
     return 0;
 }
+#endif
 
 int
 printNice (char *str, char *margin, int charPerLine)

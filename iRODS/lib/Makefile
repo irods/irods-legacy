@@ -69,7 +69,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/osauth.o \
 		$(libCoreObjDir)/sslSockComm.o
 
-ifdef NETCDF_API
+ifdef NETCDF_CLIENT
 LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o $(libCoreObjDir)/ncUtil.o
 endif
 

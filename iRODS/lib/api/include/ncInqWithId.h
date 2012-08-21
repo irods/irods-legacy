@@ -28,7 +28,7 @@ typedef struct {
 } ncInqWithIdOut_t;
     
 #define NcInqWithIdOut_PI "double mylong; int dataType; int natts; str name[MAX_NAME_LEN];int myint; int ndim; int *intArray(ndim);"
-#if defined(RODS_SERVER)
+#if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_INQ_WITH_ID rsNcInqWithId
 /* prototype for the server handler */
 int

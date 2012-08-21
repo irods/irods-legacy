@@ -16,7 +16,7 @@
 #include "dataObjInpOut.h"
 #include "ncOpen.h"
 
-#if defined(RODS_SERVER)
+#if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_CREATE rsNcCreate
 /* prototype for the server handler */
 int

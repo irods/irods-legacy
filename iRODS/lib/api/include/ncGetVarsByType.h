@@ -16,6 +16,34 @@
 #include "dataObjInpOut.h"
 #include "ncInqId.h"
 
+#ifndef NETCDF_API
+#include <stddef.h>
+/* NETCDF lib is not installed. Define some of the netcdf.h stuff */
+#define NC_BYTE     1   /* signed 1 byte integer */
+#define NC_CHAR     2   /* ISO/ASCII character   - uchar, text */
+#define NC_SHORT    3   /* signed 2 byte integer */
+#define NC_INT      4   /* signed 4 byte integer */
+#define NC_FLOAT    5   /* single precision floating point number */
+#define NC_DOUBLE   6   /* double precision floating point number */
+#define NC_UBYTE    7   /* unsigned 1 byte int */
+#define NC_USHORT   8   /* unsigned 2-byte int */
+#define NC_UINT     9   /* unsigned 4-byte int */
+#define NC_INT64    10  /* signed 8-byte int */
+#define NC_UINT64   11  /* unsigned 8-byte int */
+#define NC_STRING   12  /* string - only for netcdf librarysupports HDF */
+#define NC_NOWRITE  0x00000
+#define NC_WRITE    0x00001
+#define NC_MAX_DIMS 1024
+#define NC_FORMAT_CLASSIC	(1)
+#define NC_FORMAT_64BIT		(2)
+#define NC_FORMAT_NETCDF4	(3)
+#define NC_FORMAT_NETCDF4_CLASSIC	(4)
+#define NC_CLASSIC_MODEL	0x0100
+#define NC_64BIT_OFFSET		0x0200
+#define NC_NETCDF4		0x1000
+#endif
+
+ 
 /* valid dataType are:
 NC_BYTE     1   signed 1 byte integer 
 NC_CHAR     2   ISO/ASCII character   - uchar, text
@@ -51,7 +79,7 @@ typedef struct {
 
 #define NcGetVarOut_PI "piStr dataType_PI[NAME_LEN]; ?dataType_PI *dataArray;"
 
-#if defined(RODS_SERVER)
+#if defined(RODS_SERVER) && defined (NETCDF_API)
 #define RS_NC_GET_VARS_BY_TYPE rsNcGetVarsByType
 /* prototype for the server handler */
 int

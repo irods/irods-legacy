@@ -388,7 +388,7 @@ apidef_t RcApiTable[] = {
       "RegReplica_PI", 0, NULL, 0, (funcPtr) RS_REG_REPLICA},
     {FILE_CHKSUM_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
        "fileChksumInp_PI", 0, "fileChksumOut_PI", 0, (funcPtr) RS_FILE_CHKSUM},
-#ifdef NETCDF_API
+#ifdef NETCDF_CLIENT
     {NC_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
        "NcOpenInp_PI", 0, "INT_PI", 0, (funcPtr) RS_NC_OPEN},
     {NC_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 

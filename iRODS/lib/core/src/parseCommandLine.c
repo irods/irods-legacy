@@ -175,7 +175,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->add=True;
             argv[i]="-Z";
          }
-#ifdef NETCDF_API
+#ifdef NETCDF_CLIENT
          if (strcmp("--reg", argv[i])==0) {
             rodsArgs->reg=True;
             argv[i]="-Z";
@@ -352,7 +352,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          break;
       case 'q':
          rodsArgs->query=True;
-#ifdef NETCDF_API
+#ifdef NETCDF_CLIENT
          rodsArgs->queryStr = optarg;
 #endif
          break;

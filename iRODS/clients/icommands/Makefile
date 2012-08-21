@@ -137,7 +137,7 @@ BINS =		\
 		$(binDir)/iticket \
 		$(binDir)/igroupadmin
 
-ifdef NETCDF_API
+ifdef NETCDF_CLIENT
 OBJS += $(objDir)/incattr.o $(objDir)/inc.o
 BINS += $(binDir)/incattr $(binDir)/inc
 endif

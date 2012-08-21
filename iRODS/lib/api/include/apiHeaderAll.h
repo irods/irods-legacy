@@ -141,7 +141,7 @@
 #include "dataObjLock.h"
 #include "ticketAdmin.h"
 #include "getTempPasswordForOther.h"
-#ifdef NETCDF_API
+#ifdef NETCDF_CLIENT
 #include "ncOpen.h"
 #include "ncCreate.h"
 #include "ncClose.h"

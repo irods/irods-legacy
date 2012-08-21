@@ -408,42 +408,36 @@ LIB_API_OBJS += $(libApiObjDir)/rcTicketAdmin.o
 SVR_API_OBJS += $(svrApiObjDir)/rsGetTempPasswordForOther.o
 LIB_API_OBJS += $(libApiObjDir)/rcGetTempPasswordForOther.o
 
+ifdef NETCDF_CLIENT
+LIB_API_OBJS += $(libApiObjDir)/rcNcOpen.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcCreate.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcClose.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcInqId.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcInqWithId.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcGetVarsByType.o
+LIB_API_OBJS += $(libApiObjDir)/rcNccfGetVara.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcInq.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcInqGrps.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcRegGlobalAttr.o
 ifdef NETCDF_API
 SVR_API_OBJS += $(svrApiObjDir)/rsNcOpen.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcOpen.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsNcCreate.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcCreate.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsNcClose.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcClose.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInqId.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcInqId.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInqWithId.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcInqWithId.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsNcGetVarsByType.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcGetVarsByType.o
-
 ifdef LIB_CF
 SVR_API_OBJS += $(svrApiObjDir)/rsNccfGetVara.o
 endif
-LIB_API_OBJS += $(libApiObjDir)/rcNccfGetVara.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInq.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcInq.o
-
 ifdef NETCDF4_API
 SVR_API_OBJS += $(svrApiObjDir)/rsNcOpenGroup.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInqGrps.o
 endif
-LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcInqGrps.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsNcRegGlobalAttr.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcRegGlobalAttr.o
-endif
+endif	# NETCDF_API
+endif   # NETCDF_CLIENT
 
 SVR_API_OBJS += $(svrApiObjDir)/rsPamAuthRequest.o
 LIB_API_OBJS += $(libApiObjDir)/rcPamAuthRequest.o

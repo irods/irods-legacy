@@ -30,7 +30,7 @@ typedef struct {
 
 #define NcOpenInp_PI "str objPath[MAX_NAME_LEN]; int mode; int rootNcid; double intialsz; double bufrsizehint; struct KeyValPair_PI;"
 
-#if defined(RODS_SERVER)
+#if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_OPEN rsNcOpen
 /* prototype for the server handler */
 int
