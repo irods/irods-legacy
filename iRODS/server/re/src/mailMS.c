@@ -97,7 +97,7 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
 	t1 = NULL;
     }
     fclose(fd);
-    mailStr = (char*)malloc (strlen(toAddr)+100);
+    mailStr = (char*)malloc (strlen(toAddr)+strlen(subjectLine)+100);
     if (mailStr == NULL) return SYS_MALLOC_ERR;
 
 #ifdef solaris_platform
