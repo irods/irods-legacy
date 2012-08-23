@@ -734,6 +734,7 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
   char myActionStr[10][MAX_NAME_LEN + 10];
   int aNum = 0;
   char seActionStr[10 * MAX_NAME_LEN + 100];
+  char timestamp[TIME_LEN];
   rsComm_t *svrComm;
   int waitCnt = 0;
   sleepT = 1;
@@ -745,7 +746,8 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
     return(0);
   }
 
-  snprintf(hdr, HEADER_TYPE_LEN - 1,   "iaudit:%s",callLabel);
+  generateLogTimestamp(timestamp, TIME_LEN);
+  snprintf(hdr, HEADER_TYPE_LEN - 1,   "iaudit:%s:%s", timestamp, callLabel);
   condRead[0] = '\0'; 
   /* rodsLog (LOG_NOTICE,"PPP:%s\n",hdr); */
   snprintf(seActionStr, MAX_NAME_LEN + 10, "%s:%s", action, actionStr);
