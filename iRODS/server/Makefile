@@ -98,8 +98,10 @@ ifdef HPSS
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hpssFileDriver.o
 endif
 
-ifdef OOI_CI
+ifdef NETCDF_API
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/pydapDriver.o
+endif
+ifdef OOI_CI
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/erddapDriver.o
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/tdsDriver.o
 endif

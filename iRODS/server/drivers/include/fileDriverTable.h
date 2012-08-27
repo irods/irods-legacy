@@ -32,8 +32,10 @@
 #include "directAccessFileDriver.h"
 #endif
 
-#ifdef OOI_CI
+#ifdef NETCDF_API
 #include "pydapDriver.h"
+#endif
+#ifdef OOI_CI
 #include "erddapDriver.h"
 #include "tdsDriver.h"
 #endif
@@ -228,12 +230,16 @@ fileDriver_t FileDriverTable[] = {
 #endif
 
     {OOICI_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
-#ifdef OOI_CI
+#ifdef NETCDF_API
     {PYDAP_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
      noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, pydapStat, noSupportFsFileFstat,
      noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
      pydapOpendir, pydapClosedir, pydapReaddir, noSupportFsFileStage, noSupportFsFileRename,
      noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, pydapStageToCache, noSupportFsFileSyncToArch},
+#else
+    {PYDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
+#ifdef OOI_CI
     {ERDDAP_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
      noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, erddapStat, noSupportFsFileFstat,
      noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
@@ -246,7 +252,7 @@ fileDriver_t FileDriverTable[] = {
      tdsOpendir, tdsClosedir, tdsReaddir, noSupportFsFileStage, noSupportFsFileRename,
      noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, tdsStageToCache, noSupportFsFileSyncToArch},
 #else
-    {PYDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+    {TDS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
     {ERDDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
 };
