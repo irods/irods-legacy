@@ -866,8 +866,8 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName)
      * subsetNcInqOut.var[i].myint contains the var id of the target 
      */
     for (i = 0; i < ncInqOut->nvars; i++) {
-        if (ncVarSubset->numVar > 1 || (ncVarSubset->numVar == 1 &&
-          strcmp ((char *)ncVarSubset->varName, "all") == 0)) {
+        if (ncVarSubset->numVar == 0 || 
+          strcmp ((char *)ncVarSubset->varName, "all") == 0) {
             /* do all var */
             subsetNcInqOut.var[subsetNcInqOut.nvars] = ncInqOut->var[i];
             subsetNcInqOut.nvars++;
