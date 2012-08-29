@@ -18,6 +18,8 @@
 #include "ncInqId.h"
 #include "ncGetVarsByType.h"
 
+#define NC_VAR_TRANS_SZ         (4*1024*1024)
+
 /* definition for paramType, can be or'ed to inquire more than 1 type */
 
 #define NC_VAR_TYPE            0x1     /* nc variable */
@@ -171,6 +173,10 @@ ncInqOut_t *ncInqOut, char *outFileName);
 int
 dumpSubsetToFile (rcComm_t *conn, int srcNcid, int noattrFlag,
 ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName);
+int
+getAndPutVarToFile (rcComm_t *conn, int srcNcid, int srcVarid, int ndim,
+int dataType, size_t *lstart, ptrdiff_t *lstride, size_t *lcount, 
+int ncid, int varid);
 int
 ncFormatToCmode (int format);
 int

@@ -629,8 +629,6 @@ ncInqOut_t *ncInqOut, char *outFileName)
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
     size_t lstart[NC_MAX_DIMS], lcount[NC_MAX_DIMS];
     ptrdiff_t lstride[NC_MAX_DIMS];
-    ncGetVarInp_t ncGetVarInp;
-    ncGetVarOut_t *ncGetVarOut = NULL;
     void *bufPtr;
     int dimIdArray[NC_MAX_DIMS];
 
@@ -733,6 +731,16 @@ ncInqOut_t *ncInqOut, char *outFileName)
             stride[j] = 1;
             lstride[j] = 1;
         }
+        status = getAndPutVarToFile (conn, srcNcid, var->id, var->nvdims,
+          var->dataType, lstart, lstride, lcount, ncid, var->myint);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "dumpNcInqOutToNcFile: getAndPutVarToFile error for %s",
+              ncInqOut->var[i].name);
+            closeAndRmNeFile (ncid, outFileName);
+            return status;
+        }
+#if 0
         bzero (&ncGetVarInp, sizeof (ncGetVarInp));
         ncGetVarInp.dataType = var->dataType;
         ncGetVarInp.ncid = srcNcid;
@@ -765,8 +773,85 @@ ncInqOut_t *ncInqOut, char *outFileName)
             closeAndRmNeFile (ncid, outFileName);
             return NETCDF_PUT_VARS_ERR;
         }
+#endif
     }
     nc_close (ncid);
+    return 0;
+}
+
+int
+getAndPutVarToFile (rcComm_t *conn, int srcNcid, int srcVarid, int ndim, 
+int dataType, size_t *lstart, ptrdiff_t *lstride, size_t *lcount, 
+int ncid, int varid)
+{
+    int i, status;
+    rodsLong_t arrayLen = 1;
+    size_t dimStep = lcount[0];		/* use dim 0 - time for time series */
+    size_t curCount = 0;
+    size_t mystart[NC_MAX_DIMS], mycount[NC_MAX_DIMS];
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    ptrdiff_t mystride[NC_MAX_DIMS];
+    ncGetVarInp_t ncGetVarInp;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+
+    for (i = 0; i < ndim; i++) {
+        arrayLen = arrayLen * ((lcount[i] - 1) / lstride[i] + 1);
+        mystart[i] = lstart[i];
+        mycount[i] = lcount[i];
+        mystride[i] = lstride[i];
+        start[i] = lstart[i];
+        count[i] = lcount[i];
+        stride[i] = lstride[i];
+        
+    }
+
+    if (arrayLen > NC_VAR_TRANS_SZ) {
+        int stepSize = arrayLen / dimStep;
+        dimStep = NC_VAR_TRANS_SZ / stepSize + 1;
+    }
+    
+    bzero (&ncGetVarInp, sizeof (ncGetVarInp));
+    ncGetVarInp.dataType = dataType;
+    ncGetVarInp.ncid = srcNcid;
+    ncGetVarInp.varid =  srcVarid;
+    ncGetVarInp.ndim =  ndim;
+    ncGetVarInp.start = start;
+    ncGetVarInp.count = count;
+    ncGetVarInp.stride = stride;
+
+    while (curCount < lcount[0]) {
+        if (curCount + dimStep > lcount[0]) {
+            mycount[0] = lcount[0] - curCount;
+            count[0] = lcount[0] - curCount;
+        } else {
+            mycount[0] = dimStep;
+            count[0] = dimStep;
+        }
+        if (conn == NULL) {
+            /* local call */
+            status = _rsNcGetVarsByType (srcNcid, &ncGetVarInp, &ncGetVarOut);
+        } else {
+            status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+        }
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "getAndPutVarToFile: rcNcGetVarsByType error for varid %d",
+              srcVarid);
+            return status;
+        }
+        status = nc_put_vars (ncid, varid, mystart, mycount, mystride, 
+          ncGetVarOut->dataArray->buf);
+        freeNcGetVarOut (&ncGetVarOut);
+        if (status != NC_NOERR) {
+            rodsLogError (LOG_ERROR, status,
+              "getAndPutVarToFile: nc_put_vars error for varid %d    %s",
+              varid, nc_strerror(status));
+            return NETCDF_PUT_VARS_ERR;
+        }
+        curCount += mycount[0];
+        mystart[0] += mycount[0];
+        start[0] = mystart[0];
+    } 
     return 0;
 }
 
