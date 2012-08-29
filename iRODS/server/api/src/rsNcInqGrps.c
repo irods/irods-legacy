@@ -116,7 +116,7 @@ _rsNcInqGrps (int ncid, ncInqGrpsOut_t **ncInqGrpsOut)
         rodsLog (LOG_ERROR,
           "_rsNcInqGrps: nc_inq_grps error ncid = %d.  %s ", 
           ncid, nc_strerror(status));
-        status = NETCDF_INQ_ERR - status;
+        status = NETCDF_INQ_ERR + status;
         return status;
     }
     myNInqGrpsOut = *ncInqGrpsOut = (ncInqGrpsOut_t *) 
@@ -131,7 +131,7 @@ _rsNcInqGrps (int ncid, ncInqGrpsOut_t **ncInqGrpsOut)
         rodsLog (LOG_ERROR,
           "_rsNcInqGrps: nc_inq_grps error.  %s ", nc_strerror(status));
 	free (grpNcid);
-        status = NETCDF_INQ_ERR - status;
+        status = NETCDF_INQ_ERR + status;
         return status;
     }
     myNInqGrpsOut->grpName = (char **) calloc (1, numgrps * sizeof (char *));
@@ -144,7 +144,7 @@ _rsNcInqGrps (int ncid, ncInqGrpsOut_t **ncInqGrpsOut)
 	      nc_strerror(status));
 	    freeNcInqGrpsOut (ncInqGrpsOut);	
 	    free (grpNcid);
-            status = NETCDF_INQ_ERR - status;
+            status = NETCDF_INQ_ERR + status;
             return status;
 	}
 	myNInqGrpsOut->grpName[i] = (char *) malloc (len + 1);
@@ -157,7 +157,7 @@ _rsNcInqGrps (int ncid, ncInqGrpsOut_t **ncInqGrpsOut)
               nc_strerror(status));
             freeNcInqGrpsOut (ncInqGrpsOut);
             free (grpNcid);
-            status = NETCDF_INQ_ERR - status;
+            status = NETCDF_INQ_ERR + status;
             return status;
         }
     }

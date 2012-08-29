@@ -40,7 +40,7 @@ rsNcOpenGroup (rsComm_t *rsComm, ncOpenInp_t *ncOpenGroupInp, int **ncid)
             rodsLog (LOG_ERROR,
               "rsNcOpenGroup: nc_open %s error, status = %d, %s",
               ncOpenGroupInp->objPath, status, nc_strerror(status));
-            return (NETCDF_OPEN_ERR - status);
+            return (NETCDF_OPEN_ERR + status);
         } 
     }
     rl1descInx = ncOpenGroupInp->rootNcid;
@@ -83,7 +83,7 @@ rsNcOpenGroup (rsComm_t *rsComm, ncOpenInp_t *ncOpenGroupInp, int **ncid)
 		rodsLog (LOG_ERROR,
 		  "rsNcOpenGroup: nc_inq_grp_full_ncid %s err, stat = %d, %s",
 		  ncOpenGroupInp->objPath, status, nc_strerror(status));
-		return (NETCDF_OPEN_ERR - status);
+		return (NETCDF_OPEN_ERR + status);
 	    }
 	} else {
 	    /* execute it remotely */

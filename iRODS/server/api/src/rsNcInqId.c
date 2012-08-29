@@ -103,7 +103,7 @@ _rsNcInqId (int paramType, int ncid, char *name, int **outId)
         rodsLog (LOG_ERROR,
           "_rsNcInqId: nc_inq error paramType %d for %s. %s ", 
 	  paramType, name, nc_strerror(status));
-        status = NETCDF_INQ_ID_ERR - status;
+        status = NETCDF_INQ_ID_ERR + status;
     }
     return status;
 }

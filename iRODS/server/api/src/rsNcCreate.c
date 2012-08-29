@@ -42,7 +42,7 @@ rsNcCreate (rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid)
             rodsLog (LOG_ERROR,
               "rsNccreate: nc_create %s error, status = %d, %s",
               ncCreateInp->objPath, status, nc_strerror(status));
-            return (NETCDF_OPEN_ERR - status);
+            return (NETCDF_OPEN_ERR + status);
         }
     }
     bzero (&dataObjInp, sizeof (dataObjInp));
@@ -72,7 +72,7 @@ rsNcCreate (rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid)
 		  "rsNcCreate: nc_open %s error, status = %d, %s",
 		  ncCreateInp->objPath, status, nc_strerror(status));
 		freeL1desc (l1descInx);
-		return (NETCDF_CREATE_ERR - status);
+		return (NETCDF_CREATE_ERR + status);
 	    }
 	} else {
             /* execute it remotely with dataObjInfo->filePath */
@@ -105,7 +105,7 @@ rsNcCreate (rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid)
                   "rsNcCreate: svrRegDataObj for %s failed, status = %d",
                   L1desc[l1descInx].dataObjInfo->objPath, status);
                 freeL1desc (l1descInx);
-                return (NETCDF_CREATE_ERR - status);
+                return (NETCDF_CREATE_ERR + status);
             }
 	}
     } else {

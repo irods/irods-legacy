@@ -131,7 +131,7 @@ ncInqWithIdOut_t **ncInqWithIdOut)
           "_rsNcInqWithId: nc_inq error paramType %d for %s. %s ", 
 	  paramType, name, nc_strerror(status));
 	*ncInqWithIdOut = NULL;
-        status = NETCDF_INQ_ID_ERR - status;
+        status = NETCDF_INQ_ID_ERR + status;
     }
     return status;
 }

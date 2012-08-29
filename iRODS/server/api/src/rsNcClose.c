@@ -31,7 +31,7 @@ rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
             rodsLog (LOG_ERROR,
               "rsNcClose: nc_close %d error, status = %d, %s",
               ncCloseInp->ncid, status, nc_strerror(status));
-            status = NETCDF_CLOSE_ERR - status;
+            status = NETCDF_CLOSE_ERR + status;
 	}
 	return status;
     }
@@ -71,7 +71,7 @@ rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
 		  L1desc[l1descInx].dataObjInfo->objPath, status, 
 		  nc_strerror(status));
                 freeL1desc (l1descInx);
-                return (NETCDF_CLOSE_ERR - status);
+                return (NETCDF_CLOSE_ERR + status);
             }
         } else {
 	    /* execute it remotely */

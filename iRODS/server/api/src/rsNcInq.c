@@ -96,7 +96,7 @@ _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
     if (status != NC_NOERR) {
         rodsLog (LOG_ERROR,
           "_rsNcInq: nc_inq error.  %s ", nc_strerror(status));
-        status = NETCDF_INQ_ERR - status;
+        status = NETCDF_INQ_ERR + status;
         return status;
     }
 
@@ -136,7 +136,7 @@ _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
     if (status != NC_NOERR) {
         rodsLog (LOG_ERROR,
           "_rsNcInq: nc_inq_format error.  %s ", nc_strerror(status));
-        status = NETCDF_INQ_FORMAT_ERR - status;
+        status = NETCDF_INQ_FORMAT_ERR + status;
         return status;
     }
     initNcInqOut (ndims, nvars, ngatts, unlimdimid, format, ncInqOut);
@@ -156,7 +156,7 @@ _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
                     rodsLog (LOG_ERROR,
                       "_rsNcInq: nc_inq_dimid error for %s.  %s ", 
 	              ncInqInp->name, nc_strerror(status));
-                    status = NETCDF_INQ_ID_ERR - status;
+                    status = NETCDF_INQ_ID_ERR + status;
                     freeNcInqOut (ncInqOut);
                     return status;
 		}
@@ -170,7 +170,7 @@ _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
         } else {
             rodsLog (LOG_ERROR,
               "_rsNcInq: nc_inq_dim error.  %s ", nc_strerror(status));
-            status = NETCDF_INQ_DIM_ERR - status;
+            status = NETCDF_INQ_DIM_ERR + status;
 	    freeNcInqOut (ncInqOut);
             return status;
 	}
@@ -189,7 +189,7 @@ _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
                     rodsLog (LOG_ERROR,
                       "_rsNcInq: nc_inq_varid error for %s.  %s ",
                       ncInqInp->name, nc_strerror(status));
-                    status = NETCDF_INQ_ID_ERR - status;
+                    status = NETCDF_INQ_ID_ERR + status;
                     freeNcInqOut (ncInqOut);
                     return status;
                 }
@@ -222,7 +222,7 @@ _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
         } else {
             rodsLog (LOG_ERROR,
               "_rsNcInq: nc_inq_var error.  %s ", nc_strerror(status));
-            status = NETCDF_INQ_VARS_ERR - status;
+            status = NETCDF_INQ_VARS_ERR + status;
             freeNcInqOut (ncInqOut);
             return status;
         }
@@ -268,7 +268,7 @@ ncGenAttOut_t *attOut)
             rodsLog (LOG_ERROR,
               "inqAtt: nc_inq_attname error for ncid %d, varid %d, %s", 
 	      ncid, varid, nc_strerror(status));
-            status = NETCDF_INQ_ATT_ERR - status;
+            status = NETCDF_INQ_ATT_ERR + status;
 	    free (attOut);
             return status;
         }
@@ -277,7 +277,7 @@ ncGenAttOut_t *attOut)
             rodsLog (LOG_ERROR,
               "inqAtt: nc_inq_att error for ncid %d, varid %d, %s", 
               ncid, varid, nc_strerror(status));
-            status = NETCDF_INQ_ATT_ERR - status;
+            status = NETCDF_INQ_ATT_ERR + status;
             free (attOut);
             return status;
         }   
@@ -388,7 +388,7 @@ ncGetVarOut_t *value)
         rodsLog (LOG_ERROR,
           "getAttValue:  nc_get_att err varid %d dataType %d. %s ",
           varid, dataType, nc_strerror(status));
-        status = NETCDF_GET_ATT_ERR - status;
+        status = NETCDF_GET_ATT_ERR + status;
     }
     return status;
 }

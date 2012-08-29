@@ -39,7 +39,7 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
             rodsLog (LOG_ERROR,
               "rsNcOpen: nc_open %s error, status = %d, %s",
               ncOpenInp->objPath, status, nc_strerror(status));
-            return (NETCDF_OPEN_ERR - status);
+            return (NETCDF_OPEN_ERR + status);
         } 
     }
     bzero (&dataObjInp, sizeof (dataObjInp));
@@ -79,7 +79,7 @@ status = nc_open (myPath, ncOpenInp->mode, &myncid);
 		  "rsNcOpen: nc_open %s error, status = %d, %s",
 		  ncOpenInp->objPath, status, nc_strerror(status));
 		freeL1desc (l1descInx);
-		return (NETCDF_OPEN_ERR - status);
+		return (NETCDF_OPEN_ERR + status);
 	    }
 	} else {
 	    /* execute it remotely with dataObjInfo->filePath */
