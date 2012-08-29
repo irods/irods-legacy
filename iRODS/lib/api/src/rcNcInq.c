@@ -66,12 +66,28 @@ freeNcInqOut (ncInqOut_t **ncInqOut)
 }
 
 int
-prNcHeader (rcComm_t *conn, char *fileName, int ncid, int noattr,
-ncInqOut_t *ncInqOut)
+prFirstNcLine (char *objPath)
+{
+    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+
+    if (objPath == NULL || splitPathByKey (objPath, myDir, myFile, '/') < 0) {
+        printf ("netcdf UNKNOWN_FILE {\n");
+    } else {
+        int len = strlen (myFile);
+        char *myptr = myFile + len - 3;
+        if (strcmp (myptr, ".nc") == 0) *myptr = '\0';
+        printf ("netcdf %s {\n", myFile);
+    }
+    return 0;
+}
+
+int
+prNcHeader (rcComm_t *conn, int ncid, int noattr, ncInqOut_t *ncInqOut)
 {
     int i, j, dimId, status;
     char tempStr[NAME_LEN];
     void *bufPtr;
+#if 0
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
 
     if (fileName == NULL || splitPathByKey (fileName, myDir, myFile, '/') < 0) {
@@ -82,6 +98,7 @@ ncInqOut_t *ncInqOut)
 	if (strcmp (myptr, ".nc") == 0) *myptr = '\0'; 
 	printf ("netcdf %s {\n", myFile);
     }
+#endif
 
     /* attrbutes */
     if (noattr == False) {
@@ -327,7 +344,8 @@ ncInqOut_t *ncInqOut)
 {
     int status;
 
-    status = prNcHeader (conn, fileName, ncid, False, ncInqOut);
+    prFirstNcLine (fileName);
+    status = prNcHeader (conn, ncid, False, ncInqOut);
     if (status < 0) return status;
 
     if (dumpVarLen > 0) {
@@ -351,6 +369,7 @@ ncInqOut_t *ncInqOut)
     } else {
         status = prNcVarData (conn, fileName, ncid, False, ncInqOut, NULL);
     }
+    printf ("}\n");
     return status;
 }
 
@@ -444,7 +463,6 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
 	    freeNcGetVarOut (&ncGetVarOut);
 	}
     }
-    printf ("}\n");
     return 0;
 }
 

@@ -113,9 +113,9 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
 
     if (rodsArgs->option == False) {
         /* stdout */
+        prFirstNcLine (ncOpenInp->objPath);
         if (rodsArgs->header == True) {
-            status = prNcHeader (conn, ncOpenInp->objPath, ncid,
-              rodsArgs->noattr, ncInqOut);
+            status = prNcHeader (conn, ncid, rodsArgs->noattr, ncInqOut);
         }
         if (rodsArgs->header + rodsArgs->dim + rodsArgs->var + 
           rodsArgs->subset > 1)
@@ -133,6 +133,7 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
             status = prNcVarData (conn, ncOpenInp->objPath, ncid, 
               rodsArgs->ascitime, ncInqOut, ncVarSubset);
         }
+        printf ("}\n");
     } else {
 #ifdef NETCDF_API
         if (rodsArgs->var + rodsArgs->subset > 0) {

@@ -148,7 +148,9 @@ int
 dumpNcInqOut (rcComm_t *conn, char *fileName, int ncid, int dumpVarLen,
 ncInqOut_t *ncInqOut);
 int
-prNcHeader (rcComm_t *conn, char *fileName, int ncid, int noattr,
+prFirstNcLine (char *objPath);
+int
+prNcHeader (rcComm_t *conn, int ncid, int noattr,
 ncInqOut_t *ncInqOut);
 int
 prSingleDimVar (rcComm_t *conn, int ncid, int varInx, 
