@@ -129,8 +129,10 @@ ncInqOut_t *ncInqOut)
 	    printf ("%s, ",  ncInqOut->dim[dimId].name);
 	}
 	/* last one */
-         dimId = ncInqOut->var[i].dimId[j];
-         printf ("%s) ;\n", ncInqOut->dim[dimId].name);
+	if (ncInqOut->var[i].nvdims > 0) {
+             dimId = ncInqOut->var[i].dimId[j];
+             printf ("%s) ;\n", ncInqOut->dim[dimId].name);
+        }
 	/* print the attributes */
         if (noattr == False) {
 	    for (j = 0; j < ncInqOut->var[i].natts; j++) {
