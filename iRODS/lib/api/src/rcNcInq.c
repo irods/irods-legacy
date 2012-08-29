@@ -1048,7 +1048,11 @@ ncFormatToCmode (int format)
 
     switch (format) {
       case NC_FORMAT_CLASSIC:
+#ifdef NETCDF4_API	/* force it to NC_NETCDF4 */
+        cmode = NC_NETCDF4;
+#else
         cmode = NC_CLASSIC_MODEL;
+#endif
         break;
       case NC_FORMAT_64BIT:
         cmode = NC_64BIT_OFFSET;
