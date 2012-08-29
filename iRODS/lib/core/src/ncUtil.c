@@ -152,9 +152,11 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
     ncCloseInp.ncid = ncid;
     status1 = rcNcClose (conn, &ncCloseInp);
     if (status1 < 0) {
-        rodsLogError (LOG_ERROR, status1,
-          "ncOperDataObjUtil: rcNcClose error for %s", ncOpenInp->objPath);
-        return status1;
+        /* nc_close on the server sometime returns -62 for opendap */
+        rodsLog (LOG_NOTICE,
+          "ncOperDataObjUtil: rcNcClose error for %s, status = %d", 
+          ncOpenInp->objPath, status1);
+        return 0;
     }
     return status;
 }
