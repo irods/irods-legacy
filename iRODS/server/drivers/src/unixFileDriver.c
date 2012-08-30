@@ -615,7 +615,7 @@ int
 unixFileCopy (int mode, char *srcFileName, char *destFileName)
 {
     int inFd, outFd;
-    char myBuf[TRANS_BUF_SZ];
+    void *myBuf;
     rodsLong_t bytesCopied = 0;
     int bytesRead;
     int bytesWritten;
@@ -650,6 +650,7 @@ unixFileCopy (int mode, char *srcFileName, char *destFileName)
         return status;
     }
 
+    myBuf = malloc (TRANS_BUF_SZ);
     while ((bytesRead = read (inFd, (void *) myBuf, TRANS_BUF_SZ)) > 0) {
 	bytesWritten = write (outFd, (void *) myBuf, bytesRead);
 	if (bytesWritten <= 0) {
@@ -657,13 +658,14 @@ unixFileCopy (int mode, char *srcFileName, char *destFileName)
             rodsLog (LOG_ERROR,
              "unixFileCopy: write error for srcFileName %s, status = %d",
              destFileName, status);
+            free (myBuf);
 	    close (inFd);
 	    close (outFd);
             return status;
 	}
 	bytesCopied += bytesWritten;
     }
-
+    free (myBuf);
     close (inFd);
     close (outFd);
 
