@@ -187,6 +187,10 @@ int
 printNice (char *str, char *margin, int charPerLine);
 int
 parseNcSubset (ncSubset_t *ncSubset);
+int
+parseVarStrForSubset (char *varStr, ncVarSubset_t *ncVarSubset);
+int
+parseSubsetStr (char *subsetStr, ncVarSubset_t *ncVarSubset);
 #ifdef  __cplusplus
 }
 #endif

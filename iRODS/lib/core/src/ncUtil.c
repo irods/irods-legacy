@@ -166,8 +166,7 @@ int
 initCondForNcOper (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
 {
-    int i, inLen, status = 0;
-    char *inPtr;
+    int status = 0;
 
     if (ncOpenInp == NULL) {
        rodsLog (LOG_ERROR,
@@ -202,6 +201,9 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
     addKeyVal (&ncOpenInp->condInput, NO_STAGING_KW, "");
 
     if (rodsArgs->var == True) {
+        status = parseVarStrForSubset (rodsArgs->varStr, ncVarSubset);
+        if (status < 0) return status;
+#if 0
         i = 0;
         inLen = strlen (rodsArgs->varStr);
         inPtr = rodsArgs->varStr;
@@ -212,8 +214,12 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
             i++;
             if (ncVarSubset->numVar >= MAX_NUM_VAR) break;
         }
+#endif
     }
     if (rodsArgs->subset == True) {
+        status = parseSubsetStr (rodsArgs->subsetStr, ncVarSubset);
+        if (status < 0) return status;
+#if 0
         i = 0;
         inLen = strlen (rodsArgs->subsetStr);
         inPtr = rodsArgs->subsetStr;
@@ -226,6 +232,7 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
             i++;
             if (ncVarSubset->numSubset >= MAX_NUM_VAR) break;
         }
+#endif
     }
     return (0);
 }

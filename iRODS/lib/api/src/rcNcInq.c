@@ -1184,3 +1184,40 @@ parseNcSubset (ncSubset_t *ncSubset)
     return 0;
 }
 
+int
+parseVarStrForSubset (char *varStr, ncVarSubset_t *ncVarSubset)
+{
+    int i = 0;
+    int inLen = strlen (varStr);
+    char *inPtr = varStr;
+
+    while (getNextEleInStr (&inPtr, &ncVarSubset->varName[i][LONG_NAME_LEN],
+      &inLen, LONG_NAME_LEN) > 0) {
+        ncVarSubset->numVar++;
+        i++;
+        if (ncVarSubset->numVar >= MAX_NUM_VAR) break;
+    }
+    return 0;
+}
+
+int
+parseSubsetStr (char *subsetStr, ncVarSubset_t *ncVarSubset)
+{
+    int status;
+    int i = 0;
+    int inLen = strlen (subsetStr);
+    char *inPtr = subsetStr;
+
+    while (getNextEleInStr (&inPtr,
+     ncVarSubset->ncSubset[i].subsetVarName,
+     &inLen, LONG_NAME_LEN) > 0) {
+        status = parseNcSubset (&ncVarSubset->ncSubset[i]);
+        if (status < 0) return status;
+        ncVarSubset->numSubset++;
+        i++;
+        if (ncVarSubset->numSubset >= MAX_NUM_VAR) break;
+    }
+    return 0;
+}
+
+
