@@ -1313,8 +1313,12 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
     if (status < 0) return status;
 
     bufPtr = value->dataArray->buf;
-    status = ncValueToStr (value->dataArray->type, &bufPtr, tempStr);
-
+    if (value->dataArray->type == NC_CHAR && value->dataArray->len > 0) {
+        /* must be a string */
+        status = ncValueToStr (NC_STRING, &bufPtr, tempStr);
+    } else {
+        status = ncValueToStr (value->dataArray->type, &bufPtr, tempStr);
+    }
     if (status < 0) return status;
 
     fillStrInMsParam (outParam, tempStr);
