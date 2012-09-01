@@ -115,4 +115,12 @@ msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int
 msiNcRegGlobalAttr (msParam_t *objPathParam, msParam_t *adminParam,
 msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiNcSubsetVar (msParam_t *varNameParam, msParam_t *ncidParam,
+msParam_t *ncInqOutParam, msParam_t *subsetStrParam,
+msParam_t *outParam, ruleExecInfo_t *rei);
+int
+ncSubsetVar (rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
+ncVarSubset_t *ncVarSubset, ncGetVarOut_t **ncGetVarOut);
+
 #endif	/* RE_NETCDF_H */

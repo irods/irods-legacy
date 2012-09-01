@@ -467,6 +467,7 @@ microsdef_t MicrosTable[] = {
   {"msiNcGetNGrpsInInqOut",2,(funcPtr) msiNcGetNGrpsInInqOut},
   {"msiNcGetGrpInInqOut",3,(funcPtr) msiNcGetGrpInInqOut},
   {"msiNcRegGlobalAttr",3,(funcPtr) msiNcRegGlobalAttr},
+  {"msiNcSubsetVar",5,(funcPtr) msiNcSubsetVar},
 #ifdef LIB_CF
   {"msiNccfGetVara",10,(funcPtr) msiNccfGetVara},
 #endif

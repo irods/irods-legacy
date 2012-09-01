@@ -1802,3 +1802,254 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+int
+msiNcSubsetVar (msParam_t *varNameParam, msParam_t *ncidParam, 
+msParam_t *ncInqOutParam, msParam_t *subsetStrParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    ncVarSubset_t ncVarSubset;
+    int ncid;
+    ncInqOut_t *ncInqOut;
+    char *name;
+    char *subsetStr;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+
+    RE_TEST_MACRO ("    Calling msiNcSubsetVar")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR,
+        "msiNcSubsetVar: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    rsComm = rei->rsComm;
+    if (ncidParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcSubsetVar: input ncidParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    } else {
+        ncid = parseMspForPosInt (ncidParam);
+        if (ncid < 0) return ncid;
+    }
+    if (ncInqOutParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcSubsetVar: input ncInqOutParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    } else {
+        ncInqOut = (ncInqOut_t *) ncInqOutParam->inOutStruct;
+
+    }
+
+    if (varNameParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcSubsetVar: input varNameParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    } else {
+        name = (char*) varNameParam->inOutStruct;
+    }
+    if (subsetStrParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiNcSubsetVar: input subsetStrParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    } else {
+        subsetStr = (char*) subsetStrParam->inOutStruct;
+    }
+    bzero (&ncVarSubset, sizeof (ncVarSubset));
+    ncVarSubset.numVar = 1;
+    rstrcpy ((char *) ncVarSubset.varName, name, LONG_NAME_LEN);
+    rei->status = parseSubsetStr (subsetStr, &ncVarSubset);
+    if (rei->status < 0) return rei->status;
+    rei->status = ncSubsetVar (rsComm, ncid, ncInqOut, &ncVarSubset,
+      &ncGetVarOut);
+    if (rei->status >= 0) {
+        fillMsParam (outParam, NULL, NcGetVarOut_MS_T, ncGetVarOut, NULL);
+    } else {
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiNcSubsetVar: ncSubsetVar failed, status = %d",
+        rei->status);
+    }
+
+    return rei->status;
+}
+
+int
+ncSubsetVar (rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut, 
+ncVarSubset_t *ncVarSubset, ncGetVarOut_t **ncGetVarOut)
+{
+    int i, j, k, status;
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    ncGetVarInp_t ncGetVarInp;
+    int varInx = -1;
+
+    for (i = 0; i < ncInqOut->nvars; i++) {
+        if (strcmp ((char *)ncVarSubset->varName, ncInqOut->var[i].name) == 0) {
+            varInx = i;
+            break;
+        }
+    }
+    if (varInx < 0) {
+        rodsLog (LOG_ERROR,
+          "ncSubsetVar: unmatched input var name %s", ncVarSubset->varName);
+        return NETCDF_UNMATCHED_NAME_ERR;
+    }
+    /* the following code is almost identical to getSingleNcVarData on 
+     * the client side */
+    for (j = 0; j < ncInqOut->var[varInx].nvdims; j++) {
+        int dimId = ncInqOut->var[varInx].dimId[j];
+        int doSubset = False;
+        if (ncVarSubset != NULL && ncVarSubset->numSubset > 0) {
+            for (k = 0; k < ncVarSubset->numSubset; k++) {
+                if (strcmp (ncInqOut->dim[dimId].name,
+                  ncVarSubset->ncSubset[k].subsetVarName) == 0) {
+                    doSubset = True;
+                    break;
+                }
+            }
+        }
+       if (doSubset == True) {
+            if (ncVarSubset->ncSubset[k].start >=
+              ncInqOut->dim[dimId].arrayLen ||
+              ncVarSubset->ncSubset[k].end >=
+              ncInqOut->dim[dimId].arrayLen ||
+              ncVarSubset->ncSubset[k].start >
+              ncVarSubset->ncSubset[k].end) {
+                rodsLog (LOG_ERROR,
+                 "ncSubsetVar:start %d or end %d for %s outOfRange %lld",
+                 ncVarSubset->ncSubset[k].start,
+                 ncVarSubset->ncSubset[k].end,
+                 ncVarSubset->ncSubset[k].subsetVarName,
+                 ncInqOut->dim[dimId].arrayLen);
+                return NETCDF_DIM_MISMATCH_ERR;
+            }
+            start[j] = ncVarSubset->ncSubset[k].start;
+            stride[j] = ncVarSubset->ncSubset[k].stride;
+            count[j] = ncVarSubset->ncSubset[k].end -
+              ncVarSubset->ncSubset[k].start + 1;
+        } else {
+            start[j] = 0;
+            count[j] = ncInqOut->dim[dimId].arrayLen;
+            stride[j] = 1;
+        }
+    }
+    bzero (&ncGetVarInp, sizeof (ncGetVarInp));
+    ncGetVarInp.dataType = ncInqOut->var[varInx].dataType;
+    ncGetVarInp.ncid = ncid;
+    ncGetVarInp.varid =  ncInqOut->var[varInx].id;
+    ncGetVarInp.ndim =  ncInqOut->var[varInx].nvdims;
+    ncGetVarInp.start = start;
+    ncGetVarInp.count = count;
+    ncGetVarInp.stride = stride;
+
+    status = rsNcGetVarsByType (rsComm, &ncGetVarInp, ncGetVarOut);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "ncSubsetVar: rcNcGetVarsByType error for %s",
+          ncInqOut->var[varInx].name);
+    }
+    return status;
+}
+
+#if 0	/* not done */
+int
+msiPrVarInNcGetVarOut (msParam_t *ncGetVarOutParam, msParam_t *prefixParam,
+msParam_t *itemsPerLineParam, ruleExecInfo_t *rei)
+{
+    ncGetVarOut_t *ncGetVarOut;
+    RE_TEST_MACRO ("    Calling msiPrVarInNcGetVarOut")
+    char *prefix;
+    int itemsPerLine;
+    char tempStr[NAME_LEN];
+    void *bufPtr;
+    int outCnt = 0;
+    int itemsInLine = 0;
+
+    if (rei == NULL) {
+        rodsLog (LOG_ERROR, "msiPrVarInNcGetVarOut: input rei is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (ncGetVarOutParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiPrVarInNcGetVarOut: input ncidParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    } else {
+        ncGetVarOut = (ncGetVarOut_t *) ncGetVarOutParam->inOutStruct;
+        if (ncGetVarOut == NULL || ncGetVarOut->dataArray == NULL)
+            return USER__NULL_INPUT_ERR;
+    }
+    if (prefixParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiPrVarInNcGetVarOut: input prefixParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    } else {
+        prefix = (char *) prefixParam->inOutStruct;
+        if ( prefix == NULL) return USER__NULL_INPUT_ERR;
+    }
+    if (itemsPerLineParam == NULL) {
+        itemsPerLine = 1;
+    } else {
+        itemsPerLine = parseMspForPosInt (itemsPerLineParam);
+        if (itemsPerLine <= 0) itemsPerLine = 1;
+    }
+    bufPtr = ncGetVarOut->dataArray->buf;
+    bzero (tempStr, sizeof (tempStr));
+    if (ncInqOut->var[varInx].dataType == NC_CHAR) {
+        int totalLen = 0;
+        while (totalLen < ncGetVarOut->dataArray->len) {
+            int len;
+            char *nextBufPtr;
+            /* treat it as strings */
+            if (outCnt == 0) _writeString ("stdout", prefix, rei);
+            len = strlen (bufPtr);
+            totalLen += (len + 1);
+
+            nextBufPtr = bufPtr + len + 1;
+            while (isspace (*nextBufPtr) || *nextBufPtr = '\0') {
+                bufPtr++;
+                totalLen++;
+                if (totalLen >= ncGetVarOut->dataArray->len) break;
+            }
+            if (totalLen >= ncGetVarOut->dataArray->len) {
+                /* last one */
+                printf ("%s ;\n", (char *) bufPtr);
+                snprintf (tempStr, NAME_LEN, "%s ;\n", bufPtr);
+            if (outCnt >= itemsPerLine - 1) {
+                /* reset */
+                snprintf (tempStr, NAME_LEN, "%s,\n", bufPtr);
+                outCnt = 0;
+            } else {
+               snprintf (tempStr, NAME_LEN, "%s,", bufPtr);
+            }
+            _writeString ("stdout", tempStr, rei);
+            outCnt ++;
+            bufPtr = nextBufPtr;
+        }
+    } else {
+        for (j = 0; j < ncGetVarOut->dataArray->len; j++) {
+            ncValueToStr (ncInqOut->var[varInx].dataType, &bufPtr, tempStr);
+            outCnt++;
+            if (j >= ncGetVarOut->dataArray->len - 1) {
+                strcat (tempStr, " ;\n");
+                printf ("%s ;\n", tempStr);
+            } else if (itemsPerLine > 0) {
+                itemsInLine++;
+                if (itemsInLine >= itemsPerLine) {
+                    strcat (tempStr, ",\n");
+                    itemsInLine = 0;
+                } else {
+                    strcat (tempStr, ", ");
+                }
+            } else if (outCnt >= lastDimLen) {
+                /* reset */
+                strcat (tempStr, ",\n  ");
+                outCnt = 0;
+            } else {
+                strcat (tempStr, ", ");
+            }
+        }
+    }
+    return 0;
+}
+#endif
+
