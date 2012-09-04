@@ -122,5 +122,10 @@ msParam_t *outParam, ruleExecInfo_t *rei);
 int
 ncSubsetVar (rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
 ncVarSubset_t *ncVarSubset, ncGetVarOut_t **ncGetVarOut);
+int
+msiNcVarStat (msParam_t *ncGetVarOutParam, msParam_t *statOutStr,
+ruleExecInfo_t *rei);
+int
+procMaxMinAve (float myfloat, float *mymax, float *mymin, float *mytotal);
 
 #endif	/* RE_NETCDF_H */
