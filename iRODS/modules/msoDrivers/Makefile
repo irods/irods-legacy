@@ -90,7 +90,8 @@ endif
 
 ifdef MSOSRB
 CFLAGS += -DMSO_SRB
-MySrbPath = /data1/sheauc/SRB3_5_0
+#MySrbPath = /data1/sheauc/SRB3_5_0
+MySrbPath = $(modulesDir)/msoDrivers/microservices
 SRBLIBS =  -L$(MySrbPath)/obj -lSrbClient
 endif
 
