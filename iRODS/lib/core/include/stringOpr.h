@@ -32,6 +32,9 @@ int
 getParentPathlen (char *path);
 int
 trimQuotes(char *s);
+int
+checkStringForSystem( char *inString);
+
 #ifdef  __cplusplus
 }
 #endif

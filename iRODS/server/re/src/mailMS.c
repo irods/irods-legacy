@@ -52,11 +52,16 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
   char *toAddr;
   char *subjectLine;
   char *body;
+  int status;
 
   toAddr = (char *) xtoAddr->inOutStruct;
   subjectLine = (char *) xsubjectLine->inOutStruct;
   body = (char *) xbody->inOutStruct;
 
+  status = checkStringForSystem(toAddr);
+  if (status) return(status);
+  status = checkStringForSystem(subjectLine);
+  if (status) return(status);
 
     if (reTestFlag > 0 ) {
       if (reTestFlag == COMMAND_TEST_1) {
