@@ -221,7 +221,7 @@ unlink($tmpPwFile);
 # Temporary password for other
 $prevAuthFileName=$ENV{'irodsAuthFileName'};  # old one, if any
 $ENV{'irodsAuthFileName'}=$tmpPwFile;
-runCmd(0, "test_chl tpwforother 123 $User2 | grep  'temp pw'");
+runCmd(0, "test_chl tpwforother $IRODS_ADMIN_PASSWORD $User2 | grep  'temp pw'");
 $temp1=$cmdStdout;
 chomp($temp1);
 $ixPw=index($temp1,"=");
