@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* #define RULE_ENGINE_N */
+/* #define RE_LOG_RULES_TMP */
 #include "reGlobals.h"
 #include "initServer.h"
 #include "reHelpers1.h"
@@ -447,7 +447,7 @@ int
 applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag)
 {
-    #ifdef DEBUG
+    #if defined(DEBUG) || defined(RE_LOG_RULES_TMP)
     writeToTmp("entry.log", "applyRule: ");
     writeToTmp("entry.log", inAction);
     writeToTmp("entry.log", "\n");
