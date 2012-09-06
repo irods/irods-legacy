@@ -132,6 +132,11 @@ ifdef PARA_OPR
 MY_CFLAG+= -DPARA_OPR=1
 endif
 
+# New rule engine
+ifdef RULE_ENGINE_N
+MY_CFLAG+= -DRULE_ENGINE_N=1
+endif
+
 # Hardware choices
 MY_CFLAG+= -D$(OS_platform)
 ifdef hardware_platform
