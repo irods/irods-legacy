@@ -230,7 +230,7 @@ fileDriver_t FileDriverTable[] = {
 #endif
 
     {OOICI_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
-#ifdef NETCDF_API
+#ifdef PYDAP
     {PYDAP_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
      noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, pydapStat, noSupportFsFileFstat,
      noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
@@ -239,13 +239,16 @@ fileDriver_t FileDriverTable[] = {
 #else
     {PYDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
-#ifdef OOI_CI
+#ifdef ERDDAP
     {ERDDAP_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
      noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, erddapStat, noSupportFsFileFstat,
      noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
      erddapOpendir, erddapClosedir, erddapReaddir, noSupportFsFileStage, noSupportFsFileRename,
      noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, erddapStageToCache, noSupportFsFileSyncToArch},
-
+#else
+    {ERDDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
+#ifdef TDS
     {TDS_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead,
      noSupportFsFileWrite, noSupportFsFileClose, noSupportFsFileUnlink, tdsStat, noSupportFsFileFstat,
      noSupportFsFileLseek, noSupportFsFileFsync, noSupportFsFileMkdir, noSupportFsFileChmod, noSupportFsFileRmdir,
@@ -253,7 +256,6 @@ fileDriver_t FileDriverTable[] = {
      noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, tdsStageToCache, noSupportFsFileSyncToArch},
 #else
     {TDS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
-    {ERDDAP_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
 };
 

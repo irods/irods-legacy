@@ -477,6 +477,32 @@ LIB_CF_LIB_DIR=/usr/local/lib
 endif
 endif
 
+# PYDAP - Define whether PYDAP driver  is supported on this server. 
+# NETCDF_API must be enabled if PYDAP is enabled.
+# PYDAP=1
+
+# TDS - Define whether the TDS (Thredds Data Server) driver is supported on 
+# this server. NETCDF_API must be enabled and libxml2 must be installed
+# if TDS is enabled. LIB_XML2_INC_DIR and LIB_XML2_LIB_DIR defines
+# the path for the include directory and lib directory, respectively, for
+# libxml2.
+# TDS=1
+ifdef TDS
+LIB_XML2_INC_DIR=/usr/local/include
+LIB_XML2_LIB_DIR=/usr/local/lib
+endif
+
+# ERDDAP - Define whether the ERDDAP driver is supported on 
+# this server. NETCDF_API must be enabled and JANSSON library must be installed
+# if ERDDAP is enabled. LIB_JANSSON_INC_DIR and LIB_JANSSON_LIB_DIR defines
+# the path for the include directory and lib directory, respectively, for
+# libjansson.
+# ERDDAP=1
+ifdef ERDDAP
+LIB_JANSSON_INC_DIR=/usr/local/include
+LIB_JANSSON_LIB_DIR=/usr/local/lib
+endif
+
 # FILESYSTEM_META - turn on functionality that collects the 
 # filesystem meta-data (i.e. 'stat' information) from files 
 # and directories added to iRODS via iput and ireg. Only supported

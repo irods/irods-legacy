@@ -283,6 +283,20 @@ ifdef NETCDF_CLIENT
 MY_CFLAG += -DNETCDF_CLIENT
 endif
 
+ifdef PYDAP
+MY_CFLAG += -DPYDAP
+endif
+
+ifdef TDS
+MY_CFLAG += -DTDS -I$(LIB_XML2_INC_DIR)
+LDADD += -L$(LIB_XML2_LIB_DIR) -lxml2
+endif
+
+ifdef ERDDAP
+MY_CFLAG += -DERDDAP -I$(LIB_JANSSON_INC_DIR)
+LDADD += -L$(LIB_JANSSON_LIB_DIR) -lxml2
+endif
+
 ifdef RUN_SERVER_AS_ROOT
 MY_CFLAG+= -DRUN_SERVER_AS_ROOT
 endif
@@ -323,7 +337,7 @@ MY_CFLAG+= -DPAM_AUTH_CHECK_PROG=\"$(PAM_AUTH_CHECK_PROG)\"
 endif
 
 ifdef OOI_CI
-LDADD+= -ljansson -lxml2
+LDADD+= -ljansson
 CL_LDADD+= -ljansson
 endif
 
