@@ -15,6 +15,7 @@ static void sslLogError(char *msg);
 static DH *get_dh2048();
 static int sslLoadDHParams(SSL_CTX *ctx, char *file);
 static int sslVerifyCallback(int ok, X509_STORE_CTX *store);
+static int sslPostConnectionCheck(SSL *ssl, char *peer);
 
 int
 sslStart(rcComm_t *rcComm)
@@ -66,6 +67,12 @@ sslStart(rcComm_t *rcComm)
 
     rcComm->ssl_on = 1;
 
+    if (!sslPostConnectionCheck(rcComm->ssl, rcComm->host)) {
+        rodsLog(LOG_ERROR, "sslStart: post connection certificate check failed");
+        sslEnd(rcComm);
+        return SSL_CERT_ERROR;
+    }
+    
     return 0;
 }
 
@@ -570,6 +577,7 @@ sslInit(char *certfile, char *keyfile)
     SSL_CTX *ctx;
     char *ca_path;
     char *ca_file;
+    char *verify_server;
 
     if (!init_done) {
         SSL_library_init();
@@ -615,10 +623,18 @@ sslInit(char *certfile, char *keyfile)
     }
     
     /* Set up the default certificate verification */
-    /* we're not going to stop the handshake if verification fails,
-       but we will log messages in the callback */
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, sslVerifyCallback);
-    SSL_CTX_set_verify_depth(ctx, 10);
+    /* if "none" is specified, we won't stop the SSL handshake
+       due to certificate error, but will log messages from
+       the verification callback */
+    verify_server = getenv("irodsSSLVerifyServer");
+    if (verify_server && !strcmp(verify_server, "none")) {
+        SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, sslVerifyCallback);
+    }
+    else {
+        SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, sslVerifyCallback);
+    }
+    /* default depth is nine ... leave this here in case it needs modification */
+    SSL_CTX_set_verify_depth(ctx, 9);
 
     /* ciphers */
     if (SSL_CTX_set_cipher_list(ctx, SSL_CIPHER_LIST) != 1) {
@@ -663,34 +679,6 @@ sslLogError(char *msg)
         rodsLog(LOG_ERROR, "%s. SSL error: %s", msg, buf);
     }
 }
-
-static int
-sslVerifyCallback(int ok, X509_STORE_CTX *store)
-{
-    char data[256];
-
-    if (!ok) {
-        X509 *cert = X509_STORE_CTX_get_current_cert(store);
-        int  depth = X509_STORE_CTX_get_error_depth(store);
-        int  err = X509_STORE_CTX_get_error(store);
-        
-        if (err == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT) {
-            /* common testing mode ... self-signed cert 
-               just return */
-            return ok;
-        }
-
-        rodsLog(LOG_ERROR, "sslVerifyCallback: error with certificate at depth: %i", depth);
-        X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
-        rodsLog(LOG_ERROR, "sslVerifyCallback:   issuer = %s", data);
-        X509_NAME_oneline(X509_get_subject_name(cert), data, 256);
-        rodsLog(LOG_ERROR, "sslVerifyCallback:   subject = %s", data);
-        rodsLog(LOG_ERROR, "sslVerifyCallback:   err %i:%s", err, 
-                X509_verify_cert_error_string(err));
-    }
-    
-    return ok;
-}    
 
 /* This function returns a set of built-in Diffie-Hellman
    parameters. We could read the parameters from a file instead,
@@ -776,13 +764,100 @@ sslLoadDHParams(SSL_CTX *ctx, char *file)
     return 0;
 }
 
-#if 0
-static long
+static int
+sslVerifyCallback(int ok, X509_STORE_CTX *store)
+{
+    char data[256];
+
+    /* log any verification problems, even if we'll still accept the cert */
+    if (!ok) {
+        X509 *cert = X509_STORE_CTX_get_current_cert(store);
+        int  depth = X509_STORE_CTX_get_error_depth(store);
+        int  err = X509_STORE_CTX_get_error(store);
+        
+        rodsLog(LOG_NOTICE, "sslVerifyCallback: problem with certificate at depth: %i", depth);
+        X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
+        rodsLog(LOG_NOTICE, "sslVerifyCallback:   issuer = %s", data);
+        X509_NAME_oneline(X509_get_subject_name(cert), data, 256);
+        rodsLog(LOG_NOTICE, "sslVerifyCallback:   subject = %s", data);
+        rodsLog(LOG_NOTICE, "sslVerifyCallback:   err %i:%s", err, 
+                X509_verify_cert_error_string(err));
+    }
+    
+    return ok;
+}
+
+static int
 sslPostConnectionCheck(SSL *ssl, char *peer)
 {
-    /* XXX - will eventually check hostnames to cert CN, etc */
-    return SSL_get_verify_result(ssl);
+    char *verify_server;
+    X509 *cert;
+    int match = 0;
+    STACK_OF(GENERAL_NAMES) *names;
+    GENERAL_NAME *name;
+    int num_names, i;
+    char *namestr;
+    char cn[256];
+
+    verify_server = getenv("irodsSSLVerifyServer");
+    if (verify_server && strcmp(verify_server, "hostname")) {
+        /* not being asked to verify that the peer hostname 
+           is in the certificate. */
+        return 1;
+    }
+
+    cert = SSL_get_peer_certificate(ssl);
+    if (cert == NULL) {
+        /* no certificate presented */
+        return 0;
+    }
+
+    if (peer == NULL) {
+        /* no hostname passed to verify */
+        X509_free(cert);
+        return 0;
+    }
+
+    /* check if the peer name matches any of the subjectAltNames 
+       listed in the certificate */
+    names = (STACK_OF(GENERAL_NAMES)*)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
+    num_names = sk_GENERAL_NAMES_num(names);
+    for (i = 0; i < num_names; i++ ) {
+        name = (GENERAL_NAME*)sk_GENERAL_NAMES_value(names, i);
+        if (name->type == GEN_DNS) {
+            namestr = (char*)ASN1_STRING_data(name->d.dNSName);
+            if (!strcasecmp(namestr, peer)) {
+                match = 1;
+                break;
+            }
+        }
+    }
+    sk_GENERAL_NAMES_free(names);
+
+    /* if no match above, check the common name in the certificate */
+    if (!match &&
+        (X509_NAME_get_text_by_NID(X509_get_subject_name(cert),
+                                   NID_commonName, cn, 256) != -1)) {
+        cn[255] = 0;
+        if (!strcasecmp(cn, peer)) {
+            match = 1;
+        }
+        else if (cn[0] == '*') { /* wildcard domain */
+            char *tmp = strchr(peer, '.');
+            if (tmp && !strcasecmp(tmp, cn+1)) {
+                match = 1;
+            }
+        }
+    }
+
+    X509_free(cert);
+
+    if (match) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
-#endif
 
 #endif /* USE_SSL */

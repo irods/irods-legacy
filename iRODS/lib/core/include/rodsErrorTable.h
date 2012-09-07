@@ -642,6 +642,7 @@
 #define SSL_INIT_ERROR                  -2102000
 #define SSL_HANDSHAKE_ERROR             -2103000
 #define SSL_SHUTDOWN_ERROR              -2104000
+#define SSL_CERT_ERROR                  -2105000
 
 /* OOI CI error codes */
 #define OOI_CURL_EASY_INIT_ERR		-2200000
