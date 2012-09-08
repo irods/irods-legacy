@@ -17,12 +17,12 @@
  *
  * \user client
  *
- * \category data object operations
+ * \category NETCDF operations
  *
- * \since 1.0
+ * \since 3.1
  *
  * \author  Mike Wan
- * \date    2011
+ * \date    2012
  *
  * \remark none
  *
@@ -35,16 +35,16 @@
  * \n int status;
  * \n bzero (&ncOpenInp, sizeof (ncOpenInp));
  * \n rstrcpy (ncOpenInp.objPath, "/myZone/home/john/myfile.nc", MAX_NAME_LEN);
- * \n dataObjInp.mode = NC_NOWRITE;
+ * \n ncOpenInp.mode = NC_NOWRITE;
  * \n status = rcNcOpen (conn, &ncOpenInp, &ncid);
- * \n if (lstatus < 0) {
+ * \n if (status < 0) {
  * \n .... handle the error
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
  * \param[in] ncOpenInp - Elements of ncOpenInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
- *    \li char \b mode - the mode of the open - valid values are given in netcdf.h - NC_NOWRITE, NC_WRITE
+ *    \li int \b mode - the mode of the open - valid values are given in netcdf.h - NC_NOWRITE, NC_WRITE
  * \param[out] ncid - the ncid of the opened object.
  *
  * \return integer

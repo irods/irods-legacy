@@ -1,7 +1,81 @@
+/**
+ * @file  rcNcInq.c
+ *
+ */
+
 /* This is script-generated code.  */ 
 /* See ncInq.h for a description of this API call.*/
 
 #include "ncInq.h"
+
+/**
+ * \fn rcNcInq (rcComm_t *conn, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
+ *
+ * \brief General netcdf inquiry (equivalent to nc_inq + nc_inq_format).
+ *          Get all info including attributes, dimensions and variables
+ *          assocaiated with a NETCDF file will a single call.
+ *
+ * \user client
+ *
+ * \category NETCDF operations
+ *
+ * \since 3.1
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \usage
+ * nc_inq an opened data object and print the header info:
+ * \n ncOpenInp_t ncOpenInp;
+ * \n ncInqInp_t ncInqInp;
+ * \n int ncid = 0;
+* \n int status;
+ * \n bzero (&ncOpenInp, sizeof (ncOpenInp));
+ * \n rstrcpy (ncOpenInp.objPath, "/myZone/home/john/myfile.nc", MAX_NAME_LEN);
+ * \n ncOpenInp.mode = NC_NOWRITE;
+ * \n status = rcNcOpen (conn, &ncOpenInp, &ncid);
+ * \n if (status < 0) {
+ * \n .... handle the error
+ * \n }
+ * \n   bzero (&ncInqInp, sizeof (ncInqInp));
+ * \n    ncInqInp.ncid = ncid;
+ * \n   ncInqInp.paramType = NC_ALL_TYPE;
+ * \n    ncInqInp.flags = NC_ALL_FLAG;
+ * \n    status = rcNcInq (conn, &ncInqInp, &ncInqOut);
+ * \n .... handle the error
+ * \n    if (status < 0) {
+ * \n    }
+ * \n status = prNcHeader (conn, ncid, False, ncInqOut);
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] ncInqInp - Elements of ncInqInp_t used :
+ *    \li int \b paramType - what to inquire - valid values are defined in ncInq.h - NC_VAR_TYPE, NC_DIM_TYPE, NC_ATT_TYPE and NC_ALL_TYPE.
+ *    \li int \b ncid - the ncid from ncNcOpen.
+ *    \li int \b myid - the id (from rcNcInqId) to inquire. Meaning only if NC_ALL_TYPE == 0.
+ *    \li char \b name[MAX_NAME_LEN] - the name of the item to inquire. Either  myid or name, but not both, can be input. Meaning only if NC_ALL_TYPE == 0.
+ * \param[out] ncInqOut - a ncInqOut_t. Elements of ncInqOut_t:
+ *    \li int \b ndims - number of dimensions
+ *    \li ncGenDimOut_t *dim - an array with ndims length of ncGenDimOut_t struct
+ *    \li int \b ngatts - number of global attributes
+ *    \li ncGenAttOut_t *gatt - an array with ngatts length of ncGenAttOut_t struct
+ *    \li int \b nvars - number of variables 
+ *    \li ncGenAttOut_t *var - an array with nvars length of ncGenVarOut_t struct
+ *    \li int \b unlimdimid - the dimid of the unlimited dimension
+ *    \li int \b format - NC_FORMAT_CLASSIC, NC_FORMAT_64BIT, NC_FORMAT_NETCDF4 or NC_FORMAT_NETCDF4_CLASSIC
+ *
+ * \return integer
+ * \retval status of the call. success if greater or equal 0. error if negative.
+
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
 
 int
 rcNcInq (rcComm_t *conn, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)

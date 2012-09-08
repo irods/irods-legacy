@@ -91,6 +91,19 @@ This documentation is generated from the iRODS code.
   - #rcRcvXmsg
   - #rcSendXmsg
 
+\subsection netcdfOpr NETCDF Operations
+  - #rcNcCreate
+  - #rcNcOpen
+  - #rcNcClose
+  - #rcNcInq
+  - #rcNcInqId
+  - #rcNcInqWithId
+  - #rcNcGetVarsByType
+  - #rcNcRegGlobalAttr
+  - #rcNcOpenGroup
+  - #rcNcInqGrps
+  - #rcNccfGetVara
+
 \subsection miscClientOpr Misc Client Operations
   - #rcExecCmd
   - #rcStreamRead
