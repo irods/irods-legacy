@@ -653,7 +653,8 @@ ExprType* typeFunction3(Node* node, int dynamictyping, Env* funcDesc, Hashtable*
         		updateInHashTable(var_type_table, varname, newIRODSType(DataObjInp_MS_T, r));
         		break;
             case T_STRING:
-        		updateInHashTable(var_type_table, varname, newIRODSType(DataObjInp_MS_T, r));
+            	RE_ERROR2(!dynamictyping, "foreach is applied to a non collection type");
+        		updateInHashTable(var_type_table, varname, newSimpType(T_STRING, r));
         		break;
             default:
             	RE_ERROR2(TRUE, "foreach is applied to a non collection type");
