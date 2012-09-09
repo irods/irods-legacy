@@ -657,7 +657,7 @@ ExprType* typeFunction3(Node* node, int dynamictyping, Env* funcDesc, Hashtable*
         		updateInHashTable(var_type_table, varname, newSimpType(T_STRING, r));
         		break;
             default:
-            	RE_ERROR2(TRUE, "foreach is applied to a non collection type");
+            	RE_ERROR2(1, "foreach is applied to a non collection type");
             	break;
             }
 
