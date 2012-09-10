@@ -170,7 +170,7 @@ int
 freePhyPathInOpenedDir (int dirFd, int pathInx)
 {
     if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
-#ifdef OOI_CI
+#ifdef TDS
         int status;
         tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *) 
           FileDesc[dirFd].driverDep;
