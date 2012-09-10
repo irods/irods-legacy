@@ -39,7 +39,7 @@ ncGetVarOut_t **ncGetVarOut)
  *    \li rodsLong_t \b *start - A vector of rodsLong_t with ndim length specifying the index in the variable where the first of the data values will be read.
  *    \li rodsLong_t \b *count - A vector of rodsLong_t with ndim length specifying the number of indices selected along each dimension.
  *    \li rodsLong_t \b *stride - A vector of rodsLong_t with ndim length specifying for each dimension, the interval between selected indices.
- * \param[out] ncGetVarOut - a ncGetVarOut_t. Elements of ncGetVarsByTypeOut_t:
+ * \param[out] ncGetVarOut - a ncGetVarOut_t. Elements of ncGetVarOut_t:
  *    \li char \b dataType_PI[NAME_LEN] - Packing instruction of the dataType.
  *    \li dataArray_t \b *dataArray - returned values of the variable. dataArray->type gives the var type; dataArray->len gives the var length; dataArray->buf contains the var values.
  *
