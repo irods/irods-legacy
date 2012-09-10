@@ -4,6 +4,10 @@
 #ifndef SHAREDMEMORY_H
 #define SHAREDMEMORY_H
 #include "debug.h"
+#ifdef DEBUG
+#include "re.h"
+#endif
+
 
 #ifdef USE_BOOST
 #include <boost/interprocess/creation_tags.hpp>

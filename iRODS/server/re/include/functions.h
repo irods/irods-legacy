@@ -7,11 +7,13 @@
 #include "hashtable.h"
 #include "region.h"
 #include "parser.h"
+#include "debug.h"
+
+#ifdef DEBUG
+#include "re.h"
+#endif
 
 
-
-
-/*Hashtable *getSystemFunctionTypes(Region *r); */
 void getSystemFunctions(Hashtable *ft, Region *r);
 
 Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r);

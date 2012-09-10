@@ -8,6 +8,10 @@
 #include "datetime.h"
 #include "filesystem.h"
 
+#ifdef DEBUG
+#include "re.h"
+#endif
+
 char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]) {
     char *configDir = getConfigDir ();
     snprintf (rulesFileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir,ruleBaseName);

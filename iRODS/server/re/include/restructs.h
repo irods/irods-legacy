@@ -12,6 +12,8 @@
 #ifndef DEBUG
 #include "rodsType.h"
 #include "msParam.h"
+#else
+#include "re.h"
 #endif
 
 #include "reconstants.h"
@@ -163,6 +165,24 @@ typedef enum node_type {
     T_TYPE = 500,
     TC_LT = 600,
     TC_SET = 660,
+    PI_BIN = 1002,
+    PI_CHAR = 1008,
+    PI_STR = 1009,
+    PI_PISTR = 1010,
+    PI_INT16 = 1016,
+    PI_INT = 1032,
+    PI_DOUBLE = 1064,
+    PI_POINTER = 2001,
+    PI_STRUCT = 2002,
+    PI_DEPENDENT = 2003,
+    PI_INT_DEPENDENT = 2004,
+    PI_DIM = 2006,
+    PI_MEMBER = 2007,
+    PI_INDEX = 2008,
+    PI_CASE = 2009,
+    PI_DEFAULT = 2010,
+    PI_TYPE = 2011,
+    PI_ARRAY_MEMBER = 2012
 } NodeType;
 
 typedef struct condIndexVal {

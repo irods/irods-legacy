@@ -5,6 +5,11 @@
 #include "filesystem.h"
 #include "utils.h"
 
+#ifdef DEBUG
+#include "re.h"
+#endif
+
+
 int lockMutex(mutex_type **mutex) {
 	char sem_name[1024];
 	getResourceName(sem_name, SEM_NAME);

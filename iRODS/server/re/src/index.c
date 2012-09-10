@@ -13,6 +13,8 @@ typedef struct {
 } microsdef_t;
 extern int NumOfAction;
 extern microsdef_t MicrosTable[];
+#else
+#include "re.h"
 #endif
 
 Hashtable *coreRuleFuncMapDefIndex = NULL;

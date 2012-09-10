@@ -11,6 +11,11 @@
 #include <string.h>
 #include "debug.h"
 
+#ifdef DEBUG
+#include "re.h"
+#endif
+
+
 #ifndef DEBUG
 #include "objInfo.h"
 #include "reHelpers1.h"

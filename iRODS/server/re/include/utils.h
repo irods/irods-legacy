@@ -9,15 +9,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include "debug.h"
+#ifdef DEBUG
+#include "re.h"
+#endif
 #ifndef DEBUG
 #include "objInfo.h"
 #include "reHelpers1.h"
 #include "rodsType.h"
 #endif
-
 #include "restructs.h"
 #include "region.h"
 #include "hashtable.h"
+
 
 #define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }
 #define CASCADE_NULL(x) if((x)==NULL) return NULL;

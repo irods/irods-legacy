@@ -1,12 +1,17 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 #include "debug.h"
+#ifdef DEBUG
+#include "re.h"
+#endif
 #include "rules.h"
 #include "index.h"
 #include "functions.h"
 #include "arithmetics.h"
 #include "configuration.h"
 #include "filesystem.h"
+
+
 
 
 
