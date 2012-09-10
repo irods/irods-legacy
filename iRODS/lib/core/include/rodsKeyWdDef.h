@@ -46,7 +46,6 @@
 #define COLL_ID_KW     "collId"
 #define RESC_GROUP_NAME_KW     "rescGroupName"
 #define DATA_MODE_KW   "dataMode"
-#define DATA_REG_USER_ID_KW   "dataRegUserId"
 #define STATUS_STRING_KW     "statusString"
 #define DATA_MAP_ID_KW    "dataMapId"
 #define NO_PARA_OP_KW    "noParaOpr"

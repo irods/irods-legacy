@@ -336,7 +336,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       "rescName","filePath", "dataOwner", "dataOwnerZone", 
       "replStatus", "chksum", "dataExpiry",
       "dataComments", "dataCreate", "dataModify",  "rescGroupName",
-      "dataMode", "dataRegUserId", "END"
+      "dataMode", "END"
    };
 
    /* If you update colNames, be sure to update DATA_EXPIRY_TS_IX if
@@ -346,7 +346,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       "resc_name", "data_path", "data_owner_name", "data_owner_zone",
       "data_is_dirty", "data_checksum", "data_expiry_ts",
       "r_comment", "create_ts", "modify_ts", "resc_group_name",
-      "data_mode", "data_reg_user_id"
+      "data_mode"
    };
    int DATA_EXPIRY_TS_IX=9; /* must match index in above colNames table */
    int DATA_SIZE_IX=2;      /* must match index in above colNames table */
@@ -620,7 +620,6 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    char dataReplNum[MAX_NAME_LEN];
    char dataSizeNum[MAX_NAME_LEN];
    char dataStatusNum[MAX_NAME_LEN];
-   char dataRegUserIdNum[MAX_NAME_LEN];
    int status;
    int inheritFlag;
 
@@ -688,7 +687,6 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    snprintf(dataReplNum, MAX_NAME_LEN, "%d", dataObjInfo->replNum);
    snprintf(dataStatusNum, MAX_NAME_LEN, "%d", dataObjInfo->replStatus);
    snprintf(dataSizeNum, MAX_NAME_LEN, "%lld", dataObjInfo->dataSize);
-   snprintf(dataRegUserIdNum, MAX_NAME_LEN, "%d", dataObjInfo->regUid);
    getNowStr(myTime);
 
    cllBindVars[0]=dataIdNum;
@@ -706,13 +704,12 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    cllBindVars[12]=dataStatusNum;
    cllBindVars[13]=dataObjInfo->chksum;
    cllBindVars[14]=dataObjInfo->dataMode;
-   cllBindVars[15]=dataRegUserIdNum;
+   cllBindVars[15]=myTime;
    cllBindVars[16]=myTime;
-   cllBindVars[17]=myTime;
-   cllBindVarCount=18;
+   cllBindVarCount=17;
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegDataObj SQL 6");
    status =  cmlExecuteNoAnswerSql(
-       "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, data_reg_user_id, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+       "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
        &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
