@@ -19,3 +19,8 @@ create table R_OBJT_FILESYSTEM_META
 create unique index idx_obj_filesystem_meta1 on R_OBJT_FILESYSTEM_META (object_id);
 
 insert into R_TOKN_MAIN values ('resc_type',407,'direct access file system','','','','','1311740184','1311740184');
+insert into R_TOKN_MAIN values ('resc_type',408,'ooici','','','','','1347482000','1347482000');
+insert into R_TOKN_MAIN values ('resc_type',409,'opendap','','','','','1347482000','1347482000');
+insert into R_TOKN_MAIN values ('resc_type',410,'pydap','','','','','1347482000','1347482000');
+insert into R_TOKN_MAIN values ('resc_type',411,'erddap','','','','','1347482000','1347482000');
+insert into R_TOKN_MAIN values ('resc_type',412,'tds','','','','','1347482000','1347482000');
