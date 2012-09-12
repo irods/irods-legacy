@@ -32,11 +32,13 @@
 #include "directAccessFileDriver.h"
 #endif
 
-#ifdef NETCDF_API
+#ifdef PYDAP
 #include "pydapDriver.h"
 #endif
-#ifdef OOI_CI
+#ifdef ERDDAP
 #include "erddapDriver.h"
+#endif
+#ifdef TDS
 #include "tdsDriver.h"
 #endif
 
