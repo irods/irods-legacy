@@ -13,7 +13,7 @@
 /**
  * \fn rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid)
  *
- * \brief netcdf open an iRODS data object (equivalent to nc_open).
+ * \brief open an iRODS data object for netcdf operation (equivalent to nc_open).
  *
  * \user client
  *
