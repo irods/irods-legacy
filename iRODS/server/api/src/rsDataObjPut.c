@@ -65,7 +65,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
 
 	dataObjInp->openFlags = O_RDWR;
         status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
-          portalOprOut, BRANCH_MSG);
+          portalOprOut);
     } else {
 	int l1descInx;
         status = _rcDataObjPut (rodsServerHost->conn, dataObjInp, 
@@ -100,7 +100,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
 
 int
 _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
+bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
 {
     int status;
     int l1descInx;
@@ -196,13 +196,8 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
 	clearKeyVal (&replDataObjInp.condInput);
     }
 
-    if (handlerFlag & INTERNAL_SVR_CALL) {
-        /* internal call. want to know the real status */
-	return (retval);
-    } else {
-        /* already send the client the status */
-        return (SYS_NO_HANDLER_REPLY_MSG);
-    }
+    /* already send the client the status */
+    return (SYS_NO_HANDLER_REPLY_MSG);
 }
 
 /* preProcParaPut - preprocessing for parallel put. Basically it calls

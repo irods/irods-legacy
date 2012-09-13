@@ -601,6 +601,7 @@
     SSL_INIT_ERROR, 
     SSL_HANDSHAKE_ERROR, 
     SSL_SHUTDOWN_ERROR, 
+    SSL_CERT_ERROR, 
     OOI_CURL_EASY_INIT_ERR, 
     OOI_JSON_OBJ_SET_ERR, 
     OOI_DICT_TYPE_NOT_SUPPORTED, 
@@ -1192,6 +1193,7 @@
     "SSL_INIT_ERROR", 
     "SSL_HANDSHAKE_ERROR", 
     "SSL_SHUTDOWN_ERROR", 
+    "SSL_CERT_ERROR", 
     "OOI_CURL_EASY_INIT_ERR", 
     "OOI_JSON_OBJ_SET_ERR", 
     "OOI_DICT_TYPE_NOT_SUPPORTED", 
@@ -1212,7 +1214,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 589;
+int irodsErrorCount= 590;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;
