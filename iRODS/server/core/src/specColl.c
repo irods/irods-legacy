@@ -233,6 +233,11 @@ matchSpecCollCache (char *objPath)
     return (NULL);
 }
 
+/* getSpecCollCache - check if the path is in a spcial collection.
+ * If it is, output the special coll in specCollCache.
+ * If not, return SYS_SPEC_COLL_NOT_IN_CACHE if check for inCachOnly or
+ * CAT_NO_ROWS_FOUND.
+ */
 int
 getSpecCollCache (rsComm_t *rsComm, char *objPath,
 int inCachOnly, specCollCache_t **specCollCache)
@@ -288,6 +293,10 @@ modCollInfo2 (rsComm_t *rsComm, specColl_t *specColl, int clearFlag)
  * in the path of a special collection. The inCachOnly flag asks it to
  * check the specColl in the global cache only. The output of the
  * stat is given in rodsObjStatOut.
+ * The object can be in a special collection but does not exist, then
+ * objType = UNKNOWN_OBJ_T.
+ * The only time inCachOnly is on is called from rsObjStat to check
+ * local cache first before calling iCAT to resolve the path.
  *
  */
 
@@ -319,7 +328,7 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
     rstrcpy ((*rodsObjStatOut)->ownerName, specCollCache->ownerName, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerZone, specCollCache->ownerZone, NAME_LEN);
 
-    status = specCollSubStat (rsComm, specColl, objPath, UNKNOW_COLL_PERM,
+    status = specCollSubStat (rsComm, specColl, objPath, UNKNOWN_COLL_PERM,
       &dataObjInfo);
 
     if (status < 0) {
@@ -374,9 +383,10 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
 }
 
 /* specCollSubStat - Given specColl and the object path (subPath),
- * returns a dataObjInfo struct with dataObjInfo->specColl != NULL.
- * Returns COLL_OBJ_T if the path is a collection or DATA_OBJ_T if the
- * path is a data oobject.
+ * returns a dataObjInfo and a value COLL_OBJ_T if the path 
+ * is a collection or DATA_OBJ_T if the path is a data object or 
+ * CAT_NO_ROWS_FOUND or -1 if the object does not exist.
+ * 
  */
 
 int
@@ -594,10 +604,13 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
 /* resolvePathInSpecColl - given the object path in dataObjInp->objPath, see if
  * it is in the path of a special collection (mounted or structfile).
  * If it is not in a special collection, returns a -ive value.
- * The inCachOnly flag asks it to check the specColl in the global cache only
+ * Check permission if specCollPerm is not UNKNOWN_COLL_PERM.
  * If it is, returns a dataObjInfo struct with dataObjInfo->specColl != NULL.
  * Returns COLL_OBJ_T if the path is a collection or DATA_OBJ_T if the
- * path is a data oobject.
+ * path is a data object or SYS_SPEC_COLL_OBJ_NOT_EXIST if it is in
+ * special coll but does not exist.
+ * The only time inCachOnly is on is called from getDataObjInfoIncSpecColl to 
+ * check local cache first before calling iCAT to resolve the path.
  */
 int
 resolvePathInSpecColl (rsComm_t *rsComm, char *objPath,
@@ -619,7 +632,7 @@ specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo)
         cachedSpecColl = &specCollCache->specColl;
     }
 
-    if (specCollPerm != UNKNOW_COLL_PERM) {
+    if (specCollPerm != UNKNOWN_COLL_PERM) {
         if (specCollPerm == WRITE_COLL_PERM) {
             accessStr = ACCESS_DELETE_OBJECT;
         } else {
@@ -691,6 +704,7 @@ specCollCache_t **specCollCache, keyValPair_t *condInput)
         curSpecColl = &(*specCollCache)->specColl;
         if (strcmp (curSpecColl->collection, objPath) == 0 &&
           getValByKey (condInput, NO_TRANSLATE_LINKPT_KW) != NULL) {
+            /* when doing renaming, don't translate the link point */
             return 0;
         }
         rstrcpy (prevNewPath, objPath, MAX_NAME_LEN);

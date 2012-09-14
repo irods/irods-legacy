@@ -75,7 +75,7 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
 #if 0
       READ_COLL_PERM, 0, &dataObjInfo);
 #else
-      UNKNOW_COLL_PERM, 0, &dataObjInfo);
+      UNKNOWN_COLL_PERM, 0, &dataObjInfo);
 #endif
 
     if (status < 0) {

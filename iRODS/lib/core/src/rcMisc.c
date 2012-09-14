@@ -3349,6 +3349,8 @@ appendToByteBuf(bytesBuf_t *bytesBuf, char *str) {
 }
 
 
+/* getMountedSubPhyPath - get the relative subpath of logSubPath in
+ * logMountPoint and graft it to phyMountPoint and put it in phySubPathOut */
 int
 getMountedSubPhyPath (char *logMountPoint, char *phyMountPoint, 
 char *logSubPath, char *phySubPathOut)

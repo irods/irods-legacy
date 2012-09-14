@@ -1644,10 +1644,13 @@ dataObjInfo_t **dataObjInfo)
 	/* if it is linked, it already has been resolved */
         status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
           specCollPerm, 0, dataObjInfo);
-        if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
-          dataObjInfo != NULL) {
-            freeDataObjInfo (*dataObjInfo);
-            dataObjInfo = NULL;
+        if (status < 0) {
+            if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
+              dataObjInfo != NULL) {
+                freeDataObjInfo (*dataObjInfo);
+                dataObjInfo = NULL;
+            }
+            return status;
         }
     } else if ((status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
       specCollPerm, 1, dataObjInfo)) >= 0) {

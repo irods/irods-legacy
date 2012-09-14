@@ -41,8 +41,9 @@ rodsObjStat_t **rodsObjStatOut)
 #endif
     } else {
 	if (isLocalZone (dataObjInp->objPath)) {
-	    /* see if it is a sub path of a specColl cached locally. If it is,
-	     * it will save time resolving it */
+	    /* Since the iCat is on a remote host, see if it is a sub path of 
+             * a cached specColl locally first. If it is, it will save time 
+             * resolving it */
             status = statPathInSpecColl (rsComm, dataObjInp->objPath, 1,
               rodsObjStatOut);
 	    if (status >= 0) {
