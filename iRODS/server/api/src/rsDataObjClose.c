@@ -316,6 +316,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     /* note that bytesWritten only indicates whether the file has been written
      * to. Not necessarily the size of the file */
     if (L1desc[l1descInx].bytesWritten <= 0 && 
+      L1desc[l1descInx].replRescInfo == NULL &&     /* not replicating */
       L1desc[l1descInx].oprType != REPLICATE_DEST &&
       L1desc[l1descInx].oprType != PHYMV_DEST &&
       L1desc[l1descInx].oprType != COPY_DEST) {

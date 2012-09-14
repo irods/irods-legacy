@@ -198,6 +198,9 @@ char *cacheFilename,  rodsLong_t dataSize, keyValPair_t *condInput)
     int status;
     struct stat statbuf;
 
+    /* not sure it can handle 0 size transfer */
+    if (dataSize == 0) return 0;
+
     status = stat (cacheFilename, &statbuf);
 
     if (status < 0) {

@@ -90,6 +90,12 @@ char *cacheFilename,  rodsLong_t dataSize)
     WosStatus wosStatus;
     WosOID oid;
 
+    if (dataSize == 0) {
+        /* just generate some random number */
+        snprintf (filename, MAX_NAME_LEN, "%d%d", 
+          (int) random(), (int) random());
+        return 0;
+    }
     status = stat (cacheFilename, &statbuf);
 
     if (status < 0) {
