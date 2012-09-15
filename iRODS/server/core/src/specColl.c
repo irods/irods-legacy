@@ -233,7 +233,7 @@ matchSpecCollCache (char *objPath)
     return (NULL);
 }
 
-/* getSpecCollCache - check if the path is in a spcial collection.
+/* getSpecCollCache - check if the path is in a special collection.
  * If it is, output the special coll in specCollCache.
  * If not, return SYS_SPEC_COLL_NOT_IN_CACHE if check for inCachOnly or
  * CAT_NO_ROWS_FOUND.
