@@ -333,6 +333,8 @@ rescInfo_t *rescInfo)
         rstrcpy (dataObjInfo.chksum, chksum, NAME_LEN);
     }
 
+    setDataTypeByResc (&dataObjInfo);
+
     status = svrRegDataObj (rsComm, &dataObjInfo);
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -435,6 +437,8 @@ rescInfo_t *rescInfo)
     while ((status = rsFileReaddir (rsComm, &fileReaddirInp, &rodsDirent))
       >= 0) {
 	int len;
+
+        if (strlen (rodsDirent->d_name) == 0) break;
 
         if (strcmp (rodsDirent->d_name, ".") == 0 ||
           strcmp (rodsDirent->d_name, "..") == 0) {

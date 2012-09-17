@@ -125,6 +125,10 @@ int
 updateResc (rsComm_t *rsComm);
 rescInfo_t *
 matchSameHostRescByType (rescInfo_t *myRescInfo, int driverType);
+int
+getFileDriverTypeByResc (rescInfo_t *rescInfo);
+int
+setDataTypeByResc (dataObjInfo_t *dataObjInfo);
 #ifdef  __cplusplus
 }
 #endif
