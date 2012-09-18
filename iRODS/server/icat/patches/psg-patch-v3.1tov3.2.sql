@@ -24,3 +24,6 @@ insert into R_TOKN_MAIN values ('resc_type',409,'opendap','','','','','134748200
 insert into R_TOKN_MAIN values ('resc_type',410,'pydap','','','','','1347482000','1347482000');
 insert into R_TOKN_MAIN values ('resc_type',411,'erddap','','','','','1347482000','1347482000');
 insert into R_TOKN_MAIN values ('resc_type',412,'tds','','','','','1347482000','1347482000');
+
+insert into R_TOKN_MAIN values ('data_type',1705,'netcdf','','','','','1348000000','1348000000');
+insert into R_TOKN_MAIN values ('data_type',1706,'hdf5','','','','','1348000000','1348000000');
