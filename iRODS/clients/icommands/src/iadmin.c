@@ -1862,6 +1862,8 @@ usage(char *subOpt)
 "If an Alias is provided, clients can use that instead of the full SQL",
 "string to select the SQL.  Aliases are checked to be sure they are unique",
 "but the same SQL can have multiple aliases.",
+"If you need to have single quotes (') within the SQL, you can surround the",
+"SQL with double quotes (\") instead of single quotes.",
 "These can be executed via 'iquest --sql'.",
 "Use 'iquest --sql ls' to see the currently defined list.",
 "If 'iquest --sql ls' fails see icatSysInserts.sql for the definitions of two",
