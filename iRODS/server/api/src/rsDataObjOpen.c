@@ -600,7 +600,7 @@ dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
     status = requeDataObjInfoByDestResc (dataObjInfoHead,
       &dataObjInp->condInput, 1, 1);
     /* status < 0 means there is no copy in the DEST_RESC */
-    if (status < 0 &&
+    if (status < 0 && (*dataObjInfoHead)->specColl == NULL &&
       getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
         /* we don't have a copy in the DEST_RESC_NAME */
         status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
