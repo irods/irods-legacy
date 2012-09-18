@@ -191,6 +191,10 @@ int
 parseVarStrForSubset (char *varStr, ncVarSubset_t *ncVarSubset);
 int
 parseSubsetStr (char *subsetStr, ncVarSubset_t *ncVarSubset);
+int
+timeToAsci (time_t mytime, char *asciTime);
+int
+asciToTime (char *asciTime, time_t *mytime);
 #ifdef  __cplusplus
 }
 #endif

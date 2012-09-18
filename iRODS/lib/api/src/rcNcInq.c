@@ -375,6 +375,8 @@ int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut)
               strcasecmp (ncInqOut->var[varInx].name, "time") == 0) {
                 /* asci time */
                 time_t mytime =atoi (tempStr);
+                timeToAsci (mytime, tempStr);
+#if 0
                 struct tm *mytm = gmtime (&mytime);
                 if (mytm != NULL) {
                     snprintf (tempStr, NAME_LEN, 
@@ -382,6 +384,7 @@ int itemsPerLine, int printAsciTime, ncInqOut_t *ncInqOut)
                       1900+mytm->tm_year, mytm->tm_mon + 1, mytm->tm_mday,
                       mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
                 }
+#endif
             }
             if (j >= ncGetVarOut->dataArray->len - 1) {
                 printf ("%s ;\n", tempStr);
@@ -513,6 +516,8 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
                       strcasecmp (ncInqOut->var[i].name, "time") == 0) { 
                         /* asci time */
                         time_t mytime =atoi (tempStr);
+                        timeToAsci (mytime, tempStr);
+#if 0
                         struct tm *mytm = gmtime (&mytime);
                         if (mytm != NULL) {
                             snprintf (tempStr, NAME_LEN,
@@ -521,6 +526,7 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset)
                               mytm->tm_mday,
                               mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
                         }
+#endif
                     }
 		    outCnt++;
 		    if (j >= ncGetVarOut->dataArray->len - 1) {
@@ -1294,4 +1300,43 @@ parseSubsetStr (char *subsetStr, ncVarSubset_t *ncVarSubset)
     return 0;
 }
 
+int
+timeToAsci (time_t mytime, char *asciTime)
+{
+    struct tm *mytm = gmtime (&mytime);
+    if (mytm != NULL) {
+        snprintf (asciTime, NAME_LEN,
+          "%04d-%02d-%02dT%02d:%02d:%02dZ",
+           1900+mytm->tm_year, mytm->tm_mon + 1, mytm->tm_mday,
+           mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
+    } else {
+        *asciTime = '\0';
+    }
+    return 0;
+}
+
+int
+asciToTime (char *asciTime, time_t *mytime)
+{
+    struct tm mytm;
+    int status;
+
+    status = sscanf (asciTime, "%04d-%02d-%02dT%02d:%02d:%02dZ",
+      &mytm.tm_year, &mytm.tm_mon, &mytm.tm_mday, 
+      &mytm.tm_hour, &mytm.tm_min, &mytm.tm_sec);
+
+    if (status != 6) {
+        rodsLog (LOG_ERROR,
+          "asciToTime: Time format error for %s, must be like %s", asciTime,
+          "1970-01-01T03:21:48Z");
+        return USER_INPUT_FORMAT_ERR;
+    }
+    mytm.tm_year -= 1900;
+    mytm.tm_mon -= 1;
+
+    *mytime = mktime (&mytm);
+
+    return 0;
+}
+        
 
