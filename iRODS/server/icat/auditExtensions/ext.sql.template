@@ -120,7 +120,6 @@ CREATE TABLE ext_data_historical
   data_map_id bigint DEFAULT 0,
   data_mode character varying(32),
   r_comment character varying(1000),
-  data_reg_user_id integer DEFAULT 0,
   create_ts character varying(32),
   modify_ts character varying(32)
 )
