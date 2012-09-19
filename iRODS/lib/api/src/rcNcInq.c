@@ -1232,7 +1232,7 @@ parseNcSubset (ncSubset_t *ncSubset)
     }
  
     tmpPtr1 = endPtr + 1;
-    if ((tmpPtr2 = strchr (tmpPtr1, ':')) == NULL || !isdigit (*tmpPtr1)) {
+    if ((tmpPtr2 = strchr (tmpPtr1, '%')) == NULL || !isdigit (*tmpPtr1)) {
         rodsLog (LOG_ERROR,
           "parseNcSubset: subset input %s format error", 
           ncSubset->subsetVarName);
@@ -1240,9 +1240,10 @@ parseNcSubset (ncSubset_t *ncSubset)
     }
     *tmpPtr2 = '\0';
     ncSubset->start = atoi (tmpPtr1);
-    *tmpPtr2 = ':';
+    rstrcpy (ncSubset->startStr, tmpPtr1, NAME_LEN);
+    *tmpPtr2 = '%';
     tmpPtr1 = tmpPtr2 + 1;
-    if ((tmpPtr2 = strchr (tmpPtr1, ':')) == NULL || !isdigit (*tmpPtr1)) {
+    if ((tmpPtr2 = strchr (tmpPtr1, '%')) == NULL || !isdigit (*tmpPtr1)) {
         rodsLog (LOG_ERROR,
           "parseNcSubset: subset input %s format error",   
           ncSubset->subsetVarName);
@@ -1250,7 +1251,7 @@ parseNcSubset (ncSubset_t *ncSubset)
     }
     *tmpPtr2 = '\0';
     ncSubset->stride = atoi (tmpPtr1);
-    *tmpPtr2 = ':';
+    *tmpPtr2 = '%';
     tmpPtr1 = tmpPtr2 + 1;
     if ((tmpPtr2 = strchr (tmpPtr1, ']')) == NULL || !isdigit (*tmpPtr1)) {
         rodsLog (LOG_ERROR,
@@ -1260,6 +1261,7 @@ parseNcSubset (ncSubset_t *ncSubset)
     }
     *tmpPtr2 = '\0';
     ncSubset->end = atoi (tmpPtr1);
+    rstrcpy (ncSubset->endStr, tmpPtr1, NAME_LEN);
     *endPtr = '\0'; 	/* truncate the name */
     return 0;
 }
@@ -1321,6 +1323,11 @@ asciToTime (char *asciTime, time_t *mytime)
     struct tm mytm;
     int status;
 
+    if (strchr (asciTime, 'T') == NULL || strchr (asciTime, 'Z') == NULL) {
+        /* assume it is UTC time */
+        *mytime = atoi (asciTime);
+        return 0;
+    }
     status = sscanf (asciTime, "%04d-%02d-%02dT%02d:%02d:%02dZ",
       &mytm.tm_year, &mytm.tm_mon, &mytm.tm_mday, 
       &mytm.tm_hour, &mytm.tm_min, &mytm.tm_sec);
@@ -1339,4 +1346,142 @@ asciToTime (char *asciTime, time_t *mytime)
     return 0;
 }
         
+int
+resolveSubsetVar (rcComm_t *conn, int ncid, ncInqOut_t *ncInqOut,
+ncVarSubset_t *ncVarSubset)
+{
+    int i, j, k, status;
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    ncGetVarOut_t *ncGetVarOut = NULL;
+    char *bufPtr;
+    rodsLong_t longStart, longEnd, mylong;
+    double doubleStart, doubleEnd, mydouble;
+    time_t startTime, endTime;
+    int isInt;
+
+    for (j = 0; j < ncVarSubset->numVar; j++) {
+        for (i = 0; i < ncInqOut->nvars; i++) {
+            if (strcmp (&ncVarSubset->varName[j][LONG_NAME_LEN],
+                  ncInqOut->var[i].name) == 0) break;
+        }
+        if (i >= ncInqOut->nvars) {
+            rodsLog (LOG_ERROR,
+              "resolveSubsetVar: unmatch subset dim %s",
+              &ncVarSubset->varName[j][LONG_NAME_LEN]);
+            return NETCDF_DIM_MISMATCH_ERR;
+        }
+        if (strcasecmp (ncInqOut->var[i].name, "time") == 0) {
+            asciToTime (ncVarSubset->ncSubset[j].startStr, &startTime);
+            asciToTime (ncVarSubset->ncSubset[j].endStr, &endTime);
+        }
+        switch (ncInqOut->var[i].dataType) {
+          case NC_SHORT:
+          case NC_USHORT:
+          case NC_INT:
+          case NC_UINT:
+          case NC_INT64:
+          case NC_UINT64:
+            isInt = True;
+            if (strcasecmp (ncInqOut->var[i].name, "time") == 0) {
+                longStart = startTime;
+                longEnd = endTime;
+            } else {
+                longStart = atoll (ncVarSubset->ncSubset[j].startStr);
+                longEnd = atoll (ncVarSubset->ncSubset[j].endStr);
+            }
+            break;
+          case NC_FLOAT:
+          case NC_DOUBLE:
+            isInt = False;
+            if (strcasecmp (ncInqOut->var[i].name, "time") == 0) {
+                doubleStart = startTime;
+                doubleEnd = endTime;
+            } else {
+                doubleStart = atof (ncVarSubset->ncSubset[j].startStr);
+                doubleEnd = atof (ncVarSubset->ncSubset[j].endStr);
+            }
+            break;
+          default:
+            rodsLog (LOG_ERROR,
+              "resolveSubsetVar: Unknow dim dataType %d",
+              ncInqOut->var[i].dataType);
+            return (NETCDF_INVALID_DATA_TYPE);
+        }
+        status = getSingleNcVarData (conn, ncid, i, ncInqOut, NULL,
+          &ncGetVarOut, start, stride, count);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "resolveSubsetVar: rcNcGetVarsByType error for %s",
+              ncInqOut->var[i].name);
+            return status;
+        }
+        bufPtr = (char *) ncGetVarOut->dataArray->buf;
+        ncVarSubset->ncSubset[j].start = ncVarSubset->ncSubset[j].end = -1;
+        for (k = 0; k < ncGetVarOut->dataArray->len; k++) {
+            switch (ncInqOut->var[i].dataType) {
+              case NC_SHORT:
+                mylong = *((short *) bufPtr);
+                bufPtr += sizeof (short);
+                break;
+              case NC_USHORT:
+                mylong = *((unsigned short *) bufPtr);
+                bufPtr += sizeof (short);
+                break;
+              case NC_INT:
+                mylong = *((int *) bufPtr);
+                bufPtr += sizeof (int);
+                break;
+              case NC_UINT:
+                mylong = *((unsigned int *) bufPtr); 
+                bufPtr += sizeof (int);
+                break;
+              case NC_INT64:
+                mylong = *((rodsLong_t *) bufPtr);
+                bufPtr += sizeof (rodsLong_t);
+                break;
+              case NC_UINT64:
+                mylong = *((rodsULong_t *) bufPtr);
+                bufPtr += sizeof (rodsLong_t);
+                break;
+              case NC_FLOAT:
+                mydouble = *((float *) bufPtr);
+                bufPtr += sizeof (float);
+                break;
+              case NC_DOUBLE:
+                mydouble = *((double *) bufPtr);
+                bufPtr += sizeof (double);
+                break;
+              default:
+                rodsLog (LOG_ERROR,
+                  "resolveSubsetVar: Unknow dim dataType %d", 
+                  ncInqOut->var[i].dataType);
+                return (NETCDF_INVALID_DATA_TYPE);
+            }
+            if (ncVarSubset->ncSubset[j].start == -1) {
+                if (isInt == True) {
+                    if (mylong >= longStart) 
+                      ncVarSubset->ncSubset[j].start = k;
+                } else {
+                    if (mydouble >= doubleStart) 
+                      ncVarSubset->ncSubset[j].start = k;
+                }
+            }
+            if (isInt == True) {
+                if (mylong <= longEnd) {
+                    ncVarSubset->ncSubset[j].end = k;
+                } else {
+                    break;
+                }
+            } else {
+                if (mydouble <= doubleEnd) {
+                  ncVarSubset->ncSubset[j].end = k;
+                } else {
+                    break;
+                }
+            }
+        }
+        freeNcGetVarOut (&ncGetVarOut);
+    }
+    return 0;
+}
 

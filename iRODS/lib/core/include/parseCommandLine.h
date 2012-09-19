@@ -93,6 +93,7 @@ typedef struct {
    int srcResc;
    char *srcRescString;
    int subset;
+   int subsetByVal;
    char *subsetStr;
    int test;
    int ticket;

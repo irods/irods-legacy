@@ -98,6 +98,8 @@ typedef struct {
     int start;
     int stride;
     int end;
+    char startStr[NAME_LEN];
+    char endStr[NAME_LEN];
 } ncSubset_t;
 
 typedef struct {
@@ -195,6 +197,9 @@ int
 timeToAsci (time_t mytime, char *asciTime);
 int
 asciToTime (char *asciTime, time_t *mytime);
+int
+resolveSubsetVar (rcComm_t *conn, int srcNcid, ncInqOut_t *ncInqOut,
+ncVarSubset_t *ncVarSubset);
 #ifdef  __cplusplus
 }
 #endif
