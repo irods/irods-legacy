@@ -46,6 +46,7 @@ parseRodsPath (rodsPath_t *rodsPath, rodsEnv *myRodsEnv)
 {
     int len;
     char *tmpPtr1, *tmpPtr2;
+    char tmpStr[MAX_NAME_LEN];
     
     if (rodsPath == NULL) {
         fprintf (stderr, "parseRodsPath: NULL rodsPath input\n");
@@ -107,13 +108,24 @@ parseRodsPath (rodsPath_t *rodsPath, rodsEnv *myRodsEnv)
     /* take out any "//" */
 
     while ((tmpPtr1 = strstr (rodsPath->outPath, "//")) != NULL) {
+#if 0
         rstrcpy (tmpPtr1 + 1, tmpPtr1 + 2, MAX_NAME_LEN);
+#else
+        rstrcpy (tmpStr, tmpPtr1 + 2, MAX_NAME_LEN);
+        rstrcpy (tmpPtr1 + 1, tmpStr, MAX_NAME_LEN);
+#endif
     }
 
     /* take out any "/./" */
 
     while ((tmpPtr1 = strstr (rodsPath->outPath, "/./")) != NULL) {
+#if 0
         rstrcpy (tmpPtr1 + 1, tmpPtr1 + 3, MAX_NAME_LEN);
+#else
+        rstrcpy (tmpStr, tmpPtr1 + 3, MAX_NAME_LEN);
+        rstrcpy (tmpPtr1 + 1, tmpStr, MAX_NAME_LEN);
+#endif
+
     }
 
     /* take out any /../ */
@@ -130,7 +142,13 @@ parseRodsPath (rodsPath_t *rodsPath, rodsEnv *myRodsEnv)
 		return (USER_INPUT_PATH_ERR);
 	    }
 	}
+#if 0
 	rstrcpy (tmpPtr2 + 1, tmpPtr1 + 4, MAX_NAME_LEN);
+#else
+        rstrcpy (tmpStr, tmpPtr1 + 4, MAX_NAME_LEN);
+        rstrcpy (tmpPtr2 + 1, tmpStr, MAX_NAME_LEN);
+#endif
+
     }
 
     /* handle "/.", "/.." and "/" at the end */
