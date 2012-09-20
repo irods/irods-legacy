@@ -1,0 +1,57 @@
+Various Levels of iRODS Server
+Level 1:
+    . Object Level
+    . Paths in virtual name space (/myZone/home/mwan/foo1)
+    . Need to query the iCAT for metadata associated with the path
+	resource - where and type, physical path e.g., UNIX path on the servers
+        time stamps, mode ....
+    . A large number of APIs - most in the form rcDataObjYYYYY
+        rcDataObjCreate, rcDataObjOpen, rcDataObjRead, rcDataObjGet,
+        rcDataObjPut, rcDataObjRsync, .....
+    . descriptor L1desc contain state info of opened object.
+        L1desc[l1descInx].l3descInx - linkage to Level 3 descriptor
+
+Level 3:
+    . Physical File Level
+    . Paths are real path (e.g., real UNIX path) 
+    . Info such as resource type (UNIX, HPSS), IP address, etc passed down 
+        from Level 1
+    . A large number of APIs - most in the form rcFileYYYYY
+        rcFileCreate, rcFileOpen, rcFileRead, rcFileObjGet,
+        rcFilePut, rcFileRename, .....
+    . These APIs are called only by Servers to do remote file operations.
+    . descriptor FileDesc contain state info of opened files.
+        FileDesc[l3descInx].fd - linkage to driver level descriptor 
+        e.g. UNIX fd.
+    . Remote file operations are done at this level.
+    . Fan out to call the driver functions based on file types (UNIX, HPSS...)
+
+Level 4:
+    . Driver Level
+    . A set of POSIX functions for each driver type (open/read/write/close ...)
+
+Level 2:
+    . Not visible
+    . Very little or no APIs at this level
+    . A lot of misc routines that goes between L1 and L3.
+    . e.g., routines that facilitate parallel I/O - eventally call L3 functions
+        to do the actual I/O. routines that branch off to handle mounted
+        collections, etc.
+    . These routines are not in any specific modules or directories. Mixed
+        in with L1 modules or in some modules in server/core directories. 
+
+
+Workflow in the server for same Zone operations:
+    . Try to do most of works on the server where the client is connected to
+        Query iCAT on the object and resource (remote call if iCAT is remote).
+    . Drill down to level L3
+        If the file or resource on a remote host, use server-server L3
+        API functions.
+
+
+Workflow in the server for cross Zone operations:
+    . For remote zone operations, use server-server L1 API functions
+    . Do not go across at L3 
+    . Most rules are enforced at L1. Do not tunnel through L3 and bypass 
+      L1 rules.
+
