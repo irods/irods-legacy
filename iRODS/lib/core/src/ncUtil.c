@@ -110,7 +110,7 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
           "ncOperDataObjUtil: rcNcInq error for %s", ncOpenInp->objPath);
         return status;
     }
-    if (rodsArgs->subsetByVal=True) {
+    if (rodsArgs->subsetByVal == True) {
         status = resolveSubsetVar (conn, ncid, ncInqOut, ncVarSubset);
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
