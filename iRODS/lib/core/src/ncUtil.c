@@ -44,6 +44,8 @@ rodsPathInp_t *rodsPathInp)
              rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs, 
              &ncOpenInp, &ncVarSubset);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
+            /* The path given by collEnt.collName from rclReadCollection
+             * has already been translated */
             addKeyVal (&ncOpenInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = ncOperCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               myRodsEnv, myRodsArgs, &ncOpenInp, &ncVarSubset);

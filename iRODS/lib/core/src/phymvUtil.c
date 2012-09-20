@@ -42,6 +42,8 @@ rodsPathInp_t *rodsPathInp)
 	    status = phymvDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	     myRodsEnv, myRodsArgs, &dataObjInp);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
+            /* The path given by collEnt.collName from rclReadCollection
+             * has been translated */
             addKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = phymvCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               myRodsEnv, myRodsArgs, &dataObjInp);

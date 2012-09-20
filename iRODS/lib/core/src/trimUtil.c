@@ -50,6 +50,8 @@ rodsPathInp_t *rodsPathInp)
 	     myRodsEnv, myRodsArgs, &dataObjInp);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
 	    collCnt ++;
+            /* The path given by collEnt.collName from rclReadCollection
+             * has already been translated */
 	    addKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = trimCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               myRodsEnv, myRodsArgs, &dataObjInp);

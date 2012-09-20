@@ -124,6 +124,8 @@ rodsPathInp_t *rodsPathInp)
 	      myRodsArgs, &dataObjOprInp);
 	} else if (targPath->objType ==  LOCAL_DIR_T) {
             setStateForRestart (conn, &rodsRestart, targPath, myRodsArgs);
+            /* The path given by collEnt.collName from rclReadCollection 
+             * has already been translated */
 	    addKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = getCollUtil (myConn, rodsPathInp->srcPath[i].outPath,
               targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,

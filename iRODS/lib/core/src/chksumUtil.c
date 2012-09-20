@@ -49,6 +49,8 @@ rodsPathInp_t *rodsPathInp)
 	    status = chksumDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	     myRodsEnv, myRodsArgs, &dataObjInp);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
+            /* The path given by collEnt.collName from rclReadCollection
+             * has already been translated */
             addKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = chksumCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               myRodsEnv, myRodsArgs, &dataObjInp, &collInp);

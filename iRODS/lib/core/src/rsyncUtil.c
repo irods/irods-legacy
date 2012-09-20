@@ -89,6 +89,8 @@ rodsPathInp_t *rodsPathInp)
             status = rsyncDataToDataUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjCopyInp);
         } else if (srcType == COLL_OBJ_T && targType == LOCAL_DIR_T) {
+            /* The path given by collEnt.collName from rclReadCollection
+             * has already been translated */
 	    addKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW, "");
             status = rsyncCollToDirUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjOprInp);

@@ -57,6 +57,8 @@ rodsPathInp_t *rodsPathInp)
                  rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs);
             }
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
+            /* The path given by collEnt.collName from rclReadCollection
+             * has already been translated */
             addKeyVal (&ncRegGlobalAttrInp.condInput, TRANSLATED_PATH_KW, "");
             if (myRodsArgs->reg == True) {
 	        status = regAttrCollUtil (conn, rodsPathInp->srcPath[i].outPath,

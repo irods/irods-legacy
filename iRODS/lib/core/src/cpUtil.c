@@ -68,6 +68,8 @@ rodsPathInp_t *rodsPathInp)
 	       myRodsArgs, &dataObjCopyInp);
 	} else if (targPath->objType == COLL_OBJ_T) {
             setStateForRestart (conn, &rodsRestart, targPath, myRodsArgs);
+            /* The path given by collEnt.collName from rclReadCollection
+             * has already been translated */
 	    addKeyVal (&dataObjCopyInp.srcDataObjInp.condInput, 
 	      TRANSLATED_PATH_KW, "");
 	    status = cpCollUtil (conn, rodsPathInp->srcPath[i].outPath,
