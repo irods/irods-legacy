@@ -136,17 +136,17 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
               rodsArgs->ascitime, ncInqOut);
         }
         if (rodsArgs->header + rodsArgs->dim + rodsArgs->var + 
-          rodsArgs->subset > 1)
+          rodsArgs->subset + rodsArgs->subsetByVal > 1)
             printf 
               ("===========================================================\n");
-        if (rodsArgs->var + rodsArgs->subset > 0) {
+        if (rodsArgs->var + rodsArgs->subset + rodsArgs->subsetByVal > 0) {
             status = prNcVarData (conn, ncOpenInp->objPath, ncid, 
               rodsArgs->ascitime, ncInqOut, ncVarSubset);
         }
         printf ("}\n");
     } else {
 #ifdef NETCDF_API
-        if (rodsArgs->var + rodsArgs->subset > 0) {
+        if (rodsArgs->var + rodsArgs->subset + rodsArgs->subsetByVal > 0) {
             status = dumpSubsetToFile (conn, ncid, rodsArgs->noattr, ncInqOut,
                 ncVarSubset, rodsArgs->optionString);
         } else {
@@ -203,7 +203,7 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
     }
 
     if ((rodsArgs->dim + rodsArgs->header + rodsArgs->var + 
-      rodsArgs->option + rodsArgs->subset) == False) {
+      rodsArgs->option + rodsArgs->subset + rodsArgs->subsetByVal) == False) {
         rodsArgs->header = True;
     }
 

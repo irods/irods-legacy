@@ -1305,10 +1305,10 @@ parseSubsetStr (char *subsetStr, ncVarSubset_t *ncVarSubset)
 int
 timeToAsci (time_t mytime, char *asciTime)
 {
-    struct tm *mytm = gmtime (&mytime);
+    struct tm *mytm = localtime (&mytime);
     if (mytm != NULL) {
         snprintf (asciTime, NAME_LEN,
-          "%04d-%02d-%02dT%02d:%02d:%02dZ",
+          "%04d-%02d-%02dT%02d:%02d:%02d",
            1900+mytm->tm_year, mytm->tm_mon + 1, mytm->tm_mday,
            mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
     } else {
@@ -1320,26 +1320,32 @@ timeToAsci (time_t mytime, char *asciTime)
 int
 asciToTime (char *asciTime, time_t *mytime)
 {
-    struct tm mytm;
+    struct tm mytm, *tmptm;
     int status;
+    time_t thistm = time (0);
 
-    if (strchr (asciTime, 'T') == NULL || strchr (asciTime, 'Z') == NULL) {
+    if (strchr (asciTime, 'T') == NULL) {
         /* assume it is UTC time */
         *mytime = atoi (asciTime);
         return 0;
     }
-    status = sscanf (asciTime, "%04d-%02d-%02dT%02d:%02d:%02dZ",
+    bzero (&mytm, sizeof (mytm));
+    status = sscanf (asciTime, "%04d-%02d-%02dT%02d:%02d:%02d",
       &mytm.tm_year, &mytm.tm_mon, &mytm.tm_mday, 
       &mytm.tm_hour, &mytm.tm_min, &mytm.tm_sec);
 
     if (status != 6) {
         rodsLog (LOG_ERROR,
           "asciToTime: Time format error for %s, must be like %s", asciTime,
-          "1970-01-01T03:21:48Z");
+          "1970-01-01T03:21:48");
         return USER_INPUT_FORMAT_ERR;
     }
+    /* get the tm_isdst of local time */
+    tmptm = localtime (&thistm);
+
     mytm.tm_year -= 1900;
     mytm.tm_mon -= 1;
+    mytm.tm_isdst = tmptm->tm_isdst;
 
     *mytime = mktime (&mytm);
 
@@ -1359,15 +1365,15 @@ ncVarSubset_t *ncVarSubset)
     time_t startTime, endTime;
     int isInt;
 
-    for (j = 0; j < ncVarSubset->numVar; j++) {
+    for (j = 0; j < ncVarSubset->numSubset; j++) {
         for (i = 0; i < ncInqOut->nvars; i++) {
-            if (strcmp (&ncVarSubset->varName[j][LONG_NAME_LEN],
+            if (strcmp (ncVarSubset->ncSubset[j].subsetVarName,
                   ncInqOut->var[i].name) == 0) break;
         }
         if (i >= ncInqOut->nvars) {
             rodsLog (LOG_ERROR,
               "resolveSubsetVar: unmatch subset dim %s",
-              &ncVarSubset->varName[j][LONG_NAME_LEN]);
+              ncVarSubset->ncSubset[j].subsetVarName);
             return NETCDF_DIM_MISMATCH_ERR;
         }
         if (strcasecmp (ncInqOut->var[i].name, "time") == 0) {
