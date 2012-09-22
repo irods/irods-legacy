@@ -440,6 +440,13 @@ chkApiPermission (rsComm_t *rsComm, int apiInx)
         return (SYS_NO_API_PRIV);
     }
 
+#ifdef STORAGE_ADMIN_ROLE
+    if ((strcmp(rsComm->proxyUser.userType, "storageadmin") == 0)
+        && (clientUserAuth & STORAGE_ADMIN_ALSO)) {
+      return (0);
+    }
+#endif
+
     clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
 
     if (clientUserAuth > rsComm->clientUser.authInfo.authFlag) {

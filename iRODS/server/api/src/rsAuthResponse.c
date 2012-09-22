@@ -177,8 +177,8 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
    status = chkProxyUserPriv (rsComm, authCheckOut->privLevel);
 
    if (status < 0) {
-      free (authCheckOut);
-      return status;
+     free (authCheckOut);
+     return status;
    } 
 
    rodsLog(LOG_NOTICE,
@@ -210,6 +210,14 @@ chkProxyUserPriv (rsComm_t *rsComm, int proxyUserPriv)
 {
     if (strcmp (rsComm->proxyUser.userName, rsComm->clientUser.userName) 
       == 0) return 0;
+
+#ifdef STORAGE_ADMIN_ROLE
+    /* if the proxy is a storageadmin, then can proxy for client, but client
+       won't have any privileges (set in chlAuthCheck) */
+    if (strcmp(rsComm->proxyUser.userType, "storageadmin") == 0) {
+      return 0;
+    }
+#endif
 
     /* remote privileged user can only do things on behalf of users from
      * the same zone */

@@ -3779,6 +3779,19 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 }
       }
    }
+#ifdef STORAGE_ADMIN_ROLE
+   else if (strcmp(userType, "storageadmin") == 0) {
+     /* Store userType so that other functions can 
+        check for storageadmin role. */
+     strncpy(rsComm->proxyUser.userType, userType, NAME_LEN);
+     /* If the storageadmin is also the client, then 
+        set the clientPrivLevel as well. */
+     if (strcmp(rsComm->clientUser.userName, userName2) == 0 &&
+         strcmp(rsComm->clientUser.rodsZone, userZone) == 0) {
+       *clientPrivLevel = LOCAL_USER_AUTH; 
+     }
+   }
+#endif
 
    prevFailure=0;
    return(0);

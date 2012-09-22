@@ -346,3 +346,6 @@ LDADD+= -ljansson
 CL_LDADD+= -ljansson
 endif
 
+ifdef STORAGE_ADMIN_ROLE
+MY_CFLAG+= -DSTORAGE_ADMIN_ROLE
+endif
