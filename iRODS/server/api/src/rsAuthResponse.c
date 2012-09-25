@@ -212,9 +212,11 @@ chkProxyUserPriv (rsComm_t *rsComm, int proxyUserPriv)
       == 0) return 0;
 
 #ifdef STORAGE_ADMIN_ROLE
-    /* if the proxy is a storageadmin, then can proxy for client, but client
-       won't have any privileges (set in chlAuthCheck) */
-    if (strcmp(rsComm->proxyUser.userType, "storageadmin") == 0) {
+    /* if the proxy is a storageadmin, and is from the local zone, 
+       then it can proxy for client, but client won't have any 
+       privileges (as set in chlAuthCheck) */
+    if (proxyUserPriv == LOCAL_USER_AUTH &&
+        (strcmp(rsComm->proxyUser.userType, "storageadmin") == 0)) {
       return 0;
     }
 #endif
