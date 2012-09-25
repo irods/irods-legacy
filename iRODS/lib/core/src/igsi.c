@@ -28,6 +28,8 @@ sets up the login session.
 #include "rods.h"
 #include "rcGlobalExtern.h"
 
+#define NEW_GSI 1  /* a few differences for newer Globus (5.2.1, others?) */
+
 #if defined(GSI_AUTH)
 #include <gssapi.h>
 #endif
@@ -101,7 +103,14 @@ static int inCacheBufReadIndex[MAX_FDS];
 
 #endif  /* end of #if defined(GSI_AUTH) */
 
+
+#ifdef NEW_GSI 
+OM_uint32  context_flags;
+#else
+/* Not sure if OM_uinit32 works for older GSI versions or not, so the
+   code is here if needed */
 unsigned int context_flags;
+#endif
 
 /* Function for time test 
  * Returns the difference between start time and end time in tdiff 
@@ -350,7 +359,11 @@ static void _igsiLogError_1(char *callerMsg, OM_uint32 code, int type)
 {
     OM_uint32 majorStatus, minorStatus;
     gss_buffer_desc msg;
+#ifdef NEW_GSI
+    OM_uint32 msg_ctx;
+#else
     unsigned int msg_ctx;
+#endif
     int status;
     char *whichSide;
 

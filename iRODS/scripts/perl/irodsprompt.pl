@@ -811,8 +811,9 @@ sub promptForIrodsConfigurationPart2( )
 		       "The GLOBUS_LOCATION and the 'install type' is needed to find include\n",
 		       "and library files.  GLOBUS_LOCATION specifies the directory where\n",
 		       "Globus is installed (see Globus documentation).  The 'install type' is\n",
-		       "which 'flavor' of installation you want to use.  For this, use the,\n",
-		       "exact name of one of the subdirectories under GLOBUS_LOCATION/include.\n",
+		       "which 'flavor' of installation you want to use.  For this, use the\n",
+		       "exact name of one of the subdirectories under GLOBUS_LOCATION/include\n",
+		       "or 'none' in certain cases (e.g. the install type is 'globus').\n",
 		       "\n",
 		       "You also need to set up your Globus GSI environment before running\n",
 		       "this.\n",
@@ -834,9 +835,12 @@ sub promptForIrodsConfigurationPart2( )
 		}
 		printNotice("\nAvailable types appear to be: $gTypes\n");
 		$gsiInstallType = promptString(
-			"GSI Install Type to use",
+                        "GSI Install Type to use (or 'none')",
 			((!defined($gsiInstallType)||$gsiInstallType eq "") ?
 				"" : $gsiInstallType) );
+                if ($gsiInstallType eq "none") {
+                    $gsiInstallType = "";
+                }
 
 		if (!-e $globusLocation . "/include/" . $gsiInstallType) {
 		    printError("Warning, $globusLocation/include/$gsiInstallType does not exist, build will fail.\n");
