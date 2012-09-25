@@ -27,3 +27,4 @@ insert into R_TOKN_MAIN values ('resc_type',412,'tds','','','','','1347482000','
 
 insert into R_TOKN_MAIN values ('data_type',1705,'netcdf','','','','','1348000000','1348000000');
 insert into R_TOKN_MAIN values ('data_type',1706,'hdf5','','','','','1348000000','1348000000');
+insert into R_TOKN_MAIN values ('data_type',1707,'msso file','','|.mss|','','','1324000000','1324000000');
