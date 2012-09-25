@@ -398,7 +398,7 @@ typedef struct TagStruct {
 
 typedef struct Subfile {
     rodsHostAddr_t addr;
-    char subFilePath[MAX_NAME_LEN];
+    char subFilePath[MAX_NAME_LEN];	/* the logical path of the subfile */
     int mode;
     int flags;
     rodsLong_t offset;
