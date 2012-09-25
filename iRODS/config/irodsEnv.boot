@@ -3,5 +3,5 @@
 irodsHost 'localhost'
 irodsPort 1233
 irodsUserName 'rodsBoot'
-irodsZone 14zone
-irodsAuthFileName /data1/sekar/iRODS/iRODS_Jun10/iRODS/config/auth.tmp
+irodsZone dfctest
+irodsAuthFileName /vault19/dfctest/irods-ooi/config/auth.tmp

@@ -267,6 +267,9 @@ rodsLong_t **longArray);
 int
 parseMspForNccfGetVarInp (msParam_t *inpParam, nccfGetVarInp_t *nccfGetVarInp);
 #endif
+int
+parseMsParamFromIRFile (msParamArray_t *inpParamArray, char *inBuf);
+
 #ifdef  __cplusplus
 }
 #endif

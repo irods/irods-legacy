@@ -272,8 +272,10 @@ modCollInfo2 (rsComm_t *rsComm, specColl_t *specColl, int clearFlag)
 
     memset (&modCollInp, 0, sizeof (modCollInp));
     rstrcpy (modCollInp.collName, specColl->collection, MAX_NAME_LEN);
+    /*** RAJA REMOVED AS HE WANTED TYPE NOT TO CHANGE FOR MSSO ***
     addKeyVal (&modCollInp.condInput, COLLECTION_TYPE_KW,
-      TAR_STRUCT_FILE_STR); /* need this or rsModColl fail */
+    TAR_STRUCT_FILE_STR);  MIKE HADFOLLOWING COMMENT BEFORE  ****/  
+    /* need this or rsModColl   fail */
     if (clearFlag > 0) {
         rstrcpy (collInfo2, "NULL_SPECIAL_VALUE", MAX_NAME_LEN);
     } else {

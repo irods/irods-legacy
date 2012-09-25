@@ -1413,7 +1413,17 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
   rstrcpy (execMyRuleInp.outParamDesc, ALL_MS_PARAM_KW, LONG_NAME_LEN);
 
   rstrcpy (tmpStr, params[0]->text, LONG_NAME_LEN);
-  parseHostAddrStr (tmpStr, &execMyRuleInp.addr);
+  /*Changed by Raja December 12 2011  */
+  /*  parseHostAddrStr (tmpStr, &execMyRuleInp.addr); */
+  if (tmpStr[0] != '/' && tmpStr[0] != '@' ) { /* real address */
+    parseHostAddrStr (tmpStr, &execMyRuleInp.addr);
+  }
+  else { /* irods object name or resource name */
+    i = computeHostAddress(rei->rsComm, tmpStr, &execMyRuleInp.addr);
+    if (i < 0)
+      return newErrorRes(r, i);
+  }
+
 
   if(strlen(params[3]->text) == 0) {
       snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", params[2]->text);

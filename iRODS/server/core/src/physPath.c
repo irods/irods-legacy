@@ -1058,6 +1058,8 @@ dataObjInfo_t *dataObjInfo)
         structFileOprInp->specColl->type = TAR_STRUCT_FILE_T;
     } else if (strcmp (dataObjInfo->dataType, HAAW_DT_STR) == 0) {
         structFileOprInp->specColl->type = HAAW_STRUCT_FILE_T;
+    } else if (strcmp (dataObjInfo->dataType, MSSO_DT_STR) == 0) {
+        structFileOprInp->specColl->type = MSSO_STRUCT_FILE_T;
     } else {
         rodsLog (LOG_ERROR,
           "initStructFileOprInp: objType %s of %s is not a struct file",

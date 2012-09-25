@@ -752,7 +752,18 @@ int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, r
   i = evaluateExpression(tmpStr, tmpStr1, rei);
   if (i < 0)
     return(i);
-  parseHostAddrStr (tmpStr1, &execMyRuleInp.addr);
+  /*Changed by Raja December 12 2011  */
+  /* parseHostAddrStr (tmpStr1, &execMyRuleInp.addr); */
+  if (tmpStr1[0] != '/' && tmpStr1[0] != '@' ) { /* real address */
+    parseHostAddrStr (tmpStr1, &execMyRuleInp.addr);
+  }
+  else { /* irods object name or resource name */
+    i = computeHostAddress(rei->rsComm, tmpStr1, &execMyRuleInp.addr);
+    if (i < 0)
+      return(i);
+  }
+
+
 #endif
   if(strlen((char*)mPC->inOutStruct)!=0) {
 	  snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s",  (char*)mPB->inOutStruct,(char*)mPC->inOutStruct);

@@ -17,6 +17,9 @@
 #ifdef TAR_STRUCT_FILE
 #include "tarSubStructFileDriver.h"
 #endif
+#ifdef MSSO_STRUCT_FILE
+#include "mssoSubStructFileDriver.h"
+#endif
 #include "miscUtil.h"
 
 
@@ -57,6 +60,9 @@ extern specCollCache_t *SpecCollCacheHead;
 extern structFileDesc_t StructFileDesc[];
 #ifdef TAR_STRUCT_FILE
 extern tarSubFileDesc_t TarSubFileDesc[];
+#endif
+#ifdef MSSO_STRUCT_FILE
+extern mssoSubFileDesc_t MssoSubFileDesc[];
 #endif
 
 #ifdef RULE_ENGINE_N

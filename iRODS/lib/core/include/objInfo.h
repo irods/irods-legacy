@@ -35,6 +35,7 @@ extern "C" {
 #define GZIP_TAR_DT_STR	"gzipTar"
 #define BZIP2_TAR_DT_STR "bzip2Tar"
 #define ZIP_DT_STR "zipFile"
+#define MSSO_DT_STR     "msso file"
 /* bundle are types for internal phybun use */
 #define TAR_BUNDLE_DT_STR "tar bundle"
 #define GZIP_TAR_BUNDLE_DT_STR "gzipTar bundle"
@@ -102,7 +103,8 @@ typedef enum {         /* class of SpecColl */
 
 typedef enum {          /* structFile type */
     HAAW_STRUCT_FILE_T,        /* the UK eScience structFile */
-    TAR_STRUCT_FILE_T	     /* The tar structFile */
+    TAR_STRUCT_FILE_T,	     /* The tar structFile */
+    MSSO_STRUCT_FILE_T        /* The workflow structFile */
 } structFileType_t;
 
 typedef enum {          /* specColl operation type */
@@ -117,6 +119,7 @@ typedef enum {          /* specColl operation type */
 #define MOUNT_POINT_STR		"mountPoint"
 #define LINK_POINT_STR		"linkPoint"
 #define INHERIT_PAR_SPEC_COLL_STR	"inheritParentSpecColl"
+#define MSSO_STRUCT_FILE_STR           "mssoStructFile"
 
 #define UNMOUNT_STR		"unmount"
 

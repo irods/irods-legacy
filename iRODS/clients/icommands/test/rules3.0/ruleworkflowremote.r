@@ -9,11 +9,12 @@ myTestRule {
 #  writeLine: inString = remote exec
 #Output from running the example written to standard out:
 #  local exec
+  msiSleep("20","20");
   writeLine("serverLog","local exec");
-  remote("localhost", "null") {
+  remote(*where, "null") {
     writeLine("serverLog","remote exec");
   }
   writeLine("stdout", "local exec");
 }
-INPUT null
+INPUT *where=$"localhost"
 OUTPUT ruleExecOut

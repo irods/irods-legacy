@@ -2,6 +2,9 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "reGlobalsExtern.h"
+#include "resource.h"
+#include "dataObjOpr.h"
+
 extern char *rmemmove (void *dest, void *src, int strLen, int maxLen);
 
 static int staticVarNumber = 1;
@@ -1181,3 +1184,58 @@ carryOverMsParam(msParamArray_t *sourceMsParamArray,msParamArray_t *targetMsPara
   return(0);
 }
 
+
+int
+computeHostAddress(rsComm_t *rsComm, char *inStr, rodsHostAddr_t *addr)
+{
+  int status;
+  dataObjInp_t dataObjInp;
+  dataObjInfo_t *dataObjInfoHead = NULL;
+  char *path;
+  rescGrpInfo_t *rescGrpInfo = NULL;
+
+  if (inStr[0] == '@')
+    path = inStr + 1;
+  else
+    path = inStr;
+  if (path[0] == '/') { /* objpath */
+    memset (&dataObjInp, 0, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, path, MAX_NAME_LEN);
+    status = getDataObjInfo (rsComm, &dataObjInp, &dataObjInfoHead,
+			     ACCESS_READ_OBJECT, 0);
+    if (status < 0) {
+      rodsLog (LOG_ERROR,
+	       "computeHostAddress: getDataObjInfo error for Path %s", path); 
+      return (status);
+    }
+
+    status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, NULL, 0);
+    if (status < 0) {
+      rodsLog (LOG_ERROR,
+               "computeHostAddress: sortObjInfoForOpen error for Path %s", path);
+      return status;
+    }
+    rstrcpy (addr->zoneName, dataObjInfoHead->rescInfo->zoneName, NAME_LEN);
+    rstrcpy (addr->hostAddr, dataObjInfoHead->rescInfo->rescLoc, LONG_NAME_LEN);
+    freeAllDataObjInfo (dataObjInfoHead);
+  }
+  else { /* it is a logical resource (or group) name */
+    status = getRescInfo (rsComm, path, NULL, &rescGrpInfo);
+    if (status < 0) {
+      rodsLog (LOG_ERROR,
+               "computeHostAddress: getRescInfo error for Path %s", path);
+      return (status);
+    }
+
+    status = sortResc(rsComm, &rescGrpInfo, "random");
+    if (status < 0) {
+      rodsLog (LOG_ERROR,
+               "computeHostAddress: sortResc error for Path %s", path);
+      return status;
+    }
+    rstrcpy (addr->zoneName, rescGrpInfo->rescInfo->zoneName, NAME_LEN);
+    rstrcpy (addr->hostAddr, rescGrpInfo->rescInfo->rescLoc, LONG_NAME_LEN);
+    freeAllRescGrpInfo (rescGrpInfo);
+  }
+    return(0);
+}

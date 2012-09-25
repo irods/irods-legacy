@@ -69,5 +69,5 @@ netcdfTest1 () {
         msiFreeNcStruct (*getVarsOut);
 	}
 }
-INPUT *ncTestPath="/oneZone/home/rods/pydap/oceanModel/hawModel1.nc", *subsetStr="time[10:1:12] depth[3:1:3] lat[20:1:21] lon[30:1:34]"
+INPUT *ncTestPath="/dfctest/home/rodsAdmin/pydap/oceanModel/hawModel1.nc", *subsetStr="time[10:1:12] depth[3:1:3] lat[20:1:21] lon[30:1:34]"
 OUTPUT ruleExecOut,*ncInqOut

@@ -109,6 +109,12 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
 	  strcmp (mountType, "haaw") == 0) {
             addKeyVal (&dataObjOprInp->condInput,
               COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR);
+        } else if (strcmp (mountType, "m") == 0 ||
+		   strcmp (mountType, "msso") == 0) {
+	  addKeyVal (&dataObjOprInp->condInput,
+		     COLLECTION_TYPE_KW, MSSO_STRUCT_FILE_STR);
+	  /* XXXXX need to add "msso structFile" token */
+	  addKeyVal (&dataObjOprInp->condInput, DATA_TYPE_KW, "msso file");
         } else if (strcmp (mountType, "t") == 0 || 
           strcmp (mountType, "tar") == 0) {
             addKeyVal (&dataObjOprInp->condInput,

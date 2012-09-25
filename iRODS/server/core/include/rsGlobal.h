@@ -14,6 +14,9 @@
 #ifdef TAR_STRUCT_FILE
 #include "tarSubStructFileDriver.h"
 #endif
+#ifdef MSSO_STRUCT_FILE
+#include "mssoSubStructFileDriver.h"
+#endif
 #include "miscUtil.h"
 
 int LogFd = -1;		/* the log file descriptor */
@@ -58,6 +61,9 @@ specCollCache_t *SpecCollCacheHead = NULL;
 structFileDesc_t StructFileDesc[NUM_STRUCT_FILE_DESC];
 #ifdef TAR_STRUCT_FILE
 tarSubFileDesc_t TarSubFileDesc[NUM_TAR_SUB_FILE_DESC];
+#endif
+#ifdef MSSO_STRUCT_FILE
+mssoSubFileDesc_t MssoSubFileDesc[NUM_MSSO_SUB_FILE_DESC];
 #endif
 
 /* Server Authentication information */

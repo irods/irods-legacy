@@ -154,6 +154,13 @@
 #define PATH_REG_NOT_ALLOWED		-129000
 #define SYS_INVALID_INPUT_PARAM		-130000
 #define SYS_GROUP_RETRIEVE_ERR          -131000
+#define SYS_MSSO_APPEND_ERR              -132000
+#define SYS_MSSO_STRUCT_FILE_EXTRACT_ERR -133000
+#define SYS_MSSO_EXTRACT_ALL_ERR         -134000
+#define SYS_MSSO_OPEN_ERR                -135000
+#define SYS_MSSO_CLOSE_ERR               -136000
+
+
 
 /* 300,000 - 499,000 - user input type error */
 #define USER_AUTH_SCHEME_ERR		-300000

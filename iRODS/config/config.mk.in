@@ -262,6 +262,11 @@ ifdef PHP_LIB
 PHP_LIB_DIR=/data/mwan/php/php-5.2.5x/libs
 endif
 
+# MSSO_STRUCT_FILE - specify whether the msso-based  workflow will be loaded
+# into irodsAgent.
+MSSO_STRUCT_FILE = 1
+
+
 # TAR_STRUCT_FILE - specify whether the tar structured file will be loaded
 # into irodsAgent. TAR_EXEC_PATH specifies the path of the tar executable
 # is located if the tar executable is to be used for tar operation.

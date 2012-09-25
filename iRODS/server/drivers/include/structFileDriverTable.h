@@ -13,6 +13,7 @@
 #include "structFileDriver.h"
 #include "haawSubStructFileDriver.h"
 #include "tarSubStructFileDriver.h"
+#include "mssoSubStructFileDriver.h"
 #include "miscServerFunct.h"
 
 // =-=-=-=-=-=-=-
@@ -43,6 +44,17 @@ structFileDriver_t StructFileDriverTable[] = {
       tarStructFileExtract},
 #else
     {TAR_STRUCT_FILE_T, NO_SUB_STRUCT_FILE_FUNCTIONS},
+#endif
+#ifdef MSSO_STRUCT_FILE
+    {MSSO_STRUCT_FILE_T, mssoSubStructFileCreate, mssoSubStructFileOpen, 
+     mssoSubStructFileRead, mssoSubStructFileWrite, mssoSubStructFileClose, 
+     mssoSubStructFileUnlink, mssoSubStructFileStat, mssoSubStructFileFstat, 
+     mssoSubStructFileLseek, mssoSubStructFileRename, mssoSubStructFileMkdir,
+     mssoSubStructFileRmdir, mssoSubStructFileOpendir, mssoSubStructFileReaddir,
+     mssoSubStructFileClosedir, mssoSubStructFileTruncate, mssoStructFileSync,
+     mssoStructFileExtract},
+#else
+    {MSSO_STRUCT_FILE_T, NO_SUB_STRUCT_FILE_FUNCTIONS},
 #endif
 };
 

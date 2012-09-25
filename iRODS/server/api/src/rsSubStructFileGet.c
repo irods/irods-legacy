@@ -89,6 +89,16 @@ bytesBuf_t *subFileGetOutBBuf)
     status = subStructFileRead (subFile->specColl->type, rsComm,
       fd, subFileGetOutBBuf->buf, len);
 
+    /**** RAJA May 22 2012 - for taking care of max get value being put in for msso ***/
+    if (len == (MAX_SZ_FOR_SINGLE_BUF - 20) ) {
+      if (status >= 0) {
+        subFileGetOutBBuf->len = status;
+        return(status);
+      }
+    }
+    /**** RAJA May 22 2012 - for taking care of max get value being put in for msso ***/
+
+
     if (status != len) {
        if (status >= 0) {
             rodsLog (LOG_NOTICE,

@@ -64,7 +64,8 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         status = unmountFileDir (rsComm, phyPathRegInp);
         return (status);
     } else if (tmpStr != NULL && (strcmp (tmpStr, HAAW_STRUCT_FILE_STR) == 0 ||
-      strcmp (tmpStr, TAR_STRUCT_FILE_STR) == 0)) {
+      strcmp (tmpStr, TAR_STRUCT_FILE_STR) == 0 ||
+      strcmp (tmpStr, MSSO_STRUCT_FILE_STR) == 0 )) {
 	status = structFileReg (rsComm, phyPathRegInp);
         return (status);
     } else if (tmpStr != NULL && strcmp (tmpStr, LINK_POINT_STR) == 0) {
@@ -868,6 +869,8 @@ rescInfo_t *rescInfo)
         specColl.type = HAAW_STRUCT_FILE_T;
     } else if (strcmp (collType, TAR_STRUCT_FILE_STR) == 0) {
 	specColl.type = TAR_STRUCT_FILE_T;
+    } else if (strcmp (collType, MSSO_STRUCT_FILE_STR) == 0) {
+	specColl.type = MSSO_STRUCT_FILE_T;
     } else {
 	return (0);
     }

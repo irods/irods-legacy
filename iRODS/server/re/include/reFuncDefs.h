@@ -338,5 +338,6 @@ int _applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 		   ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag);
 int _execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei,int reiSaveFlag);
 
+int computeHostAddress(rsComm_t *rsComm, char *inStr, rodsHostAddr_t *addr);
 
 #endif  /* RE_FUNCDEFS_H */

@@ -1533,6 +1533,53 @@ chkStructFileExtAndRegInpKw (char *keyWd, int validKwFlags)
     return USER_BAD_KEYWORD_ERR;
 }
 
+int
+parseMsParamFromIRFile (msParamArray_t *inpParamArray, char *inBuf)
+{
+    strArray_t strArray;
+    int status, i;
+    char *value;
+
+    if (inBuf == NULL || strcmp (inBuf, "null") == 0) {
+	inpParamArray = NULL;
+	return (0);
+    }
+
+    memset (&strArray, 0, sizeof (strArray));
+
+    status = splitMultiStr (inBuf, &strArray);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "parseMsParamFromIRFile: parseMultiStr error, status = %d", status);
+	inpParamArray = NULL;
+        return (status);
+    }
+    value = strArray.value;
+
+    for (i = 0; i < strArray.len; i++) {
+	char *valPtr = &value[i * strArray.size];
+	char *tmpPtr;
+	if ((tmpPtr = strstr (valPtr, "=")) != NULL) {
+	    *tmpPtr = '\0';
+	    tmpPtr++;
+	    if (*tmpPtr == '\\') {
+	      tmpPtr++;
+	    }
+	    char *param = strdup (tmpPtr);
+	    addMsParam (inpParamArray, valPtr, STR_MS_T,
+			  param, NULL);
+	    
+	} else {
+	    rodsLog (LOG_ERROR,
+             "parseMsParamFromIRFile: inpParam %s format error", valPtr);
+	}
+    }
+
+    return (0);
+}
+
+
+
 #ifdef NETCDF_API
 int
 parseMspForNcInqIdInpName (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp)
