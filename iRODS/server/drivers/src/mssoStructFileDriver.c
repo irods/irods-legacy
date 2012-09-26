@@ -1357,7 +1357,7 @@ writeBufToLocalFile(char *fName, char *buf)
              "Cannot open rule file %s. ernro = %d\n",fName, errno);
     return(FILE_OPEN_ERR);
   }
-  fprintf(fd,buf);
+  fprintf(fd,"%s",buf);
   fclose(fd);
   return(0);
 
