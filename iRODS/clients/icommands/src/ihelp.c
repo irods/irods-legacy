@@ -9,10 +9,11 @@
 
 char *icmds[]={
   "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",
-  "ierror", "iexecmd", "iexit", "iget", "igetwild.sh", "igroupadmin",
-  "ihelp", "iinit", "ils", "ilsresc",
-  "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
-  "iphybun", "iphymv", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
+  "ierror", "iexecmd", "iexit", "ifsck", "iget", "igetwild.sh", "igroupadmin",
+  "ihelp", "iinit", "ilocate", "ils", "ilsresc",
+  "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "inc", "incattr", 
+  "ipasswd",
+  "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
   "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
   "iscan", "isysmeta", "iticket", "itrim", "iuserinfo",
   ""};
@@ -52,6 +53,8 @@ printMainHelp()
 "imiscsvrinfo - retrieve basic server information.",
 "imkdir   - make an irods directory (collection).",
 "imv      - move/rename an irods data-object (file) or collection (directory).",
+"inc      - perform NetCDF operations on data objects (available if configured).",
+"incattr  - perform NetCDF attribute operations (available if configured).",
 "ipasswd  - change your irods password.",
 "iphybun  - physically bundle files (admin only).",
 "iphymv   - physically move a data-object to another storage resource.",
