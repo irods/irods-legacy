@@ -1616,7 +1616,7 @@ generateLogTimestamp(char *ts, int tsLen)
     strftime(timestamp, TIME_LEN, "%Y%m%dT%H%M%S", &utc);
     
     /* 8 characters of '.uuuuuuZ' + nul */
-    if (tsLen < strlen(timestamp) + 9) {
+    if (tsLen < (int)strlen(timestamp) + 9) {
         return;
     }
 
