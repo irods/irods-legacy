@@ -1,5 +1,8 @@
---- Run these SQL statements using the PostgreSQL client psql
---- to upgrade from a 3.1 Postgres ICAT to 3.2.
+--- Depending on your ICAT DBMS type, run these SQL statements using 
+---    the MySQL client mysql,
+---    the Oracle client sqlplus,
+---    or the PostgreSQL client psql,
+--- to upgrade from a 3.1 ICAT to 3.2.
 
 create table R_OBJT_FILESYSTEM_META
 (
