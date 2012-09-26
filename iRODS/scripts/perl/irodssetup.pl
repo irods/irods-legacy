@@ -189,10 +189,10 @@ if ( $thisUserID == 0 )
 
 
 if ( $isUpgrade ne "") {
-    printNotice("\nNote: When upgrading from 3.0 to 3.1, you should run\n");
-    printNotice("psg-patch-v3.0tov3.1.sql via psql (for Postgres)\n");
-    printNotice("or ora-patch-v3.0tov3.1.sql via sqlplus (for Oracle)\n");
-    printNotice("or mys-patch-v3.0tov3.1.sql via mysql (for MySQL)\n");
+    printNotice("\nNote: When upgrading from 3.1 to 3.2, you should run\n");
+    printNotice("all-patch-v3.1tov3.2.sql via psql (for Postgres)\n");
+    printNotice("or sqlplus (for Oracle)\n");
+    printNotice("or mysql (for MySQL)\n");
     printNotice("before running this script.\n");
     printNotice("If you have an older iRODS, you need to run the\n");
     printNotice("other patch scripts in sequence.\n\n");
