@@ -64,19 +64,17 @@ void UnixSendEmail(char *toAddr, char *subjectLine, char *msgBody)
     }
     fclose(fd);
 
+    if (checkStringForSystem(fileName)) return; 
+    if (checkStringForSystem(subjectLine)) return; 
+    if (checkStringForSystem(toAddr)) return; 
 #ifdef solaris_platform
     sprintf(mailStr,"cat %s| mail  %s",fileName,toAddr);
 #else /* tested for linux - not sure how other platforms operate for subject */
     if((subjectLine != NULL) && (strlen(subjectLine) > 0)) {
-       if (checkStringForSystem(fileName)) return; 
-       if (checkStringForSystem(subjectLine)) return; 
-       if (checkStringForSystem(toAddr)) return; 
        sprintf(mailStr,"cat %s| mail -s '%s'  %s",fileName, 
 	       subjectLine, toAddr);
     }
     else {
-       if (checkStringForSystem(fileName)) return; 
-       if (checkStringForSystem(toAddr)) return; 
        sprintf(mailStr,"cat %s| mail  %s",fileName, toAddr);
     }
 #endif

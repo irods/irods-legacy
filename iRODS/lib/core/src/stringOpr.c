@@ -387,6 +387,7 @@ trimQuotes(char *s)
 int
 checkStringForSystem( char *inString) {
   char c;
+  if (inString==NULL) return(0);
   c = *inString;
   while (c != '\0') {
      if ( (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
