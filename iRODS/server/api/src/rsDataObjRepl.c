@@ -1455,6 +1455,9 @@ dataObjInfo_t **outDataObjInfo)
     return status;
 }
 
+/* getCacheDataInfoOfCompResc - get the CacheDataInfo of compRescGrpInfo
+ * and put it in outDataObjInfo. May have to stage it if it does not
+ * exist */
 int
 getCacheDataInfoOfCompResc (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,

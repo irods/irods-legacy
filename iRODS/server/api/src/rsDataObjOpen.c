@@ -712,7 +712,8 @@ dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
          * a COMPOUND_CL resource in the group */
         if (getRescInGrpByClass (rsComm, (*dataObjInfoHead)->rescGroupName,
           COMPOUND_CL, compRescInfo, &myRescGrpInfo) >= 0) {
-	    /* get cacheDataObjInfo */
+	    /* get cacheDataObjInfo. May have to stage it if it does not
+             * exist */
             status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
               *dataObjInfoHead, NULL, myRescGrpInfo, NULL,
               cacheDataObjInfo);
@@ -743,6 +744,8 @@ dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
     status = procDataObjOpenForExistObj (rsComm, dataObjInp, dataObjInfoHead,
       cacheDataObjInfo, compDataObjInfo, compRescInfo);
 
+    /* since the obj is already staged to cache, we don't need the
+     * compDataObjInfo any more */
     if (*compDataObjInfo != NULL) {
 	dequeDataObjInfo (dataObjInfoHead, *compDataObjInfo);
 	freeDataObjInfo (*compDataObjInfo);
