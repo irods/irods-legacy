@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* 
- * incattr - The irods physical move utility
+ * incattr - The irods NETCDF attributes utility
 */
 
 #include "rodsClient.h"
