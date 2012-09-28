@@ -1,5 +1,5 @@
 		Scripts for installing and uninstalling iRODS
-			Last updated March 2012
+			Last updated September 2012
 
 
 The iRODS distribution uses several configuration files and shell/Perl
@@ -16,22 +16,22 @@ the patch file for either PostgreSQL, Oracle, or MySQL to make some
 needed updates to tables (if any).  Assuming your iCAT database is
 named ICAT, this would be, for example:
 
-        psql ICAT < server/icat/patches/psg-patch-v3.0tov3.1.sql
+        psql ICAT < server/icat/patches/all-patch-v3.1tov3.2.sql
 
     or 
         sqlplus name@instance
-        @server/icat/patches/ora-patch-v3.0tov3.1.sql
+        @server/icat/patches/all-patch-v3.1tov3.2.sql
 
     or
-        mysql ICAT < server/icat/patches/mys-patch-v3.0tov3.1.sql
+        mysql ICAT < server/icat/patches/all-patch-v3.1tov3.2.sql
 
-For 3.1 the patch sql script will add some tables and indexes for the
-ticket feature, add another index for better performance of 'iscan'
-operations, and add tokens related to the ibun/iphybun compression
-feature for zip, gzip and bzip2.
+For 3.2 the patch sql script will add a table and an index for the
+filesystem metadata feature, and add tokens related to other new
+capabilities.
 
 If you are upgrading from an older version, you'll need to apply the
-patch file for each released version that has one, in sequence.
+patch file for each released version that has one, in sequence.  For
+most releases, there are separate patch files for each type of DBMS.
 See the server/icat/patches directory for the set of patch files.
 
 Then run either of these (they are equivalent):
@@ -46,6 +46,9 @@ upgrading an existing ICAT.
 The system will then be updated and new features and bug fixes will be
 installed.  Others features, such as GSI, can be enabled via your
 answers to the script.  And others are enabled in other ways.
+
+Note that starting in 3.2, irodssetup can use system-installed
+postgresql and ODBC instead of building them from source.
 
 See the irods web site release notes for information on the new
 features and bug fixes, and other information.
