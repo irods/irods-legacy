@@ -721,11 +721,13 @@ dataObjInp_t *dataObjOprInp)
               mySrcPath.outPath, errno);
             return (USER_INPUT_PATH_ERR);
         }
+#ifndef USE_BOOST_FS
         if ((statbuf.st_mode & S_IFREG) != 0 && rodsArgs->age == True) {
             if (ageExceeded (rodsArgs->agevalue, statbuf.st_mtime,
               rodsArgs->verbose, mySrcPath.outPath, statbuf.st_size)) 
                 continue;
         }
+#endif /* #ifndef USE_BOOST_FS */
 #ifdef FILESYSTEM_META
         getFileMetaFromPath(mySrcPath.outPath, &dataObjOprInp->condInput);
 #endif
