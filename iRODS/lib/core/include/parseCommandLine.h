@@ -118,6 +118,8 @@ typedef struct {
    int retries;
    int retriesValue;
    int regRepl;
+   int excludeFile;
+   char *excludeFileString;
 
    int parallel;
    int serial;

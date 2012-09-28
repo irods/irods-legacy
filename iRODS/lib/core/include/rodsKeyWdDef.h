@@ -126,6 +126,7 @@
 #define FILE_CTIME_KW           "fileCtime"
 #define FILE_MTIME_KW           "fileMtime" 
 #define FILE_SOURCE_PATH_KW     "fileSourcePath"    
+#define EXCLUDE_FILE_KW         "excludeFile"
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

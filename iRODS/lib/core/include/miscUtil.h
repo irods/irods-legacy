@@ -169,6 +169,13 @@ typedef struct CollEnt {
     specColl_t specColl;	 /* valid only for collection */ 
 } collEnt_t;
 
+/* used to store regex patterns used to match pathnames */
+typedef struct {
+  char *pattern_buf;
+  char **patterns;
+  int num_patterns;
+} pathnamePatterns_t;
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -303,6 +310,12 @@ getFileMetaFromStat (rodsStat_t *statbuf, keyValPair_t *condInput);
 int
 copyFilesystemMetadata (keyValPair_t *src, keyValPair_t *dest);
 #endif /* FILESYSTEM_META */
+pathnamePatterns_t *
+readPathnamePatterns(char *buf, int buflen);
+void
+freePathnamePatterns(pathnamePatterns_t *pp);
+int
+matchPathname(pathnamePatterns_t *pp, char *name, char *dirname);
 #ifdef  __cplusplus
 }
 #endif
