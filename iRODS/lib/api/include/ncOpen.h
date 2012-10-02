@@ -46,10 +46,10 @@ typedef struct {
     char ncObjectName[MAX_NAME_LEN];
     ncAggElement_t *ncAggElement;	/* pointer to numFiles of 
                                          * ncAggElement_t */
-} ncAggregate_t;
+} ncAggrInfo_t;
     
 #define NcAggElement_PI "int startTime; int endTime; int arraylen; int flags; str fileName[MAX_NAME_LEN];"
-#define NcAggregate_PI "int numFiles; int flags; str  ncObjectName[MAX_NAME_LEN]; struct *NcAggElement_PI(numFiles);"
+#define NcAggrInfo_PI "int numFiles; int flags; str  ncObjectName[MAX_NAME_LEN]; struct *NcAggElement_PI(numFiles);"
 
 #if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_OPEN rsNcOpen
