@@ -116,12 +116,6 @@ int
 rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
 int
 _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
-int
-inqAtt (int ncid, int varid, int natt, char *name, int id, int allFlag,
-ncGenAttOut_t *attOut);
-int
-getAttValue (int ncid, int varid, char *name, int dataType, int length,
-ncGetVarOut_t *value);
 #else
 #define RS_NC_INQ NULL
 #endif
@@ -200,6 +194,15 @@ asciToTime (char *asciTime, time_t *mytime);
 int
 resolveSubsetVar (rcComm_t *conn, int srcNcid, ncInqOut_t *ncInqOut,
 ncVarSubset_t *ncVarSubset);
+int
+ncInq (ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
+int
+inqAtt (int ncid, int varid, int natt, char *name, int id, int allFlag,
+ncGenAttOut_t *attOut);
+int
+getAttValue (int ncid, int varid, char *name, int dataType, int length,
+ncGetVarOut_t *value);
+
 #ifdef  __cplusplus
 }
 #endif

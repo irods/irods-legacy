@@ -80,6 +80,10 @@ rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
 int
 _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
 {
+    int status = ncInq (ncInqInp, ncInqOut);
+    return status;
+}
+#if 0	/* moved to the client */
     int ndims, nvars, ngatts, unlimdimid, format;
     int dimType, attType, varType, allFlag;
     int status, i;
@@ -392,4 +396,4 @@ ncGetVarOut_t *value)
     }
     return status;
 }
-
+#endif
