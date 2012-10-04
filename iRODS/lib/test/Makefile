@@ -26,7 +26,7 @@ endif
 TESTOBJS = luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o listcoll.o nctest.o
 ifdef OOI_CI
-TESTOBJS+=  tdsdir.o erddapdir.o pydapdir.o httpget.o ooitest.o ooiAmqptest.o ooiapitest.o
+TESTOBJS+=  ncaggr.o tdsdir.o erddapdir.o pydapdir.o httpget.o ooitest.o ooiAmqptest.o ooiapitest.o
 endif
 
 
@@ -37,7 +37,7 @@ TARGETS+= nctest
 endif
 
 ifdef OOI_CI
-TARGETS+= tdsdir erddapdir pydapdir httpget ooitest ooiAmqptest ooiapitest
+TARGETS+= ncaggr tdsdir erddapdir pydapdir httpget ooitest ooiAmqptest ooiapitest
 endif
 
 ifdef TAR_STRUCT_FILE
@@ -144,6 +144,8 @@ ooitest: ooitest.o
 ooiDeployTest: ooiDeployTest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 ooiapitest: ooiapitest.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+ncaggr: ncaggr.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 endif
 

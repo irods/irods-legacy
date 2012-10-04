@@ -33,10 +33,9 @@ typedef struct {
 /* data struct for aggregation of netcdf files. Our first attempt assumes
  * the aggregation is based on the time dimension - time series */ 
 typedef struct {
-    int startTime;
-    int endTime;
-    int arraylen;
-    int flags;	/* not used */
+    unsigned int startTime;
+    unsigned int endTime;
+    rodsLong_t arraylen;
     char fileName[MAX_NAME_LEN];
 } ncAggElement_t;
 
@@ -48,7 +47,7 @@ typedef struct {
                                          * ncAggElement_t */
 } ncAggrInfo_t;
     
-#define NcAggElement_PI "int startTime; int endTime; int arraylen; int flags; str fileName[MAX_NAME_LEN];"
+#define NcAggElement_PI "int startTime; int endTime; double arraylen; str fileName[MAX_NAME_LEN];"
 #define NcAggrInfo_PI "int numFiles; int flags; str  ncObjectName[MAX_NAME_LEN]; struct *NcAggElement_PI(numFiles);"
 
 #if defined(RODS_SERVER) && defined(NETCDF_API)
