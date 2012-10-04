@@ -3,6 +3,11 @@
 ---    the Oracle client sqlplus,
 ---    or the PostgreSQL client psql,
 --- to upgrade from a 3.1 ICAT to 3.2.
+---
+--- After the release, it was noticed that for Oracle the 'bigint' below
+--- needed to be changed to 'integer'.  So edit that now, if you are using
+--- Oracle.  We would have had separate ora, mys, and psg patch files had
+--- we noticed this.  All the other SQL is fine.
 
 create table R_OBJT_FILESYSTEM_META
 (
