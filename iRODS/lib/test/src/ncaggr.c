@@ -9,9 +9,11 @@
 int
 genNcAggrInfo (char *testPath, ncAggrInfo_t *ncAggrInfo);
 int 
-setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t **ncAggElement);
+setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t *ncAggElement);
 unsigned int
 getIntVar (int ncid, int varid, int dataType, rodsLong_t inx);
+int
+addNcAggElement (ncAggElement_t *ncAggElement, ncAggrInfo_t *ncAggrInfo);
 
 int
 main(int argc, char **argv)
@@ -46,7 +48,7 @@ genNcAggrInfo (char *dirPath, ncAggrInfo_t *ncAggrInfo)
     ncInqInp_t ncInqInp;
     ncInqOut_t *ncInqOut = NULL;
     int ncid;
-    ncAggElement_t *ncAggElement = NULL;
+    ncAggElement_t ncAggElement;
 
     if (dirPath == NULL || ncAggrInfo == NULL) return USER__NULL_INPUT_ERR;
 
@@ -58,6 +60,8 @@ genNcAggrInfo (char *dirPath, ncAggrInfo_t *ncAggrInfo)
         return (USER_INPUT_PATH_ERR);
     }
     bzero (ncAggrInfo, sizeof (ncAggrInfo_t));
+    bzero (&ncAggElement, sizeof (ncAggElement));
+    rstrcpy (ncAggrInfo->ncObjectName, dirPath, MAX_NAME_LEN);
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -97,15 +101,20 @@ genNcAggrInfo (char *dirPath, ncAggrInfo_t *ncAggrInfo)
             return status;
         }
         status = setNcAggElement (ncid, ncInqOut, &ncAggElement);
+        if (status < 0) break;
+        rstrcpy (ncAggElement.fileName, childPath, MAX_NAME_LEN);
+        status = addNcAggElement (&ncAggElement, ncAggrInfo);
+        if (status < 0) break;
+        bzero (&ncAggElement, sizeof (ncAggElement));
     }
     closedir (dirPtr);
     return 0;
 }
 
 int 
-setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t **ncAggElement)
+setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t *ncAggElement)
 {
-    int i, j, status;
+    int i, j;
 
     if (ncInqOut == NULL || ncAggElement == NULL) return USER__NULL_INPUT_ERR;
 
@@ -131,13 +140,12 @@ setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t **ncAggElement)
         return NETCDF_DIM_MISMATCH_ERR;
     }
 
-    *ncAggElement = (ncAggElement_t *) calloc (1, sizeof (ncAggElement_t));
 
-    (*ncAggElement)->arraylen = ncInqOut->dim[i].arrayLen;
+    ncAggElement->arraylen = ncInqOut->dim[i].arrayLen;
 
-    (*ncAggElement)->startTime = getIntVar (ncid, ncInqOut->var[j].id, 
+    ncAggElement->startTime = getIntVar (ncid, ncInqOut->var[j].id, 
       ncInqOut->var[j].dataType, 0);
-    (*ncAggElement)->endTime = getIntVar (ncid, ncInqOut->var[j].id, 
+    ncAggElement->endTime = getIntVar (ncid, ncInqOut->var[j].id, 
       ncInqOut->var[j].dataType, ncInqOut->dim[i].arrayLen - 1);
 
     return 0;
@@ -216,7 +224,7 @@ getIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
 int
 addNcAggElement (ncAggElement_t *ncAggElement, ncAggrInfo_t *ncAggrInfo)
 {
-    int newNumFiles;
+    int newNumFiles, i, j;
     ncAggElement_t *newElement;
 
     if (ncAggrInfo == NULL || ncAggElement == NULL) return USER__NULL_INPUT_ERR;
@@ -224,7 +232,7 @@ addNcAggElement (ncAggElement_t *ncAggElement, ncAggrInfo_t *ncAggrInfo)
     if ((ncAggrInfo->numFiles % PTR_ARRAY_MALLOC_LEN) == 0) {
         newNumFiles =  ncAggrInfo->numFiles + PTR_ARRAY_MALLOC_LEN;
         newElement = (ncAggElement_t *) calloc (newNumFiles, 
-          sizeof (newElement));
+          sizeof (ncAggElement_t));
         if (ncAggrInfo->numFiles > 0) {
             if (ncAggrInfo->ncAggElement == NULL) {
                 rodsLog (LOG_ERROR,
@@ -239,18 +247,27 @@ addNcAggElement (ncAggElement_t *ncAggElement, ncAggrInfo_t *ncAggrInfo)
     }
 
     if (ncAggrInfo->numFiles <= 0) {
-        ncAggrInfo->ncAggElement[0] = ncAggElement;
+        ncAggrInfo->ncAggElement[0] = *ncAggElement;
     } else {
-        for (i = 0; i < ncAggrInfo->numFiles) {
+        for (i = 0; i < ncAggrInfo->numFiles; i++) {
             ncAggElement_t *myElement = &ncAggrInfo->ncAggElement[i];
-            if (ncAggElement->startTime > myElement->startTime || 
+            if (ncAggElement->startTime < myElement->startTime || 
               (ncAggElement->startTime == myElement->startTime &&
-              ncAggElement->endTime > myElement->endTime)) {
+              ncAggElement->endTime < myElement->endTime)) {
                 /* insert */
                 for (j = ncAggrInfo->numFiles; j > i; j--) {
                     ncAggrInfo->ncAggElement[j] = ncAggrInfo->ncAggElement[j-1];
                 }
-                
+                ncAggrInfo->ncAggElement[i] = *ncAggElement;
+                break;
+            }
+        }
+        if (i >= ncAggrInfo->numFiles) {
+            /* not inserted yet. put it at the end */
+            ncAggrInfo->ncAggElement[i] = *ncAggElement;
+        }
+    }
+    ncAggrInfo->numFiles++;            
     return 0;
 }
 
