@@ -441,8 +441,8 @@ chkApiPermission (rsComm_t *rsComm, int apiInx)
     }
 
 #ifdef STORAGE_ADMIN_ROLE
-    if ((strcmp(rsComm->proxyUser.userType, "storageadmin") == 0)
-        && (clientUserAuth & STORAGE_ADMIN_ALSO)) {
+    if ((strcmp(rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE) == 0)
+        && (clientUserAuth & STORAGE_ADMIN_USER)) {
       return (0);
     }
 #endif

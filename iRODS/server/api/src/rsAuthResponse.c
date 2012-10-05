@@ -116,6 +116,17 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
       }
    }
 
+#ifdef STORAGE_ADMIN_ROLE
+   /* if the user is a storage admin, this will be indicated with
+      a bit in authCheckOut->privLevel. If it's set, set the userType
+      in rsComm->proxyUser to 'storageadmin' and clear the bit so
+      it doesn't affect subsequent checks */
+   if (authCheckOut->privLevel & STORAGE_ADMIN_USER) {
+     strncpy(rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE, NAME_LEN);
+     authCheckOut->privLevel &= ~STORAGE_ADMIN_USER;
+   }
+#endif
+
    /* Set the clientUser zone if it is null. */
    if (strlen(rsComm->clientUser.rodsZone)==0) {
       zoneInfo_t *tmpZoneInfo;
@@ -216,7 +227,7 @@ chkProxyUserPriv (rsComm_t *rsComm, int proxyUserPriv)
        then it can proxy for client, but client won't have any 
        privileges (as set in chlAuthCheck) */
     if (proxyUserPriv == LOCAL_USER_AUTH &&
-        (strcmp(rsComm->proxyUser.userType, "storageadmin") == 0)) {
+        (strcmp(rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE) == 0)) {
       return 0;
     }
 #endif
