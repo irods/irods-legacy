@@ -247,3 +247,11 @@ directory.
 7) Add the client API function and the server API handling function to the
 make by adding two lines to the mk/mk.api file.
 
+Note:
+The apiGen.pl script in lib/api/scripts can be used to generate much of the
+modifications listed above:
+1) create a header file with content listed in 3) above. e.g., execCmd.h
+2) run the apiGen.pl. e.g., "./apiGen.pl execCmd".
+The modifications listed above will be generated, but they may not be 100%
+correct depending on the circumstance. Need to go through the list above
+to make sure they are correct.

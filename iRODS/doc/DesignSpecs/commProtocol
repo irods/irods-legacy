@@ -32,6 +32,10 @@ type message:
 <intInfo>702</intInfo>
 </MsgHeader_PI>
 
+Note: set the following env variable to print out exchange of messages:
+export irodsLogLevel=10         (LOG_DEBUG3)
+export irodsProt=1              (XML_PROT)
+    
 3) The main message - typically it is a C struct packed with the packStruct()
 subroutine. The length of this message is given in the "msgLen" element of
 the message header. The struct can be packed using the NATIVE_PROT protocol
@@ -194,4 +198,24 @@ implemented.
 
 #define RODS_REAUTH_T     "RODS_REAUTH"
 
+"Proxy User" and "Client User" in iRods server
+----------------------------------------------
+Created to perform inter-server operation without passing the credential
+of the client from server to server.
+
+A client connect to a server and authenicate himself with the server.
+From that point onward, server perform operations on behaf of the user.
+
+Server-server authentication -
+    o always run by rodsadmin type user
+    o authenticate using the admin user's credential.
+    o admin user perform operation on behalf of the client user
+
+"Proxy User" - sort of like real user of UNIX
+"Client User" - sort of like effective user of UNIX
+
+----------  proxyUser = userA  ------------- proxyUser = admUserB -------------
+| Client | ------------------->|  Server B |--------------------->| Server C  |
+| userA  |  clientUser = userA |  admUserB | clientUser = userA   | adminUerB |
+----------                     -------------                      -------------
 
