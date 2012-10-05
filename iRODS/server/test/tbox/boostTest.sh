@@ -4,6 +4,7 @@
 set -x
 date
 cd /tbox/IRODS_BUILD/iRODS
+make clean
 buildboost.sh
 date
 
