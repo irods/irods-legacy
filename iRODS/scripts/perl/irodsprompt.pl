@@ -1893,7 +1893,7 @@ sub promptForConfirmation( )
     # UNICODE
 	if ( $advanced )
 	{
-	    if ($UNICODE == 0) {
+	    if ($unicode == 0) {
 		 printNotice(
 			"    UNICODE not selected\n\n");
 	    } else {
