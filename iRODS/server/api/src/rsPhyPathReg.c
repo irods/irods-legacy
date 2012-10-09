@@ -424,11 +424,16 @@ rescInfo_t *rescInfo)
         /* create the coll just in case it does not exist */
         status = rsCollCreate (rsComm, &collCreateInp);
 	clearKeyVal (&collCreateInp.condInput);
-	if (status < 0) return status;
+	if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "dirPathReg: rsCollCreate %s error. status = %d", 
+              phyPathRegInp->objPath, status);
+            return status;
+        }
     } else if (rodsObjStatOut->specColl != NULL) {
         freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
-          "mountFileDir: %s already mounted", phyPathRegInp->objPath);
+          "dirPathReg: %s already mounted", phyPathRegInp->objPath);
         return (SYS_MOUNT_MOUNTED_COLL_ERR);
     }
     freeRodsObjStat (rodsObjStatOut);
@@ -507,6 +512,16 @@ rescInfo_t *rescInfo)
 	    return (status);
 	}
 
+        if (RescTypeDef[rescTypeInx].driverType == TDS_FILE_TYPE &&
+          strchr (rodsDirent->d_name, '/') != NULL) {
+            /* TDS may contain '/' in the file path */
+            char *tmpPtr = rodsDirent->d_name;
+            /* replace '/' with '.' */
+            while (*tmpPtr != '\0') {
+               if (*tmpPtr == '/') *tmpPtr = '.';
+               tmpPtr ++;
+            }
+        }
         if (RescTypeDef[rescTypeInx].incParentDir == PHYPATH_IN_DIR_PTR) {
             /* the st_mode is stored in the opened dir */
             myStat->st_mode = getStModeInOpenedDir (dirFd, rodsDirent->d_ino);
@@ -577,6 +592,7 @@ rescInfo_t *rescInfo)
             status = dirPathReg (rsComm, &subPhyPathRegInp,
               fileStatInp.fileName, rescInfo);
 	}
+        if (status < 0) return status;
 	free (myStat);
 	free (rodsDirent);
     }
