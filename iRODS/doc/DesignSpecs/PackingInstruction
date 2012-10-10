@@ -21,7 +21,8 @@ The struct can contain the following data types:
   "struct" - a struct within the struct
   "?" - dependent type. The data type or packing instruction is dependent on 
       the content of other "piStr" type string.
-
+   "%" - another dependent type. the packing instruction depends on the 
+    integer value of another parameter in the struct.
 For example:
 
 The struct to be packed in C is:
@@ -264,6 +265,26 @@ The packing instruction for this struct is:
 Note that the string "?myType" here means that the data type of the pointer
 depends on the content of myType. Also, the "piStr" element must be put
 before the "?" element for the dependency to be resolved.
+
+9) "%" - another dependent type. the packing instruction depends on the
+integer value of another parameter in the struct. It is best explained
+with an example:
+The hdf5 H5Dataset:
+typedef struct H5Dataset
+{
+    int opID;
+    H5Datatype_class_t tclass;
+    unsigned int nvalue;
+    void*    value;
+    ...
+} H5Dataset;
+
+The type of pointer for 'value' depends on the integer value of tclass. If
+tclass equals to 3, 6 or 9, 'value' is a pointer to an array (with array length
+== nvalue) of string pointer. Otherwise, it is a pointer to 'nvalue' char.
+The packing instruction is:
+
+#define h5Dataset_PI "int opID; int tclass; int nvalue; % tclass:3,6,9 = str *value[nvalue]:default= char *value(nvalue);"
 
 Packing/unpacking processes
 ---------------------------
