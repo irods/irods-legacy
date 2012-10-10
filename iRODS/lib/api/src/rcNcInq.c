@@ -1806,3 +1806,74 @@ ncGetVarOut_t *value)
     return status;
 }
 
+unsigned int
+getNcIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
+{
+    size_t start[1], count[1];
+    short int myshort;
+    int myint;
+    rodsLong_t mylong;
+    float myfloat;
+    double mydouble;
+    unsigned int retint;
+    int status;
+
+
+    start[0] = inx;
+    count[0] = 1;
+
+    if (dataType == NC_SHORT || dataType == NC_USHORT) {
+        status = nc_get_vara (ncid, varid, start, count, (void *) &myshort);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "getNcIntVar: nc_get_vara error, status = %d, %s",
+              status, nc_strerror(status));
+            return NETCDF_GET_VARS_ERR - status;
+        }
+        retint = (unsigned int) myshort;
+    } else if (dataType == NC_INT || dataType == NC_UINT) {
+        status = nc_get_vara (ncid, varid, start, count, (void *) &myint);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "getNcIntVar: nc_get_vara error, status = %d, %s",
+              status, nc_strerror(status));
+            return NETCDF_GET_VARS_ERR - status;
+        }
+        retint = (unsigned int) myint;
+    } else if (dataType == NC_INT64 || dataType == NC_UINT64) {
+        status = nc_get_vara (ncid, varid, start, count, (void *) &mylong);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "getNcIntVar: nc_get_vara error, status = %d, %s",
+              status, nc_strerror(status));
+            return NETCDF_GET_VARS_ERR - status;
+        }
+        retint = (unsigned int) mylong;
+   } else if (dataType == NC_FLOAT) {
+        status = nc_get_vara (ncid, varid, start, count, (void *) &myfloat);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "getNcIntVar: nc_get_vara error, status = %d, %s",
+              status, nc_strerror(status));
+            return NETCDF_GET_VARS_ERR - status;
+        }
+        retint = (unsigned int) myfloat;
+    } else if (dataType == NC_DOUBLE) {
+        status = nc_get_vara (ncid, varid, start, count, (void *) &mydouble);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "getNcIntVar: nc_get_vara error, status = %d, %s",
+              status, nc_strerror(status));
+            return NETCDF_GET_VARS_ERR - status;
+        }
+        retint = (unsigned int) mydouble;
+    } else {
+        rodsLog (LOG_ERROR,
+          "getNcIntVar: Unsupported dataType %d", dataType);
+        return (NETCDF_INVALID_DATA_TYPE);
+    }
+
+    return retint;
+}
+
+

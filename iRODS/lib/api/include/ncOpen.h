@@ -30,26 +30,6 @@ typedef struct {
 
 #define NcOpenInp_PI "str objPath[MAX_NAME_LEN]; int mode; int rootNcid; double intialsz; double bufrsizehint; struct KeyValPair_PI;"
 
-/* data struct for aggregation of netcdf files. Our first attempt assumes
- * the aggregation is based on the time dimension - time series */ 
-typedef struct {
-    unsigned int startTime;
-    unsigned int endTime;
-    rodsLong_t arraylen;
-    char fileName[MAX_NAME_LEN];
-} ncAggElement_t;
-
-typedef struct {
-    int numFiles;
-    int flags;		/* not used */
-    char ncObjectName[MAX_NAME_LEN];
-    ncAggElement_t *ncAggElement;	/* pointer to numFiles of 
-                                         * ncAggElement_t */
-} ncAggrInfo_t;
-    
-#define NcAggElement_PI "int startTime; int endTime; double arraylen; str fileName[MAX_NAME_LEN];"
-#define NcAggrInfo_PI "int numFiles; int flags; str  ncObjectName[MAX_NAME_LEN]; struct *NcAggElement_PI(numFiles);"
-
 #if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_OPEN rsNcOpen
 /* prototype for the server handler */

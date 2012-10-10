@@ -6,6 +6,7 @@
 
 #define TEST_PATH1 "./ncdata/HFRadarCurrent"
 
+#define TEST_OBJ_PATH "/wanZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
 int
 genNcAggrInfo (char *testPath, ncAggrInfo_t *ncAggrInfo);
 int 
@@ -14,6 +15,8 @@ unsigned int
 getIntVar (int ncid, int varid, int dataType, rodsLong_t inx);
 int
 addNcAggElement (ncAggElement_t *ncAggElement, ncAggrInfo_t *ncAggrInfo);
+int
+testGetAggElement (rcComm_t *conn, char *objPath);
 
 int
 main(int argc, char **argv)
@@ -21,12 +24,45 @@ main(int argc, char **argv)
     char *testPath;
     int status;
     ncAggrInfo_t ncAggrInfo;
+    rcComm_t *conn;
+    rodsEnv myRodsEnv;
+    rErrMsg_t errMsg;
 
     if (argc <= 1) {
         testPath = TEST_PATH1;
     } else {
 	testPath = argv[1];
     }
+
+    status = getRodsEnv (&myRodsEnv);
+
+    if (status < 0) {
+        fprintf (stderr, "getRodsEnv error, status = %d\n", status);
+        exit (1);
+    }
+
+
+    conn = rcConnect (myRodsEnv.rodsHost, myRodsEnv.rodsPort,
+      myRodsEnv.rodsUserName, myRodsEnv.rodsZone, 0, &errMsg);
+
+    if (conn == NULL) {
+        fprintf (stderr, "rcConnect error\n");
+        exit (1);
+    }
+    status = clientLogin(conn);
+    if (status != 0) {
+        fprintf (stderr, "clientLogin error\n");
+       rcDisconnect(conn);
+       exit (2);
+    }
+    status = testGetAggElement (conn, TEST_OBJ_PATH);
+    if (status < 0) {
+        fprintf (stderr, "testGetAggElement of %s failed. status = %d\n",
+        TEST_OBJ_PATH, status);
+        exit (1);
+    }
+
+
     status = genNcAggrInfo (testPath, &ncAggrInfo);
 
     if (status < 0) {
@@ -35,6 +71,19 @@ main(int argc, char **argv)
         exit (1);
     }
     exit (0);
+}
+
+int
+testGetAggElement (rcComm_t *conn, char *objPath)
+{
+    ncOpenInp_t ncOpenInp;
+    ncAggElement_t *ncAggElement = NULL;
+    int status;
+
+    bzero (&ncOpenInp, sizeof (ncOpenInp));
+    rstrcpy (ncOpenInp.objPath, objPath, MAX_NAME_LEN);
+    status = rcNcGetAggElement (conn, &ncOpenInp, &ncAggElement);
+    return status;
 }
 
 int
@@ -101,8 +150,9 @@ genNcAggrInfo (char *dirPath, ncAggrInfo_t *ncAggrInfo)
             return status;
         }
         status = setNcAggElement (ncid, ncInqOut, &ncAggElement);
+        nc_close (ncid);
         if (status < 0) break;
-        rstrcpy (ncAggElement.fileName, childPath, MAX_NAME_LEN);
+        rstrcpy (ncAggElement.objPath, childPath, MAX_NAME_LEN);
         status = addNcAggElement (&ncAggElement, ncAggrInfo);
         if (status < 0) break;
         bzero (&ncAggElement, sizeof (ncAggElement));
@@ -143,9 +193,9 @@ setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t *ncAggElement)
 
     ncAggElement->arraylen = ncInqOut->dim[i].arrayLen;
 
-    ncAggElement->startTime = getIntVar (ncid, ncInqOut->var[j].id, 
+    ncAggElement->startTime = getNcIntVar (ncid, ncInqOut->var[j].id, 
       ncInqOut->var[j].dataType, 0);
-    ncAggElement->endTime = getIntVar (ncid, ncInqOut->var[j].id, 
+    ncAggElement->endTime = getNcIntVar (ncid, ncInqOut->var[j].id, 
       ncInqOut->var[j].dataType, ncInqOut->dim[i].arrayLen - 1);
 
     return 0;

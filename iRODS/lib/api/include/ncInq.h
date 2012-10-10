@@ -202,6 +202,8 @@ ncGenAttOut_t *attOut);
 int
 getAttValue (int ncid, int varid, char *name, int dataType, int length,
 ncGetVarOut_t *value);
+unsigned int
+getNcIntVar (int ncid, int varid, int dataType, rodsLong_t inx);
 
 #ifdef  __cplusplus
 }
