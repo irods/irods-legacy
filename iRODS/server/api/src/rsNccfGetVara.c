@@ -90,7 +90,7 @@ nccfGetVarOut_t ** nccfGetVarOut)
 
     *nccfGetVarOut = NULL;
     status = nc_inq_vartype (ncid, nccfGetVarInp->varid, &xtypep);
-    if (status != NC_NOERR) return NETCDF_INQ_VARS_ERR - status;
+    if (status != NC_NOERR) return NETCDF_INQ_VARS_ERR + status;
 
     switch (xtypep) {
       case NC_CHAR:

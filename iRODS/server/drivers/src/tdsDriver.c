@@ -350,7 +350,7 @@ keyValPair_t *condInput)
         rodsLog (LOG_ERROR,
           "tdsStageToCache: nc_open %s error, status = %d, %s",
           urlPath, status, nc_strerror(status));
-        return (NETCDF_OPEN_ERR - status);
+        return (NETCDF_OPEN_ERR + status);
     }
     bzero (&ncInqInp, sizeof (ncInqInp));  
     ncInqInp.ncid = ncid;
