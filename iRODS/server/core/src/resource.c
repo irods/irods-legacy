@@ -1736,6 +1736,7 @@ matchSameHostRescByType (rescInfo_t *myRescInfo, int driverType)
     return NULL;
 }
 
+#if 0	/* use getRescType */
 int
 getFileDriverTypeByResc (rescInfo_t *rescInfo)
 {
@@ -1748,6 +1749,7 @@ getFileDriverTypeByResc (rescInfo_t *rescInfo)
     fileDriverType = RescTypeDef[rescTypeInx].driverType;
     return fileDriverType;
 }
+#endif
  
 int
 setDataTypeByResc (dataObjInfo_t *dataObjInfo)
@@ -1757,7 +1759,7 @@ setDataTypeByResc (dataObjInfo_t *dataObjInfo)
     if (dataObjInfo == NULL || dataObjInfo->rescInfo == NULL) 
         return USER__NULL_INPUT_ERR;
 
-    fileDriverType = getFileDriverTypeByResc (dataObjInfo->rescInfo);
+    fileDriverType = getRescType (dataObjInfo->rescInfo);
 
     if (fileDriverType == PYDAP_FILE_TYPE || 
       fileDriverType == ERDDAP_FILE_TYPE || fileDriverType == TDS_FILE_TYPE) {
