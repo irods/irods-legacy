@@ -13,7 +13,6 @@ based on these 3 metadata.
 The following definitions in the objInfo.h file define the collection types
 (COL_COLL_TYPE):
 
-#define HAAW_STRUCT_FILE_STR            "haawStructFile"
 #define TAR_STRUCT_FILE_STR             "tarStructFile"
 #define MOUNT_POINT_STR         	"mountPoint"
 #define LINK_POINT_STR         		"linkPoint"
@@ -25,7 +24,7 @@ COL_COLL_INFO2 = the resource where this directory is located
 
 2) COL_COLL_TYPE == TAR_STRUCT_FILE_STR ==> mounted tar file
 COL_COLL_INFO1 = The path of the tar file
-COL_COLL_INFO2 = caching info.  
+COL_COLL_INFO2 = caching info - cache_dir;;;resource;;;dirtyFlag    
 
 3) COL_COLL_TYPE == LINK_POINT_STR ==>collection softlink
 COL_COLL_INFO1 = The path of an existing collection being linked.
