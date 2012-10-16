@@ -486,14 +486,14 @@ endif
 
 # PYDAP - Define whether PYDAP driver  is supported on this server. 
 # NETCDF4_API must be enabled if PYDAP is enabled.
-PYDAP=1
+# PYDAP=1
 
 # TDS - Define whether the TDS (Thredds Data Server) driver is supported on 
 # this server. NETCDF4_API must be enabled and libxml2 must be installed
 # if TDS is enabled. LIB_XML2_INC_DIR and LIB_XML2_LIB_DIR defines
 # the path for the include directory and lib directory, respectively, for
 # libxml2.
-TDS=1
+# TDS=1
 ifdef TDS
 LIB_XML2_INC_DIR=/usr/local/include
 LIB_XML2_LIB_DIR=/usr/local/lib
@@ -504,7 +504,7 @@ endif
 # if ERDDAP is enabled. LIB_JANSSON_INC_DIR and LIB_JANSSON_LIB_DIR defines
 # the path for the include directory and lib directory, respectively, for
 # libjansson.
-ERDDAP=1
+# ERDDAP=1
 ifdef ERDDAP
 LIB_JANSSON_INC_DIR=/usr/local/include
 LIB_JANSSON_LIB_DIR=/usr/local/lib
