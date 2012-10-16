@@ -182,6 +182,7 @@
 #define NC_INQ_GRPS_AN 			1009
 #define NC_REG_GLOBAL_ATTR_AN 			1010
 #define NC_GET_AGG_ELEMENT_AN 			1011
+#define NC_GET_AGG_INFO_AN 			1012
 
 /* 1060 - 1099 - OOI API calls */
 #define OOI_GEN_SERV_REQ_AN 			1060

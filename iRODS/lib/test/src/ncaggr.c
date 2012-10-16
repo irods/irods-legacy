@@ -6,24 +6,27 @@
 
 #define TEST_PATH1 "./ncdata/HFRadarCurrent"
 
-#define TEST_OBJ_PATH "/wanZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
+#define TEST_OBJ_PATH "/oneZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
+#define TEST_OBJ_COLL "/oneZone/home/rods/ncdata/HFRadarCurrent"
 int
-genNcAggrInfo (char *testPath, ncAggrInfo_t *ncAggrInfo);
+genNcAggInfo (char *testPath, ncAggInfo_t *ncAggInfo);
 int 
 setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t *ncAggElement);
 unsigned int
 getIntVar (int ncid, int varid, int dataType, rodsLong_t inx);
 int
-addNcAggElement (ncAggElement_t *ncAggElement, ncAggrInfo_t *ncAggrInfo);
+addNcAggElement (ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo);
 int
 testGetAggElement (rcComm_t *conn, char *objPath);
+int
+testGetAggInfo (rcComm_t *conn, char *collPath);
 
 int
 main(int argc, char **argv)
 {
     char *testPath;
     int status;
-    ncAggrInfo_t ncAggrInfo;
+    ncAggInfo_t ncAggInfo;
     rcComm_t *conn;
     rodsEnv myRodsEnv;
     rErrMsg_t errMsg;
@@ -62,14 +65,23 @@ main(int argc, char **argv)
         exit (1);
     }
 
+    status = testGetAggInfo (conn, TEST_OBJ_COLL);
+    if (status < 0) {
+        fprintf (stderr, "testGetAggInfo of %s failed. status = %d\n",
+        TEST_OBJ_COLL, status);
+        exit (1);
+    }
 
-    status = genNcAggrInfo (testPath, &ncAggrInfo);
+
+#if 0
+    status = genNcAggInfo (testPath, &ncAggInfo);
 
     if (status < 0) {
-        fprintf (stderr, "genNcAggrInfo of %s failed. status = %d\n", 
+        fprintf (stderr, "genNcAggInfo of %s failed. status = %d\n", 
         testPath, status);
         exit (1);
     }
+#endif
     exit (0);
 }
 
@@ -87,7 +99,21 @@ testGetAggElement (rcComm_t *conn, char *objPath)
 }
 
 int
-genNcAggrInfo (char *dirPath, ncAggrInfo_t *ncAggrInfo)
+testGetAggInfo (rcComm_t *conn, char *collPath)
+{
+    ncOpenInp_t ncOpenInp;
+    ncAggInfo_t *ncAggInfo = NULL;
+    int status;
+
+    bzero (&ncOpenInp, sizeof (ncOpenInp));
+    rstrcpy (ncOpenInp.objPath, collPath, MAX_NAME_LEN);
+    status = rcNcGetAggInfo (conn, &ncOpenInp, &ncAggInfo);
+    return status;
+}
+
+#if 0
+int
+genNcAggInfo (char *dirPath, ncAggInfo_t *ncAggInfo)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
@@ -99,18 +125,18 @@ genNcAggrInfo (char *dirPath, ncAggrInfo_t *ncAggrInfo)
     int ncid;
     ncAggElement_t ncAggElement;
 
-    if (dirPath == NULL || ncAggrInfo == NULL) return USER__NULL_INPUT_ERR;
+    if (dirPath == NULL || ncAggInfo == NULL) return USER__NULL_INPUT_ERR;
 
     dirPtr = opendir (dirPath);
     if (dirPtr == NULL) {
         rodsLog (LOG_ERROR,
-        "genNcAggrInfo: opendir local dir error for %s, errno = %d\n",
+        "genNcAggInfo: opendir local dir error for %s, errno = %d\n",
          dirPath, errno);
         return (USER_INPUT_PATH_ERR);
     }
-    bzero (ncAggrInfo, sizeof (ncAggrInfo_t));
+    bzero (ncAggInfo, sizeof (ncAggInfo_t));
     bzero (&ncAggElement, sizeof (ncAggElement));
-    rstrcpy (ncAggrInfo->ncObjectName, dirPath, MAX_NAME_LEN);
+    rstrcpy (ncAggInfo->ncObjectName, dirPath, MAX_NAME_LEN);
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -121,19 +147,19 @@ genNcAggrInfo (char *dirPath, ncAggrInfo_t *ncAggrInfo)
         status = stat (childPath, &statbuf);
         if (status != 0) {
             rodsLog (LOG_ERROR,
-              "genNcAggrInfo: stat error for %s, errno = %d\n",
+              "genNcAggInfo: stat error for %s, errno = %d\n",
               childPath, errno);
             continue;
         } else if (statbuf.st_mode & S_IFDIR) {
             rodsLog (LOG_ERROR,
-              "genNcAggrInfo: %s is a directory, errno = %d\n",
+              "genNcAggInfo: %s is a directory, errno = %d\n",
               childPath, errno);
             continue;
         }
         status = nc_open (childPath, NC_NOWRITE, &ncid);
         if (status != NC_NOERR) {
             rodsLog (LOG_ERROR,
-              "genNcAggrInfo: nc_open %s error, status = %d, %s",
+              "genNcAggInfo: nc_open %s error, status = %d, %s",
               childPath, status, nc_strerror(status));
             continue;
         }
@@ -146,14 +172,14 @@ genNcAggrInfo (char *dirPath, ncAggrInfo_t *ncAggrInfo)
         status = ncInq (&ncInqInp, &ncInqOut);
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-              "genNcAggrInfo: rcNcInq error for %s", childPath);
+              "genNcAggInfo: rcNcInq error for %s", childPath);
             return status;
         }
         status = setNcAggElement (ncid, ncInqOut, &ncAggElement);
         nc_close (ncid);
         if (status < 0) break;
         rstrcpy (ncAggElement.objPath, childPath, MAX_NAME_LEN);
-        status = addNcAggElement (&ncAggElement, ncAggrInfo);
+        status = addNcAggElement (&ncAggElement, ncAggInfo);
         if (status < 0) break;
         bzero (&ncAggElement, sizeof (ncAggElement));
     }
@@ -174,7 +200,7 @@ setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t *ncAggElement)
     if (i >= ncInqOut->ndims) {
         /* no match */
         rodsLog (LOG_ERROR, 
-          "genNcAggrInfo: 'time' dim does not exist");
+          "genNcAggInfo: 'time' dim does not exist");
         return NETCDF_DIM_MISMATCH_ERR;
     }
     for (j = 0; j < ncInqOut->nvars; j++) {
@@ -186,7 +212,7 @@ setNcAggElement (int ncid, ncInqOut_t *ncInqOut, ncAggElement_t *ncAggElement)
     if (j >= ncInqOut->nvars) {
         /* no match */
         rodsLog (LOG_ERROR, 
-          "genNcAggrInfo: 'time' var does not exist");
+          "genNcAggInfo: 'time' var does not exist");
         return NETCDF_DIM_MISMATCH_ERR;
     }
 
@@ -221,7 +247,7 @@ getIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
         status = nc_get_vara (ncid, varid, start, count, (void *) &myshort);
         if (status != NC_NOERR) {
             rodsLog (LOG_ERROR,
-              "genNcAggrInfo: nc_get_vara error, status = %d, %s",
+              "genNcAggInfo: nc_get_vara error, status = %d, %s",
               status, nc_strerror(status));
             return NETCDF_GET_VARS_ERR - status;
         }
@@ -230,7 +256,7 @@ getIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
         status = nc_get_vara (ncid, varid, start, count, (void *) &myint);
         if (status != NC_NOERR) {
             rodsLog (LOG_ERROR,
-              "genNcAggrInfo: nc_get_vara error, status = %d, %s",
+              "genNcAggInfo: nc_get_vara error, status = %d, %s",
               status, nc_strerror(status));
             return NETCDF_GET_VARS_ERR - status;
         }
@@ -239,7 +265,7 @@ getIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
         status = nc_get_vara (ncid, varid, start, count, (void *) &mylong);
         if (status != NC_NOERR) {
             rodsLog (LOG_ERROR,
-              "genNcAggrInfo: nc_get_vara error, status = %d, %s",
+              "genNcAggInfo: nc_get_vara error, status = %d, %s",
               status, nc_strerror(status));
             return NETCDF_GET_VARS_ERR - status;
         }
@@ -248,7 +274,7 @@ getIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
         status = nc_get_vara (ncid, varid, start, count, (void *) &myfloat);
         if (status != NC_NOERR) {
             rodsLog (LOG_ERROR,
-              "genNcAggrInfo: nc_get_vara error, status = %d, %s",
+              "genNcAggInfo: nc_get_vara error, status = %d, %s",
               status, nc_strerror(status));
             return NETCDF_GET_VARS_ERR - status;
         }
@@ -257,7 +283,7 @@ getIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
         status = nc_get_vara (ncid, varid, start, count, (void *) &mydouble);
         if (status != NC_NOERR) {
             rodsLog (LOG_ERROR,
-              "genNcAggrInfo: nc_get_vara error, status = %d, %s",
+              "genNcAggInfo: nc_get_vara error, status = %d, %s",
               status, nc_strerror(status));
             return NETCDF_GET_VARS_ERR - status;
         }
@@ -272,52 +298,52 @@ getIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
 }
 
 int
-addNcAggElement (ncAggElement_t *ncAggElement, ncAggrInfo_t *ncAggrInfo)
+addNcAggElement (ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo)
 {
     int newNumFiles, i, j;
     ncAggElement_t *newElement;
 
-    if (ncAggrInfo == NULL || ncAggElement == NULL) return USER__NULL_INPUT_ERR;
+    if (ncAggInfo == NULL || ncAggElement == NULL) return USER__NULL_INPUT_ERR;
 
-    if ((ncAggrInfo->numFiles % PTR_ARRAY_MALLOC_LEN) == 0) {
-        newNumFiles =  ncAggrInfo->numFiles + PTR_ARRAY_MALLOC_LEN;
+    if ((ncAggInfo->numFiles % PTR_ARRAY_MALLOC_LEN) == 0) {
+        newNumFiles =  ncAggInfo->numFiles + PTR_ARRAY_MALLOC_LEN;
         newElement = (ncAggElement_t *) calloc (newNumFiles, 
           sizeof (ncAggElement_t));
-        if (ncAggrInfo->numFiles > 0) {
-            if (ncAggrInfo->ncAggElement == NULL) {
+        if (ncAggInfo->numFiles > 0) {
+            if (ncAggInfo->ncAggElement == NULL) {
                 rodsLog (LOG_ERROR,
                   "addNcAggElement: numFiles > 0 but cAggElement == NULL");
                 return (NETCDF_VAR_COUNT_OUT_OF_RANGE);
             }
-            memcpy (newElement, ncAggrInfo->ncAggElement, 
-              ncAggrInfo->numFiles * sizeof (newElement));
-            free (ncAggrInfo->ncAggElement);
+            memcpy (newElement, ncAggInfo->ncAggElement, 
+              ncAggInfo->numFiles * sizeof (newElement));
+            free (ncAggInfo->ncAggElement);
         } 
-        ncAggrInfo->ncAggElement = newElement;
+        ncAggInfo->ncAggElement = newElement;
     }
 
-    if (ncAggrInfo->numFiles <= 0) {
-        ncAggrInfo->ncAggElement[0] = *ncAggElement;
+    if (ncAggInfo->numFiles <= 0) {
+        ncAggInfo->ncAggElement[0] = *ncAggElement;
     } else {
-        for (i = 0; i < ncAggrInfo->numFiles; i++) {
-            ncAggElement_t *myElement = &ncAggrInfo->ncAggElement[i];
+        for (i = 0; i < ncAggInfo->numFiles; i++) {
+            ncAggElement_t *myElement = &ncAggInfo->ncAggElement[i];
             if (ncAggElement->startTime < myElement->startTime || 
               (ncAggElement->startTime == myElement->startTime &&
               ncAggElement->endTime < myElement->endTime)) {
                 /* insert */
-                for (j = ncAggrInfo->numFiles; j > i; j--) {
-                    ncAggrInfo->ncAggElement[j] = ncAggrInfo->ncAggElement[j-1];
+                for (j = ncAggInfo->numFiles; j > i; j--) {
+                    ncAggInfo->ncAggElement[j] = ncAggInfo->ncAggElement[j-1];
                 }
-                ncAggrInfo->ncAggElement[i] = *ncAggElement;
+                ncAggInfo->ncAggElement[i] = *ncAggElement;
                 break;
             }
         }
-        if (i >= ncAggrInfo->numFiles) {
+        if (i >= ncAggInfo->numFiles) {
             /* not inserted yet. put it at the end */
-            ncAggrInfo->ncAggElement[i] = *ncAggElement;
+            ncAggInfo->ncAggElement[i] = *ncAggElement;
         }
     }
-    ncAggrInfo->numFiles++;            
+    ncAggInfo->numFiles++;            
     return 0;
 }
-
+#endif

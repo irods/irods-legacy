@@ -421,6 +421,7 @@ LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInqGrps.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcRegGlobalAttr.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcGetAggElement.o
+LIB_API_OBJS += $(libApiObjDir)/rcNcGetAggInfo.o
 ifdef NETCDF_API
 SVR_API_OBJS += $(svrApiObjDir)/rsNcOpen.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcCreate.o
@@ -429,6 +430,7 @@ SVR_API_OBJS += $(svrApiObjDir)/rsNcInqId.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInqWithId.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcGetVarsByType.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcGetAggElement.o
+SVR_API_OBJS += $(svrApiObjDir)/rsNcGetAggInfo.o
 ifdef LIB_CF
 SVR_API_OBJS += $(svrApiObjDir)/rsNccfGetVara.o
 endif
@@ -454,5 +456,6 @@ ifdef OOI_CI
 SVR_API_OBJS += $(svrApiObjDir)/rsOoiGenServReq.o
 LIB_API_OBJS += $(libApiObjDir)/rcOoiGenServReq.o
 endif
+
 
 

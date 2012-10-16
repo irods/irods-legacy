@@ -154,6 +154,7 @@
 #include "ncInqGrps.h"
 #include "ncRegGlobalAttr.h"
 #include "ncGetAggElement.h"
+#include "ncGetAggInfo.h"
 #endif
 #include "pamAuthRequest.h"
 #include "sslStart.h"
@@ -162,7 +163,9 @@
 #include "ooiGenServReq.h"
 #include "ncRegGlobalAttr.h"
 #include "ncGetAggElement.h"
+#include "ncGetAggInfo.h"
 #endif
 #include "ncRegGlobalAttr.h"
 #include "ncGetAggElement.h"
+#include "ncGetAggInfo.h"
 #endif	/* API_HEADER_ALL_H */

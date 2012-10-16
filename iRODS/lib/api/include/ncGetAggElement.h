@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* ncOpen.h
+/* ncGetAggElement.h
  */
 
 #ifndef NC_GET_AGG_ELEMENT_H
@@ -28,16 +28,7 @@ typedef struct {
     char objPath[MAX_NAME_LEN];
 } ncAggElement_t;
 
-typedef struct {
-    int numFiles;
-    int flags;		/* not used */
-    char ncObjectName[MAX_NAME_LEN];
-    ncAggElement_t *ncAggElement;	/* pointer to numFiles of 
-                                         * ncAggElement_t */
-} ncAggrInfo_t;
-    
 #define NcAggElement_PI "int startTime; int endTime; double arraylen; str objPath[MAX_NAME_LEN];"
-#define NcAggrInfo_PI "int numFiles; int flags; str  ncObjectName[MAX_NAME_LEN]; struct *NcAggElement_PI(numFiles);"
 
 #if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_GET_AGG_ELEMENT rsNcGetAggElement

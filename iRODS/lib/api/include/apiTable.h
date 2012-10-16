@@ -422,6 +422,8 @@ apidef_t RcApiTable[] = {
       "NcRegGlobalAttrInp_PI", 0, NULL, 0, (funcPtr) RS_NC_REG_GLOBAL_ATTR},
     {NC_GET_AGG_ELEMENT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "NcOpenInp_PI", 0, "NcAggElement_PI", 0, (funcPtr) RS_NC_GET_AGG_ELEMENT},
+    {NC_GET_AGG_INFO_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+      "NcOpenInp_PI", 0, "NcAggInfo_PI", 0, (funcPtr) RS_NC_GET_AGG_INFO},
 #endif
 #ifdef OOI_CI
     {OOI_GEN_SERV_REQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 

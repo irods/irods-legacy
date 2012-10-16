@@ -123,7 +123,7 @@ packInstructArray_t ApiPackTable[] = {
 	{"NcInqGrpsOut_PI", NcInqGrpsOut_PI},
 	{"NcRegGlobalAttrInp_PI", NcRegGlobalAttrInp_PI},
 	{"NcAggElement_PI", NcAggElement_PI},
-	{"NcAggrInfo_PI", NcAggrInfo_PI},
+	{"NcAggInfo_PI", NcAggInfo_PI},
 #endif
         /* endof NETCDF_CLIENT */
 #ifdef OOI_CI
