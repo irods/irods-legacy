@@ -6,7 +6,7 @@
 #include "fileReaddir.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
-#ifdef OOI_CI
+#ifdef TDS
 #include "tdsDriver.h"
 #endif
 
