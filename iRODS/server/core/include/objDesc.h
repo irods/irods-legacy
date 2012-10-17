@@ -18,6 +18,9 @@
 #include "structFileSync.h"
 #include "structFileExtAndReg.h"
 #include "dataObjOpenAndStat.h"
+#ifdef NETCDF_API
+#include "ncGetAggInfo.h"
+#endif
 
 #define NUM_L1_DESC	1026 	/* number of L1Desc */
 
@@ -55,6 +58,9 @@ typedef struct l1desc {
     int stageFlag;
     int purgeCacheFlag;
     int lockFd;
+#ifdef NETCDF_API
+    openedAggInfo_t openedAggInfo;
+#endif
     rescInfo_t *replRescInfo;	/* if non NULL, repl to this resc on close */
     dataObjInfo_t *replDataObjInfo; /* if non NULL, repl to this dataObjInfo
 				     * on close */

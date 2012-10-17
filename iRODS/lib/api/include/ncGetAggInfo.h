@@ -36,6 +36,13 @@ typedef struct {
     
 #define NcAggInfo_PI "int numFiles; int flags; str  ncObjectName[MAX_NAME_LEN]; struct *NcAggElement_PI(numFiles);"
 
+typedef struct {
+    int aggElemetInx;	/* index into the ncAggElement in ncAggInfo */
+    int objNcid;        /* the opened object L1desc */
+    int currentTimeInx;	/* the current time index */
+    ncAggInfo_t *ncAggInfo;
+} openedAggInfo_t;
+
 #if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_GET_AGG_INFO rsNcGetAggInfo
 /* prototype for the server handler */

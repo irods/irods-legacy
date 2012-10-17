@@ -35,6 +35,10 @@ typedef struct {
 /* prototype for the server handler */
 int
 rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid);
+int
+rsNcOpenDataObj (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid);
+int
+rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid);
 #else
 #define RS_NC_OPEN NULL
 #endif
@@ -50,7 +54,7 @@ extern "C" {
  *   ncOpenInp_t *ncOpenInp - generic nc open/create input. Relevant items are:
  *	objPath - the path of the data object.
  *      mode - the mode of the open - valid values are given in netcdf.h -
- *       NC_NOWRITE (0), NC_WRITE (1)
+ *       NC_NOWRITE (0), NC_WRITE (1), NC_NETCDF4, ...
  *	condInput - condition input (not used).
  * OutPut - 
  *   int the ncid of the opened object - an integer descriptor.   

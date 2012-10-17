@@ -20,6 +20,8 @@ int
 testGetAggElement (rcComm_t *conn, char *objPath);
 int
 testGetAggInfo (rcComm_t *conn, char *collPath);
+int
+testAggNcOpr (rcComm_t *conn, char *collPath);
 
 int
 main(int argc, char **argv)
@@ -72,6 +74,12 @@ main(int argc, char **argv)
         exit (1);
     }
 
+    status = testAggNcOpr (conn, TEST_OBJ_COLL);
+    if (status < 0) {
+        fprintf (stderr, "testAggNcOpr of %s failed. status = %d\n",
+        TEST_OBJ_COLL, status);
+        exit (1);
+    }
 
 #if 0
     status = genNcAggInfo (testPath, &ncAggInfo);
@@ -110,6 +118,21 @@ testGetAggInfo (rcComm_t *conn, char *collPath)
     ncOpenInp.mode = NC_WRITE;
     addKeyVal (&ncOpenInp.condInput, DEST_RESC_NAME_KW, "hpResc1");
     status = rcNcGetAggInfo (conn, &ncOpenInp, &ncAggInfo);
+    return status;
+}
+
+int
+testAggNcOpr (rcComm_t *conn, char *collPath)
+{
+    ncOpenInp_t ncOpenInp;
+    int ncid;
+    int status;
+
+    bzero (&ncOpenInp, sizeof (ncOpenInp));
+    rstrcpy (ncOpenInp.objPath, collPath, MAX_NAME_LEN);
+    ncOpenInp.mode = NC_NOWRITE | NC_NETCDF4;
+    addKeyVal (&ncOpenInp.condInput, DEST_RESC_NAME_KW, "hpResc1");
+    status = rcNcOpen (conn, &ncOpenInp, &ncid);
     return status;
 }
 

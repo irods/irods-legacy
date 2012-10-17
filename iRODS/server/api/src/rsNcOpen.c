@@ -13,16 +13,14 @@
 #include "physPath.h"
 #include "specColl.h"
 #include "getRemoteZoneResc.h"
+#include "dataObjGet.h"
 
 int
 rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 {
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
     int status;
-    dataObjInp_t dataObjInp;
-    int l1descInx, myncid;
+    int myncid;
+    specCollCache_t *specCollCache = NULL;
 
     if (getValByKey (&ncOpenInp->condInput, NATIVE_NETCDF_CALL_KW) != NULL) {
 	/* just all nc_open with objPath as file nc file path */
@@ -42,11 +40,29 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
             return (NETCDF_OPEN_ERR + status);
         } 
     }
+    resolveLinkedPath (rsComm, ncOpenInp->objPath, &specCollCache, 
+      &ncOpenInp->condInput);
+
+    if (isColl (rsComm, ncOpenInp->objPath, NULL) >= 0) {
+        status = rsNcOpenColl (rsComm, ncOpenInp, ncid);
+    } else {
+        status = rsNcOpenDataObj (rsComm, ncOpenInp, ncid);
+    }
+    return status;
+}
+
+int
+rsNcOpenDataObj (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
+{
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+    int status;
+    dataObjInp_t dataObjInp;
+    int l1descInx, myncid;
+
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, ncOpenInp->objPath, MAX_NAME_LEN);
     replKeyVal (&ncOpenInp->condInput, &dataObjInp.condInput);
-    resolveLinkedPath (rsComm, dataObjInp.objPath, &specCollCache,
-      &dataObjInp.condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
       REMOTE_OPEN);
 
@@ -65,15 +81,8 @@ rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 	if (remoteFlag < 0) {
             return (remoteFlag);
 	} else if (remoteFlag == LOCAL_HOST) {
-#if 0
-char myPath[MAX_NAME_LEN];
-snprintf (myPath, MAX_NAME_LEN, "%s?stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R&time>=2012-07-23", L1desc[l1descInx].dataObjInfo->filePath);
-snprintf (myPath, MAX_NAME_LEN, "%s?longitude,latitude,station_id,altitude,time,sensor_id,air_temperature&time>=2012-07-19", L1desc[l1descInx].dataObjInfo->filePath);
-status = nc_open (myPath, ncOpenInp->mode, &myncid);
-#else
             status = nc_open (L1desc[l1descInx].dataObjInfo->filePath, 
 	      ncOpenInp->mode, &myncid);
-#endif
 	    if (status != NC_NOERR) {
 		rodsLog (LOG_ERROR,
 		  "rsNcOpen: nc_open %s error, status = %d, %s",
@@ -121,3 +130,46 @@ status = nc_open (myPath, ncOpenInp->mode, &myncid);
     return 0;
 }
 
+int
+rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
+{
+    int status;
+    dataObjInp_t dataObjInp;
+    portalOprOut_t *portalOprOut = NULL;
+    bytesBuf_t packedBBuf;
+    ncAggInfo_t *ncAggInfo = NULL;
+    int l1descInx;
+
+    /* get the aggInfo from file */
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    bzero (&packedBBuf, sizeof (packedBBuf));
+    replKeyVal (&ncOpenInp->condInput, &dataObjInp.condInput);
+    snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
+      ncOpenInp->objPath, NC_AGG_INFO_FILE_NAME);
+    dataObjInp.oprType = GET_OPR;
+    status = rsDataObjGet (rsComm, &dataObjInp, &portalOprOut, &packedBBuf);
+    clearKeyVal (&dataObjInp.condInput);
+    if (portalOprOut != NULL) free (portalOprOut);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rsNcGetAggInfo: rsDataObjGet error for %s", dataObjInp.objPath);
+        return status;
+    }
+    status = unpackStruct (packedBBuf.buf, (void **) &ncAggInfo, 
+      "NcAggInfo_PI", RodsPackTable, XML_PROT);
+
+    if (status < 0 || ncAggInfo == NULL) {
+        rodsLogError (LOG_ERROR, status,
+          "rsNcGetAggInfo: unpackStruct error for %s", dataObjInp.objPath);
+        return status;
+    }
+
+    l1descInx = allocL1desc ();
+    if (l1descInx < 0) return l1descInx;
+    L1desc[l1descInx].openedAggInfo.ncAggInfo = ncAggInfo;
+    L1desc[l1descInx].openedAggInfo.objNcid = -1;	/* not opened */
+    *ncid = (int *) malloc (sizeof (int));
+    *(*ncid) = l1descInx;
+
+    return 0;
+}
