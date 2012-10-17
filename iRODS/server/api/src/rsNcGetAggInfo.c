@@ -17,6 +17,7 @@
 #include "readCollection.h"
 #include "closeCollection.h"
 #include "closeCollection.h"
+#include "dataObjPut.h"
 
 int
 rsNcGetAggInfo (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp,
@@ -30,6 +31,7 @@ ncAggInfo_t **ncAggInfo)
     int status2 = 0;
     ncOpenInp_t childNcOpenInp;
     ncAggElement_t *ncAggElement = NULL;
+    bytesBuf_t *packedBBuf = NULL;
 
     bzero (&collInp, sizeof (collInp));
     rstrcpy (collInp.collName, ncOpenInp->objPath, MAX_NAME_LEN);
@@ -73,9 +75,37 @@ ncAggInfo_t **ncAggInfo)
     }
     rsCloseCollection (rsComm, &handleInx);
     if (status2 < 0 && status2 != CAT_NO_ROWS_FOUND && status >= 0) {
-        return status2;
-    } else {
-        return status;
+        status = status2;
     }
+    if (status >= 0 && (ncOpenInp->mode & NC_WRITE) != 0) {
+        dataObjInp_t dataObjInp;
+        portalOprOut_t *portalOprOut = NULL;
+        status = packStruct ((void *) *ncAggInfo, &packedBBuf, "NcAggInfo_PI",
+          RodsPackTable, 0, XML_PROT);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "rsNcGetAggInfo: packStruct error for %s",
+              childNcOpenInp.objPath);
+          return status;
+        }
+        /* write it */
+        bzero (&dataObjInp, sizeof (dataObjInp));
+        replKeyVal (&ncOpenInp->condInput, &dataObjInp.condInput);
+        snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
+          collInp.collName, NC_AGG_INFO_FILE_NAME);
+        dataObjInp.dataSize = packedBBuf->len;
+        dataObjInp.oprType = PUT_OPR;
+        addKeyVal (&dataObjInp.condInput, DATA_INCLUDED_KW, "");
+        addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
+        status = rsDataObjPut (rsComm, &dataObjInp, packedBBuf, &portalOprOut);
+        clearBBuf (packedBBuf);
+        clearKeyVal (&dataObjInp.condInput);
+        if (portalOprOut != NULL) free (portalOprOut);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "rsNcGetAggInfo: rsDataObjPut error for %s", dataObjInp.objPath);
+        }
+    }
+    return status;
 }
 

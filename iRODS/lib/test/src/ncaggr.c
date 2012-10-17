@@ -6,8 +6,8 @@
 
 #define TEST_PATH1 "./ncdata/HFRadarCurrent"
 
-#define TEST_OBJ_PATH "/oneZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
-#define TEST_OBJ_COLL "/oneZone/home/rods/ncdata/HFRadarCurrent"
+#define TEST_OBJ_PATH "/wanZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
+#define TEST_OBJ_COLL "/wanZone/home/rods/ncdata/HFRadarCurrent"
 int
 genNcAggInfo (char *testPath, ncAggInfo_t *ncAggInfo);
 int 
@@ -107,6 +107,8 @@ testGetAggInfo (rcComm_t *conn, char *collPath)
 
     bzero (&ncOpenInp, sizeof (ncOpenInp));
     rstrcpy (ncOpenInp.objPath, collPath, MAX_NAME_LEN);
+    ncOpenInp.mode = NC_WRITE;
+    addKeyVal (&ncOpenInp.condInput, DEST_RESC_NAME_KW, "hpResc1");
     status = rcNcGetAggInfo (conn, &ncOpenInp, &ncAggInfo);
     return status;
 }

@@ -20,6 +20,9 @@
 #include "netcdf.h"
 #endif
 
+/* The file name for the aggregate info */
+#define NC_AGG_INFO_FILE_NAME	".aggInfo"
+
 /* data struct for aggregation of netcdf files. Our first attempt assumes
  * the aggregation is based on the time dimension - time series */ 
 
