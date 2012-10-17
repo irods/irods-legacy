@@ -346,7 +346,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				cmd = REDEBUG_WAIT;
 				}
 			OR(Param)
-				NEXT_TOKEN;
+				NEXT_TOKEN_BASIC;
 				_writeXMsg(streamId, myhdr, "Unknown parameter type.\n");
 				cmd = REDEBUG_WAIT;
 			OR(Param)
@@ -484,7 +484,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				_writeXMsg(streamId, myhdr, mymsg);
 				cmd = REDEBUG_WAIT;
 			OR(Param)
-				NEXT_TOKEN;
+				NEXT_TOKEN_BASIC;
 				_writeXMsg(streamId, myhdr, "Unknown parameter type.\n");
 				cmd = REDEBUG_WAIT;
 			OR(Param)

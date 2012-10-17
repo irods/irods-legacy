@@ -46,6 +46,7 @@ PARSER_FUNC_PROTO2(Actions, int rulegen, int backwardCompatible);
 PARSER_FUNC_PROTO1(T, int rulegen);
 PARSER_FUNC_PROTO1(Value, int rulegen);
 PARSER_FUNC_PROTO1(StringExpression, Token *tk);
+PARSER_FUNC_PROTO(PathExpression);
 PARSER_FUNC_PROTO(RuleName);
 PARSER_FUNC_PROTO(TermBackwardCompatible);
 PARSER_FUNC_PROTO1(ExprBackwardCompatible, int level);
@@ -138,7 +139,7 @@ char *findLineCont(char *expr) {
  * return 0 failure non 0 success
  */
 int skip(Pointer *e, char *text, Token **token, ParserContext *pc, int rulegen) {
-	*token = nextTokenRuleGen(e, pc, rulegen);
+	*token = nextTokenRuleGen(e, pc, rulegen, 0);
 	if(((*token)->type!=TK_TEXT && (*token)->type!=TK_OP && (*token)->type!=TK_MISC_OP) || strcmp((*token)->text,text)!=0) {
 		(*token)->type = N_ERROR;
 		return 0;
@@ -150,7 +151,7 @@ int skip(Pointer *e, char *text, Token **token, ParserContext *pc, int rulegen) 
 
 }*/
 
-Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen) {
+Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen, int pathLiteral) {
 	if(context->tqp != context->tqtop) {
 		Token *token = &(context->tokenQueue[context->tqp]);
 		INC_MOD(context->tqp, 1024);
@@ -237,7 +238,12 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen) {
                 } else {
                     seekInFile(e, start.exprloc);
                 }
+            } else if (pathLiteral && ch == '/') { /* path */
+            	nextStringBase(e, token->text, "),; \t\r\n", 0, '\\', 0, token->vars); /* path is used only in a foreach loop or assignment */
+            	token->type = TK_PATH;
+				break;
             }
+
             char op[100];
             dupString(e, &start, 10, op);
             int found = 0;
@@ -290,7 +296,7 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen) {
             			token->vars[0] = -1;
             		}
             	} else {
-					nextStringBase(e, token->text, "`", 1, '\\', token->vars);
+					nextStringBase(e, token->text, "`", 1, '\\', 1, token->vars);
 					token->type = TK_BACKQUOTED;
             	}
             } else {
@@ -1062,6 +1068,21 @@ PARSER_FUNC_BEGIN1(StringExpression, Token *tk)
     }
 PARSER_FUNC_END(StringExpression)
 
+PARSER_FUNC_BEGIN(PathExpression)
+	int rulegen = 1;
+	TRY(Token)
+		TTYPE(TK_PATH);
+	OR(Token)
+		TTEXT("/");
+		/* need to reparse */
+		PUSHBACK;
+		syncTokenQueue(e, context);
+		TTYPE(TK_PATH);
+	END_TRY(Token)
+	NT1(StringExpression, token);
+	BUILD_APP_NODE("path", &start, 1);
+PARSER_FUNC_END(PathExpression)
+
 PARSER_FUNC_BEGIN1(T, int rulegen)
 	TRY(value)
 		TTYPE(TK_LOCAL_VAR);
@@ -1076,7 +1097,7 @@ PARSER_FUNC_BEGIN1(T, int rulegen)
 		TTYPE(TK_DOUBLE);
 		BUILD_NODE(TK_DOUBLE, token->text, &start, 0, 0);
 	END_TRY(value)
-PARSER_FUNC_END(StringExpression)
+PARSER_FUNC_END(T)
 
 PARSER_FUNC_BEGIN1(Value, int rulegen)
     TRY(value)
@@ -1150,9 +1171,11 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
 				END_TRY(queryCondDelim)
 			LOOP_END(queryConds)
 		OPTIONAL_END(where)
-		BUILD_APP_NODE("query", &start, n);
-
-    OR(value)
+		BUILD_NODE(N_QUERY, "QUERY", &start, n, n);
+		/* BUILD_APP_NODE("query", &start, 1); */
+	OR(value)
+		NT(PathExpression);
+	OR(value)
         TRY(func)
             ABORT(!rulegen);
             TRY(funcIf)
@@ -1389,52 +1412,71 @@ PARSER_FUNC_END(Column)
 
 PARSER_FUNC_BEGIN(QueryCond)
 	int rulegen = 1;
+    char *op = NULL;
 
 	TRY(QueryCond)
-		NT(Column)
-		TRY(QueryCondOp)
-			TTEXT2("=", "==");
-    		NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, "=", &start, 2, 2);
-		OR(QueryCondOp)
-			TTEXT2("<>", "!=");
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, "<>", &start, 2, 2);
-		OR(QueryCondOp)
-			TTEXT(">");
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, ">", &start, 2, 2);
-		OR(QueryCondOp)
-			TTEXT("<");
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, "<", &start, 2, 2);
-		OR(QueryCondOp)
-			TTEXT(">=");
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, ">=", &start, 2, 2);
-		OR(QueryCondOp)
-			TTEXT("<=");
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, "<=", &start, 2, 2);
-		OR(QueryCondOp)
-			TTEXT2("in", "IN");
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, "in", &start, 2, 2);
-		OR(QueryCondOp)
-			TTEXT2("between", "BETWEEN");
-			NT1(Value, 1);
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, "between", &start, 3, 3);
-		OR(QueryCondOp)
-			TTEXT2("like", "LIKE");
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, "like", &start, 2, 2);
-		OR(QueryCondOp)
-			TTEXT2("not", "NOT");
-			TTEXT2("like", "LIKE");
-			NT1(Value, 1);
-			BUILD_NODE(N_QUERY_COND, "not like", &start, 2, 2);
-		END_TRY(QueryCondOp)
+    	NT(Column)
+    	int n = 0;
+    	LOOP_BEGIN(Junction)
+			Label l = *FPOS;
+			TRY(QueryCondOp)
+				TTEXT2("=", "==");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, "=", &l, 1, 1);
+			OR(QueryCondOp)
+				TTEXT2("<>", "!=");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, "<>", &l, 1, 1);
+			OR(QueryCondOp)
+				TTEXT(">");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, ">", &l, 1, 1);
+			OR(QueryCondOp)
+				TTEXT("<");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, "<", &l, 1, 1);
+			OR(QueryCondOp)
+				TTEXT(">=");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, ">=", &l, 1, 1);
+			OR(QueryCondOp)
+				TTEXT("<=");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, "<=", &l, 1, 1);
+			OR(QueryCondOp)
+				TTEXT2("in", "IN");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, "in", &l, 1, 1);
+			OR(QueryCondOp)
+				TTEXT2("between", "BETWEEN");
+				NT1(Value, 1);
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, "between", &l, 2, 2);
+			OR(QueryCondOp)
+				TTEXT2("like", "LIKE");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, "like", &l, 1, 1);
+			OR(QueryCondOp)
+				TTEXT2("not", "NOT");
+				TTEXT2("like", "LIKE");
+				NT1(Value, 1);
+				BUILD_NODE(N_QUERY_COND, "not like", &l, 1, 1);
+			END_TRY(QueryCondOp)
+			n++;
+			TRY(Or)
+				TTEXT("||");
+				ABORT(op!=NULL && strcmp(op, "||") != 0);
+				op = "||";
+			OR(Or)
+				TTEXT("&&");
+				ABORT(op!=NULL && strcmp(op, "&&") != 0);
+				op = "&&";
+			OR(Or)
+				DONE(Junction)
+			END_TRY(Or)
+		LOOP_END(Junction)
+		BUILD_NODE(N_QUERY_COND_JUNCTION, op, &start, n+1, n+1);
+
 	END_TRY(QueryCond)
 PARSER_FUNC_END(QueryCond)
 
@@ -1463,7 +1505,7 @@ int nextStringBase2(Pointer *e, char *value, char* delim) {
 /*
  * return number of vars or -1 if no string found
  */
-int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char escape, int vars[]) {
+int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char escape, int cntOffset, int vars[]) {
 	int mode=1; /* 1 string 3 escape */
         int nov = 0;
 	char* value0=value;
@@ -1489,7 +1531,7 @@ int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char 
                             return nov;
                         } else if((ch =='*' || ch=='$') &&
                                 isalpha(lookAhead(e, 1))) {
-                            vars[nov++] = value - value0 - 1;
+                            vars[nov++] = value - value0 - cntOffset;
                         }
 
 
@@ -1544,10 +1586,10 @@ int nextStringParsed(Pointer *e, char *value, char* deliml, char *delimr, char *
 	return -1;
 }
 int nextString(Pointer *e, char *value, int vars[]) {
-	return nextStringBase(e, value, "\"", 1, '\\', vars);
+	return nextStringBase(e, value, "\"", 1, '\\', 1, vars);
 }
 int nextString2(Pointer *e, char *value, int vars[]) {
-	return nextStringBase(e, value, "\'", 1, '\\', vars);
+	return nextStringBase(e, value, "\'", 1, '\\', 1, vars);
 }
 
 int getBinaryPrecedence(Token * token) {
@@ -1823,11 +1865,45 @@ void termToString(char **p, int *s, int indent, int prec, Node *n, int quote) {
 				break;
 			}
 			if(strcmp(fn, "assign") == 0) {
-							patternToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
-							PRINT(p, s, "%s", " = ");
-							termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1], quote);
-							break;
+				patternToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				PRINT(p, s, "%s", " = ");
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1], quote);
+				break;
+			}
+			if(strcmp(fn, "query") == 0) {
+				Node *queNode = N_APP_ARG(n, 0);
+				int where = 0;
+				PRINT(p, s, "%s", "select");
+				int i;
+				for(i = 0;i<queNode->degree;i++) {
+					if(getNodeType(queNode->subtrees[i])==N_ATTR) {
+						if(i != 0) {
+							PRINT(p, s, "%s", ",");
 						}
+						if(strlen(queNode->subtrees[i]->text)!=0) {
+							PRINT(p, s, " %s(", queNode->subtrees[i]->text);
+							PRINT(p, s, "%s)", queNode->subtrees[i]->subtrees[0]->text);
+						} else {
+							PRINT(p, s, "%s", queNode->subtrees[i]->subtrees[0]->text);
+						}
+					} else if(getNodeType(queNode->subtrees[i]) == N_QUERY_COND_JUNCTION) {
+						if(!where) {
+							PRINT(p, s, " %s", "where");
+							where = 1;
+						} else {
+							PRINT(p, s, " %s", "and");
+						}
+						PRINT(p, s, " %s", queNode->subtrees[i]->subtrees[0]->text); /* column */
+						PRINT(p, s, " %s", queNode->subtrees[i]->text); /* op */
+						int k;
+						for(k=1;k<queNode->subtrees[i]->degree;k++) {
+							termToString(p, s, indent, MAX_PREC, queNode->subtrees[i]->subtrees[k], quote);
+						}
+					} else {
+						/* todo error handling */
+					}
+				}
+			}
 			Token t;
 			strcpy(t.text, fn);
 			if(isBinaryOp(&t)) {
@@ -2640,10 +2716,10 @@ void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token) {
     } else {
         ch = lookAhead(e, 0);
         if(ch == '\"') {
-            nextStringBase(e, token->text, "\"", 1, '\\', token->vars);
+            nextStringBase(e, token->text, "\"", 1, '\\', 1, token->vars);
             skipWhitespace(e);
         } else if( ch == '\'') {
-            nextStringBase(e, token->text, "\'", 1, '\\', token->vars);
+            nextStringBase(e, token->text, "\'", 1, '\\', 1, token->vars);
             skipWhitespace(e);
         } else {
             nextStringParsed(e, token->text, "(", ")", ",|)", 0, token->vars);
@@ -2758,6 +2834,9 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
             OR(type)
                     TTEXT("string");
                     CASCADE(newSimpType(T_STRING, context->region));
+			OR(type)
+                    TTEXT("path");
+					CASCADE(newSimpType(T_PATH, context->region));
             OR(type)
                     TTEXT("list");
                     NT2(_Type, 1, 0);
@@ -2967,7 +3046,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
         while(ret == 1) {
         	pc->nodeStackTop = 0;
         	pc->stackTopStackTop = 0;
-            token = nextTokenRuleGen(e, pc, 1);
+            token = nextTokenRuleGen(e, pc, 1, 0);
             switch(token->type) {
                 case N_ERROR:
                     return -1;
@@ -2980,9 +3059,9 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                         skipComments(e);
                         continue;
                     } else if(token->text[0] == '@') { /* directive */
-                    	token = nextTokenRuleGen(e, pc, 1);
+                    	token = nextTokenRuleGen(e, pc, 1, 0);
                         if(strcmp(token->text, "backwardCompatible")==0) {
-                        	token = nextTokenRuleGen(e, pc, 1);
+                        	token = nextTokenRuleGen(e, pc, 1, 0);
                             if(token->type == TK_TEXT) {
 								if(strcmp(token->text, "true")==0) {
 									backwardCompatible = 1;
@@ -2997,7 +3076,7 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                             	/* todo error handling */
                             }
                         } else if(strcmp(token->text, "include")==0) {
-                        	token = nextTokenRuleGen(e, pc, 1);
+                        	token = nextTokenRuleGen(e, pc, 1, 0);
                         	if(token->type == TK_TEXT || token->type == TK_STRING) {
                         		CASCASE_NON_ZERO(readRuleSetFromFile(token->text, ruleSet, funcDescIndex, errloc, errmsg, r));
                         	} else {
@@ -3202,6 +3281,8 @@ char* typeName_Parser(NodeType s) {
                 return "ERROR";
             case T_DATETIME:
                 return "time";
+            case T_PATH:
+            	return "path";
             case T_TYPE:
                 return "set";
             case T_TUPLE:
@@ -3237,6 +3318,8 @@ char* typeName_NodeType(NodeType s) {
                 return "ERROR";
             case T_DATETIME:
                 return "DATETIME";
+            case T_PATH:
+            	return "PATH";
             case T_TYPE:
                 return "TYPE";
             case T_TUPLE:

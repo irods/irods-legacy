@@ -203,14 +203,25 @@ Res* newBoolRes(Region *r, int n) {
         RES_BOOL_VAL_LVAL(res1) = n;
 	return res1;
 }
-Res* newStringRes(Region *r, char *s) {
+Res* newStringBasedRes(Region *r, char *s) {
 	Res *res1 = newRes(r);
-        res1->exprType = newSimpType(T_STRING,r);
         RES_STRING_STR_LEN(res1) = strlen(s);
         int size = (RES_STRING_STR_LEN(res1)+1)*sizeof(char);
         res1->text = (char *)region_alloc(r, size);
         memcpy(res1->text, s, size);
 	return res1;
+}
+Res *newStringRes(Region *r, char *s) {
+	Res *res = newStringBasedRes(r, s);
+    res->exprType = newSimpType(T_STRING,r);
+    return res;
+
+}
+Res *newPathRes(Region *r, char *s) {
+	Res *res = newStringBasedRes(r, s);
+	    res->exprType = newSimpType(T_PATH,r);
+	    return res;
+
 }
 Res* newUnspecifiedRes(Region *r) {
 	Res *res1 = newRes(r);

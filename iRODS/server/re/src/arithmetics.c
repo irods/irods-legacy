@@ -290,6 +290,13 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                             break;
                     }
                     break;
+				case T_PATH:
+					switch(TYPE(res)) {
+					case T_STRING:
+						return newPathRes(r, res->text);
+					default:
+						break;
+					}
                 case T_BOOL:
                     switch(TYPE(res) ) {
                         case T_INT:
@@ -369,9 +376,9 @@ Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, 
                 res = evaluateExpression3(nodei, applyAll, 0, rei, reiSaveFlag, env, errmsg,r);
                 if(getNodeType(res) == N_ERROR) {
                     #ifndef DEBUG
-                        sprintf(tmpStr,"executeRuleAction Failed for %s",N_APP_FUNC(nodei)->text); // JMC - backport 4826
+                        sprintf(tmpStr,"executeRuleAction Failed for %s",N_APP_FUNC(nodei)->text);
                         rodsLogError(LOG_ERROR,RES_ERR_CODE(res),tmpStr);
-                        rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",N_APP_FUNC(nodei)->text,RES_ERR_CODE(res)); // JMC - backport 4826
+                        rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",N_APP_FUNC(nodei)->text,RES_ERR_CODE(res));
                     #endif
                     /* run recovery chain */
                     if(RES_ERR_CODE(res) != RETRY_WITHOUT_RECOVERY_ERR && reco!=NULL) {
@@ -392,7 +399,7 @@ Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, 
                             Res *res2 = evaluateExpression3(reco->subtrees[i2], 0, 0, rei, reiSaveFlag, env, errmsg, r);
                             if(getNodeType(res2) == N_ERROR) {
                             #ifndef DEBUG
-                                sprintf(tmpStr,"executeRuleRecovery Failed for %s",N_APP_FUNC(reco->subtrees[i2])->text); // JMC - backport 4826
+                                sprintf(tmpStr,"executeRuleRecovery Failed for %s",N_APP_FUNC(reco->subtrees[i2])->text);
                                 rodsLogError(LOG_ERROR,RES_ERR_CODE(res2),tmpStr);
                             #endif
                             }
@@ -870,7 +877,7 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
             addRErrorMsg(errmsg, ret, errbuf);
             return newErrorRes(r, ret);
 
-	}
+    }
 
 #ifdef USE_EIRODS
 	myFunc       = ms_entry.callAction_;

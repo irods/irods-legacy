@@ -336,6 +336,10 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             var->inOutStruct = res->text == NULL? NULL : strdup(res->text);
             var->type = strdup(STR_MS_T);
             break;
+        case T_PATH: /* path */
+            var->inOutStruct = res->text == NULL? NULL : strdup(res->text);
+            var->type = strdup(STR_MS_T);
+            break;
         case T_DATETIME: /* date time */
             /*var->inOutStruct = (time_t *)malloc(sizeof(time_t)); */
             /**((time_t *)var->inOutStruct) = res->value.t; */
@@ -536,6 +540,13 @@ char* convertResToString(Res *res0) {
 				}
 				return res;
             case T_STRING:
+                if(res0->text == NULL) {
+                    res = strdup("<null>");
+                } else {
+                    res = strdup(res0->text);
+                }
+                return res;
+            case T_PATH:
                 if(res0->text == NULL) {
                     res = strdup("<null>");
                 } else {

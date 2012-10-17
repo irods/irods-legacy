@@ -1,6 +1,9 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 #include "debug.h"
+#ifdef DEBUG
+#include "re.h"
+#endif
 #include "rules.h"
 #include "index.h"
 #include "functions.h"
@@ -282,7 +285,6 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 			ExprType *type = typeRule(ruleEngineConfig.extRuleSet->rules[i], ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
 
 			if(getNodeType(type)==T_ERROR) {
-/*				rescode = TYPE_ERROR;     #   TGR, since renamed to RE_TYPE_ERROR */
 				rescode = RE_TYPE_ERROR;
 				RETURN;
 			}
@@ -585,7 +587,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
             RETURN;
     } else {
         Token *token;
-        token = nextTokenRuleGen(e, pc, 0);
+        token = nextTokenRuleGen(e, pc, 0, 0);
         if(strcmp(token->text, "|")==0) {
         	recoNode = parseActionsRuleGen(e, rulegen, 1, pc);
             if(node==NULL) {
@@ -598,7 +600,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
 				res = newErrorRes(r, RE_PARSER_ERROR);
 				RETURN;
             }
-            token = nextTokenRuleGen(e, pc, 0);
+            token = nextTokenRuleGen(e, pc, 0, 0);
         }
         if(token->type!=TK_EOS) {
             Label pos;
@@ -686,7 +688,6 @@ int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 #else
 int actionTableLookUp (char *action)
 {
-
 	int i;
 
 	for (i = 0; i < NumOfAction; i++) {
@@ -702,7 +703,7 @@ int actionTableLookUp (char *action)
 /*
  * Set retOutParam to 1 if you need to retrieve the output parameters from inMsParamArray and 0 if not
  */
-Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, int retOutParams, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) { // JMC - backport 4540
+Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, int retOutParams, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
     /* set clearDelayed to 0 so that nested calls to this function do not call clearDelay() */
     int recclearDelayed = ruleEngineConfig.clearDelayed;
     ruleEngineConfig.clearDelayed = 0;
@@ -730,12 +731,13 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     }
 
     res = parseAndComputeExpression(inAction, env, rei, reiSaveFlag, &errmsgBuf, r);
-    if(retOutParams) { // JMC - backport 4540
-       if(inMsParamArray != NULL) {
-                       clearMsParamArray(inMsParamArray, 0);
-                       convertEnvToMsParamArray(inMsParamArray, env, &errmsgBuf, r);
-               }
+    if(retOutParams) {
+    	if(inMsParamArray != NULL) {
+			clearMsParamArray(inMsParamArray, 0);
+			convertEnvToMsParamArray(inMsParamArray, env, &errmsgBuf, r);
+		}
     }
+
     rei->msParamArray = orig;
 
 	freeCmdExecOut(execOut);

@@ -119,12 +119,15 @@ typedef enum node_type {
     TK_OP = 12,
     TK_MISC_OP = 14,
     TK_COL = 16,
-    N_ATTR = 17,
-    N_QUERY_COND = 18,
+    TK_PATH = 18,
     N_VAL = 20,
     N_TUPLE = 21,
     N_APPLICATION = 22,
     N_PARTIAL_APPLICATION = 23,
+    N_ATTR = 25,
+    N_QUERY_COND = 26,
+    N_QUERY_COND_JUNCTION = 27,
+    N_QUERY = 28,
     N_ACTIONS = 30,
     N_ACTIONS_RECOVERY = 31,
     N_RULE_NAME = 32,
@@ -158,6 +161,7 @@ typedef enum node_type {
     T_FIXD = 207,
     T_TUPLE = 208,
     T_CONS = 209,
+    T_PATH = 220,
     T_BREAK = 230,
     T_SUCCESS = 231,
     T_VAR = 300,
@@ -315,6 +319,7 @@ Res* newBoolRes(Region *r, int n);
 Res* newErrorRes(Region *r, int errcode);
 Res* newUnspecifiedRes(Region *r);
 Res* newStringRes(Region *r, char *s);
+Res* newPathRes(Region *r, char *s);
 Res* newDatetimeRes(Region *r, long dt);
 Res* newCollRes(int size, ExprType *elemType, Region *r);
 Res* newUninterpretedRes(Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf);
