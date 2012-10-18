@@ -65,3 +65,21 @@ addNcAggElement (ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo)
     return 0;
 }
 
+rodsLong_t
+sumAggElementArraylen (ncAggInfo_t *ncAggInfo, int aggElemetInx)
+{
+    rodsLong_t arrayLenSum = 0;
+    int i;
+
+    if (aggElemetInx > ncAggInfo->numFiles) {
+        rodsLog (LOG_ERROR,
+          "sumAggElementArraylen: Input aggElemetInx %d > numFiles %d",
+          aggElemetInx, ncAggInfo->numFiles);
+        return NETCDF_AGG_ELE_INX_OUT_OF_RANGE;
+    }
+    for (i = 0; i < ncAggInfo->numFiles; i++) {
+        arrayLenSum += ncAggInfo->ncAggElement[i].arraylen;
+    }
+    return arrayLenSum;
+}
+

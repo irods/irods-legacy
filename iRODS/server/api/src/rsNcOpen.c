@@ -152,20 +152,27 @@ rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
     if (portalOprOut != NULL) free (portalOprOut);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "rsNcGetAggInfo: rsDataObjGet error for %s", dataObjInp.objPath);
+          "rsNcOpenColl: rsDataObjGet error for %s", dataObjInp.objPath);
         return status;
     }
     status = unpackStruct (packedBBuf.buf, (void **) &ncAggInfo, 
       "NcAggInfo_PI", RodsPackTable, XML_PROT);
 
-    if (status < 0 || ncAggInfo == NULL) {
+    if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "rsNcGetAggInfo: unpackStruct error for %s", dataObjInp.objPath);
-        return status;
+          "rsNcOpenColl: unpackStruct error for %s", dataObjInp.objPath);
+        return NETCDF_AGG_INFO_FILE_ERR;
+    }
+
+    if (ncAggInfo == NULL || ncAggInfo->numFiles == 0) {
+        rodsLog (LOG_ERROR, 
+          "rsNcOpenColl: No ncAggInfo for %s", dataObjInp.objPath);
+        return NETCDF_AGG_INFO_FILE_ERR;
     }
 
     l1descInx = allocL1desc ();
     if (l1descInx < 0) return l1descInx;
+    bzero (&L1desc[l1descInx].openedAggInfo, sizeof (openedAggInfo_t));
     L1desc[l1descInx].openedAggInfo.ncAggInfo = ncAggInfo;
     L1desc[l1descInx].openedAggInfo.objNcid = -1;	/* not opened */
     *ncid = (int *) malloc (sizeof (int));

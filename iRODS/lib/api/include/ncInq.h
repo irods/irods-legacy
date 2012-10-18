@@ -115,6 +115,10 @@ typedef struct {
 int
 rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
 int
+rsNcInqDataObj (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
+int
+rsNcInqColl (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
+int
 _rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut);
 #else
 #define RS_NC_INQ NULL

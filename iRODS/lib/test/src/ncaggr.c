@@ -6,8 +6,13 @@
 
 #define TEST_PATH1 "./ncdata/HFRadarCurrent"
 
-#define TEST_OBJ_PATH "/wanZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
-#define TEST_OBJ_COLL "/wanZone/home/rods/ncdata/HFRadarCurrent"
+#define TEST_OBJ_PATH "/oneZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
+#define TEST_OBJ_COLL "/oneZone/home/rods/ncdata/HFRadarCurrent"
+#if 0
+#define RESC "hpResc1"
+#else
+#define RESC "demoResc1"
+#endif
 int
 genNcAggInfo (char *testPath, ncAggInfo_t *ncAggInfo);
 int 
@@ -28,7 +33,6 @@ main(int argc, char **argv)
 {
     char *testPath;
     int status;
-    ncAggInfo_t ncAggInfo;
     rcComm_t *conn;
     rodsEnv myRodsEnv;
     rErrMsg_t errMsg;
@@ -112,12 +116,38 @@ testGetAggInfo (rcComm_t *conn, char *collPath)
     ncOpenInp_t ncOpenInp;
     ncAggInfo_t *ncAggInfo = NULL;
     int status;
+    int ncid;
+    ncInqInp_t ncInqInp;
+    ncInqOut_t *ncInqOut = NULL;
 
     bzero (&ncOpenInp, sizeof (ncOpenInp));
     rstrcpy (ncOpenInp.objPath, collPath, MAX_NAME_LEN);
     ncOpenInp.mode = NC_WRITE;
-    addKeyVal (&ncOpenInp.condInput, DEST_RESC_NAME_KW, "hpResc1");
+    addKeyVal (&ncOpenInp.condInput, DEST_RESC_NAME_KW, RESC);
     status = rcNcGetAggInfo (conn, &ncOpenInp, &ncAggInfo);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcGetAggInfo error for %s", ncOpenInp.objPath);
+        return status;
+    }
+    ncOpenInp.mode = NC_NOWRITE;
+    status = rcNcOpen (conn, &ncOpenInp, &ncid);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcOpen error for %s", ncOpenInp.objPath);
+        return status;
+    }
+    bzero (&ncInqInp, sizeof (ncInqInp));
+    ncInqInp.ncid = ncid;
+    ncInqInp.paramType = NC_ALL_TYPE;
+    ncInqInp.flags = NC_ALL_FLAG;
+
+    status = rcNcInq (conn, &ncInqInp, &ncInqOut);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcInq error for %s", ncOpenInp.objPath);
+        return status;
+    }
     return status;
 }
 

@@ -75,6 +75,8 @@ ncAggInfo_t **ncAggInfo);
 
 int
 addNcAggElement (ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo);
+rodsLong_t
+sumAggElementArraylen (ncAggInfo_t *ncAggInfo, int aggElemetInx);
 
 #ifdef  __cplusplus
 }

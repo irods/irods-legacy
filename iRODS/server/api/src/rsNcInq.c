@@ -16,10 +16,7 @@
 int
 rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
 {
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost = NULL;
     int l1descInx;
-    ncInqInp_t myNcInqInp;
     int status = 0;
 
     if (getValByKey (&ncInqInp->condInput, NATIVE_NETCDF_CALL_KW) !=
@@ -36,6 +33,77 @@ rsNcInq (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
     if (L1desc[l1descInx].inuseFlag != FD_INUSE) return BAD_INPUT_DESC_INDEX;
+    if (L1desc[l1descInx].openedAggInfo.ncAggInfo != NULL) {
+        status = rsNcInqColl (rsComm, ncInqInp, ncInqOut);
+    } else {
+        status = rsNcInqDataObj (rsComm, ncInqInp, ncInqOut);
+    }
+    return status;
+}
+
+int
+rsNcInqColl (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
+{
+    int status;
+    int l1descInx;
+    int *ncid = NULL;
+    ncOpenInp_t ncOpenInp;
+    ncInqInp_t myNcInqInp;
+    int i;
+
+    l1descInx = ncInqInp->ncid;
+    if (L1desc[l1descInx].openedAggInfo.objNcid == -1) {
+        /* not opened yet. Use aggElemetInx 0 */
+        bzero (&ncOpenInp, sizeof (ncOpenInp));
+        rstrcpy (ncOpenInp.objPath, 
+          L1desc[l1descInx].openedAggInfo.ncAggInfo->ncAggElement[0].objPath,
+          MAX_NAME_LEN);
+        status = rsNcOpenDataObj (rsComm, &ncOpenInp, &ncid);
+        if (status >= 0) {
+            L1desc[l1descInx].openedAggInfo.objNcid = *ncid;
+            free (ncid);
+            L1desc[l1descInx].openedAggInfo.aggElemetInx = 0;
+            L1desc[l1descInx].openedAggInfo.currentTimeInx = 0;
+        } else {
+            rodsLogError (LOG_ERROR, status,
+              "rsNcInqColl: rsNcInqColl error for %s", ncOpenInp.objPath);
+            return status;
+        }
+    }
+    myNcInqInp = *ncInqInp;
+    myNcInqInp.ncid = L1desc[l1descInx].openedAggInfo.objNcid;
+    bzero (&myNcInqInp.condInput, sizeof (keyValPair_t));
+    status = rsNcInqDataObj (rsComm, &myNcInqInp, ncInqOut);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rsNcInqColl: rsNcInqDataObj error for %s", ncOpenInp.objPath);
+        return status;
+    }
+    /* make correction to 'time' dimension */
+    for (i = 0; i < (*ncInqOut)->ndims; i++) {
+        if (strcasecmp ((*ncInqOut)->dim[i].name, "time") == 0) {
+            (*ncInqOut)->dim[i].arrayLen = sumAggElementArraylen (
+              L1desc[l1descInx].openedAggInfo.ncAggInfo, 
+              L1desc[l1descInx].openedAggInfo.ncAggInfo->numFiles);
+            if ((*ncInqOut)->dim[i].arrayLen < 0) {
+                status = (*ncInqOut)->dim[i].arrayLen;
+                freeNcInqOut (ncInqOut);
+            }
+            break;
+        }
+    }
+    return status;  
+}
+
+int
+rsNcInqDataObj (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
+{
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost = NULL;
+    int l1descInx;
+    ncInqInp_t myNcInqInp;
+    int status = 0;
+
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         bzero (&myNcInqInp, sizeof (myNcInqInp));
         myNcInqInp.ncid = L1desc[l1descInx].remoteL1descInx;
