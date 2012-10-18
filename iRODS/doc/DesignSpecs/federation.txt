@@ -1,0 +1,141 @@
+Zone Federation:
+
+In the examples below, we assume:
+   Zone A is the local zone and has 2 users AdminA and UserA 
+   Zone B is a remote zone and has 2 users AdminB and UserB.
+
+o Allow separate iRODS instances to share data.
+
+o Each zone has its own iCAT.
+
+o Each zone administers its system metadata - users, resources, ... 
+  separately. i.e., remote admin users has no permission to run most
+  commands in iadmin
+
+o Some iadmin commands:
+In zone A:
+
+   iadmin mkzone B remote Host:Port
+   iadmin mkuser AdminB#B rodsadmin
+   iadmin mkuser UserB#B rodsuser
+
+In zone B:
+
+   iadmin mkzone A remote Host:Port
+   iadmin mkuser AdminA#A rodsadmin
+   iadmin mkuser UserA#A rodsuser
+
+o A user can only belong to one zone. Four basic classes of users:
+    local admin user
+    local regular user
+    remote admin user
+    remote regular user
+
+o User authorization info such as passwords are not shared between zones.
+  To authenticate UserB in Zone A, the Zone A server will check with the
+  the home zone of UserB to verify the password. i.e., the Zone A server
+  sends the challenge and response strings to iCAT B for verification.
+  Zone A does not have the password of UserB.
+
+o concept of proxy_user/client_user
+    . iRODS server performs operation on behalf of client users
+
+"Proxy User" - sort of like real user of UNIX
+"Client User" - sort of like effective user of UNIX
+
+----------  proxyUser = UserB  ------------- proxyUser = AdminB   -------------
+| Client | ------------------->|  Server B |--------------------->| Server A  |
+| UserB  |  clientUser = UserB |  AdminB   | clientUser = UserB   | AdminA    |
+----------                     -------------                      -------------
+
+----------  proxyUser = UserA  ------------- proxyUser = AdminB   -------------
+| Client | ------------------->|  Server B |--------------------->| Server A  |
+| UserA  |  clientUser = UserA |  AdminB   | clientUser = UserA   | AdminA    |
+----------                     -------------                      -------------
+
+    . "local admin user" - can perform operations on behalf of all users
+      in his local zone.
+    . "remote admin user" can only perform operations on behalf of users
+      belonging to the same zone.
+      e.g., adminB can only make requests to Zone A on behalf of UserB,
+      but not UserA.
+      Compromize in zone B only affects Zone B users in Zone A. 
+
+o The root collection of a path contains the zone name.
+  e.g., /A/home/UserB#B/foo
+  The server parse this to figure out where to perform the operation and
+  which iCAT to use.
+
+o Data sharing - e.g. UserA grants read permission to UserB#B:
+    ichmod read UserB#B /A/home/UserA#B/foo
+
+o Resources are not shared between Zones.
+    . Common error - default resource (irodsDefResource) defined for
+      zoneA does not work for zoneB.
+
+    . "ilsresc -z Zonename" lists resources by zone.
+    . Use "-R resource" option to specify resource. e.g.
+         iput -R rescB foo1 /B/home/UserA#A/foo1
+
+o Cross zone operations
+    . most operations works across zones
+         ils, iput, iget, icp, irsync,....
+    . irepl does not work with remote resources because resources are not 
+      shared between zones.
+
+o Workflow
+
+Level 1 - Object Level
+Level 3 - Physical File Level
+
+Workflow in the server for same Zone operations:
+    . Try to do most of works on the server where the client is connected to.
+    . Drill down to level L3
+        If the file or resource on a remote host, use server-server L3
+        API functions.
+
+Workflow in the server for cross Zone operations:
+    . For remote zone operations, use server-server L1 API functions
+    . Do not drill down and go across at L3
+    . Most rules are enforced at L1. Do not tunnel through L3 and bypass
+      L1 rules.
+
+o Some Cross-zone calls
+int getAndConnRemoteZone (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rodsServerHost_t **rodsServerHost, char *remotZoneOpr)
+
+  . Use dataObjInp->objPath to determine the zone.
+  . remotZoneOpr - REMOTE_CREATE, REMOTE_OPEN
+      connect to the resource server.
+
+int getAndConnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
+rodsServerHost_t **rodsServerHost)
+    . connect to remote zone iCAT
+
+o L1desc
+  . Cross zone - L1 server-server call
+  . L1desc designed for L1 drill down to L3 type operations - maintains many 
+    system info on the data object - dataObjInfo, rescInfo, l3descInx.
+  . Much of the info not available or not needed for cross Zone operations. 
+  . A high level remote call, but still need to track the linkage.
+  . remoteZoneHost, remoteL1descInx and oprType fields of L1desc keep track of 
+    remote zone operation. e.g.,
+    L1desc[l1descInx].remoteZoneHost = remoteZoneHost;
+    L1desc[l1descInx].remoteL1descInx = remoteL1descInx;
+    L1desc[l1descInx].oprType = REMOTE_ZONE_OPR;
+
+
+o Master/Slave iCAT
+
+    o Make use of replication capability of some DBMS - Oracle, Postgres
+
+    o All modifications to iCAT (iput, irepl) are done in the Master iCAT
+    o These modifications are replicated to the Slave iCAT by the DBMS.
+    o The Slave iCAT can be used for read-only type operations (ils, iget)
+    o The Slave iCAT can be slightly outdated.
+    o Setup
+        . configure the iCAT DBMS to do replication to another host
+        . In the server.config file
+             icatHost - the address of the master icat host
+             slaveIcatHost - the address of the slave Icat host (optional)
+
