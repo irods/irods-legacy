@@ -84,6 +84,8 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
 #define PASSWORD_DEFAULT_KEY "a9_3fker"
 
+#define MAX_HOST_STR 2700
+
 int logSQL=0;
 
 static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo);
@@ -4550,6 +4552,98 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    return(0);
 }
 
+/*
+ Modify a resource host (location) string.  This is used for the new
+WOS resources which may have multiple addresses.  A series or comma
+separated DNS names is maintained.
+ */
+int
+modRescHostStr(rsComm_t *rsComm, char *rescId, char * option, char * optionValue) {
+   char hostStr[MAX_HOST_STR];
+   int status;
+   struct hostent *myHostEnt;
+   int i;
+   char errMsg[155];
+   char myTime[50];
+
+   memset(hostStr, 0, sizeof(hostStr));
+   if (logSQL!=0) rodsLog(LOG_SQL, "modRescHostStr SQL 1 ");
+   status = cmlGetStringValueFromSql(
+	 "select resc_net from R_RESC_MAIN where resc_id=?",
+	 hostStr, MAX_HOST_STR, rescId, 0, 0, &icss);
+   if (status != 0) {
+      return(status);
+   }
+   if (strcmp(option, "host-add")==0) {
+      myHostEnt = gethostbyname(optionValue);
+      if (myHostEnt == 0) {
+	 snprintf(errMsg, 150, 
+		  "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+		  optionValue);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      }
+      if (strstr(hostStr,optionValue)!=NULL) {
+	 snprintf(errMsg, 150, 
+		  "Error, input DNS name, %s, already in the list for this resource.", 
+		  optionValue);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(CAT_INVALID_ARGUMENT);
+      }
+      strncat(hostStr, ",", sizeof(hostStr));
+      strncat(hostStr, optionValue, sizeof(hostStr));
+   }
+   if (strcmp(option, "host-rm")==0) {
+      char *cp, *cp2, *cp3;
+      int len;
+      len=strlen(optionValue);
+      cp = strstr(hostStr,",");
+      if (cp==NULL) {
+	 i = addRErrorMsg (&rsComm->rError, 0, 
+			   "Error, removal of last location/host for this resource not allowed.");
+	 return(CAT_INVALID_ARGUMENT);
+      }
+
+
+      cp = strstr(hostStr,optionValue);
+      if (cp==NULL ||
+          (cp > hostStr && *(cp-1)!=',') ||
+	  (*(cp+len)!= ',' && *(cp+len)!= '\0')) {
+	 snprintf(errMsg, 150, 
+		  "Error, input DNS location/host, %s, being removed is not in the list for this resource.", 
+		  optionValue);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(CAT_INVALID_ARGUMENT);
+      }
+      cp2=cp+len+1;
+      cp3=cp;
+      if (*cp2=='\0') *(cp3-1)='\0'; /* it's the last in the list, remove trailing ',' */
+      while (cp3<cp2) {
+	 *cp3++='\0';  /* clear out the entry */
+      }
+      while (cp2<hostStr+sizeof(hostStr)) {
+	 *cp++=*cp2++; /* slide up the other items, if any */
+      }
+   }
+   getNowStr(myTime);
+   cllBindVars[cllBindVarCount++]=hostStr;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=rescId;
+   if (logSQL!=0) rodsLog(LOG_SQL, "modRescHostStr SQL 2");
+   status =  cmlExecuteNoAnswerSql(
+      "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
+      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "modRescHostStr cmlExecuteNoAnswerSql update failure %d",
+	      status);
+      _rollback("modRescHostStr");
+      return(status);
+   }
+   return status;
+}
+
+
+
 /* Modify a Resource (certain fields) */
 int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 		 char *optionValue) {
@@ -4698,6 +4792,11 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 	 _rollback("chlModResc");
 	 return(status);
       }
+      OK=1;
+   }
+   if (strncmp(option, "host-",5)==0) {
+      status = modRescHostStr(rsComm, rescId, option, optionValue);
+      if (status) return(status);
       OK=1;
    }
    if (strcmp(option, "host")==0) {

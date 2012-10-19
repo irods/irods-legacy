@@ -1406,6 +1406,7 @@ void usageMain()
 " mkresc Name Type Class Host [Path] (make Resource)",
 " modresc Name [name, type, class, host, path, status, comment, info, ",
 "      freespace] Value (mod Resc)",
+" modresc Name host-add|host-rm host (for WOS resources)",
 " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
 "      sometimes needed after modresc path)",
 " rmresc Name (remove resource)",
@@ -1644,6 +1645,8 @@ usage(char *subOpt)
    char *modrescMsgs[]={
 " modresc Name [name, type, class, host, path, status, comment, info, or freespace] Value",
 "         (modify Resource)",
+" modresc Name host-add host (for WOS (multiple host) resources)",
+" modresc Name host-rm host (for WOS (multiple host) resources)",
 "Change some attribute of a resource.  For example:",
 "    modresc demoResc comment 'test resource'",
 "The 'host' field is the DNS host name, for example 'datastar.sdsc.edu',",
@@ -1657,6 +1660,11 @@ usage(char *subOpt)
 " ",
 "The freespace value can be simply specified, or if it starts with + or -",
 "the freespace amount will be incremented or decremented by the value.",
+" ",
+"WOS resources have multiple host-addresses, so for these you create the initial",
+"resource and then use host-add or host-rm to add or remove host names from the",
+"list.  The iRODS system will pick an appropriate one to access using some basic",
+"heuristics during initialization.",
 ""};
 
    char *modrescDataPathsMsgs[]={

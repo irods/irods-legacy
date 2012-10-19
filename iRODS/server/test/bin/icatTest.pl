@@ -822,8 +822,10 @@ runCmd(0, "irm -f $F1");
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none
 runCmd(1, "iadmin rum");
 
-# before removing, test changing the host
+# before removing, test changing the host and the new host-add and host-rm
 runCmd(0, "iadmin modresc $Resc2 host foo.sdsc.edu");
+runCmd(0, "iadmin modresc $Resc2 host-add zuri.ucsd.edu");
+runCmd(0, "iadmin modresc $Resc2 host-rm zuri.ucsd.edu");
 runCmd(0, "iadmin lr $Resc2");
 
 # finished with temp resource
