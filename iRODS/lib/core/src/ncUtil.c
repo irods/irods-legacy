@@ -47,8 +47,15 @@ rodsPathInp_t *rodsPathInp)
             /* The path given by collEnt.collName from rclReadCollection
              * has already been translated */
             addKeyVal (&ncOpenInp.condInput, TRANSLATED_PATH_KW, "");
-	    status = ncOperCollUtil (conn, rodsPathInp->srcPath[i].outPath,
-              myRodsEnv, myRodsArgs, &ncOpenInp, &ncVarSubset);
+            if (myRodsArgs->recursive == True) {
+	        status = ncOperCollUtil (conn, rodsPathInp->srcPath[i].outPath,
+                  myRodsEnv, myRodsArgs, &ncOpenInp, &ncVarSubset);
+            } else {
+                /* assume it is an aggr collection */
+                status = ncOperDataObjUtil (conn,
+                 rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs,
+                 &ncOpenInp, &ncVarSubset);
+            }
 	} else {
 	    /* should not be here */
 	    rodsLog (LOG_ERROR,
