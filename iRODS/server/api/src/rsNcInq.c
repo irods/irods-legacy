@@ -104,6 +104,7 @@ rsNcInqDataObj (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
     ncInqInp_t myNcInqInp;
     int status = 0;
 
+    l1descInx = ncInqInp->ncid;
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         bzero (&myNcInqInp, sizeof (myNcInqInp));
         myNcInqInp.ncid = L1desc[l1descInx].remoteL1descInx;
