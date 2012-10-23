@@ -85,6 +85,12 @@ typedef struct {
 int
 rsNcGetVarsByType (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp, 
 ncGetVarOut_t **ncGetVarOut);
+int
+NcGetVarsByTypeForColl (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+ncGetVarOut_t **ncGetVarOut);
+int
+NcGetVarsByTypeForObj (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+ncGetVarOut_t **ncGetVarOut);
 #else
 #define RS_NC_GET_VARS_BY_TYPE NULL
 #endif

@@ -17,10 +17,7 @@ int
 rsNcGetVarsByType (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
 ncGetVarOut_t **ncGetVarOut)
 {
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost = NULL;
     int l1descInx;
-    ncGetVarInp_t myNcGetVarInp;
     int status = 0;
 
     if (getValByKey (&ncGetVarInp->condInput, NATIVE_NETCDF_CALL_KW) != 
@@ -38,6 +35,25 @@ ncGetVarOut_t **ncGetVarOut)
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
     if (L1desc[l1descInx].inuseFlag != FD_INUSE) return BAD_INPUT_DESC_INDEX;
+    if (L1desc[l1descInx].openedAggInfo.ncAggInfo != NULL) {
+        status = NcGetVarsByTypeForColl (rsComm, ncGetVarInp, ncGetVarOut);
+    } else {
+        status = NcGetVarsByTypeForObj (rsComm, ncGetVarInp, ncGetVarOut);
+    }
+    return status;
+}
+
+int
+NcGetVarsByTypeForObj (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+ncGetVarOut_t **ncGetVarOut)
+{
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost = NULL;
+    int l1descInx;
+    ncGetVarInp_t myNcGetVarInp;
+    int status = 0;
+
+    l1descInx = ncGetVarInp->ncid;
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
 	myNcGetVarInp = *ncGetVarInp;
 	myNcGetVarInp.ncid = L1desc[l1descInx].remoteL1descInx;
@@ -76,4 +92,16 @@ ncGetVarOut_t **ncGetVarOut)
     return status;
 }
 
+int
+NcGetVarsByTypeForColl (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+ncGetVarOut_t **ncGetVarOut)
+{
+    int status;
+    int l1descInx;
+    int *ncid = NULL;
+    ncOpenInp_t ncOpenInp;
+    ncGetVarInp_t myNcGetVarInp;
+
+    return status;
+}
 /* _rsNcGetVarsByType has been moved to the client because clients need it */
