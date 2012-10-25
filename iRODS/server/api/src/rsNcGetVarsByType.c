@@ -36,15 +36,15 @@ ncGetVarOut_t **ncGetVarOut)
     }
     if (L1desc[l1descInx].inuseFlag != FD_INUSE) return BAD_INPUT_DESC_INDEX;
     if (L1desc[l1descInx].openedAggInfo.ncAggInfo != NULL) {
-        status = NcGetVarsByTypeForColl (rsComm, ncGetVarInp, ncGetVarOut);
+        status = rsNcGetVarsByTypeForColl (rsComm, ncGetVarInp, ncGetVarOut);
     } else {
-        status = NcGetVarsByTypeForObj (rsComm, ncGetVarInp, ncGetVarOut);
+        status = rsNcGetVarsByTypeForObj (rsComm, ncGetVarInp, ncGetVarOut);
     }
     return status;
 }
 
 int
-NcGetVarsByTypeForObj (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+rsNcGetVarsByTypeForObj (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
 ncGetVarOut_t **ncGetVarOut)
 {
     int remoteFlag;
@@ -93,15 +93,176 @@ ncGetVarOut_t **ncGetVarOut)
 }
 
 int
-NcGetVarsByTypeForColl (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+rsNcGetVarsByTypeForColl (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
 ncGetVarOut_t **ncGetVarOut)
 {
-    int status;
+    int i, j, status;
     int l1descInx;
-    int *ncid = NULL;
-    ncOpenInp_t ncOpenInp;
+    openedAggInfo_t *openedAggInfo;
+    ncInqInp_t ncInqInp;
     ncGetVarInp_t myNcGetVarInp;
+    rodsLong_t timeStart0, timeEnd0, curPos; 
+    rodsLong_t eleStart, eleEnd; 
+    int timeInxInVar0; 
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    char *buf, *bufPos;
+    int len, eleLen, curLen;
+    ncGetVarOut_t *myNcGetVarOut = NULL;
 
+    l1descInx = ncGetVarInp->ncid;
+    openedAggInfo = &L1desc[l1descInx].openedAggInfo;
+    if (openedAggInfo->objNcid0 == -1) {
+        return NETCDF_AGG_ELE_FILE_NOT_OPENED;
+    }
+    if (openedAggInfo->ncInqOut0 == NULL) {
+        bzero (&ncInqInp, sizeof (ncInqInp));
+        ncInqInp.ncid = openedAggInfo->objNcid0;
+        ncInqInp.paramType = NC_ALL_TYPE;
+        ncInqInp.flags = NC_ALL_FLAG;
+        status = rsNcInqColl (rsComm, &ncInqInp, &openedAggInfo->ncInqOut0);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "rsNcGetVarsByTypeForColl: rsNcInqColl %d for %s error",
+              openedAggInfo->ncAggInfo->ncObjectName);
+            return status;
+        }
+    }
+    timeInxInVar0 = getTimeInxInVar (openedAggInfo->ncInqOut0, 
+      ncGetVarInp->varid);
+
+    if (timeInxInVar0 < 0) return timeInxInVar0;
+    if (timeInxInVar0 >= ncGetVarInp->ndim) {
+        rodsLog (LOG_ERROR, 
+          "rsNcGetVarsByTypeForColl: timeInxInVar0 %d >= ndim %d",
+          timeInxInVar0, ncGetVarInp->ndim);
+        return NETCDF_DIM_MISMATCH_ERR;
+    }
+    timeStart0 = curPos = ncGetVarInp->start[timeInxInVar0];
+    timeEnd0 = timeStart0 + ncGetVarInp->count[timeInxInVar0] - 1;
+    eleStart = 0;
+    myNcGetVarInp = *ncGetVarInp;
+    bzero (start, sizeof (char) * NC_MAX_DIMS);
+    bzero (count, sizeof (char) * NC_MAX_DIMS);
+    bzero (stride, sizeof (char) * NC_MAX_DIMS);
+    myNcGetVarInp.start = start;
+    myNcGetVarInp.count = count;
+    myNcGetVarInp.stride = stride;
+    for (i = 0; i < ncGetVarInp->ndim; i++) {
+         myNcGetVarInp.start[i] = ncGetVarInp->start[i];
+         myNcGetVarInp.stride[i] = ncGetVarInp->stride[i];
+         myNcGetVarInp.count[i] = ncGetVarInp->count[i];
+    }
+    len = getSizeForGetVars (ncGetVarInp);
+    if (len <= 0) return len;
+    buf = bufPos = (char *) calloc (len, sizeof (char));
+    curLen = 0;
+    for (i = 0; i < openedAggInfo->ncAggInfo->numFiles; i++) {
+        eleEnd = eleStart + 
+          openedAggInfo->ncAggInfo->ncAggElement[i].arraylen - 1;
+        if (curPos >= eleStart && curPos <= eleEnd) {
+            /* in range */
+            if (i != 0 && i != openedAggInfo->objNcid) {
+                char *varName0 = NULL;
+                status = openAggrFile (rsComm, l1descInx, i);
+                if (status < 0) {
+                    free (buf);
+                    return status;
+                }
+                bzero (&ncInqInp, sizeof (ncInqInp));
+                ncInqInp.ncid = openedAggInfo->objNcid;
+                ncInqInp.paramType = NC_ALL_TYPE;
+                ncInqInp.flags = NC_ALL_FLAG;
+                status = rsNcInqDataObj (rsComm, &ncInqInp, 
+                  &openedAggInfo->ncInqOut);
+                if (status < 0) {
+                    rodsLogError (LOG_ERROR, status,
+                      "rsNcGetVarsByTypeForColl: rsNcInqDataObj error for %s",
+                      openedAggInfo->ncAggInfo->ncObjectName);
+                    free (buf);
+                    return status;
+                }
+                if (i != 0) {
+                    /* varid can be different than ele 0 */
+                    for (j = 0; j < openedAggInfo->ncInqOut0->nvars; j++) {
+                        if (openedAggInfo->ncInqOut0->var[j].id == 
+                          ncGetVarInp->varid) {
+                            varName0 = openedAggInfo->ncInqOut0->var[j].name;
+                            break;
+                        }
+                    } 
+                    if (varName0 == NULL) {
+                        free (buf);
+                        return NETCDF_DEF_VAR_ERR;
+                    }
+                    myNcGetVarInp.varid = -1;
+                    for (j = 0; j < openedAggInfo->ncInqOut0->nvars; j++) {
+                        if (strcmp (varName0, 
+                          openedAggInfo->ncInqOut0->var[j].name) == 0) {
+                            myNcGetVarInp.varid = 
+                              openedAggInfo->ncInqOut0->var[j].id;
+                            break;
+                        }
+                    }
+                    if (myNcGetVarInp.varid == -1) {
+                        free (buf);
+                        return NETCDF_DEF_VAR_ERR;
+                    }
+                }
+                /* adjust the start, count */ 
+                myNcGetVarInp.start[timeInxInVar0] = curPos - eleStart;
+                if (timeEnd0 >= eleEnd) {
+                    myNcGetVarInp.count[timeInxInVar0] = eleEnd - curPos + 1;
+                } else {
+                    myNcGetVarInp.count[timeInxInVar0] = timeEnd0 - curPos + 1;
+                }
+                /* adjust curPos. need to take stride into account */
+                curPos += myNcGetVarInp.count[timeInxInVar0];
+                if (myNcGetVarInp.stride[timeInxInVar0] > 0) { 
+                    int mystride = myNcGetVarInp.stride[timeInxInVar0];
+                    int remaine = curPos % mystride;
+                    if (remaine > 0) {
+                        curPos = (curPos / mystride) * (mystride + 1);
+                    }
+                }
+                eleLen = getSizeForGetVars (&myNcGetVarInp);
+                status = rsNcGetVarsByTypeForObj (rsComm, &myNcGetVarInp,
+                 &myNcGetVarOut);
+                if (status < 0) {
+                    rodsLogError (LOG_ERROR, status,
+                    "rsNcGetVarsByTypeForColl: rsNcGetVarsByTypeForObj %s err",
+                      openedAggInfo->ncAggInfo->ncObjectName);
+                    free (buf);
+                    return status;
+                }
+                if (myNcGetVarOut->dataArray->len > 0) {
+                    curLen += myNcGetVarOut->dataArray->len;
+                    if (curLen > len) {
+                        rodsLog (LOG_ERROR,
+                          "rsNcGetVarsByTypeForColl: curLen %d > total len %d",
+                          curLen, len);
+                        free (buf);
+                        return NETCDF_VARS_DATA_TOO_BIG;
+                    }
+                    memcpy (bufPos, myNcGetVarOut->dataArray->buf,
+                     myNcGetVarOut->dataArray->len);
+                    bufPos += myNcGetVarOut->dataArray->len;
+                    freeNcGetVarOut (&myNcGetVarOut);
+                }
+            }
+        }
+        if (curPos > timeEnd0) break;
+        eleStart = eleEnd + 1;
+    }
+    if (status >= 0) {
+        *ncGetVarOut = (ncGetVarOut_t *) calloc (1, sizeof (ncGetVarOut_t));
+        (*ncGetVarOut)->dataArray = (dataArray_t *) 
+          calloc (1, sizeof (dataArray_t));
+        (*ncGetVarOut)->dataArray->len = len;
+        (*ncGetVarOut)->dataArray->type = ncGetVarInp->dataType;
+        (*ncGetVarOut)->dataArray->buf = buf;
+    } else {
+        free (buf);
+    }
     return status;
 }
 /* _rsNcGetVarsByType has been moved to the client because clients need it */

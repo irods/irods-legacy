@@ -39,6 +39,8 @@ int
 rsNcOpenDataObj (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid);
 int
 rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid);
+int
+openAggrFile (rsComm_t *rsComm, int l1descInx, int aggElemetInx);
 #else
 #define RS_NC_OPEN NULL
 #endif

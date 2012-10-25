@@ -1876,4 +1876,33 @@ getNcIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
     return retint;
 }
 
+int
+getTimeInxInVar (ncInqOut_t *ncInqOut, int varid)
+{
+    int i;
+    int timeDimId = -1;
+    int varInx = -1;
+
+    for (i = 0; i < ncInqOut->ndims; i++) {
+        if (strcasecmp (ncInqOut->dim[i].name, "time") == 0) {
+            timeDimId = i;
+            break;
+        }
+    }
+    if (timeDimId < 0) return NETCDF_AGG_ELE_FILE_NO_TIME_DIM;
+    for (i = 0; i < ncInqOut->nvars; i++) {
+        if (ncInqOut->var[i].id == varid) {
+            varInx = i;
+            break;
+        }
+    }
+    if (varInx < 0) return NETCDF_DEF_VAR_ERR;
+    /* try to fine the time range */
+    for (i = 0; i < ncInqOut->var[varInx].nvdims; i++) {
+        if (ncInqOut->var[varInx].dimId[i] == timeDimId) {
+            return i;
+        }
+    }
+    return NETCDF_AGG_ELE_FILE_NO_TIME_DIM; 
+}
 

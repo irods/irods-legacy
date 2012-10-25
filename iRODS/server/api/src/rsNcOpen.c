@@ -4,6 +4,7 @@
 /* See dataObjGet.h for a description of this API call.*/
 
 #include "ncOpen.h"
+#include "ncClose.h"
 #include "rodsLog.h"
 #include "dataObjOpen.h"
 #include "rsGlobalExtern.h"
@@ -175,8 +176,56 @@ rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
     bzero (&L1desc[l1descInx].openedAggInfo, sizeof (openedAggInfo_t));
     L1desc[l1descInx].openedAggInfo.ncAggInfo = ncAggInfo;
     L1desc[l1descInx].openedAggInfo.objNcid = -1;	/* not opened */
+    L1desc[l1descInx].openedAggInfo.objNcid0 = -1;	/* not opened */
+    status = openAggrFile (rsComm, l1descInx, 0);
+    if (status < 0) return status;
     *ncid = (int *) malloc (sizeof (int));
     *(*ncid) = l1descInx;
 
     return 0;
 }
+
+int
+openAggrFile (rsComm_t *rsComm, int l1descInx, int aggElemetInx)
+{
+    int status, status1;
+    ncOpenInp_t ncOpenInp;
+    ncCloseInp_t ncCloseInp;
+    openedAggInfo_t *openedAggInfo;
+    int *ncid = NULL;
+
+    openedAggInfo = &L1desc[l1descInx].openedAggInfo;
+    bzero (&ncOpenInp, sizeof (ncOpenInp));
+    rstrcpy (ncOpenInp.objPath,
+      openedAggInfo->ncAggInfo->ncAggElement[aggElemetInx].objPath,
+      MAX_NAME_LEN);
+    status = rsNcOpenDataObj (rsComm, &ncOpenInp, &ncid);
+    if (status >= 0) {
+        if (aggElemetInx > 0 && openedAggInfo->objNcid > 0) {
+            bzero (&ncCloseInp, sizeof (ncCloseInp));
+            ncCloseInp.ncid = openedAggInfo->objNcid;
+            status1 = rsNcClose (rsComm, &ncCloseInp);
+            if (status1 < 0) {
+                rodsLogError (LOG_ERROR, status1,
+                  "openAndInqAggrFile: rcNcClose error for %s", 
+                openedAggInfo->ncAggInfo->ncObjectName);
+            }
+            if (openedAggInfo->ncInqOut != NULL) 
+                freeNcInqOut (&openedAggInfo->ncInqOut);
+        }
+        if (aggElemetInx == 0) {
+            openedAggInfo->objNcid0 = *ncid;
+        } else {
+            openedAggInfo->objNcid = *ncid;
+            openedAggInfo->aggElemetInx = aggElemetInx;
+        }
+        free (ncid);
+    } else {
+        rodsLogError (LOG_ERROR, status,
+          "openAndInqAggrFile: rsNcOpen error for %s", 
+          openedAggInfo->ncAggInfo->ncAggElement[aggElemetInx].objPath);
+        return status;
+    }
+    return status;
+}
+

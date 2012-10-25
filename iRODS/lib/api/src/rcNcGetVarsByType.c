@@ -133,16 +133,9 @@ ncGetVarOut_t **ncGetVarOut)
         start[i] = ncGetVarInp->start[i];
         count[i] = ncGetVarInp->count[i];
         stride[i] = ncGetVarInp->stride[i];
-        if (count[i] <= 0) return NETCDF_VAR_COUNT_OUT_OF_RANGE;
-        /* cal dataArray->len */
-        if (stride[i] <= 0) {
-            stride[i] = 1;
-        } else if (stride[i] > 1) {
-            hasStride = 1;
-        }
-        len = len * ((count[i] - 1) / stride[i] + 1);
     }
-    if (len <= 0) return 0;
+    len = getSizeForGetVars (ncGetVarInp);
+    if (len <= 0) return len;
     *ncGetVarOut = (ncGetVarOut_t *) calloc (1, sizeof (ncGetVarOut_t));
     (*ncGetVarOut)->dataArray = (dataArray_t *) calloc (1, sizeof (dataArray_t));
     (*ncGetVarOut)->dataArray->len = len;
@@ -288,3 +281,24 @@ ncGetVarOut_t **ncGetVarOut)
     return status;
 }
 #endif		/* NETCDF_API */
+
+int
+getSizeForGetVars (ncGetVarInp_t *ncGetVarInp)
+{
+    int i;
+    int len = 1;
+    int hasStride = 0;
+
+    for (i = 0; i < ncGetVarInp->ndim; i++) {
+        if (ncGetVarInp->count[i] <= 0) return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+        /* cal dataArray->len */
+        if (ncGetVarInp->stride[i] <= 0) {
+            ncGetVarInp->stride[i] = 1;
+        } else if (ncGetVarInp->stride[i] > 1) {
+            hasStride = 1;
+        }
+        len = len * ((ncGetVarInp->count[i] - 1) / ncGetVarInp->stride[i] + 1);
+    }
+    return len;
+}
+

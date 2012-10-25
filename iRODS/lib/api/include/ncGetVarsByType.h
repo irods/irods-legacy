@@ -86,10 +86,10 @@ int
 rsNcGetVarsByType (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp, 
 ncGetVarOut_t **ncGetVarOut);
 int
-NcGetVarsByTypeForColl (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+rsNcGetVarsByTypeForColl (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
 ncGetVarOut_t **ncGetVarOut);
 int
-NcGetVarsByTypeForObj (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
+rsNcGetVarsByTypeForObj (rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
 ncGetVarOut_t **ncGetVarOut);
 #else
 #define RS_NC_GET_VARS_BY_TYPE NULL
@@ -130,6 +130,8 @@ clearNcGetVarInp (ncGetVarInp_t *ncGetVarInp);
 int
 _rsNcGetVarsByType (int ncid, ncGetVarInp_t *ncGetVarInp,
 ncGetVarOut_t **ncGetVarOut);
+int
+getSizeForGetVars (ncGetVarInp_t *ncGetVarInp);
 #ifdef  __cplusplus
 }
 #endif

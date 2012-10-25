@@ -16,6 +16,7 @@
 #include "dataObjInpOut.h"
 #include "ncOpen.h"
 #include "ncGetAggElement.h"
+#include "ncInq.h"
 #ifdef NETCDF_API
 #include "netcdf.h"
 #endif
@@ -38,9 +39,11 @@ typedef struct {
 
 typedef struct {
     int aggElemetInx;	/* index into the ncAggElement in ncAggInfo */
+    int objNcid0;	/* the opened object L1desc for element 0 */
     int objNcid;        /* the opened object L1desc */
-    int currentTimeInx;	/* the current time index */
     ncAggInfo_t *ncAggInfo;
+    ncInqOut_t *ncInqOut0;	/* ncInqOut for objNcid0 */
+    ncInqOut_t *ncInqOut;	/* ncInqOut for objNcid */
 } openedAggInfo_t;
 
 #if defined(RODS_SERVER) && defined(NETCDF_API)

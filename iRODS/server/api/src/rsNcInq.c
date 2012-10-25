@@ -46,32 +46,17 @@ rsNcInqColl (rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
 {
     int status;
     int l1descInx;
-    int *ncid = NULL;
     ncOpenInp_t ncOpenInp;
     ncInqInp_t myNcInqInp;
     int i;
 
     l1descInx = ncInqInp->ncid;
-    if (L1desc[l1descInx].openedAggInfo.objNcid == -1) {
-        /* not opened yet. Use aggElemetInx 0 */
-        bzero (&ncOpenInp, sizeof (ncOpenInp));
-        rstrcpy (ncOpenInp.objPath, 
-          L1desc[l1descInx].openedAggInfo.ncAggInfo->ncAggElement[0].objPath,
-          MAX_NAME_LEN);
-        status = rsNcOpenDataObj (rsComm, &ncOpenInp, &ncid);
-        if (status >= 0) {
-            L1desc[l1descInx].openedAggInfo.objNcid = *ncid;
-            free (ncid);
-            L1desc[l1descInx].openedAggInfo.aggElemetInx = 0;
-            L1desc[l1descInx].openedAggInfo.currentTimeInx = 0;
-        } else {
-            rodsLogError (LOG_ERROR, status,
-              "rsNcInqColl: rsNcInqColl error for %s", ncOpenInp.objPath);
-            return status;
-        }
+    /* always use element 0 file aggr collection */
+    if (L1desc[l1descInx].openedAggInfo.objNcid0 == -1) {
+        return NETCDF_AGG_ELE_FILE_NOT_OPENED;
     }
     myNcInqInp = *ncInqInp;
-    myNcInqInp.ncid = L1desc[l1descInx].openedAggInfo.objNcid;
+    myNcInqInp.ncid = L1desc[l1descInx].openedAggInfo.objNcid0;
     bzero (&myNcInqInp.condInput, sizeof (keyValPair_t));
     status = rsNcInqDataObj (rsComm, &myNcInqInp, ncInqOut);
     if (status < 0) {

@@ -208,7 +208,8 @@ getAttValue (int ncid, int varid, char *name, int dataType, int length,
 ncGetVarOut_t *value);
 unsigned int
 getNcIntVar (int ncid, int varid, int dataType, rodsLong_t inx);
-
+int
+getTimeInxInVar (ncInqOut_t *ncInqOut, int varid);
 #ifdef  __cplusplus
 }
 #endif
