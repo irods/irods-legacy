@@ -930,7 +930,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       rodsLogSql("SQLPrepare");
       stat = SQLPrepare(hstmt,  (unsigned char *)sql, SQL_NTS);
       if (stat != SQL_SUCCESS) {
-	 rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLPrepare failed: %d",
+	 rodsLog(LOG_ERROR, "cllExecSqlWithResultBV: SQLPrepare failed: %d",
 		 stat);
 	 return(-1);
       }
@@ -943,7 +943,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 	  rodsLogSql(tmpStr);
 	  if (stat != SQL_SUCCESS) {
 	     rodsLog(LOG_ERROR, 
-		     "cllExecSqlNoResult: SQLBindParameter failed: %d", stat);
+		     "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat);
 	     return(-1);
 	 }
       }
@@ -955,7 +955,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 	 rodsLogSql(tmpStr);
 	 if (stat != SQL_SUCCESS) {
 	    rodsLog(LOG_ERROR, 
-		    "cllExecSqlNoResult: SQLBindParameter failed: %d", stat);
+		    "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat);
 	    return(-1);
 	 }
       }
@@ -966,7 +966,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 		   "bindVar3=%s", bindVar3);
 	 rodsLogSql(tmpStr);
 	 if (stat != SQL_SUCCESS) {
-	    rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLBindParameter failed: %d",
+	    rodsLog(LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
 		    stat);
 	    return(-1);
 	 }
@@ -978,7 +978,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 		   "bindVar4=%s", bindVar4);
 	 rodsLogSql(tmpStr);
 	 if (stat != SQL_SUCCESS) {
-	    rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLBindParameter failed: %d",
+	    rodsLog(LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
 		    stat);
 	    return(-1);
 	 }
@@ -990,7 +990,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 		   "bindVar5=%s", bindVar5);
 	 rodsLogSql(tmpStr);
 	 if (stat != SQL_SUCCESS) {
-	    rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLBindParameter failed: %d",
+	    rodsLog(LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
 		    stat);
 	    return(-1);
 	 }
