@@ -1254,7 +1254,16 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
         if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
 	  *destRescGrpInfo)) != NULL) {
             /* have a good copy already */
+#if 0
 	    *destDataObjInfo = NULL;
+#else
+            dataObjInfo_t *myDataObjInfo = (dataObjInfo_t *)
+              malloc (sizeof (dataObjInfo_t));
+            *myDataObjInfo = **destDataObjInfo;
+            replSpecColl ((*destDataObjInfo)->specColl, 
+              &myDataObjInfo->specColl);
+            *destDataObjInfo = myDataObjInfo;
+#endif
             return (HAVE_GOOD_COPY);
 	}
     } else {

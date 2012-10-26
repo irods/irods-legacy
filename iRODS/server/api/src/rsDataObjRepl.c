@@ -256,6 +256,8 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
             if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
                 /* pass back the GOOD_COPY */
                 *outDataObjInfo = *destDataObjInfo;
+                replSpecColl (destDataObjInfo->specColl,  
+                  &outDataObjInfo->specColl);
 		outDataObjInfo->next = NULL;
             }
 	    if (backupFlag == 0 && myRescGrpInfo != NULL && 
