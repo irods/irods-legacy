@@ -115,10 +115,14 @@ testGetAggInfo (rcComm_t *conn, char *collPath)
 {
     ncOpenInp_t ncOpenInp;
     ncAggInfo_t *ncAggInfo = NULL;
-    int status;
+    int i, status;
     int ncid;
     ncInqInp_t ncInqInp;
     ncInqOut_t *ncInqOut = NULL;
+    ncGetVarInp_t ncGetVarInp;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+    ncGenVarOut_t *var;
+    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
 
     bzero (&ncOpenInp, sizeof (ncOpenInp));
     rstrcpy (ncOpenInp.objPath, collPath, MAX_NAME_LEN);
@@ -146,6 +150,38 @@ testGetAggInfo (rcComm_t *conn, char *collPath)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "rcNcInq error for %s", ncOpenInp.objPath);
+        return status;
+    }
+    if (status < 0) return status;
+
+    /* rcNcGetVarsByType - do the last var and 3 */
+    var =  &ncInqOut->var[ncInqOut->nvars-1];
+
+    for (i = 0; i < var->nvdims; i++) {
+        int dimId = var->dimId[i];
+        if (strcasecmp (ncInqOut->dim[dimId].name, "time") == 0) {
+            start[i] = 699;
+            count[i] = 4;
+        } else {
+            start[i] = 0;
+            count[i] = ncInqOut->dim[dimId].arrayLen;
+        }
+        stride[i] = 1;
+    }
+    bzero (&ncGetVarInp, sizeof (ncGetVarInp));
+    ncGetVarInp.dataType = var->dataType;
+    ncGetVarInp.ncid = ncid;
+    ncGetVarInp.varid = var->id;
+    ncGetVarInp.ndim = var->nvdims;
+    ncGetVarInp.start = start;
+    ncGetVarInp.count = count;
+    ncGetVarInp.stride = stride;
+
+    status = rcNcGetVarsByType (conn, &ncGetVarInp, &ncGetVarOut);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rcNcGetVarsByType error for %s of %s", var->name,
+          ncOpenInp.objPath);
         return status;
     }
     return status;

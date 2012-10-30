@@ -132,6 +132,8 @@ _rsNcGetVarsByType (int ncid, ncGetVarInp_t *ncGetVarInp,
 ncGetVarOut_t **ncGetVarOut);
 int
 getSizeForGetVars (ncGetVarInp_t *ncGetVarInp);
+int
+getDataTypeSize (int dataType);
 #ifdef  __cplusplus
 }
 #endif

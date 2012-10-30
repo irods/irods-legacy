@@ -195,13 +195,15 @@ openAggrFile (rsComm_t *rsComm, int l1descInx, int aggElemetInx)
     int *ncid = NULL;
 
     openedAggInfo = &L1desc[l1descInx].openedAggInfo;
+    if (aggElemetInx > 0 && aggElemetInx == openedAggInfo->aggElemetInx) 
+        return 0;
     bzero (&ncOpenInp, sizeof (ncOpenInp));
     rstrcpy (ncOpenInp.objPath,
       openedAggInfo->ncAggInfo->ncAggElement[aggElemetInx].objPath,
       MAX_NAME_LEN);
     status = rsNcOpenDataObj (rsComm, &ncOpenInp, &ncid);
     if (status >= 0) {
-        if (aggElemetInx > 0 && openedAggInfo->objNcid > 0) {
+        if (aggElemetInx > 0 && openedAggInfo->aggElemetInx > 0) {
             bzero (&ncCloseInp, sizeof (ncCloseInp));
             ncCloseInp.ncid = openedAggInfo->objNcid;
             status1 = rsNcClose (rsComm, &ncCloseInp);

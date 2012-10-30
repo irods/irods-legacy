@@ -302,3 +302,47 @@ getSizeForGetVars (ncGetVarInp_t *ncGetVarInp)
     return len;
 }
 
+int
+getDataTypeSize (int dataType)
+{
+    int size;
+
+    switch (dataType) {
+      case NC_CHAR:
+      case NC_BYTE:
+      case NC_UBYTE:
+        size = sizeof (char);
+        break;
+      case NC_STRING:
+        size = sizeof (char *);
+        break;
+      case NC_INT:
+      case NC_UINT:
+        size = sizeof (int);
+        break;
+      case NC_SHORT:
+      case NC_USHORT:
+        size = sizeof (short);
+        break;
+      case NC_INT64:
+      case NC_UINT64:
+        size = sizeof (rodsLong_t);
+        break;
+      case NC_FLOAT:
+        size = sizeof (float);
+        break;
+      case NC_DOUBLE:
+        size = sizeof (double);
+        break;
+        rodsLog (LOG_ERROR,
+          "getDataTypeSize: Unknow dataType %d", dataType);
+        return (NETCDF_INVALID_DATA_TYPE);
+    }
+    return size;
+}
+
+
+
+
+
+ 

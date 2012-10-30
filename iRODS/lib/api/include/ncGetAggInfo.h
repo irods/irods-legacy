@@ -38,7 +38,7 @@ typedef struct {
 #define NcAggInfo_PI "int numFiles; int flags; str  ncObjectName[MAX_NAME_LEN]; struct *NcAggElement_PI(numFiles);"
 
 typedef struct {
-    int aggElemetInx;	/* index into the ncAggElement in ncAggInfo */
+    int aggElemetInx;	/* index into the ncAggElement of objNcid */
     int objNcid0;	/* the opened object L1desc for element 0 */
     int objNcid;        /* the opened object L1desc */
     ncAggInfo_t *ncAggInfo;
