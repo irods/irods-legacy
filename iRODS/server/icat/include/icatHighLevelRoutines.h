@@ -105,6 +105,8 @@ int chlRegZone(rsComm_t *rsComm, char *zoneName, char *zoneType,
 	       char *zoneConnInfo, char *zoneComment);
 int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
 	       char *optionValue);
+int chlModZoneCollAcl(rsComm_t *rsComm, char* accessLevel, char *userName, 
+		  char* pathName);
 int chlDelZone(rsComm_t *rsComm, char *zoneName);
 int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName);
 int chlRenameColl(rsComm_t *rsComm, char *oldName, char *newName);

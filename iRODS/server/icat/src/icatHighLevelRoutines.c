@@ -2589,7 +2589,6 @@ int chlRegZone(rsComm_t *rsComm,
    return(0);
 }
 
-
 /* Modify a Zone (certain fields) */
 int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
 		 char *optionValue) {
@@ -2737,6 +2736,21 @@ int chlRenameColl(rsComm_t *rsComm, char *oldCollName, char *newCollName) {
    return(status);
 }
 
+/* Modify a Zone Collection ACL */
+int chlModZoneCollAcl(rsComm_t *rsComm, char* accessLevel, char *userName, 
+	       char* pathName) {
+  int status;
+  char *cp;
+  if (*pathName != '/') return(CAT_INVALID_ARGUMENT);
+  cp = pathName+1;
+  if (strstr(cp, "/") != NULL) return(CAT_INVALID_ARGUMENT);
+  status =  chlModAccessControl(rsComm, 0,
+				accessLevel,
+				userName,
+				rsComm->clientUser.rodsZone,
+				pathName);
+  return(status);
+}
 
 /* rename the local zone */
 int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
