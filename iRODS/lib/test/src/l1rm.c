@@ -5,7 +5,7 @@
 #include "rodsClient.h" 
 
 #define USER_NAME	"rods"
-#define RODS_ZONE	"temp"
+#define RODS_ZONE	"oneZone"
 
 /* NOTE : You have to change FILE_NAME, PAR_DIR_NAME, DIR_NAME and ADDR
  * for your own env */
@@ -57,6 +57,7 @@ main(int argc, char **argv)
         exit (7);
     }
 
+#if 0
     /* test rcRuleExecDel call */
 
     memset (&ruleExecDelInp, 0, sizeof (ruleExecDelInp));
@@ -72,6 +73,7 @@ main(int argc, char **argv)
     } else {
         printf ("ruleExecDelInp: status = %d\n", status);
     }
+#endif
 
 
     /* test rcDataObjUnlink call */
