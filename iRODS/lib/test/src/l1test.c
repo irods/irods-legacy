@@ -5,7 +5,7 @@
 #include "rodsClient.h" 
 
 #define USER_NAME	"rods"
-#define RODS_ZONE	"tempZone"
+#define RODS_ZONE	"wanZone"
 
 /* NOTE : You have to change FILE_NAME, PAR_DIR_NAME, DIR_NAME and ADDR
  * for your own env */

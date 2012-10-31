@@ -83,3 +83,14 @@ sumAggElementArraylen (ncAggInfo_t *ncAggInfo, int aggElemetInx)
     return arrayLenSum;
 }
 
+int
+freeAggInfo (ncAggInfo_t **ncAggInfo)
+{
+    if (ncAggInfo == NULL || *ncAggInfo ==NULL) return USER__NULL_INPUT_ERR;
+
+    if ((*ncAggInfo)->ncAggElement != NULL) free ((*ncAggInfo)->ncAggElement);
+    free (*ncAggInfo);
+    *ncAggInfo = NULL;
+    return 0;
+}
+

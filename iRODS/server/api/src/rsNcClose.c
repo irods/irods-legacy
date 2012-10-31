@@ -17,11 +17,8 @@
 int
 rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
 {
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost = NULL;
     int l1descInx;
     ncCloseInp_t myNcCloseInp;
-    openedDataObjInp_t dataObjCloseInp;
     int status = 0;
 
     if (getValByKey (&ncCloseInp->condInput, NATIVE_NETCDF_CALL_KW) != NULL) {
@@ -58,46 +55,121 @@ rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)
 	    freeL1desc (l1descInx);
 	    return 0;
 	}
-        remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
-	  L1desc[l1descInx].dataObjInfo, &rodsServerHost);
-        if (remoteFlag < 0) {
-            return (remoteFlag);
-        } else if (remoteFlag == LOCAL_HOST) {
-            status = nc_close (L1desc[l1descInx].l3descInx);
-            if (status != NC_NOERR) {
-                rodsLog (LOG_ERROR,
-                  "rsNcClose: nc_close %d for %s error, status = %d, %s",
-                  L1desc[l1descInx].l3descInx, 
-		  L1desc[l1descInx].dataObjInfo->objPath, status, 
-		  nc_strerror(status));
-                freeL1desc (l1descInx);
-                return (NETCDF_CLOSE_ERR + status);
-            }
+        if (L1desc[l1descInx].openedAggInfo.ncAggInfo != NULL) {
+            status = ncCloseColl (rsComm, l1descInx);
         } else {
-	    /* execute it remotely */
-	    bzero (&myNcCloseInp, sizeof (myNcCloseInp));
-	    myNcCloseInp.ncid = L1desc[l1descInx].l3descInx;
-	    addKeyVal (&myNcCloseInp.condInput, NATIVE_NETCDF_CALL_KW, "");
-            status = rcNcClose (rodsServerHost->conn, &myNcCloseInp);
-	    clearKeyVal (&myNcCloseInp.condInput);
-            if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "rsNcClose: rcNcClose %d for %s error, status = %d",
-                  L1desc[l1descInx].l3descInx,
-                  L1desc[l1descInx].dataObjInfo->objPath, status);
-                freeL1desc (l1descInx);
-                return (status);
-            }
-	}
-        bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
-        dataObjCloseInp.l1descInx = l1descInx;
-        status = rsDataObjClose (rsComm, &dataObjCloseInp);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "rsNcClose: rcNcClose %d error, status = %d",
-              l1descInx, status);
+            status = ncCloseDataObj (rsComm, l1descInx);
         }
     }
     return status;
+}
+
+int
+ncCloseColl (rsComm_t *rsComm, int l1descInx)
+{
+    openedDataObjInp_t dataObjCloseInp;
+    int status = 0;
+
+    status = closeAggrFiles (rsComm, l1descInx);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+         "ncCloseColl: closeAggrFiles error");
+    }
+    freeAggInfo (&L1desc[l1descInx].openedAggInfo.ncAggInfo);
+    freeNcInqOut (&L1desc[l1descInx].openedAggInfo.ncInqOut0);
+    freeNcInqOut (&L1desc[l1descInx].openedAggInfo.ncInqOut);
+
+    bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
+    dataObjCloseInp.l1descInx = l1descInx;
+    status = rsDataObjClose (rsComm, &dataObjCloseInp);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "ncCloseColl: rsDataObjClose %d error, status = %d",
+          l1descInx, status);
+    }
+    return status;
+}
+
+int
+ncCloseDataObj (rsComm_t *rsComm, int l1descInx)
+{
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost = NULL;
+    ncCloseInp_t myNcCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
+    int status = 0;
+
+    remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
+      L1desc[l1descInx].dataObjInfo, &rodsServerHost);
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == LOCAL_HOST) {
+        status = nc_close (L1desc[l1descInx].l3descInx);
+        if (status != NC_NOERR) {
+            rodsLog (LOG_ERROR,
+              "ncCloseDataObj: nc_close %d for %s error, status = %d, %s",
+              L1desc[l1descInx].l3descInx, 
+              L1desc[l1descInx].dataObjInfo->objPath, status, 
+            nc_strerror(status));
+            freeL1desc (l1descInx);
+            return (NETCDF_CLOSE_ERR + status);
+        }
+        L1desc[l1descInx].l3descInx = 0;
+    } else {
+        /* execute it remotely */
+        bzero (&myNcCloseInp, sizeof (myNcCloseInp));
+        myNcCloseInp.ncid = L1desc[l1descInx].l3descInx;
+        addKeyVal (&myNcCloseInp.condInput, NATIVE_NETCDF_CALL_KW, "");
+        status = rcNcClose (rodsServerHost->conn, &myNcCloseInp);
+        clearKeyVal (&myNcCloseInp.condInput);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "ncCloseDataObj: rcNcClose %d for %s error, status = %d",
+              L1desc[l1descInx].l3descInx,
+              L1desc[l1descInx].dataObjInfo->objPath, status);
+            freeL1desc (l1descInx);
+            return (status);
+        }
+    }
+    bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
+    dataObjCloseInp.l1descInx = l1descInx;
+    status = rsDataObjClose (rsComm, &dataObjCloseInp);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "ncCloseDataObj: rcNcClose %d error, status = %d",
+          l1descInx, status);
+    }
+    return status;
+}
+
+int
+closeAggrFiles (rsComm_t *rsComm, int l1descInx)
+{
+    int status;
+    openedAggInfo_t *openedAggInfo;
+    int savedStatus = 0;
+
+    openedAggInfo = &L1desc[l1descInx].openedAggInfo;
+    if (openedAggInfo->aggElemetInx > 0 && openedAggInfo->objNcid >= 0) {
+        status = ncCloseDataObj (rsComm, openedAggInfo->objNcid);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "closeAggrFiles: rcNcClose error for objNcid %d", 
+              openedAggInfo->objNcid);
+            savedStatus = status;
+        }
+    }
+    if (openedAggInfo->objNcid0 >= 0) {
+        status = ncCloseDataObj (rsComm,  openedAggInfo->objNcid0);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "closeAggrFiles: rcNcClose error for objNcid0 %d", 
+              openedAggInfo->objNcid0);
+            savedStatus = status;
+        }
+    }
+    openedAggInfo->aggElemetInx = openedAggInfo->objNcid = 
+      openedAggInfo->objNcid0 = -1;
+    return savedStatus;
 }
 

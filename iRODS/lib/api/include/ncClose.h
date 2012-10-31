@@ -29,6 +29,12 @@ typedef struct {
 /* prototype for the server handler */
 int
 rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp);
+int
+closeAggrFiles (rsComm_t *rsComm, int l1descInx);
+int
+ncCloseColl (rsComm_t *rsComm, int l1descInx);
+int
+ncCloseDataObj (rsComm_t *rsComm, int l1descInx);
 #else
 #define RS_NC_CLOSE NULL
 #endif

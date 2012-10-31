@@ -80,7 +80,8 @@ int
 addNcAggElement (ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo);
 rodsLong_t
 sumAggElementArraylen (ncAggInfo_t *ncAggInfo, int aggElemetInx);
-
+int
+freeAggInfo (ncAggInfo_t **ncAggInfo);
 #ifdef  __cplusplus
 }
 #endif
