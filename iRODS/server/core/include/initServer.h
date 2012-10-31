@@ -284,4 +284,6 @@ queAgentProc (agentProc_t *agentPorc, agentProc_t **agentPorcHead,
 irodsPosition_t position);
 int
 purgeLockFileDir (int chkLockFlag);
+int
+resolveMultiHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost);
 #endif	/* INIT_SERVER_H */

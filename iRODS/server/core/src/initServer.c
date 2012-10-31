@@ -2678,3 +2678,56 @@ purgeLockFileDir (int chkLockFlag)
     return savedStatus;
 }
 
+int
+resolveMultiHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
+{
+    char hostAddr[MAX_NAME_LEN];
+    char *tmpPtr1, *tmpPtr2;
+    int numHost = 0;
+    rodsServerHost_t *myRodsServerHost[MAX_NAME_LEN];
+    rodsServerHost_t *tmpRodsServerHost = NULL;
+    int status;
+    int noMore = False;
+
+    rstrcpy (hostAddr, addr->hostAddr, MAX_NAME_LEN);
+    tmpPtr1 = hostAddr;
+
+    while (noMore == False) {
+        if ((tmpPtr2 = strchr (tmpPtr1, ',')) != NULL) {
+            *tmpPtr2 = '\0';
+        } else {
+            noMore = True;
+        }
+        rstrcpy (addr->hostAddr, tmpPtr1, LONG_NAME_LEN);
+        status = resolveHost (addr, &tmpRodsServerHost);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "resolveMultiHost: resolveHost error for %s",
+              addr->hostAddr);
+        } else {
+            if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
+                /* it is a local host */
+                *rodsServerHost = tmpRodsServerHost;
+                return 0;
+            }
+            /* save it */
+            myRodsServerHost[numHost] = tmpRodsServerHost;
+            numHost++;
+        }
+        tmpPtr1 = tmpPtr2 + 1;
+    }
+    if (numHost == 0) {
+        rodsLog (LOG_ERROR,
+          "resolveMultiHost: no vaild address for %s",
+          hostAddr);
+        return SYS_INVALID_SERVER_HOST;
+    } else if (numHost == 1) {
+        *rodsServerHost = myRodsServerHost[0];
+        return 0;
+    } else {
+        unsigned int myRanNum = random() % numHost;
+        *rodsServerHost = myRodsServerHost[myRanNum];
+        return 0;
+    }
+}
+

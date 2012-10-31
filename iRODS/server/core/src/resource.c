@@ -1306,7 +1306,11 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
         memset (&addr, 0, sizeof (addr));
         rstrcpy (addr.hostAddr, tmpRescLoc, LONG_NAME_LEN);
         rstrcpy (addr.zoneName, tmpZoneName, NAME_LEN);
-        status = resolveHost (&addr, &tmpRodsServerHost);
+        if (strchr (addr.hostAddr, ',') != NULL) {
+            status = resolveMultiHost (&addr, &tmpRodsServerHost);
+        } else {
+            status = resolveHost (&addr, &tmpRodsServerHost);
+        }
         if (status < 0) {
             rodsLog (LOG_NOTICE,
               "procAndQueRescResult: resolveHost error for %s",
@@ -1767,3 +1771,4 @@ setDataTypeByResc (dataObjInfo_t *dataObjInfo)
     }
     return 0;
 }
+
