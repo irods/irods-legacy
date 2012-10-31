@@ -1308,6 +1308,9 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
         rstrcpy (addr.zoneName, tmpZoneName, NAME_LEN);
         if (strchr (addr.hostAddr, ',') != NULL) {
             status = resolveMultiHost (&addr, &tmpRodsServerHost);
+            if (status >= 0) 
+              rstrcpy (tmpRescLoc, tmpRodsServerHost->hostName->name,
+                rescLoc->len);
         } else {
             status = resolveHost (&addr, &tmpRodsServerHost);
         }
