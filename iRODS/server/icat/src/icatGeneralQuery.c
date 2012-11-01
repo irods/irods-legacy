@@ -611,13 +611,13 @@ int setTable(int column, int sel, int selectOption, int castOption) {
 	    if (castOption==1) {
 	       rstrcat(whereSQL, "cast (", MAX_SQL_SIZE_GQ);
 	    }
-	    if (doUpperCase==1) {
+	    if (doUpperCase==1 && castOption==0) {
 	       rstrcat(whereSQL, "upper (", MAX_SQL_SIZE_GQ);
 	    }
 	    rstrcat(whereSQL, Tables[i].tableName, MAX_SQL_SIZE_GQ);
 	    rstrcat(whereSQL, ".", MAX_SQL_SIZE_GQ);
 	    rstrcat(whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ);
-	    if (doUpperCase==1) {
+	    if (doUpperCase==1 && castOption==0) {
 	       rstrcat(whereSQL, " )", MAX_SQL_SIZE_GQ);
 	    }
 	    if (castOption==1) {
