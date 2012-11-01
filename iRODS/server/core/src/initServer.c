@@ -2685,6 +2685,7 @@ resolveMultiHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     char *tmpPtr1, *tmpPtr2;
     int numHost = 0;
     rodsServerHost_t *myRodsServerHost[MAX_NAME_LEN];
+    char *myRodsServerHostStr[MAX_NAME_LEN];
     rodsServerHost_t *tmpRodsServerHost = NULL;
     int status;
     int noMore = False;
@@ -2712,6 +2713,7 @@ resolveMultiHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
             }
             /* save it */
             myRodsServerHost[numHost] = tmpRodsServerHost;
+            myRodsServerHostStr[numHost] = tmpPtr1;
             numHost++;
         }
         tmpPtr1 = tmpPtr2 + 1;
@@ -2727,6 +2729,7 @@ resolveMultiHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     } else {
         unsigned int myRanNum = random() % numHost;
         *rodsServerHost = myRodsServerHost[myRanNum];
+        rstrcpy (addr->hostAddr, myRodsServerHostStr[myRanNum], LONG_NAME_LEN);
         return 0;
     }
 }

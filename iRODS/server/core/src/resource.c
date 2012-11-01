@@ -1309,8 +1309,7 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
         if (strchr (addr.hostAddr, ',') != NULL) {
             status = resolveMultiHost (&addr, &tmpRodsServerHost);
             if (status >= 0) 
-              rstrcpy (tmpRescLoc, tmpRodsServerHost->hostName->name,
-                rescLoc->len);
+              rstrcpy (tmpRescLoc, addr.hostAddr, rescLoc->len);
         } else {
             status = resolveHost (&addr, &tmpRodsServerHost);
         }
