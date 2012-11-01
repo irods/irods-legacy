@@ -103,6 +103,8 @@ getSeg (rcComm_t *conn, rodsLong_t segSize, int localFd,
 openedDataObjInp_t *dataObjReadInp, bytesBuf_t *dataObjReadInpBBuf,
 int bufLen, int *writtenSinceUpdated, fileRestartInfo_t *info,
 rodsLong_t *dataSegLen);
+int 
+catDataObj (rcComm_t *conn, char *objPath);
 #ifdef  __cplusplus
 }
 #endif

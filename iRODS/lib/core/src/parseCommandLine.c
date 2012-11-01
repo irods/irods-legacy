@@ -252,6 +252,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->ascitime=True;
             argv[i]="-Z";
          }
+         if (strcmp("--agginfo", argv[i])==0) {
+            rodsArgs->agginfo=True;
+            argv[i]="-Z";
+         }
 
 #endif
          if (strcmp("--exclude-from", argv[i])==0) {
@@ -430,6 +434,9 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 	 else {
 	    rodsLogLevel(LOG_DEBUG); /* multiple V's is for DEBUG level */
 	 }
+         break;
+      case 'w':
+         rodsArgs->writeFlag=True;
          break;
       case 'z':
          rodsArgs->zone=True;

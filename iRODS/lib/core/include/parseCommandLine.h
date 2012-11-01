@@ -26,6 +26,7 @@ typedef struct {
    int all;
    int accessControl;
    int admin;
+   int agginfo;
    int ascitime;
    int attr;
    int noattr;
@@ -104,6 +105,7 @@ typedef struct {
    int unmount;
    int verbose;
    int veryVerbose;
+   int writeFlag;
    int zone;
    char *zoneName;
    int verify;

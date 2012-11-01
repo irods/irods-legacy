@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "ho:Z";
+    optStr = "hlo:R:wZ";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
@@ -92,6 +92,7 @@ usage ()
 "Usage : inc [-hr] [--header] [--dim] [--ascitime] [--noattr] [-o outFile]",
 "[--var 'var1 var2 ...'] [--subset 'dimName1[start%stride%end] ...']|",
 "[--SUBSET dimName1[startVal%stride%endVal]...] dataObj|collection ... ",
+"Usage : inc --agginfo [-l]|[w] [-R resource] collection ...",
 " ",
 "Perform NETCDF operations on the input data objects. The data objects must",
 "be in NETCDF file format.",
@@ -133,6 +134,13 @@ usage ()
 "      with the NETCDF_API switched on (compile and linked without the",
 "      NETCDF C library)",
 " -r  recursive operation on the collction",
+"--agginfo - set or list the .aggInfo file of an aggregate collection",
+" -l  list (cat) the content of the .aggInfo file to std out. Can only be",
+"     used with --agginfo",
+" -w  Get the aggregate info of the aggregate collection and write it",
+"     into the .aggInfo file. Can only be used with --agginfo",
+" -R  resource - specifies the resource to store the .aggInfo file. Can", 
+"     only be used with --agginfo and -w options.", 
 "--ascitime - For 'time' variable, output time in asci local time instead of ",
 "      integer. e.g., 2006-05-01T08:30:00.",
 "--header - output the header info (info on atrributes, dimensions and",

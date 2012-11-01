@@ -27,6 +27,11 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset);
 int
 ncOperCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
 rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset);
+int
+catAggInfo (rcComm_t *conn, char *srcColl);
+int
+setAggInfo (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
+rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp);
 #ifdef  __cplusplus
 }
 #endif
