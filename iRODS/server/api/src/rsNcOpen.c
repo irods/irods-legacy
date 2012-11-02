@@ -152,6 +152,7 @@ rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
     clearKeyVal (&dataObjInp.condInput);
     if (portalOprOut != NULL) free (portalOprOut);
     if (status < 0) {
+        if (status == CAT_NO_ROWS_FOUND) status = NETCDF_AGG_INFO_FILE_ERR;
         rodsLogError (LOG_ERROR, status,
           "rsNcOpenColl: rsDataObjGet error for %s", dataObjInp.objPath);
         return status;
