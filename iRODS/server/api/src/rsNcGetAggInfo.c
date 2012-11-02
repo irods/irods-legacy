@@ -29,6 +29,7 @@ ncAggInfo_t **ncAggInfo)
     collEnt_t *collEnt;
     int status = 0;
     int status2 = 0;
+    int savedStatus = 0;
     ncOpenInp_t childNcOpenInp;
     ncAggElement_t *ncAggElement = NULL;
     bytesBuf_t *packedBBuf = NULL;
@@ -49,8 +50,14 @@ ncAggInfo_t **ncAggInfo)
     *ncAggInfo = (ncAggInfo_t *) calloc (1, sizeof (ncAggInfo_t));
     rstrcpy ((*ncAggInfo)->ncObjectName, ncOpenInp->objPath, MAX_NAME_LEN);
     while ((status2 = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
-        if (collEnt->objType != DATA_OBJ_T ||
+        if (collEnt->objType != DATA_OBJ_T || 
           strcmp (collEnt->dataType, "netcdf") != 0) {
+            if (strcmp (collEnt->dataName, NC_AGG_INFO_FILE_NAME) != 0) {
+                rodsLog (LOG_NOTICE,
+                  "rsNcGetAggInfo: dataType of %s in %s is not 'netcdf' type",
+                  collEnt->dataName, collInp.collName);
+                savedStatus = NETCDF_INVALID_DATA_TYPE;
+            }
             free (collEnt);
             continue;
         } 
@@ -106,6 +113,10 @@ ncAggInfo_t **ncAggInfo)
               "rsNcGetAggInfo: rsDataObjPut error for %s", dataObjInp.objPath);
         }
     }
-    return status;
+    if (status < 0) {
+        return status;
+    } else {
+        return savedStatus;
+    }
 }
 
