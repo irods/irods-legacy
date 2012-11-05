@@ -78,7 +78,11 @@ ncAggElement_t **ncAggElement)
     if (dataObjInfo == NULL || ncAggElement == NULL) 
       return USER__NULL_INPUT_ERR;
     *ncAggElement = NULL;
+#ifdef NETCDF4_API
+    status = nc_open (dataObjInfo->filePath, NC_NOWRITE|NC_NETCDF4, &ncid);
+#else
     status = nc_open (dataObjInfo->filePath, NC_NOWRITE, &ncid);
+#endif
     if (status != NC_NOERR) {
         rodsLog (LOG_ERROR,
           "_rsNcGetAggElement: nc_open %s error, status = %d, %s",

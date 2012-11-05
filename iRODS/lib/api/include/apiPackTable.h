@@ -124,6 +124,7 @@ packInstructArray_t ApiPackTable[] = {
 	{"NcRegGlobalAttrInp_PI", NcRegGlobalAttrInp_PI},
 	{"NcAggElement_PI", NcAggElement_PI},
 	{"NcAggInfo_PI", NcAggInfo_PI},
+	{"NcArchTimeSeriesInp_PI", NcArchTimeSeriesInp_PI},
 #endif
         /* endof NETCDF_CLIENT */
 #ifdef OOI_CI

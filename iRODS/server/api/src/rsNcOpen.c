@@ -14,7 +14,7 @@
 #include "physPath.h"
 #include "specColl.h"
 #include "getRemoteZoneResc.h"
-#include "dataObjGet.h"
+#include "miscServerFunct.h"
 
 int
 rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
@@ -95,9 +95,14 @@ rsNcOpenDataObj (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 	    /* execute it remotely with dataObjInfo->filePath */
 	    ncOpenInp_t myNcOpenInp;
 	    bzero (&myNcOpenInp, sizeof (myNcOpenInp));
+            myNcOpenInp.mode = ncOpenInp->mode;
 	    rstrcpy (myNcOpenInp.objPath, 
 	      L1desc[l1descInx].dataObjInfo->filePath, MAX_NAME_LEN);
 	    addKeyVal (&myNcOpenInp.condInput, NATIVE_NETCDF_CALL_KW, "");
+
+            if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+                return status;
+            }
 	    status = rcNcOpen (rodsServerHost->conn, &myNcOpenInp, &myncid);
 	    clearKeyVal (&myNcOpenInp.condInput);
 	    if (status < 0) {
@@ -110,6 +115,9 @@ rsNcOpenDataObj (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 	} 
 	L1desc[l1descInx].l3descInx = myncid;
     } else {
+        if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+            return status;
+        }
         status = rcNcOpen (rodsServerHost->conn, ncOpenInp, &myncid);
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -135,12 +143,13 @@ int
 rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 {
     int status;
-    dataObjInp_t dataObjInp;
-    portalOprOut_t *portalOprOut = NULL;
-    bytesBuf_t packedBBuf;
     ncAggInfo_t *ncAggInfo = NULL;
     int l1descInx;
 
+    status = readAggInfo (rsComm, ncOpenInp->objPath, &ncOpenInp->condInput,
+      &ncAggInfo);
+    if (status < 0) return status;
+#if 0
     /* get the aggInfo from file */
     bzero (&dataObjInp, sizeof (dataObjInp));
     bzero (&packedBBuf, sizeof (packedBBuf));
@@ -171,6 +180,7 @@ rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
           "rsNcOpenColl: No ncAggInfo for %s", dataObjInp.objPath);
         return NETCDF_AGG_INFO_FILE_ERR;
     }
+#endif
 
     l1descInx = allocL1desc ();
     if (l1descInx < 0) return l1descInx;

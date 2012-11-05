@@ -94,3 +94,24 @@ freeAggInfo (ncAggInfo_t **ncAggInfo)
     return 0;
 }
 
+int
+getNextAggEleObjPath (ncAggInfo_t *ncAggInfo, char *basePath, 
+char *nextObjPath) 
+{
+    int i;
+    char *tmpPtr;
+    int len = strlen (basePath);
+    int lastNum = 0;
+
+    for (i = 0; i < ncAggInfo->numFiles; i++) {
+        if (strncmp (basePath,  ncAggInfo->ncAggElement[i].objPath, len) == 0) {
+            tmpPtr = ncAggInfo->ncAggElement[i].objPath + len;
+            if (isdigit (*tmpPtr)) {
+                int myInt = atoi (tmpPtr);
+                if (myInt > lastNum) lastNum = myInt;
+            }
+        }
+    }
+    snprintf (nextObjPath, MAX_NAME_LEN, "%s%-d", basePath, lastNum + 1);
+    return 0;
+}

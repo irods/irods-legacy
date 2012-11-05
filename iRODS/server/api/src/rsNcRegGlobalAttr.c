@@ -49,7 +49,11 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
 
     bzero (&ncOpenInp, sizeof (ncOpenInp_t));
     rstrcpy (ncOpenInp.objPath, ncRegGlobalAttrInp->objPath, MAX_NAME_LEN);
+#ifdef NETCDF4_API
+    ncOpenInp.mode = NC_NOWRITE|NC_NETCDF4;
+#else
     ncOpenInp.mode = NC_NOWRITE;
+#endif
     addKeyVal (&ncOpenInp.condInput, NO_STAGING_KW, "");
 
     status = rsNcOpen (rsComm, &ncOpenInp, &ncidPtr);

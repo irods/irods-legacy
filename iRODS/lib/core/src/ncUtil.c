@@ -239,7 +239,11 @@ ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset)
             rodsArgs->longOption = True;
         }
     } else {
+#ifdef NETCDF4_API
+        ncOpenInp->mode = NC_NOWRITE|NC_NETCDF4;
+#else
         ncOpenInp->mode = NC_NOWRITE;
+#endif
         addKeyVal (&ncOpenInp->condInput, NO_STAGING_KW, "");
     }
     if (rodsArgs->var == True) {

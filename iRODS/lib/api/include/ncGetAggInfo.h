@@ -52,6 +52,9 @@ typedef struct {
 int
 rsNcGetAggInfo (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, 
 ncAggInfo_t **ncAggInfo);
+int
+readAggInfo (rsComm_t *rsComm, char *aggColl, keyValPair_t *condInput,
+ncAggInfo_t **ncAggInfo);
 #else
 #define RS_NC_GET_AGG_INFO NULL
 #endif
@@ -82,6 +85,9 @@ rodsLong_t
 sumAggElementArraylen (ncAggInfo_t *ncAggInfo, int aggElemetInx);
 int
 freeAggInfo (ncAggInfo_t **ncAggInfo);
+int
+getNextAggEleObjPath (ncAggInfo_t *ncAggInfo, char *basePath, 
+char *nextObjPath);
 #ifdef  __cplusplus
 }
 #endif
