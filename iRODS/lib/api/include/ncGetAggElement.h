@@ -24,11 +24,13 @@
 typedef struct {
     unsigned int startTime;
     unsigned int endTime;
+    char astartTime[NAME_LEN];
+    char aendTime[NAME_LEN];
     rodsLong_t arraylen;
     char objPath[MAX_NAME_LEN];
 } ncAggElement_t;
 
-#define NcAggElement_PI "int startTime; int endTime; double arraylen; str objPath[MAX_NAME_LEN];"
+#define NcAggElement_PI "int startTime; int endTime; str astartTime[NAME_LEN]; str aendTime[NAME_LEN]; double arraylen; str objPath[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_GET_AGG_ELEMENT rsNcGetAggElement

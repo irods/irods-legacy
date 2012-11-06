@@ -134,6 +134,8 @@ ncAggElement_t **ncAggElement)
       ncInqOut->var[j].dataType, 0);
     (*ncAggElement)->endTime = getNcIntVar (ncid, ncInqOut->var[j].id,
       ncInqOut->var[j].dataType, ncInqOut->dim[i].arrayLen - 1);
+    timeToAsci ((*ncAggElement)->startTime, (*ncAggElement)->astartTime);
+    timeToAsci ((*ncAggElement)->endTime, (*ncAggElement)->aendTime);
     rstrcpy ((*ncAggElement)->objPath, dataObjInfo->objPath, MAX_NAME_LEN);
 
     nc_close (ncid);
