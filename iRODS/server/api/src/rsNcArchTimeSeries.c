@@ -16,6 +16,8 @@
 #include "miscServerFunct.h"
 #include "dataObjCreate.h"
 #include "ncGetAggInfo.h"
+#include "ncClose.h"
+#include "ncInq.h"
 
 int
 rsNcArchTimeSeries (rsComm_t *rsComm,
@@ -63,6 +65,7 @@ _rsNcArchTimeSeries (rsComm_t *rsComm,
 ncArchTimeSeriesInp_t *ncArchTimeSeriesInp) 
 {
     int status;
+    int dimInx, varInx;
     rescGrpInfo_t *myRescGrpInfo = NULL;
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
@@ -71,12 +74,13 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     dataObjInp_t dataObjInp;
     int l1descInx;
     unsigned int endTime;
-    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN], basePath[MAX_NAME_LEN];
     ncOpenInp_t ncOpenInp;
+    ncCloseInp_t ncCloseInp;
     int *ncid = NULL;
     ncInqInp_t ncInqInp;
     ncInqOut_t *ncInqOut = NULL;
     ncAggInfo_t *ncAggInfo = NULL;
+    rodsLong_t startTimeInx, endTimeInx;
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, ncArchTimeSeriesInp->aggCollection,
@@ -86,7 +90,7 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     status = getRescGrpForCreate (rsComm, &dataObjInp, &myRescGrpInfo);
     clearKeyVal (&dataObjInp.condInput);
     
-    /* pick this first local host */
+    /* pick the first local host */
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
@@ -119,27 +123,6 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     }
     /* get here when tmpRescGrpInfo != NULL. Will do it locally */ 
 
-    status = readAggInfo (rsComm, ncArchTimeSeriesInp->aggCollection,
-      NULL, &ncAggInfo);
-    if (status < 0) return status;
-    endTime = ncAggInfo->ncAggElement[ncAggInfo->numFiles - 1].endTime;
-    addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
-    if ((status = splitPathByKey (ncArchTimeSeriesInp->aggCollection, 
-      myDir, myFile, '/')) < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "_rsNcArchTimeSeries: splitPathByKey error for %s",
-          ncArchTimeSeriesInp->aggCollection);
-        return status;
-    }
-    snprintf (basePath, MAX_NAME_LEN, "%s/%s", 
-      ncArchTimeSeriesInp->aggCollection, myFile);
-    getNextAggEleObjPath (ncAggInfo, basePath, dataObjInp.objPath);
-    l1descInx = _rsDataObjCreateWithRescInfo (rsComm, &dataObjInp,
-      tmpRescInfo, myRescGrpInfo->rescGroupName);
-    if (l1descInx < 0) {
-        freeAllRescGrpInfo (myRescGrpInfo);
-        return l1descInx;
-    }
     bzero (&ncOpenInp, sizeof (ncOpenInp_t));
     rstrcpy (ncOpenInp.objPath, ncArchTimeSeriesInp->objPath, MAX_NAME_LEN);
 #ifdef NETCDF4_API
@@ -167,6 +150,142 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
           "_rsNcArchTimeSeries: rcNcInq error for %s", ncOpenInp.objPath);
         return status;
     }
+    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
+    ncCloseInp.ncid = *ncid;
+    for (dimInx = 0; dimInx < ncInqOut->ndims; dimInx++) {
+        if (strcasecmp (ncInqOut->dim[dimInx].name, "time") == 0) break;
+    }
+    if (dimInx >= ncInqOut->ndims) {
+        /* no match */
+        rodsLog (LOG_ERROR,
+          "_rsNcArchTimeSeries: 'time' dim does not exist for %s",
+          ncOpenInp.objPath);
+        rsNcClose (rsComm, &ncCloseInp);
+        return NETCDF_DIM_MISMATCH_ERR;
+    }
+    for (varInx = 0; varInx < ncInqOut->nvars; varInx++) {
+        if (strcmp (ncInqOut->dim[dimInx].name, ncInqOut->var[varInx].name) 
+          == 0) {
+            break;
+        }
+    }
+    if (varInx >= ncInqOut->nvars) {
+        /* no match */
+        rodsLog (LOG_ERROR,
+          "_rsNcArchTimeSeries: 'time' var does not exist for %s",
+          ncOpenInp.objPath);
+        rsNcClose (rsComm, &ncCloseInp);
+        return NETCDF_DIM_MISMATCH_ERR;
+    }
+
+    if (ncInqOut->var[varInx].nvdims != 1) {
+        rodsLog (LOG_ERROR,
+          "_rsNcArchTimeSeries: 'time' .nvdims = %d is not 1 for %s",
+          ncInqOut->var[varInx].nvdims, ncOpenInp.objPath);
+        rsNcClose (rsComm, &ncCloseInp);
+        return NETCDF_DIM_MISMATCH_ERR;
+    }
+
+    if (getValByKey (&ncArchTimeSeriesInp->condInput, NEW_NETCDF_ARCH_KW) !=
+      NULL) {
+        /* this is a new archive */
+        startTimeInx = 0;
+    } else {
+        status = readAggInfo (rsComm, ncArchTimeSeriesInp->aggCollection,
+          NULL, &ncAggInfo);
+        if (status < 0) {
+            rsNcClose (rsComm, &ncCloseInp);
+            return status;
+        }
+        endTime = ncAggInfo->ncAggElement[ncAggInfo->numFiles - 1].endTime;
+
+        status = getTimeInxForArch (rsComm, *ncid, ncInqOut, dimInx, varInx, 
+          endTime, &startTimeInx);
+        if (status < 0) {
+            rsNcClose (rsComm, &ncCloseInp);
+            return status;
+        }
+    }
+    endTimeInx = ncInqOut->dim[dimInx].arrayLen;
+
+    addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
+    getNextAggEleObjPath (ncAggInfo, ncArchTimeSeriesInp->aggCollection, 
+      dataObjInp.objPath);
+    l1descInx = _rsDataObjCreateWithRescInfo (rsComm, &dataObjInp,
+      tmpRescInfo, myRescGrpInfo->rescGroupName);
+    if (l1descInx < 0) {
+        freeAllRescGrpInfo (myRescGrpInfo);
+        return l1descInx;
+    }
+
     return status;
+}
+
+int
+getTimeInxForArch (rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
+int dimInx, int varInx, unsigned int prevEndTime, rodsLong_t *startTimeInx)
+{
+    rodsLong_t start[1], count[1], stride[1];
+    rodsLong_t timeArrayLen, timeArrayRemain, readCount;
+    ncGetVarInp_t ncGetVarInp;
+    ncGetVarOut_t *ncGetVarOut = NULL;
+    void *bufPtr;
+    int i, status;
+    unsigned int myTime;
+
+
+    /* read backward, READ_TIME_SIZE at a time until it is <= prevEndTime */
+    timeArrayLen = timeArrayRemain = ncInqOut->dim[dimInx].arrayLen;
+    if (timeArrayRemain <= READ_TIME_SIZE) {
+        readCount = timeArrayRemain;
+    } else {
+        readCount = READ_TIME_SIZE;
+    }
+    bzero (&ncGetVarInp, sizeof (ncGetVarInp));
+    ncGetVarInp.dataType = ncInqOut->var[varInx].dataType;
+    ncGetVarInp.ncid = ncid;
+    ncGetVarInp.varid =  ncInqOut->var[varInx].id;
+    ncGetVarInp.ndim =  ncInqOut->var[varInx].nvdims;
+    ncGetVarInp.start = start;
+    ncGetVarInp.count = count;
+    ncGetVarInp.stride = stride;
+
+    while (timeArrayRemain > 0) {
+        int goodInx = -1;
+        timeArrayRemain -= readCount;
+        start[0] = timeArrayRemain;
+        count[0] = readCount;
+        stride[0] = 1;
+
+        status = rsNcGetVarsByType (rsComm, &ncGetVarInp, &ncGetVarOut);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "dumpNcInqOut: rcNcGetVarsByType error for %s",
+              ncInqOut->var[varInx].name);
+              return status;
+        }
+        bufPtr = ncGetVarOut->dataArray->buf;
+        
+        for (i = 0; i < ncGetVarOut->dataArray->len; i++) {
+            myTime = ncValueToInt (ncGetVarOut->dataArray->type, &bufPtr);
+            if (myTime < 0) {
+                /* XXXX close and clear */
+                return myTime;
+            }
+            if (myTime >= prevEndTime) break;
+            goodInx = i;
+        }
+        if (goodInx >= 0) {
+            *startTimeInx = timeArrayRemain + 1;
+            return 0;
+        }
+        if (timeArrayRemain <= READ_TIME_SIZE) {
+            readCount = timeArrayRemain;
+        } else {
+            readCount = READ_TIME_SIZE;
+        }
+    }
+    *startTimeInx = 0;
+    return NETCDF_DIM_MISMATCH_ERR;
 }
 

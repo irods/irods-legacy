@@ -1906,3 +1906,50 @@ getTimeInxInVar (ncInqOut_t *ncInqOut, int varid)
     return NETCDF_AGG_ELE_FILE_NO_TIME_DIM; 
 }
 
+unsigned int
+ncValueToInt (int dataType, void **invalue)
+{
+    void *value = *invalue;
+    char **ptr = (char **) invalue;
+    unsigned short myshort;
+    unsigned int myInt;
+    rodsLong_t myLong;
+    float myFloat;
+    double myDouble;
+
+    switch (dataType) {
+        case NC_SHORT:
+        case NC_USHORT:
+            myshort = *(short int*) value;
+            myInt = myshort;
+	    *ptr+= sizeof (short);	/* advance pointer */
+	    break;
+	case NC_INT:
+	case NC_UINT:
+            myInt = *(unsigned int*) value;
+	    *ptr+= sizeof (int);	/* advance pointer */
+	    break;
+	case NC_INT64:
+	case NC_UINT64:
+            myLong = *(rodsLong_t *) value;
+            myInt = myLong;
+	    *ptr+= sizeof (rodsLong_t);	/* advance pointer */
+	    break;
+	case NC_FLOAT:
+            myFloat = *(float *) value;
+            myInt = myFloat;
+	    *ptr+= sizeof (float);	/* advance pointer */
+	    break;
+	case NC_DOUBLE:
+            myDouble = *(double *) value;
+            myInt = myDouble;
+	    *ptr+= sizeof (double);	/* advance pointer */
+	    break;
+      default:
+        rodsLog (LOG_ERROR,
+          "ncValueToInt: Unknow dataType %d for time", dataType);
+        return (NETCDF_INVALID_DATA_TYPE);
+    }
+    return 0;
+}
+

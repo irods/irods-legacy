@@ -14,14 +14,18 @@
 #include "apiNumber.h"
 #include "initServer.h"
 #include "dataObjInpOut.h"
+#include "ncInq.h"
+
+#define READ_TIME_SIZE	100
 
 typedef struct {
+    rodsLong_t fileSizeLimit;
     char objPath[MAX_NAME_LEN];	/* The time series netcdf path to archive */ 
     char aggCollection[MAX_NAME_LEN];  /* target aggregate collection */
     keyValPair_t condInput;
 } ncArchTimeSeriesInp_t;
 
-#define NcArchTimeSeriesInp_PI "str objPath[MAX_NAME_LEN]; str aggCollection[MAX_NAME_LEN]; struct KeyValPair_PI;"
+#define NcArchTimeSeriesInp_PI "double fileSizeLimit; str objPath[MAX_NAME_LEN]; str aggCollection[MAX_NAME_LEN]; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_ARCH_TIME_SERIES rsNcArchTimeSeries
@@ -32,6 +36,10 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp);
 int
 _rsNcArchTimeSeries (rsComm_t *rsComm,
 ncArchTimeSeriesInp_t *ncArchTimeSeriesInp);
+int
+getTimeInxForArch (rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
+int dimInx, int varInx, unsigned int prevEndTime, rodsLong_t *startTimeInx);
+
 #else
 #define RS_NC_ARCH_TIME_SERIES NULL
 #endif
@@ -60,6 +68,7 @@ extern "C" {
 /* prototype for the client call */
 int
 rcNcArchTimeSeries (rcComm_t *conn, ncArchTimeSeriesInp_t *ncArchTimeSeriesInp);
+
 #ifdef  __cplusplus
 }
 #endif
