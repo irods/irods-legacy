@@ -151,7 +151,7 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
         return status;
     }
     bzero (&ncCloseInp, sizeof (ncCloseInp_t));
-    ncCloseInp.ncid = *ncid;
+    ncCloseInp.ncid = ncInqInp.ncid;
     for (dimInx = 0; dimInx < ncInqOut->ndims; dimInx++) {
         if (strcasecmp (ncInqOut->dim[dimInx].name, "time") == 0) break;
     }
@@ -199,15 +199,16 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
         }
         endTime = ncAggInfo->ncAggElement[ncAggInfo->numFiles - 1].endTime;
 
-        status = getTimeInxForArch (rsComm, *ncid, ncInqOut, dimInx, varInx, 
-          endTime, &startTimeInx);
+        status = getTimeInxForArch (rsComm, ncInqInp.ncid, ncInqOut, dimInx, 
+          varInx, endTime, &startTimeInx);
         if (status < 0) {
             rsNcClose (rsComm, &ncCloseInp);
             return status;
         }
     }
-    endTimeInx = ncInqOut->dim[dimInx].arrayLen;
+    endTimeInx = ncInqOut->dim[dimInx].arrayLen - 1;
 
+#if 0
     addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
     getNextAggEleObjPath (ncAggInfo, ncArchTimeSeriesInp->aggCollection, 
       dataObjInp.objPath);
@@ -217,6 +218,7 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
         freeAllRescGrpInfo (myRescGrpInfo);
         return l1descInx;
     }
+#endif
 
     return status;
 }
@@ -272,11 +274,11 @@ int dimInx, int varInx, unsigned int prevEndTime, rodsLong_t *startTimeInx)
                 /* XXXX close and clear */
                 return myTime;
             }
-            if (myTime >= prevEndTime) break;
+            if (myTime > prevEndTime) break;
             goodInx = i;
         }
         if (goodInx >= 0) {
-            *startTimeInx = timeArrayRemain + 1;
+            *startTimeInx = timeArrayRemain + goodInx + 1;
             return 0;
         }
         if (timeArrayRemain <= READ_TIME_SIZE) {

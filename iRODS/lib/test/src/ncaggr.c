@@ -6,12 +6,14 @@
 
 #define TEST_PATH1 "./ncdata/HFRadarCurrent"
 
-#define TEST_OBJ_PATH "/oneZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
-#define TEST_OBJ_COLL "/oneZone/home/rods/ncdata/HFRadarCurrent"
+#define TEST_OBJ_PATH "/wanZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
+#define TEST_OBJ_COLL "/wanZone/home/rods/ncdata/HFRadarCurrent"
+#define ARCH_COLLECTION "/wanZone/home/rods/agg/HFRADAR, Alaska - North Slope, 6km Resolution, Hourly RTV"
+#define ARCH_SRC_OBJ_PATH "/wanZone/home/rods/tds/HFRNET.AKNS.RTV/HFRADAR, Alaska - North Slope, 6km Resolution, Hourly RTV"
 #if 0
-#define RESC "hpResc1"
-#else
 #define RESC "demoResc1"
+#else
+#define RESC "hpResc1"
 #endif
 int
 genNcAggInfo (char *testPath, ncAggInfo_t *ncAggInfo);
@@ -27,7 +29,8 @@ int
 testGetAggInfo (rcComm_t *conn, char *collPath);
 int
 testAggNcOpr (rcComm_t *conn, char *collPath);
-
+int
+testArch (rcComm_t *conn, char *objPath, char *archCollection);
 int
 main(int argc, char **argv)
 {
@@ -82,6 +85,13 @@ main(int argc, char **argv)
     if (status < 0) {
         fprintf (stderr, "testAggNcOpr of %s failed. status = %d\n",
         TEST_OBJ_COLL, status);
+        exit (1);
+    }
+
+    status = testArch (conn, ARCH_SRC_OBJ_PATH, ARCH_COLLECTION);
+    if (status < 0) {
+        fprintf (stderr, "testArch of %s in %s failed. status = %d\n",
+        ARCH_SRC_OBJ_PATH, ARCH_COLLECTION, status);
         exit (1);
     }
 
@@ -199,6 +209,21 @@ testAggNcOpr (rcComm_t *conn, char *collPath)
     ncOpenInp.mode = NC_NOWRITE | NC_NETCDF4;
     addKeyVal (&ncOpenInp.condInput, DEST_RESC_NAME_KW, "hpResc1");
     status = rcNcOpen (conn, &ncOpenInp, &ncid);
+    return status;
+}
+
+int
+testArch (rcComm_t *conn, char *objPath, char *archCollection)
+{
+    ncArchTimeSeriesInp_t ncArchTimeSeriesInp;
+    int status;
+
+    bzero (&ncArchTimeSeriesInp, sizeof (ncArchTimeSeriesInp));
+    rstrcpy (ncArchTimeSeriesInp.objPath, objPath, MAX_NAME_LEN);
+    rstrcpy (ncArchTimeSeriesInp.aggCollection, archCollection, MAX_NAME_LEN);
+
+    status = rcNcArchTimeSeries (conn, &ncArchTimeSeriesInp);
+
     return status;
 }
 

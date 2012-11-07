@@ -1950,6 +1950,6 @@ ncValueToInt (int dataType, void **invalue)
           "ncValueToInt: Unknow dataType %d for time", dataType);
         return (NETCDF_INVALID_DATA_TYPE);
     }
-    return 0;
+    return myInt;
 }
 
