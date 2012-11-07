@@ -90,6 +90,8 @@ acAclPolicy { }
 # following permissions if you are using the PHP web browser:
 # ichmod -M read public /ZONE_NAME
 # ichmod -M read public /ZONE_NAME/home 
+# Post-3.2, you may also want to use 'iadmin modzonecollacl'; see the
+# help 'iadmin h modzonecollacl' for more information on this.
 #
 # --------------------------------------------------------------------------
 # This is a policy point for ticket-based access (added in iRODS 3.1),
