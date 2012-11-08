@@ -256,7 +256,19 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->agginfo=True;
             argv[i]="-Z";
          }
-
+         if (strcmp("--new", argv[i])==0) { 
+            rodsArgs->newFlag=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--new option needs an starting time index iput ");
+                    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->startTimeInxStr = strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
 #endif
          if (strcmp("--exclude-from", argv[i])==0) {
             rodsArgs->excludeFile=True;

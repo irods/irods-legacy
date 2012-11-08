@@ -68,6 +68,7 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
 {
     int status;
     int dimInx, varInx;
+    char *tmpStr;
     rescGrpInfo_t *myRescGrpInfo = NULL;
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
@@ -82,6 +83,7 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     ncInqOut_t *ncInqOut = NULL;
     ncAggInfo_t *ncAggInfo = NULL;
     rodsLong_t startTimeInx, endTimeInx;
+    rodsLong_t fileSizeLimit;
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, ncArchTimeSeriesInp->aggCollection,
@@ -200,10 +202,10 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
         return NETCDF_DIM_MISMATCH_ERR;
     }
 
-    if (getValByKey (&ncArchTimeSeriesInp->condInput, NEW_NETCDF_ARCH_KW) !=
-      NULL) {
+    if ((tmpStr = getValByKey (&ncArchTimeSeriesInp->condInput, 
+      NEW_NETCDF_ARCH_KW)) != NULL) {
         /* this is a new archive */
-        startTimeInx = 0;
+        startTimeInx = strtoll (tmpStr, 0, 0);
     } else {
         status = readAggInfo (rsComm, ncArchTimeSeriesInp->aggCollection,
           NULL, &ncAggInfo);
@@ -227,10 +229,15 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     }
     endTimeInx = ncInqOut->dim[dimInx].arrayLen - 1;
 
+    if (ncArchTimeSeriesInp->fileSizeLimit > 0) {
+        fileSizeLimit = ncArchTimeSeriesInp->fileSizeLimit * ONE_MILLION;
+    } else {
+        fileSizeLimit = ARCH_FILE_SIZE;
+    }
     status = archPartialTimeSeries (rsComm, ncInqOut, ncAggInfo, 
       L1desc[ncInqInp.ncid].l3descInx, varInx, 
       ncArchTimeSeriesInp->aggCollection, tmpRescGrpInfo, 
-      startTimeInx, endTimeInx, ARCH_FILE_SIZE);
+      startTimeInx, endTimeInx, fileSizeLimit);
 
     rsNcClose (rsComm, &ncCloseInp);
     freeRescGrpInfo (myRescGrpInfo);

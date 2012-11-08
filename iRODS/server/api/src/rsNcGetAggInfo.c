@@ -51,8 +51,10 @@ ncAggInfo_t **ncAggInfo)
     *ncAggInfo = (ncAggInfo_t *) calloc (1, sizeof (ncAggInfo_t));
     rstrcpy ((*ncAggInfo)->ncObjectName, ncOpenInp->objPath, MAX_NAME_LEN);
     while ((status2 = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
-        if (collEnt->objType != DATA_OBJ_T || 
-          strcmp (collEnt->dataType, "netcdf") != 0) {
+        if (collEnt->objType != DATA_OBJ_T) {
+            free (collEnt);
+            continue;
+        } else if (strcmp (collEnt->dataType, "netcdf") != 0) {
             if (strcmp (collEnt->dataName, NC_AGG_INFO_FILE_NAME) != 0) {
                 rodsLog (LOG_NOTICE,
                   "rsNcGetAggInfo: dataType of %s in %s is not 'netcdf' type",

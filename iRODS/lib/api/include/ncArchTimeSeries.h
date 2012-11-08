@@ -19,6 +19,7 @@
 
 #define READ_TIME_SIZE	100
 #define ARCH_FILE_SIZE  (1024*1024*1024)   /* archival file size */
+#define ONE_MILLION	(1024*1024)
 
 typedef struct {
     rodsLong_t fileSizeLimit;

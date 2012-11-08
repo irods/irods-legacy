@@ -67,6 +67,8 @@ typedef struct {
    char *mountType; 
    int replNum;
    char *replNumValue;
+   int newFlag;
+   char *startTimeInxStr;
    int noPage;
    int number;
    int numberValue;
