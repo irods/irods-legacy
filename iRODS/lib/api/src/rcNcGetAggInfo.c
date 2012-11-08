@@ -33,7 +33,7 @@ addNcAggElement (ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo)
                 return (NETCDF_VAR_COUNT_OUT_OF_RANGE);
             }
             memcpy (newElement, ncAggInfo->ncAggElement,
-              ncAggInfo->numFiles * sizeof (newElement));
+              ncAggInfo->numFiles * sizeof (ncAggElement_t));
             free (ncAggInfo->ncAggElement);
         }
         ncAggInfo->ncAggElement = newElement;
@@ -96,11 +96,11 @@ freeAggInfo (ncAggInfo_t **ncAggInfo)
 
 int
 getNextAggEleObjPath (ncAggInfo_t *ncAggInfo, char *aggCollection, 
-char *nextObjPath) 
+char *basePath) 
 {
     int i;
     char *tmpPtr;
-    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN], basePath[MAX_NAME_LEN];
+    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     int status;
     int len;
     int lastNum = 0;
@@ -121,6 +121,5 @@ char *nextObjPath)
             }
         }
     }
-    snprintf (nextObjPath, MAX_NAME_LEN, "%s%-d", basePath, lastNum + 1);
-    return 0;
+    return lastNum + 1;
 }

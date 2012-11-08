@@ -15,6 +15,7 @@
 #include "initServer.h"
 #include "dataObjInpOut.h"
 #include "ncInq.h"
+#include "ncGetAggInfo.h"
 
 #define READ_TIME_SIZE	100
 
@@ -39,7 +40,10 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp);
 int
 getTimeInxForArch (rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
 int dimInx, int varInx, unsigned int prevEndTime, rodsLong_t *startTimeInx);
-
+int
+archPartialTimeSeries (rsComm_t *rsComm, ncInqOut_t *ncInqOut,
+ncAggInfo_t *ncAggInfo, int srcNcid, int timeVarInx, char *aggCollection,
+rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx);
 #else
 #define RS_NC_ARCH_TIME_SERIES NULL
 #endif

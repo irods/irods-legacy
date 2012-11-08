@@ -18,6 +18,8 @@
 #include "ncGetAggInfo.h"
 #include "ncClose.h"
 #include "ncInq.h"
+#include "regDataObj.h"
+
 
 int
 rsNcArchTimeSeries (rsComm_t *rsComm,
@@ -72,7 +74,6 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     dataObjInp_t dataObjInp;
-    int l1descInx;
     unsigned int endTime;
     ncOpenInp_t ncOpenInp;
     ncCloseInp_t ncCloseInp;
@@ -208,17 +209,92 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     }
     endTimeInx = ncInqOut->dim[dimInx].arrayLen - 1;
 
-#if 0
-    addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
-    getNextAggEleObjPath (ncAggInfo, ncArchTimeSeriesInp->aggCollection, 
-      dataObjInp.objPath);
-    l1descInx = _rsDataObjCreateWithRescInfo (rsComm, &dataObjInp,
-      tmpRescInfo, myRescGrpInfo->rescGroupName);
-    if (l1descInx < 0) {
-        freeAllRescGrpInfo (myRescGrpInfo);
-        return l1descInx;
+    status = archPartialTimeSeries (rsComm, ncInqOut, ncAggInfo, 
+      L1desc[ncInqInp.ncid].l3descInx, varInx, 
+      ncArchTimeSeriesInp->aggCollection, tmpRescGrpInfo, 
+      startTimeInx, endTimeInx);
+
+    /* XXXX cleanup */
+    if (status < 0) {
+        return status;
     }
-#endif
+    return status;
+}
+
+int
+archPartialTimeSeries (rsComm_t *rsComm, ncInqOut_t *ncInqOut,
+ncAggInfo_t *ncAggInfo, int srcNcid, int timeVarInx, char *aggCollection, 
+rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx)
+{
+    dataObjInp_t dataObjInp;
+    int status, l1descInx;
+    rodsLong_t curTimeInx = startTimeInx;
+    ncVarSubset_t ncVarSubset;
+    openedDataObjInp_t dataObjCloseInp;
+    dataObjInfo_t *myDataObjInfo;
+    int nextNumber;
+    char basePath[MAX_NAME_LEN];
+    int inxInterval = 10;
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    bzero (&ncVarSubset, sizeof (ncVarSubset));
+    ncVarSubset.numVar = 0;
+    ncVarSubset.numSubset = 1;
+    rstrcpy (ncVarSubset.ncSubset[0].subsetVarName, 
+      ncInqOut->var[timeVarInx].name, NAME_LEN);
+    ncVarSubset.ncSubset[0].stride = 1;
+    addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
+    nextNumber = getNextAggEleObjPath (ncAggInfo, aggCollection, basePath);
+    if (nextNumber < 0) return nextNumber;
+    while (curTimeInx < endTimeInx) {
+        snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s%-d", basePath, 
+          nextNumber);
+        nextNumber++;
+        l1descInx = _rsDataObjCreateWithRescInfo (rsComm, &dataObjInp,
+          myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName);
+        if (l1descInx < 0) {
+            return l1descInx;
+        }
+        myDataObjInfo = L1desc[l1descInx].dataObjInfo;
+        rstrcpy (myDataObjInfo->dataType, "netcdf", NAME_LEN);
+        memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+        dataObjCloseInp.l1descInx = l1descInx;
+        ncVarSubset.ncSubset[0].start = curTimeInx;
+        if (curTimeInx + inxInterval > endTimeInx) {
+            ncVarSubset.ncSubset[0].end = endTimeInx;
+        } else {
+           ncVarSubset.ncSubset[0].end = curTimeInx + inxInterval - 1;
+        }
+        curTimeInx = ncVarSubset.ncSubset[0].end + 1;
+
+        mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", 
+          myDataObjInfo->filePath, getDefDirMode ());
+        status = dumpSubsetToFile (NULL, srcNcid, 0, ncInqOut, &ncVarSubset,
+          L1desc[l1descInx].dataObjInfo->filePath);
+        if (status >= 0) {
+            L1desc[l1descInx].bytesWritten = 1;
+        } else {
+            rodsLogError (LOG_ERROR, status,
+              "archPartialTimeSeries: rsRegDataObj for %s failed, status = %d",
+              myDataObjInfo->objPath, status);
+            L1desc[l1descInx].oprStatus = status;
+            rsDataObjClose (rsComm, &dataObjCloseInp);
+            return (status);
+        }
+        status = svrRegDataObj (rsComm, myDataObjInfo);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "archPartialTimeSeries: rsRegDataObj for %s failed, status = %d",
+              myDataObjInfo->objPath, status);
+            L1desc[l1descInx].oprStatus = status;
+            rsDataObjClose (rsComm, &dataObjCloseInp);
+            return (status);
+        } else {
+            myDataObjInfo->replNum = status;
+        }
+        L1desc[l1descInx].oprStatus = status;
+        rsDataObjClose (rsComm, &dataObjCloseInp);
+    }
 
     return status;
 }

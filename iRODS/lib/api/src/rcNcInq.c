@@ -600,7 +600,12 @@ rodsLong_t *stride, rodsLong_t *count)
     ncGetVarInp.count = count;
     ncGetVarInp.stride = stride;
 
-    status = rcNcGetVarsByType (conn, &ncGetVarInp, ncGetVarOut);
+    if (conn == NULL) {
+        /* local call */
+        status = _rsNcGetVarsByType (ncid, &ncGetVarInp, ncGetVarOut);
+    } else {
+        status = rcNcGetVarsByType (conn, &ncGetVarInp, ncGetVarOut);
+    }
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -972,7 +977,7 @@ ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName)
     if (status != NC_NOERR) {
         rodsLog (LOG_ERROR,
           "dumpSubsetToFile: nc_create error.  %s ", nc_strerror(status));
-        status = NETCDF_CREATE_ERR - status;
+        status = NETCDF_CREATE_ERR + status;
         return status;
     }
     /* attrbutes */
