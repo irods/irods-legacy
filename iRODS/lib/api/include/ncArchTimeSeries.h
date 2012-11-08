@@ -18,6 +18,7 @@
 #include "ncGetAggInfo.h"
 
 #define READ_TIME_SIZE	100
+#define ARCH_FILE_SIZE  (1024*1024*1024)   /* archival file size */
 
 typedef struct {
     rodsLong_t fileSizeLimit;
@@ -43,7 +44,8 @@ int dimInx, int varInx, unsigned int prevEndTime, rodsLong_t *startTimeInx);
 int
 archPartialTimeSeries (rsComm_t *rsComm, ncInqOut_t *ncInqOut,
 ncAggInfo_t *ncAggInfo, int srcNcid, int timeVarInx, char *aggCollection,
-rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx);
+rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx,
+rodsLong_t archFileSize);
 #else
 #define RS_NC_ARCH_TIME_SERIES NULL
 #endif

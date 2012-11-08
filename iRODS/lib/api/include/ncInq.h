@@ -212,6 +212,8 @@ int
 getTimeInxInVar (ncInqOut_t *ncInqOut, int varid);
 unsigned int
 ncValueToInt (int dataType, void **invalue);
+rodsLong_t
+getTimeStepSize (ncInqOut_t *ncInqOut);
 #ifdef  __cplusplus
 }
 #endif

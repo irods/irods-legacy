@@ -105,17 +105,21 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
             rodsLog (LOG_ERROR,
               "_rsNcArchTimeSeries: No local resc for NATIVE_NETCDF_CALL of %s",
               ncArchTimeSeriesInp->objPath);
+            freeRescGrpInfo (myRescGrpInfo);
             return SYS_INVALID_RESC_INPUT;
         } else {
             remoteFlag = resolveHostByRescInfo (myRescGrpInfo->rescInfo,
               &rodsServerHost);
             if (remoteFlag < 0) {
+                freeRescGrpInfo (myRescGrpInfo);
                 return (remoteFlag);
             } else if (remoteFlag == REMOTE_HOST) {
+                freeRescGrpInfo (myRescGrpInfo);
                 addKeyVal (&ncArchTimeSeriesInp->condInput, 
                   NATIVE_NETCDF_CALL_KW, "");
-                if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0)
+                if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
                     return status;
+                }
                 status = rcNcArchTimeSeries (rodsServerHost->conn,
                   ncArchTimeSeriesInp);
                 return status;
@@ -134,14 +138,17 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     addKeyVal (&ncOpenInp.condInput, NO_STAGING_KW, "");
 
     status = rsNcOpen (rsComm, &ncOpenInp, &ncid);
+    clearKeyVal (&ncOpenInp.condInput);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "_rsNcArchTimeSeries: rsNcOpen error for %s", ncOpenInp.objPath);
+        freeRescGrpInfo (myRescGrpInfo);
         return status;
     }
-
     bzero (&ncInqInp, sizeof (ncInqInp));
     ncInqInp.ncid = *ncid;
+    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
+    ncCloseInp.ncid = *ncid;
     free (ncid);
     ncInqInp.paramType = NC_ALL_TYPE;
     ncInqInp.flags = NC_ALL_FLAG;
@@ -149,10 +156,10 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "_rsNcArchTimeSeries: rcNcInq error for %s", ncOpenInp.objPath);
+        rsNcClose (rsComm, &ncCloseInp);
+        freeRescGrpInfo (myRescGrpInfo);
         return status;
     }
-    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
-    ncCloseInp.ncid = ncInqInp.ncid;
     for (dimInx = 0; dimInx < ncInqOut->ndims; dimInx++) {
         if (strcasecmp (ncInqOut->dim[dimInx].name, "time") == 0) break;
     }
@@ -162,6 +169,8 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
           "_rsNcArchTimeSeries: 'time' dim does not exist for %s",
           ncOpenInp.objPath);
         rsNcClose (rsComm, &ncCloseInp);
+        freeRescGrpInfo (myRescGrpInfo);
+        freeNcInqOut (&ncInqOut);
         return NETCDF_DIM_MISMATCH_ERR;
     }
     for (varInx = 0; varInx < ncInqOut->nvars; varInx++) {
@@ -176,6 +185,8 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
           "_rsNcArchTimeSeries: 'time' var does not exist for %s",
           ncOpenInp.objPath);
         rsNcClose (rsComm, &ncCloseInp);
+        freeRescGrpInfo (myRescGrpInfo);
+        freeNcInqOut (&ncInqOut);
         return NETCDF_DIM_MISMATCH_ERR;
     }
 
@@ -184,6 +195,8 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
           "_rsNcArchTimeSeries: 'time' .nvdims = %d is not 1 for %s",
           ncInqOut->var[varInx].nvdims, ncOpenInp.objPath);
         rsNcClose (rsComm, &ncCloseInp);
+        freeRescGrpInfo (myRescGrpInfo);
+        freeNcInqOut (&ncInqOut);
         return NETCDF_DIM_MISMATCH_ERR;
     }
 
@@ -196,6 +209,8 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
           NULL, &ncAggInfo);
         if (status < 0) {
             rsNcClose (rsComm, &ncCloseInp);
+            freeRescGrpInfo (myRescGrpInfo);
+            freeNcInqOut (&ncInqOut);
             return status;
         }
         endTime = ncAggInfo->ncAggElement[ncAggInfo->numFiles - 1].endTime;
@@ -204,6 +219,9 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
           varInx, endTime, &startTimeInx);
         if (status < 0) {
             rsNcClose (rsComm, &ncCloseInp);
+            freeRescGrpInfo (myRescGrpInfo);
+            freeNcInqOut (&ncInqOut);
+            freeAggInfo (&ncAggInfo);
             return status;
         }
     }
@@ -212,11 +230,26 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
     status = archPartialTimeSeries (rsComm, ncInqOut, ncAggInfo, 
       L1desc[ncInqInp.ncid].l3descInx, varInx, 
       ncArchTimeSeriesInp->aggCollection, tmpRescGrpInfo, 
-      startTimeInx, endTimeInx);
+      startTimeInx, endTimeInx, ARCH_FILE_SIZE);
 
-    /* XXXX cleanup */
-    if (status < 0) {
-        return status;
+    rsNcClose (rsComm, &ncCloseInp);
+    freeRescGrpInfo (myRescGrpInfo);
+    freeNcInqOut (&ncInqOut);
+    freeAggInfo (&ncAggInfo);
+
+    if (status >= 0) {
+        /* update agginfo */
+        rstrcpy (ncOpenInp.objPath,  ncArchTimeSeriesInp->aggCollection, 
+          MAX_NAME_LEN);
+        ncOpenInp.mode = NC_WRITE;
+        status = rsNcGetAggInfo (rsComm, &ncOpenInp, &ncAggInfo);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "_rsNcArchTimeSeries: rsNcGetAggInfo error for %s", 
+            ncOpenInp.objPath);
+        } else {
+            freeAggInfo (&ncAggInfo);
+        }
     }
     return status;
 }
@@ -224,7 +257,8 @@ ncArchTimeSeriesInp_t *ncArchTimeSeriesInp)
 int
 archPartialTimeSeries (rsComm_t *rsComm, ncInqOut_t *ncInqOut,
 ncAggInfo_t *ncAggInfo, int srcNcid, int timeVarInx, char *aggCollection, 
-rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx)
+rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx,
+rodsLong_t archFileSize)
 {
     dataObjInp_t dataObjInp;
     int status, l1descInx;
@@ -234,8 +268,18 @@ rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx)
     dataObjInfo_t *myDataObjInfo;
     int nextNumber;
     char basePath[MAX_NAME_LEN];
-    int inxInterval = 10;
+    int inxInterval;
+    rodsLong_t timeStepSize;
 
+    timeStepSize = getTimeStepSize (ncInqOut);
+    if (timeStepSize < 0) {
+        status = timeStepSize;
+        rodsLogError (LOG_ERROR, status,
+          "archPartialTimeSeries: getTimeStepSize error for %s",
+          aggCollection);
+        return status;
+    }
+    inxInterval = archFileSize/timeStepSize + 1;
     bzero (&dataObjInp, sizeof (dataObjInp));
     bzero (&ncVarSubset, sizeof (ncVarSubset));
     ncVarSubset.numVar = 0;
@@ -244,9 +288,14 @@ rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx)
       ncInqOut->var[timeVarInx].name, NAME_LEN);
     ncVarSubset.ncSubset[0].stride = 1;
     addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
-    nextNumber = getNextAggEleObjPath (ncAggInfo, aggCollection, basePath);
-    if (nextNumber < 0) return nextNumber;
+    if (ncAggInfo == NULL) {
+        nextNumber = 0;
+    } else {
+        nextNumber = getNextAggEleObjPath (ncAggInfo, aggCollection, basePath);
+        if (nextNumber < 0) return nextNumber;
+    }
     while (curTimeInx < endTimeInx) {
+        rodsLong_t remainingInx;
         snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s%-d", basePath, 
           nextNumber);
         nextNumber++;
@@ -260,6 +309,10 @@ rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx)
         memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
         dataObjCloseInp.l1descInx = l1descInx;
         ncVarSubset.ncSubset[0].start = curTimeInx;
+        /* if it is close enough, just do all of it */
+        remainingInx = endTimeInx - curTimeInx + 1;
+        if ((inxInterval + inxInterval/2 + 1) >= remainingInx)
+          inxInterval = remainingInx;
         if (curTimeInx + inxInterval > endTimeInx) {
             ncVarSubset.ncSubset[0].end = endTimeInx;
         } else {

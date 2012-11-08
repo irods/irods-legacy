@@ -1958,3 +1958,33 @@ ncValueToInt (int dataType, void **invalue)
     return myInt;
 }
 
+rodsLong_t
+getTimeStepSize (ncInqOut_t *ncInqOut)
+{
+    int timeDimInx;
+    int i, j;
+    rodsLong_t  totalSize = 0;
+
+    for (timeDimInx = 0; timeDimInx < ncInqOut->ndims; timeDimInx++) {
+        if (strcasecmp (ncInqOut->dim[timeDimInx].name, "time") == 0) break;
+    }
+    if (timeDimInx >= ncInqOut->ndims) {
+        /* no match */
+        rodsLog (LOG_ERROR,
+          "_rsNcArchTimeSeries: 'time' dim does not exist");
+        return NETCDF_DIM_MISMATCH_ERR;
+    }
+
+    for (i = 0; i < ncInqOut->nvars; i++) {
+        int varSize = getDataTypeSize (ncInqOut->var[i].dataType);
+        for (j = 0; j < ncInqOut->var[i].nvdims; j++) {
+            int dimId = ncInqOut->var[i].dimId[j];
+            /* skip time dim */
+            if (dimId == timeDimInx) continue;
+            varSize *= ncInqOut->dim[dimId].arrayLen;
+        }
+        totalSize += varSize;
+    }
+    return totalSize;
+}
+    

@@ -6,14 +6,19 @@
 
 #define TEST_PATH1 "./ncdata/HFRadarCurrent"
 
-#define TEST_OBJ_PATH "/wanZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
-#define TEST_OBJ_COLL "/wanZone/home/rods/ncdata/HFRadarCurrent"
+#define TEST_OBJ_PATH "/oneZone/home/rods/ncdata/HFRadarCurrent/SFCurrent1_1.nc"
+#define TEST_OBJ_COLL "/oneZone/home/rods/ncdata/HFRadarCurrent"
+#if 0
 #define ARCH_COLLECTION "/wanZone/home/rods/agg/HFRADAR, Alaska - North Slope, 6km Resolution, Hourly RTV"
 #define ARCH_SRC_OBJ_PATH "/wanZone/home/rods/tds/HFRNET.AKNS.RTV/HFRADAR, Alaska - North Slope, 6km Resolution, Hourly RTV"
-#if 0
-#define RESC "demoResc1"
 #else
+#define ARCH_COLLECTION "/oneZone/home/rods/agg/HFRADAR, Alaska - North Slope, 6km Resolution, Hourly RTV"
+#define ARCH_SRC_OBJ_PATH "/oneZone/home/rods/tds/HF RADAR, Alaska, North Slope/HFRADAR, Alaska - North Slope, 6km Resolution, Hourly RTV"
+#endif
+#if 0
 #define RESC "hpResc1"
+#else
+#define RESC "demoResc1"
 #endif
 int
 genNcAggInfo (char *testPath, ncAggInfo_t *ncAggInfo);
@@ -111,12 +116,14 @@ int
 testGetAggElement (rcComm_t *conn, char *objPath)
 {
     ncOpenInp_t ncOpenInp;
+    
     ncAggElement_t *ncAggElement = NULL;
     int status;
 
     bzero (&ncOpenInp, sizeof (ncOpenInp));
     rstrcpy (ncOpenInp.objPath, objPath, MAX_NAME_LEN);
     status = rcNcGetAggElement (conn, &ncOpenInp, &ncAggElement);
+
     return status;
 }
 
@@ -133,6 +140,7 @@ testGetAggInfo (rcComm_t *conn, char *collPath)
     ncGetVarOut_t *ncGetVarOut = NULL;
     ncGenVarOut_t *var;
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
+    ncCloseInp_t ncCloseInp;
 
     bzero (&ncOpenInp, sizeof (ncOpenInp));
     rstrcpy (ncOpenInp.objPath, collPath, MAX_NAME_LEN);
@@ -194,6 +202,10 @@ testGetAggInfo (rcComm_t *conn, char *collPath)
           ncOpenInp.objPath);
         return status;
     }
+    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
+    ncCloseInp.ncid = ncid;
+    rcNcClose (conn, &ncCloseInp);
+
     return status;
 }
 
@@ -203,12 +215,18 @@ testAggNcOpr (rcComm_t *conn, char *collPath)
     ncOpenInp_t ncOpenInp;
     int ncid;
     int status;
+    ncCloseInp_t ncCloseInp;
 
     bzero (&ncOpenInp, sizeof (ncOpenInp));
     rstrcpy (ncOpenInp.objPath, collPath, MAX_NAME_LEN);
     ncOpenInp.mode = NC_NOWRITE | NC_NETCDF4;
     addKeyVal (&ncOpenInp.condInput, DEST_RESC_NAME_KW, "hpResc1");
     status = rcNcOpen (conn, &ncOpenInp, &ncid);
+    if (status < 0) return status;
+    bzero (&ncCloseInp, sizeof (ncCloseInp_t));
+    ncCloseInp.ncid = ncid;
+    rcNcClose (conn, &ncCloseInp);
+
     return status;
 }
 
