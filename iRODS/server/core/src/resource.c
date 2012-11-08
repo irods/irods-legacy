@@ -991,7 +991,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
         }
     }
 
-    if (strcmp (optionStr, "preferred") == 0) {
+    if (optionStr != NULL && strcmp (optionStr, "preferred") == 0) {
         /* checkinput first, then default */
         status = getRescInfoAndStatus (rsComm, NULL, condInput,
           &myRescGrpInfo);
@@ -1033,7 +1033,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
                 status = 0;
             }
         }
-    } else if (strcmp (optionStr, "forced") == 0 && 
+    } else if (optionStr != NULL && strcmp (optionStr, "forced") == 0 && 
       rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         if (defRescGrpInfo != NULL) {
             myRescGrpInfo = defRescGrpInfo;
