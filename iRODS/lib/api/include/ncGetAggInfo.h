@@ -86,6 +86,8 @@ sumAggElementArraylen (ncAggInfo_t *ncAggInfo, int aggElemetInx);
 int
 freeAggInfo (ncAggInfo_t **ncAggInfo);
 int
+getAggBasePath (char *aggCollection, char *basePath);
+int
 getNextAggEleObjPath (ncAggInfo_t *ncAggInfo, char *aggCollection,
 char *nextObjPath);
 #ifdef  __cplusplus

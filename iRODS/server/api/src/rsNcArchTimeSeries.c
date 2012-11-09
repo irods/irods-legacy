@@ -297,6 +297,8 @@ rodsLong_t archFileSize)
     addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
     if (ncAggInfo == NULL) {
         nextNumber = 0;
+        status = getAggBasePath (aggCollection, basePath);
+        if (status < 0) return status;
     } else {
         nextNumber = getNextAggEleObjPath (ncAggInfo, aggCollection, basePath);
         if (nextNumber < 0) return nextNumber;

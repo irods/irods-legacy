@@ -94,23 +94,33 @@ freeAggInfo (ncAggInfo_t **ncAggInfo)
     return 0;
 }
 
+int 
+getAggBasePath (char *aggCollection, char *basePath)
+{
+    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+    int status;
+
+    if ((status = splitPathByKey (aggCollection, myDir, myFile, '/')) < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "getAggBasePath: splitPathByKey error for %s", aggCollection);
+        return status;
+    }
+    snprintf (basePath, MAX_NAME_LEN, "%s/%s", aggCollection, myFile);
+    return 0;
+}
+
 int
 getNextAggEleObjPath (ncAggInfo_t *ncAggInfo, char *aggCollection, 
 char *basePath) 
 {
     int i;
     char *tmpPtr;
-    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     int status;
     int len;
     int lastNum = 0;
 
-    if ((status = splitPathByKey (aggCollection, myDir, myFile, '/')) < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "getNextAggEleObjPath: splitPathByKey error for %s", aggCollection);
-        return status;
-    }
-    snprintf (basePath, MAX_NAME_LEN, "%s/%s", aggCollection, myFile);
+    status = getAggBasePath (aggCollection, basePath);
+    if (status < 0) return status;
     len = strlen (basePath);
     for (i = 0; i < ncAggInfo->numFiles; i++) {
         if (strncmp (basePath,  ncAggInfo->ncAggElement[i].objPath, len) == 0) {
