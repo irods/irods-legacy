@@ -36,6 +36,10 @@ int
 rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
 int
 _rsNcInqId (int type, int ncid, char *name, int **outId);
+int
+rsNcInqIdDataObj (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
+int
+rsNcInqIdColl (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
 #else
 #define RS_NC_INQ_ID NULL
 #endif

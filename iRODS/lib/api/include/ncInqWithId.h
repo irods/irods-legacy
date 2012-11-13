@@ -37,6 +37,12 @@ ncInqWithIdOut_t **ncInqWithIdOut);
 int
 _rsNcInqWithId (int type, int ncid, int myid, char *name, 
 ncInqWithIdOut_t **ncInqWithIdOut);
+int
+rsNcInqWithIdColl (rsComm_t *rsComm, ncInqIdInp_t *ncInqWithIdInp, 
+ncInqWithIdOut_t **ncInqWithIdOut);
+int
+rsNcInqWithIdDataObj (rsComm_t *rsComm, ncInqIdInp_t *ncInqWithIdInp,
+ncInqWithIdOut_t **ncInqWithIdOut);
 #else
 #define RS_NC_INQ_WITH_ID NULL
 #endif

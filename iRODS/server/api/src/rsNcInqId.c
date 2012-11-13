@@ -16,8 +16,6 @@
 int
 rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
 {
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost = NULL;
     int l1descInx;
     ncInqIdInp_t myNcInqIdInp;
     int status = 0;
@@ -46,33 +44,11 @@ rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
 	status = rcNcInqId (L1desc[l1descInx].remoteZoneHost->conn,
 	  &myNcInqIdInp, outId);
     } else {
-        remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
-	  L1desc[l1descInx].dataObjInfo, &rodsServerHost);
-        if (remoteFlag < 0) {
-            return (remoteFlag);
-        } else if (remoteFlag == LOCAL_HOST) {
-	    status = _rsNcInqId (ncInqIdInp->paramType, 
-	      L1desc[l1descInx].l3descInx, ncInqIdInp->name, outId);
-            if (status < 0) {
-                return status;
-            }
+        if (L1desc[l1descInx].openedAggInfo.ncAggInfo != NULL) {
+            status = rsNcInqIdColl (rsComm, ncInqIdInp, outId);
         } else {
-	    /* execute it remotely */
-	    bzero (&myNcInqIdInp, sizeof (myNcInqIdInp));
-	    myNcInqIdInp.paramType = ncInqIdInp->paramType;
-	    myNcInqIdInp.ncid = L1desc[l1descInx].l3descInx;
-	    rstrcpy (myNcInqIdInp.name, ncInqIdInp->name, MAX_NAME_LEN);
-	    addKeyVal (&myNcInqIdInp.condInput, NATIVE_NETCDF_CALL_KW, "");
-            status = rcNcInqId (rodsServerHost->conn, &myNcInqIdInp, outId);
-	    clearKeyVal (&myNcInqIdInp.condInput);
-            if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "rsNcInqId: rcNcInqId %d for %s error, status = %d",
-                  L1desc[l1descInx].l3descInx,
-                  L1desc[l1descInx].dataObjInfo->objPath, status);
-                return (status);
-            }
-	}
+            status = rsNcInqIdDataObj (rsComm, ncInqIdInp, outId);
+        }
     }
     return status;
 }
@@ -104,6 +80,68 @@ _rsNcInqId (int paramType, int ncid, char *name, int **outId)
           "_rsNcInqId: nc_inq error paramType %d for %s. %s ", 
 	  paramType, name, nc_strerror(status));
         status = NETCDF_INQ_ID_ERR + status;
+    }
+    return status;
+}
+
+int
+rsNcInqIdDataObj (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
+{
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost = NULL;
+    int l1descInx;
+    ncInqIdInp_t myNcInqIdInp;
+    int status = 0;
+
+    remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
+      L1desc[l1descInx].dataObjInfo, &rodsServerHost);
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == LOCAL_HOST) {
+        status = _rsNcInqId (ncInqIdInp->paramType,
+          L1desc[l1descInx].l3descInx, ncInqIdInp->name, outId);
+        if (status < 0) {
+            return status;
+        }
+    } else {
+        /* execute it remotely */
+        bzero (&myNcInqIdInp, sizeof (myNcInqIdInp));
+        myNcInqIdInp.paramType = ncInqIdInp->paramType;
+        myNcInqIdInp.ncid = L1desc[l1descInx].l3descInx;
+        rstrcpy (myNcInqIdInp.name, ncInqIdInp->name, MAX_NAME_LEN);
+        addKeyVal (&myNcInqIdInp.condInput, NATIVE_NETCDF_CALL_KW, "");
+        status = rcNcInqId (rodsServerHost->conn, &myNcInqIdInp, outId);
+        clearKeyVal (&myNcInqIdInp.condInput);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "rsNcInqIdDataObj: rcNcInqId %d for %s error, status = %d",
+              L1desc[l1descInx].l3descInx,
+              L1desc[l1descInx].dataObjInfo->objPath, status);
+            return (status);
+        }
+    }
+    return status;
+}
+
+int
+rsNcInqIdColl (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
+{
+    int status;
+    int l1descInx;
+    ncInqIdInp_t myNcInqIdInp;
+
+    l1descInx = ncInqIdInp->ncid;
+    /* always use element 0 file aggr collection */
+    if (L1desc[l1descInx].openedAggInfo.objNcid0 == -1) {
+        return NETCDF_AGG_ELE_FILE_NOT_OPENED;
+    }
+    myNcInqIdInp = *ncInqIdInp;
+    myNcInqIdInp.ncid = L1desc[l1descInx].openedAggInfo.objNcid0;
+    bzero (&myNcInqIdInp.condInput, sizeof (keyValPair_t));
+    status = rsNcInqIdDataObj (rsComm, &myNcInqIdInp, outId);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "rsNcInqIdColl: rsNcInqIdDataObj error for l1descInx %d", l1descInx);
     }
     return status;
 }
