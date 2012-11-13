@@ -93,6 +93,7 @@ rsNcInqIdDataObj (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId)
     ncInqIdInp_t myNcInqIdInp;
     int status = 0;
 
+    l1descInx = ncInqIdInp->ncid;
     remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
       L1desc[l1descInx].dataObjInfo, &rodsServerHost);
     if (remoteFlag < 0) {

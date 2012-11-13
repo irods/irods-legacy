@@ -11,8 +11,8 @@
 #define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc"
 #define TEST_PATH2 "/oneZone/home/rods/erddap/erdCalcofiBio"
 #endif
-#define TEST_PATH1 "/wanZone/home/rods/hdf5/group.h5"
-#define TEST_PATH2 "/oneZone/home/rods/pydap/coastErd/erdCS25h.nc"
+#define TEST_PATH1 "/oneZone/home/rods/hdf5/group.h5"
+#define TEST_PATH2 "/oneZone/home/rods/pydap/glider/glider114.nc"
 
 #define NC_OUTFILE	"ncoutfile.nc"
 int
@@ -81,12 +81,19 @@ exit (0);
 	fprintf (stderr, "nctest1 of %s failed. status = %d\n", 
         TEST_PATH1, status);
     }
+    status = nctestold (conn, testPath);
+
+    if (status < 0) {
+        fprintf (stderr, "nctestold of %s failed. status = %d\n",
+        testPath, status);
+    }
 #endif
+
     status = nctest1 (conn, testPath, NULL);
 
     if (status < 0) {
         fprintf (stderr, "nctest1 of %s failed. status = %d\n", 
-        TEST_PATH2, status);
+        testPath, status);
     }
 
 #if 0

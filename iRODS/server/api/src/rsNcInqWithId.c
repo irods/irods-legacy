@@ -120,6 +120,7 @@ ncInqWithIdOut_t **ncInqWithIdOut)
     ncInqIdInp_t myNcInqWithIdInp;
     int status = 0;
 
+    l1descInx = ncInqWithIdInp->ncid;
     remoteFlag = resoAndConnHostByDataObjInfo (rsComm,
       L1desc[l1descInx].dataObjInfo, &rodsServerHost);
     if (remoteFlag < 0) {
