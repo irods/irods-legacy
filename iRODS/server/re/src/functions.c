@@ -2418,6 +2418,42 @@ Res *smsi_path(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiS
 	Res *res = newPathRes(r,pathName);
 	return res;
 }
+
+Res *smsi_execCmdArg(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *arg = subtrees[0]->text;
+	char *argNew = (char *) malloc(strlen(arg) * 2 + 4);
+	char *p = arg, *q = argNew;
+	/* this prevent invalid read:
+	 * when msiExecCmd sees a quote it tries to read the previous char to determine whether the quote is escaped
+	 * if the quote is the first char, there will be an invalid read
+	 * leave a space so that the first char is never a quote */
+	*(q++) = ' ';
+	*(q++) = '\"';
+	while(*p != '\0') {
+		if(*p == '\"' || *p == '\'') {
+			*(q++) = '\\';
+		}
+		*(q++) = *(p++);
+	}
+	*(q++) = '\"';
+	*(q++) = '\0';
+	Res *res = newStringRes(r, argNew);
+	free(argNew);
+	return res;
+
+}
+
+int checkStringForSystem(char *s);
+Res *smsi_msiCheckStringForSystem(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *s = paramsr[0]->text;
+	int ret = checkStringForSystem(s);
+	if(ret<0) {
+		return newErrorRes(r, ret);
+	} else {
+		return newIntRes(r, ret);
+	}
+}
+
 int
 parseResForCollInp (Node *inpParam, collInp_t *collInpCache,
 collInp_t **outCollInp, int outputToCache)
@@ -2768,8 +2804,10 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "strlen", newFunctionFD("string->integer", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionFD("string * integer * integer->string", smsi_substr, r));
     insertIntoHashTable(ft, "split", newFunctionFD("string * string -> list string", smsi_split, r));
+    insertIntoHashTable(ft, "execCmdArg", newFunctionFD("f string->string", smsi_execCmdArg, r));
     insertIntoHashTable(ft, "query", newFunctionFD("expression ? + -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r));
     insertIntoHashTable(ft, "unspeced", newFunctionFD("-> ?", smsi_undefined, r));
+    insertIntoHashTable(ft, "msiCheckStringForSystem", newFunctionFD("f string->int", smsi_msiCheckStringForSystem, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionFD("e ? ?->integer", smsi_msiAdmShowIRB, r));
     insertIntoHashTable(ft, "msiAdmShowCoreRE", newFunctionFD("e ? ?->integer", smsi_msiAdmShowCoreRE, r));
 #ifdef DEBUG

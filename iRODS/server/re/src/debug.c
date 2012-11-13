@@ -706,5 +706,10 @@ parseHostAddrStr (char *hostAddr, rodsHostAddr_t *addr) {
 int getVarMap(char* action,char* varName, char **varMap, int i) { return 0; }
 int setVarValue(char *varMap, ruleExecInfo_t *rei, void *newVarValue) { return 0; }
 
+int
+checkStringForSystem( char *inString) {
+  return 0;
+}
+
 #endif
 
