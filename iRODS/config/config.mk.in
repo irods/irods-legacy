@@ -459,18 +459,9 @@ endif
 # NETCDF_CLIENT - build only the irods client with the NETCDF API. This
 # option does not require the installation of the NETCDF C library nor
 # header files. NETCDF_API must be off with is option.
-# LIB_CF - specify whether higher level libCF is present. libCF, uses the
-# netCDF API to aid in the creation, processing and sharing of scientific
-# data files which conform to the Climate and Forecast (CF) conventions
-# Currently, one libCF subsetting API - nccf_get_vara has been inplemented
-# as an iRods API (rcNccfGetVara). If LIB_CF is not set, only the low
-# level NETCDF APIs are present. LIB_CF_INC_DIR and LIB_CF_LIB_DIR defines
-# the path for the include directory and lib directory, respectively, for
-# libcf.
 # NETCDF_API=1
 # NETCDF4_API=1
 # NETCDF_CLIENT=1
-# LIB_CF=1
 
 ifdef NETCDF4_API
 NETCDF_API=1
@@ -478,10 +469,6 @@ endif
 ifdef NETCDF_API
 NETCDF_CLIENT=1
 NETCDF_DIR=/usr/local
-ifdef LIB_CF
-LIB_CF_INC_DIR=/usr/local/include
-LIB_CF_LIB_DIR=/usr/local/lib
-endif
 endif
 
 # PYDAP - Define whether PYDAP driver  is supported on this server. 
