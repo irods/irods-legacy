@@ -55,7 +55,7 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
 
     int argc;
     ruleExecInfo_t rei2;
- 
+
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     rei2.rsComm = rsComm;
     if (rsComm != NULL) {
@@ -165,3 +165,28 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
     return(CAT_INVALID_ARGUMENT);
 }
 #endif
+
+/* 
+   This is the function used by chlModUser to run a rule to check a
+   password.  It is in this source file instead of
+   icatHighLevelRoutines.c so that test programs and define a dummy
+   version of this and avoid linking with, and possibly trying to use,
+   the Rule Engine.
+*/
+
+int
+icatApplyRule(rsComm_t *rsComm, char *ruleName, char *arg1) {
+  ruleExecInfo_t rei;
+  int status;
+  char *args[2];
+
+  rodsLog (LOG_NOTICE, "icatApplyRule called");
+  memset ((char*)&rei, 0, sizeof (rei));
+  args[0] = arg1;
+  rei.rsComm = rsComm;
+  rei.uoic = &rsComm->clientUser;
+  rei.uoip = &rsComm->proxyUser;
+  status =  applyRuleArg(ruleName,
+                         args,1,&rei, NO_SAVE_REI);
+  return(status);
+}

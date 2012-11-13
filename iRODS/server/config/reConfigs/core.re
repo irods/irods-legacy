@@ -107,6 +107,15 @@ acTicketPolicy {}
 #acTicketPolicy {ON($userNameClient != "anonymous") { } }
 #
 # --------------------------------------------------------------------------
+# This is a policy point for checking password strength (added after
+# iRODS 3.2), called when the admin or user is setting a password.  By
+# default, this is a no-op but the simple rule example below can be
+# used to enforce a minimal password length.  Also, microservices
+# could be developed to make other checks, such as requiring both
+# upper and lower case, and/or special characters, etc.
+acCheckPasswordStrength(*password) { }
+#acCheckPasswordStrength(*password) {if(strlen(*password) <7) {msiDeleteDisallowed; }}
+# --------------------------------------------------------------------------
 # The following are rules for data object operation
 # Note that the msiOprDisallowed microservice can be used by all the rules
 # to disallow the execution of certain actions.

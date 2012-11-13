@@ -23,6 +23,7 @@
 #include "icatLowLevel.h"
 
 extern int get64RandomBytes(char *buf);
+extern int icatApplyRule(rsComm_t *rsComm, char *ruleName, char *arg1);
 
 static char prevChalSig[200]; /* a 'signiture' of the previous
    challenge.  This is used as a sessionSigniture on the ICAT server
@@ -4324,7 +4325,11 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    if (strcmp(option,"password")==0) {
       int i;
       char userIdStr[MAX_NAME_LEN];
+      int status2;
       i = decodePw(rsComm, newValue, decoded);
+
+      status2 = icatApplyRule(rsComm, "acCheckPasswordStrength", decoded);
+      if (status2) return(status2);
 
       icatScramble(decoded); 
 

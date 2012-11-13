@@ -1220,3 +1220,10 @@ main(int argc, char **argv) {
 
    exit(status);
 }
+
+/* This is a dummy version of icatApplyRule for this test program so
+   the rule-engine is not needed in this ICAT test. */
+int
+icatApplyRule(rsComm_t *rsComm, char *ruleName, char *arg1) {
+  return(0);
+}
