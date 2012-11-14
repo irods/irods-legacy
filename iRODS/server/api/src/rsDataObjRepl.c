@@ -694,7 +694,8 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     l1DataObjInp->numThreads = dataObjInp->numThreads =
       getNumThreads (rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads, 
       &dataObjInp->condInput, destRescName, srcRescName);
-    if (l1DataObjInp->numThreads > 0 && 
+    if ((l1DataObjInp->numThreads > 0 || 
+      l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF) &&
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
 	if (updateFlag > 0) {
             status = dataOpen (rsComm, destL1descInx);
@@ -745,7 +746,8 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
         L1desc[srcL1descInx].purgeCacheFlag = 1;
     }
 
-    if (l1DataObjInp->numThreads > 0 &&
+    if ((l1DataObjInp->numThreads > 0 ||
+      l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF) &&
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
 	openedDataObjInp_t dataObjCloseInp;
 
