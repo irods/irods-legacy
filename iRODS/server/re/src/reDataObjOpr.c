@@ -2405,7 +2405,8 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  *    indicates the path is a directory. A "null" string indicates the path 
  *    is a file.  A "mountPoint" (MOUNT_POINT_STR) means mounting the file
  *      directory given in inpParam3. A "linkPoint" (LINK_POINT_STR)
- *      means soft link the collection given in inpParam3.
+ *      means soft link the collection given in inpParam3. A "unmount"
+ *      (UNMOUNT_STR) means unmount the collection. 
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a

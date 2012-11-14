@@ -475,6 +475,8 @@ parseMspForPhyPathReg (msParam_t *inpParam, keyValPair_t *condInput)
             	    addKeyVal (condInput, COLLECTION_TYPE_KW, MOUNT_POINT_STR);
 		} else if (strcmp (tmpStr, LINK_POINT_STR) == 0) {
             	    addKeyVal (condInput, COLLECTION_TYPE_KW, LINK_POINT_STR);
+                } else if (strcmp (tmpStr, UNMOUNT_STR) == 0) {
+                    addKeyVal (condInput, COLLECTION_TYPE_KW, UNMOUNT_STR);
 		}
             }
         } else {
