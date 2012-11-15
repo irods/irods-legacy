@@ -6,6 +6,7 @@
 #include "regReplica.h"
 #include "objMetaOpr.h"
 #include "icatHighLevelRoutines.h"
+#include "miscServerFunct.h"
 
 int
 rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
@@ -31,6 +32,14 @@ rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 #endif
     } else {
         status = rcRegReplica (rodsServerHost->conn, regReplicaInp);
+        if (getIrodsErrno (status) == SYS_HEADER_READ_LEN_ERR ||
+          getIrodsErrno (status) == SYS_HEADER_WRITE_LEN_ERR) {
+            /* this connection may be broken. try again */
+            int status1 = svrToSvrReConnect (rsComm, rodsServerHost);
+            if (status1 >= 0) {
+                status = rcRegReplica (rodsServerHost->conn, regReplicaInp);
+            }
+        }
 	if (status >= 0) regReplicaInp->destDataObjInfo->replNum = status;
 
     }

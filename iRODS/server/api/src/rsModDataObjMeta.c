@@ -7,6 +7,7 @@
 #include "icatHighLevelRoutines.h"
 #include "objMetaOpr.h"
 #include "dataObjOpr.h"
+#include "miscServerFunct.h"
 
 int
 rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
@@ -32,6 +33,16 @@ rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 #endif
     } else {
         status = rcModDataObjMeta (rodsServerHost->conn, modDataObjMetaInp);
+        if (getIrodsErrno (status) == SYS_HEADER_READ_LEN_ERR ||
+          getIrodsErrno (status) == SYS_HEADER_WRITE_LEN_ERR) {
+            /* this connection may be broken. try again */
+            int status1 = svrToSvrReConnect (rsComm, rodsServerHost);
+            if (status1 >= 0) {
+                status = rcModDataObjMeta (rodsServerHost->conn, 
+                  modDataObjMetaInp);
+            }
+        }
+
     }
 
     return (status);

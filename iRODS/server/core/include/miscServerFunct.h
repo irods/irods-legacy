@@ -53,6 +53,8 @@ svrToSvrConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost);
 int
 svrToSvrConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost);
 int
+svrToSvrReConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost);
+int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost);
 int
 createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto);

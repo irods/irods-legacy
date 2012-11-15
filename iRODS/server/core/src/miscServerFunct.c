@@ -85,6 +85,19 @@ svrToSvrConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
     }
 }
 
+int
+svrToSvrReConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
+{
+    int status;
+
+    if (rodsServerHost->conn != NULL) {
+        freeRcComm (rodsServerHost->conn);
+        rodsServerHost->conn = NULL;
+    }
+    status = svrToSvrConnect (rsComm, rodsServerHost);
+    return status;
+}
+
 /* setupSrvPortalForParaOpr - Setup the portal on this server for
  * parallel or RBUDP transfer. It call createSrvPortal to create
  * the portal socket, malloc the portalOprOut struct, put the

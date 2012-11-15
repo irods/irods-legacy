@@ -5,6 +5,7 @@
 
 #include "regDataObj.h"
 #include "icatHighLevelRoutines.h"
+#include "miscServerFunct.h"
 
 /* rsRegDataObj - This call is strictly an API handler and should not be 
  * called directly in the server. For server calls, use svrRegDataObj
@@ -84,6 +85,15 @@ svrRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         dataObjInfo_t *outDataObjInfo = NULL;
         status = rcRegDataObj (rodsServerHost->conn, dataObjInfo,
           &outDataObjInfo);
+        if (getIrodsErrno (status) == SYS_HEADER_READ_LEN_ERR || 
+          getIrodsErrno (status) == SYS_HEADER_WRITE_LEN_ERR) {
+            /* this connection may be broken. try again */
+            int status1 = svrToSvrReConnect (rsComm, rodsServerHost);
+            if (status1 >= 0) {
+                status = rcRegDataObj (rodsServerHost->conn, dataObjInfo,
+                  &outDataObjInfo);
+            }
+        }
         if (status >= 0) {
             dataObjInfo->dataId = outDataObjInfo->dataId;
             free (outDataObjInfo);
