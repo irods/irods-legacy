@@ -602,7 +602,11 @@ rodsLong_t *stride, rodsLong_t *count)
 
     if (conn == NULL) {
         /* local call */
+#ifdef NETCDF_API
         status = _rsNcGetVarsByType (ncid, &ncGetVarInp, ncGetVarOut);
+#else
+        status = NETCDF_BUILD_WITH_NETCDF_API_NEEDED;
+#endif
     } else {
         status = rcNcGetVarsByType (conn, &ncGetVarInp, ncGetVarOut);
     }
@@ -1495,6 +1499,7 @@ ncVarSubset_t *ncVarSubset)
     }
     return 0;
 }
+#ifdef NETCDF_API
 int
 ncInq (ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
 {
@@ -1880,6 +1885,7 @@ getNcIntVar (int ncid, int varid, int dataType, rodsLong_t inx)
 
     return retint;
 }
+#endif	/* NETCDF_API */
 
 int
 getTimeInxInVar (ncInqOut_t *ncInqOut, int varid)
