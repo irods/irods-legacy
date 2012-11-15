@@ -80,6 +80,12 @@ LDFLAGS +=	$(LIBRARY)
 
 ifdef GSI_AUTH
 
+ifeq ($(ADDR_64BITS), 1)
+GSI_LIB_DIR=lib64
+else
+GSI_LIB_DIR=lib
+endif
+
 ifeq ($(GSI_INSTALL_TYPE),)
 GSI_INSTALL_TYPE2=
 else
@@ -101,7 +107,7 @@ GSI_CRYPTO = crypto$(GSI_INSTALL_TYPE2)
 endif
 
 LIB_GSI_AUTH = \
-      -L$(GLOBUS_LOCATION)/lib \
+      -L$(GLOBUS_LOCATION)/$(GSI_LIB_DIR) \
       -lglobus_gss_assist$(GSI_INSTALL_TYPE2) \
       -lglobus_gssapi_gsi$(GSI_INSTALL_TYPE2) \
       -lglobus_gsi_credential$(GSI_INSTALL_TYPE2) \
