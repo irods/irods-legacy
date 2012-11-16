@@ -101,7 +101,7 @@ tdsReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
             }
             if (myurlPath == NULL) {
                 /* drill down */
-                setTdsCurdir (tdsDirStruct, (char *) myname);
+                // setTdsCurdir (tdsDirStruct, (char *) myname);
                 continue;
             } else {
                 if ((char *)myname != NULL && strlen ((char *)myname) > 0) {
@@ -151,7 +151,9 @@ tdsReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
             }
             snprintf (direntPtr->d_name, NAME_MAX, "%s", (char *) tmpname);
             status = setTDSUrl (tdsDirStruct, (char *)myhref, True);
-            if (status >= 0) direntPtr->d_ino = status;
+            if (status >= 0) {
+                direntPtr->d_ino = status;
+            }
             return status;
         }
     }

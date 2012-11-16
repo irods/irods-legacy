@@ -116,7 +116,7 @@ int
 getPhyPathInOpenedDir (int dirFd, int pathInx, char *outPath)
 {
     if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
-#ifdef OOI_CI
+#ifdef TDS
         tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *) 
           FileDesc[dirFd].driverDep;
         if (pathInx < 0 || pathInx >= NUM_URL_PATH) 
@@ -135,7 +135,7 @@ int
 getStModeInOpenedDir (int dirFd, int pathInx)
 {
     if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
-#ifdef OOI_CI
+#ifdef TDS
         tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *)
           FileDesc[dirFd].driverDep;
         if (pathInx < 0 || pathInx >= NUM_URL_PATH)
@@ -153,7 +153,7 @@ int
 getCurDirInOpenedDir (int dirFd, char *curdir)
 {
     if (FileDesc[dirFd].fileType == TDS_FILE_TYPE) {
-#ifdef OOI_CI
+#ifdef TDS
         tdsDirStruct_t *tdsDirStruct = (tdsDirStruct_t *)
           FileDesc[dirFd].driverDep;
         rstrcpy (curdir, tdsDirStruct->curdir, MAX_NAME_LEN);
