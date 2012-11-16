@@ -87,7 +87,8 @@ rsNcOpenDataObj (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)
 	    if (status != NC_NOERR) {
 		rodsLog (LOG_ERROR,
 		  "rsNcOpen: nc_open %s error, status = %d, %s",
-		  ncOpenInp->objPath, status, nc_strerror(status));
+		  L1desc[l1descInx].dataObjInfo->filePath, status, 
+                  nc_strerror(status));
 		freeL1desc (l1descInx);
 		return (NETCDF_OPEN_ERR + status);
 	    }
