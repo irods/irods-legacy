@@ -303,7 +303,7 @@ endif
 
 ifdef ERDDAP
 MY_CFLAG += -DERDDAP -I$(LIB_JANSSON_INC_DIR)
-LDADD += -L$(LIB_JANSSON_LIB_DIR) -lxml2
+LDADD += -L$(LIB_JANSSON_LIB_DIR) --ljansson
 endif
 
 ifdef RUN_SERVER_AS_ROOT
