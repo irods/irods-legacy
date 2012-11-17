@@ -11,7 +11,33 @@
 
 /**
  * \fn msiNcOpen (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief open an iRODS data object for netcdf operation (equivalent to nc_open)
+ * \module core
  *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam1 - A STR_MS_T for the dataObj path to open.
+ * \param[in] inpParam2 - A STR_MS_T or INT_MS_T for the mode of the open. valid values are given in netcdf.h - NC_NOWRITE, NC_WRITE.
+ * \param[out] outParam - a msParam of type INT_MS_T containing the ncid of the opened object. 
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval positive on success
+ * \pre none
+ * \post none
+ * \sa none
 **/
 int
 msiNcOpen (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
@@ -73,7 +99,33 @@ ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Create an iRODS data object for netcdf operation (equivalent to nc_open)
+ * \module core
  *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam1 - A STR_MS_T for the dataObj path to create.
+ * \param[in] inpParam2 - A STR_MS_T or INT_MS_T for the mode of the open. valid values are given in netcdf.h - NC_NOWRITE, NC_WRITE.
+ * \param[out] outParam - a msParam of type INT_MS_T containing the ncid of the opened object.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval positive on success
+ * \pre none
+ * \post none
+ * \sa none
 **/
 int
 msiNcCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
@@ -135,7 +187,32 @@ ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
+ * \brief open an iRODS data object for netcdf operation (equivalent to nc_open)
+ * \module core
  *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam1 - A INT_MS_T or NcCloseInp_MS_T containing the ncid to close.
+ * \param[out] none
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval positive on success
+ * \pre none
+ * \post none
+ * \sa none
 **/
 int
 msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
@@ -185,7 +262,31 @@ msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcInqId (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief  This a microservice performs general netcdf inquiry for id (equivalent to nc_inq_dimid, nc_inq_varid, .... This msi is superceded by the more comprehensive msiNcInq API.
+ * \module core
  *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam1 - A NcInqIdInp_MS_T or STR_MS_T. For STR_MS_T input, it contains the name of the item to inquire.
+ * \param[in] inpParam2 - If inpParam1 is a STR_MS_T, it is a INT_MS_T containing the paramType - what to inquire - valid values are defined in ncInqId.h - 0 (NC_VAR_T) or 1 (NC_DIM_T).
+ * \param[in] inpParam3 - If inpParam1 is a STR_MS_T, it is a INT_MS_T containing ncid of the opened object for the inquiry.
+ * \param[out] outParam - An INT_MS_T containing the the returned id of the inquiry.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
 **/
 int
 msiNcInqId (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
@@ -248,7 +349,39 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcInqWithId (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief General netcdf inquiry with id (equivalent nc_inq_dim, nc_inq_dim, nc_inq_var ....) This API is superceded by the more comprehensive rcNcInq API.
+ * \module core
  *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam1 - A STR_MS_T, INT_MS_T or NcInqIdInp_MS_T. If it is a STR_MS_T or INT_MS_T, it contains the id of the inquiry obtained from msiNcInqId.
+ * \param[in] inpParam2 - If inpParam1 is a STR_MS_T or INT_MS_T, it is a INT_MS_T containing the paramType - what to inquire - valid values are defined in ncInqId.h - 0 (NC_VAR_T) or 1 (NC_DIM_T).
+NC_VAR_T or NC_DIM_T.
+ * \param[in] inpParam3 - If inpParam1 is a STR_MS_T or INT_MS_T, it is a INT_MS_T containing ncid of the opened object for the inquiry.
+ * \param[out] outParam - A NcInqWithIdOut_MS_T containing a ncInqWithIdOut_t.
+Elements of ncInqWithIdOut_t:
+ *    \li rodsLong_t \b mylong - Content depends on paramType.For NC_DIM_T, this is arrayLen. not used for NC_VAR_T.
+ *    \li int \b dataType - data type for NC_VAR_T.
+ *    \li int \b natts - number of attrs for NC_VAR_T.
+ *    \li char \b name[MAX_NAME_LEN] - name of the parameter.
+ *    \li int \b ndim - number of dimensions (rank) for NC_VAR_T.
+ *    \li int \b *intArray - int array of dimIds and ndim length for NC_VAR_T.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
 **/
 int
 msiNcInqWithId (msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -310,7 +443,33 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcGetVarsByType (msParam_t *dataTypeParam, msParam_t *ncidParam,  msParam_t *varidParam, msParam_t *ndimParam, msParam_t *startParam,  msParam_t *countParam, msParam_t *strideParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief General NETCDF variable subsetting microservice (equivalent to nc_get_vars_type API).
+ * \module core
  *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] dataTypeParam - A NcGetVarInp_MS_T, STR_MS_T or INT_MS_T. If it is a STR_MS_T or INT_MS_T, it contains dataType of the variable - valid values are defined in ncGetVarsByType.h - 1 (NC_BYTE), 2 (NC_CHAR), 3 (NC_SHORT), 4 (NC_INT), 5 (NC_FLOAT), 6 (NC_DOUBLE), 7 (NC_UBYTE), 8 (NC_USHORT), 9 (NC_UINT), 10 (NC_INT64), 11 (NC_UINT64) and 12 (NC_STRING).
+ * \param[in] ncidParam - If dataTypeParam is a  STR_MS_T or INT_MS_T, it is a STR_MS_T or INT_MS_T containing the ncid of the opened object.
+ * \param[in] - varidParam - If dataTypeParam is a  STR_MS_T or INT_MS_T, it is a STR_MS_T or INT_MS_T containing the variable Id from msiNcInq or msiNcInqId.
+ * \param[in] - ndimParam - If dataTypeParam is a  STR_MS_T or INT_MS_T, it is a STR_MS_T or INT_MS_T containing the number of dimensions (rank).
+ * \param[in] - startParam - If dataTypeParam is a  STR_MS_T or INT_MS_T, it is a STR_MS_T or NcGetVarOut_MS_T containing info on vector of rodsLong_t with ndim length specifying the index in the variable where the first of the data values will be read. For STR_MS_T input, the vector is represented by a string containing inx0%inx1%inx2%...%inx(ndim-1).
+ * \param[in] - countParam - same input format as startParam representing a ndim vector of 'count' values - the number of indices selected along each dimension.
+ * \param[in] - strideParam - same input format as startParam representing a ndim vector of 'stride' values - the interval between selected indices for each dimension.
+ * \param[out] - A NcGetVarOut_MS_T containing a ncGetVarOut_t struct. Elements of ncGetVarOut_t:
+ *    \li char \b dataType_PI[NAME_LEN] - Packing instruction of the dataType.
+ *    \li dataArray_t \b *dataArray - returned values of the variable. dataArray->type gives the var type; dataArray->len gives the var length; dataArray->buf contains the var values.
+ *
+ * \return integer
+ * \retval status of the call. success if greater or equal 0. error if negative.
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
 **/
 int
 msiNcGetVarsByType (msParam_t *dataTypeParam, msParam_t *ncidParam, 
