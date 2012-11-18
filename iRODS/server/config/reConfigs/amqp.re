@@ -6,7 +6,7 @@ amqpSend(*Host, *Queue, *Msg) {
 	*HostArg = execCmdArg(*Host);
 	*QueueArg = execCmdArg(*Queue);
 	*MsgArg = execCmdArg(*Msg);
-	msiExecCmd("amqpsend.py", "*Host *Queue *Msg", "null", "null", "null", *Out);
+	msiExecCmd("amqpsend.py", "*HostArg *QueueArg *MsgArg", "null", "null", "null", *Out);
 }
 
 # receive a msg
@@ -14,7 +14,7 @@ amqpRecv: string * string * output boolean * output string -> integer
 amqpRecv(*Host, *Queue, *Emp, *Msg) {
     *HostArg = execCmdArg(*Host);
     *QueueArg = execCmdArg(*Queue);
-	msiExecCmd("amqprecv.py", "*Host *Queue", "null", "null", "null", *Out);
+	msiExecCmd("amqprecv.py", "*HostArg *QueueArg", "null", "null", "null", *Out);
     msiGetStdoutInExecCmdOut(*Out, *Msg);
     *Emp = strlen(*Msg) == 0;
     if(!*Emp) {
