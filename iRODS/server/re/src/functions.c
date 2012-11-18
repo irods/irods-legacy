@@ -2805,7 +2805,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "substr", newFunctionFD("string * integer * integer->string", smsi_substr, r));
     insertIntoHashTable(ft, "split", newFunctionFD("string * string -> list string", smsi_split, r));
     insertIntoHashTable(ft, "execCmdArg", newFunctionFD("f string->string", smsi_execCmdArg, r));
-    insertIntoHashTable(ft, "query", newFunctionFD("expression ? + -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r));
+    insertIntoHashTable(ft, "query", newFunctionFD("expression ? -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r));
     insertIntoHashTable(ft, "unspeced", newFunctionFD("-> ?", smsi_undefined, r));
     insertIntoHashTable(ft, "msiCheckStringForSystem", newFunctionFD("f string->int", smsi_msiCheckStringForSystem, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionFD("e ? ?->integer", smsi_msiAdmShowIRB, r));
