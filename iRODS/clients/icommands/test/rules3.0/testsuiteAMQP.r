@@ -1,5 +1,5 @@
 # test amqp client
-# requires python, pika, and rabbitmq server running on localhost:5672
+# python, pika 0.9.5, and rabbitmq 2.8.7 server running on localhost:5672
 rule {
 	testSuite;
 }
@@ -90,7 +90,7 @@ testAmqp1(*RES) {
 	*Host = "localhost";
 	*Queue = "queue";
 	amqpSend(*Host, *Queue, *Message);
-	amqpRecv(*Host, *Queue, *Message2);
+	amqpRecv(*Host, *Queue, *Emp, *Message2);
 	assert("``*Message`` == ``*Message2``", *RES);
 }
 
@@ -107,9 +107,15 @@ testAmqp2(*RES) {
     msiSendXmsg(*Conn,*MParam);
     msiXmsgServerDisConnect(*Conn);
     
-    startAmqpXmsgBridge(*Tic);
+    startXmsgAmqpBridge(*Tic, 1);
 	
-	amqpRecv(*Host, *Queue, *Message2);
+    *Retries = 0;
+    *Emp = true;
+    while(*Emp && *Retries < 10) {
+		*Retries=*Retries+1;
+		msiSleep("5", "0");
+		amqpRecv(*Host, *Queue, *Emp, *Message2);
+	}
 	assert("``*Message`` == ``*Message2``", *RES);
 }
 INPUT null
