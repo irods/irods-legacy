@@ -239,7 +239,7 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen, int pat
                     seekInFile(e, start.exprloc);
                 }
             } else if (pathLiteral && ch == '/') { /* path */
-            	nextStringBase(e, token->text, "),; \t\r\n", 0, '\\', 0, token->vars); /* path is used only in a foreach loop or assignment */
+            	nextStringBase(e, token->text, "),; \t\r\n", 0, '\\', 0, token->vars); /* path can be used in a foreach loop or assignment, or as a function argument */
             	token->type = TK_PATH;
 				break;
             }
@@ -1172,7 +1172,7 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
 			LOOP_END(queryConds)
 		OPTIONAL_END(where)
 		BUILD_NODE(N_QUERY, "QUERY", &start, n, n);
-		/* BUILD_APP_NODE("query", &start, 1); */
+		BUILD_APP_NODE("query", &start, 1);
 	OR(value)
 		NT(PathExpression);
 	OR(value)

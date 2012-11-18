@@ -625,7 +625,7 @@ ExprType *getElemType(ExprType *type, Region *r) {
 ExprType* isIterable(ExprType *type, int dynamictyping, Hashtable* var_type_table, Region *r) {
 	ExprType *derefedType = dereference(type, var_type_table, r);
 	Node *disjuncts[6];
-	Res *unified;
+	Res *unified, *comp0, *comp1;
     switch(getNodeType(derefedType)) {
     case T_CONS:
     	if(strcmp(type->text, LIST) == 0) { /* list */
@@ -667,15 +667,18 @@ ExprType* isIterable(ExprType *type, int dynamictyping, Hashtable* var_type_tabl
     			return getElemType(unified, r);
     		}
     case T_TUPLE:
-    	if(T_CONS_ARITY(derefedType)!=2 ||
-    			getNodeType(T_CONS_TYPE_ARG(derefedType, 0)) != T_IRODS ||
-    			strcmp(T_CONS_TYPE_NAME(T_CONS_TYPE_ARG(derefedType, 0)), GenQueryInp_MS_T) !=0 ||
-    			getNodeType(T_CONS_TYPE_ARG(derefedType, 1)) != T_IRODS ||
-				strcmp(T_CONS_TYPE_NAME(T_CONS_TYPE_ARG(derefedType, 0)), GenQueryOut_MS_T) !=0) {
+    	if(T_CONS_ARITY(derefedType)!=2)
     		return NULL;
-    	} else {
-    		return newIRODSType(KeyValPair_MS_T, r);
+    	comp0 = dereference(T_CONS_TYPE_ARG(derefedType, 0), var_type_table, r);
+    	comp1 = dereference(T_CONS_TYPE_ARG(derefedType, 1), var_type_table, r);
+    	if(getNodeType(comp0) != T_IRODS ||
+    			strcmp(T_CONS_TYPE_NAME(comp0), GenQueryInp_MS_T) !=0 ||
+    			getNodeType(comp1) != T_IRODS ||
+				strcmp(T_CONS_TYPE_NAME(comp1), GenQueryOut_MS_T) !=0) {
+    		return NULL;
     	}
+		return newIRODSType(KeyValPair_MS_T, r);
+
     case T_DYNAMIC:
     	return type;
     default:
