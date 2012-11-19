@@ -17,7 +17,7 @@ main(int argc, char **argv)
     rodsArguments_t myRodsArgs;
     rodsEnv myEnv;
     char *envFile;
-    char buffer[500];
+    char buffer[MAX_NAME_LEN];
     rodsPath_t rodsPath;
     rcComm_t *Conn;
     rErrMsg_t errMsg;
@@ -90,7 +90,7 @@ main(int argc, char **argv)
         fprintf(stderr, "Unable to open envFile %s\n", envFile);
         exit(5);
     }
-    sprintf(buffer,"irodsCwd=%s\n", rodsPath.outPath);
+    snprintf(buffer,sizeof(buffer),"irodsCwd=%s\n", rodsPath.outPath);
     len = strlen(buffer);
     i = write(fd, buffer, len);
     close(fd);
