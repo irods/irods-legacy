@@ -99,7 +99,7 @@ ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
- * \brief Create an iRODS data object for netcdf operation (equivalent to nc_open)
+ * \brief Create an iRODS data object for netcdf operation (equivalent to nc_create)
  * \module core
  *
  * \since 3.2
@@ -187,7 +187,7 @@ ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
- * \brief open an iRODS data object for netcdf operation (equivalent to nc_open)
+ * \brief Close an opened iRODS data object (equivalent to nc_close)
  * \module core
  *
  * \since 3.2
@@ -274,7 +274,7 @@ msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei)
  * \param[in] inpParam1 - A NcInqIdInp_MS_T or STR_MS_T. For STR_MS_T input, it contains the name of the item to inquire.
  * \param[in] inpParam2 - If inpParam1 is a STR_MS_T, it is a INT_MS_T containing the paramType - what to inquire - valid values are defined in ncInqId.h - 0 (NC_VAR_T) or 1 (NC_DIM_T).
  * \param[in] inpParam3 - If inpParam1 is a STR_MS_T, it is a INT_MS_T containing ncid of the opened object for the inquiry.
- * \param[out] outParam - An INT_MS_T containing the the returned id of the inquiry.
+ * \param[out] outParam - An INT_MS_T containing the returned id of the inquiry.
  *
  * \DolVarDependence none
  * \DolVarModified none
@@ -459,7 +459,7 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] - startParam - If dataTypeParam is a  STR_MS_T or INT_MS_T, it is a STR_MS_T or NcGetVarOut_MS_T containing info on vector of rodsLong_t with ndim length specifying the index in the variable where the first of the data values will be read. For STR_MS_T input, the vector is represented by a string containing inx0%inx1%inx2%...%inx(ndim-1).
  * \param[in] - countParam - same input format as startParam representing a ndim vector of 'count' values - the number of indices selected along each dimension.
  * \param[in] - strideParam - same input format as startParam representing a ndim vector of 'stride' values - the interval between selected indices for each dimension.
- * \param[out] - A NcGetVarOut_MS_T containing a ncGetVarOut_t struct. Elements of ncGetVarOut_t:
+ * \param[out] - outParam - A NcGetVarOut_MS_T containing a ncGetVarOut_t struct. Elements of ncGetVarOut_t:
  *    \li char \b dataType_PI[NAME_LEN] - Packing instruction of the dataType.
  *    \li dataArray_t \b *dataArray - returned values of the variable. dataArray->type gives the var type; dataArray->len gives the var length; dataArray->buf contains the var values.
  *
@@ -578,6 +578,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 #ifdef LIB_CF
 /**
  * \fn msiNccfGetVara (msParam_t *ncidParam, msParam_t *varidParam, msParam_t *lvlIndexParam, msParam_t *timestepParam,  msParam_t *latRange0Param, msParam_t *latRange1Param, msParam_t *lonRange0Param, msParam_t *lonRange1Param, msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * This msi is being phased out becauuse we no longer support LIB_CF.
  *
 **/
 int
@@ -676,6 +677,29 @@ msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcGetArrayLen (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the array length of a NcInqWithIdOut_MS_T (output of msiNcInqWithId) or NcGetVarOut_MS_T (output of msiNcGetVarsByType).
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam - A NcInqWithIdOut_MS_T or NcGetVarOut_MS_T which are outputs of the msiNcInqWithId and msiNcGetVarsByType msi, respectively.
+ * \param[out] outParam - An INT_MS_T containing the array length.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  *
 **/
 int
@@ -719,6 +743,29 @@ ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcGetNumDim (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the number of dimensions of a NcInqWithIdOut_MS_T (output of msiNcInqWithId) or NcGetVarOut_MS_T (output of msiNcGetVarsByType).
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam - A NcInqWithIdOut_MS_T or NcGetVarOut_MS_T which are outputs of the msiNcInqWithId and msiNcGetVarsByType msi, respectively.
+ * \param[out] outParam - An INT_MS_T containing the number of dimensions
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  *
 **/
 int
@@ -751,6 +798,29 @@ ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcGetDataType (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the dataType of a NcInqWithIdOut_MS_T (output of msiNcInqWithId), NcGetVarInp_MS_T (input of msiNcGetVarsByType) or NcGetVarOut_MS_T (output of msiNcGetVarsByType).
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam - A NcInqWithIdOut_MS_T, NcGetVarInp_MS_T or NcGetVarOut_MS_T.
+ * \param[out] outParam - An INT_MS_T containing the dataType.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  *
 **/
 int
@@ -795,6 +865,29 @@ ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcGetElementInArray (msParam_t *arrayStructParam, msParam_t *indexParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the value of an element in an array. The position of the element in the array is given in the indexParam input. 
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam - A NcInqWithIdOut_MS_T or NcGetVarOut_MS_T which are outputs of the msiNcInqWithId and msiNcGetVarsByType msi, respectively.
+ * \param[out] outParam - An INT_MS_T, CHAR_MS_T, STR_MS_T, or DOUBLE_MS_T, etc (depending on the dataType of the array) containing the value of the element).
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  *
 **/
 int
@@ -889,6 +982,29 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
 /**
  * \fn msiFloatToString (msParam_t *floatParam, msParam_t *stringParam, ruleExecInfo_t *rei)
+ * \brief Convert a floating point number to a string because writeLine does not yet support floating point output.
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] floatParam - A FLOAT_MS_T containing the floating point number
+ * \param[out] stringParam - A STR_MS_T containing the output string
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  *
 **/
 int
@@ -916,6 +1032,29 @@ ruleExecInfo_t *rei)
 
 /**
  * \fn msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief General netcdf inquiry (equivalent to nc_inq + nc_inq_format). Get all info including attributes, dimensions and variables assocaiated with a NETCDF file will a single call. This msi is more comprehensive and supercede the msiNcInqId and msiNcInqWithId msi.
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncidParam - An INT_MS_T containing the ncid of the opened NETCDF file (using msiNcOpen).
+ * \param[out] - outParam - A NcInqOut_MS_T containing the results of the inquery. 
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  *
 **/
 int
@@ -957,6 +1096,35 @@ msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiNcGetNdimsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the number of dimensions of a variable in a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] varNameParam - A STR_MS_T containing the name of a variable.
+ * \param[out] outParam - An INT_MS_T containing the number of dimensions
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetNdimsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1010,6 +1178,35 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetNattsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the number of attributes associated with a variable in a NcInqOut_MS_T.
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] varNameParam - A STR_MS_T containing the name of a variable.
+ * \param[out] outParam - An INT_MS_T containing the number of attributes
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetNattsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1063,6 +1260,34 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetNvarsInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam,
+ruleExecInfo_t *rei)
+ * \brief Get the number of variables in a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[out] outParam - An INT_MS_T containing the number of variables
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetNvarsInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam, 
 ruleExecInfo_t *rei)
@@ -1089,6 +1314,34 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetFormatInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam,
+ruleExecInfo_t *rei)
+ * \brief Get the format of the NETCDF file in  a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[out] outParam - An INT_MS_T containing the format value
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetFormatInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam, 
 ruleExecInfo_t *rei)
@@ -1115,6 +1368,35 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetVarNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the name of a variable in an array of variables in a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] inxParam - An INT_MS_T containing the index in this variable array
+ * \param[out] outParam - A INT_MS_T containing the name of the variable
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetVarNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1149,6 +1431,35 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetVarIdInInqOut (msParam_t *ncInqOutParam, msParam_t *whichVarParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the NETCDF variable ID of a variable in a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] whichVarParam - If it is a STR_MS_T, it contains the name of the variable. If it is an INT_MS_T, it contains the index in the variable array.
+ * \param[out] outParam - An INT_MS_T containing the variable ID.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetVarIdInInqOut (msParam_t *ncInqOutParam, msParam_t *whichVarParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1213,6 +1524,36 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetDimNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the name of a dimension in a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] inxParam - An INT_MS_T containing the index in the variable's dimension array
+ * \param[in] varNameParam - A STR_MS_T containing the name of a variable
+ * \param[out] outParam - A STR_MS_T containing the name of the dimension
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetDimNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
 msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1299,6 +1640,36 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
     return 0;
 }
+/**
+ * \fn msiNcGetDimLenInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the length of a dimension of a variable in a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] inxParam - An INT_MS_T containing the index in the variable's dimension array
+ * \param[in] varNameParam - A STR_MS_T containing the name of a variable
+ * \param[out] outParam - An INT_MS_T containing  the length of the dimension.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetDimLenInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
 msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1386,6 +1757,36 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetAttNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the name of an attribute of a varible in a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] inxParam - An INT_MS_T containing the index in the variable's attribute array
+ * \param[in] varNameParam - A STR_MS_T containing the name of a variable
+ * \param[out] outParam - A STR_MS_T containing the name of the attribute
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetAttNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
 msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1456,6 +1857,36 @@ msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetAttValStrInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
+msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the value of an atrribute of a variable in a NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] whichAttParam - If it is a STR_MS_T, it contains the name of the attribute. If it is an INT_MS_T, it contains the index in the attribute array.
+ * \param[in] varNameParam - A STR_MS_T conataining the name of a variable
+ * \param[out] outParam - An INT_MS_T containing the value of the atrribute
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetAttValStrInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
 msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1598,6 +2029,35 @@ msParam_t *varNameParam, ncGetVarOut_t **ncGetVarOut)
     return 0;
 }
 
+/**
+ * \fn msiNcGetVarTypeInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the dataType of a variable in a  NcInqOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] varNameParam - A STR_MS_T containing the name of a variable
+ * \param[out] outParam - An INT_MS_T containing the dataType
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetVarTypeInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam, 
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1646,6 +2106,34 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcIntDataTypeToStr (msParam_t *dataTypeParam, msParam_t *outParam,
+ruleExecInfo_t *rei)
+ * \brief Covert an integer NETCDF type to string
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] A INT_MS_T containing the dataType.
+ * \param[out] outParam - A STR_MS_T containing the NETCDF type string
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcIntDataTypeToStr (msParam_t *dataTypeParam, msParam_t *outParam, 
 ruleExecInfo_t *rei)
@@ -1674,6 +2162,35 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiAddToNcArray (msParam_t *elementParam, msParam_t *inxParam,
+msParam_t *ncArrayParam, ruleExecInfo_t *rei)
+ * \brief Add a value to a variable value array in a DataArray_PI.
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] elementParam - the value to add. Currently, only an INT_MS_T is subported.
+ * \param[in] inxParam - An INT_MS_T containing the index in the array to add
+ * \param[out] ncArrayParam - A NcGetVarOut_MS_T containing the modified array.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiAddToNcArray (msParam_t *elementParam, msParam_t *inxParam, 
 msParam_t *ncArrayParam, ruleExecInfo_t *rei)
@@ -1729,6 +2246,33 @@ msParam_t *ncArrayParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei)
+ ** \brief Free the NcGetVarOut_MS_T and its content
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] inpParam - A NcGetVarOut_MS_T to free
+ * \param[out] - None
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei)
 {
@@ -1755,8 +2299,32 @@ msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei)
 }
 
 #ifdef NETCDF4_API
+
 /**
  * \fn msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief  Given the group ncid, returns all full group paths. On the server, the nc_inq_grpname_len and nc_inq_grpname_full are called
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncidParam - An INT_MS_T containing the group ncid obtained from msiNcOpenGroup
+ * \param[out] outParam - A NcInqGrpsOut_MS_T containing the output of the inquiry
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  *
 **/
 int
@@ -1800,6 +2368,18 @@ msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
 /**
  * \fn msiNcOpenGroup (msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Open a fully qualified group name and get the group id.  nc_inq_grp_full_ncid is called to get the grpncid
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] rootNcidParam - An INT_MS_T containing the rootNcid.
+ * \param[in] fullGrpNameParam - A STR_MS_T containing the full group name
+ * \param[out] outParam - An INT_MS_T containing the group ncid 
  *
 **/
 int
@@ -1850,6 +2430,34 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 }
 #endif
 
+/**
+ * \fn msiNcGetNGrpsInInqOut (msParam_t *ncInqGrpsOutParam, msParam_t *outParam,
+ruleExecInfo_t *rei)
+ * \brief Get the number of groups in a NcInqGrpsOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqGrpsOutParam - A NcInqGrpsOut_MS_T objtained from msiNcInqGrps
+ * \param[out] outParam - An INT_MS_T containing the the number of groups
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetNGrpsInInqOut (msParam_t *ncInqGrpsOutParam, msParam_t *outParam,
 ruleExecInfo_t *rei)
@@ -1876,6 +2484,35 @@ ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcGetGrpInInqOut (msParam_t *ncInqGrpsOutParam,
+msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Get the name of a group in a NcInqGrpsOut_MS_T 
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncInqGrpsOutParam - A NcInqGrpsOut_MS_T objtained from msiNcInqGrps
+ * \param[in] inxParam - An INT_MS_T containing the index in the group array
+ * \param[out] outParam - A STR_MS_T containing the name of the group
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcGetGrpInInqOut (msParam_t *ncInqGrpsOutParam, 
 msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1910,6 +2547,35 @@ msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei)
     return 0;
 }
 
+/**
+ * \fn msiNcRegGlobalAttr (msParam_t *objPathParam, msParam_t *adminParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief Extract the NETCDF global variables in an iRODS data object and register them as AUV.
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] objPathParam - A STR_MS_T containing the object path of a NETCDF file
+ * \param[in] adminParam - An INT_MS_T or STR_MS_T containing the admin flag (admin operation on behalf of the user)
+ * \param[out] outParam - An INT_MS_T containing the status of the operation
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcRegGlobalAttr (msParam_t *objPathParam, msParam_t *adminParam, 
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1961,6 +2627,38 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiNcSubsetVar (msParam_t *varNameParam, msParam_t *ncidParam,
+msParam_t *ncInqOutParam, msParam_t *subsetStrParam,
+msParam_t *outParam, ruleExecInfo_t *rei)
+ * \brief NETCDF subsetting operation
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] varNameParam - A STR_MS_T containing the name of a variable for subsetting.
+ * \param[in] ncidParam - An INT_MS_T containing the ncid 
+ * \param[in] ncInqOutParam - A NcInqOut_MS_T which is the output of msiNcInq.
+ * \param[in] subsetStrParam - A STR_MS_T containing the subsetting string. The format of the string is dimVariable[start:stride:end]. e.g., *subsetStr="time[10:1:12] depth[3:1:3] lat[20:1:21] lon[30:1:34]"
+ * \param[out] outParam - A NcGetVarOut_MS_T containing the output of the subsetting
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
+ *
+**/
 int
 msiNcSubsetVar (msParam_t *varNameParam, msParam_t *ncidParam, 
 msParam_t *ncInqOutParam, msParam_t *subsetStrParam,
@@ -2109,6 +2807,29 @@ ncVarSubset_t *ncVarSubset, ncGetVarOut_t **ncGetVarOut)
     return status;
 }
 
+/**
+ * \fn msiNcVarStat (msParam_t *ncGetVarOutParam, msParam_t *statOutStr,
+ruleExecInfo_t *rei)
+ * \brief Compute the maximum, minimum and average of a variable in a NcGetVarOut_MS_T
+ * \module core
+ *
+ * \since 3.2
+ *
+ * \author  Mike Wan
+ * \date    2012
+ *
+ * \usage See clients/icommands/test/rules3.0/netcdfTest1.r, netcdfTest2.r and netcdfTest3.r.
+ * \param[in] ncGetVarOutParam - A NcGetVarOut_MS_T containing the variables
+ * \param[out] - statOutStr - A STR_MS_T containing the  maximum, minimum and average values
+ *
+ * \return integer
+ * \retval status of the call. success if greater or equal 0. error if negative.
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
 int
 msiNcVarStat (msParam_t *ncGetVarOutParam, msParam_t *statOutStr,
 ruleExecInfo_t *rei)
