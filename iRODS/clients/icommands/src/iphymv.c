@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hMrvVp:n:R:S:";
+    optStr = "hG:MrvVp:n:R:S:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -90,7 +90,7 @@ usage ()
 
    char *msgs[]={
 "Usage : iphymv [-hMrvV] [-n replNum] [-S srcResource]  [-R destResource] ",
-"dataObj|collection ... ",
+"[-G destRescGrp] dataObj|collection ... ",
 " ",
 "Physically move a file in iRODS to another storage resource.",
 " ",
@@ -107,6 +107,7 @@ usage ()
 "     Otherwise, one of the copy will be moved",
 " -R  destResource - specifies the destination resource for the move.", 
 "     This can also be specified, in your environment or via a rule",
+" -G  destRescGrp - specifies the destination resource group",
 "     set up by the administrator.",
 " -v  verbose",
 " -V  Very verbose",

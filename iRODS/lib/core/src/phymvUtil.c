@@ -149,6 +149,16 @@ dataObjInp_t *dataObjInp)
         addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
           myRodsEnv->rodsDefResource);
     }
+    if (rodsArgs->rescGroup == True) {
+        if (rodsArgs->rescGroupString == NULL) {
+            rodsLog (LOG_ERROR,
+              "initCondForReg: NULL rescGroupString error");
+            return (USER__NULL_INPUT_ERR);
+        } else {
+            addKeyVal (&dataObjInp->condInput, RESC_GROUP_NAME_KW,
+              rodsArgs->rescGroupString);
+        }
+    }
 
     return (0);
 }

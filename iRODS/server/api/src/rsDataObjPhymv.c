@@ -136,16 +136,22 @@ transferStat_t *transStat, int multiCopyFlag)
     rescInfo_t *tmpRescInfo;
     int status;
     int savedStatus = 0;
+    char *inpRescGrpName, *myRescGrpName;
 
+    
     tmpRescGrpInfo = destRescGrpInfo;
     srcDataObjInfo = srcDataObjInfoHead;
+    inpRescGrpName = myRescGrpName =
+      getValByKey (&dataObjInp->condInput, RESC_GROUP_NAME_KW);
     while (tmpRescGrpInfo != NULL) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (inpRescGrpName == NULL) 
+          myRescGrpName = tmpRescGrpInfo->rescGroupName;
         while (srcDataObjInfo != NULL) {
 	    /* use _rsDataObjReplS for the phymv */ 
 	    dataObjInp->oprType = PHYMV_OPR;	/* should be set already */
             status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-              tmpRescInfo, tmpRescGrpInfo->rescGroupName, NULL, 0);
+              tmpRescInfo, myRescGrpName, NULL, 0);
 
 	    if (multiCopyFlag == 0) {
 		if (status >= 0) {
