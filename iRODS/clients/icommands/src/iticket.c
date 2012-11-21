@@ -110,7 +110,7 @@ showRestrictionsByHost(char *inColumn) {
    genQueryInp.selectInp.len = i;
 
    i2a[0]=COL_TICKET_ALLOWED_HOST_TICKET_ID;
-   sprintf(v1,"='%s'", inColumn);
+   snprintf(v1,sizeof(v1), "='%s'", inColumn);
    condVal[0]=v1;
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
@@ -173,7 +173,7 @@ showRestrictionsByUser(char *inColumn) {
    genQueryInp.selectInp.len = i;
 
    i2a[0]=COL_TICKET_ALLOWED_USER_TICKET_ID;
-   sprintf(v1,"='%s'", inColumn);
+   snprintf(v1,sizeof(v1),"='%s'", inColumn);
    condVal[0]=v1;
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
@@ -236,7 +236,7 @@ showRestrictionsByGroup(char *inColumn) {
    genQueryInp.selectInp.len = i;
 
    i2a[0]=COL_TICKET_ALLOWED_GROUP_TICKET_ID;
-   sprintf(v1,"='%s'", inColumn);
+   snprintf(v1,sizeof(v1),"='%s'", inColumn);
    condVal[0]=v1;
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
@@ -351,10 +351,10 @@ showTickets1(char *inOption, char *inName)
 
 #if 0
    i2a[0]=COL_USER_NAME;
-   sprintf(v1,"='%s'", myEnv.rodsUserName);
+   snprintf(v1,sizeof(v1),"='%s'", myEnv.rodsUserName);
    condVal[0]=v1;
    i2a[1]=COL_USER_ZONE;
-   sprintf(v2,"='%s'", myEnv.rodsZone);
+   snprintf(v2,sizeof(v2),"='%s'", myEnv.rodsZone);
    condVal[1]=v2;
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
@@ -372,7 +372,7 @@ showTickets1(char *inOption, char *inName)
       else {
 	 i2a[0]=COL_TICKET_STRING;
       }
-      sprintf(v1,"='%s'", inName);
+      snprintf(v1,sizeof(v1),"='%s'", inName);
       condVal[0]=v1;
       genQueryInp.sqlCondInp.inx = i2a;
       genQueryInp.sqlCondInp.value = condVal;

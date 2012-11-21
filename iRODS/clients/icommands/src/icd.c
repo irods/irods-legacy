@@ -124,7 +124,7 @@ checkColl(rcComm_t *Conn, char *path) {
 
    i2a[0]=COL_COLL_NAME;
    genQueryInp.sqlCondInp.inx = i2a;
-   sprintf(v1,"='%s'",path);
+   snprintf(v1,sizeof(v1),"='%s'",path);
    condVal[0]=v1;
    genQueryInp.sqlCondInp.value = condVal;
    genQueryInp.sqlCondInp.len=1;

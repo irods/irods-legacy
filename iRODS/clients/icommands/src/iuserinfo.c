@@ -94,7 +94,7 @@ showUser(char *name)
    genQueryInp.selectInp.len = i;
 
    i2a[0]=COL_USER_NAME;
-   sprintf(v1,"='%s'",name);
+   snprintf(v1,sizeof(v1),"='%s'",name);
    condVal[0]=v1;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -130,7 +130,7 @@ showUser(char *name)
    genQueryInp.selectInp.len = 1;
 
    i2a[0]=COL_USER_NAME;
-   sprintf(v1,"='%s'",name);
+   snprintf(v1,sizeof(v1),"='%s'",name);
    condVal[0]=v1;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -163,7 +163,7 @@ showUser(char *name)
    genQueryInp.selectInp.len = 1;
 
    i2a[0]=COL_USER_NAME;
-   sprintf(v1,"='%s'",name);
+   snprintf(v1,sizeof(v1),"='%s'",name);
    condVal[0]=v1;
 
    genQueryInp.sqlCondInp.inx = i2a;

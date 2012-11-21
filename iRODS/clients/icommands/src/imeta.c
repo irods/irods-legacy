@@ -126,11 +126,11 @@ showDataObj(char *name, char *attrName, int wild)
    }
 
    i2a[0]=COL_COLL_NAME;
-   sprintf(v1,"='%s'",cwd);
+   snprintf(v1,sizeof(v1),"='%s'",cwd);
    condVal[0]=v1;
 
    i2a[1]=COL_DATA_NAME;
-   sprintf(v2,"='%s'",name);
+   snprintf(v2,sizeof(v1),"='%s'",name);
    condVal[1]=v2;
 
    strncpy(fullName, cwd, MAX_NAME_LEN);
@@ -143,8 +143,8 @@ showDataObj(char *name, char *attrName, int wild)
       }
       status = splitPathByKey(fullName, 
 			      myDirName, myFileName, '/');
-      sprintf(v1,"='%s'",myDirName);
-      sprintf(v2,"='%s'",myFileName);
+      snprintf(v1,sizeof(v1),"='%s'",myDirName);
+      snprintf(v2,sizeof(v2),"='%s'",myFileName);
    }
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -154,10 +154,10 @@ showDataObj(char *name, char *attrName, int wild)
    if (attrName != NULL && *attrName!='\0') {
       i2a[2]=COL_META_DATA_ATTR_NAME;
       if (wild) {
-	 sprintf(v3,"like '%s'",attrName);
+	 snprintf(v3,sizeof(v3),"like '%s'",attrName);
       }
       else {
-	 sprintf(v3,"= '%s'",attrName);
+	 snprintf(v3,sizeof(v3),"= '%s'",attrName);
       }
       condVal[2]=v3;
       genQueryInp.sqlCondInp.len++;
@@ -248,7 +248,7 @@ showColl(char *name, char *attrName, int wild)
       }
    }
    i2a[0]=COL_COLL_NAME;
-   sprintf(v1,"='%s'",fullName);
+   snprintf(v1,sizeof(v1),"='%s'",fullName);
    condVal[0]=v1;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -258,10 +258,10 @@ showColl(char *name, char *attrName, int wild)
    if (attrName != NULL && *attrName!='\0') {
       i2a[1]=COL_META_COLL_ATTR_NAME;
       if (wild) {
-	 sprintf(v2,"like '%s'",attrName);
+	 snprintf(v2,sizeof(v2),"like '%s'",attrName);
       }
       else {
-	 sprintf(v2,"= '%s'",attrName);
+	 snprintf(v2,sizeof(v2),"= '%s'",attrName);
       }
       condVal[1]=v2;
       genQueryInp.sqlCondInp.len++;
@@ -339,7 +339,7 @@ showResc(char *name, char *attrName, int wild)
    genQueryInp.selectInp.len = 3;
 
    i2a[0]=COL_R_RESC_NAME;
-   sprintf(v1,"='%s'",name);
+   snprintf(v1,sizeof(v1),"='%s'",name);
    condVal[0]=v1;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -349,10 +349,10 @@ showResc(char *name, char *attrName, int wild)
    if (attrName != NULL && *attrName!='\0') {
       i2a[1]=COL_META_RESC_ATTR_NAME;
       if (wild) {
-	 sprintf(v2,"like '%s'",attrName);
+	 snprintf(v2,sizeof(v2),"like '%s'",attrName);
       }
       else {
-	 sprintf(v2,"= '%s'",attrName);
+	 snprintf(v2,sizeof(v2),"= '%s'",attrName);
       }
       condVal[1]=v2;
       genQueryInp.sqlCondInp.len++;
@@ -430,7 +430,7 @@ showRescGroup(char *name, char *attrName, int wild)
    genQueryInp.selectInp.len = 3;
 
    i2a[0]=COL_RESC_GROUP_NAME;
-   sprintf(v1,"='%s'",name);
+   snprintf(v1,sizeof(v1),"='%s'",name);
    condVal[0]=v1;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -440,10 +440,10 @@ showRescGroup(char *name, char *attrName, int wild)
    if (attrName != NULL && *attrName!='\0') {
       i2a[1]=COL_META_RESC_GROUP_ATTR_NAME;
       if (wild) {
-	 sprintf(v2,"like '%s'",attrName);
+	 snprintf(v2,sizeof(v2),"like '%s'",attrName);
       }
       else {
-	 sprintf(v2,"= '%s'",attrName);
+	 snprintf(v2,sizeof(v2),"= '%s'",attrName);
       }
       condVal[1]=v2;
       genQueryInp.sqlCondInp.len++;
@@ -537,11 +537,11 @@ showUser(char *name, char *attrName, int wild)
    genQueryInp.selectInp.len = 3;
 
    i2a[0]=COL_USER_NAME;
-   sprintf(v1,"='%s'",userName);
+   snprintf(v1,sizeof(v1),"='%s'",userName);
    condVal[0]=v1;
 
    i2a[1]=COL_USER_ZONE;
-   sprintf(v2,"='%s'",userZone);
+   snprintf(v2,sizeof(v2),"='%s'",userZone);
    condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -551,10 +551,10 @@ showUser(char *name, char *attrName, int wild)
    if (attrName != NULL && *attrName!='\0') {
       i2a[2]=COL_META_USER_ATTR_NAME;
       if (wild) {
-	 sprintf(v3,"like '%s'",attrName);
+	 snprintf(v3,sizeof(v3),"like '%s'",attrName);
       }
       else {
-	 sprintf(v3,"= '%s'",attrName);
+	 snprintf(v3,sizeof(v3),"= '%s'",attrName);
       }
       condVal[2]=v3;
       genQueryInp.sqlCondInp.len++;
@@ -632,11 +632,11 @@ int queryDataObj(char *cmdToken[]) {
    genQueryInp.selectInp.len = 2;
 
    i2a[0]=COL_META_DATA_ATTR_NAME;
-   sprintf(v1,"='%s'", cmdToken[2]);
+   snprintf(v1,sizeof(v1),"='%s'", cmdToken[2]);
    condVal[0]=v1;
 
    i2a[1]=COL_META_DATA_ATTR_VALUE;
-   sprintf(v2, "%s '%s'", cmdToken[3], cmdToken[4]);
+   snprintf(v2, sizeof(v2),"%s '%s'", cmdToken[3], cmdToken[4]);
    condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -644,7 +644,7 @@ int queryDataObj(char *cmdToken[]) {
    genQueryInp.sqlCondInp.len=2;
 
    if (strcmp(cmdToken[5], "or")==0) {
-      sprintf(v3, "|| %s '%s'", cmdToken[6], cmdToken[7]);
+      snprintf(v3, sizeof(v3), "|| %s '%s'", cmdToken[6], cmdToken[7]);
       rstrcat(v2, v3, BIG_STR);
    }
 
@@ -653,12 +653,13 @@ int queryDataObj(char *cmdToken[]) {
    while (strcmp(cmdToken[cmdIx], "and")==0) {
       i2a[condIx]=COL_META_DATA_ATTR_NAME;
       cmdIx++;
-      sprintf(vstr[condIx],"='%s'", cmdToken[cmdIx]);
+      snprintf(vstr[condIx],BIG_STR,"='%s'", cmdToken[cmdIx]);
       condVal[condIx]=vstr[condIx];
       condIx++;
 
       i2a[condIx]=COL_META_DATA_ATTR_VALUE;
-      sprintf(vstr[condIx], "%s '%s'", cmdToken[cmdIx+1], cmdToken[cmdIx+2]);
+      snprintf(vstr[condIx], BIG_STR,
+	       "%s '%s'", cmdToken[cmdIx+1], cmdToken[cmdIx+2]);
       cmdIx+=3;
       condVal[condIx]=vstr[condIx];
       condIx++;
@@ -721,11 +722,11 @@ int queryCollection(char *cmdToken[]) {
    genQueryInp.selectInp.len = 1;
 
    i2a[0]=COL_META_COLL_ATTR_NAME;
-   sprintf(v1,"='%s'", cmdToken[2]);
+   snprintf(v1,sizeof(v1),"='%s'",cmdToken[2]);
    condVal[0]=v1;
 
    i2a[1]=COL_META_COLL_ATTR_VALUE;
-   sprintf(v2, "%s '%s'", cmdToken[3], cmdToken[4]);
+   snprintf(v2, sizeof(v2),"%s '%s'", cmdToken[3], cmdToken[4]);
    condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -733,7 +734,7 @@ int queryCollection(char *cmdToken[]) {
    genQueryInp.sqlCondInp.len=2;
 
    if (strcmp(cmdToken[5], "or")==0) {
-      sprintf(v3, "|| %s '%s'", cmdToken[6], cmdToken[7]);
+      snprintf(v3, sizeof(v3), "|| %s '%s'", cmdToken[6], cmdToken[7]);
       rstrcat(v2, v3, BIG_STR);
    }
 
@@ -742,12 +743,13 @@ int queryCollection(char *cmdToken[]) {
    while (strcmp(cmdToken[cmdIx], "and")==0) {
       i2a[condIx]=COL_META_COLL_ATTR_NAME;
       cmdIx++;
-      sprintf(vstr[condIx],"='%s'", cmdToken[cmdIx]);
+      snprintf(vstr[condIx],BIG_STR,"='%s'", cmdToken[cmdIx]);
       condVal[condIx]=vstr[condIx];
       condIx++;
 
       i2a[condIx]=COL_META_COLL_ATTR_VALUE;
-      sprintf(vstr[condIx], "%s '%s'", cmdToken[cmdIx+1], cmdToken[cmdIx+2]);
+      snprintf(vstr[condIx], BIG_STR, 
+	       "%s '%s'", cmdToken[cmdIx+1], cmdToken[cmdIx+2]);
       cmdIx+=3;
       condVal[condIx]=vstr[condIx];
       condIx++;
@@ -807,11 +809,11 @@ int queryResc(char *attribute, char *op, char *value) {
    genQueryInp.selectInp.len = 1;
 
    i2a[0]=COL_META_RESC_ATTR_NAME;
-   sprintf(v1,"='%s'",attribute);
+   snprintf(v1,sizeof(v1),"='%s'",attribute);
    condVal[0]=v1;
 
    i2a[1]=COL_META_RESC_ATTR_VALUE;
-   sprintf(v2, "%s '%s'", op, value);
+   snprintf(v2, sizeof(v2),"%s '%s'", op, value);
    condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -870,11 +872,11 @@ int queryRescGroup(char *attribute, char *op, char *value) {
    genQueryInp.selectInp.len = 1;
 
    i2a[0]=COL_META_RESC_GROUP_ATTR_NAME;
-   sprintf(v1,"='%s'",attribute);
+   snprintf(v1,sizeof(v1),"='%s'",attribute);
    condVal[0]=v1;
 
    i2a[1]=COL_META_RESC_GROUP_ATTR_VALUE;
-   sprintf(v2, "%s '%s'", op, value);
+   snprintf(v2, sizeof(v2),"%s '%s'", op, value);
    condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;
@@ -937,11 +939,11 @@ int queryUser(char *attribute, char *op, char *value) {
    genQueryInp.selectInp.len = 2;
 
    i2a[0]=COL_META_USER_ATTR_NAME;
-   sprintf(v1,"='%s'",attribute);
+   snprintf(v1,sizeof(v1),"='%s'",attribute);
    condVal[0]=v1;
 
    i2a[1]=COL_META_USER_ATTR_VALUE;
-   sprintf(v2, "%s '%s'", op, value);
+   snprintf(v2, sizeof(v2),"%s '%s'", op, value);
    condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;

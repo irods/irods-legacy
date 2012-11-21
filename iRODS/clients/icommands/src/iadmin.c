@@ -299,7 +299,7 @@ showGroup(char *groupName)
    }
 
    conditionIndexes[0]=COL_USER_TYPE;
-   sprintf(conditionString1,"='rodsgroup'");
+   snprintf(conditionString1,sizeof(conditionString1),"='rodsgroup'");
    conditionValues[0]=conditionString1;
 
    genQueryInp.sqlCondInp.inx = conditionIndexes;
@@ -308,10 +308,10 @@ showGroup(char *groupName)
 
    if (groupName != NULL && *groupName!='\0') {
 
-      sprintf(conditionString1,"!='rodsgroup'");
+      snprintf(conditionString1,sizeof(conditionString1),"!='rodsgroup'");
 
       conditionIndexes[1]=COL_USER_GROUP_NAME;
-      sprintf(conditionString2,"='%s'",groupName);
+      snprintf(conditionString2,sizeof(conditionString2),"='%s'",groupName);
       conditionValues[1]=conditionString2;
       genQueryInp.sqlCondInp.len=2;
    }

@@ -147,34 +147,34 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
       status = parseUserName(userName, userName2, userZone);
       if (userZone[0]=='\0') {
 	 inputCond[0]=COL_QUOTA_USER_NAME;
-	 sprintf(v1,"='%s'",userName);
+	 snprintf(v1,sizeof(v1),"='%s'",userName);
 	 condVal[0]=v1;
 	 genQueryInp.sqlCondInp.len++;
       }
       else {
 	 inputCond[0]=COL_QUOTA_USER_NAME;
-	 sprintf(v1,"='%s'",userName2);
+	 snprintf(v1,sizeof(v1),"='%s'",userName2);
 	 condVal[0]=v1;
 	 genQueryInp.sqlCondInp.len++;
 	 inputCond[1]=COL_QUOTA_USER_ZONE;
-	 sprintf(v1b,"='%s'",userZone);
+	 snprintf(v1b,sizeof(v1b),"='%s'",userZone);
 	 condVal[1]=v1b;
 	 genQueryInp.sqlCondInp.len++;
       }
    }
    inputCond[genQueryInp.sqlCondInp.len] = COL_QUOTA_USER_TYPE;
    if (userOrGroup==0) {
-      sprintf(v2,"!='%s'","rodsgroup");
+      snprintf(v2,sizeof(v2),"!='%s'","rodsgroup");
    }
    else {
-      sprintf(v2,"='%s'","rodsgroup");
+      snprintf(v2,sizeof(v2),"='%s'","rodsgroup");
    }
    condVal[genQueryInp.sqlCondInp.len] = v2;
    genQueryInp.sqlCondInp.len++;
 
    if (rescOrGlobal==1) {
       inputCond[genQueryInp.sqlCondInp.len] = COL_QUOTA_RESC_ID;
-      sprintf(v3, "='%s'", "0");
+      snprintf(v3, sizeof(v3),"='%s'", "0");
       condVal[genQueryInp.sqlCondInp.len] = v3;
       genQueryInp.sqlCondInp.len++;
    }
@@ -317,7 +317,7 @@ showUserUsage(char *userName, char *usersZone)
    genQueryInp.sqlCondInp.len=0;
    if (userName[0]!='\0') {
       inputCond[0]=COL_QUOTA_USER_NAME;
-      sprintf(v1,"='%s'",userName);
+      snprintf(v1,sizeof(v1),"='%s'",userName);
       condVal[0]=v1;
 
       genQueryInp.sqlCondInp.inx = inputCond;

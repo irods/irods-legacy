@@ -214,9 +214,11 @@ main(int argc, char **argv)
 	  connectFlag = 1;
 	}
 	if (strlen(condStr) > 0)
-	  sprintf(rcvXmsgInp.msgCondition, "(*XSEQNUM  >= %d) && (%s)", sNum, condStr);
+	  snprintf(rcvXmsgInp.msgCondition, sizeof(rcvXmsgInp.msgCondition),
+		   "(*XSEQNUM  >= %d) && (%s)", sNum, condStr);
 	else
-	  sprintf(rcvXmsgInp.msgCondition, "*XSEQNUM >= %d ", sNum);
+	  snprintf(rcvXmsgInp.msgCondition, sizeof(rcvXmsgInp.msgCondition),
+		   "*XSEQNUM >= %d ", sNum);
 
 	status = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
 	/*        rcDisconnect(conn); */

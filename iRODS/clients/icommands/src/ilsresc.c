@@ -148,13 +148,13 @@ showResc(char *name, int longOption)
 	 return(0);
       }
       i2a[0]=COL_R_RESC_NAME;
-      sprintf(v1,"='%s'",name);
+      snprintf(v1,sizeof(v1),"='%s'",name);
       condVal[0]=v1;
       genQueryInp.sqlCondInp.len=1;
    }
    else {
       i2a[0]=COL_R_RESC_NAME;
-      sprintf(v1,"!='%s'",BUNDLE_RESC);  /* all but bundleResc */
+      snprintf(v1,sizeof(v1),"!='%s'",BUNDLE_RESC);  /* all but bundleResc */
       condVal[0]=v1;
       genQueryInp.sqlCondInp.len=1;
    }
@@ -228,7 +228,7 @@ showOneRescGroup(char *rescGroupName, int longOption)
    genQueryInp.sqlCondInp.value = condVal;
 
    i2a[0]=COL_RESC_GROUP_NAME;
-   sprintf(v1,"='%s'",rescGroupName);
+   snprintf(v1,sizeof(v1),"='%s'",rescGroupName);
    condVal[0]=v1;
    genQueryInp.sqlCondInp.len=1;
 
@@ -310,7 +310,7 @@ showRescAcl(char *name)
    genQueryInp.sqlCondInp.value = condVal;
    if (name !=NULL && *name != '\0') {
       i2a[0]=COL_R_RESC_NAME;
-      sprintf(v1,"='%s'",name);
+      snprintf(v1,sizeof(v1),"='%s'",name);
       condVal[0]=v1;
       genQueryInp.sqlCondInp.len=1;
    }

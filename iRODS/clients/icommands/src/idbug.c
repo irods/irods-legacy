@@ -521,7 +521,9 @@ main(int argc, char **argv)
       ubuf[0] = '\0';
       memset (&rcvXmsgInp, 0, sizeof (rcvXmsgInp));
       rcvXmsgInp.rcvTicket = streamId;
-      sprintf(rcvXmsgInp.msgCondition, "(*XSEQNUM >= %d) && (*XADDR != \"%s:%i\") ", rNum, myHostName, getpid ());
+      snprintf(rcvXmsgInp.msgCondition, sizeof(rcvXmsgInp.msgCondition),
+	       "(*XSEQNUM >= %d) && (*XADDR != \"%s:%i\") ", rNum, 
+	       myHostName, getpid ());
 
       status = getIDebugReply(&rcvXmsgInp, &rcvXmsgOut, 0);
       if (status == 0) {

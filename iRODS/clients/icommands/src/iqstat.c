@@ -116,7 +116,7 @@ showRuleExec(char *name, char *ruleName, int allFlag)
    }
    else {
       i2a[0]=COL_RULE_EXEC_USER_NAME;
-      sprintf(v1,"='%s'",name);
+      snprintf(v1,sizeof(v1),"='%s'",name);
       condVal[0]=v1;
       genQueryInp.sqlCondInp.inx = i2a;
       genQueryInp.sqlCondInp.value = condVal;
@@ -127,9 +127,9 @@ showRuleExec(char *name, char *ruleName, int allFlag)
       int i;
       i =  genQueryInp.sqlCondInp.len;
       /*  i2a[i]=COL_RULE_EXEC_NAME;
-      sprintf(v2,"='%s'",ruleName);  */
+      snprintf(v2,sizeof(v2),"='%s'",ruleName);  */
       i2a[i]=COL_RULE_EXEC_ID;
-      sprintf(v2,"='%s'",ruleName);
+      snprintf(v2,sizeof(v2),"='%s'",ruleName);
       condVal[i]=v2;
       genQueryInp.sqlCondInp.len++;
    }
@@ -208,7 +208,7 @@ showRuleExecBrief(char *name, int allFlag)
    genQueryInp.selectInp.len = i;
 
    i2a[0]=COL_RULE_EXEC_USER_NAME;
-   sprintf(v1,"='%s'",name);
+   snprintf(v1,sizeof(v1),"='%s'",name);
    condVal[0]=v1;
 
    genQueryInp.sqlCondInp.inx = i2a;

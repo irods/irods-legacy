@@ -120,10 +120,10 @@ doLs(rcComm_t *Conn, char *objPath, int longOption) {
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
    i2a[0]=COL_COLL_NAME;
-   sprintf(v1,"='%s'",logicalParentDirName);
+   snprintf(v1,sizeof(v1),"='%s'",logicalParentDirName);
    condVal[0]=v1;
    i2a[1]=COL_DATA_NAME;
-   sprintf(v2,"='%s'",logicalEndName);
+   snprintf(v2,sizeof(v1),"='%s'",logicalEndName);
    condVal[1]=v2;
    genQueryInp.sqlCondInp.len=2;
 
