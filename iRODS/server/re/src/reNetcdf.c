@@ -2298,7 +2298,6 @@ msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei)
     return 0;
 }
 
-#ifdef NETCDF4_API
 
 /**
  * \fn msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -2327,9 +2326,11 @@ msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei)
  * \sa N/A
  *
 **/
+
 int
 msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
+#ifdef NETCDF4_API
     rsComm_t *rsComm;
     ncInqGrpsInp_t ncInqGrpsInp;
     ncInqGrpsOut_t *ncInqGrpsOut = NULL;
@@ -2362,8 +2363,13 @@ msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei)
         "msiNcInqGrps: rsNcInqGrps failed for ncid %d, status = %d",
         ncInqGrpsInp.ncid, rei->status);
     }
+#else
+    rei->status = NETCDF_BUILD_WITH_NETCDF_API_NEEDED;    
+#endif
     return (rei->status);
 }
+
+
 
 /**
  * \fn msiNcOpenGroup (msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
@@ -2386,6 +2392,7 @@ int
 msiNcOpenGroup (msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
+#ifdef NETCDF4_API
     rsComm_t *rsComm;
     ncOpenInp_t ncOpenInp;
     int *grpNcid = NULL;
@@ -2426,9 +2433,11 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         "msiNcOpenGroup: rsNcOpenGroup failed for rootNcid %d, status = %d",
         ncOpenInp.rootNcid, rei->status);
     }
+#else
+    rei->status = NETCDF_BUILD_WITH_NETCDF_API_NEEDED;    
+#endif
     return (rei->status);
 }
-#endif
 
 /**
  * \fn msiNcGetNGrpsInInqOut (msParam_t *ncInqGrpsOutParam, msParam_t *outParam,
