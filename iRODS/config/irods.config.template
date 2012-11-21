@@ -26,9 +26,15 @@
 #	use this file to control their access to the database and
 #	iRODS.  If you change this file after iRODS is built, it
 #	may confuse the scripts and cause problems.
-# 
-
-
+#
+#	However, for the most part, the information in this script is
+#	used by 'irodssetup' to set up other configuration files and
+#	ICAT database information, so to make a change after
+#	installation, use other iRODS or subsystem (such as ODBC)
+#	mechanisms.  Or, in rare cases in working with a new
+#	installation, you might update this file (the updated
+#	irods.config version) and then re-run irodssetup.
+#
 
 
 
@@ -47,11 +53,11 @@
 # 	$DATABASE_HOME is the full path to the installation
 # 	directory of the database.  Subdirectories of this directory
 # 	include the database's libraries, applications, configuration 
-#       files, and data storage.
+#	files, and data storage.
 #
 # 	$DATABASE_LIB the subdirectories uder $DATABASE_HOME for the
-#       libraries.  Sometimes for Oracle, this is something other 
-#       than lib.
+#	libraries.  Sometimes for Oracle, this is something other 
+#	than lib.
 # 
 # 	$DATABASE_HOST is the name of the host running the database
 # 	server used by iRODS.  It need not be the localhost.
