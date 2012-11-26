@@ -817,4 +817,44 @@ msiStrCat (msParam_t *targParam, msParam_t *srcParam, ruleExecInfo_t *rei)
 
     return 0;
 }
+int
+msiSplitPathByKey (msParam_t *inpPath,  msParam_t *inpKey, msParam_t *outParentColl, 
+msParam_t *outChildName, ruleExecInfo_t *rei)
+{
+    char parent[MAX_NAME_LEN], child[MAX_NAME_LEN];
+
+    RE_TEST_MACRO (" Calling msiSplitPathByKey")
+
+    if (rei == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiSplitPathByKey: input rei is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if ( inpPath == NULL ) {
+        rodsLog (LOG_ERROR,
+          "msiSplitPathByKey: input inpPath is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (inpPath->type, STR_MS_T) == 0) {
+        if ((rei->status = splitPathByKey ((char *) inpPath->inOutStruct,
+          parent, child, *(char *) inpKey->inOutStruct)) < 0) {
+            rodsLog (LOG_ERROR,
+              "msiSplitPathByKey: splitPathByKey for %s error, status = %d",
+              (char *) inpPath->inOutStruct, rei->status);
+        } else {
+          fillStrInMsParam (outParentColl, parent);
+          fillStrInMsParam (outChildName, child);
+        }
+    } else {
+        rodsLog (LOG_ERROR,
+        "msiSplitPathByKey: Unsupported input inpPath types %s",
+        inpPath->type);
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+    }
+    return (rei->status);
+}
+
 
