@@ -57,8 +57,8 @@ def read_config(cfg_file, doxy_keys)
     if ((line =~ /#/) == nil) then
       tkey, tvalue = line.split("=")
       key = tkey.strip()
-      if (tvalue): value = tvalue.strip() end
-      if (doxy_keys.include?(key)): doxy_cfg[key] = value end
+      if (tvalue) then  value = tvalue.strip() end
+      if (doxy_keys.include?(key)) then  doxy_cfg[key] = value end
     end
   end
   file.close()
@@ -104,17 +104,17 @@ def main()
     puts("Your saved configuration values will be written to [#{output_file}]\n\n")
     for key in doxy_cfg.keys.sort.reverse
       # Skip the strip_from_path it is the same as the input
-      if ((key =~ /STRIP_FROM_PATH/) != nil): next end
+      if ((key =~ /STRIP_FROM_PATH/) != nil) then  next end
       if (doxy_cfg[key] != nil) then
         puts("Enter #{key} [#{doxy_cfg[key]}]:")
         tvalue = gets()
         value = tvalue.strip()
-        if (value.length() > 0): doxy_cfg[key] = value end
+        if (value.length() > 0) then  doxy_cfg[key] = value end
       else
         puts("Enter #{key} []:")
         tvalue = gets()
         value = tvalue.strip()
-        if (value.length() > 0): doxy_cfg[key] = value end
+        if (value.length() > 0) then doxy_cfg[key] = value end
       end
     end
 
