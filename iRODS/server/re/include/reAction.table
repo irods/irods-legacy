@@ -394,6 +394,7 @@ microsdef_t MicrosTable[] = {
   {"msiFlushMonStat",2,(funcPtr) msiFlushMonStat},
   {"msiDigestMonStat",7,(funcPtr) msiDigestMonStat},
   {"msiSplitPath",3,(funcPtr) msiSplitPath},
+  {"msiSplitPathByKey",4,(funcPtr) msiSplitPathByKey},
   {"msiGetSessionVarValue",2,(funcPtr) msiGetSessionVarValue},
   {"msiAutoReplicateService", 5, (funcPtr)msiAutoReplicateService},
   {"msiDataObjAutoMove", 5, (funcPtr)msiDataObjAutoMove},
@@ -460,8 +461,10 @@ microsdef_t MicrosTable[] = {
   {"msiNcGetDimLenInInqOut",4,(funcPtr) msiNcGetDimLenInInqOut},
   {"msiNcGetVarIdInInqOut",3,(funcPtr) msiNcGetVarIdInInqOut},
   {"msiFreeNcStruct",1,(funcPtr) msiFreeNcStruct},
+#ifdef NETCDF4_API
   {"msiNcOpenGroup",3,(funcPtr) msiNcOpenGroup},
   {"msiNcInqGrps",2,(funcPtr) msiNcInqGrps},
+#endif
   {"msiNcGetNGrpsInInqOut",2,(funcPtr) msiNcGetNGrpsInInqOut},
   {"msiNcGetGrpInInqOut",3,(funcPtr) msiNcGetGrpInInqOut},
   {"msiNcRegGlobalAttr",3,(funcPtr) msiNcRegGlobalAttr},
