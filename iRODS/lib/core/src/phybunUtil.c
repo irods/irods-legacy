@@ -86,13 +86,20 @@ rodsPathInp_t *rodsPathInp)
         } else {
             addKeyVal (&phyBundleCollInp->condInput, 
 	      DEST_RESC_NAME_KW, rodsArgs->resourceString);
+#if 0
             addKeyVal (&phyBundleCollInp->condInput, RESC_NAME_KW,
               rodsArgs->resourceString);
+#endif
         }
     } else {
        rodsLog (LOG_ERROR,
           "initCondForPhybunOpr: A -Rresource must be input");
         return (USER__NULL_INPUT_ERR);
+    }
+
+    if (rodsArgs->srcResc == True) {
+        addKeyVal (&phyBundleCollInp->condInput, RESC_NAME_KW,
+          rodsArgs->srcRescString);
     }
 
     if (rodsArgs->verifyChecksum == True) {

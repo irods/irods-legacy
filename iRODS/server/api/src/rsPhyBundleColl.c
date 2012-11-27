@@ -91,13 +91,19 @@ rescGrpInfo_t *rescGrpInfo)
     int savedStatus = 0;
     int chksumFlag, maxSubFileCnt;
     char *dataType = NULL;
+    char *srcRescName;
 
+    srcRescName = getValByKey (&phyBundleCollInp->condInput, RESC_NAME_KW);
     myRescInfo = rescGrpInfo->rescInfo;
     myRescName = myRescInfo->rescName;
     bzero (&collInp, sizeof (collInp));
     rstrcpy (collInp.collName, phyBundleCollInp->collection, MAX_NAME_LEN);
     collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | 
       NO_TRIM_REPL_FG;
+    if (srcRescName != NULL) {
+        collInp.flags |= INCLUDE_CONDINPUT_IN_QUERY;
+        addKeyVal (&collInp.condInput, RESC_NAME_KW, srcRescName);
+    }
     handleInx = rsOpenCollection (rsComm, &collInp);
     if (handleInx < 0) {
         rodsLog (LOG_ERROR,
@@ -246,6 +252,9 @@ rescGrpInfo_t *rescGrpInfo)
           "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stat=%d",
           phyBundleCollInp->collection, status);
     }
+    clearKeyVal (&collInp.condInput);
+    rsCloseCollection (rsComm, &handleInx);
+
     if (status >= 0 && savedStatus < 0) {
         return savedStatus;
     } else {
