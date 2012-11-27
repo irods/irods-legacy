@@ -360,6 +360,7 @@ dataObjInp_t *dataObjOprInp)
 	    status = rcDataObjRsync (conn, dataObjOprInp);
 	} else {
             status = 0;
+            printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
 	}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW);
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW);
