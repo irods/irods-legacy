@@ -291,7 +291,8 @@ rcDisconnect (rcComm_t *conn)
 //#ifdef windows_platform
 //	closesocket(conn->sock);
 //#else
-    if (conn->svrVersion->reconnPort > 0 && conn->reconnThr != 0) {
+    if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 
+      && conn->reconnThr != 0) {
 	pthread_cancel (conn->reconnThr);
 	pthread_detach (conn->reconnThr);
         pthread_mutex_destroy (&conn->lock);
