@@ -873,7 +873,8 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 	char errbuf[ERR_MSG_LEN];
 	if (actionInx < 0) {
             int ret = NO_MICROSERVICE_FOUND_ERR;
-            generateErrMsg("execMicroService3: no micro service found", NODE_EXPR_POS(node), node->base, errbuf);
+            /* since rules are looked up before micro services, when a micro service is not found, a rule is not found, either */
+            generateErrMsg("execMicroService3: no rule or micro service found", NODE_EXPR_POS(node), node->base, errbuf);
             addRErrorMsg(errmsg, ret, errbuf);
             return newErrorRes(r, ret);
 
