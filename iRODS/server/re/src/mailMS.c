@@ -58,7 +58,7 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
   subjectLine = (char *) xsubjectLine->inOutStruct;
   body = (char *) xbody->inOutStruct;
 
-  status = checkStringForSystem(toAddr);
+  status = checkStringForEmailAddress(toAddr);
   if (status) return(status);
   status = checkStringForSystem(subjectLine);
   if (status) return(status);
@@ -106,12 +106,12 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
     if (mailStr == NULL) return SYS_MALLOC_ERR;
 
 #ifdef solaris_platform
-    sprintf(mailStr,"cat %s| mail  %s",fName,toAddr);
+    sprintf(mailStr,"cat %s| mail  '%s'",fName,toAddr);
 #else /* tested for linux - not sure how other platforms operate for subject */
     if (subjectLine != NULL && strlen(subjectLine) > 0)
-      sprintf(mailStr,"cat %s| mail -s '%s'  %s",fName,subjectLine, toAddr);
+      sprintf(mailStr,"cat %s| mail -s '%s'  '%s'",fName,subjectLine, toAddr);
     else
-      sprintf(mailStr,"cat %s| mail  %s",fName,toAddr);
+      sprintf(mailStr,"cat %s| mail  '%s'",fName,toAddr);
 #endif
     system(mailStr);
     sprintf(mailStr,"rm %s",fName);
