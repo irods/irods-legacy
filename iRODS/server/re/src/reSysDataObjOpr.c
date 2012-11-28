@@ -742,6 +742,7 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+    if (rescGrpInfo != NULL) freeRescGrpInfo (rescGrpInfo);
     rei->status = rsReplAndRequeDataObjInfo (rei->rsComm, &dataObjInfoHead, 
      cacheResc, flag);
     if (rei->status >= 0) {
