@@ -708,6 +708,7 @@ ruleExecInfo_t *rei)
     dataObjInfo_t *dataObjInfoHead;
     char *cacheResc;
     char *flag = NULL;
+    rescGrpInfo_t *rescGrpInfo = NULL;
 
     cacheResc = (char *) xcacheResc->inOutStruct;
     if (xflag != NULL && xflag->inOutStruct != NULL) {
@@ -718,6 +719,9 @@ ruleExecInfo_t *rei)
 
     rei->status = 0;
 
+    if (strcmp (flag, "all") == 0) {
+        resolveRescGrp (rei->rsComm, cacheResc, &rescGrpInfo);
+    }
     if (cacheResc == NULL || strcmp (cacheResc, "null") == 0 ||
       strlen (cacheResc) == 0) {
 	return (rei->status);
@@ -732,7 +736,7 @@ ruleExecInfo_t *rei)
     writeFlag = getWriteFlag (rei->doinp->openFlags);
 
     if (requeDataObjInfoByResc (&dataObjInfoHead, cacheResc, writeFlag, 1) 
-      >= 0) {
+      >= 0 && rescGrpInfo == NULL) {
 	/* we have a good copy on cache */
 	rei->status = 1;
         return (rei->status);
