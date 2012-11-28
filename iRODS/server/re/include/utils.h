@@ -140,9 +140,22 @@ void keyBuf(unsigned char *buf, int size, char *keyBuf);
 #include "restruct.templates.h"
 #include "end.instance.h"
 
-/*#include "region.check.proto.h"
+/*#define RE_CACHE_CHECK
+
+#ifdef RE_REGION_CHECK
+#include "region.check.proto.h"
+#include "proto.h"
 #include "restruct.templates.h"
-#include "end.instance.h"*/
+#include "end.instance.h"
+#endif
+
+#ifdef RE_CACHE_CHECK
+typedef struct cache Cache;
+#include "cache.check.proto.h"
+#include "proto.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+#endif*/
 
 /** debugging functions */
 int writeToTmp(char *fileName, char *text);
