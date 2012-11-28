@@ -30,7 +30,7 @@ typedef enum ruleEngineStatus {
     DISABLED*/
 } RuleEngineStatus;
 
-typedef struct {
+typedef struct cache {
     unsigned char *address;
     unsigned char *pointers;
     size_t dataSize;

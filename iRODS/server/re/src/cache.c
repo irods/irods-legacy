@@ -13,6 +13,13 @@
 #include "traversal.instance.h"
 #include "restruct.templates.h"
 
+/* Copy the data stored in a Cache struct into a continuously allocated memory block in *p.
+ * All sub structure status are either uninitialized or compressed, which meaning that they are not allocated separately and therefore should not be deallocated.
+ * Only coreRuleSet and coreFuncDescIndex are copied.
+ * Starting from *p+size backwards, a list of pointers to pointers in the copied data structures are stored.
+ * There pointers are used to quickly access all pointers in the stored data structures so that they can be offset when they are copied to a new memory address.
+ * This function returns NULL if it runs out of memory allocated between in *p and *p+size.
+ * The rule engine status is also set to uninitialized. */
 Cache *copyCache(unsigned char **p, size_t size, Cache *ptr) {
 	if(size%REGION_ALIGNMENT != 0) { /* size should be divisible by ALIGNMENT */
 		return NULL;
@@ -32,17 +39,17 @@ Cache *copyCache(unsigned char **p, size_t size, Cache *ptr) {
     MK_POINTER(&(ecopy->pointers));
 
     MK_PTR(RuleSet, coreRuleSet);
-    MK_TRANSIENT_VAL(RuleEngineStatus, coreRuleSetStatus, COMPRESSED);
-    MK_TRANSIENT_PTR(RuleSet, appRuleSet);
-    MK_TRANSIENT_VAL(RuleEngineStatus, appRuleSetStatus, UNINITIALIZED);
-    MK_TRANSIENT_PTR(RuleSet, extRuleSet);
-    MK_TRANSIENT_VAL(RuleEngineStatus, extRuleSetStatus, UNINITIALIZED);
-    MK_PTR_GENERIC(Env, coreFuncDescIndex, GENERIC(Node));
-    MK_TRANSIENT_VAL(RuleEngineStatus, coreFuncDescIndexStatus, COMPRESSED);
-    MK_TRANSIENT_PTR(Hashtable, appFuncDescIndex);
-    MK_TRANSIENT_VAL(RuleEngineStatus, appFuncDescIndexStatus, UNINITIALIZED);
-    MK_TRANSIENT_PTR(Hashtable, extFuncDescIndex);
-    MK_TRANSIENT_VAL(RuleEngineStatus, extFuncDescIndexStatus, UNINITIALIZED);
+    ecopy->coreRuleSetStatus = COMPRESSED;
+    ecopy->appRuleSet = NULL;
+    ecopy->appRuleSetStatus = UNINITIALIZED;
+    ecopy->extRuleSet = NULL;
+    ecopy->extRuleSetStatus = UNINITIALIZED;
+    MK_PTR_TAPP(Env, coreFuncDescIndex, PARAM(Node));
+    ecopy->coreFuncDescIndexStatus = COMPRESSED; /* The coreFuncDescIndex is stored in a continuously allocated memory block in *buf */
+    ecopy->appFuncDescIndex = NULL;
+    ecopy->appFuncDescIndexStatus = UNINITIALIZED;
+    ecopy->extFuncDescIndex = NULL;
+    ecopy->extFuncDescIndexStatus = UNINITIALIZED;
     ecopy->dataSize = (*p - buf);
     ecopy->address = buf;
     ecopy->pointers = pointers0;
@@ -56,14 +63,21 @@ Cache *copyCache(unsigned char **p, size_t size, Cache *ptr) {
 	ecopy->extRegionStatus = UNINITIALIZED;
 	ecopy->sysRegion = NULL;
 	ecopy->sysRegionStatus = UNINITIALIZED;
-	MK_TRANSIENT_PTR(Hashtable, sysFuncDescIndex);
-	MK_TRANSIENT_VAL(RuleEngineStatus, sysFuncDescIndexStatus, UNINITIALIZED);
-	MK_TRANSIENT_VAL(RuleEngineStatus, ruleEngineStatus, UNINITIALIZED);
+	ecopy->sysFuncDescIndex = NULL;
+	ecopy->sysFuncDescIndexStatus = UNINITIALIZED;
+	ecopy->ruleEngineStatus = UNINITIALIZED;
 
     deleteHashTable(objectMap, nop);
 
     return ecopy;
 }
+
+/*
+ * Restore a Cache struct from buf into a malloc'd buffer.
+ * This function returns NULL if failed to acquire or release the mutex.
+ * It first create a local copy of buf's data section and pointer pointers section. This part needs synchronization.
+ * Then it works on its local copy, which does not need synchronization.
+ */
 Cache *restoreCache(unsigned char *buf) {
 	mutex_type *mutex;
     Cache *cache = (Cache *) buf;
@@ -140,6 +154,12 @@ Cache *restoreCache(unsigned char *buf) {
     applyDiff(pointers, pointersSize, diff, pointerDiff);
     free(pointersCopy);
     cache = (Cache *) bufCopy;
+
+#ifdef RE_CACHE_CHECK
+    Hashtable *objectMap = newHashTable(100);
+    cacheChkEnv(cache->coreFuncDescIndex, cache, (CacheChkFuncType *) cacheChkNode, objectMap);
+    cacheChkRuleSet(cache->coreRuleSet, cache, objectMap);
+#endif
     return cache;
 }
 void applyDiff(unsigned char *pointers, long pointersSize, long diff, long pointerDiff) {
@@ -175,6 +195,18 @@ void applyDiffToPointers(unsigned char *pointers, long pointersSize, long pointe
         }
 
 }
+
+/*
+ * Update shared with a new cache.
+ * This function checks
+ *     if new cache has a newer timestamp than the shared cache and updates,
+ * 		   then the updateTS of the shared cache before it starts to update the cached data.
+ * 		   else return.
+ * 	   except when the processType is RULE_ENGINE_INIT_CACHE, which means that the share caches has not been initialized.
+ * 		   or when the processType is RULE_ENGINE_REFRESH_CACHE, which means that we want to refresh the cache with the new cache.
+ * It prepares the data in the new cache for copying into the shared cache.
+ * It checks the timestamp again and does the actually copying.
+ */
 int updateCache(unsigned char *shared, size_t size, Cache *cache, int processType) {
 	mutex_type *mutex;
 	time_type timestamp;

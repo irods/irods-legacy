@@ -47,21 +47,6 @@ Cache ruleEngineConfig = {
     0, /* int version */
 };
 
-#ifdef DEBUG
-int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char sep) {
-    char *i = strchr(all, sep);
-    if(i==NULL) {
-        tail[0] = '\0';
-        strcpy(head, all);
-    } else {
-        strcpy(tail, i+1);
-        strncpy(head, all, i-all);
-        head[i-all] = '\0';
-    }
-    return 0;
-}
-#endif
-
 void removeRuleFromExtIndex(char *ruleName, int i) {
 	if(isComponentInitialized(ruleEngineConfig.extFuncDescIndexStatus)) {
 		FunctionDesc *fd = (FunctionDesc *)lookupFromHashTable(ruleEngineConfig.extFuncDescIndex->current, ruleName);

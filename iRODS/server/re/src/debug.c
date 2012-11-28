@@ -658,6 +658,18 @@ char* rstrcpy(char *dest, char *src, int n) {
     strncpy(dest, src, n);
     return dest;
 }
+int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char sep) {
+    char *i = strchr(all, sep);
+    if(i==NULL) {
+        tail[0] = '\0';
+        strcpy(head, all);
+    } else {
+        strcpy(tail, i+1);
+        strncpy(head, all, i-all);
+        head[i-all] = '\0';
+    }
+    return 0;
+}
 
 /* mock functions */
 int reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, Env *env, ruleExecInfo_t *rei) { return 0; }
