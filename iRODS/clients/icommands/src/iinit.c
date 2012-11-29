@@ -62,8 +62,9 @@ main(int argc, char **argv)
     char ttybuf[TTYBUF_LEN];
     int doingEnvFileUpdate=0;
     char updateText[UPDATE_TEXT_LEN]="";
+    int ttl=0;
 
-    status = parseCmdLineOpt(argc, argv, "ehvVl", 0, &myRodsArgs);
+    status = parseCmdLineOpt(argc, argv, "ehvVlZ", 1, &myRodsArgs);
     if (status != 0) {
        printf("Use -h for help.\n");
        exit(1);
@@ -81,18 +82,32 @@ main(int argc, char **argv)
 	rodsLogLevel(LOG_NOTICE);
     }
  
-    ix = myRodsArgs.optind;
-
-    password="";
-    if (ix < argc) {
-       password = argv[ix];
-    }
-
     status = getRodsEnv (&myEnv);
     if (status < 0) {
        rodsLog (LOG_ERROR, "main: getRodsEnv error. status = %d",
 		status);
        exit (1);
+    }
+
+    if (myRodsArgs.ttl==True) {
+      ttl = myRodsArgs.ttlValue;
+      if (ttl < 1) {
+	printf("Time To Live value needs to be a positive integer\n");
+	exit(1);
+      }
+      if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
+	  strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
+      }
+      else {
+	printf("Time-To-Live only applies when using PAM authentication\n");
+	exit(1);
+      }
+    }
+    ix = myRodsArgs.optind;
+
+    password="";
+    if (ix < argc) {
+       password = argv[ix];
     }
 
     if (myRodsArgs.longOption==True) {
@@ -228,7 +243,7 @@ main(int argc, char **argv)
 #ifdef PAM_AUTH
     if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
 	strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
-       status = clientLoginPam(Conn, password);
+       status = clientLoginPam(Conn, password, ttl);
        if (status != 0) exit(8);
        /* if this succeeded, do the regular login below to check that the
 	generated password works properly.  */
@@ -259,11 +274,12 @@ void usage (char *prog)
 {
   printf("Creates a file containing your iRODS password in a scrambled form,\n");
   printf("to be used automatically by the icommands.\n");
-  printf("Usage: %s [-ehvVl]\n", prog);
+  printf("Usage: %s [-ehvVl] [--ttl TimeToLive]\n", prog);
   printf(" -e  echo the password as you enter it (normally there is no echo)\n");
   printf(" -l  list the iRODS environment variables (only)\n");
   printf(" -v  verbose\n");
   printf(" -V  Very verbose\n");
+  printf("--ttl ttl  set the irods-pam password Time To Live (specified in hours)\n");
   printf(" -h  this help\n");
   printReleaseInfo("iinit");
 }

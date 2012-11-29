@@ -153,7 +153,7 @@ int clientLoginKrb(rcComm_t *Conn)
 }
 #endif
 
-int clientLoginPam(rcComm_t *Conn, char *password) 
+int clientLoginPam(rcComm_t *Conn, char *password, int ttl) 
 {
 #ifdef PAM_AUTH
    int status;
@@ -209,6 +209,7 @@ int clientLoginPam(rcComm_t *Conn, char *password)
    memset (&pamAuthReqInp, 0, sizeof (pamAuthReqInp));
    pamAuthReqInp.pamPassword = myPassword;
    pamAuthReqInp.pamUser = userName;
+   pamAuthReqInp.timeToLive = ttl;
    status = rcPamAuthRequest(Conn, &pamAuthReqInp, &pamAuthReqOut);
    if (status) {
       printError(Conn, status, "rcPamAuthRequest");

@@ -70,17 +70,27 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #define TEMP_PASSWORD_TIME 120
 #define TEMP_PASSWORD_MAX_TIME 1000
 
-/* IRODS_PAM_PASSWORD_TIME (the iRODS=PAM password lifetime) must not
-   be equal to TEMP_PASSWORD_TIME to avoid the possibility that the logic
-   for temporary passwords would be applied.  This should be fine as
+/* IRODS_PAM_PASSWORD_DEFAULT_TIME (the default iRODS-PAM password
+   lifetime) IRODS_PAM_PASSWORD_MIN_TIME must be greater than
+   TEMP_PASSWORD_TIME to avoid the possibility that the logic for
+   temporary passwords would be applied.  This should be fine as
    IRODS-PAM passwords will typically be valid on the order of a
    couple weeks compared to a couple minutes for temporary one-time
    passwords.
  */
 #define IRODS_PAM_PASSWORD_LEN 20
 
-#define IRODS_PAM_PASSWORD_TIME "1209600"  /* two weeks in seconds */
-
+/* The IRODS_PAM_PASSWORD_MIN_TIME must be greater than
+   TEMP_PASSWORD_TIME so the logic can deal with each password type
+   differently.  If they overlap, SQL errors can result */
+#define IRODS_PAM_PASSWORD_MIN_TIME "121"  /* must be > TEMP_PASSWORD_TIME */
+#define IRODS_PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
+#ifdef PAM_AUTH_NO_EXTEND
+#define IRODS_PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
+#else
+#define IRODS_PAM_PASSWORD_DEFAULT_TIME "1209600" /* two weeks in seconds */
+#endif
+ 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
 #define PASSWORD_DEFAULT_KEY "a9_3fker"
@@ -3498,6 +3508,9 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    char myUserZone[MAX_NAME_LEN];
    char userName2[NAME_LEN+2];
    char userZone[NAME_LEN+2];
+   rodsLong_t pamMinTime;
+   rodsLong_t pamMaxTime;
+
 #if defined(OS_AUTH)
    int doOsAuthentication = 0;
    char *os_auth_flag;
@@ -3628,7 +3641,12 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    nowTime=atoll(myTime);
 
 /* Check for PAM_AUTH type passwords */
-   if (strncmp(goodPwExpiry, IRODS_PAM_PASSWORD_TIME,10)==0) {
+   pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
+   pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
+
+   if ((strncmp(goodPwExpiry, "9999",4)!=0) &&
+       expireTime >=  pamMinTime &&
+       expireTime <= pamMaxTime) {
       time_t modTime;
       /* The used pw is an iRODS-PAM type, so now check if it's expired */
       getNowStr(myTime);
@@ -3661,8 +3679,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       }
    }
 
-   if (expireTime < TEMP_PASSWORD_MAX_TIME &&
-       strncmp(goodPwExpiry, IRODS_PAM_PASSWORD_TIME,10)!=0) {
+   if (expireTime < TEMP_PASSWORD_MAX_TIME) {
       /* in the form used by temporary, one-time passwords */
 
       time_t createTime;
@@ -4033,7 +4050,8 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
  If testTime is non-null, use that as the create-time, as a testing aid.
  */
 int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
-			      char *username, char *testTime,
+			      char *username, int timeToLive,
+			      char *testTime,
 			      char **irodsPassword) {
    char myTime[50];
    char rBuf[200];
@@ -4045,14 +4063,32 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
    char passwordModifyTime[50];
    char *cVal[3];
    int iVal[3];
-
    char selUserId[MAX_NAME_LEN];
+   char expTime[50];
 
    status = getLocalZone();
    if (status != 0) return(status);
 
    getNowStr(myTime);
 
+   /* if ttl is unset, use the default */
+   if (timeToLive == 0) {
+     rstrcpy(expTime, IRODS_PAM_PASSWORD_DEFAULT_TIME, sizeof expTime);
+   }
+   else {
+     /* convert ttl to seconds and make sure ttl is within the limits */
+     rodsLong_t pamMinTime, pamMaxTime;
+     pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
+     pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
+     timeToLive = timeToLive * 3600;
+     if (timeToLive < pamMinTime || 
+	 timeToLive > pamMaxTime) {
+       return PAM_AUTH_PASSWORD_INVALID_TTL;
+     }
+     snprintf(expTime, sizeof expTime, "%d", timeToLive);
+   }
+
+   /* get user id */
    if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 1");
    status = cmlGetStringValueFromSql(
       "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
@@ -4060,24 +4096,33 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
    if (status==CAT_NO_ROWS_FOUND) return (CAT_INVALID_USER);
    if (status) return(status);
 
+   /* first delete any that are expired */
    if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 2");
+   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
+   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+   cllBindVars[cllBindVarCount++]=myTime;
+   status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+				   &icss);
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 3");
    cVal[0]=passwordInIcat;
    iVal[0]=MAX_PASSWORD_LEN;
    cVal[1]=passwordModifyTime;
    iVal[1]=sizeof(passwordModifyTime);
    status = cmlGetStringValuesFromSql(
-	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts = ?",
+	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
 	    cVal, iVal, 2,
 	    selUserId, 
-	    IRODS_PAM_PASSWORD_TIME,
-            0, &icss);
+            IRODS_PAM_PASSWORD_MIN_TIME,
+            IRODS_PAM_PASSWORD_MAX_TIME, &icss);
    if (status==0) {
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 3");
+#ifndef PAM_AUTH_NO_EXTEND
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
       cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=expTime;
       cllBindVars[cllBindVarCount++]=selUserId;
-      cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_TIME;
       cllBindVars[cllBindVarCount++]=passwordInIcat;
-      status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=? where user_id = ? and pass_expiry_ts = ? and rcat_password = ?",
+      status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
 				      &icss);
       if (status) return(status);
 
@@ -4088,7 +4133,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 		 status);
 	 return(status);
       }
-
+#endif
       icatDescramble(passwordInIcat);
       strncpy(*irodsPassword, passwordInIcat, IRODS_PAM_PASSWORD_LEN);
       return(0);
@@ -4115,10 +4160,10 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
       strncpy(myTime, testTime, sizeof(myTime));
    }
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 5");
    cllBindVars[cllBindVarCount++]=selUserId;
    cllBindVars[cllBindVarCount++]=randomPwEncoded;
-   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_TIME;
+   cllBindVars[cllBindVarCount++]=expTime;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
    status =  cmlExecuteNoAnswerSql("insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values (?, ?, ?, ?, ?)", 
@@ -4153,7 +4198,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    char form4[]="insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)";
    char form5[]="insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
    char form6[]="delete from R_USER_AUTH where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name = ?";
-   char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+   char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
    char myTime[50];
    rodsLong_t iVal;
 
@@ -4290,7 +4335,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    }
    if (strncmp(option, "rmPamPw", 9)==0) {
       rstrcpy(tSQL, form7, MAX_SQL_SIZE);
-      cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_TIME;
+      cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
+      cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneName;
       if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 6");

@@ -22,9 +22,10 @@ extern "C" {
 typedef struct {
    char *pamUser;
    char *pamPassword;
+   int timeToLive;
 } pamAuthRequestInp_t;
     
-#define pamAuthRequestInp_PI "str *pamUser; str *pamPassword;"
+#define pamAuthRequestInp_PI "str *pamUser; str *pamPassword; int timeToLive;"
 
 typedef struct {
    char *irodsPamPassword;  /* the generated password to use for iRODS */

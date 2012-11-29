@@ -84,6 +84,19 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 	    rodsArgs->test=True;
 	    argv[i]="-Z";
 	 }
+	 if (strcmp("--ttl", argv[i])==0) {
+	    rodsArgs->ttl=True;
+	    argv[i]="-Z";
+	    if (i + 2 <= argc) {
+	       if (*argv[i+1] == '-') {
+		 rodsLog (LOG_ERROR,
+			  "--ttl option needs a time to live number");
+		 return USER_INPUT_OPTION_ERR;
+	       }
+	       rodsArgs->ttlValue=atoi(argv[i+1]);
+	       argv[i+1]="-Z";
+	    }
+	 }
 	 if (strcmp("--verify", argv[i])==0) {  /* also -x */
 	    rodsArgs->verify=True;
 	    argv[i]="-Z";

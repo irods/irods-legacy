@@ -870,7 +870,7 @@ testGetPamPw(rsComm_t *rsComm, char *username, char *testTime) {
    irodsPamPassword = (char*)malloc(100);
    memset(irodsPamPassword,0,100);
 
-   status = chlUpdateIrodsPamPassword(rsComm, username, testTime,
+   status = chlUpdateIrodsPamPassword(rsComm, username, 0, testTime,
 				      &irodsPamPassword);
    if (status==0) {
       printf("status=%d pw=%s \n",status,irodsPamPassword);

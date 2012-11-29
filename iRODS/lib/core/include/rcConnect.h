@@ -236,7 +236,7 @@ cleanRcComm (rcComm_t *conn);
 int
 clientLogin(rcComm_t *conn);
 int
-clientLoginPam(rcComm_t *conn, char *password);
+clientLoginPam(rcComm_t *conn, char *password, int ttl);
 
 char *
 getSessionSignitureClientside();

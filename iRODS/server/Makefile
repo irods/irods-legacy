@@ -98,6 +98,10 @@ SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/wosFileDriver.o
 CPPFLAGS = -g -O0 -c -D$(OS_platform) -I$(libCoreIncDir) -I$(svrDriversIncDir) -I$(WOS_DIR)/include -I$(BOOST_DIR)
 endif
 
+ifdef PAM_AUTH_NO_EXTEND
+CFLAGS +=	-DPAM_AUTH_NO_EXTEND
+endif
+
 ifdef HPSS
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hpssFileDriver.o
 endif
