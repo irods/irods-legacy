@@ -92,7 +92,11 @@ main(int argc, char *argv[])
 
 #ifdef IRODS_SYSLOG
 /* Open a connection to syslog */
+#ifdef SYSLOG_FACILITY_CODE
+    openlog("rodsAgent",LOG_ODELAY|LOG_PID,SYSLOG_FACILITY_CODE);
+#else
     openlog("rodsAgent",LOG_ODELAY|LOG_PID,LOG_DAEMON);
+#endif
 #endif
 
     status = getRodsEnv (&rsComm.myEnv);

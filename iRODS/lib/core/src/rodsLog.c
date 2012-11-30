@@ -1328,7 +1328,11 @@ rodsLog(int level, char *formatStr, ...) {
 #endif
    {
 #ifdef IRODS_SYSLOG
-		syslog(LOG_DAEMON|LOG_NOTICE,"%s - %s: %s", myZone, prefix, bigString);
+#ifdef SYSLOG_FACILITY_CODE
+     syslog(SYSLOG_FACILITY_CODE|LOG_NOTICE,"%s - %s: %s", myZone, prefix, bigString);
+#else
+     syslog(LOG_DAEMON|LOG_NOTICE,"%s - %s: %s", myZone, prefix, bigString);
+#endif
 #else
 #ifndef windows_platform
       fprintf(errOrOut, "%s%s: %s", extraInfo, prefix, bigString);

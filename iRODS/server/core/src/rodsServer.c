@@ -99,7 +99,11 @@ int irodsWinMain(int argc, char **argv)
 
 #ifdef IRODS_SYSLOG
 /* Open a connection to syslog */
-	openlog("rodsServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
+#ifdef SYSLOG_FACILITY_CODE
+    openlog("rodsServer",LOG_ODELAY|LOG_PID,SYSLOG_FACILITY_CODE);
+#else
+    openlog("rodsServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
+#endif
 #endif
     
     ServerBootTime = time (0);

@@ -78,7 +78,11 @@ main(int argc, char **argv)
 
 #ifdef IRODS_SYSLOG
 /* Open a connection to syslog */
+#ifdef SYSLOG_FACILITY_CODE
+    openlog("rodsReServer",LOG_ODELAY|LOG_PID,SYSLOG_FACILITY_CODE);
+#else
     openlog("rodsReServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
+#endif
 #endif
 
     while ((c=getopt(argc, argv,"sSvD:j:t:")) != EOF) {

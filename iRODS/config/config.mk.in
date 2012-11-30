@@ -343,6 +343,10 @@ COMPAT_201=1
 # Uncomment this line to log into syslog instead of the usual
 # server/log/ log files.
 #IRODS_SYSLOG = 1
+# When iRODS_SYSLOG is enabled, logging will be done using "LOG_DAEMON" by
+# default but this can be changed by uncommenting the following.  You can
+# also modify LOG_LOCAL0 to other available values (see /usr/include/syslog.h).
+#SYSLOG_FACILITY_CODE = LOG_LOCAL0
 
 # HPSS - Define whether HPSS is supported on this server. HPSS_UNIX_PASSWD_AUTH
 # specifies whether the UNix password authentication should be used. 
