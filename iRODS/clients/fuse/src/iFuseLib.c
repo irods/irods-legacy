@@ -47,68 +47,69 @@
 #define FREE_STRUCT_LOCK(s) \
     delete (s).mutex; \
     (s).mutex = 0;
+
+	void releaseFuseConnLock(iFuseConn_t *tmpIFuseConn) {
+		/* don't unlock. it will cause delete to fail */
+		FREE_STRUCT_LOCK(*tmpIFuseConn);
+	}
+
+	void initConnReqWaitMutex(connReqWait_t *myConnReqWait) {
+	            myConnReqWait->mutex = new boost::mutex;
+
+	}
+
+	void deleteConnReqWaitMutex(connReqWait_t *myConnReqWait) {
+	            delete myConnReqWait->mutex;
+
+	}
+
+	void timeoutWait(boost::mutex &ConnManagerLock, boost::condition_variable &ConnManagerCond, int sleepTime) {
+		boost::system_time const tt=boost::get_system_time() + boost::posix_time::seconds( sleepTime );
+	        boost::unique_lock< boost::mutex > boost_lock( ConnManagerLock );
+	        ConnManagerCond.timed_wait( boost_lock, tt );
+	}
+	void notifyTimeoutWait(boost::mutex &ConnManagerLock, boost::condition_variable &ConnManagerCond) {
+		ConnManagerCond.notify_all( );
+	}
 #else
 #define UNLOCK(Lock) (pthread_mutex_unlock (&(Lock)))
 #define LOCK(Lock) (pthread_mutex_lock (&(Lock)))
 #define INIT_STRUCT_LOCK(s) (pthread_mutex_init (&((s).lock), NULL))
-#define LOCK_STRUCT(s) LOCK((s).lock);
-#define UNLOCK_STRUCT(s) UNLOCK((s).lock);
+#define LOCK_STRUCT(s) LOCK((s).lock)
+#define UNLOCK_STRUCT(s) UNLOCK((s).lock)
 #define FREE_STRUCT_LOCK(s) \
-    pthread_mutex_destroy (&((s).lock));
+    pthread_mutex_destroy (&((s).lock))
+	void releaseFuseConnLock(iFuseConn_t *tmpIFuseConn) {
+		UNLOCK_STRUCT (*tmpIFuseConn);
+		FREE_STRUCT_LOCK(*tmpIFuseConn);
+	}
+
+	void initConnReqWaitMutex(connReqWait_t *myConnReqWait) {
+	            pthread_mutex_init (&myConnReqWait->mutex, NULL);
+	            pthread_cond_init (&myConnReqWait->cond, NULL);
+
+	}
+
+	void deleteConnReqWaitMutex(connReqWait_t *myConnReqWait) {
+		    pthread_mutex_destroy (&myConnReqWait->mutex);
+
+	}
+
+	void timeoutWait(pthread_mutex_t *ConnManagerLock, pthread_cond_t *ConnManagerCond, int sleepTime) {
+		struct timespec timeout;
+		bzero (&timeout, sizeof (timeout));
+		timeout.tv_sec = time (0) + sleepTime;
+		pthread_mutex_lock (ConnManagerLock);
+		pthread_cond_timedwait (ConnManagerCond, ConnManagerLock, &timeout);
+		pthread_mutex_unlock (ConnManagerLock);
+	}
+	void notifyTimeoutWait(pthread_mutex_t *mutex, pthread_cond_t *cond) {
+		pthread_mutex_lock (mutex);
+		pthread_cond_signal (cond);
+		pthread_mutex_unlock (mutex);
+	}
 #endif
 
-void releaseFuseConnLock(iFuseConn_t *tmpIFuseConn) {
-#ifdef USE_BOOST
-	/* don't unlock. it will cause delete to fail */
-#else
-	UNLOCK_STRUCT (*tmpIFuseConn);
-#endif
-	FREE_STRUCT_LOCK(*tmpIFuseConn);
-}
-
-void initConnReqWaitMutex(connReqWait_t *myConnReqWait) {
-#ifdef USE_BOOST
-            myConnReqWait->mutex = new boost::mutex;
-#else
-            pthread_mutex_init (&myConnReqWait->mutex, NULL);
-            pthread_cond_init (&myConnReqWait->cond, NULL);
-#endif
-
-}
-
-void deleteConnReqWaitMutex(connReqWait_t *myConnReqWait) {
-#ifdef USE_BOOST
-            delete myConnReqWait->mutex;
-#else
-	    pthread_mutex_destroy (&myConnReqWait->mutex);
-#endif
-
-}
-
-#ifdef USE_BOOST
-void timeoutWait(boost::mutex &ConnManagerLock, boost::condition_variable &ConnManagerCond, int sleepTime) {
-	boost::system_time const tt=boost::get_system_time() + boost::posix_time::seconds( sleepTime );
-        boost::unique_lock< boost::mutex > boost_lock( ConnManagerLock );
-        ConnManagerCond.timed_wait( boost_lock, tt );
-}
-void notifyTimeoutWait(boost::mutex &ConnManagerLock, boost::condition_variable &ConnManagerCond) {
-	ConnManagerCond.notify_all( );
-}
-#else
-void timeoutWait(pthread_mutex_t *ConnManagerLock, pthread_cond_t *ConnManagerCond, int sleepTime) {
-	struct timespec timeout;
-	bzero (&timeout, sizeof (timeout));
-	timeout.tv_sec = time (0) + sleepTime;
-	pthread_mutex_lock (ConnManagerLock);
-	pthread_cond_timedwait (ConnManagerCond, ConnManagerLock, &timeout);
-	pthread_mutex_unlock (ConnManagerLock);
-}
-void notifyTimeoutWait(pthread_mutex_t *mutex, pthread_cond_t *cond) {
-	pthread_mutex_lock (mutex);
-	pthread_cond_signal (cond);
-	pthread_mutex_unlock (mutex);
-}
-#endif
 
 
 
