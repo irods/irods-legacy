@@ -111,13 +111,18 @@
 #endif
 
 
-
-
 char FuseCacheDir[MAX_NAME_LEN];
 
 /* some global variables */
+/* Lock DescLock when this array is read/writen, or the inUseFlag var in an array element is read/written.
+ * Locking DescLock prevent allocating/freeing new IFuseDesc.
+ * After being added to the pathCache or newlyCreatedCache,
+ * LOCK_STRUCT when an array element (except its inUseFlag) is read/written */
 iFuseDesc_t IFuseDesc[MAX_IFUSE_DESC];
 int IFuseDescInuseCnt = 0;
+/* ConnLock is locked when any free conn is read/written, or the linked list is read/written.
+ * An ifuseconn is locked when before it goes from free to inuse and during the whole time it is in use, it is only unlocked when it becomes free again.
+ */
 iFuseConn_t *ConnHead = NULL;
 connReqWait_t *ConnReqWaitQue = NULL;
 rodsEnv MyRodsEnv;
@@ -205,26 +210,26 @@ pathCache_t **outPathCache)
     myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
     myque = &pathQueArray[myslot];
 
-    chkCacheExpire (myque);
-    status = matchPathInPathSlot (myque, inPath, outPathCache);
+    _chkCacheExpire (myque);
+    status = _matchPathInPathSlot (myque, inPath, outPathCache);
 
     return status;
 }
 
 int
-addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
+addPathToCache (char *inPath, char *cachePath, pathCacheQue_t *pathQueArray,
 struct stat *stbuf, pathCache_t **outPathCache)
 {
     int status;
 
     LOCK (PathCacheLock);
-    status = _addPathToCache (inPath, pathQueArray, stbuf, outPathCache);
+    status = _addPathToCache (inPath, cachePath, pathQueArray, stbuf, outPathCache);
     UNLOCK (PathCacheLock);
     return status;
 }
 
 int
-_addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
+_addPathToCache (char *inPath, char *cachePath, pathCacheQue_t *pathQueArray,
 struct stat *stbuf, pathCache_t **outPathCache)
 {
     pathCacheQue_t *pathCacheQue;
@@ -235,7 +240,7 @@ struct stat *stbuf, pathCache_t **outPathCache)
     mysum = pathSum (inPath);
     myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
     pathCacheQue = &pathQueArray[myslot];
-    status = addToCacheSlot (inPath, pathCacheQue, stbuf, outPathCache);
+    status = _addToCacheSlot (inPath, cachePath, pathCacheQue, stbuf, outPathCache);
 
     return (status);
 }
@@ -277,7 +282,7 @@ _rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray)
 	    } else {
 		tmpPathCache->next->prev = tmpPathCache->prev;
 	    }
-	    freePathCache (tmpPathCache);
+	    _freePathCache (tmpPathCache);
 	    return 1;
 	}
         tmpPathCache = tmpPathCache->next;
@@ -294,7 +299,7 @@ getHashSlot (int value, int numHashSlot)
 }
 
 int
-matchPathInPathSlot (pathCacheQue_t *pathCacheQue, char *inPath, 
+_matchPathInPathSlot (pathCacheQue_t *pathCacheQue, char *inPath,
 pathCache_t **outPathCache)
 {
     pathCache_t *tmpPathCache;
@@ -317,7 +322,7 @@ pathCache_t **outPathCache)
 }
 
 int
-chkCacheExpire (pathCacheQue_t *pathCacheQue)
+_chkCacheExpire (pathCacheQue_t *pathCacheQue)
 {
     pathCache_t *tmpPathCache;
 
@@ -332,7 +337,7 @@ chkCacheExpire (pathCacheQue_t *pathCacheQue)
 	if (curTime >= tmpPathCache->cachedTime + CACHE_EXPIRE_TIME) {
 	    /* cache expired */
 	    pathCacheQue->top = tmpPathCache->next;
-	    freePathCache (tmpPathCache);
+	    _freePathCache (tmpPathCache);
 	    tmpPathCache = pathCacheQue->top;
             if (tmpPathCache != NULL) {
                 tmpPathCache->prev = NULL;
@@ -349,7 +354,7 @@ chkCacheExpire (pathCacheQue_t *pathCacheQue)
 }
 	     
 int
-addToCacheSlot (char *inPath, pathCacheQue_t *pathCacheQue, 
+_addToCacheSlot (char *inPath, char *fileCachePath, pathCacheQue_t *pathCacheQue,
 struct stat *stbuf, pathCache_t **outPathCache)
 {
     pathCache_t *tmpPathCache;
@@ -365,6 +370,11 @@ struct stat *stbuf, pathCache_t **outPathCache)
     tmpPathCache->filePath = strdup (inPath);
     tmpPathCache->cachedTime = time (0);
     tmpPathCache->pathCacheQue = pathCacheQue;
+#ifdef CACHE_FILE_FOR_NEWLY_CREATED
+    tmpPathCache->locCachePath = fileCachePath == NULL?NULL:strdup (fileCachePath);
+    tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
+#endif
+
     if (stbuf != NULL) {
 	tmpPathCache->stbuf = *stbuf;
     }
@@ -418,18 +428,17 @@ int
 allocIFuseDesc ()
 {
     int i;
-
-    LOCK (DescLock);
+    LOCK(DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
         if (IFuseDesc[i].inuseFlag <= IRODS_FREE) {
         	INIT_STRUCT_LOCK(IFuseDesc[i]);
             IFuseDesc[i].inuseFlag = IRODS_INUSE;
-	    IFuseDescInuseCnt++;
-            UNLOCK (DescLock);
+            IFuseDescInuseCnt++;
+            UNLOCK(DescLock);
             return (i);
         };
     }
-    UNLOCK (DescLock);
+    UNLOCK(DescLock);
     rodsLog (LOG_ERROR, 
       "allocIFuseDesc: Out of iFuseDesc");
 
@@ -480,44 +489,53 @@ unlockDesc (int descInx)
     return status;
 }
 
-int
+/* find out if a IFuseDesc pointing to the iFuseConn is in use */
+/* int
 iFuseConnInuse (iFuseConn_t *iFuseConn)
+{
+    LOCK (DescLock);
+    int ret = _iFuseConnInuse(iFuseConn);
+    UNLOCK (DescLock);
+    return ret;
+} */
+
+/* need to lock DescLock */
+/* int
+_iFuseConnInuse (iFuseConn_t *iFuseConn)
 {
     int i;
     int inuseCnt = 0;
 
     if (iFuseConn == NULL) return 0;
-    LOCK (DescLock);
+
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
-	if (inuseCnt >= IFuseDescInuseCnt) break;
+    	if (inuseCnt >= IFuseDescInuseCnt) break;
         if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
-	    inuseCnt++;
-	    if (IFuseDesc[i].iFuseConn != NULL && 
-	      IFuseDesc[i].iFuseConn == iFuseConn) {
-	        UNLOCK (DescLock);
+        	inuseCnt++;
+        	if (IFuseDesc[i].iFuseConn != NULL &&
+        			IFuseDesc[i].iFuseConn == iFuseConn) {
                 return 1;
-	    }
-	}
+        	}
+        }
     }
-    UNLOCK (DescLock);
     return (0);
-}
+} */
 
 int
-freePathCache (pathCache_t *tmpPathCache)
+_freePathCache (pathCache_t *tmpPathCache)
 {
     if (tmpPathCache == NULL) return 0;
     if (tmpPathCache->filePath != NULL) free (tmpPathCache->filePath);
     if (tmpPathCache->locCacheState != NO_FILE_CACHE &&
       tmpPathCache->locCachePath != NULL) {
-	freeFileCache (tmpPathCache);
+	_freeFileCache (tmpPathCache);
     }
     free (tmpPathCache);
     return (0);
 }
 
 int
-freeFileCache (pathCache_t *tmpPathCache)
+_freeFileCache (pathCache_t *tmpPathCache)
 {
     unlink (tmpPathCache->locCachePath);
     free (tmpPathCache->locCachePath);
@@ -539,6 +557,13 @@ freeIFuseDesc (int descInx)
     }
 
     LOCK (DescLock);
+    /*if(IFuseDesc[descInx].inuseFlag != IRODS_FREE) {
+    	UNLOCK(DescLock);
+        rodsLog (LOG_ERROR,
+         "freeIFuseDesc: IFuseDesc at descInx in use", descInx);
+    	return -1;
+    }
+    */
     for (i = 0; i < MAX_BUF_CACHE; i++) {
         if (IFuseDesc[descInx].bufCache[i].buf != NULL) {
 	    free (IFuseDesc[descInx].bufCache[i].buf);
@@ -558,10 +583,11 @@ freeIFuseDesc (int descInx)
     memset (&IFuseDesc[descInx], 0, sizeof (iFuseDesc_t));
     IFuseDescInuseCnt--;
 
-    UNLOCK(DescLock);
-    /* have to do it outside the lock bacause _relIFuseConn lock it */
-    if (tmpIFuseConn != NULL)
-	_relIFuseConn (tmpIFuseConn);
+	UNLOCK(DescLock);
+    /* Release reference to tmpIFuseConn */
+    if (tmpIFuseConn != NULL) {
+    	relIFuseConn (tmpIFuseConn);
+    }
 
     return (0);
 }
@@ -591,8 +617,8 @@ checkFuseDesc (int descInx)
 }
 
 int
-fillIFuseDesc (int descInx, iFuseConn_t *iFuseConn, int iFd, char *objPath,
-char *localPath)
+_fillIFuseDesc (int descInx, iFuseConn_t *iFuseConn, int iFd, char *objPath,
+char *localPath, mode_t mode)
 { 
     IFuseDesc[descInx].iFuseConn = iFuseConn;
     IFuseDesc[descInx].iFd = iFd;
@@ -604,6 +630,11 @@ char *localPath)
         /* rstrcpy (IFuseDesc[descInx].localPath, localPath, MAX_NAME_LEN); */
         IFuseDesc[descInx].localPath = strdup (localPath);
     }
+#ifdef CACHE_FILE_FOR_NEWLY_CREATED
+    IFuseDesc[descInx].locCacheState = HAVE_NEWLY_CREATED_CACHE;
+    IFuseDesc[descInx].createMode = mode;
+#endif
+
     return (0);
 }
 
@@ -613,16 +644,17 @@ ifuseClose (char *path, int descInx)
     int lockFlag;
     int status;
 
-    if (IFuseDesc[descInx].iFuseConn != NULL &&
-      IFuseDesc[descInx].iFuseConn->conn != NULL) {
+    /* need to write newly create file that hasn't been written to the server yet to the server */
+    if (IFuseDesc[descInx].newFlag > 0 ||
+    		IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
         useIFuseConn (IFuseDesc[descInx].iFuseConn);
-	lockFlag = 1;
+        lockFlag = 1;
     } else {
-	lockFlag = 0;
+    	lockFlag = 0;
     }
     status = _ifuseClose (path, descInx);
     if (lockFlag == 1) {
-	unuseIFuseConn (IFuseDesc[descInx].iFuseConn);
+    	unuseIFuseConn (IFuseDesc[descInx].iFuseConn);
     }
     return status;
 }
@@ -658,7 +690,7 @@ _ifuseClose (char *path, int descInx)
                 }
 		if (tmpPathCache->stbuf.st_size > MAX_READ_CACHE_SIZE) {
 		    /* too big to keep */
-		    freeFileCache (tmpPathCache);
+		    _freeFileCache (tmpPathCache);
 		}	
             } else {
                 /* should not be here. but cache may be removed that we
@@ -957,32 +989,47 @@ ifuseLseek (char *path, int descInx, off_t offset)
     return (0);
 }
 
-/* getIFuseConnByPath - try to use the same conn as opened desc of the
- * same path */
 int
-getIFuseConnByPath (iFuseConn_t **iFuseConn, char *localPath, 
-rodsEnv *myRodsEnv)
+getIFuseDescInxByPath (char *localPath)
 {
-    int i, status;
+    int i;
     int inuseCnt = 0;
     LOCK(DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
-        if (inuseCnt >= IFuseDescInuseCnt) break;
+        if (inuseCnt >= IFuseDescInuseCnt) {
+    		UNLOCK(DescLock);
+    		return -1;
+        }
         if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
-	    inuseCnt++;
-	    if (IFuseDesc[i].iFuseConn != NULL &&
-              IFuseDesc[i].iFuseConn->conn != NULL &&
-	      strcmp (localPath, IFuseDesc[i].localPath) == 0) {
-		*iFuseConn = IFuseDesc[i].iFuseConn;
-		LOCK(ConnLock);
-		UNLOCK(DescLock);
-		_useIFuseConn (*iFuseConn);
-		return 0;
-	    }
-	}
+        	inuseCnt++;
+        	if (strcmp (localPath, IFuseDesc[i].localPath) == 0) {
+        		UNLOCK(DescLock);
+        		return i;
+        	}
+        }
     }
+	UNLOCK(DescLock);
+
+	return -1;
+}
+
+/* getIFuseConnByPath - try to use the same conn as opened desc of the
+ * same path */
+int
+getIFuseConnByPath (iFuseConn_t **iFuseConn, char *localPath, rodsEnv *myRodsEnv)
+{
+    int i, status;
+    /* make sure iFuseConn is not released after getIFuseDescInxByPath finishes */
+	LOCK(ConnLock);
+    i = getIFuseDescInxByPath(localPath);
+    if(i>=0) {
+    	*iFuseConn = IFuseDesc[i].iFuseConn;
+    	_useIFuseConn (*iFuseConn);
+    	UNLOCK (ConnLock);
+		return 0;
+	}
     /* no match. just assign one */
-    UNLOCK(DescLock);
+	UNLOCK (ConnLock);
     status = getIFuseConn (iFuseConn, myRodsEnv);
 
     return status;
@@ -1004,50 +1051,52 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
         inuseCnt = 0;
         tmpIFuseConn = ConnHead;
         while (tmpIFuseConn != NULL) {
-	    if (tmpIFuseConn->status == IRODS_FREE && 
-	      tmpIFuseConn->conn != NULL) {
-	        useFreeIFuseConn (tmpIFuseConn);
-	        *iFuseConn = tmpIFuseConn;
-		return 0;;
-	    }
-	    inuseCnt++;
-	    tmpIFuseConn = tmpIFuseConn->next;
+        	if (tmpIFuseConn->status == IRODS_FREE &&
+        			tmpIFuseConn->conn != NULL) {
+        		useFreeIFuseConn (tmpIFuseConn);
+        		*iFuseConn = tmpIFuseConn;
+        		UNLOCK(ConnLock);
+        		return 0;
+        	}
+        	inuseCnt++;
+        	tmpIFuseConn = tmpIFuseConn->next;
         }
         if (inuseCnt >= MAX_NUM_CONN) {
-	    connReqWait_t myConnReqWait, *tmpConnReqWait;
-	    /* find one that is not in use */
+        	/* find one that is not in use */
             tmpIFuseConn = ConnHead;
             while (tmpIFuseConn != NULL) {
-                if (tmpIFuseConn->inuseCnt == 0 && 
-	          tmpIFuseConn->pendingCnt == 0 && tmpIFuseConn->conn != NULL) {
+                if (tmpIFuseConn->inuseCnt == 0 && tmpIFuseConn->pendingCnt == 0 && tmpIFuseConn->conn != NULL) {
                     _useIFuseConn (tmpIFuseConn);
+                    UNLOCK (ConnLock);
                     *iFuseConn = tmpIFuseConn;
                     return 0;
                 }
                 tmpIFuseConn = tmpIFuseConn->next;
             }
-	    /* have to wait */
-	    bzero (&myConnReqWait, sizeof (myConnReqWait));
-	    initConnReqWaitMutex(&myConnReqWait);
-	    /* queue it to the bottom */
-	    if (ConnReqWaitQue == NULL) {
-	        ConnReqWaitQue = &myConnReqWait;
-	    } else {
-	        tmpConnReqWait = ConnReqWaitQue;
-	        while (tmpConnReqWait->next != NULL) {
-		    tmpConnReqWait = tmpConnReqWait->next;
-	        }
-	        tmpConnReqWait->next = &myConnReqWait;
-	    }
-	    while (myConnReqWait.state == 0) {
-	    	UNLOCK(ConnLock);
-			timeoutWait (&myConnReqWait.mutex, &myConnReqWait.cond, CONN_REQ_SLEEP_TIME);
-	    }
-	    deleteConnReqWaitMutex(&myConnReqWait);
-	    /* start from begining */
-	    continue;
+			UNLOCK(ConnLock);
+            /* have to wait */
+            connReqWait_t myConnReqWait, *tmpConnReqWait;
+			bzero (&myConnReqWait, sizeof (myConnReqWait));
+			initConnReqWaitMutex(&myConnReqWait);
+			/* queue it to the bottom */
+			if (ConnReqWaitQue == NULL) {
+				ConnReqWaitQue = &myConnReqWait;
+			} else {
+				tmpConnReqWait = ConnReqWaitQue;
+				while (tmpConnReqWait->next != NULL) {
+					tmpConnReqWait = tmpConnReqWait->next;
+				}
+				tmpConnReqWait->next = &myConnReqWait;
+			}
+			while (myConnReqWait.state == 0) {
+				timeoutWait (&myConnReqWait.mutex, &myConnReqWait.cond, CONN_REQ_SLEEP_TIME);
+			}
+			deleteConnReqWaitMutex(&myConnReqWait);
+			/* start from begining */
+			continue;
         }
 
+        /* release connlock may cause num of conn > max num of conn */
         UNLOCK (ConnLock);
         /* get here when nothing free. make one */
         tmpIFuseConn = (iFuseConn_t *) malloc (sizeof (iFuseConn_t));
@@ -1055,7 +1104,6 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
             return SYS_MALLOC_ERR;
         }
         bzero (tmpIFuseConn, sizeof (iFuseConn_t));
-
 
         INIT_STRUCT_LOCK(*tmpIFuseConn);
 
@@ -1071,7 +1119,7 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
         ConnHead = tmpIFuseConn;
 
         UNLOCK (ConnLock);
-	break;
+        break;
     }	/* while *iFuseConn */
 
     if (ConnManagerStarted < HIGH_NUM_CONN && 
@@ -1099,6 +1147,8 @@ useIFuseConn (iFuseConn_t *iFuseConn)
         return USER__NULL_INPUT_ERR;
     LOCK (ConnLock);
     status = _useIFuseConn (iFuseConn);
+    UNLOCK (ConnLock);
+
     return status;
 }
 
@@ -1113,13 +1163,15 @@ _useIFuseConn (iFuseConn_t *iFuseConn)
     iFuseConn->pendingCnt++;
 
     UNLOCK (ConnLock);
+    /* wait for iFuseConn to be unlocked */
     LOCK_STRUCT (*iFuseConn);
     LOCK (ConnLock);
 
     iFuseConn->inuseCnt++;
     iFuseConn->pendingCnt--;
 
-    UNLOCK (ConnLock);
+    /* move unlock to caller site */
+    /* UNLOCK (ConnLock); */
     return 0;
 }
 
@@ -1130,7 +1182,6 @@ useFreeIFuseConn (iFuseConn_t *iFuseConn)
     iFuseConn->actTime = time (NULL);
     iFuseConn->status = IRODS_INUSE;
     iFuseConn->inuseCnt++;
-    UNLOCK (ConnLock);
     LOCK_STRUCT(*iFuseConn);
     return 0;
 }
@@ -1140,10 +1191,8 @@ unuseIFuseConn (iFuseConn_t *iFuseConn)
 {
     if (iFuseConn == NULL || iFuseConn->conn == NULL)
         return USER__NULL_INPUT_ERR;
-    LOCK (ConnLock);
     iFuseConn->actTime = time (NULL);
     iFuseConn->inuseCnt--;
-    UNLOCK (ConnLock);
     UNLOCK_STRUCT(*iFuseConn);
     return 0;
 }
@@ -1153,7 +1202,6 @@ ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
 { 
     int status;
     rErrMsg_t errMsg;
-
     iFuseConn->conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->rodsPort,
       myRodsEnv->rodsUserName, myRodsEnv->rodsZone, NO_RECONN, &errMsg);
 
@@ -1175,7 +1223,7 @@ ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
     status = clientLogin (iFuseConn->conn);
     if (status != 0) {
         rcDisconnect (iFuseConn->conn);
-	iFuseConn->conn=NULL;
+        iFuseConn->conn=NULL;
     }
     return (status);
 }
@@ -1187,7 +1235,17 @@ relIFuseConn (iFuseConn_t *iFuseConn)
 
     if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
     unuseIFuseConn (iFuseConn);
-    status = _relIFuseConn (iFuseConn);
+    /* set ifuseConn status to free if both pendingCnt and inuseCnt are 0
+     */
+	LOCK(ConnLock);
+    if(iFuseConn->pendingCnt + iFuseConn->inuseCnt <= 0) {
+    	status = _relIFuseConn (iFuseConn);
+    	UNLOCK(ConnLock);
+        signalConnManager ();
+    } else {
+    	UNLOCK(ConnLock);
+    	status = 0;
+    }
     return status;
 }
  
@@ -1199,29 +1257,8 @@ int
 _relIFuseConn (iFuseConn_t *iFuseConn)
 {
     if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
-    LOCK(ConnLock);
     iFuseConn->actTime = time (NULL);
-    if (iFuseConn->conn == NULL) {
-        /* unlock it before calling iFuseConnInuse which locks DescLock */
-        UNLOCK(ConnLock);
-        if (iFuseConnInuse (iFuseConn) == 0) {
-            LOCK (ConnLock);
-        	iFuseConn->status = IRODS_FREE;
-            UNLOCK (ConnLock);
-
-        }
-    } else if (iFuseConn->pendingCnt + iFuseConn->inuseCnt <= 0) {
-        /* unlock it before calling iFuseConnInuse which locks DescLock */
-        UNLOCK(ConnLock);
-        if (iFuseConnInuse (iFuseConn) == 0) {
-        	LOCK(ConnLock);
-        	iFuseConn -> status = IRODS_FREE;
-        	UNLOCK(ConnLock);
-	}
-    } else {
-        UNLOCK(ConnLock);
-    }
-    signalConnManager ();
+	iFuseConn->status = IRODS_FREE;
     return 0;
 }
 
@@ -1373,14 +1410,16 @@ ifuseReconnect (iFuseConn_t *iFuseConn)
     if (iFuseConn == NULL || iFuseConn->conn == NULL) 
 	return USER__NULL_INPUT_ERR;
     rodsLog (LOG_DEBUG, "ifuseReconnect: reconnecting");
+    LOCK(ConnLock);
     rcDisconnect (iFuseConn->conn);
     iFuseConn->conn=NULL;
     status = ifuseConnect (iFuseConn, &MyRodsEnv);
+    UNLOCK(ConnLock);
     return status;
 }
 
 int
-addNewlyCreatedToCache (char *path, int descInx, int mode, 
+addNewlyCreatedToCache (char *path, char *cachePath, int descInx, int mode,
 pathCache_t **tmpPathCache)
 {
     int i;
@@ -1388,26 +1427,23 @@ pathCache_t **tmpPathCache)
     uint cachedTime = time (0);
     LOCK (NewlyCreatedOprLock);
     for (i = 0; i < NUM_NEWLY_CREATED_SLOT; i++) {
-	if (newlyInx < 0 && NewlyCreatedFile[i].inuseFlag == IRODS_FREE) { 
-	    newlyInx = i;
-	    NewlyCreatedFile[i].inuseFlag = IRODS_INUSE;
-	} else if (NewlyCreatedFile[i].inuseFlag == IRODS_INUSE) {
-	    if (cachedTime - NewlyCreatedFile[i].cachedTime  >= 
-	      MAX_NEWLY_CREATED_TIME) {
-		closeNewlyCreatedCache (&NewlyCreatedFile[i]);
-	        if (newlyInx < 0) {
-		    newlyInx = i;
-		} else {
-		    NewlyCreatedFile[i].inuseFlag = IRODS_FREE;
-		}
-	    }
-	}
+    	if (NewlyCreatedFile[i].inuseFlag == IRODS_FREE) {
+    		newlyInx = i;
+    		NewlyCreatedFile[i].inuseFlag = IRODS_INUSE;
+    		break;
+    	} else if (NewlyCreatedFile[i].inuseFlag == IRODS_INUSE) {
+    		if (cachedTime - NewlyCreatedFile[i].cachedTime  >= MAX_NEWLY_CREATED_TIME) {
+    			closeNewlyCreatedCache (&NewlyCreatedFile[i]);
+				newlyInx = i;
+				break;
+    		}
+    	}
     }
     if (newlyInx < 0) {
-	/* have to close one */
-	newlyInx = NUM_NEWLY_CREATED_SLOT - 2;
+    	/* have to close one */
+    	newlyInx = NUM_NEWLY_CREATED_SLOT - 2;
         closeNewlyCreatedCache (&NewlyCreatedFile[newlyInx]);
-	NewlyCreatedFile[newlyInx].inuseFlag = IRODS_INUSE;
+        NewlyCreatedFile[newlyInx].inuseFlag = IRODS_INUSE;
     }
     rstrcpy (NewlyCreatedFile[newlyInx].filePath, path, MAX_NAME_LEN);
     NewlyCreatedFile[newlyInx].descInx = descInx;
@@ -1415,8 +1451,9 @@ pathCache_t **tmpPathCache)
     IFuseDesc[descInx].newFlag = 1;    /* XXXXXXX use newlyInx ? */
     fillFileStat (&NewlyCreatedFile[newlyInx].stbuf, mode, 0, cachedTime, 
       cachedTime, cachedTime);
-    addPathToCache (path, PathArray, &NewlyCreatedFile[newlyInx].stbuf, 
+    addPathToCache (path, cachePath, PathArray, &NewlyCreatedFile[newlyInx].stbuf,
       tmpPathCache);
+
     UNLOCK(NewlyCreatedOprLock);
     return (0);
 }
@@ -1462,18 +1499,18 @@ getDescInxInNewlyCreatedCache (char *path, int flags)
     LOCK(NewlyCreatedOprLock);
     for (i = 0; i < NUM_NEWLY_CREATED_SLOT; i++) {
         if (strcmp (path, NewlyCreatedFile[i].filePath) == 0) {
-	    if ((flags & O_RDWR) == 0 && (flags & O_WRONLY) == 0) {
-	        closeNewlyCreatedCache (&NewlyCreatedFile[i]);
-	        descInx = -1;
-	    } else if (checkFuseDesc (NewlyCreatedFile[i].descInx) >= 0) {
-	        descInx = NewlyCreatedFile[i].descInx;
-	        bzero (&NewlyCreatedFile[i], sizeof (newlyCreatedFile_t));
-	    } else {
-	        bzero (&NewlyCreatedFile[i], sizeof (newlyCreatedFile_t));
-	        descInx = -1;
-	    }
-	    break;
-	}
+        	if ((flags & O_RDWR) == 0 && (flags & O_WRONLY) == 0) {
+        		closeNewlyCreatedCache (&NewlyCreatedFile[i]);
+        		descInx = -1;
+        	} else if (checkFuseDesc (NewlyCreatedFile[i].descInx) >= 0) {
+        		descInx = NewlyCreatedFile[i].descInx;
+        		bzero (&NewlyCreatedFile[i], sizeof (newlyCreatedFile_t));
+        	} else {
+        		bzero (&NewlyCreatedFile[i], sizeof (newlyCreatedFile_t));
+        		descInx = -1;
+        	}
+        	break;
+        }
     }
     UNLOCK(NewlyCreatedOprLock);
     return descInx;
@@ -1532,8 +1569,10 @@ updatePathCacheStat (pathCache_t *tmpPathCache)
 	if (status < 0) {
 	    return (errno ? (-1 * errno) : -1);
 	} else {
+		LOCK(PathCacheLock);
 	    /* update the size */
-	    tmpPathCache->stbuf.st_size = stbuf.st_size; 
+	    tmpPathCache->stbuf.st_size = stbuf.st_size;
+	    UNLOCK(PathCacheLock);
 	    return 0; 
 	}
     } else {
@@ -1611,8 +1650,10 @@ irodsOpenWithReadCache (iFuseConn_t *iFuseConn, char *path, int flags)
 
 	    return status; 
 	}
+        LOCK(PathCacheLock);
         tmpPathCache->locCachePath = strdup (cachePath);
         tmpPathCache->locCacheState = HAVE_READ_CACHE;
+        UNLOCK(PathCacheLock);
     } else {
         rodsLog (LOG_DEBUG, "irodsOpenWithReadCache: read cache match for %s",
           path);
@@ -1626,17 +1667,16 @@ irodsOpenWithReadCache (iFuseConn_t *iFuseConn, char *path, int flags)
 	return(errno ? (-1 * errno) : -1);
     }
 
-    descInx = allocIFuseDesc ();
+	descInx = allocIFuseDesc ();
     if (descInx < 0) {
         rodsLogError (LOG_ERROR, descInx,
           "irodsOpenWithReadCache: allocIFuseDesc of %s error", path);
         close(fd);	// cppcheck - Resource leak: fd
         return -ENOENT;
     }
-    fillIFuseDesc (descInx, iFuseConn, fd, dataObjInp.objPath,
-      (char *) path);
+    /* mode not in use for existing files, set to 0 */
+    _fillIFuseDesc (descInx, iFuseConn, fd, dataObjInp.objPath, (char *) path, 0);
     IFuseDesc[descInx].locCacheState = HAVE_READ_CACHE;
-
     return descInx;
 }
 
@@ -1727,12 +1767,19 @@ char *outIrodsPath)
 }
 
 int
-getNewlyCreatedDescByPath (char *path)
+getNewlyCreatedDescByPath (char *path) {
+	LOCK(DescLock);
+	int ret = _getNewlyCreatedDescByPath(path);
+	UNLOCK(DescLock);
+	return ret;
+}
+
+int
+_getNewlyCreatedDescByPath (char *path)
 {
     int i;
     int inuseCnt = 0;
 
-    LOCK (DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
 		if (inuseCnt >= IFuseDescInuseCnt) break;
 			if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
@@ -1742,12 +1789,10 @@ getNewlyCreatedDescByPath (char *path)
 				continue;
 			}
 			if (strcmp (IFuseDesc[i].localPath, path) == 0) {
-				UNLOCK (DescLock);
 				return (i);
 			}
 		}
     }
-	UNLOCK (DescLock);
     return (-1);
 }
 
@@ -1758,32 +1803,33 @@ renmeOpenedIFuseDesc (pathCache_t *fromPathCache, char *to)
     int status;
     pathCache_t *tmpPathCache = NULL;
 
-    if ((descInx = getNewlyCreatedDescByPath (
+    LOCK(DescLock);
+    if ((descInx = _getNewlyCreatedDescByPath (
       (char *)fromPathCache->filePath)) >= 3) {
-        rmPathFromCache ((char *) to, PathArray);
-        rmPathFromCache ((char *) to, NonExistPathArray);
-	addPathToCache ((char *) to, PathArray, &fromPathCache->stbuf, 
-	  &tmpPathCache);
-        tmpPathCache->locCachePath = fromPathCache->locCachePath;
-	fromPathCache->locCachePath = NULL;
-        tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
-	fromPathCache->locCacheState = NO_FILE_CACHE;
-	if (IFuseDesc[descInx].objPath != NULL) 
-	    free (IFuseDesc[descInx].objPath);
-	IFuseDesc[descInx].objPath = (char *) malloc (MAX_NAME_LEN);
-        status = parseRodsPathStr ((char *) (to + 1) , &MyRodsEnv,
-          IFuseDesc[descInx].objPath);
+    	LOCK(PathCacheLock);
+        _rmPathFromCache ((char *) to, PathArray);
+        _rmPathFromCache ((char *) to, NonExistPathArray);
+        _addPathToCache ((char *) to, fromPathCache->locCachePath, PathArray, &fromPathCache->stbuf, &tmpPathCache);
+        fromPathCache->locCachePath = NULL;
+        fromPathCache->locCacheState = NO_FILE_CACHE;
+        UNLOCK(PathCacheLock);
+        if (IFuseDesc[descInx].objPath != NULL)
+        	free (IFuseDesc[descInx].objPath);
+        IFuseDesc[descInx].objPath = (char *) malloc (MAX_NAME_LEN);
+        status = parseRodsPathStr ((char *) (to + 1) , &MyRodsEnv, IFuseDesc[descInx].objPath);
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "renmeOpenedIFuseDesc: parseRodsPathStr of %s error", to);
             return -ENOTDIR;
         }
-	if (IFuseDesc[descInx].localPath != NULL) 
-	    free (IFuseDesc[descInx].localPath);
+        if (IFuseDesc[descInx].localPath != NULL)
+        	free (IFuseDesc[descInx].localPath);
         IFuseDesc[descInx].localPath = strdup (to);
-	return 0;
+        UNLOCK(DescLock);
+        return 0;
     } else {
-	return -ENOTDIR;
+        UNLOCK(DescLock);
+    	return -ENOTDIR;
     }
 }
 

@@ -87,7 +87,7 @@ pathCache_t **outPathCache)
 	          "irodsGetattr: rcObjStat of %s error", path);
 	    }
 #ifdef CACHE_FUSE_PATH
-            addPathToCache ((char *) path, NonExistPathArray, stbuf, NULL);
+            addPathToCache ((char *) path, NULL, NonExistPathArray, stbuf, NULL);
 #endif
 	    return -ENOENT;
 	}
@@ -99,7 +99,7 @@ pathCache_t **outPathCache)
 	  atoi (rodsObjStatOut->modifyTime));
     } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
 #ifdef CACHE_FUSE_PATH
-        addPathToCache ((char *) path, NonExistPathArray, stbuf, NULL);
+        addPathToCache ((char *) path, NULL, NonExistPathArray, stbuf, NULL);
 #endif
         if (rodsObjStatOut != NULL) freeRodsObjStat (rodsObjStatOut);
             return -ENOENT;
@@ -113,7 +113,7 @@ pathCache_t **outPathCache)
         freeRodsObjStat (rodsObjStatOut);
 
 #ifdef CACHE_FUSE_PATH
-    addPathToCache ((char *) path, PathArray, stbuf, outPathCache);
+    addPathToCache ((char *) path, NULL, PathArray, stbuf, outPathCache);
 #endif
     return 0;
 }
@@ -194,7 +194,7 @@ off_t offset, struct fuse_file_info *fi)
 	        fillFileStat (&stbuf, collEnt.dataMode, collEnt.dataSize,
 	          atoi (collEnt.createTime), atoi (collEnt.modifyTime), 
 	          atoi (collEnt.modifyTime));
-	        addPathToCache (childPath, PathArray, &stbuf, &tmpPathCache);
+	        addPathToCache (childPath, NULL, PathArray, &stbuf, &tmpPathCache);
 	    }
 #endif
         } else if (collEnt.objType == COLL_OBJ_T) {
@@ -211,7 +211,7 @@ off_t offset, struct fuse_file_info *fi)
 	        fillDirStat (&stbuf, 
 	          atoi (collEnt.createTime), atoi (collEnt.modifyTime), 
 	          atoi (collEnt.modifyTime));
-	        addPathToCache (childPath, PathArray, &stbuf, &tmpPathCache);
+	        addPathToCache (childPath, NULL, PathArray, &stbuf, &tmpPathCache);
 	    }
 #endif
         }
@@ -273,20 +273,13 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
     if (descInx < 0) {
         rodsLogError (LOG_ERROR, descInx,
           "irodsMknod: allocIFuseDesc of %s error", path);
-	closeIrodsFd (iFuseConn->conn, status);
+        closeIrodsFd (iFuseConn->conn, status);
         relIFuseConn (iFuseConn);
         return 0;
     }
-    fillIFuseDesc (descInx, iFuseConn, status, irodsPath,
-      (char *) path);
+    _fillIFuseDesc (descInx, iFuseConn, status, irodsPath, (char *) path, mode);
     relIFuseConn (iFuseConn);
-    addNewlyCreatedToCache ((char *) path, descInx, mode, &tmpPathCache);
-#ifdef CACHE_FILE_FOR_NEWLY_CREATED
-    tmpPathCache->locCachePath = strdup (cachePath);
-    tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
-    IFuseDesc[descInx].locCacheState = HAVE_NEWLY_CREATED_CACHE;
-    IFuseDesc[descInx].createMode = mode;
-#endif
+    addNewlyCreatedToCache ((char *) path, cachePath, descInx, mode, &tmpPathCache);
 
 #else   /* CACHE_FUSE_PATH */ 
     closeIrodsFd (iFuseConn->conn, status);
@@ -336,7 +329,7 @@ irodsMkdir (const char *path, mode_t mode)
 	uint mytime = time (0);
 	bzero (&stbuf, sizeof (struct stat));
         fillDirStat (&stbuf, mytime, mytime, mytime);
-        addPathToCache ((char *) path, PathArray, &stbuf, NULL);
+        addPathToCache ((char *) path, NULL, PathArray, &stbuf, NULL);
 	rmPathFromCache ((char *) path, NonExistPathArray);
 #endif
         relIFuseConn (iFuseConn);
@@ -511,7 +504,7 @@ irodsRename (const char *from, const char *to)
         rmPathFromCache ((char *) to, PathArray);
         if (matchPathInPathCache ((char *) from, PathArray,
           &tmpPathCache) == 1) {
-	    addPathToCache ((char *) to, PathArray, &tmpPathCache->stbuf,
+	    addPathToCache ((char *) to, NULL, PathArray, &tmpPathCache->stbuf,
 	      &tmpPathCache);
             rmPathFromCache ((char *) from, PathArray);
 	}
@@ -760,8 +753,9 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
           "irodsOpen: allocIFuseDesc of %s error", path);
         return -ENOENT;
     }
-    fillIFuseDesc (descInx, iFuseConn, fd, dataObjInp.objPath, 
-      (char *) path);
+    /* mode is not used for existing files, set to 0 */
+    _fillIFuseDesc (descInx, iFuseConn, fd, dataObjInp.objPath,
+      (char *) path, 0);
     relIFuseConn (iFuseConn);
     fi->fh = descInx;
 

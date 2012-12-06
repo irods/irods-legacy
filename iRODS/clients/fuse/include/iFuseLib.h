@@ -135,8 +135,8 @@ int
 getIFuseConnByPath (iFuseConn_t **iFuseConn, char *localPath,
 rodsEnv *myRodsEnv);
 int
-fillIFuseDesc (int descInx, iFuseConn_t *iFuseConn, int iFd, char *objPath,
-char *localPath);
+_fillIFuseDesc (int descInx, iFuseConn_t *iFuseConn, int iFd, char *objPath,
+char *localPath, mode_t mode);
 int
 ifuseWrite (char *path, int descInx, char *buf, size_t size,
 off_t offset);
@@ -183,13 +183,13 @@ pathCache_t **outPathCache);
 int
 chkCacheExpire (pathCacheQue_t *pathCacheQue);
 int
-addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
+addPathToCache (char *inPath, char *fileCachePath, pathCacheQue_t *pathQueArray,
 struct stat *stbuf, pathCache_t **outPathCache);
 int
-_addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
+_addPathToCache (char *inPath, char *fileCachePath, pathCacheQue_t *pathQueArray,
 struct stat *stbuf, pathCache_t **outPathCache);
 int
-addToCacheSlot (char *inPath, pathCacheQue_t *pathCacheQue,
+addToCacheSlot (char *inPath, char *fileCachePath, pathCacheQue_t *pathCacheQue,
 struct stat *stbuf, pathCache_t **outPathCache);
 int
 pathSum (char *inPath);
@@ -206,7 +206,7 @@ rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray);
 int
 _rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray);
 int
-addNewlyCreatedToCache (char *path, int descInx, int mode,
+addNewlyCreatedToCache (char *path, char *localPath, int descInx, int mode,
 pathCache_t **tmpPathCache);
 int
 closeNewlyCreatedCache (newlyCreatedFile_t *newlyCreatedFile);
@@ -224,7 +224,7 @@ irodsMknodWithCache (char *path, mode_t mode, char *cachePath);
 int
 irodsOpenWithReadCache (iFuseConn_t *iFuseConn, char *path, int flags);
 int
-freePathCache (pathCache_t *tmpPathCache);
+_freePathCache (pathCache_t *tmpPathCache);
 int
 getFileCachePath (char *inPath, char *cacehPath);
 int
@@ -251,6 +251,15 @@ int
 getNewlyCreatedDescByPath (char *path);
 int
 renmeOpenedIFuseDesc (pathCache_t *fromPathCache, char *to);
+int	_chkCacheExpire (pathCacheQue_t *pathCacheQue);
+int _matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray, pathCache_t **outPathCache);
+int _matchPathInPathSlot (pathCacheQue_t *pathCacheQue, char *inPath, pathCache_t **outPathCache);
+int _addToCacheSlot (char *inPath, char *fileCachePath, pathCacheQue_t *pathCacheQue, struct stat *stbuf, pathCache_t **outPathCache);
+int _freePathCache (pathCache_t *tmpPathCache);
+int _iFuseConnInuse (iFuseConn_t *iFuseConn);
+int _freePathCache (pathCache_t *tmpPathCache);
+int _freeFileCache (pathCache_t *tmpPathCache);
+int _getNewlyCreatedDescByPath (char *path);
 #ifdef  __cplusplus
 }
 #endif
