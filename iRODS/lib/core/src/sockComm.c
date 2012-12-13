@@ -1245,6 +1245,17 @@ struct timeval *tv)
     if (myHeader == NULL) {
 	return (SYS_READ_MSG_BODY_INPUT_ERR);
     }
+
+    if (irodsProt != XML_PROT && irodsProt != NATIVE_PROT) {
+      /* This check helps protect the server from problems deeper in
+         the protocol handling if the client is sending an invalid
+         type.  SYS_INVALID_PROTOCOL_TYPE is also used (in other
+         functions above) to mean not UDP or TCP, but in this case the
+         client has set an invalid iRODS protocol type.
+      */
+      return SYS_INVALID_PROTOCOL_TYPE;
+    }
+
     if (inputStructBBuf != NULL)
 	memset (inputStructBBuf, 0, sizeof (bytesBuf_t));
 
