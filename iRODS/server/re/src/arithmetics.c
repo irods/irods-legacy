@@ -633,7 +633,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
                 res = (Res *) FD_SMSI_FUNC_PTR(fd)(args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
                 break;
             case N_FD_EXTERNAL:
-                res = execMicroService3(fn, args, n, node, nEnv, rei, errmsg, newRegion);
+                res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
                 break;
             case N_FD_RULE_INDEX_LIST:
                 res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
@@ -644,7 +644,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
                 RETURN;
         }
     } else {
-        res = execMicroService3(fn, args, n, node, nEnv, rei, errmsg, newRegion);
+        res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
     }
 
 	if (GlobalREAuditFlag > 0) {
