@@ -5927,6 +5927,11 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
      status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute, "%",
 				   "%", 1);
      if (status != 0) {
+       /* Give it a second chance */
+       status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute, "%",
+				     "%", 1);
+     }
+     if (status != 0) {
        _rollback("chlSetAVUMetadata");
        return(status);
      }
@@ -5954,6 +5959,11 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
      */
      status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute,
 				   "%", "%", 1);
+     if (status != 0) {
+       /* Give it a second chance */
+       status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute, "%",
+				     "%", 1);
+     }
      if (status != 0) {
        _rollback("chlSetAVUMetadata");
        return(status);
@@ -6679,7 +6689,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 				   rsComm->clientUser.rodsZone, 
 				   ACCESS_DELETE_METADATA, &icss);
       if (status < 0) {
-	 _rollback("chlDeleteAVUMetadata");
+	 if (noCommit != 1) {
+	    _rollback("chlDeleteAVUMetadata");
+	 }
 	 return(status);
       }
       objId=status;
@@ -6721,7 +6733,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 		&objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
-	 _rollback("chlDeleteAVUMetadata");
+	 if (noCommit != 1) {
+	    _rollback("chlDeleteAVUMetadata");
+	 }
 	 return(status);
       }
    }
@@ -6746,6 +6760,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
 	 _rollback("chlDeleteAVUMetadata");
+	 if (noCommit != 1) {
+	    _rollback("chlDeleteAVUMetadata");
+	 }
 	 return(status);
       }
    }
@@ -6765,7 +6782,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 		&objId, name, 0, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
-	 _rollback("chlDeleteAVUMetadata");
+	 if (noCommit != 1) {
+	    _rollback("chlDeleteAVUMetadata");
+	 }
 	 return(status);
       }
    }
@@ -6785,7 +6804,10 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 rodsLog(LOG_NOTICE,
 	       "chlDeleteAVUMetadata cmlExecuteNoAnswerSql delete failure %d",
 		 status);
-	 _rollback("chlDeleteAVUMetadata");
+	 if (noCommit != 1) {
+	    _rollback("chlDeleteAVUMetadata");
+	 }
+
 	 return(status);
       }
 
@@ -6805,7 +6827,10 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 rodsLog(LOG_NOTICE,
 		 "chlDeleteAVUMetadata cmlAudit3 failure %d",
 		 status);
-	 _rollback("chlDeleteAVUMetadata");
+	 if (noCommit != 1) {
+	    _rollback("chlDeleteAVUMetadata");
+	 }
+
 	 return(status);
       }
 
@@ -6866,7 +6891,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       rodsLog(LOG_NOTICE,
 	      "chlDeleteAVUMetadata cmlExecuteNoAnswerSql delete failure %d",
 	      status);
-      _rollback("chlDeleteAVUMetadata");
+      if (noCommit != 1) {
+	_rollback("chlDeleteAVUMetadata");
+      }
       return(status);
    }
 
@@ -6886,7 +6913,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       rodsLog(LOG_NOTICE,
 	      "chlDeleteAVUMetadata cmlAudit3 failure %d",
 	      status);
-      _rollback("chlDeleteAVUMetadata");
+      if (noCommit != 1) {
+	_rollback("chlDeleteAVUMetadata");
+      }
       return(status);
    }
 
