@@ -19,6 +19,7 @@
 #include "reconstants.h"
 #include "region.h"
 #include "hashtable.h"
+#include "list.h"
 
 #define TYPE(x) ((x)->exprType->nodeType)
 
@@ -245,17 +246,6 @@ struct node {
 	msParam_t *param;
 };
 
-typedef struct listNode ListNode;
-struct listNode {
-    ListNode *next;
-    void *value;
-};
-
-typedef struct list {
-    ListNode *head;
-    ListNode *tail;
-} List;
-
 typedef enum ruleType {
     RK_REL,
     RK_FUNC,
@@ -330,10 +320,6 @@ Env *newEnv(Hashtable *current, Env *previous, Env *lower, Region *r);
 /* void deleteEnv(Env *env, int deleteCurrent); */
 msParamArray_t *newMsParamArray();
 void deleteMsParamArray(msParamArray_t *msParamArray);
-
-List *newList(Region *r);
-ListNode *newListNode(void *value, Region *r);
-ListNode *newListNodeNoRegion(void *value);
 
 TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r);
 

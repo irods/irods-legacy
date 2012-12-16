@@ -308,6 +308,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/typing.o \
 		$(svrReObjDir)/utils.o \
 		$(svrReObjDir)/locks.o \
+		$(svrReObjDir)/list.o \
 		$(svrReObjDir)/restructs.o \
 		$(svrReObjDir)/sharedmemory.o \
 		$(svrReObjDir)/filesystem.o \

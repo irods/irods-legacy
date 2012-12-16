@@ -732,73 +732,6 @@ Env* globalEnv(Env *env) {
 }
 
 
-void listAppendNoRegion(List *list, void *value) {
-    ListNode *ln = newListNodeNoRegion(value);
-    if(list->head != NULL) {
-        list->tail = list->tail->next = ln;
-    } else {
-        list->head = list->tail = ln;
-    }
-}
-void listAppend(List *list, void *value, Region *r) {
-    ListNode *ln = newListNode(value, r);
-    if(list->head != NULL) {
-        list->tail = list->tail->next = ln;
-    } else {
-        list->head = list->tail = ln;
-    }
-}
-
-void listAppendToNode(List *list, ListNode *node, void *value, Region *r) {
-    ListNode *ln = newListNode(value, r);
-    if(node->next != NULL) {
-        ln->next = node->next;
-        node->next = ln;
-    } else {
-        node->next = list->tail = ln;
-    }
-}
-
-void listRemove(List *list, ListNode *node) {
-    ListNode *prev = NULL, *curr = list->head;
-    while(curr != NULL) {
-        if(curr == node) {
-            if(prev == NULL) {
-                list->head = node->next;
-            } else {
-                prev->next = node->next;
-            }
-            /*free(node); */
-            break;
-        }
-        prev = curr;
-        curr = curr->next;
-    }
-    if(list->tail == node) {
-        list->tail = prev;
-    }
-
-}
-void listRemoveNoRegion(List *list, ListNode *node) {
-    ListNode *prev = NULL, *curr = list->head;
-    while(curr != NULL) {
-        if(curr == node) {
-            if(prev == NULL) {
-                list->head = node->next;
-            } else {
-                prev->next = node->next;
-            }
-            free(node);
-            break;
-        }
-        prev = curr;
-        curr = curr->next;
-    }
-    if(list->tail == node) {
-        list->tail = prev;
-    }
-
-}
 
 int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str) {
   int i,j;
@@ -1085,3 +1018,16 @@ void keyBuf(unsigned char *buf, int size, char *keyBuf) {
 #include "to.memory.instance.h"
 #include "restruct.templates.h"
 #include "end.instance.h"
+
+#ifdef RE_CACHE_CHECK
+#include "cache.check.instance.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+#endif
+
+#ifdef RE_REGION_CHECK
+#include "region.check.instance.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+#endif
+

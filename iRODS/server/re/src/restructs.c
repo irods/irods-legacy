@@ -283,25 +283,6 @@ Env *newEnv(Hashtable *current, Env *previous, Env *callerEnv, Region *r) {
     free(env);
 }*/
 
-List *newList(Region *r) {
-    List *l = (List *)region_alloc(r, sizeof (List));
-    l->head = l->tail = NULL;
-    return l;
-}
-
-ListNode *newListNodeNoRegion(void *value) {
-    ListNode *l = (ListNode *)malloc(sizeof (ListNode));
-    l->next = NULL;
-    l->value = value;
-    return l;
-}
-ListNode *newListNode(void *value, Region *r) {
-    ListNode *l = (ListNode *)region_alloc(r, sizeof (ListNode));
-    l->next = NULL;
-    l->value = value;
-    return l;
-}
-
 TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r) {
     TypingConstraint *tc = (TypingConstraint *)region_alloc(r, sizeof (TypingConstraint));
     memset(tc, 0, sizeof(TypingConstraint));
