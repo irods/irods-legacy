@@ -9,14 +9,14 @@
 #include "rodsClient.h"
 #include "rodsPath.h"
 #include "iFuseLib.h"
+#include "iFuseLib.Lock.h"
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
 int
-_irodsGetattr (iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf,
-pathCache_t **outPathCache);
+_irodsGetattr (iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf);
 int irodsGetattr(const char *path, struct stat *stbuf);
 int irodsReadlink(const char *path, char *buf, size_t size);
 int irodsGetdir (const char *, char *, size_t);	/* Deprecated */

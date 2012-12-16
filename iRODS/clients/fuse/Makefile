@@ -31,6 +31,12 @@ binDir =	$(fuseDir)/bin
 srcDir =	$(fuseDir)/src
 incDir =	$(fuseDir)/include
 
+reSrcDir =	$(buildDir)/server/re/src
+reObjDir =	$(buildDir)/server/re/obj
+reIncDir =	$(buildDir)/server/re/include
+
+
+
 
 
 
@@ -46,9 +52,18 @@ BINS =		\
 
 LIB_OBJS =	\
 		$(objDir)/iFuseOper.o \
-		$(objDir)/iFuseLib.o
+		$(objDir)/iFuseLib.o \
+		$(objDir)/iFuseLib.Conn.o \
+		$(objDir)/iFuseLib.Desc.o \
+		$(objDir)/iFuseLib.FileCache.o \
+		$(objDir)/iFuseLib.Lock.o \
+		$(objDir)/iFuseLib.PathCache.o \
+		$(objDir)/iFuseLib.Utils.o \
+		$(reObjDir)/list.o \
+		$(reObjDir)/hashtable.o \
+		$(reObjDir)/region.o \
 
-INCLUDES +=	-I$(incDir)
+INCLUDES +=	-I$(incDir) -I$(reIncDir)
 
 
 
@@ -157,6 +172,10 @@ fuse:	print_cflags print_ldflags $(LIB_OBJS) $(OBJS) $(BINS)
 	@true
 
 $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
+	@echo "Compile fuse `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
+
+$(reObjDir)/%.o:	$(reSrcDir)/%.c $(LIBRARY)
 	@echo "Compile fuse `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 

@@ -168,6 +168,8 @@ irodsOper.flush = irodsFlush;
 
     initPathCache ();
     initIFuseDesc ();
+    initConn();
+    initFileCache();
 
     status = fuse_main (argc, argv, &irodsOper, NULL);
 
