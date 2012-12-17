@@ -6759,7 +6759,6 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 		 &objId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
-	 _rollback("chlDeleteAVUMetadata");
 	 if (noCommit != 1) {
 	    _rollback("chlDeleteAVUMetadata");
 	 }
