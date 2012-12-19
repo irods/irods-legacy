@@ -1,7 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python 
 # Script to allow remote reading of the iRODS log files. Can be useful for
 # applications intended to process the log files.
-# Adil Hasan, 15/Jun/12
+# Bug fix for paths that contain a "." causing the script to fail picking out
+# the  year Adil Hasan, 13/Dec/12
+# Creator: Adil Hasan, 15/Jun/12
 
 import getopt
 import sys
@@ -66,7 +68,8 @@ def readLog(logPath, logFile, stime, etime, listFlag, verbose):
     print "Log file is: ", logFile
     print "-----------------------------------------------------------------"
     log = file(logFile, 'r')
-    logYear = logFile.split(".")[1]
+    logf = os.path.basename(logFile)
+    logYear = logf.split(".")[1]
     timeStr = re.compile("\d\d:\d\d:\d\d")
     for line in log:
         if (stime):
@@ -98,7 +101,8 @@ def readLog(logPath, logFile, stime, etime, listFlag, verbose):
     print "Log file is: ", relogFile
     print "-----------------------------------------------------------------"
     relog = file(relogFile, 'r')
-    relogYear = relogFile.split(".")[1]
+    relogf = os.path.basename(relogFile)
+    relogYear = relogf.split(".")[1]
     for reline in relog:
         if (stime):
             printS = 0
