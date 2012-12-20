@@ -304,9 +304,9 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        if (strcmp(generalAdminInp->arg1,"group")==0) {
     	   userInfo_t ui;
     	   memset(&ui, 0, sizeof(userInfo_t));
-		   rei2.uoio = &ui;
-		   rstrcpy(ui.userName, generalAdminInp->arg4, NAME_LEN);
-		   rstrcpy(ui.rodsZone, generalAdminInp->arg4, NAME_LEN);
+    	   rei2.uoio = &ui;
+    	   rstrcpy(ui.userName, generalAdminInp->arg4, NAME_LEN);
+    	   rstrcpy(ui.rodsZone, generalAdminInp->arg5, NAME_LEN);
          /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
          args[0] = generalAdminInp->arg2; /* groupname */
          args[1] = generalAdminInp->arg3; /* option */
