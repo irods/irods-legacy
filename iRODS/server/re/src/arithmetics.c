@@ -685,8 +685,8 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     /*return res;*/
 ret:
     /*deleteEnv(nEnv, 2);*/
-    cpEnv(env,r);
-    res = cpRes(res,r);
+    cpEnv2(env,newRegion, r);
+    res = cpRes2(res,newRegion, r);
     region_free(newRegion);
     return res;
 
