@@ -4,7 +4,7 @@ Jargon 3.2.0 Release Notes
 *** Pre-release code ****
 Project: Jargon - IRODS Java API
 Date: 12/31/2012 
-Release Version: Jargon 3.2.0
+Release Version: Jargon 3.2.0 beta1
 ================================================================================================
 
 News
