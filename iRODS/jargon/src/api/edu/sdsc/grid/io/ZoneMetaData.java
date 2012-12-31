@@ -47,7 +47,7 @@ package edu.sdsc.grid.io;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public interface ZoneMetaData extends StandardMetaData {
-	
+
 	public static final String ZONE_NAME = "Zone Name";
 
 }

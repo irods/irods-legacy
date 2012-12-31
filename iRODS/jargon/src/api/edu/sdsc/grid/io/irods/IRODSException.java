@@ -57,12 +57,12 @@ public class IRODSException extends IOException {
 	 */
 	private int type;
 
-	IRODSException(String message) {
+	IRODSException(final String message) {
 		super(message);
 
 	}
 
-	IRODSException(String message, int type) {
+	IRODSException(final String message, final int type) {
 		super(message);
 		this.type = type;
 	}

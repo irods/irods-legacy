@@ -45,17 +45,17 @@
 //
 package edu.sdsc.grid.io.http;
 
-import edu.sdsc.grid.io.*;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import edu.sdsc.grid.io.RemoteAccount;
+
 /**
  * An object to hold the user information used when connecting to a HTTP file
  * system.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since Jargon2.0
@@ -80,8 +80,8 @@ public class HTTPAccount extends RemoteAccount {
 	 * @param homeDirectory
 	 *            home directory on the http system
 	 */
-	HTTPAccount(String host, int port, String userName, String password,
-			String homeDirectory) {
+	HTTPAccount(final String host, final int port, final String userName,
+			final String password, final String homeDirectory) {
 		super(host, port, userName, password, homeDirectory);
 
 		try {
@@ -99,7 +99,7 @@ public class HTTPAccount extends RemoteAccount {
 	 * Constructs an object to hold the user information used when connecting to
 	 * a http server.
 	 */
-	public HTTPAccount(URI uri) {
+	public HTTPAccount(final URI uri) {
 		super(uri.getHost(), uri.getPort(), uri.getUserInfo(), uri
 				.getAuthority(), uri.getPath());
 		this.uri = uri;
@@ -126,18 +126,19 @@ public class HTTPAccount extends RemoteAccount {
 	 *             if homeDirectory is null.
 	 */
 	@Override
-	public void setHomeDirectory(String homeDirectory) {
-		if (homeDirectory == null || homeDirectory.equals(""))
+	public void setHomeDirectory(final String homeDirectory) {
+		if (homeDirectory == null || homeDirectory.equals("")) {
 			this.homeDirectory = HTTPFileSystem.HTTP_ROOT;
-		else
+		} else {
 			this.homeDirectory = homeDirectory;
+		}
 	}
 
 	@Override
 	public void setPort(int port) {
-		if (port > 0)
+		if (port > 0) {
 			this.port = port;
-		else {
+		} else {
 			// default http port
 			port = 80;
 		}
@@ -173,15 +174,17 @@ public class HTTPAccount extends RemoteAccount {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			HTTPAccount temp = (HTTPAccount) obj;
 
-			if (!uri.equals(temp.uri))
+			if (!uri.equals(temp.uri)) {
 				return false;
+			}
 
 			// else //everything is equal
 			return true;

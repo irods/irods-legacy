@@ -8,7 +8,8 @@ package org.irods.jargon.core.packinstr;
  * and put). The data in this object are synchronized and thread-safe.
  * <p/>
  * Note that udp options are included here, but the UDP option is not yet
- * implemented in jargon, and will have no effect. This part of the API is new and subject to refactoring.
+ * implemented in jargon, and will have no effect. This part of the API is new
+ * and subject to refactoring.
  * 
  * @author Mike Conway - DICE (www.irods.org)
  * 
@@ -88,7 +89,8 @@ public class TransferOptions {
 		return redirectToResource;
 	}
 
-	public synchronized void setRedirectToResource(boolean redirectToResource) {
+	public synchronized void setRedirectToResource(
+			final boolean redirectToResource) {
 		this.redirectToResource = redirectToResource;
 	}
 

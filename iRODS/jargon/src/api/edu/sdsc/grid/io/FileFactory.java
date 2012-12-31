@@ -948,9 +948,9 @@ public final class FileFactory {
 			if (!(file instanceof LocalFile)) {
 				throw new IllegalArgumentException("file is not a LocalFile");
 			}
-			
+
 			LocalFile localFile = (LocalFile) file;
-			
+
 			return new LocalFileOutputStream(localFile);
 		}
 		return out;

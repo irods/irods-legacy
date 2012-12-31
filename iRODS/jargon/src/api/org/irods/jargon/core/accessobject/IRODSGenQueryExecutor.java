@@ -36,11 +36,14 @@ public interface IRODSGenQueryExecutor {
 			int continueIndex) throws JargonException, JargonQueryException;
 
 	/**
-	 * Execute a requery meant to retrieve more results.  The previous result set contains 
-	 * information to requery iRODS.
-	 * @param irodsQueryResultSet {@link org.irods.jargon.core.query.IRODSQueryResultSet} that contains the results
-	 * of the previous query.
-	 * @return <code>IRODSQueryResultSet</code> containing the previous batch of query results.
+	 * Execute a requery meant to retrieve more results. The previous result set
+	 * contains information to requery iRODS.
+	 * 
+	 * @param irodsQueryResultSet
+	 *            {@link org.irods.jargon.core.query.IRODSQueryResultSet} that
+	 *            contains the results of the previous query.
+	 * @return <code>IRODSQueryResultSet</code> containing the previous batch of
+	 *         query results.
 	 * @throws JargonException
 	 * @throws JargonQueryException
 	 */

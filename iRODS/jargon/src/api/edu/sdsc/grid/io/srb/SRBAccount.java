@@ -45,26 +45,29 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
-import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import org.ietf.jgss.GSSCredential;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileInputStream;
+import edu.sdsc.grid.io.Lucid;
+import edu.sdsc.grid.io.RemoteAccount;
+import edu.sdsc.grid.io.local.LocalFile;
 
 /**
  * This class extends the RemoteAccount class, adding those values necessary to
  * open a connection to the SRB. This class does not actually connect to a
  * filesystem. It only hold user connection information. Setting or getting this
  * information only refers to the contents of the object.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
@@ -268,7 +271,7 @@ public class SRBAccount extends RemoteAccount {
 	 * @returns true if the new version was different than the old, false
 	 *          otherwise.
 	 */
-	static boolean systemPropertyVersion(String newVersion) {
+	static boolean systemPropertyVersion(final String newVersion) {
 		String temp = null;
 		if (newVersion != null) {
 			if (newVersion.equals(version)) {
@@ -278,8 +281,9 @@ public class SRBAccount extends RemoteAccount {
 			}
 		} else {
 			temp = System.getProperty("jargon.version");
-			if (temp == null)
+			if (temp == null) {
 				return false;
+			}
 		}
 		if (temp.startsWith("SRB-3.5") || temp.startsWith("SRB3.5")
 				|| temp.startsWith("3.5") || temp.startsWith("SRB-3.5")
@@ -368,9 +372,10 @@ public class SRBAccount extends RemoteAccount {
 			info = new LocalFile(System.getProperty("user.home") + "/srb/");
 		}
 
-		if (!info.exists())
+		if (!info.exists()) {
 			throw new FileNotFoundException(
 					"Cannot find default srb account info");
+		}
 
 		setUserInfo(info);
 	}
@@ -387,8 +392,8 @@ public class SRBAccount extends RemoteAccount {
 	 *             if the user info exists but cannot be opened or created for
 	 *             any other reason.
 	 */
-	public SRBAccount(String userInfoDirectory) throws FileNotFoundException,
-			IOException {
+	public SRBAccount(final String userInfoDirectory)
+			throws FileNotFoundException, IOException {
 		this(new LocalFile(userInfoDirectory));
 	}
 
@@ -404,8 +409,8 @@ public class SRBAccount extends RemoteAccount {
 	 *             if the user info exists but cannot be opened or created for
 	 *             any other reason.
 	 */
-	public SRBAccount(File userInfoDirectory) throws FileNotFoundException,
-			IOException {
+	public SRBAccount(final File userInfoDirectory)
+			throws FileNotFoundException, IOException {
 		this(new LocalFile(userInfoDirectory));
 	}
 
@@ -421,13 +426,14 @@ public class SRBAccount extends RemoteAccount {
 	 *             if the user info exists but cannot be opened or created for
 	 *             any other reason.
 	 */
-	public SRBAccount(GeneralFile userInfoDirectory)
+	public SRBAccount(final GeneralFile userInfoDirectory)
 			throws FileNotFoundException, IOException {
 		// Can't actually do anything until the .Mdas files have been read.
 		super("", 0, "", "", "");
 
-		if (userInfoDirectory.equals(null))
+		if (userInfoDirectory.equals(null)) {
 			throw new NullPointerException("UserInfoDirectory cannot be null");
+		}
 
 		setUserInfo(userInfoDirectory);
 	}
@@ -446,7 +452,7 @@ public class SRBAccount extends RemoteAccount {
 	 *             if the user info exists but cannot be opened or created for
 	 *             any other reason.
 	 */
-	public SRBAccount(String mdasEnvFile, String mdasAuthFile)
+	public SRBAccount(final String mdasEnvFile, final String mdasAuthFile)
 			throws FileNotFoundException, IOException {
 		this(new LocalFile(mdasEnvFile), new LocalFile(mdasAuthFile));
 	}
@@ -465,7 +471,7 @@ public class SRBAccount extends RemoteAccount {
 	 *             if the user info exists but cannot be opened or created for
 	 *             any other reason.
 	 */
-	public SRBAccount(File mdasEnvFile, File mdasAuthFile)
+	public SRBAccount(final File mdasEnvFile, final File mdasAuthFile)
 			throws FileNotFoundException, IOException {
 		this(new LocalFile(mdasEnvFile), new LocalFile(mdasAuthFile));
 	}
@@ -484,13 +490,15 @@ public class SRBAccount extends RemoteAccount {
 	 *             if the user info exists but cannot be opened or created for
 	 *             any other reason.
 	 */
-	public SRBAccount(GeneralFile mdasEnvFile, GeneralFile mdasAuthFile)
-			throws FileNotFoundException, IOException {
+	public SRBAccount(final GeneralFile mdasEnvFile,
+			final GeneralFile mdasAuthFile) throws FileNotFoundException,
+			IOException {
 		// Can't actually do anything until the .Mdas files have been read.
 		super("", 0, "", "", "");
 
-		if (mdasEnvFile.equals(null) || mdasAuthFile.equals(null))
+		if (mdasEnvFile.equals(null) || mdasAuthFile.equals(null)) {
 			throw new NullPointerException("Mdas files cannot be null");
+		}
 
 		setMdasUserInfo(mdasEnvFile);
 		readMdasAuth(mdasAuthFile);
@@ -516,9 +524,9 @@ public class SRBAccount extends RemoteAccount {
 	 * @param defaultStorageResource
 	 *            default storage resource
 	 */
-	public SRBAccount(String host, int port, String userName, String password,
-			String homeDirectory, String mdasDomainName,
-			String defaultStorageResource) {
+	public SRBAccount(final String host, final int port, final String userName,
+			final String password, final String homeDirectory,
+			final String mdasDomainName, final String defaultStorageResource) {
 		super(host, port, userName, password, homeDirectory);
 
 		setProxyUserName(userName);
@@ -549,9 +557,10 @@ public class SRBAccount extends RemoteAccount {
 	 * @param mcatZone
 	 *            mcat zone
 	 */
-	public SRBAccount(String host, int port, String userName, String password,
-			String homeDirectory, String mdasDomainName,
-			String defaultStorageResource, String mcatZone) {
+	public SRBAccount(final String host, final int port, final String userName,
+			final String password, final String homeDirectory,
+			final String mdasDomainName, final String defaultStorageResource,
+			final String mcatZone) {
 		super(host, port, userName, password, homeDirectory);
 
 		setProxyUserName(userName);
@@ -574,7 +583,8 @@ public class SRBAccount extends RemoteAccount {
 	 * @param gssCredential
 	 *            the org.ietf.jgss.GSSCredential object
 	 */
-	public SRBAccount(String host, int port, GSSCredential gssCredential) {
+	public SRBAccount(final String host, final int port,
+			final GSSCredential gssCredential) {
 		super(host, port, null, null, "");
 
 		setGSSCredential(gssCredential);
@@ -597,8 +607,9 @@ public class SRBAccount extends RemoteAccount {
 	 * @param options
 	 *            authentication protocol, e.g GSI_AUTH
 	 */
-	public SRBAccount(String host, int port, GSSCredential gssCredential,
-			String homeDirectory, String defaultStorageResource, int options) {
+	public SRBAccount(final String host, final int port,
+			final GSSCredential gssCredential, final String homeDirectory,
+			final String defaultStorageResource, final int options) {
 		super(host, port, null, null, homeDirectory);
 
 		setGSSCredential(gssCredential);
@@ -611,6 +622,7 @@ public class SRBAccount extends RemoteAccount {
 	 * held values.
 	 * <P>
 	 */
+	@Override
 	protected void finalize() {
 		super.finalize();
 		proxyUserName = null;
@@ -625,10 +637,12 @@ public class SRBAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if homeDirectory is null.
 	 */
-	public void setHomeDirectory(String homeDirectory) {
-		if (homeDirectory == null)
+	@Override
+	public void setHomeDirectory(final String homeDirectory) {
+		if (homeDirectory == null) {
 			throw new NullPointerException(
 					"The home directory string cannot be null");
+		}
 
 		this.homeDirectory = homeDirectory;
 	}
@@ -638,14 +652,18 @@ public class SRBAccount extends RemoteAccount {
 	 * 
 	 * @return homeDirectory
 	 */
+	@Override
 	public String getHomeDirectory() throws NullPointerException {
-		if (homeDirectory != null)
+		if (homeDirectory != null) {
 			return homeDirectory;
+		}
 
 		String dir = "/home/";
-		if (userName != null)
-			if (domainName != null)
+		if (userName != null) {
+			if (domainName != null) {
 				dir += userName + "." + domainName;
+			}
+		}
 
 		return dir;
 	}
@@ -655,10 +673,11 @@ public class SRBAccount extends RemoteAccount {
 	 * Sets the port of this SRBAccount. Port numbers can not be negative.
 	 * Default value is 5544
 	 */
-	public void setPort(int port) {
-		if (port > 0)
+	@Override
+	public void setPort(final int port) {
+		if (port > 0) {
 			this.port = port;
-		else {
+		} else {
 			this.port = 5544;
 		}
 	}
@@ -669,9 +688,10 @@ public class SRBAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if proxyUserName is null.
 	 */
-	protected void setProxyUserName(String proxyUserName) {
-		if (proxyUserName == null)
+	protected void setProxyUserName(final String proxyUserName) {
+		if (proxyUserName == null) {
 			throw new NullPointerException("The proxy user name cannot be null");
+		}
 
 		this.proxyUserName = proxyUserName;
 	}
@@ -682,10 +702,11 @@ public class SRBAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if proxyDomainName is null.
 	 */
-	protected void setProxyDomainName(String proxyDomainName) {
-		if (proxyDomainName == null)
+	protected void setProxyDomainName(final String proxyDomainName) {
+		if (proxyDomainName == null) {
 			throw new NullPointerException(
 					"The proxy domain name cannot be null");
+		}
 
 		this.proxyDomainName = proxyDomainName;
 	}
@@ -696,9 +717,10 @@ public class SRBAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if domainName is null.
 	 */
-	public void setDomainName(String domainName) {
-		if (domainName == null)
+	public void setDomainName(final String domainName) {
+		if (domainName == null) {
 			throw new NullPointerException("The domain name cannot be null");
+		}
 
 		this.domainName = domainName;
 	}
@@ -709,7 +731,7 @@ public class SRBAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if defaultStorageResource is null.
 	 */
-	public void setDefaultStorageResource(String defaultStorageResource) {
+	public void setDefaultStorageResource(final String defaultStorageResource) {
 		if (defaultStorageResource == null) {
 			throw new NullPointerException(
 					"The default storage resource cannot be null");
@@ -721,7 +743,7 @@ public class SRBAccount extends RemoteAccount {
 	/**
 	 * Set the type of authentication used, e.g. ENCRYPT1, GSI_AUTH.
 	 */
-	public void setOptions(int options) {
+	public void setOptions(final int options) {
 		this.options = options;
 	}
 
@@ -731,9 +753,10 @@ public class SRBAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if version is null.
 	 */
-	public static void setVersion(String srbVersion) {
-		if (srbVersion == null)
+	public static void setVersion(final String srbVersion) {
+		if (srbVersion == null) {
 			throw new IllegalArgumentException("Invalid version");
+		}
 
 		if (versionNumber.get(srbVersion) != null) {
 			version = srbVersion;
@@ -746,21 +769,21 @@ public class SRBAccount extends RemoteAccount {
 	/**
 	 * Sets the proxy mcat zone.
 	 */
-	public void setProxyMcatZone(String proxyMcatZone) {
+	public void setProxyMcatZone(final String proxyMcatZone) {
 		this.proxyMcatZone = proxyMcatZone;
 	}
 
 	/**
 	 * Sets the client mcat zone.
 	 */
-	public void setMcatZone(String clientMcatZone) {
+	public void setMcatZone(final String clientMcatZone) {
 		this.clientMcatZone = clientMcatZone;
 	}
 
 	/**
 	 * Sets the exec file.
 	 */
-	public void setExecFile(String execFile) {
+	public void setExecFile(final String execFile) {
 		this.execFile = execFile;
 	}
 
@@ -770,14 +793,14 @@ public class SRBAccount extends RemoteAccount {
 	 * contain multiple files that are comma separated. By default, the CA
 	 * definition comes from the user's cog.properties file.
 	 */
-	public void setCertificateAuthority(String list) {
+	public void setCertificateAuthority(final String list) {
 		certificateAuthority = list;
 	}
 
 	/**
 	 * Allows a GSSCredential to be used to make a GSI authentication.
 	 */
-	public void setGSSCredential(GSSCredential gssCredential) {
+	public void setGSSCredential(final GSSCredential gssCredential) {
 		this.gssCredential = gssCredential;
 		if (gssCredential == null) {
 			return;
@@ -788,16 +811,18 @@ public class SRBAccount extends RemoteAccount {
 		}
 	}
 
-	public void setObf(boolean obf) {
-		if (obf)
+	public void setObf(final boolean obf) {
+		if (obf) {
 			obfuscate = 1;
-		else
+		} else {
 			obfuscate = -1;
+		}
 	}
 
 	public boolean getObf() {
-		if (obfuscate == 1 || (obfuscate == 0 && defaultObfuscate))
+		if (obfuscate == 1 || (obfuscate == 0 && defaultObfuscate)) {
 			return true;
+		}
 
 		return false;
 	}
@@ -913,7 +938,8 @@ public class SRBAccount extends RemoteAccount {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
-	public boolean equals(Object obj) {
+	@Override
+	public boolean equals(final Object obj) {
 		return equals(obj, true);
 	}
 
@@ -921,33 +947,42 @@ public class SRBAccount extends RemoteAccount {
 	 * The zone is uniquely determined by username.domain. So SRBFile(uri) does
 	 * some fancy stuff, but doesn't have the zone yet.
 	 */
-	boolean equals(Object obj, boolean checkZone) {
+	boolean equals(final Object obj, final boolean checkZone) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			SRBAccount temp = (SRBAccount) obj;
 
-			if (!getHost().equals(temp.getHost()))
+			if (!getHost().equals(temp.getHost())) {
 				return false;
-			if (getPort() != temp.getPort())
+			}
+			if (getPort() != temp.getPort()) {
 				return false;
-			if (!getUserName().equals(temp.getUserName()))
+			}
+			if (!getUserName().equals(temp.getUserName())) {
 				return false;
-			if (!getPassword().equals(temp.getPassword()))
+			}
+			if (!getPassword().equals(temp.getPassword())) {
 				return false;
+			}
 			if ((getOptions() == GSI_AUTH) || (getOptions() == GSI_DELEGATE)) {
 				if (!getCertificateAuthority().equals(
-						temp.getCertificateAuthority()))
+						temp.getCertificateAuthority())) {
 					return false;
+				}
 			}
 
-			if (!getProxyUserName().equals(temp.getProxyUserName()))
+			if (!getProxyUserName().equals(temp.getProxyUserName())) {
 				return false;
-			if (!getProxyDomainName().equals(temp.getProxyDomainName()))
+			}
+			if (!getProxyDomainName().equals(temp.getProxyDomainName())) {
 				return false;
-			if (!getDomainName().equals(temp.getDomainName()))
+			}
+			if (!getDomainName().equals(temp.getDomainName())) {
 				return false;
+			}
 
 			if (!getVersion().equals(SRB_VERSION_2)
 					&& !getVersion().equals(SRB_VERSION_1_1_8) && checkZone) {
@@ -983,6 +1018,7 @@ public class SRBAccount extends RemoteAccount {
 	 * formated according to the SRB URI model. Note: the user password will not
 	 * be included in the URI.
 	 */
+	@Override
 	public String toString() {
 		return new String("srb://" + getUserName() + "." + getDomainName()
 				+ "@" + getHost() + ":" + getPort());
@@ -995,15 +1031,17 @@ public class SRBAccount extends RemoteAccount {
 	 *            If true, the account's password will be included in the URI,
 	 *            if possible.
 	 */
-	public URI toURI(boolean includePassword) {
+	@Override
+	public URI toURI(final boolean includePassword) {
 		URI uri = null;
 		try {
 			return new URI("srb://" + getUserName() + "." + getDomainName()
 					+ ":" + getPassword() + "@" + getHost() + ":" + getPort()
 					+ getHomeDirectory());
 		} catch (URISyntaxException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 		return uri;
 	}
@@ -1011,8 +1049,8 @@ public class SRBAccount extends RemoteAccount {
 	/**
    * 
    */
-	public static void hidePassword(GeneralFile passwordFile, String password)
-			throws Throwable {
+	public static void hidePassword(final GeneralFile passwordFile,
+			final String password) throws Throwable {
 		/* \u002a\u002f\u006e\u0065\u0077 \u004c\u0075\u0063\u0069\u0064\u0028
 				\u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0046\u0069\u006c\u0065\u0029
 				\u002e\u006c\u0039\u0031\u0028\u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0029\u003b\u002f\u002a */
@@ -1024,7 +1062,7 @@ public class SRBAccount extends RemoteAccount {
 	 * @param userInfoDirectory
 	 *            The path to the user info files
 	 */
-	public void setUserInfo(GeneralFile userInfoDirectory)
+	public void setUserInfo(final GeneralFile userInfoDirectory)
 			throws FileNotFoundException, IOException {
 		GeneralFile mdas = FileFactory.newFile(userInfoDirectory, ".MdasEnv");
 		if (!mdas.exists()) {
@@ -1045,7 +1083,7 @@ public class SRBAccount extends RemoteAccount {
 	 * @param mdasEnvFile
 	 *            The mdas file which stores the user info
 	 */
-	public void setMdasUserInfo(GeneralFile mdasEnvFile)
+	public void setMdasUserInfo(final GeneralFile mdasEnvFile)
 			throws FileNotFoundException, IOException {
 		int index = 0;
 		GeneralFileInputStream mdasEnvReader = null;
@@ -1101,8 +1139,8 @@ public class SRBAccount extends RemoteAccount {
 			setPort(5544);
 		} else {
 			index = mdasEnv.indexOf('\'', index) + 1;
-			setPort(Integer.parseInt(mdasEnv.substring(index, mdasEnv.indexOf(
-					'\'', index))));
+			setPort(Integer.parseInt(mdasEnv.substring(index,
+					mdasEnv.indexOf('\'', index))));
 		}
 
 		// Default proxyUserName
@@ -1123,8 +1161,8 @@ public class SRBAccount extends RemoteAccount {
 					"No home domain name found in Mdas file.");
 		}
 		index = mdasEnv.indexOf('\'', index) + 1;
-		setProxyDomainName(mdasEnv.substring(index, mdasEnv
-				.indexOf('\'', index)));
+		setProxyDomainName(mdasEnv.substring(index,
+				mdasEnv.indexOf('\'', index)));
 
 		// domainName
 		setDomainName(proxyDomainName);
@@ -1136,8 +1174,8 @@ public class SRBAccount extends RemoteAccount {
 					"No default resource found in Mdas file.");
 		}
 		index = mdasEnv.indexOf('\'', index) + 1;
-		setDefaultStorageResource(mdasEnv.substring(index, mdasEnv.indexOf(
-				'\'', index)));
+		setDefaultStorageResource(mdasEnv.substring(index,
+				mdasEnv.indexOf('\'', index)));
 
 		// options (password type)
 		index = mdasEnv.indexOf("AUTH_SCHEME");
@@ -1168,8 +1206,8 @@ public class SRBAccount extends RemoteAccount {
 		index = mdasEnv.indexOf("mcatZone");
 		if (index >= 0) {
 			index = mdasEnv.indexOf('\'', index) + 1;
-			setProxyMcatZone(mdasEnv.substring(index, mdasEnv.indexOf('\'',
-					index)));
+			setProxyMcatZone(mdasEnv.substring(index,
+					mdasEnv.indexOf('\'', index)));
 		}
 
 		// clientMcatZone
@@ -1179,8 +1217,8 @@ public class SRBAccount extends RemoteAccount {
 		index = mdasEnv.indexOf("execFile");
 		if (index >= 0) {
 			index = mdasEnv.indexOf('\'', index) + 1;
-			setDefaultStorageResource(mdasEnv.substring(index, mdasEnv.indexOf(
-					'\'', index)));
+			setDefaultStorageResource(mdasEnv.substring(index,
+					mdasEnv.indexOf('\'', index)));
 		}
 
 		// had to move down after 3.0
@@ -1189,18 +1227,18 @@ public class SRBAccount extends RemoteAccount {
 		if (index < 0) {
 			if (proxyMcatZone == null) {
 				// = /zone/home/user.domain
-				setHomeDirectory(SRBFile.separator + proxyMcatZone
-						+ SRBFile.separator + "home" + SRBFile.separator
-						+ userName + "." + domainName);
+				setHomeDirectory(GeneralFile.separator + proxyMcatZone
+						+ GeneralFile.separator + "home"
+						+ GeneralFile.separator + userName + "." + domainName);
 			} else {
 				// = /home/user.domain
-				setHomeDirectory(SRBFile.separator + "home" + SRBFile.separator
-						+ userName + "." + domainName);
+				setHomeDirectory(GeneralFile.separator + "home"
+						+ GeneralFile.separator + userName + "." + domainName);
 			}
 		} else {
 			index = mdasEnv.indexOf('\'', index) + 1;
-			setHomeDirectory(mdasEnv.substring(index, mdasEnv.indexOf('\'',
-					index)));
+			setHomeDirectory(mdasEnv.substring(index,
+					mdasEnv.indexOf('\'', index)));
 		}
 
 		// srbVersion (for JARGON only)
@@ -1217,7 +1255,7 @@ public class SRBAccount extends RemoteAccount {
 	 * @param mdasAuthFile
 	 *            The file which contains the Mdas authorization
 	 */
-	public void readMdasAuth(GeneralFile mdasAuthFile)
+	public void readMdasAuth(final GeneralFile mdasAuthFile)
 			throws FileNotFoundException, IOException {
 		if (obfuscate == 1 || (obfuscate == 0 && defaultObfuscate)) {
 			/* 
@@ -1235,9 +1273,8 @@ public class SRBAccount extends RemoteAccount {
 
 		String mdasAuth = new String(mdasAuthContents);
 
-		StringTokenizer authTokens = new StringTokenizer(mdasAuth, System
-				.getProperty("line.separator")
-				+ "\n");
+		StringTokenizer authTokens = new StringTokenizer(mdasAuth,
+				System.getProperty("line.separator") + "\n");
 		String token;
 		while (authTokens.hasMoreTokens()) {
 			token = authTokens.nextToken();
@@ -1248,10 +1285,11 @@ public class SRBAccount extends RemoteAccount {
 				index = token.indexOf(System.getProperty("line.separator"))
 						+ token.indexOf("\n") + 1;
 
-				if (index >= 0)
+				if (index >= 0) {
 					mdasAuth = token.substring(0, index);
-				else
+				} else {
 					mdasAuth = token;
+				}
 			}
 		}
 

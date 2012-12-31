@@ -574,40 +574,53 @@ public class Resource extends Domain {
 				.buildAvuDataListFromResultSet(resultSet);
 
 	}
-	
+
 	/**
-	 * Retrieve a list of host names for resource servers that have a copy of the data object.  This is used in resource re-routing for transfers and streaming.
-	 * @param irodsCollectionAbsolutePath <code>String</code> with the absolute path to the data object parent collection
-	 * @param dataName <code>String</code> with the name of the iRODS data object
+	 * Retrieve a list of host names for resource servers that have a copy of
+	 * the data object. This is used in resource re-routing for transfers and
+	 * streaming.
+	 * 
+	 * @param irodsCollectionAbsolutePath
+	 *            <code>String</code> with the absolute path to the data object
+	 *            parent collection
+	 * @param dataName
+	 *            <code>String</code> with the name of the iRODS data object
 	 * @return <code>List<String></code> with available host names
 	 * @throws JargonException
 	 */
-	public List<String> listHostsForDataObject(final String irodsCollectionAbsolutePath, final String dataName) throws JargonException {
-		
-		if (irodsCollectionAbsolutePath == null || irodsCollectionAbsolutePath.length() == 0) {
-			throw new IllegalArgumentException("null or empty irodsCollectionAbsolutePath");
+	public List<String> listHostsForDataObject(
+			final String irodsCollectionAbsolutePath, final String dataName)
+			throws JargonException {
+
+		if (irodsCollectionAbsolutePath == null
+				|| irodsCollectionAbsolutePath.length() == 0) {
+			throw new IllegalArgumentException(
+					"null or empty irodsCollectionAbsolutePath");
 		}
-		
+
 		if (dataName == null || dataName.length() == 0) {
 			throw new IllegalArgumentException("null or empty dataName");
 		}
-		
+
 		List<String> hosts = new ArrayList<String>();
-		
-		log.info("listHostsForDataObject for collection: {}", irodsCollectionAbsolutePath);
+
+		log.info("listHostsForDataObject for collection: {}",
+				irodsCollectionAbsolutePath);
 		log.info(" dataName:{}", dataName);
 
 		final StringBuilder sb = new StringBuilder();
 		sb.append("SELECT ");
 		sb.append(RodsGenQueryEnum.COL_R_LOC.getName());
-	
+
 		sb.append(RodsGenQueryEnum.COL_COLL_NAME.getName());
 		sb.append(EQUALS_AND_QUOTE);
-		sb.append(IRODSDataConversionUtil.escapeSingleQuotes(irodsCollectionAbsolutePath));
+		sb.append(IRODSDataConversionUtil
+				.escapeSingleQuotes(irodsCollectionAbsolutePath));
 		sb.append("' AND ");
 		sb.append(RodsGenQueryEnum.COL_DATA_NAME.getName());
 		sb.append(EQUALS_AND_QUOTE);
-		sb.append(IRODSDataConversionUtil.escapeSingleQuotes(irodsCollectionAbsolutePath));
+		sb.append(IRODSDataConversionUtil
+				.escapeSingleQuotes(irodsCollectionAbsolutePath));
 		sb.append(QUOTE);
 
 		final IRODSQuery irodsQuery = IRODSQuery.instance(sb.toString(), 5000);
@@ -626,15 +639,15 @@ public class Resource extends Domain {
 			log.error("query exception for resource query: " + sb.toString(), e);
 			throw new JargonException("error in resource query", e);
 		}
-		
+
 		for (IRODSQueryResultRow resultRow : resultSet.getResults()) {
 			hosts.add(resultRow.getColumn(0));
 		}
-		
+
 		log.info("hosts for data object: {}", hosts);
-		
+
 		return hosts;
-		
+
 	}
 
 }

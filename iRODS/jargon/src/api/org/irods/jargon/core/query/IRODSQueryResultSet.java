@@ -9,13 +9,13 @@ import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 
 /**
- * Immutable result set returned from an IRODS query.  This class is not final to assist in testability of 
- * complex query structures.
+ * Immutable result set returned from an IRODS query. This class is not final to
+ * assist in testability of complex query structures.
  * 
  * @author Mike Conway - DICE (www.irods.org) TODO: how will this be built? do I
  *         need to copy the results to an immutable list, etc
  */
-public  class IRODSQueryResultSet {
+public class IRODSQueryResultSet {
 
 	public static IRODSQueryResultSet instance(
 			final TranslatedIRODSQuery translatedIRODSQuery,
@@ -24,6 +24,7 @@ public  class IRODSQueryResultSet {
 		return new IRODSQueryResultSet(translatedIRODSQuery, results,
 				hasMoreRecords);
 	}
+
 	public static IRODSQueryResultSet instance(
 			final TranslatedIRODSQuery translatedIRODSQuery,
 			final List<IRODSQueryResultRow> results, final int continuationIndex)
@@ -33,6 +34,7 @@ public  class IRODSQueryResultSet {
 
 		return new IRODSQueryResultSet(translatedIRODSQuery, results, hasMore);
 	}
+
 	private final boolean hasMoreRecords;
 
 	private final List<IRODSQueryResultRow> results;

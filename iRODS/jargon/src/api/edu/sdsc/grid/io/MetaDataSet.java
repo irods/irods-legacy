@@ -613,15 +613,18 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	}
 
 	/**
-	 * Create a condition that will accept the values as an array of <code>Object</code> without any condition checking.  This is intended for internal use, and the use of the 
-	 * more specific instance methods is suggested.
+	 * Create a condition that will accept the values as an array of
+	 * <code>Object</code> without any condition checking. This is intended for
+	 * internal use, and the use of the more specific instance methods is
+	 * suggested.
+	 * 
 	 * @param attributeValue
 	 * @param operator
 	 * @param values
 	 * @return
 	 */
-	public static MetaDataCondition newCondition(String attributeValue,
-			int operator, Object[] values) {
+	public static MetaDataCondition newCondition(final String attributeValue,
+			final int operator, final Object[] values) {
 		return new MetaDataCondition(getField(attributeValue), operator, values);
 	}
 

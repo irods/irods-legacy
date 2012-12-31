@@ -14,8 +14,7 @@ import edu.sdsc.grid.io.irods.IRODSMetaDataSet;
  */
 public class IRODSAvu {
 
-
-	static String getAttributeName(Namespace namespace) {
+	static String getAttributeName(final Namespace namespace) {
 		switch (namespace) {
 		default:
 		case FILE:
@@ -28,8 +27,8 @@ public class IRODSAvu {
 			return IRODSMetaDataSet.META_USER_ATTR_NAME;
 		}
 	}
-	
-	static Integer getAttributeNumericName(Namespace namespace) {
+
+	static Integer getAttributeNumericName(final Namespace namespace) {
 		switch (namespace) {
 		default:
 		case FILE:
@@ -42,8 +41,8 @@ public class IRODSAvu {
 			return IRODSMetaDataSet.COL_META_USER_ATTR_NAME;
 		}
 	}
-	
-	static Integer getAttributeNumericValue(Namespace namespace) {
+
+	static Integer getAttributeNumericValue(final Namespace namespace) {
 		switch (namespace) {
 		default:
 		case FILE:
@@ -57,7 +56,7 @@ public class IRODSAvu {
 		}
 	}
 
-	static String getAttributeValue(Namespace namespace) {
+	static String getAttributeValue(final Namespace namespace) {
 		switch (namespace) {
 		default:
 		case FILE:

@@ -18,13 +18,15 @@ public class IRODSAccessObjectFactoryImpl implements IRODSAccessObjectFactory {
 	private final IRODSCommands irodsCommands;
 
 	/**
-	 * Returns an instance of an Access Object factory that will hold a live connection to iRODS.  Note
-	 * that access objects rely on irodsCommands for any thread management.
+	 * Returns an instance of an Access Object factory that will hold a live
+	 * connection to iRODS. Note that access objects rely on irodsCommands for
+	 * any thread management.
+	 * 
 	 * @param irodsCommands
 	 * @throws JargonException
 	 */
-	public static IRODSAccessObjectFactory instance(IRODSCommands irodsCommands)
-			throws JargonException {
+	public static IRODSAccessObjectFactory instance(
+			final IRODSCommands irodsCommands) throws JargonException {
 		return new IRODSAccessObjectFactoryImpl(irodsCommands);
 	}
 
@@ -44,33 +46,43 @@ public class IRODSAccessObjectFactoryImpl implements IRODSAccessObjectFactory {
 	protected IRODSCommands getIrodsCommands() {
 		return irodsCommands;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#getIRODSGenQueryExcecutor()
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#
+	 * getIRODSGenQueryExcecutor()
 	 */
-	public IRODSGenQueryExecutor getIRODSGenQueryExcecutor() throws JargonException {
+	public IRODSGenQueryExecutor getIRODSGenQueryExcecutor()
+			throws JargonException {
 		return new IRODSGenQueryExecutorImpl(irodsCommands);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#getRemoteExecutionOfCommandsAO()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#
+	 * getRemoteExecutionOfCommandsAO()
 	 */
 	public RemoteExecutionOfCommandsAO getRemoteExecutionOfCommandsAO()
 			throws JargonException {
 		return new RemoteExecutionOfCommandsAOImpl(irodsCommands);
 	}
-	
-	//@Override
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#getBulkFileOperationsAO()
+
+	// @Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.core.accessobject.IRODSAccessObjectFactory#
+	 * getBulkFileOperationsAO()
 	 */
-	public BulkFileOperationsAO getBulkFileOperationsAO() throws JargonException {
+	public BulkFileOperationsAO getBulkFileOperationsAO()
+			throws JargonException {
 		return new BulkFileOperationsAOImpl(irodsCommands);
 	}
-	
-	
+
 	public FileCatalogObjectAO getFileCatalogObjectAO() throws JargonException {
 		return new FileCatalogObjectAOImpl(irodsCommands);
 	}
-	 
+
 }

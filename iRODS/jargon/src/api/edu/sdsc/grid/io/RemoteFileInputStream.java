@@ -46,15 +46,15 @@
 //
 package edu.sdsc.grid.io;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * A GeneralFileInputStream obtains input bytes from a file in a file system.
  * What files are available depends on the host environment.
- *<P>
+ * <P>
  * GeneralFileInputStream is meant for reading streams of raw bytes such as
  * image data.
- *<P>
+ * <P>
  * The original intention for this class was to subclass
  * java.io.FileInputStream. But that is not currently the case.
  * <P>
@@ -83,8 +83,8 @@ public abstract class RemoteFileInputStream extends GeneralFileInputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public RemoteFileInputStream(GeneralFileSystem fileSystem, String name)
-			throws IOException {
+	public RemoteFileInputStream(final GeneralFileSystem fileSystem,
+			final String name) throws IOException {
 		super(fileSystem, name);
 	}
 
@@ -110,7 +110,7 @@ public abstract class RemoteFileInputStream extends GeneralFileInputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public RemoteFileInputStream(GeneralFile file) throws IOException {
+	public RemoteFileInputStream(final GeneralFile file) throws IOException {
 		super(file);
 	}
 }

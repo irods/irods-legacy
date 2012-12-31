@@ -49,7 +49,7 @@ import java.util.HashMap;
  * includes documentation and introspection methods that describe the group as a
  * whole, the list of fields in the group, a description for those fields, the
  * data types for those fields, and the expected field values.
- *<P>
+ * <P>
  * Each subclass has a constructor. None of the constructors are ever public.
  * Leaf classes in the class tree have private constructors, while the rest are
  * protected. The constructors are called by a static initializer method for
@@ -58,28 +58,28 @@ import java.util.HashMap;
  * That object also should be saved by the child class and will be passed to
  * constructors for condition and select objects (so that generic handlers of
  * those objects can get back to the metadata group).
- *<P>
+ * <P>
  * Each of the subclasses group together meta data for a specific purpose. All
  * of the SRB meta data groups are subclassed off of SRBMetaData. The subclasses
  * may add methods, but most will only implement the required methods.
- *<P>
+ * <P>
  * Some meta groups are standard regardless of implementation. To handle
  * standard metadata, we defined interfaces that are implemented by
  * protocol-specific metadata groups. The GeneralMetaData interface contract is
  * that the implementor supports metadata we might find for any file system,
  * such as:
- *<ul>
+ * <ul>
  * <li>File name
  * <li>File size
  * <li>Creation date
  * <li>Modification date
  * <li>Owner name
- *</ul>
- *<P>
+ * </ul>
+ * <P>
  * An implementation specific group, such as the general SRB metadata group must
  * support these fields, but also may support further general metadata fields,
  * such as:
- *<ul>
+ * <ul>
  * <li>Collection name
  * <li>Replication number
  * <li>File type
@@ -91,12 +91,12 @@ import java.util.HashMap;
  * <li>Deleted flag
  * <li>Owner domain
  * <li>Owner email address
- *</ul>
+ * </ul>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public class MetaDataGroup implements Comparable {
-	
+
 	protected HashMap fields = new HashMap();
 
 	protected String groupName;
@@ -112,7 +112,7 @@ public class MetaDataGroup implements Comparable {
 	 * unique and do not collide with any field names of any previously
 	 * registered groups.
 	 */
-	public MetaDataGroup(String groupName, String description) {
+	public MetaDataGroup(final String groupName, final String description) {
 		super();
 
 		this.groupName = groupName;
@@ -122,7 +122,7 @@ public class MetaDataGroup implements Comparable {
 	/**
 	 * Load the group's fields.
 	 */
-	public void add(MetaDataField field) {
+	public void add(final MetaDataField field) {
 		String fieldName = field.getName();
 		if (isField(fieldName)) {
 			MetaDataField oldField = getField(fieldName);
@@ -160,9 +160,9 @@ public class MetaDataGroup implements Comparable {
 	/**
 	 * Returns an object describing this field in the group.
 	 */
-	public MetaDataField getField(String fieldName) {
+	public MetaDataField getField(final String fieldName) {
 		return (MetaDataField) fields.get(fieldName);
-	}                                                                                                                                                                                                                                    
+	}
 
 	/**
 	 * Returns all the fields in the group.
@@ -177,9 +177,10 @@ public class MetaDataGroup implements Comparable {
 	 * @see edu.sdsc.grid.io.MetaDataField#compareTo(Object )
 	 * @return all the fields in the group.
 	 */
-	public MetaDataField[] getFields(boolean sort) {
-		if (!sort)
+	public MetaDataField[] getFields(final boolean sort) {
+		if (!sort) {
 			return getFields();
+		}
 
 		MetaDataField[] mdFields = (MetaDataField[]) fields.values().toArray(
 				new MetaDataField[0]);
@@ -187,7 +188,7 @@ public class MetaDataGroup implements Comparable {
 		return mdFields;
 	}
 
-	public int compareTo(Object obj) {
+	public int compareTo(final Object obj) {
 
 		return toString().compareTo(obj.toString());
 	}
@@ -196,7 +197,7 @@ public class MetaDataGroup implements Comparable {
 	 * Returns true if the given field name is part of the group. False is
 	 * returned otherwise.
 	 */
-	boolean isField(String fieldName) {
+	boolean isField(final String fieldName) {
 		if (fields.get(fieldName) != null) {
 			return true;
 		}

@@ -61,9 +61,9 @@ import edu.sdsc.grid.io.RemoteFile;
  * you would a regular File object. The localFile.getFile() method will return a
  * java.io.File object for those situations where a true java.io.File is
  * required.
- *<P>
+ * <P>
  * LocalFile includes dummy methods for the local file's metadata.
- *<P>
+ * <P>
  * 
  * @see java.io.File
  * @see edu.sdsc.grid.io.GeneralFile
@@ -71,7 +71,6 @@ import edu.sdsc.grid.io.RemoteFile;
  * @since Jargon1.0
  */
 public class LocalFile extends GeneralFile {
-	
 
 	/**
 	 * The system-dependent default name-separator character. This field is
@@ -110,14 +109,12 @@ public class LocalFile extends GeneralFile {
 	 */
 	public static final String pathSeparator = File.pathSeparator;
 
-	
 	/**
 	 * Internal file object to provide LocalFile with the functionality of
 	 * java.io.File
 	 */
 	private File wrapper;
 
-	
 	/**
 	 * Creates a new LocalFile instance by converting the given pathname string
 	 * into an abstract pathname. If the given string is the empty string, then
@@ -126,7 +123,7 @@ public class LocalFile extends GeneralFile {
 	 * @throws NullPointerException
 	 *             - If the pathname argument is null
 	 */
-	public LocalFile(String filePath) {
+	public LocalFile(final String filePath) {
 		super(new LocalFileSystem(), filePath, "");
 
 		wrapper = new File(filePath);
@@ -139,7 +136,7 @@ public class LocalFile extends GeneralFile {
 	 * @throws NullPointerException
 	 *             - If child is null
 	 */
-	public LocalFile(String directory, String child) {
+	public LocalFile(final String directory, final String child) {
 		// doesn't really do anything.
 		super(new LocalFileSystem(), directory, child);
 
@@ -153,7 +150,7 @@ public class LocalFile extends GeneralFile {
 	 * @throws NullPointerException
 	 *             - If child is null
 	 */
-	public LocalFile(LocalFile directory, String child) {
+	public LocalFile(final LocalFile directory, final String child) {
 		this(directory.getAbsolutePath(), child);
 
 		wrapper = new File(directory.getAbsolutePath(), child);
@@ -165,7 +162,7 @@ public class LocalFile extends GeneralFile {
 	 * @throws NullPointerException
 	 *             - If file is null
 	 */
-	public LocalFile(File file) {
+	public LocalFile(final File file) {
 		this(file.getAbsolutePath(), "");
 
 		wrapper = file;
@@ -177,7 +174,7 @@ public class LocalFile extends GeneralFile {
 	 * @throws NullPointerException
 	 *             - If child is null
 	 */
-	public LocalFile(File file, String child) {
+	public LocalFile(final File file, final String child) {
 		this(file.getAbsolutePath(), child);
 
 		wrapper = new File(file, child);
@@ -194,7 +191,7 @@ public class LocalFile extends GeneralFile {
 	 * @throws IllegalArgumentException
 	 *             - If the preconditions on the parameter do not hold
 	 */
-	public LocalFile(URI uri) {
+	public LocalFile(final URI uri) {
 		this(uri.getPath(), ""); // Is this right?
 
 		wrapper = new File(uri);
@@ -224,7 +221,7 @@ public class LocalFile extends GeneralFile {
 	 * Set the directory.
 	 */
 	@Override
-	protected void setDirectory(String dir) {
+	protected void setDirectory(final String dir) {
 		// do nothing
 		// for get use wrapper.getParent() instead
 	}
@@ -233,7 +230,7 @@ public class LocalFile extends GeneralFile {
 	 * Set the file name.
 	 */
 	@Override
-	protected void setFileName(String fileName) {
+	protected void setFileName(final String fileName) {
 		// do nothing
 		// for get use wrapper.getName() instead
 	}
@@ -293,7 +290,7 @@ public class LocalFile extends GeneralFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void copyTo(GeneralFile destinationFile) throws IOException {
+	public void copyTo(final GeneralFile destinationFile) throws IOException {
 		if (destinationFile instanceof RemoteFile) {
 			// This allows optimization by the use of the parallel up/download
 			destinationFile.copyFrom(this, false);
@@ -316,8 +313,8 @@ public class LocalFile extends GeneralFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
-			throws IOException {
+	public void copyTo(final GeneralFile destinationFile,
+			final boolean forceOverwrite) throws IOException {
 		if (destinationFile instanceof RemoteFile) {
 			// This allows optimization by the use of the parallel up/download
 			destinationFile.copyFrom(this, forceOverwrite);
@@ -327,8 +324,8 @@ public class LocalFile extends GeneralFile {
 	}
 
 	/**
-	 * Copies this file to another file. This object is the destination file. The
-	 * source file is given as the argument. If the destination file, does
+	 * Copies this file to another file. This object is the destination file.
+	 * The source file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
@@ -340,7 +337,7 @@ public class LocalFile extends GeneralFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void copyFrom(GeneralFile sourceFile) throws IOException {
+	public void copyFrom(final GeneralFile sourceFile) throws IOException {
 		if (sourceFile instanceof RemoteFile) {
 			// This allows optimization by the use of the parallel up/download
 			sourceFile.copyTo(this, false);
@@ -350,8 +347,8 @@ public class LocalFile extends GeneralFile {
 	}
 
 	/**
-	 * Copies this file to another file. This object is the destination file. The
-	 * source file is given as the argument. If the destination file, does
+	 * Copies this file to another file. This object is the destination file.
+	 * The source file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
@@ -363,8 +360,8 @@ public class LocalFile extends GeneralFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
-			throws IOException {
+	public void copyFrom(final GeneralFile sourceFile,
+			final boolean forceOverwrite) throws IOException {
 		/*
 		 * I didn't really want to have a .copyFrom(...), but without the
 		 * copyFrom, new packages which don't have access to the LocalFile
@@ -403,7 +400,7 @@ public class LocalFile extends GeneralFile {
 	 * Compares two abstract pathnames lexicographically.
 	 */
 	@Override
-	public int compareTo(GeneralFile pathName) {
+	public int compareTo(final GeneralFile pathName) {
 		// throw ClassCastException if not a LocalFile
 		return wrapper.compareTo(((LocalFile) pathName).getFile());
 	}
@@ -412,7 +409,7 @@ public class LocalFile extends GeneralFile {
 	 * Compares this abstract pathname to another object.
 	 */
 	@Override
-	public int compareTo(Object o) {
+	public int compareTo(final Object o) {
 		return wrapper.compareTo(((LocalFile) o).getFile());
 	}
 
@@ -434,8 +431,8 @@ public class LocalFile extends GeneralFile {
 	 * Creates an empty file in the default temporary-file directory, using the
 	 * given prefix and suffix to generate its name.
 	 */
-	public static GeneralFile createTempFile(String prefix, String suffix)
-			throws IOException {
+	public static GeneralFile createTempFile(final String prefix,
+			final String suffix) throws IOException {
 		return new LocalFile(File.createTempFile(prefix, suffix));
 	}
 
@@ -443,8 +440,9 @@ public class LocalFile extends GeneralFile {
 	 * Creates a new empty file in the specified directory, using the given
 	 * prefix and suffix strings to generate its name.
 	 */
-	public static GeneralFile createTempFile(String prefix, String suffix,
-			GeneralFile directory) throws IOException {
+	public static GeneralFile createTempFile(final String prefix,
+			final String suffix, final GeneralFile directory)
+			throws IOException {
 		return new LocalFile(File.createTempFile(prefix, suffix, new File(
 				directory.getAbsolutePath())));
 	}
@@ -470,7 +468,7 @@ public class LocalFile extends GeneralFile {
 	 * Tests this abstract pathname for equality with the given object.
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		return wrapper.equals(obj);
 	}
 
@@ -625,10 +623,11 @@ public class LocalFile extends GeneralFile {
 	 */
 	@Override
 	public long length() {
-		if (exists())
+		if (exists()) {
 			return wrapper.length();
-		else
+		} else {
 			return 0;
+		}
 	}
 
 	/**
@@ -645,7 +644,7 @@ public class LocalFile extends GeneralFile {
 	 * directory denoted by this abstract pathname that satisfy the specified
 	 * filter.
 	 */
-	public String[] list(FilenameFilter filter) {
+	public String[] list(final FilenameFilter filter) {
 		return wrapper.list(filter);
 	}
 
@@ -656,13 +655,15 @@ public class LocalFile extends GeneralFile {
 	@Override
 	public GeneralFile[] listFiles() {
 		File fileList[] = wrapper.listFiles();
-		if (fileList == null)
+		if (fileList == null) {
 			return null;
+		}
 
 		LocalFile localFileList[] = new LocalFile[fileList.length];
 
-		for (int i = 0; i < fileList.length; i++)
+		for (int i = 0; i < fileList.length; i++) {
 			localFileList[i] = new LocalFile(fileList[i]);
+		}
 
 		return localFileList;
 	}
@@ -672,12 +673,13 @@ public class LocalFile extends GeneralFile {
 	 * in the directory denoted by this abstract pathname that satisfy the
 	 * specified filter.
 	 */
-	public GeneralFile[] listFiles(FileFilter filter) {
+	public GeneralFile[] listFiles(final FileFilter filter) {
 		File fileList[] = wrapper.listFiles(filter);
 		LocalFile localFileList[] = new LocalFile[fileList.length];
 
-		for (int i = 0; i < fileList.length; i++)
+		for (int i = 0; i < fileList.length; i++) {
 			localFileList[i] = new LocalFile(fileList[i]);
+		}
 
 		return localFileList;
 	}
@@ -687,12 +689,13 @@ public class LocalFile extends GeneralFile {
 	 * in the directory denoted by this abstract pathname that satisfy the
 	 * specified filter.
 	 */
-	public GeneralFile[] listFiles(FilenameFilter filter) {
+	public GeneralFile[] listFiles(final FilenameFilter filter) {
 		File fileList[] = wrapper.listFiles(filter);
 		LocalFile localFileList[] = new LocalFile[fileList.length];
 
-		for (int i = 0; i < fileList.length; i++)
+		for (int i = 0; i < fileList.length; i++) {
 			localFileList[i] = new LocalFile(fileList[i]);
+		}
 
 		return localFileList;
 	}
@@ -705,8 +708,9 @@ public class LocalFile extends GeneralFile {
 		LocalFile localFileRoots[] = new LocalFile[fileRoots.length];
 		;
 
-		for (int i = 0; i < fileRoots.length; i++)
+		for (int i = 0; i < fileRoots.length; i++) {
 			localFileRoots[i] = new LocalFile(fileRoots[i]);
+		}
 
 		return localFileRoots;
 	}
@@ -731,7 +735,7 @@ public class LocalFile extends GeneralFile {
 	/**
 	 * Renames the file denoted by this abstract pathname. Will attempt to
 	 * overwrite existing files with the same name at the destination.
-	 *<P>
+	 * <P>
 	 * Whether or not this method can move a file from one filesystem to another
 	 * is platform-dependent. The return value should always be checked to make
 	 * sure that the rename operation was successful.
@@ -749,7 +753,7 @@ public class LocalFile extends GeneralFile {
 	 *             - If dest is null
 	 */
 	@Override
-	public boolean renameTo(GeneralFile dest) {
+	public boolean renameTo(final GeneralFile dest) {
 		if (dest instanceof LocalFile) {
 			return wrapper.renameTo(new File(dest.getAbsolutePath()));
 		} else {
@@ -762,7 +766,7 @@ public class LocalFile extends GeneralFile {
 	 * abstract pathname.
 	 */
 	@Override
-	public boolean setLastModified(long time) {
+	public boolean setLastModified(final long time) {
 		return wrapper.setLastModified(time);
 	}
 

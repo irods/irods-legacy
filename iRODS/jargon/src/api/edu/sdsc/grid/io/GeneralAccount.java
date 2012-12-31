@@ -41,24 +41,22 @@
 //
 package edu.sdsc.grid.io;
 
-
 /**
  * An object to hold the user information used when connecting to a file system.
  * This class does not actually connect to a filesystem. It only hold user
  * connection information. Setting or getting this information only refers to
  * the contents of the object.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class GeneralAccount extends Object implements Cloneable {
-	
+
 	/**
 	 * The home directory on the server
 	 */
 	protected String homeDirectory;
 
-	
 	/**
 	 * Constructs an object to hold the user information used when connecting to
 	 * a file system.
@@ -67,7 +65,7 @@ public abstract class GeneralAccount extends Object implements Cloneable {
 	 * @param homeDirectory
 	 *            home directory on the SRB
 	 */
-	public GeneralAccount(String homeDir) {
+	public GeneralAccount(final String homeDir) {
 		setHomeDirectory(homeDir);
 	}
 
@@ -78,11 +76,11 @@ public abstract class GeneralAccount extends Object implements Cloneable {
 	 */
 	@Override
 	protected void finalize() {
-		if (homeDirectory != null)
+		if (homeDirectory != null) {
 			homeDirectory = null;
+		}
 	}
 
-	
 	/**
 	 * Sets the home directory of this GeneralAccount.
 	 */
@@ -94,8 +92,9 @@ public abstract class GeneralAccount extends Object implements Cloneable {
 	 * @return homeDirectory
 	 */
 	public String getHomeDirectory() throws NullPointerException {
-		if (homeDirectory != null)
+		if (homeDirectory != null) {
 			return homeDirectory;
+		}
 
 		throw new NullPointerException();
 	}

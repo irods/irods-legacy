@@ -31,11 +31,14 @@ public class IRODSQueryResultRow {
 			final List<String> queryResultColumns,
 			final TranslatedIRODSQuery translatedIRODSQuery)
 			throws JargonException {
-		return new IRODSQueryResultRow(queryResultColumns, translatedIRODSQuery, 0, false);
+		return new IRODSQueryResultRow(queryResultColumns,
+				translatedIRODSQuery, 0, false);
 	}
+
 	/**
-	 * Build a result row from a column of results produced by an IRODS GenQuery.  This initializer
-	 * will add information about the position of the record to assist in re-query operations
+	 * Build a result row from a column of results produced by an IRODS
+	 * GenQuery. This initializer will add information about the position of the
+	 * record to assist in re-query operations
 	 * 
 	 * @param queryResultColumns
 	 * @param translatedIRODSQuery
@@ -46,20 +49,23 @@ public class IRODSQueryResultRow {
 	 */
 	public static IRODSQueryResultRow instance(
 			final List<String> queryResultColumns,
-			final TranslatedIRODSQuery translatedIRODSQuery, int recordCount, boolean lastResult)
+			final TranslatedIRODSQuery translatedIRODSQuery,
+			final int recordCount, final boolean lastResult)
 			throws JargonException {
-		return new IRODSQueryResultRow(queryResultColumns, translatedIRODSQuery, recordCount, lastResult);
+		return new IRODSQueryResultRow(queryResultColumns,
+				translatedIRODSQuery, recordCount, lastResult);
 	}
-	
+
 	private final boolean lastResult;
 	private final List<String> queryResultColumns;
 
 	private final int recordCount;
-	
+
 	private final TranslatedIRODSQuery translatedIRODSQuery;
 
 	private IRODSQueryResultRow(final List<String> queryResultColumns,
-			final TranslatedIRODSQuery translatedIRODSQuery, final int recordCount, final boolean lastResult) 
+			final TranslatedIRODSQuery translatedIRODSQuery,
+			final int recordCount, final boolean lastResult)
 			throws JargonException {
 
 		if (queryResultColumns == null) {

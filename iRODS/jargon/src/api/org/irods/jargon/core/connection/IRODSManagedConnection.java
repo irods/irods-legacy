@@ -6,7 +6,6 @@ package org.irods.jargon.core.connection;
 import org.irods.jargon.core.exception.JargonException;
 
 import edu.sdsc.grid.io.irods.IRODSAccount;
-import edu.sdsc.grid.io.irods.IRODSConnection;
 
 /**
  * Represents the interface for maintenance of a connection to the IRODS system,

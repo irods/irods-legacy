@@ -48,21 +48,26 @@
 //
 package edu.sdsc.grid.io.ftp;
 
-import java.io.*;
-import org.globus.ftp.exception.*;
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.globus.ftp.exception.FTPException;
+
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.RemoteFileInputStream;
+import edu.sdsc.grid.io.local.LocalFile;
 
 /**
  * A FTPFileInputStream obtains input bytes from a file in a file system.
- *<P>
+ * <P>
  * This class currently, downloads the file and reads from the local copy.
- *<P>
+ * <P>
  * What files are available depends on the host environment.
- *<P>
+ * <P>
  * FTPFileInputStream is meant for reading streams of raw bytes such as image
  * data.
- *<P>
+ * <P>
  * The original intention for this class was to subclass
  * java.io.FileInputStream. But that is not currently the case.
  * <P>
@@ -107,7 +112,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public FTPFileInputStream(FTPFileSystem fileSystem, String name)
+	public FTPFileInputStream(final FTPFileSystem fileSystem, final String name)
 			throws IOException {
 		super(fileSystem, name);
 	}
@@ -132,7 +137,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public FTPFileInputStream(FTPFile file) throws IOException {
+	public FTPFileInputStream(final FTPFile file) throws IOException {
 		super(file);
 	}
 
@@ -158,12 +163,12 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		// Download the file to temp, read it from there
 		this.file = file; // save for later, just in case;
 		GeneralFile temp = LocalFile.createTempFile(""
-				+ (int) (Math.random() * 999), ""
-				+ new java.util.Date().getTime());
+				+ (int) (Math.random() * 999),
+				"" + new java.util.Date().getTime());
 		try {
 			((FTPFileSystem) file.getFileSystem()).getFTPClient().get(
 					file.getPath(), ((LocalFile) file).getFile());
@@ -202,7 +207,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public int read(byte b[]) throws IOException {
+	public int read(final byte b[]) throws IOException {
 		return in.read(b);
 	}
 
@@ -281,7 +286,8 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 * @see java.io.InputStream#read()
 	 */
 	@Override
-	public int read(byte b[], int off, int len) throws IOException {
+	public int read(final byte b[], final int off, final int len)
+			throws IOException {
 		return in.read(b, off, len);
 	}
 
@@ -298,7 +304,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public long skip(long n) throws IOException {
+	public long skip(final long n) throws IOException {
 		return in.skip(n);
 	}
 
@@ -319,7 +325,7 @@ public class FTPFileInputStream extends RemoteFileInputStream {
 	/**
 	 * Closes this file input stream and releases any system resources
 	 * associated with the stream.
-	 *<p>
+	 * <p>
 	 * If this stream has an associated channel then the channel is closed as
 	 * well.
 	 * 

@@ -44,7 +44,7 @@ package edu.sdsc.grid.io;
 /**
  * A "meta data select" indicates a single field that should be returned on a
  * query.
- *<P>
+ * <P>
  * There are no 'set' methods - once constructed, the object cannot be changed.
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
@@ -58,12 +58,12 @@ public class MetaDataSelect {
 
 	/**
 	 * Operations include:
-	 *<ul>
-	 *<li>count or count-distinct
-	 *<li>max or min
-	 *<li>avg or sum
-	 *<li>variance or stddev
-	 *</ul>
+	 * <ul>
+	 * <li>count or count-distinct
+	 * <li>max or min
+	 * <li>avg or sum
+	 * <li>variance or stddev
+	 * </ul>
 	 */
 	private int operation = 1;
 
@@ -73,9 +73,10 @@ public class MetaDataSelect {
 	 * selection objects. Those factory methods take a field name and check that
 	 * it is legal before they construct a selection object.
 	 */
-	protected MetaDataSelect(MetaDataField field) {
-		if (field == null)
+	protected MetaDataSelect(final MetaDataField field) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
 	}
@@ -83,20 +84,22 @@ public class MetaDataSelect {
 	/**
 	 * Constructs a metadata selection object containing the given field name,
 	 * and the chosen operation. Operations include:
-	 *<ul>
-	 *<li>count or count-distinct
-	 *<li>max or min
-	 *<li>avg or sum
-	 *<li>variance or stddev
-	 *</ul>
+	 * <ul>
+	 * <li>count or count-distinct
+	 * <li>max or min
+	 * <li>avg or sum
+	 * <li>variance or stddev
+	 * </ul>
 	 */
-	protected MetaDataSelect(MetaDataField field, int operation) {
-		if (field == null)
+	protected MetaDataSelect(final MetaDataField field, final int operation) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null.");
+		}
 
 		this.field = field;
-		if (operation >= 0)
+		if (operation >= 0) {
 			this.operation = operation;
+		}
 	}
 
 	/**
@@ -118,12 +121,12 @@ public class MetaDataSelect {
 	 * Returns the operation code on this selection. Typically this is '1' and
 	 * just flags this field as one to return in a query. Other operation codes
 	 * include those for:
-	 *<ul>
-	 *<li>count or count-distinct
-	 *<li>max or min
-	 *<li>avg or sum
-	 *<li>variance or stddev
-	 *</ul>
+	 * <ul>
+	 * <li>count or count-distinct
+	 * <li>max or min
+	 * <li>avg or sum
+	 * <li>variance or stddev
+	 * </ul>
 	 */
 	public int getOperation() {
 		return operation;
@@ -150,10 +153,11 @@ public class MetaDataSelect {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			MetaDataSelect temp = (MetaDataSelect) obj;
 

@@ -76,7 +76,7 @@ public class SRBProtocol extends Protocol {
 	 * If and only if the object is an instance of SRBProtocol.
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj != null) {
 			if (obj instanceof SRBProtocol) {
 				return true;

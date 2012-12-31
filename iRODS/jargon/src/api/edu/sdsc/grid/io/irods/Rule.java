@@ -35,7 +35,7 @@ import edu.sdsc.grid.io.local.LocalFile;
 
 /**
  * Java object for an IRODS rule. see https://www.irods.org/index.php/Rules
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert
  * @since JARGON2.0
@@ -80,14 +80,15 @@ class Rule {
 	 * @param parameter
 	 */
 	@Deprecated
-	public Rule(String label, String type, Object parameter) {
+	public Rule(final String label, final String type, final Object parameter) {
 
 		this.label = label;
 		this.type = type;
 		this.parameter = parameter;
 	}
 
-	Rule(String ruleName, Parameter[] inputs, Parameter[] outputs) {
+	Rule(final String ruleName, final Parameter[] inputs,
+			final Parameter[] outputs) {
 		this.ruleName = ruleName;
 		this.inputs = inputs;
 		this.outputs = outputs;
@@ -106,7 +107,8 @@ class Rule {
 		} else if (type.equals(ExecCmdOut_PI)) {
 			Tag exec = parameterTag.getTag(ExecCmdOut_PI);
 
-			// FIXME: look at processing of this buf, it may need encoding... see jargon-core rule library
+			// FIXME: look at processing of this buf, it may need encoding...
+			// see jargon-core rule library
 			// last tag is status
 			int length = exec.getLength() - 1;
 			String[] results = new String[length];
@@ -125,7 +127,7 @@ class Rule {
 	}
 
 	static Parameter[] executeRule(final IRODSFileSystem irodsFileSystem,
-			String rule) throws IOException {
+			final String rule) throws IOException {
 		Vector<Parameter> inputs = new Vector<Parameter>();
 		Vector<Parameter> outputs = new Vector<Parameter>();
 
@@ -134,20 +136,24 @@ class Rule {
 		String ruleBody = processRuleBody(tokens);
 
 		// if formatting error, such as only one line, below breaks
-		if (!tokens.hasMoreTokens())
+		if (!tokens.hasMoreTokens()) {
 			throw new IllegalArgumentException("Rule stream is malformed");
+		}
 
 		// process the rule attributes
 		processRuleAttributesLine(tokens, inputs);
 
 		// if formatting error, such as only one line, below breaks
-		if (!tokens.hasMoreTokens())
+		if (!tokens.hasMoreTokens()) {
 			throw new IllegalArgumentException("Rule stream is malformed");
+		}
 
 		processRuleOutputLine(tokens, outputs);
 
-		return Rule.readResult(irodsFileSystem, irodsFileSystem.commands
-				.executeRule(ruleBody, inputs.toArray(new Parameter[0]),
+		return Rule.readResult(
+				irodsFileSystem,
+				irodsFileSystem.commands.executeRule(ruleBody,
+						inputs.toArray(new Parameter[0]),
 						outputs.toArray(new Parameter[0])));
 
 	}
@@ -163,7 +169,7 @@ class Rule {
 	 * @throws IOException
 	 */
 	static Parameter[] executeRule(final IRODSFileSystem fileSystem,
-			InputStream ruleStream) throws IOException {
+			final InputStream ruleStream) throws IOException {
 		StringBuilder rule = new StringBuilder();
 		// Probably should just read the whole thing in one buffer, but what
 		// size?
@@ -184,8 +190,9 @@ class Rule {
 	static String processRuleBody(final StringTokenizer tokens) {
 		String total;
 		// if formatting error, such as only one line, below breaks
-		if (!tokens.hasMoreTokens())
+		if (!tokens.hasMoreTokens()) {
 			throw new IllegalArgumentException("Rule stream is malformed");
+		}
 
 		// Remove comments
 		total = tokens.nextToken();
@@ -201,7 +208,7 @@ class Rule {
 	 * @param outputs
 	 */
 	static void processRuleOutputLine(final StringTokenizer tokens,
-			Vector<Parameter> outputs) {
+			final Vector<Parameter> outputs) {
 		String ruleOutputLine;
 		int index;
 		// find the outputs
@@ -222,7 +229,7 @@ class Rule {
 	 * @param inputs
 	 */
 	static void processRuleAttributesLine(final StringTokenizer tokens,
-			Vector<Parameter> inputs) {
+			final Vector<Parameter> inputs) {
 		String attribLine;
 		int index;
 		int index2;
@@ -238,18 +245,20 @@ class Rule {
 			index = attribLine.indexOf('%');
 			while (index >= 0) {
 				index2 = attribLine.indexOf('=');
-				if (index2 < 0)
+				if (index2 < 0) {
 					throw new IllegalArgumentException(
 							"Rule stream is malformed");
+				}
 				inputs.add(new Parameter(attribLine.substring(0, index2),
-						attribLine.substring(index2 + 1, attribLine.indexOf(
-								'%', index2))));
+						attribLine.substring(index2 + 1,
+								attribLine.indexOf('%', index2))));
 				attribLine = attribLine.substring(index + 1);
 				index = attribLine.indexOf("%");
 			}
 			index2 = attribLine.indexOf('=');
-			if (index2 < 0)
+			if (index2 < 0) {
 				throw new IllegalArgumentException("Rule stream is malformed");
+			}
 			// add the final one
 			inputs.add(new Parameter(attribLine.substring(0, index2),
 					attribLine.substring(index2 + 1)));
@@ -273,8 +282,8 @@ class Rule {
 	 *         now will return an empty <code>Parameter[]</code>.
 	 * @throws IOException
 	 */
-	static Parameter[] readResult(IRODSFileSystem fileSystem, final Tag rulesTag)
-			throws IOException {
+	static Parameter[] readResult(final IRODSFileSystem fileSystem,
+			final Tag rulesTag) throws IOException {
 
 		Parameter[] result;
 		if (rulesTag == null) {
@@ -367,7 +376,8 @@ class Rule {
 
 	protected static Object processRuleResponseTag(
 			final IRODSFileSystem fileSystem, final String label,
-			final String type, Object value, Tag msParam) throws IOException {
+			final String type, Object value, final Tag msParam)
+			throws IOException {
 		{
 
 			// a tag may be returned from a rule containing an array,
@@ -381,10 +391,10 @@ class Rule {
 			IRODSFile irodsFile = new IRODSFile(fileSystem, fileAction.getTag(
 					"objPath").getStringValue());
 
-			String otherFilePath = fileAction.getTag("KeyValPair_PI").getTag(
-					"svalue").getStringValue();
-			String otherFileType = fileAction.getTag("KeyValPair_PI").getTag(
-					"keyWord").getStringValue();
+			String otherFilePath = fileAction.getTag("KeyValPair_PI")
+					.getTag("svalue").getStringValue();
+			String otherFileType = fileAction.getTag("KeyValPair_PI")
+					.getTag("keyWord").getStringValue();
 			GeneralFile otherFile = null;
 			if (otherFileType.equals("localPath")) {
 				otherFile = new LocalFile(otherFilePath);

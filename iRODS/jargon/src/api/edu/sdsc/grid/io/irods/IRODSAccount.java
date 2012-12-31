@@ -45,34 +45,37 @@
 //
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.StringTokenizer;
 
 import org.ietf.jgss.GSSCredential;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileInputStream;
+import edu.sdsc.grid.io.Lucid;
+import edu.sdsc.grid.io.RemoteAccount;
+import edu.sdsc.grid.io.local.LocalFile;
 
 /**
  * This class extends the RemoteAccount class, adding those values necessary to
  * open a connection to a iRODS server. This class does not actually connect to
  * a filesystem. It only hold user connection information. Setting or getting
  * this information only refers to the contents of the object.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since JARGON2.0
  * @see edu.sdsc.grid.io.irods.IRODSFileSystem
  */
 public class IRODSAccount extends RemoteAccount {
-	
+
 	public static final String IRODS_VERSION_0_9 = "rods0.9jargon2.0";
 	public static final String IRODS_VERSION_1_0 = "rods1.0jargon2.0";
 	public static final String IRODS_VERSION_1_1 = "rods1.1jargon2.0";
@@ -82,9 +85,6 @@ public class IRODSAccount extends RemoteAccount {
 	public static final String IRODS_VERSION_2_4 = "rods2.4jargon2.4";
 	public static final String IRODS_VERSION_2_4_1 = "rods2.4.1jargon2.4.1";
 	public static final String IRODS_VERSION_2_5 = "rods2.5jargon2.5";
-
-
-
 
 	public static final String IRODS_JARGON_RELEASE_NUMBER = "rods2.5";
 
@@ -115,7 +115,7 @@ public class IRODSAccount extends RemoteAccount {
 	/**
 	 * The iRODS authorization scheme.
 	 */
-	public  String authenticationScheme = STANDARD_PASSWORD;
+	public String authenticationScheme = STANDARD_PASSWORD;
 
 	/**
 	 * The iRODS Server DN string.
@@ -141,6 +141,18 @@ public class IRODSAccount extends RemoteAccount {
 	protected String zone;
 
 	/**
+	 * Client user name (for accessing iRODS as a different account from the
+	 * account used to connect)
+	 */
+	protected String clientUserName;
+
+	/**
+	 * Client zone name (for accessing iRODS as a different account from the
+	 * account used to connect)
+	 */
+	protected String clientRodsZone;
+
+	/**
 	 * The iRODS version.
 	 */
 	protected static String version = IRODS_VERSION_2_5;
@@ -163,7 +175,7 @@ public class IRODSAccount extends RemoteAccount {
 		versionNumber.put(IRODS_VERSION_2_2, new Float(2.2));
 		versionNumber.put(IRODS_VERSION_2_3, new Float(2.3));
 		versionNumber.put(IRODS_VERSION_2_4, new Float(2.4));
-		versionNumber.put(IRODS_VERSION_2_4_1, new Float(2.41));		
+		versionNumber.put(IRODS_VERSION_2_4_1, new Float(2.41));
 		versionNumber.put(IRODS_VERSION_2_5, new Float(2.5));
 
 	}
@@ -193,9 +205,10 @@ public class IRODSAccount extends RemoteAccount {
 			info = new LocalFile(System.getProperty("user.home") + "/irods/");
 		}
 
-		if (!info.exists())
+		if (!info.exists()) {
 			throw new FileNotFoundException(
 					"Cannot find default iRODS account info");
+		}
 
 		setUserInfo(info);
 	}
@@ -212,13 +225,14 @@ public class IRODSAccount extends RemoteAccount {
 	 *             if the user info exists but cannot be opened or created for
 	 *             any other reason.
 	 */
-	public IRODSAccount(GeneralFile userInfoDirectory)
+	public IRODSAccount(final GeneralFile userInfoDirectory)
 			throws FileNotFoundException, IOException {
 		// Can't actually do anything until the .Mdas files have been read.
 		super("", 0, "", "", "");
 
-		if (userInfoDirectory.equals(null))
+		if (userInfoDirectory.equals(null)) {
 			throw new NullPointerException("UserInfoDirectory cannot be null");
+		}
 
 		setUserInfo(userInfoDirectory);
 	}
@@ -237,13 +251,14 @@ public class IRODSAccount extends RemoteAccount {
 	 *             if the user info exists but cannot be opened or created for
 	 *             any other reason.
 	 */
-	public IRODSAccount(GeneralFile envFile, GeneralFile authFile)
+	public IRODSAccount(final GeneralFile envFile, final GeneralFile authFile)
 			throws FileNotFoundException, IOException {
 		// Can't actually do anything until the .iRODS files have been read.
 		super("", 0, "", "", "");
 
-		if (envFile.equals(null) || authFile.equals(null))
+		if (envFile.equals(null) || authFile.equals(null)) {
 			throw new NullPointerException("iRODS files cannot be null");
+		}
 
 		setUserInfo(envFile);
 	}
@@ -268,9 +283,10 @@ public class IRODSAccount extends RemoteAccount {
 	 * @param defaultStorageResource
 	 *            default storage resource
 	 */
-	public IRODSAccount(String host, int port, String userName,
-			String password, String homeDirectory, String zone,
-			String defaultStorageResource) {
+	public IRODSAccount(final String host, final int port,
+			final String userName, final String password,
+			final String homeDirectory, final String zone,
+			final String defaultStorageResource) {
 		super(host, port, userName, password, homeDirectory);
 
 		setUserName(userName);
@@ -290,7 +306,8 @@ public class IRODSAccount extends RemoteAccount {
 	 * @param gssCredential
 	 *            the org.ietf.jgss.GSSCredential object
 	 */
-	public IRODSAccount(String host, int port, GSSCredential gssCredential) {
+	public IRODSAccount(final String host, final int port,
+			final GSSCredential gssCredential) {
 		this(host, port, gssCredential, "", "");
 	}
 
@@ -313,8 +330,9 @@ public class IRODSAccount extends RemoteAccount {
 	 * @param defaultStorageResource
 	 *            default storage resource
 	 */
-	public IRODSAccount(String host, int port, GSSCredential gssCredential,
-			String homeDirectory, String defaultStorageResource) {
+	public IRODSAccount(final String host, final int port,
+			final GSSCredential gssCredential, final String homeDirectory,
+			final String defaultStorageResource) {
 		super(host, port, "", null, homeDirectory);
 
 		setGSSCredential(gssCredential);
@@ -336,10 +354,10 @@ public class IRODSAccount extends RemoteAccount {
 	 * Sets the port of this IRODSAccount. Port numbers can not be negative.
 	 */
 	@Override
-	public void setPort(int port) {
-		if (port > 0)
+	public void setPort(final int port) {
+		if (port > 0) {
 			this.port = port;
-		else {
+		} else {
 			this.port = 1247;
 		}
 	}
@@ -366,7 +384,7 @@ public class IRODSAccount extends RemoteAccount {
 	 * @throws NullPointerException
 	 *             if defaultStorageResource is null.
 	 */
-	public void setDefaultStorageResource(String defaultStorageResource) {
+	public void setDefaultStorageResource(final String defaultStorageResource) {
 		if (defaultStorageResource == null) {
 			throw new NullPointerException(
 					"The default storage resource cannot be null");
@@ -378,19 +396,37 @@ public class IRODSAccount extends RemoteAccount {
 	/**
 	 * Set the type of authentication used.
 	 */
-	void setAuthenticationScheme(String scheme) {
+	void setAuthenticationScheme(final String scheme) {
 		authenticationScheme = scheme;
 	}
 
-	public void setZone(String zone) {
+	/**
+	 * Set the iRODS zone
+	 */
+
+	public void setZone(final String zone) {
 		this.zone = zone;
+	}
+
+	/**
+	 * Set the client user name (for connections under a different account)
+	 */
+	public void setClientUserName(final String clientUserName) {
+		this.clientUserName = clientUserName;
+	}
+
+	/**
+	 * Set the client zone name (for connections under a different account)
+	 */
+	public void setClientRodsZone(final String clientRodsZone) {
+		this.clientRodsZone = clientRodsZone;
 	}
 
 	/**
 	 * Set the version of the iRODS server this client should use when
 	 * connecting.
 	 */
-	void setVersion(String version) {
+	void setVersion(final String version) {
 		IRODSAccount.version = version;
 	}
 
@@ -404,7 +440,7 @@ public class IRODSAccount extends RemoteAccount {
 	 *            comma separated list of the CAs, null resets this object to
 	 *            use <code>STANDARD_PASSWORD</code>
 	 */
-	public void setCertificateAuthority(String list) {
+	public void setCertificateAuthority(final String list) {
 		this.certificateAuthority = list;
 		if (list == null) {
 			authenticationScheme = STANDARD_PASSWORD;
@@ -421,7 +457,7 @@ public class IRODSAccount extends RemoteAccount {
 	 *            The GSSCredential, null resets this object to use
 	 *            <code>STANDARD_PASSWORD</code>
 	 */
-	public void setGSSCredential(GSSCredential gssCredential) {
+	public void setGSSCredential(final GSSCredential gssCredential) {
 		this.gssCredential = gssCredential;
 		if (gssCredential == null) {
 			authenticationScheme = STANDARD_PASSWORD;
@@ -431,16 +467,18 @@ public class IRODSAccount extends RemoteAccount {
 		}
 	}
 
-	public void setObf(boolean obf) {
-		if (obf)
+	public void setObf(final boolean obf) {
+		if (obf) {
 			obfuscate = 1;
-		else
+		} else {
 			obfuscate = -1;
+		}
 	}
 
 	public boolean getObf() {
-		if (obfuscate == 1 || (defaultObfuscate && !(obfuscate == 0)))
+		if (obfuscate == 1 || (defaultObfuscate && !(obfuscate == -1))) {
 			return true;
+		}
 
 		return false;
 	}
@@ -513,6 +551,36 @@ public class IRODSAccount extends RemoteAccount {
 		return zone;
 	}
 
+	/**
+	 * @return the client user name (for connections under a different account)
+	 */
+	public String getClientUserName() {
+		return clientUserName;
+	}
+
+	/**
+	 * @return the client user name to be used (default to regular user name if
+	 *         not set)
+	 */
+	public String getEffectiveClientUserName() {
+		return clientUserName != null ? clientUserName : getUserName();
+	}
+
+	/**
+	 * @return the client user zone (for connections under a different account)
+	 */
+	public String getClientRodsZone() {
+		return clientRodsZone;
+	}
+
+	/**
+	 * @return the client zone name to be used (default to regular zone name if
+	 *         not set)
+	 */
+	public String getEffectiveClientRodsZone() {
+		return clientRodsZone != null ? clientRodsZone : getZone();
+	}
+
 	// for GSI
 	/**
 	 * Gets the locations of the GSI Certificate Authority (CA). By default, the
@@ -541,21 +609,26 @@ public class IRODSAccount extends RemoteAccount {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			IRODSAccount temp = (IRODSAccount) obj;
 
-			if (!getHost().equals(temp.getHost()))
+			if (!getHost().equals(temp.getHost())) {
 				return false;
-			if (getPort() != temp.getPort())
+			}
+			if (getPort() != temp.getPort()) {
 				return false;
-			if (!getUserName().equals(temp.getUserName()))
+			}
+			if (!getUserName().equals(temp.getUserName())) {
 				return false;
-			if (!getPassword().equals(temp.getPassword()))
+			}
+			if (!getPassword().equals(temp.getPassword())) {
 				return false;
+			}
 
 			return true;
 		} catch (ClassCastException e) {
@@ -582,16 +655,17 @@ public class IRODSAccount extends RemoteAccount {
 	 *            if possible.
 	 */
 	@Override
-	public URI toURI(boolean includePassword) {
+	public URI toURI(final boolean includePassword) {
 		URI uri = null;
 		try {
-			if (includePassword)
+			if (includePassword) {
 				uri = new URI("irods://" + getUserName() + ":" + getPassword()
 						+ "@" + getHost() + ":" + getPort()
 						+ getHomeDirectory());
-			else
+			} else {
 				uri = new URI("irods://" + getUserName() + "@" + getHost()
 						+ ":" + getPort() + getHomeDirectory());
+			}
 		} catch (URISyntaxException e) {
 			log.warn("uri syntax exception, logged and ignored", e);
 		}
@@ -601,8 +675,8 @@ public class IRODSAccount extends RemoteAccount {
 	/**
    * 
    */
-	public static void hidePassword(GeneralFile passwordFile, String password)
-			throws Throwable {
+	public static void hidePassword(final GeneralFile passwordFile,
+			final String password) throws Throwable {
 		/* \u002a\u002f\u006e\u0065\u0077 \u004c\u0075\u0063\u0069\u0064\u0028
 				\u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0046\u0069\u006c\u0065\u0029
 				\u002e\u006c\u0039\u0031\u0028\u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0029\u003b\u002f\u002a */
@@ -614,8 +688,8 @@ public class IRODSAccount extends RemoteAccount {
 	 * @param userInfo
 	 *            The path to the user info file
 	 */
-	public void setUserInfo(GeneralFile userInfo) throws FileNotFoundException,
-			IOException {
+	public void setUserInfo(final GeneralFile userInfo)
+			throws FileNotFoundException, IOException {
 		GeneralFile env = FileFactory.newFile(userInfo, ".irodsEnv");
 		if (!env.exists()) {
 			env = FileFactory.newFile(userInfo, "irodsEnv");
@@ -642,10 +716,9 @@ public class IRODSAccount extends RemoteAccount {
 			while (index >= 0) {
 				if (rcatEnv.indexOf('\n', index + 1) > 0) {
 					rcatEnv = rcatEnv.substring(0, index)
-							+ rcatEnv
-									.substring(
-											rcatEnv.indexOf('\n', index + 1),
-											rcatEnv.length());
+							+ rcatEnv.substring(
+									rcatEnv.indexOf('\n', index + 1),
+									rcatEnv.length());
 					index = rcatEnv.indexOf("#", index);
 				} else {
 					rcatEnv = rcatEnv.substring(0, index);
@@ -675,8 +748,8 @@ public class IRODSAccount extends RemoteAccount {
 			setPort(1247);
 		} else {
 			index = rcatEnv.indexOf(' ', index) + 1;
-			setPort(Integer.parseInt(rcatEnv.substring(index, rcatEnv.indexOf(
-					'\n', index))));
+			setPort(Integer.parseInt(rcatEnv.substring(index,
+					rcatEnv.indexOf('\n', index))));
 		}
 
 		// userName
@@ -691,16 +764,16 @@ public class IRODSAccount extends RemoteAccount {
 		index = rcatEnv.indexOf("irodsDefResource");
 		if (index >= 0) {
 			index = rcatEnv.indexOf(' ', index) + 1;
-			setDefaultStorageResource(rcatEnv.substring(index, rcatEnv.indexOf(
-					'\n', index)));
+			setDefaultStorageResource(rcatEnv.substring(index,
+					rcatEnv.indexOf('\n', index)));
 		}
-		
+
 		// homeDirectory
 		index = rcatEnv.indexOf("irodsHome");
 		if (index >= 0) {
 			index = rcatEnv.indexOf(' ', index) + 1;
-			setHomeDirectory(rcatEnv.substring(index, rcatEnv.indexOf('\n',
-					index)));
+			setHomeDirectory(rcatEnv.substring(index,
+					rcatEnv.indexOf('\n', index)));
 		}
 
 		// zone
@@ -725,8 +798,8 @@ public class IRODSAccount extends RemoteAccount {
 		index = rcatEnv.indexOf("irodsAuthFileName");
 		if (index >= 0) {
 			index = rcatEnv.indexOf(' ', index) + 1;
-			env = new LocalFile(rcatEnv.substring(index, rcatEnv.indexOf('\n',
-					index)));
+			env = new LocalFile(rcatEnv.substring(index,
+					rcatEnv.indexOf('\n', index)));
 		} else {
 			env = FileFactory.newFile(userInfo, ".irodsA");
 		}
@@ -735,7 +808,7 @@ public class IRODSAccount extends RemoteAccount {
 		if (!env.exists()) {
 			env = FileFactory.newFile(userInfo, "irodsA");
 		}
-		if (obfuscate == 1 || (defaultObfuscate && !(obfuscate == 0))) {
+		if (obfuscate == 1 || (defaultObfuscate && !(obfuscate == -1))) {
 			/* 
 \u002a\u002f\u0073\u0065\u0074\u0050\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0028\u0065\u006e\u0076
 					\u002e\u0074\u006f\u0055\u0052\u0049\u0028\u0029
@@ -751,7 +824,7 @@ public class IRODSAccount extends RemoteAccount {
 	 * @param mdasAuthFile
 	 *            The file which contains the Mdas authorization
 	 */
-	String readAuth(GeneralFile authFile) throws FileNotFoundException,
+	String readAuth(final GeneralFile authFile) throws FileNotFoundException,
 			IOException {
 		int index = 0;
 		GeneralFileInputStream authReader = FileFactory
@@ -762,9 +835,8 @@ public class IRODSAccount extends RemoteAccount {
 
 		String auth = new String(authContents);
 
-		StringTokenizer authTokens = new StringTokenizer(auth, System
-				.getProperty("line.separator")
-				+ "\n");
+		StringTokenizer authTokens = new StringTokenizer(auth,
+				System.getProperty("line.separator") + "\n");
 		String token;
 		while (authTokens.hasMoreTokens()) {
 			token = authTokens.nextToken();
@@ -775,10 +847,11 @@ public class IRODSAccount extends RemoteAccount {
 				index = token.indexOf(System.getProperty("line.separator"))
 						+ token.indexOf("\n") + 1;
 
-				if (index >= 0)
+				if (index >= 0) {
 					auth = token.substring(0, index);
-				else
+				} else {
 					auth = token;
+				}
 			}
 		}
 		return auth;

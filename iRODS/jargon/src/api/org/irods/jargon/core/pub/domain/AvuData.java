@@ -12,7 +12,7 @@ import org.irods.jargon.core.exception.JargonException;
  * 
  */
 
-public final class AvuData  {
+public final class AvuData {
 
 	private final String attribute;
 	private final String value;

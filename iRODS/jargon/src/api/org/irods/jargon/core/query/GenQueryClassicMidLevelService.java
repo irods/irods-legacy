@@ -291,7 +291,8 @@ public class GenQueryClassicMidLevelService {
 				MetaDataCondition avuMetaDataCondition = MetaDataSet
 						.newCondition(IRODSAvu.getAttributeValue(namespace),
 								currentCondition.getMetaDataCondition()
-										.getOperator(), currentCondition.getMetaDataCondition().getValues());
+										.getOperator(), currentCondition
+										.getMetaDataCondition().getValues());
 				IRODSMetaDataConditionWrapper newConditionWrapper;
 				try {
 					newConditionWrapper = new IRODSMetaDataConditionWrapper(
@@ -555,7 +556,7 @@ public class GenQueryClassicMidLevelService {
 				}
 
 				// New for loop because they have to be in a certain order...
-				subTags[j] = new Tag(svalue,sb.toString());
+				subTags[j] = new Tag(svalue, sb.toString());
 				j++;
 
 			}

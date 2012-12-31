@@ -43,14 +43,16 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
-
 import java.io.IOException;
+
+import edu.sdsc.grid.io.MetaDataField;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataTable;
 
 /**
  * Results of long queries will only return a partial list to save on bandwidth
  * which can be iterated through by further calls to the server.
- *<P>
+ * <P>
  * SRBMetaDataRecordList works closely with the file server to do a multi-step
  * query that does not have to return everything immediately. This class, for
  * instance, works with partial query results and, on need, issues a query for
@@ -81,13 +83,14 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	/**
 	 * Load the SRBMetaDataRecordList internal field list with the selectFields
 	 * passed to the constructor.
-	 *<P>
+	 * <P>
 	 * Then copy the queryReturn into records[][]. The order has to be switched
 	 * to match the order of fields[], which is the same order as the
 	 * selectArray initially sent.
 	 */
-	SRBMetaDataRecordList(MetaDataField[] fields, Object[] recordValues,
-			int continuationIndex, SRBCommands fileSystem) {
+	SRBMetaDataRecordList(final MetaDataField[] fields,
+			final Object[] recordValues, final int continuationIndex,
+			final SRBCommands fileSystem) {
 		super(fields, recordValues);
 
 		this.continuationIndex = continuationIndex;
@@ -99,7 +102,8 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public SRBMetaDataRecordList(MetaDataField field, int recordValue) {
+	public SRBMetaDataRecordList(final MetaDataField field,
+			final int recordValue) {
 		super(field, recordValue);
 	}
 
@@ -107,7 +111,8 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public SRBMetaDataRecordList(MetaDataField field, float recordValue) {
+	public SRBMetaDataRecordList(final MetaDataField field,
+			final float recordValue) {
 		super(field, recordValue);
 	}
 
@@ -115,7 +120,8 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public SRBMetaDataRecordList(MetaDataField field, Integer recordValue) {
+	public SRBMetaDataRecordList(final MetaDataField field,
+			final Integer recordValue) {
 		super(field, recordValue);
 	}
 
@@ -123,7 +129,8 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public SRBMetaDataRecordList(MetaDataField field, Float recordValue) {
+	public SRBMetaDataRecordList(final MetaDataField field,
+			final Float recordValue) {
 		super(field, recordValue);
 	}
 
@@ -131,7 +138,8 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public SRBMetaDataRecordList(MetaDataField field, String recordValue) {
+	public SRBMetaDataRecordList(final MetaDataField field,
+			final String recordValue) {
 		super(field, recordValue);
 	}
 
@@ -139,7 +147,8 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public SRBMetaDataRecordList(MetaDataField field, MetaDataTable recordValue) {
+	public SRBMetaDataRecordList(final MetaDataField field,
+			final MetaDataTable recordValue) {
 		super(field, recordValue);
 	}
 
@@ -159,7 +168,7 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	 * by <code>recordList</code>. (Though in the case of SRBCommands the values
 	 * will always be equal.)
 	 */
-	boolean combineRecordLists(MetaDataRecordList recordList) {
+	boolean combineRecordLists(final MetaDataRecordList recordList) {
 		if (recordList != null) {
 			for (int i = 0; i < fields.length; i++) {
 				for (int j = 0; j < recordList.getFieldCount(); j++) {
@@ -191,7 +200,7 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 	/**
    *
    */
-	void setContinuationIndex(int contIndex) {
+	void setContinuationIndex(final int contIndex) {
 		continuationIndex = contIndex;
 	}
 
@@ -245,16 +254,14 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 			int multipleRows = metaDataNums[metaDataNums.length - 1].continuationIndex;
 			if (multipleRows >= 0) {
 				SRBMetaDataRecordList[] rl;
-				metaDataNums = fileSystem
-						.srbGenGetMoreRows(SRBFile.MDAS_CATALOG, multipleRows,
-								numOfResults);
+				metaDataNums = fileSystem.srbGenGetMoreRows(
+						SRBFile.MDAS_CATALOG, multipleRows, numOfResults);
 
 				if (metaDataNums != null) {
-					for (int i = 0; i < metaDataNums.length; i++) {
+					for (SRBMetaDataRecordList metaDataNum : metaDataNums) {
 						// the max value is one low, since the count starts at
 						// zero
-						multipleRows += metaDataNums[i]
-								.getIntValue(metaDataNumAt);
+						multipleRows += metaDataNum.getIntValue(metaDataNumAt);
 					}
 					if (multipleRows > numOfResults) {
 						// if total number of user defined rows plus
@@ -265,12 +272,11 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 						// user defined metadata to finish out the last record.
 						numOfResults = multipleRows;
 					}
-					rl = fileSystem
-							.srbGenGetMoreRows(SRBFile.MDAS_CATALOG,
-									continuationIndex, numOfResults);
+					rl = fileSystem.srbGenGetMoreRows(SRBFile.MDAS_CATALOG,
+							continuationIndex, numOfResults);
 					if (rl[0].continuationIndex >= 0) {
-						for (int i = 0; i < rl.length; i++) {
-							rl[i].addMetaDataNums(metaDataNums, metaDataNumAt);
+						for (SRBMetaDataRecordList element : rl) {
+							element.addMetaDataNums(metaDataNums, metaDataNumAt);
 						}
 					}
 					return rl;
@@ -283,8 +289,8 @@ public class SRBMetaDataRecordList extends MetaDataRecordList {
 				continuationIndex, numOfResults);
 	}
 
-	void addMetaDataNums(SRBMetaDataRecordList[] metaDataNumList,
-			int metaDataNumAt) {
+	void addMetaDataNums(final SRBMetaDataRecordList[] metaDataNumList,
+			final int metaDataNumAt) {
 		metaDataNums = metaDataNumList;
 		this.metaDataNumAt = metaDataNumAt;
 	}

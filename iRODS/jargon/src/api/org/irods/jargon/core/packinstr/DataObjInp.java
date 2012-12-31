@@ -48,7 +48,6 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 	public static final int GET_HOST_FOR_GET_API_NBR = 694;
 	public static final int GET_HOST_FOR_PUT_API_NBR = 686;
 
-
 	public static final String DATA_TYPE_GENERIC = "generic";
 
 	public static final int DEFAULT_OPERATION_TYPE = 0;
@@ -286,7 +285,8 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 	public static final DataObjInp instanceForDataObjectChecksum(
 			final String dataObjectAbsolutePath) throws JargonException {
 
-		if (dataObjectAbsolutePath == null || dataObjectAbsolutePath.length() == 0) {
+		if (dataObjectAbsolutePath == null
+				|| dataObjectAbsolutePath.length() == 0) {
 			throw new JargonException("dataObjectAbsolutePath is empty");
 		}
 
@@ -674,7 +674,9 @@ public class DataObjInp extends AbstractIRODSPackingInstruction {
 		// add a keyword tag for resource if a resource was given to the packing
 		// instruction.
 		if (getResource().length() > 0) {
-			if (this.getApiNumber() == DataObjInp.GET_FILE_API_NBR || this.getApiNumber() == DataObjInp.GET_HOST_FOR_GET_API_NBR || this.getApiNumber() == DataObjInp.GET_HOST_FOR_PUT_API_NBR) {
+			if (this.getApiNumber() == DataObjInp.GET_FILE_API_NBR
+					|| this.getApiNumber() == DataObjInp.GET_HOST_FOR_GET_API_NBR
+					|| this.getApiNumber() == DataObjInp.GET_HOST_FOR_PUT_API_NBR) {
 				kvps.add(KeyValuePair.instance(RESC_NAME, getResource()));
 			} else {
 				kvps.add(KeyValuePair.instance(DEST_RESC_NAME, getResource()));

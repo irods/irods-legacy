@@ -41,11 +41,11 @@
 //
 package edu.sdsc.grid.io;
 
-import java.io.IOException;
 import java.io.EOFException;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.MalformedURLException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Vector;
@@ -57,12 +57,12 @@ import org.slf4j.LoggerFactory;
  * An abstract representation of file and directory pathnames. This abstract
  * class can be subclassed to create a generic file object which may refer to
  * either a remote or local file.
- *<P>
+ * <P>
  * Shares many similarities with the java.io.File class: User interfaces and
  * operating systems use system-dependent pathname strings to name files and
  * directories. This class presents an abstract, system-independent view of
  * hierarchical pathnames. An abstract pathname has two components:
- *<P>
+ * <P>
  * An optional system-dependent prefix string, such as a disk-drive specifier,
  * "/" for the UNIX root directory, or "\\" for a Microsoft Windows UNC
  * pathname, and <br>
@@ -79,7 +79,7 @@ import org.slf4j.LoggerFactory;
  * names within it may be separated by the default name-separator character or
  * by any other name-separator character that is supported by the underlying
  * system.
- *<P>
+ * <P>
  * A pathname, whether abstract or in string form, may be either absolute or
  * relative. An absolute pathname is complete in that no other information is
  * required in order to locate the file that it denotes. A relative pathname, in
@@ -88,30 +88,30 @@ import org.slf4j.LoggerFactory;
  * pathnames against the current user directory. This directory is named by the
  * system property user.dir, and is typically the directory in which the Java
  * virtual machine was invoked.
- *<P>
+ * <P>
  * The prefix concept is used to handle root directories on UNIX platforms, and
  * drive specifiers, root directories and UNC pathnames on Microsoft Windows
  * platforms, as follows:
- *<P>
+ * <P>
  * For UNIX platforms, the prefix of an absolute pathname is always "/".
  * Relative pathnames have no prefix. The abstract pathname denoting the root
  * directory has the prefix "/" and an empty name sequence.
- *<P>
+ * <P>
  * For Microsoft Windows platforms, the prefix of a pathname that contains a
  * drive specifier consists of the drive letter followed by ":" and possibly
  * followed by "\" if the pathname is absolute. The prefix of a UNC pathname is
  * "\\"; the hostname and the share name are the first two names in the name
  * sequence. A relative pathname that does not specify a drive has no prefix.
- *<P>
+ * <P>
  * Instances of the GeneralFile class are immutable; that is, once created, the
  * abstract pathname represented by a GeneralFile object will never change.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @see java.io.File
  */
 public class GeneralFile extends Object implements Comparable {
-	
+
 	/**
 	 * Default buffer size used for copyTo and copyFrom methods.
 	 * 
@@ -180,7 +180,6 @@ public class GeneralFile extends Object implements Comparable {
 
 	private static Logger log = LoggerFactory.getLogger(GeneralFile.class);
 
-	
 	/**
 	 * Holds the server information used by this file.
 	 */
@@ -196,15 +195,14 @@ public class GeneralFile extends Object implements Comparable {
 	 */
 	protected String fileName;
 
-	
 	/**
 	 * Creates a new GeneralFile from a parent pathname string and a child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new GeneralFile instance is created as if by
 	 * invoking the single-argument GeneralFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent pathname string is taken to denote a directory, and
 	 * the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -214,7 +212,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * directory of the subclass. Otherwise each pathname string is converted
 	 * into an abstract pathname and the child abstract pathname is resolved
 	 * against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The fileSystem used by this object
@@ -223,8 +221,8 @@ public class GeneralFile extends Object implements Comparable {
 	 * @param child
 	 *            The child pathname string
 	 */
-	protected GeneralFile(GeneralFileSystem fileSystem, String dir,
-			String fileName) throws NullPointerException {
+	protected GeneralFile(final GeneralFileSystem fileSystem, final String dir,
+			final String fileName) throws NullPointerException {
 		setFileSystem(fileSystem);
 		setDirectory(dir);
 		setFileName(fileName);
@@ -233,14 +231,14 @@ public class GeneralFile extends Object implements Comparable {
 	/**
 	 * Creates a new GeneralFile instance by converting the given file: URI into
 	 * an abstract pathname.
-	 *<P>
+	 * <P>
 	 * The exact form of a file: URI is system-dependent, hence the
 	 * transformation performed by this constructor is also system-dependent.
-	 *<P>
+	 * <P>
 	 * For a given abstract pathname f it is guaranteed that
-	 *<P>
+	 * <P>
 	 * &nbsp;&nbsp;&nbsp;&nbsp;new GeneralFile( f.toURI()).equals( f)
-	 *<P>
+	 * <P>
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
 	 * Java virtual machine. This relationship typically does not hold, however,
@@ -256,7 +254,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IllegalArgumentException
 	 *             If the preconditions on the parameter do not hold.
 	 */
-	protected GeneralFile(URI uri) throws NullPointerException,
+	protected GeneralFile(final URI uri) throws NullPointerException,
 			IllegalArgumentException {
 		super();
 	}
@@ -267,12 +265,15 @@ public class GeneralFile extends Object implements Comparable {
 	 */
 	@Override
 	protected void finalize() throws Throwable {
-		if (fileSystem != null)
+		if (fileSystem != null) {
 			fileSystem = null;
-		if (directory != null)
+		}
+		if (directory != null) {
 			directory = null;
-		if (fileName != null)
+		}
+		if (fileName != null) {
 			fileName = null;
+		}
 	}
 
 	/**
@@ -288,11 +289,12 @@ public class GeneralFile extends Object implements Comparable {
 	 *             - if the argument is not an object of the approriate
 	 *             subclass.
 	 */
-	protected void setFileSystem(GeneralFileSystem fileSystem)
+	protected void setFileSystem(final GeneralFileSystem fileSystem)
 			throws IllegalArgumentException, ClassCastException {
-		if (fileSystem == null)
+		if (fileSystem == null) {
 			throw new IllegalArgumentException(
 					"Illegal fileSystem, cannot be null");
+		}
 
 		this.fileSystem = fileSystem;
 	}
@@ -424,8 +426,9 @@ public class GeneralFile extends Object implements Comparable {
 	 *             if fileSystem is null.
 	 */
 	public GeneralFileSystem getFileSystem() throws NullPointerException {
-		if (fileSystem != null)
+		if (fileSystem != null) {
 			return fileSystem;
+		}
 
 		throw new NullPointerException("fileSystem is null.");
 	}
@@ -448,7 +451,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * @return The metadata values for this file refered to by
 	 *         <code>fieldName</code>
 	 */
-	public String firstQueryResult(String fieldName) throws IOException {
+	public String firstQueryResult(final String fieldName) throws IOException {
 		MetaDataSelect[] temp = { MetaDataSet.newSelection(fieldName) };
 		MetaDataRecordList[] rl = query(temp);
 		if (rl != null) {
@@ -461,22 +464,22 @@ public class GeneralFile extends Object implements Comparable {
 	 * Queries the file server to find all files that match a set of conditions.
 	 * For all those that match, the fields indicated in the select array are
 	 * returned in the result object.
-	 *<P>
+	 * <P>
 	 * While condition and select array objects have all been checked for
 	 * self-consistency during their construction, there are additional problems
 	 * that must be detected at query time:
-	 *<P>
+	 * <P>
 	 * <ul>
 	 * <li>Redundant selection fields
 	 * <li>Redundant query fields
 	 * <li>Fields incompatible with a file server
 	 * </ul>
-	 *<P>
+	 * <P>
 	 * For instance, it is possible to build a condition object appropriate for
 	 * the SRB, then pass that object in a local file system query. That will
 	 * find that the condition is incompatible and generate a mismatch
 	 * exception.
-	 *<P>
+	 * <P>
 	 * Query is implemented by the file-server-specific classes, like that for
 	 * the SRB, FTP, etc. Those classes must re-map condition and select field
 	 * names and operator codes to those required by a particular file server
@@ -489,7 +492,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * this API should never see the internal field names.
 	 */
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects) throws IOException {
+			final MetaDataSelect[] selects) throws IOException {
 		// doesn't need to use getZoneCondition() because will always have a
 		// DIRECTORY_NAME condition
 
@@ -536,12 +539,12 @@ public class GeneralFile extends Object implements Comparable {
 		return fileSystem.query(iConditions, selects);
 	}
 
-	public MetaDataRecordList[] query(MetaDataSelect[] selectArray)
+	public MetaDataRecordList[] query(final MetaDataSelect[] selectArray)
 			throws IOException {
 		return query(null, selectArray);
 	}
 
-	public MetaDataRecordList[] query(String[] metaDataFieldNames)
+	public MetaDataRecordList[] query(final String[] metaDataFieldNames)
 			throws IOException {
 		MetaDataSelect[] selectArray = new MetaDataSelect[metaDataFieldNames.length];
 		for (int i = 0; i < metaDataFieldNames.length; i++) {
@@ -553,7 +556,7 @@ public class GeneralFile extends Object implements Comparable {
 	/**
 	 * Used to modify the metadata associated with this file object.
 	 */
-	public void modifyMetaData(MetaDataRecordList metaDataRecordList)
+	public void modifyMetaData(final MetaDataRecordList metaDataRecordList)
 			throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -571,7 +574,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyTo(GeneralFile destinationFile) throws IOException {
+	public void copyTo(final GeneralFile destinationFile) throws IOException {
 		copyTo(destinationFile, false);
 	}
 
@@ -588,7 +591,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
+	public void copyTo(GeneralFile destinationFile, final boolean forceOverwrite)
 			throws IOException {
 		byte buffer[] = null;
 		GeneralFileInputStream in = null;
@@ -605,16 +608,18 @@ public class GeneralFile extends Object implements Comparable {
 
 			destinationFile.mkdir();
 			if (fileList != null) {
-				for (int i = 0; i < fileList.length; i++) {
-					fileList[i].copyTo(FileFactory.newFile(
-							destinationFile.getFileSystem(), destinationFile.getAbsolutePath(),
-							fileList[i].getName()), forceOverwrite);
+				for (GeneralFile element : fileList) {
+					element.copyTo(FileFactory.newFile(
+							destinationFile.getFileSystem(),
+							destinationFile.getAbsolutePath(),
+							element.getName()), forceOverwrite);
 				}
 			}
 		} else {
 			if (destinationFile.isDirectory()) {
 				// change the destination from a directory to a file
-				destinationFile = FileFactory.newFile(destinationFile, getName());
+				destinationFile = FileFactory.newFile(destinationFile,
+						getName());
 			}
 			long ilength = length();
 
@@ -632,25 +637,27 @@ public class GeneralFile extends Object implements Comparable {
 							"No permissions to access this file.");
 				}
 			}
-			
+
 			if (ilength > BUFFER_MAX_SIZE) {
 				buffer = new byte[BUFFER_MAX_SIZE];
 				do {
 					n = in.read(buffer);
-					if (n >= 0)
+					if (n >= 0) {
 						ilength -= n;
-					else
+					} else {
 						throw new EOFException();
+					}
 					out.write(buffer, 0, n);
 				} while (ilength > BUFFER_MAX_SIZE);
 			}
 			buffer = new byte[(int) ilength];
 			do {
 				n = in.read(buffer);
-				if (n >= 0)
+				if (n >= 0) {
 					ilength -= n;
-				else
+				} else {
 					throw new EOFException();
+				}
 				out.write(buffer, 0, n);
 			} while (ilength > 0);
 
@@ -660,8 +667,8 @@ public class GeneralFile extends Object implements Comparable {
 	}
 
 	/**
-	 * Copies this file to another file. This object is the destination file. The
-	 * source file is given as the argument. If the destination file, does
+	 * Copies this file to another file. This object is the destination file.
+	 * The source file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
@@ -672,13 +679,13 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(GeneralFile sourceFile) throws IOException {
+	public void copyFrom(final GeneralFile sourceFile) throws IOException {
 		copyFrom(sourceFile, false);
 	}
 
 	/**
-	 * Copies this file to another file. This object is the destination file. The
-	 * source file is given as the argument. If the destination file, does
+	 * Copies this file to another file. This object is the destination file.
+	 * The source file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
@@ -689,8 +696,8 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
-			throws IOException {
+	public void copyFrom(final GeneralFile sourceFile,
+			final boolean forceOverwrite) throws IOException {
 		/*
 		 * I didn't really want to have a .copyFrom(...), but without the
 		 * copyFrom, new packages writers which don't have access to the JARGON
@@ -711,15 +718,16 @@ public class GeneralFile extends Object implements Comparable {
 
 			mkdir();
 			if (fileList != null) {
-				for (int i = 0; i < fileList.length; i++) {
-					FileFactory.newFile(this, fileList[i].getName()).copyFrom(
-							fileList[i], forceOverwrite);
+				for (GeneralFile element : fileList) {
+					FileFactory.newFile(this, element.getName()).copyFrom(
+							element, forceOverwrite);
 				}
 			}
 		} else {
 			if (isDirectory()) {
 				// change the destination from a directory to a file
-				GeneralFile subFile = FileFactory.newFile(this, sourceFile.getName());
+				GeneralFile subFile = FileFactory.newFile(this,
+						sourceFile.getName());
 				subFile.copyFrom(sourceFile);
 				return;
 			}
@@ -783,8 +791,9 @@ public class GeneralFile extends Object implements Comparable {
 					}
 				}
 			} finally {
-				if (in != null)
+				if (in != null) {
 					in.close();
+				}
 			}
 			if ((length - length()) != 0) {
 			}
@@ -827,17 +836,17 @@ public class GeneralFile extends Object implements Comparable {
 					md5.update(input, 0, read);
 				}
 			} else if (read < 0) {
-				log
-						.warn("read value less then zero, logged and ignored..value:"
-								+ read);
+				log.warn("read value less then zero, logged and ignored..value:"
+						+ read);
 			}
 		}
 
 		StringBuffer checksum = new StringBuffer();
 		for (byte b : md5.digest()) {
 			String hex = Integer.toHexString(0xFF & b);
-			if (hex.length() == 1)
+			if (hex.length() == 1) {
 				checksum.append('0');
+			}
 
 			checksum.append(hex);
 		}
@@ -845,9 +854,9 @@ public class GeneralFile extends Object implements Comparable {
 		return checksum.toString();
 	}
 
-	
 	/**
 	 * Convenience method that will calculate an MD5 checksum on this file.
+	 * 
 	 * @return <code>String</code> containing the MD5 checksum for the file
 	 * @throws IOException
 	 */
@@ -855,8 +864,8 @@ public class GeneralFile extends Object implements Comparable {
 		return checksumMD5();
 
 	}
-	
-	public String checksum(Checksum type) throws IOException {
+
+	public String checksum(final Checksum type) throws IOException {
 		switch (type) {
 		case MD5:
 			return checksumMD5();
@@ -925,16 +934,16 @@ public class GeneralFile extends Object implements Comparable {
 	 *         less than the argument, or a value greater than zero if this
 	 *         abstract pathname is lexicographically greater than the argument
 	 */
-	public int compareTo(GeneralFile pathName) {
+	public int compareTo(final GeneralFile pathName) {
 		return (pathName.getAbsolutePath()).compareTo(getAbsolutePath());
 	}
 
 	/**
 	 * Compares this abstract pathname to another object. If the other object is
 	 * an abstract pathname, then this function behaves like <code>{@link
-   * #compareTo(GeneralFile)}</code>
-	 * . Otherwise, it throws a <code>ClassCastException</code>, since abstract
-	 * pathnames can only be compared to abstract pathnames.
+	 * #compareTo(GeneralFile)}</code> . Otherwise, it throws a
+	 * <code>ClassCastException</code>, since abstract pathnames can only be
+	 * compared to abstract pathnames.
 	 * 
 	 * @param o
 	 *            The <code>Object</code> to be compared to this abstract
@@ -945,11 +954,11 @@ public class GeneralFile extends Object implements Comparable {
 	 *         zero if this abstract pathname is lexicographically less than the
 	 *         argument, or a value greater than zero if this abstract pathname
 	 *         is lexicographically greater than the argument
-	 *        <P>
+	 *         <P>
 	 * @throws ClassCastException
 	 *             - if the argument is not an abstract pathname
 	 */
-	public int compareTo(Object o) throws ClassCastException {
+	public int compareTo(final Object o) throws ClassCastException {
 		return compareTo((GeneralFile) o);
 	}
 
@@ -965,9 +974,8 @@ public class GeneralFile extends Object implements Comparable {
 	 * Creates an empty file in the default temporary-file directory, using the
 	 * given prefix and suffix to generate its name. Invoking this method is
 	 * equivalent to invoking <code>{@link #createTempFile(java.lang.String,
-   * java.lang.String, GeneralFile)
-   * createTempFile(prefix,&nbsp;suffix,&nbsp;null)}</code>
-	 * .
+	 * java.lang.String, GeneralFile)
+	 * createTempFile(prefix,&nbsp;suffix,&nbsp;null)}</code> .
 	 * 
 	 * @param prefix
 	 *            The prefix string to be used in generating the file's name;
@@ -991,8 +999,8 @@ public class GeneralFile extends Object implements Comparable {
 	 *             If a file could not be created
 	 */
 	@Deprecated
-	public static GeneralFile createTempFile(String prefix, String suffix)
-			throws IOException, IllegalArgumentException {
+	public static GeneralFile createTempFile(final String prefix,
+			final String suffix) throws IOException, IllegalArgumentException {
 		return createTempFile(prefix, suffix, null);
 	}
 
@@ -1066,8 +1074,9 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IOException
 	 *             If a file could not be created
 	 */
-	public static GeneralFile createTempFile(String prefix, String suffix,
-			GeneralFile directory) throws IOException {
+	public static GeneralFile createTempFile(final String prefix,
+			final String suffix, final GeneralFile directory)
+			throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -1111,7 +1120,7 @@ public class GeneralFile extends Object implements Comparable {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -1321,8 +1330,9 @@ public class GeneralFile extends Object implements Comparable {
 			return 0;
 		}
 
-		if (result != null)
+		if (result != null) {
 			length = Long.parseLong(result);
+		}
 
 		return length;
 	}
@@ -1330,11 +1340,11 @@ public class GeneralFile extends Object implements Comparable {
 	/**
 	 * Returns an array of strings naming the files and directories in the
 	 * directory denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * There is no guarantee that the name strings in the resulting array will
 	 * appear in any specific order; they are not, in particular, guaranteed to
 	 * appear in alphabetical order.
-	 *<P>
+	 * <P>
 	 * If this GeneralFile object denotes a file, the results are unspecified.
 	 * 
 	 * @return An array of strings naming the files and directories in the
@@ -1352,10 +1362,9 @@ public class GeneralFile extends Object implements Comparable {
 	 * 
 	 * @see list()
 	 */
-	public String[] list(MetaDataCondition[] conditions) {
+	public String[] list(final MetaDataCondition[] conditions) {
 		throw new UnsupportedOperationException();
 	}
-
 
 	/**
 	 * Returns an array of abstract pathnames denoting the files in the
@@ -1379,8 +1388,9 @@ public class GeneralFile extends Object implements Comparable {
 	 */
 	public GeneralFile[] listFiles() {
 		String[] list = list();
-		if (list == null)
+		if (list == null) {
 			return null;
+		}
 
 		int length = list.length;
 		GeneralFile[] files = new GeneralFile[length];
@@ -1391,7 +1401,6 @@ public class GeneralFile extends Object implements Comparable {
 
 		return files;
 	}
-
 
 	/**
 	 * List the available filesystem roots.
@@ -1422,7 +1431,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * @return An array of <code>GeneralFile</code> objects denoting the SRB
 	 *         filesystem root, namely <code>"/"</code>.
 	 */
-	public static GeneralFile[] listRoots(GeneralFileSystem fileSystem) {
+	public static GeneralFile[] listRoots(final GeneralFileSystem fileSystem) {
 		String[] roots = GeneralFileSystem.roots;
 		GeneralFile[] list = new GeneralFile[roots.length];
 		for (int i = 0; i < list.length; i++) {
@@ -1465,7 +1474,7 @@ public class GeneralFile extends Object implements Comparable {
 	/**
 	 * Renames the file denoted by this abstract pathname. Will attempt to
 	 * overwrite existing files with the same name at the destination.
-	 *<P>
+	 * <P>
 	 * Whether or not this method can move a file from one filesystem to another
 	 * is platform-dependent. The return value should always be checked to make
 	 * sure that the rename operation was successful.
@@ -1481,8 +1490,8 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws NullPointerException
 	 *             - If dest is null
 	 */
-	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
-			NullPointerException {
+	public boolean renameTo(final GeneralFile dest)
+			throws IllegalArgumentException, NullPointerException {
 		// should I do this? It isn't really rename.
 		try {
 			copyTo(dest, true);
@@ -1505,7 +1514,8 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IllegalArgumentException
 	 *             - If the argument is negative
 	 */
-	public boolean setLastModified(long time) throws IllegalArgumentException {
+	public boolean setLastModified(final long time)
+			throws IllegalArgumentException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -1542,8 +1552,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * <blockquote><tt>
 	 * new {@link #GeneralFile(java.net.URI) GeneralFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
-   * </tt>
-	 * </blockquote>
+	 * </tt> </blockquote>
 	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same

@@ -41,30 +41,30 @@
 //
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
-import java.net.Socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 
 import org.globus.common.CoGProperties;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.net.impl.GSIGssInputStream;
 import org.globus.gsi.gssapi.net.impl.GSIGssOutputStream;
-import org.globus.gsi.gssapi.net.impl.GSIGssSocket;
 import org.gridforum.jgss.ExtendedGSSCredential;
 import org.gridforum.jgss.ExtendedGSSManager;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
+import edu.sdsc.grid.io.local.LocalFile;
+
 /**
  * Instances of this class support socket I/O to a iRODS server.
- *<P>
+ * <P>
  * Handles socket level protocol for interacting with the iRODS.
- *<P>
+ * <P>
  * 
  * <P>
  * 
@@ -79,7 +79,7 @@ class GSIAuth {
 	/**
 	 * Checks the authentication using GSI of a iRODS connection which has
 	 * already passed the uner info part of the handshake.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param account
 	 *            the iRODS connection information
@@ -92,8 +92,8 @@ class GSIAuth {
 	 * @throws IOException
 	 *             If the authentication to the iRODS fails.
 	 */
-	GSIAuth(IRODSAccount account, Socket connection, OutputStream out,
-			InputStream in) throws IOException {
+	GSIAuth(final IRODSAccount account, final Socket connection,
+			final OutputStream out, final InputStream in) throws IOException {
 		sendGSIAuth(account, connection, out, in);
 	}
 
@@ -112,8 +112,8 @@ class GSIAuth {
 	 * @throws IOException
 	 *             If the authentication to the iRODS fails.
 	 */
-	void sendGSIAuth(IRODSAccount account, Socket connection, OutputStream out,
-			InputStream in) throws IOException {
+	void sendGSIAuth(final IRODSAccount account, final Socket connection,
+			final OutputStream out, final InputStream in) throws IOException {
 		CoGProperties cog = null;
 		String defaultCA = null;
 		GSSCredential credential = null;
@@ -133,17 +133,15 @@ class GSIAuth {
 				cog.setCaCertLocations(caLocations);
 			}
 
-			GSSContext context = null;
 			GSIGssOutputStream gssout = null;
 			GSIGssInputStream gssin = null;
 
-			context = manager.createContext(null, null, credential,
+			GSSContext context = manager.createContext(null, null, credential,
 					GSSContext.DEFAULT_LIFETIME);
 
 			context.requestCredDeleg(false);
 			context.requestMutualAuth(true);
 
-			GSIGssSocket ggSocket = new GSIGssSocket(connection, context);
 			gssout = new GSIGssOutputStream(out, context);
 			gssin = new GSIGssInputStream(in, context);
 
@@ -191,7 +189,7 @@ class GSIAuth {
 		}
 	}
 
-	static String getDN(IRODSAccount account) throws IOException {
+	static String getDN(final IRODSAccount account) throws IOException {
 		StringBuffer dn = null;
 		int index = -1, index2 = -1;
 		try {
@@ -226,13 +224,14 @@ class GSIAuth {
 		}
 	}
 
-	static GSSCredential getCredential(IRODSAccount account)
+	static GSSCredential getCredential(final IRODSAccount account)
 			throws GSSException, IOException {
 		byte[] data = null;
 		GSSCredential credential = account.getGSSCredential();
 		if (credential != null) {
-			if (credential.getRemainingLifetime() <= 0)
+			if (credential.getRemainingLifetime() <= 0) {
 				throw new GSSException(GSSException.CREDENTIALS_EXPIRED);
+			}
 
 			return credential;
 		}
@@ -270,8 +269,9 @@ class GSIAuth {
 					GSSCredential.INITIATE_AND_ACCEPT);
 		}
 
-		if (credential.getRemainingLifetime() <= 0)
+		if (credential.getRemainingLifetime() <= 0) {
 			throw new GSSException(GSSException.CREDENTIALS_EXPIRED);
+		}
 
 		return credential;
 	}

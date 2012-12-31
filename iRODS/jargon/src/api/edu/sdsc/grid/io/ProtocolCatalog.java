@@ -50,21 +50,21 @@ import java.util.Vector;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public class ProtocolCatalog {
-	
+
 	private static Vector protocols = new Vector();
 
 	ProtocolCatalog() {
 		super();
 	}
 
-	public static void add(Protocol protocol) {
+	public static void add(final Protocol protocol) {
 		protocols.add(protocol);
 	}
 
 	/**
 	 * Check if the protocol was already loaded
 	 */
-	public static boolean has(Protocol protocol) {
+	public static boolean has(final Protocol protocol) {
 		for (int i = protocols.size() - 1; i >= 0; i--) {
 			if (protocols.get(i).equals(protocol)) {
 				return true;

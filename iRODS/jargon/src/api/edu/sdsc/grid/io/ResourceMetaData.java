@@ -64,7 +64,7 @@ public interface ResourceMetaData extends StandardMetaData {
 	public static final String RESOURCE_CREATE_DATE = "Resource Time created (Unix Time)";
 	public static final String RESOURCE_MODIFY_DATE = "Resource Time last modified (Unix Time)";
 	public static final String RESOURCE_STATUS = "Resource Status";
-	
+
 	// Resource Group
 	public static final String RESOURCE_GROUP_ID = "Resource Group Identifier";
 	public static final String RESOURCE_GROUP = "Resource Group Name";

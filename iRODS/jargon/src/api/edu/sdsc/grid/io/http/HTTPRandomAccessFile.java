@@ -43,13 +43,13 @@
 //
 package edu.sdsc.grid.io.http;
 
-import edu.sdsc.grid.io.*;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.File;
 import java.net.URLConnection;
+
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.RemoteRandomAccessFile;
 
 /**
  * The class for random access to an http file. Included for completeness, as it
@@ -120,8 +120,8 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             If an I/O error occurs
 	 */
-	public HTTPRandomAccessFile(HTTPFileSystem fileSystem, String name,
-			String mode) throws IOException {
+	public HTTPRandomAccessFile(final HTTPFileSystem fileSystem,
+			final String name, final String mode) throws IOException {
 		this(new HTTPFile(fileSystem, name), mode);
 	}
 
@@ -174,13 +174,14 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws IOException
 	 *             If an I/O error occurs
 	 */
-	public HTTPRandomAccessFile(HTTPFile file, String mode) throws IOException {
+	public HTTPRandomAccessFile(final HTTPFile file, final String mode)
+			throws IOException {
 		super(file, mode);
 		httpFile = file;
 	}
 
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		close();
 		if (in == null) {
 			// check first time
@@ -198,7 +199,8 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	}
 
 	@Override
-	protected int readBytes(byte b[], int offset, int len) throws IOException {
+	protected int readBytes(final byte b[], final int offset, final int len)
+			throws IOException {
 		int read = in.read(b, offset, len);
 		if (read > 0) {
 			filePointer += read;
@@ -208,7 +210,8 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 
 	// Private method in wrapper, so call public.
 	@Override
-	protected void writeBytes(byte b[], int offset, int len) throws IOException {
+	protected void writeBytes(final byte b[], final int offset, final int len)
+			throws IOException {
 		out.write(b, offset, len);
 	}
 
@@ -242,7 +245,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 *             error occurs.
 	 */
 	@Override
-	public void seek(long position) throws IOException {
+	public void seek(final long position) throws IOException {
 		seek(position, SEEK_CURRENT);
 	}
 
@@ -269,7 +272,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 *             error occurs.
 	 */
 	@Override
-	public void seek(long position, int origin) throws IOException {
+	public void seek(final long position, final int origin) throws IOException {
 		if (position < 0) {
 			throw new IllegalArgumentException();
 		}
@@ -314,7 +317,7 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile {
 	 *             If an I/O error occurs
 	 */
 	@Override
-	public void setLength(long newLength) throws IOException {
+	public void setLength(final long newLength) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

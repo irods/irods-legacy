@@ -53,26 +53,26 @@ class Parameter {
 		this(null, null, STR_PI);
 	}
 
-	Parameter(int value) {
+	Parameter(final int value) {
 		this(null, new Integer(value), INT_PI);
 	}
 
-	Parameter(String value) {
+	Parameter(final String value) {
 		this(null, value, STR_PI);
 	}
 
-	Parameter(byte[] value) {
+	Parameter(final byte[] value) {
 		this(null, value, BUF_LEN_PI);
 	}
 
-	Parameter(String name, String value) {
+	Parameter(final String name, final String value) {
 		this(name, value, STR_PI);
 	}
 
-	Parameter(String name, Object value, String type) {
-		if (value == null)
+	Parameter(final String name, final Object value, final String type) {
+		if (value == null) {
 			setNullValue();
-		else {
+		} else {
 			this.value = value;
 			this.type = type;
 		}
@@ -80,8 +80,9 @@ class Parameter {
 		if (name != null) {
 			uniqueName = name;
 		} else {
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < 8; i++) {
 				uniqueName += ((char) (65 + Math.random() * 25));
+			}
 		}
 	}
 
@@ -94,17 +95,17 @@ class Parameter {
 		type = NULL_PI;
 	}
 
-	void setIntValue(int value) {
+	void setIntValue(final int value) {
 		this.value = new Integer(value);
 		type = INT_PI;
 	}
 
-	void setStringValue(String value) {
+	void setStringValue(final String value) {
 		this.value = value;
 		type = STR_PI;
 	}
 
-	void setByteValue(byte[] value) {
+	void setByteValue(final byte[] value) {
 		this.value = value;
 		type = BUF_LEN_PI;
 	}
@@ -114,9 +115,9 @@ class Parameter {
 	}
 
 	int getIntValue() {
-		if (value instanceof Integer)
+		if (value instanceof Integer) {
 			return ((Integer) value).intValue();
-		else {
+		} else {
 			// will fail on byte[]...
 			return Integer.parseInt(value.toString());
 		}
@@ -152,10 +153,11 @@ class Parameter {
 	}
 
 	byte[] getByteValue() {
-		if (value instanceof byte[])
+		if (value instanceof byte[]) {
 			return (byte[]) value;
-		else
+		} else {
 			return value.toString().getBytes();
+		}
 	}
 
 	@Override
@@ -186,18 +188,18 @@ class Parameter {
 		if (type.equals(INT_PI)) {
 			param.addTag(new Tag(INT_PI, new Tag[] {
 			// only one parameter, the int
-					new Tag(myInt, getIntValue()), }));
+			new Tag(myInt, getIntValue()), }));
 		} else if (type.equals(BUF_LEN_PI)) {
 			param.addTag(new Tag(BUF_LEN_PI, new Tag[] {
-			// send a byte buffer
+					// send a byte buffer
 					new Tag(buflen, getByteValue().length),
 					// maybe convert to Base64?
 					new Tag(buf, new String(getByteValue())), }));
 		} else {// STR_PI or NULL_PI
 			param.addTag(new Tag(STR_PI, new Tag[] {
 			// only one parameter, the string
-					// if default, try sending the string value, might work...
-					new Tag(myStr, getStringValue()), }));
+			// if default, try sending the string value, might work...
+			new Tag(myStr, getStringValue()), }));
 		}
 
 		return param;

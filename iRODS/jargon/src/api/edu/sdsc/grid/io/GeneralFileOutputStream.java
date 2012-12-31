@@ -44,15 +44,16 @@
 //
 package edu.sdsc.grid.io;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * A GeneralFileOutputStream writes bytes to a file in a file system. What files
  * are available depends on the host environment.
- *<P>
+ * <P>
  * GeneralFileOutputStream is meant for writing streams of raw bytes such as
  * image data.
- *<P>
+ * <P>
  * The original intention for this class was to subclass
  * java.io.FileOuputStream. But that is not currently the case.
  * <P>
@@ -85,8 +86,8 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public GeneralFileOutputStream(GeneralFileSystem fileSystem, String name)
-			throws IOException {
+	public GeneralFileOutputStream(final GeneralFileSystem fileSystem,
+			final String name) throws IOException {
 		this(FileFactory.newFile(fileSystem, name));
 	}
 
@@ -110,7 +111,7 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public GeneralFileOutputStream(GeneralFile file) throws IOException {
+	public GeneralFileOutputStream(final GeneralFile file) throws IOException {
 		if (file == null) {
 			throw new NullPointerException("File cannot be null.");
 		}
@@ -156,7 +157,7 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(int b) throws IOException {
+	public void write(final int b) throws IOException {
 		byte buffer[] = { (byte) b };
 
 		write(buffer, 0, buffer.length);
@@ -172,7 +173,7 @@ public abstract class GeneralFileOutputStream extends OutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte b[]) throws IOException {
+	public void write(final byte b[]) throws IOException {
 		write(b, 0, b.length);
 	}
 

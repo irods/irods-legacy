@@ -45,9 +45,6 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -57,20 +54,40 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Vector;
+
+import edu.sdsc.grid.io.DirectoryMetaData;
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.FileMetaData;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileInputStream;
+import edu.sdsc.grid.io.GeneralFileSystem;
+import edu.sdsc.grid.io.GeneralMetaData;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.MetaDataTable;
+import edu.sdsc.grid.io.RemoteFile;
+import edu.sdsc.grid.io.ResourceMetaData;
+import edu.sdsc.grid.io.StandardMetaData;
+import edu.sdsc.grid.io.UserMetaData;
+import edu.sdsc.grid.io.ZoneMetaData;
+import edu.sdsc.grid.io.local.LocalFile;
 
 /**
  * An abstract representation of file and directory pathnames on the SRB.
- *<P>
+ * <P>
  * In the terminology of SRB, files are known as data sets. A data set is a
  * "stream-of-bytes" entity that can be uniquely identified. For example, a file
  * in HPSS or Unix is a data set, or a LOB stored in a SRB Vault database is a
  * data set. Importantly, note that a data set is not a set of data
  * objects/files. Each data set in SRB is given a unique internal identifier by
  * SRB. A dataset is associated with a collection.
- *<P>
+ * <P>
  * A SRB collection is a logical name given to a set of data sets. All data sets
  * stored in SRB/MCAT are stored in some collection. A collection can have
  * sub-collections, and hence provides a hierarchical structure. A collection in
@@ -80,7 +97,7 @@ import java.util.Vector;
  * stored in heterogeneous storage devices. There is one obvious restriction,
  * the name given to a data set in a collection or sub-collection should be
  * unique in that collection.
- *<P>
+ * <P>
  * This class shares many similarities with the java.io.File class:
  * <p>
  * User interfaces and operating systems use system-dependent <em>pathname
@@ -96,11 +113,11 @@ import java.util.Vector;
  * Each name in an abstract pathname except for the last denotes a directory;
  * the last name may denote either a directory or a file. The <em>empty</em>
  * abstract pathname has no prefix and an empty name sequence.
- *<P>
+ * <P>
  * When an abstract pathname is converted into a pathname string, each name is
  * separated from the next by a single copy of the default <em>separator
  * character</em>.
- *<P>
+ * <P>
  * A pathname in string form may be either <em>absolute</em> or
  * <em>relative</em>. On construction the pathname is made absolute. An absolute
  * pathname is complete in that no other information is required in order to
@@ -109,17 +126,17 @@ import java.util.Vector;
  * default the classes in the <code>edu.sdsc.grid.io.srb</code> package always
  * resolve relative pathnames against the user home directory. This directory is
  * named in the .MdasEnv file.
- *<P>
+ * <P>
  * The prefix concept is used to handle root directories on the SRB is the same
  * as for UNIX platforms.
  * <p>
  * For the SRB, the prefix of an absolute pathname is always <code>"/"</code>.
  * Relative pathnames have no prefix. The abstract pathname denoting the root
  * directory has the prefix <code>"/"</code> and an empty name sequence.
- *<P>
+ * <P>
  * Instances of the SRBFile class are immutable; that is, once created, the
  * abstract pathname represented by a SRBFile object will never change.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @see java.io.File
@@ -322,7 +339,7 @@ public class SRBFile extends RemoteFile {
 	 * Creates a new <code>SRBFile</code> instance by converting the given
 	 * pathname string into an abstract pathname.
 	 * 
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the SRB
@@ -331,7 +348,7 @@ public class SRBFile extends RemoteFile {
 	 * @throws NullPointerException
 	 *             If the given string is null or the empty string.
 	 */
-	public SRBFile(SRBFileSystem srbFileSystem, String filePath)
+	public SRBFile(final SRBFileSystem srbFileSystem, final String filePath)
 			throws NullPointerException {
 		this(srbFileSystem, "", filePath);
 		checkResource();
@@ -341,12 +358,12 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Creates a new <code>SRBFile</code> instance from a parent pathname string
 	 * and a child pathname string.
-	 *<P>
+	 * <P>
 	 * If <code>parent</code> is <code>null</code> then the new
 	 * <code>SRBFile</code> instance is created as if by invoking the
 	 * single-argument <code>SRBFile</code> constructor on the given
 	 * <code>child</code> pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the <code>parent</code> pathname string is taken to denote a
 	 * directory, and the <code>child</code> pathname string is taken to denote
 	 * either a directory or a file. If the <code>child</code> pathname string
@@ -357,7 +374,7 @@ public class SRBFile extends RemoteFile {
 	 * directory. Otherwise each pathname string is converted into an abstract
 	 * pathname and the <code>child</code> abstract pathname is resolved against
 	 * the <code>parent</code>.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the SRB
@@ -368,8 +385,9 @@ public class SRBFile extends RemoteFile {
 	 * @throws NullPointerException
 	 *             If the child string is null or the empty string.
 	 */
-	public SRBFile(SRBFileSystem srbFileSystem, String parent, String child)
-			throws NullPointerException, IllegalArgumentException {
+	public SRBFile(final SRBFileSystem srbFileSystem, final String parent,
+			final String child) throws NullPointerException,
+			IllegalArgumentException {
 		super(srbFileSystem, parent, child);
 
 		makePathCanonical(parent);
@@ -390,11 +408,11 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Creates a new <code>SRBFile</code> instance from a parent abstract
 	 * pathname and a child pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new <code>SRBFile</code> instance is created
 	 * as if by invoking the single-argument <code>SRBFile</code> constructor on
 	 * the given child pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the <code>parent</code> abstract pathname is taken to denote a
 	 * directory, and the <code>child</code> pathname string is taken to denote
 	 * either a directory or a file. If the <code>child</code> pathname string
@@ -405,7 +423,7 @@ public class SRBFile extends RemoteFile {
 	 * against the user's SRB default home directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the <code>child</code>
 	 * abstract pathname is resolved against the <code>parent</code>.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param parent
 	 *            The parent abstract pathname
@@ -414,18 +432,19 @@ public class SRBFile extends RemoteFile {
 	 * @throws NullPointerException
 	 *             If the child string is null or the empty string.
 	 */
-	public SRBFile(SRBFile parent, String child) throws NullPointerException {
+	public SRBFile(final SRBFile parent, final String child)
+			throws NullPointerException {
 		this((SRBFileSystem) parent.getFileSystem(), parent.getPath(), child);
 	}
 
 	/**
 	 * Creates a new GeneralFile instance by converting the given file: URI into
 	 * an abstract pathname.
-	 *<p>
+	 * <p>
 	 * SRB URI protocol:<br>
 	 * srb:// [ userName . domainHome [ : password ] @ ] host [ : port ][ / path
 	 * ]
-	 *<P>
+	 * <P>
 	 * example:<br>
 	 * srb://testuser.sdsc:mypassword@srb.sdsc.edu:5555/home/testuser.sdsc/
 	 * testfile.txt
@@ -440,7 +459,7 @@ public class SRBFile extends RemoteFile {
 	 *             Can occur during the creation of the internal fileSystem
 	 *             object.
 	 */
-	public SRBFile(URI uri) throws NullPointerException, IOException {
+	public SRBFile(final URI uri) throws NullPointerException, IOException {
 		super(uri);
 
 		// srb://userName.mdasDomain:password@host:port/path
@@ -479,15 +498,15 @@ public class SRBFile extends RemoteFile {
 				MetaDataCondition conditions[] = {
 						getZoneCondition(),
 						MetaDataSet.newCondition(SRBMetaDataSet.GUID,
-								MetaDataCondition.EQUAL, query
-										.substring(index + 5)) // ,
-																// query.indexOf('&',index)
-																// ) ),
+								MetaDataCondition.EQUAL,
+								query.substring(index + 5)) // ,
+															// query.indexOf('&',index)
+															// ) ),
 				// maybe add multiple conditions eventually
 				// I guess GUID wouldn't every need them though
 				};
-				String[] selectFieldNames = { GeneralMetaData.FILE_NAME,
-						GeneralMetaData.DIRECTORY_NAME };
+				String[] selectFieldNames = { StandardMetaData.FILE_NAME,
+						StandardMetaData.DIRECTORY_NAME };
 				MetaDataSelect selects[] = MetaDataSet
 						.newSelection(selectFieldNames);
 
@@ -496,11 +515,12 @@ public class SRBFile extends RemoteFile {
 					throw new FileNotFoundException("Invalid GUID");
 				}
 
-				path = rl[0].getValue(GeneralMetaData.DIRECTORY_NAME)
+				path = rl[0].getValue(StandardMetaData.DIRECTORY_NAME)
 						.toString();
-				temp = rl[0].getValue(GeneralMetaData.FILE_NAME).toString();
-				if (temp != null)
+				temp = rl[0].getValue(StandardMetaData.FILE_NAME).toString();
+				if (temp != null) {
 					path += separator + temp;
+				}
 			}
 
 			// set the filename whether or not something was found
@@ -517,17 +537,21 @@ public class SRBFile extends RemoteFile {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() throws Throwable {
-		if (deleteOnExit)
+		if (deleteOnExit) {
 			delete();
+		}
 
 		super.finalize();
 
-		if (resource != null)
+		if (resource != null) {
 			resource = null;
+		}
 
-		if (dataType != null)
+		if (dataType != null) {
 			dataType = null;
+		}
 	}
 
 	// ----------------------------------------------------------------------
@@ -536,7 +560,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Step one of SRBFile( uri )
 	 */
-	static SRBAccount uriInitialAccount(URI uri) throws IOException {
+	static SRBAccount uriInitialAccount(final URI uri) throws IOException {
 		//
 		// I guess eventually, move all this to some Handler.java for SRB URIs.
 		//
@@ -595,15 +619,17 @@ public class SRBFile extends RemoteFile {
 
 			index = result.indexOf("ns1:server");
 			index2 = result.indexOf("/ns1:server", index + 11);
-			if ((index < 0) || (index2 < 0))
+			if ((index < 0) || (index2 < 0)) {
 				throw new ConnectException("Invalid zone name.");
+			}
 			host = result.substring(index + 11, index2 - 1);
 
 			index = result.indexOf("ns1:port");
 			index2 = result.indexOf("/ns1:port", index + 9);
 			result = result.substring(index + 9, index2 - 1);
-			if ((result != null) && (result.length() > 0))
+			if ((result != null) && (result.length() > 0)) {
 				port = Integer.parseInt(result);
+			}
 		}
 
 		if (port < 0) {
@@ -618,7 +644,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Step two of SRBFile( uri )
 	 */
-	static String getLocalZone(SRBFileSystem fs) throws IOException {
+	static String getLocalZone(final SRBFileSystem fs) throws IOException {
 		// Query file system to determine this SRB user's zone,
 		// then use that for the zone of its account object
 		if (fs.getVersionNumber() >= 3) {
@@ -627,10 +653,10 @@ public class SRBFile extends RemoteFile {
 			MetaDataCondition[] conditions = { MetaDataSet.newCondition(
 					SRBMetaDataSet.ZONE_LOCALITY, MetaDataCondition.EQUAL, 1), };
 			MetaDataSelect[] selects = { MetaDataSet
-					.newSelection(SRBMetaDataSet.ZONE_NAME) };
+					.newSelection(ZoneMetaData.ZONE_NAME) };
 			MetaDataRecordList[] rl = fs.query(conditions, selects);
 			if (rl != null) {
-				return rl[0].getValue(SRBMetaDataSet.ZONE_NAME).toString();
+				return rl[0].getValue(ZoneMetaData.ZONE_NAME).toString();
 			}
 		}
 		return null;
@@ -639,7 +665,8 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Step three of SRBFile( uri )
 	 */
-	static String getAvailableResource(SRBFileSystem fs) throws IOException {
+	static String getAvailableResource(final SRBFileSystem fs)
+			throws IOException {
 		MetaDataRecordList[] rl = null;
 		if (fs.getVersionNumber() >= 3) {
 			String userName = fs.getUserName();
@@ -663,14 +690,14 @@ public class SRBFile extends RemoteFile {
 							SRBMetaDataSet.RSRC_ACCS_USER_ZONE,
 							MetaDataCondition.EQUAL, zone), };
 			MetaDataSelect[] selects = { MetaDataSet
-					.newSelection(SRBMetaDataSet.RESOURCE_NAME) };
+					.newSelection(ResourceMetaData.RESOURCE_NAME) };
 			rl = fs.query(conditions, selects);
 
 			if (rl == null) {
 				// Same as above, just no zone
 				// Metadata to determine available resources was added only
 				// after SRB3
-				rl = fs.query(SRBMetaDataSet.RESOURCE_NAME);
+				rl = fs.query(ResourceMetaData.RESOURCE_NAME);
 				if ((rl == null) && (!userName.equals("public"))) {
 					// if null then file does not exist (or is dir?)
 					// public user never has resources, so can't commit files,
@@ -683,7 +710,8 @@ public class SRBFile extends RemoteFile {
 			// The first one was sometimes causing trouble,
 			// pick a random one so it works some of the time at least
 			int random = (int) Math.round((rl.length - 1) * Math.random());
-			return rl[random].getValue(SRBMetaDataSet.RESOURCE_NAME).toString();
+			return rl[random].getValue(ResourceMetaData.RESOURCE_NAME)
+					.toString();
 		}
 		return "";
 	}
@@ -715,14 +743,14 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Step four of SRBFile( uri )
 	 */
-	static synchronized SRBFileSystem uriAccountTest(SRBAccount account) {
+	static synchronized SRBFileSystem uriAccountTest(final SRBAccount account) {
 		// having multiple connections to the same filesystem is bad
 		// users can open a thousand files, which will open 1000 filesystem
 		// connections and might even crash the SRB.
 		SRBFileSystem uriTest = null;
 		for (int i = 0; i < uriFileSystems.size(); i++) {
 			uriTest = (SRBFileSystem) uriFileSystems.get(i);
-			if (account.equals((SRBAccount) uriTest.getAccount(), false)) {
+			if (account.equals(uriTest.getAccount(), false)) {
 				if (uriTest.isConnected()) {
 					return uriTest;
 				}
@@ -735,9 +763,9 @@ public class SRBFile extends RemoteFile {
 
 	private void checkResource() {
 		if (resource == null) {
-			if (!exists())
+			if (!exists()) {
 				resource = srbFileSystem.getDefaultStorageResource();
-			else {
+			} else {
 				// also slows things down a bit with the added network call.
 				// resource = getResource();
 			}
@@ -754,6 +782,7 @@ public class SRBFile extends RemoteFile {
 	 *            The file name or fileName plus some or all of the directory
 	 *            path.
 	 */
+	@Override
 	protected void setFileName(String filePath) {
 		// used when parsing the filepath
 		int index;
@@ -803,6 +832,7 @@ public class SRBFile extends RemoteFile {
 	 *            The directory path, need not be absolute.
 	 */
 	// though everything will be converted to a canonical path to avoid errors
+	@Override
 	protected void setDirectory(String dir) {
 		if (directory == null) {
 			directory = new Vector();
@@ -881,8 +911,9 @@ public class SRBFile extends RemoteFile {
 		}
 
 		// if dir not absolute
-		if (dir.startsWith(SRBFileSystem.SRB_ROOT))
+		if (dir.startsWith(SRBFileSystem.SRB_ROOT)) {
 			absolutePath = true;
+		}
 
 		// if directory not already absolute
 		if (directory.size() > 0) {
@@ -922,8 +953,9 @@ public class SRBFile extends RemoteFile {
 				directory.remove(i);
 				directory.remove(i - 1);
 				i--;
-				if (i > 0)
+				if (i > 0) {
 					i--;
+				}
 			} else if (canonicalTest.equals("..")) {
 				// at root, just remove the ..
 				directory.remove(i);
@@ -969,11 +1001,13 @@ public class SRBFile extends RemoteFile {
 	 * @throws ClassCastException
 	 *             - if the argument is not a SRBFileSystem object.
 	 */
-	protected void setFileSystem(GeneralFileSystem fileSystem)
+	@Override
+	protected void setFileSystem(final GeneralFileSystem fileSystem)
 			throws IllegalArgumentException {
-		if (fileSystem == null)
+		if (fileSystem == null) {
 			throw new IllegalArgumentException(
 					"Illegal fileSystem, cannot be null");
+		}
 
 		this.fileSystem = fileSystem;
 		this.srbFileSystem = (SRBFileSystem) this.fileSystem;
@@ -992,7 +1026,7 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs during the system change.
 	 */
-	public void setResource(String resourceName) throws IOException,
+	public void setResource(final String resourceName) throws IOException,
 			NullPointerException, IllegalArgumentException {
 		if (resourceName != null) {
 
@@ -1000,15 +1034,16 @@ public class SRBFile extends RemoteFile {
 		} else if (false) {
 			MetaDataCondition[] conditions = {
 					getZoneCondition(),
-					MetaDataSet.newCondition(SRBMetaDataSet.RESOURCE_NAME,
+					MetaDataSet.newCondition(ResourceMetaData.RESOURCE_NAME,
 							MetaDataCondition.EQUAL, resourceName) };
 			MetaDataSelect[] selects = { MetaDataSet
-					.newSelection(SRBMetaDataSet.RESOURCE_NAME) };
+					.newSelection(ResourceMetaData.RESOURCE_NAME) };
 			MetaDataRecordList[] resources = fileSystem.query(conditions,
 					selects);
 
-			if (resources == null)
+			if (resources == null) {
 				throw new IllegalArgumentException("Resource not found");
+			}
 
 			// else resource exists
 			resource = resourceName;
@@ -1019,9 +1054,9 @@ public class SRBFile extends RemoteFile {
 				conditions = new MetaDataCondition[] {
 						// getZoneCondition(),
 						MetaDataSet.newCondition(
-								GeneralMetaData.DIRECTORY_NAME,
+								StandardMetaData.DIRECTORY_NAME,
 								MetaDataCondition.EQUAL, getParent()),
-						MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+						MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 								MetaDataCondition.EQUAL, fileName) };
 				resources = fileSystem.query(conditions, selects);
 
@@ -1038,8 +1073,9 @@ public class SRBFile extends RemoteFile {
 							getParent(), null, resource, serverLocalPath, null);
 				}
 			}
-		} else
+		} else {
 			throw new NullPointerException();
+		}
 	}
 
 	/**
@@ -1083,7 +1119,7 @@ public class SRBFile extends RemoteFile {
 	 * ReplicaNumbers are always positive. setting a negative number will remove
 	 * the any specific replica reference.
 	 */
-	public void setReplicaNumber(int replicaNumber) {
+	public void setReplicaNumber(final int replicaNumber) {
 		if (replicaNumber >= 0) {
 			// getName() strips the old number
 			fileName = getName() + "&COPY=" + replicaNumber;
@@ -1114,7 +1150,7 @@ public class SRBFile extends RemoteFile {
 	 * permissions. You must have a user account on the SRB server machine, and
 	 * that account must have read/write permissions to this abstract filepath.
 	 */
-	public void setServerLocalPath(String serverLocalPath) {
+	public void setServerLocalPath(final String serverLocalPath) {
 		this.serverLocalPath = serverLocalPath;
 	}
 
@@ -1166,6 +1202,7 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs during the system query.
 	 */
+	@Override
 	public String getResource() throws IOException {
 		if (isDirectory()) {
 			return null;
@@ -1207,6 +1244,8 @@ public class SRBFile extends RemoteFile {
 	 * 
 	 * @deprecated Use separator and pathSeparator
 	 */
+	@Deprecated
+	@Override
 	public final String getPathSeparator() {
 		return separator;
 	}
@@ -1216,6 +1255,8 @@ public class SRBFile extends RemoteFile {
 	 * 
 	 * @deprecated Use separatorChar and pathSeparatorChar
 	 */
+	@Deprecated
+	@Override
 	public final char getPathSeparatorChar() {
 		return separatorChar;
 	}
@@ -1225,9 +1266,11 @@ public class SRBFile extends RemoteFile {
 	 * @throws NullPointerException
 	 *             if fileSystem is null.
 	 */
+	@Override
 	public GeneralFileSystem getFileSystem() throws NullPointerException {
-		if (srbFileSystem != null)
+		if (srbFileSystem != null) {
 			return srbFileSystem;
+		}
 
 		throw new NullPointerException("fileSystem is null.");
 	}
@@ -1244,7 +1287,7 @@ public class SRBFile extends RemoteFile {
 	public String getServerLocalPath() {
 		if ((serverLocalPath == null) || (serverLocalPath.equals(""))) {
 			try {
-				return firstQueryResult(SRBMetaDataSet.PATH_NAME);
+				return firstQueryResult(FileMetaData.PATH_NAME);
 			} catch (IOException e) {
 				if (SRBCommands.DEBUG > 0) {
 					e.printStackTrace();
@@ -1267,9 +1310,10 @@ public class SRBFile extends RemoteFile {
 	 * @return The metadata values for this file refered to by
 	 *         <code>fieldName</code>
 	 */
-	public MetaDataRecordList[] query(String fieldName) throws IOException {
+	public MetaDataRecordList[] query(final String fieldName)
+			throws IOException {
 		MetaDataSelect[] temp = { MetaDataSet.newSelection(fieldName) };
-		return query(temp, fileSystem.DEFAULT_RECORDS_WANTED);
+		return query(temp, GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
 
 	/**
@@ -1280,30 +1324,34 @@ public class SRBFile extends RemoteFile {
 	 * @return The metadata values for this file refered to by
 	 *         <code>fieldNames</code>
 	 */
-	public MetaDataRecordList[] query(String[] fieldNames) throws IOException {
+	@Override
+	public MetaDataRecordList[] query(final String[] fieldNames)
+			throws IOException {
 		return query(MetaDataSet.newSelection(fieldNames),
-				fileSystem.DEFAULT_RECORDS_WANTED);
+				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
 
 	/**
 	 * Queries metadata specific to this SRBFile object and selects one metadata
 	 * value, <code>select</code>, to be returned.
 	 */
-	public MetaDataRecordList[] query(MetaDataSelect select) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataSelect select)
+			throws IOException {
 		MetaDataSelect[] temp = { select };
-		return query(temp, fileSystem.DEFAULT_RECORDS_WANTED);
+		return query(temp, GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
 
 	/**
 	 * Queries metadata specific to this SRBFile object.
 	 */
-	public MetaDataRecordList[] query(MetaDataSelect[] selects)
+	@Override
+	public MetaDataRecordList[] query(final MetaDataSelect[] selects)
 			throws IOException {
-		return query(selects, fileSystem.DEFAULT_RECORDS_WANTED);
+		return query(selects, GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
 
-	public MetaDataRecordList[] query(MetaDataSelect[] selects,
-			int recordsWanted) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataSelect[] selects,
+			final int recordsWanted) throws IOException {
 		// doesn't need to use getZoneCondition() because will always have a
 		// DIRECTORY_NAME condition
 
@@ -1314,20 +1362,20 @@ public class SRBFile extends RemoteFile {
 
 		if (isDirectory()) {
 			iConditions = new MetaDataCondition[1];
-			fieldName = GeneralMetaData.DIRECTORY_NAME;
+			fieldName = StandardMetaData.DIRECTORY_NAME;
 			operator = MetaDataCondition.EQUAL;
 			value = getAbsolutePath();
 			iConditions[0] = MetaDataSet.newCondition(fieldName, operator,
 					value);
 		} else {
 			iConditions = new MetaDataCondition[3];
-			fieldName = GeneralMetaData.DIRECTORY_NAME;
+			fieldName = StandardMetaData.DIRECTORY_NAME;
 			operator = MetaDataCondition.EQUAL;
 			value = getParent();
 			iConditions[0] = MetaDataSet.newCondition(fieldName, operator,
 					value);
 
-			fieldName = GeneralMetaData.FILE_NAME;
+			fieldName = StandardMetaData.FILE_NAME;
 			value = getName();
 			iConditions[1] = MetaDataSet.newCondition(fieldName, operator,
 					value);
@@ -1344,13 +1392,16 @@ public class SRBFile extends RemoteFile {
 		return fileSystem.query(iConditions, selects, recordsWanted);
 	}
 
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects) throws IOException {
-		return query(conditions, selects, fileSystem.DEFAULT_RECORDS_WANTED);
+	@Override
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects) throws IOException {
+		return query(conditions, selects,
+				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
 
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int recordsWanted) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int recordsWanted)
+			throws IOException {
 		// doesn't need to use getZoneCondition() because will always have a
 		// DIRECTORY_NAME condition
 
@@ -1364,7 +1415,7 @@ public class SRBFile extends RemoteFile {
 
 			System.arraycopy(conditions, 0, iConditions, 0, conditions.length);
 
-			fieldName = GeneralMetaData.DIRECTORY_NAME;
+			fieldName = StandardMetaData.DIRECTORY_NAME;
 			operator = MetaDataCondition.EQUAL;
 			value = getAbsolutePath();
 			iConditions[conditions.length] = MetaDataSet.newCondition(
@@ -1374,13 +1425,13 @@ public class SRBFile extends RemoteFile {
 
 			System.arraycopy(conditions, 0, iConditions, 0, conditions.length);
 
-			fieldName = GeneralMetaData.DIRECTORY_NAME;
+			fieldName = StandardMetaData.DIRECTORY_NAME;
 			operator = MetaDataCondition.EQUAL;
 			value = getParent();
 			iConditions[conditions.length] = MetaDataSet.newCondition(
 					fieldName, operator, value);
 
-			fieldName = GeneralMetaData.FILE_NAME;
+			fieldName = StandardMetaData.FILE_NAME;
 			value = fileName;
 			iConditions[conditions.length + 1] = MetaDataSet.newCondition(
 					fieldName, operator, value);
@@ -1440,7 +1491,7 @@ public class SRBFile extends RemoteFile {
 	 * SIZE<br>
 	 * DEFINABLE_METADATA_FOR_FILES<br>
 	 * DEFINABLE_METADATA_FOR_DIRECTORIES<br>
-	 *<br>
+	 * <br>
 	 * note: Dates timestamps are Strings with the format: YYYY-MM-DD-HH.MM.SS
 	 * 
 	 * @throws FileNotFoundException
@@ -1448,7 +1499,9 @@ public class SRBFile extends RemoteFile {
 	 *             the file was improperly deleted, removing the data on disk
 	 *             without removing the metadata.
 	 */
-	public void modifyMetaData(MetaDataRecordList record) throws IOException {
+	@Override
+	public void modifyMetaData(final MetaDataRecordList record)
+			throws IOException {
 		// The srb C version, sort of,
 		// catalog/mdas-srb/srbC_mdas_library.c - modify_dataset_info(...)
 
@@ -1473,13 +1526,14 @@ public class SRBFile extends RemoteFile {
 		if ((serverLocalPath == null) || (serverLocalPath.equals(""))) {
 			if ((getReplicaNumber() < 0) && isFile) {
 				MetaDataSelect[] selects = {
-						MetaDataSet.newSelection(SRBMetaDataSet.PATH_NAME),
-						MetaDataSet.newSelection(SRBMetaDataSet.RESOURCE_NAME) };
+						MetaDataSet.newSelection(FileMetaData.PATH_NAME),
+						MetaDataSet
+								.newSelection(ResourceMetaData.RESOURCE_NAME) };
 				MetaDataRecordList rl[] = query(selects);
 				if (rl != null) {
-					vaultPathName = rl[0].getValue(SRBMetaDataSet.PATH_NAME)
+					vaultPathName = rl[0].getValue(FileMetaData.PATH_NAME)
 							.toString();
-					resource = rl[0].getValue(SRBMetaDataSet.RESOURCE_NAME)
+					resource = rl[0].getValue(ResourceMetaData.RESOURCE_NAME)
 							.toString();
 				} else {
 					throw new FileNotFoundException(
@@ -1500,10 +1554,11 @@ public class SRBFile extends RemoteFile {
 		boolean delete = false;
 
 		for (int i = 0; i < record.getFieldCount(); i++) {
-			if (record.getValue(i) == null)
+			if (record.getValue(i) == null) {
 				delete = true;
-			else
+			} else {
 				delete = false;
+			}
 
 			fieldName = record.getFieldName(i);
 			if (fieldName == FileMetaData.FILE_COMMENTS) {
@@ -1513,14 +1568,14 @@ public class SRBFile extends RemoteFile {
 					retractionType = SRBMetaDataSet.D_INSERT_COMMENTS;
 					dataValue1 = record.getStringValue(i);
 				}
-			} else if (fieldName == SRBMetaDataSet.SIZE) {
+			} else if (fieldName == GeneralMetaData.SIZE) {
 				retractionType = SRBMetaDataSet.D_CHANGE_SIZE;
 				dataValue1 = record.getStringValue(i);
 				filesOnly = true;
 			} else if (fieldName == SRBMetaDataSet.FILE_TYPE_NAME) {
 				retractionType = SRBMetaDataSet.D_CHANGE_TYPE;
 				dataValue1 = record.getStringValue(i);
-			} else if (fieldName == GeneralMetaData.DIRECTORY_NAME) {
+			} else if (fieldName == StandardMetaData.DIRECTORY_NAME) {
 				retractionType = SRBMetaDataSet.D_CHANGE_GROUP;
 				dataValue1 = record.getStringValue(i);
 			} else if (fieldName == SRBMetaDataSet.OFFSET) {
@@ -1545,7 +1600,7 @@ public class SRBFile extends RemoteFile {
 				retractionType = SRBMetaDataSet.D_INSERT_LOCK;
 				dataValue1 = record.getStringValue(i);
 				// @@@
-			} else if (fieldName == SRBMetaDataSet.FILE_CHECKSUM) {
+			} else if (fieldName == FileMetaData.FILE_CHECKSUM) {
 				retractionType = SRBMetaDataSet.D_INSERT_DCHECKSUM;
 				dataValue1 = record.getStringValue(i);
 			} else if (fieldName == SRBMetaDataSet.FILE_HIDE) {
@@ -1583,7 +1638,7 @@ public class SRBFile extends RemoteFile {
 			 * SRBMetaDataSet.D_INSERT_LINK; dataValue1 =
 			 * record.getStringValue(i); //@@@ }
 			 */
-			else if (fieldName == GeneralMetaData.FILE_NAME) {
+			else if (fieldName == StandardMetaData.FILE_NAME) {
 				// same as renameTo(GeneralFile)
 				retractionType = SRBMetaDataSet.D_CHANGE_DNAME;
 				dataValue1 = record.getStringValue(i);
@@ -1628,11 +1683,11 @@ public class SRBFile extends RemoteFile {
 				retractionType = SRBMetaDataSet.D_CHANGE_OWNER;
 				dataValue1 = record.getStringValue(i);
 				// @@@
-			} else if (fieldName == SRBMetaDataSet.PATH_NAME) {
+			} else if (fieldName == FileMetaData.PATH_NAME) {
 				// newPathName, not_used (be careful how you use this!)
 				retractionType = SRBMetaDataSet.D_CHANGE_DPATH;
 				dataValue1 = record.getStringValue(i);
-			} else if (fieldName == SRBMetaDataSet.MODIFICATION_DATE) {
+			} else if (fieldName == GeneralMetaData.MODIFICATION_DATE) {
 				// newTimeStamp, not_used newTimeStamp=YYYY-MM-DD-HH.MM.SS
 				retractionType = SRBMetaDataSet.D_CHANGE_MODIFY_TIMESTAMP;
 				dataValue1 = record.getStringValue(i);
@@ -1863,10 +1918,10 @@ public class SRBFile extends RemoteFile {
 							|| record.getStringValue(i).equals("false")) {
 						retractionType = SRBMetaDataSet.C_CHANGE_ACL_INHERITANCE_BIT;
 						dataValue1 = "0";
-					} else if (record.getStringValue(i).toLowerCase().equals(
-							"recursive")
-							|| record.getStringValue(i).toLowerCase().equals(
-									"r")) {
+					} else if (record.getStringValue(i).toLowerCase()
+							.equals("recursive")
+							|| record.getStringValue(i).toLowerCase()
+									.equals("r")) {
 						retractionType = SRBMetaDataSet.C_CHANGE_ACL_INHERITANCE_BIT_RECUR;
 						dataValue1 = "1";
 					} else {
@@ -1951,7 +2006,7 @@ public class SRBFile extends RemoteFile {
 	 * destination file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
-	 *<P>
+	 * <P>
 	 * note: Files will be transferred using the SRB parallel transfer protocol.
 	 * However, appending a file cannot use the parallel copy method. Also, the
 	 * parallel method may be blocked by some firewalls, see also
@@ -1967,7 +2022,8 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyTo(GeneralFile file, boolean forceOverwrite)
+	@Override
+	public void copyTo(final GeneralFile file, final boolean forceOverwrite)
 			throws IOException {
 		copyTo(file, forceOverwrite, USE_BULKCOPY);
 	}
@@ -1977,7 +2033,7 @@ public class SRBFile extends RemoteFile {
 	 * destination file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
-	 *<P>
+	 * <P>
 	 * note: Files will be transferred using the SRB parallel transfer protocol.
 	 * However, appending a file cannot use the parallel copy method. Also, the
 	 * parallel method may be blocked by some firewalls, see also
@@ -1998,7 +2054,7 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyTo(GeneralFile file, boolean forceOverwrite,
+	public void copyTo(GeneralFile file, final boolean forceOverwrite,
 			boolean bulkCopy) throws IOException {
 		if (file == null) {
 			throw new NullPointerException();
@@ -2021,13 +2077,14 @@ public class SRBFile extends RemoteFile {
 				// maybe a query for big files to be done in parallel,
 				// server-side changes?
 				if (bulkCopy) {
-					if (forceOverwrite)
+					if (forceOverwrite) {
 						if (!file.delete()) {
 							if (file.exists()) {
 								throw new IOException(file
 										+ " cannot be removed");
 							}
 						}
+					}
 
 					bulkUnload((LocalFile) file);
 					return;
@@ -2040,15 +2097,15 @@ public class SRBFile extends RemoteFile {
 				// just query and if big files are found, copy them all in
 				// parallel.
 				MetaDataCondition conditions[] = { MetaDataSet.newCondition(
-						GeneralMetaData.DIRECTORY_NAME, MetaDataCondition.LIKE,
-						getAbsolutePath() + "*") };
+						StandardMetaData.DIRECTORY_NAME,
+						MetaDataCondition.LIKE, getAbsolutePath() + "*") };
 				MetaDataSelect selects[] = { MetaDataSet
 						.newSelection(GeneralMetaData.SIZE) };
 				MetaDataRecordList rl[] = query(conditions, selects);
 				if (rl != null) {
 					do {
-						for (int i = 0; i < rl.length; i++) {
-							if (rl[i].getIntValue(0) > MAX_BULK_FILE_SIZE) {
+						for (MetaDataRecordList element : rl) {
+							if (element.getIntValue(0) > MAX_BULK_FILE_SIZE) {
 								bulkCopy = false;
 								break;
 							}
@@ -2069,10 +2126,11 @@ public class SRBFile extends RemoteFile {
 
 			file.mkdir();
 			if (fileList != null) {
-				for (int i = 0; i < fileList.length; i++) {
-					fileList[i].copyTo(FileFactory.newFile(
-							file.getFileSystem(), file.getAbsolutePath(),
-							fileList[i].getName()), forceOverwrite);
+				for (GeneralFile element : fileList) {
+					element.copyTo(
+							FileFactory.newFile(file.getFileSystem(),
+									file.getAbsolutePath(), element.getName()),
+							forceOverwrite);
 				}
 			}
 		} else if (isFile(false)) {
@@ -2090,8 +2148,9 @@ public class SRBFile extends RemoteFile {
 
 			if (file instanceof LocalFile) {
 				int numThreads = (int) length() / MIN_THREAD_SIZE;
-				if (numThreads > MAX_NUMBER_OF_PARALLEL_THREADS)
+				if (numThreads > MAX_NUMBER_OF_PARALLEL_THREADS) {
 					numThreads = MAX_NUMBER_OF_PARALLEL_THREADS;
+				}
 
 				// Note: Removed support for before SRB version 3.0
 				srbFileSystem.srbObjGetClientInitiated(fileName, getParent(),
@@ -2123,7 +2182,7 @@ public class SRBFile extends RemoteFile {
 	 * destination file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
-	 *<P>
+	 * <P>
 	 * note: Files will be transferred using the SRB parallel transfer protocol.
 	 * However, appending a file cannot use the parallel copy method. Also, the
 	 * parallel method may be blocked by some firewalls, see also
@@ -2136,7 +2195,8 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(GeneralFile file, boolean forceOverwrite)
+	@Override
+	public void copyFrom(final GeneralFile file, final boolean forceOverwrite)
 			throws IOException {
 		copyFrom(file, forceOverwrite, USE_BULKCOPY);
 	}
@@ -2146,7 +2206,7 @@ public class SRBFile extends RemoteFile {
 	 * destination file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
-	 *<P>
+	 * <P>
 	 * note: Files will be transferred using the SRB parallel transfer protocol.
 	 * However, appending a file cannot use the parallel copy method. Also, the
 	 * parallel method may be blocked by some firewalls, see also
@@ -2164,8 +2224,8 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(GeneralFile file, boolean forceOverwrite,
-			boolean bulkCopy) throws IOException {
+	public void copyFrom(final GeneralFile file, final boolean forceOverwrite,
+			final boolean bulkCopy) throws IOException {
 		if (file == null) {
 			throw new NullPointerException();
 		}
@@ -2199,9 +2259,9 @@ public class SRBFile extends RemoteFile {
 
 				mkdir();
 				if (fileList != null) {
-					for (int i = 0; i < fileList.length; i++) {
-						FileFactory.newFile(this, fileList[i].getName())
-								.copyFrom(fileList[i], forceOverwrite);
+					for (GeneralFile element : fileList) {
+						FileFactory.newFile(this, element.getName()).copyFrom(
+								element, forceOverwrite);
 					}
 				}
 			}
@@ -2243,8 +2303,9 @@ public class SRBFile extends RemoteFile {
 								serverLocalPath, file.getAbsolutePath(),
 								length, 1, numThreads);
 					} catch (ConnectException e) {
-						if (SRBCommands.DEBUG > -1)
+						if (SRBCommands.DEBUG > -1) {
 							e.printStackTrace();
+						}
 
 						// Sometimes the connection drops after many repeated
 						// copies.
@@ -2263,13 +2324,14 @@ public class SRBFile extends RemoteFile {
 								serverLocalPath, file.getAbsolutePath(),
 								length, 0, numThreads);
 					} catch (ConnectException e) {
-						if (SRBCommands.DEBUG > -1)
+						if (SRBCommands.DEBUG > -1) {
 							e.printStackTrace();
+						}
 
 						// Sometimes the connection drops after many repeated
 						// copies.
-						fileSystem = new SRBFileSystem((SRBAccount) fileSystem
-								.getAccount());
+						fileSystem = new SRBFileSystem(
+								(SRBAccount) fileSystem.getAccount());
 						value = srbFileSystem.srbObjPutClientInitiated(
 								getName(), getParent(), resource, "",
 								serverLocalPath, file.getAbsolutePath(),
@@ -2294,8 +2356,8 @@ public class SRBFile extends RemoteFile {
 						}
 					}
 				}
-				srbFileSystem.srbObjCopy(((SRBFile) file).fileName, file
-						.getParent(), fileName, getParent(), getResource());
+				srbFileSystem.srbObjCopy(((SRBFile) file).fileName,
+						file.getParent(), fileName, getParent(), getResource());
 			} else {
 				super.copyFrom(file, forceOverwrite);
 			}
@@ -2324,7 +2386,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Retrieves the platform independent stat structure. This is basically the
 	 * POSIX stat definition.
-	 *<P>
+	 * <P>
 	 * Returns:<br>
 	 * st_size = 0. File size in bytes (long).<br>
 	 * st_dev = 1. Device.<br>
@@ -2364,8 +2426,9 @@ public class SRBFile extends RemoteFile {
 	public long[] getStat() throws IOException {
 		long stat[] = null;
 
-		if (!exists())
+		if (!exists()) {
 			return null;
+		}
 
 		if (isDirectory()) {
 			// @param myType file or dir state : IS_UNKNOWN, IS_FILE, IS_DIR_1,
@@ -2413,8 +2476,9 @@ public class SRBFile extends RemoteFile {
 			 * st_spare4[] = new long[25]; for (int i=0;i<st_spare4.length;i++)
 			 * st_spare4[i] = stat[i+25]; // Reserved
 			 */return stat;
-		} else
+		} else {
 			throw new IOException("Unable to obtain file stat");
+		}
 	}
 
 	// 0=empty, -1=loading, 1=ready to load
@@ -2431,7 +2495,8 @@ public class SRBFile extends RemoteFile {
 	 * <code>srbDirectory</code>.
 	 * 
 	 */
-	void bulkLoad(LocalFile[] files, boolean forceOverwrite) throws IOException {
+	void bulkLoad(final LocalFile[] files, final boolean forceOverwrite)
+			throws IOException {
 		/*
 		 * which container or resource, get size and MaxSize of container open
 		 * container or temp file for upload create two 8MB byte buffers create
@@ -2447,9 +2512,6 @@ public class SRBFile extends RemoteFile {
 		 * 
 		 * upto 4 registration threads
 		 */
-
-		long maxSize = -1;
-		long containerOffset = 0;
 
 		// buffer for loading to transfering files
 		byte[] loadBuffer = new byte[BULK_LOAD_BUFFER_SIZE];
@@ -2480,8 +2542,8 @@ public class SRBFile extends RemoteFile {
 		Thread[] registrationThreads = new Thread[MAX_NUMBER_OF_BULK_THREADS];
 
 		for (int i = 0; i < MAX_NUMBER_OF_BULK_THREADS; i++) {
-			registration[i] = new RegistrationThread(tempFile[i]
-					.getAbsolutePath(), this);
+			registration[i] = new RegistrationThread(
+					tempFile[i].getAbsolutePath(), this);
 		}
 		registrationThreads[0] = new Thread(registration[0]);
 
@@ -2489,10 +2551,9 @@ public class SRBFile extends RemoteFile {
 		load = new LoadThread(raf, loadBuffer, this);
 
 		// Now start copying
-		for (int i = 0; i < files.length; i++) {
-			loadBuffer(files[i], load, tempFile, registrationThreads,
-					registration, null, parallelSourceFiles,
-					parallelDestination);
+		for (LocalFile file : files) {
+			loadBuffer(file, load, tempFile, registrationThreads, registration,
+					null, parallelSourceFiles, parallelDestination);
 		}
 
 		// singal the load thread to stop
@@ -2535,8 +2596,9 @@ public class SRBFile extends RemoteFile {
 				}
 			}
 		} catch (InterruptedException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		// large files copied in parallel after the bulk load
@@ -2551,10 +2613,10 @@ public class SRBFile extends RemoteFile {
 
 	// loads a file (or a directory recursively)
 	// into the buffer for transfer to the SRB.
-	private void loadBuffer(GeneralFile file, LoadThread load,
-			GeneralFile[] tempFile, Thread[] registrationThreads,
-			RegistrationThread[] registration, String relativePath,
-			Vector parallelSourceFiles, Vector parallelDestination)
+	private void loadBuffer(final GeneralFile file, final LoadThread load,
+			final GeneralFile[] tempFile, final Thread[] registrationThreads,
+			final RegistrationThread[] registration, String relativePath,
+			final Vector parallelSourceFiles, final Vector parallelDestination)
 			throws IOException {
 		long length = file.length();
 		boolean exist = file.exists();
@@ -2608,11 +2670,12 @@ public class SRBFile extends RemoteFile {
 			 */
 			GeneralFile[] files = file.listFiles();
 
-			if (files == null)
+			if (files == null) {
 				return;
+			}
 
-			for (int i = 0; i < files.length; i++) {
-				loadBuffer(files[i], load, tempFile, registrationThreads,
+			for (GeneralFile file2 : files) {
+				loadBuffer(file2, load, tempFile, registrationThreads,
 						registration, relativePath, parallelSourceFiles,
 						parallelDestination);
 			}
@@ -2631,9 +2694,6 @@ public class SRBFile extends RemoteFile {
 			parallelSourceFiles.add(file);
 			parallelDestination.add(FileFactory.newFile(this, relativePath));
 		} else {
-			// temp buffer to read in source file
-			int zxcv = 0;
-
 			// note: wait if all four threads are full&in use handled at the
 			// bottom
 			// this registration is up here because the last file in a block
@@ -2657,15 +2717,17 @@ public class SRBFile extends RemoteFile {
 				readFile = FileFactory.newFileInputStream(file);
 			} catch (SecurityException e) {
 				// file I/O problem, maybe it will recover...
-				if (SRBCommands.DEBUG > 0)
+				if (SRBCommands.DEBUG > 0) {
 					e.printStackTrace();
+				}
 				return;
 			} catch (IOException e) {
 				// "trying to open a file that does not exist"
 
 				// file I/O problem, maybe it will recover...
-				if (SRBCommands.DEBUG > 0)
+				if (SRBCommands.DEBUG > 0) {
 					e.printStackTrace();
+				}
 				return;
 			}
 
@@ -2681,7 +2743,6 @@ public class SRBFile extends RemoteFile {
 
 					if (temp > 0) {
 						toRead -= temp;
-						zxcv += temp;
 						load.loadBufferLength += temp;
 					}
 				}
@@ -2722,8 +2783,9 @@ public class SRBFile extends RemoteFile {
 									.join();
 						}
 					} catch (InterruptedException e) {
-						if (SRBCommands.DEBUG > 0)
+						if (SRBCommands.DEBUG > 0) {
 							e.printStackTrace();
+						}
 					}
 
 					registrationThreads[activeRegistrationThread] = new Thread(
@@ -2732,8 +2794,8 @@ public class SRBFile extends RemoteFile {
 
 				// new tempFile for registration and load threads
 				tempFile[activeRegistrationThread] = SRBFile.createTempFile(
-						"BLoad", ".tmp", tempFile[activeRegistrationThread]
-								.getParentFile());
+						"BLoad", ".tmp",
+						tempFile[activeRegistrationThread].getParentFile());
 				registration[activeRegistrationThread]
 						.setBloadFilePath(tempFile[activeRegistrationThread]
 								.getAbsolutePath());
@@ -2764,15 +2826,14 @@ public class SRBFile extends RemoteFile {
 		// keep thread monitor
 		Object mainThread;
 
-		LoadThread(GeneralRandomAccessFile[] out, byte[] loadBuffer,
-				Object mainThread) {
+		LoadThread(final GeneralRandomAccessFile[] out,
+				final byte[] loadBuffer, final Object mainThread) {
 			this.out = out;
 			this.loadBuffer = loadBuffer;
 			this.mainThread = mainThread;
 		}
 
 		public void run() {
-			int oldBuf = Integer.MIN_VALUE;
 		}
 
 		/**
@@ -2787,7 +2848,7 @@ public class SRBFile extends RemoteFile {
 			restartRandom = false;
 		}
 
-		int sendBuffer(int oldBuf) throws IOException {
+		int sendBuffer(final int oldBuf) throws IOException {
 			if (loadBufferLength <= 0) {
 				return oldBuf;
 			}
@@ -2825,17 +2886,17 @@ public class SRBFile extends RemoteFile {
 		// list of SRB relative paths of those files
 		Vector paths = new Vector();
 
-		RegistrationThread(String bloadFilePath, Object mainThread)
+		RegistrationThread(final String bloadFilePath, final Object mainThread)
 				throws IOException {
 			this.bloadFilePath = bloadFilePath;
 			this.mainThread = mainThread;
 		}
 
-		void setBloadFilePath(String bloadFilePath) {
+		void setBloadFilePath(final String bloadFilePath) {
 			this.bloadFilePath = bloadFilePath;
 		}
 
-		void addFile(GeneralFile file, String relativePath) {
+		void addFile(final GeneralFile file, final String relativePath) {
 			files.add(file);
 			paths.add(relativePath);
 		}
@@ -2844,20 +2905,19 @@ public class SRBFile extends RemoteFile {
 			try {
 				register();
 			} catch (IOException e) {
-				if (SRBCommands.DEBUG > 0)
+				if (SRBCommands.DEBUG > 0) {
 					e.printStackTrace();
+				}
 			}
 		}
 
 		// get the files that are ready to be registered
-		SRBMetaDataRecordList[] getFileRegistry(int numFiles)
+		SRBMetaDataRecordList[] getFileRegistry(final int numFiles)
 				throws IOException {
 			SRBMetaDataRecordList rl = null;
 			SRBMetaDataRecordList[] recordLists = new SRBMetaDataRecordList[numFiles];
 
-			GeneralFile tempFile = null, tempFile2 = null;
-			String tempName = null, tempName2 = null;
-
+			GeneralFile tempFile = null;
 			String dirName = null; // SRBParentFile???
 			long size = 0;
 			int offset = 0;
@@ -2874,14 +2934,14 @@ public class SRBFile extends RemoteFile {
 					dirName = getAbsolutePath() + separator + dirName;
 				}
 
-				rl = new SRBMetaDataRecordList(SRBMetaDataSet
-						.getField(GeneralMetaData.FILE_NAME), tempFile
-						.getName());
-				rl.addRecord(SRBMetaDataSet
-						.getField(GeneralMetaData.DIRECTORY_NAME), dirName);
-				rl.addRecord(SRBMetaDataSet.getField(GeneralMetaData.SIZE),
-						size);
-				rl.addRecord(SRBMetaDataSet.getField(SRBMetaDataSet.OFFSET),
+				rl = new SRBMetaDataRecordList(
+						MetaDataSet.getField(StandardMetaData.FILE_NAME),
+						tempFile.getName());
+				rl.addRecord(
+						MetaDataSet.getField(StandardMetaData.DIRECTORY_NAME),
+						dirName);
+				rl.addRecord(MetaDataSet.getField(GeneralMetaData.SIZE), size);
+				rl.addRecord(MetaDataSet.getField(SRBMetaDataSet.OFFSET),
 						offset);
 
 				recordLists[i] = rl;
@@ -2892,8 +2952,9 @@ public class SRBFile extends RemoteFile {
 					files.remove(0);
 					paths.remove(0);
 				} catch (ArrayIndexOutOfBoundsException e) {
-					if (SRBCommands.DEBUG > 0)
+					if (SRBCommands.DEBUG > 0) {
 						e.printStackTrace();
+					}
 					break;
 				}
 			}
@@ -2947,11 +3008,11 @@ public class SRBFile extends RemoteFile {
 		boolean copied = false;
 
 		MetaDataCondition[] conditions = { MetaDataSet.newCondition(
-				GeneralMetaData.DIRECTORY_NAME, MetaDataCondition.LIKE,
+				StandardMetaData.DIRECTORY_NAME, MetaDataCondition.LIKE,
 				getAbsolutePath() + "*"), };
 		MetaDataSelect[] selects = {
-				MetaDataSet.newSelection(GeneralMetaData.DIRECTORY_NAME),
-				MetaDataSet.newSelection(GeneralMetaData.FILE_NAME), };
+				MetaDataSet.newSelection(StandardMetaData.DIRECTORY_NAME),
+				MetaDataSet.newSelection(StandardMetaData.FILE_NAME), };
 
 		MetaDataRecordList[] rl = fileSystem.query(conditions, selects);
 
@@ -2960,11 +3021,11 @@ public class SRBFile extends RemoteFile {
 		MetaDataRecordList[] rl2 = fileSystem.query(conditions, selects);
 
 		if ((rl != null) && (rl2 != null)) {
-			for (int i = 0; i < rl2.length; i++) {
-				allDir = rl2[i].getStringValue(0).substring(
+			for (MetaDataRecordList element : rl2) {
+				allDir = element.getStringValue(0).substring(
 						getAbsolutePath().length());
-				for (int j = 0; j < rl.length; j++) {
-					fileDir = rl[j].getStringValue(1).substring(
+				for (MetaDataRecordList element2 : rl) {
+					fileDir = element2.getStringValue(1).substring(
 							getAbsolutePath().length());
 					if (fileDir.equals(allDir)) {
 						copied = true;
@@ -2991,6 +3052,7 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
+	@Override
 	public String getPermissions() throws IOException {
 		// can't just call getPermissions(false) since we need to get
 		// different values if it is directory or file.
@@ -3012,18 +3074,19 @@ public class SRBFile extends RemoteFile {
 					MetaDataSet
 							.newSelection(SRBMetaDataSet.ACCESS_DIRECTORY_NAME),
 					MetaDataSet
-							.newSelection(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT),
+							.newSelection(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT),
 					MetaDataSet.newSelection(UserMetaData.USER_NAME),
 					MetaDataSet.newSelection(SRBMetaDataSet.USER_DOMAIN), };
 			rl = fileSystem.query(conditions, selects);
 
 			if (rl != null) {
-				for (int i = 0; i < rl.length; i++) {
-					if (rl[i].getValue(UserMetaData.USER_NAME).equals(userName)
-							&& rl[i].getValue(SRBMetaDataSet.USER_DOMAIN)
+				for (MetaDataRecordList element : rl) {
+					if (element.getValue(UserMetaData.USER_NAME).equals(
+							userName)
+							&& element.getValue(SRBMetaDataSet.USER_DOMAIN)
 									.equals(userDomain)) {
-						return rl[i].getValue(
-								SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT)
+						return element.getValue(
+								DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT)
 								.toString();
 					}
 				}
@@ -3035,18 +3098,19 @@ public class SRBFile extends RemoteFile {
 					MetaDataSet.newCondition(SRBMetaDataSet.USER_DOMAIN,
 							MetaDataCondition.EQUAL, userDomain), };
 			MetaDataSelect selects[] = {
-					MetaDataSet.newSelection(SRBMetaDataSet.ACCESS_CONSTRAINT),
+					MetaDataSet.newSelection(GeneralMetaData.ACCESS_CONSTRAINT),
 					MetaDataSet.newSelection(UserMetaData.USER_NAME),
 					MetaDataSet.newSelection(SRBMetaDataSet.USER_DOMAIN), };
 			rl = query(conditions, selects);
 
 			if (rl != null) {
-				for (int i = 0; i < rl.length; i++) {
-					if (rl[i].getValue(UserMetaData.USER_NAME).equals(userName)
-							&& rl[i].getValue(SRBMetaDataSet.USER_DOMAIN)
+				for (MetaDataRecordList element : rl) {
+					if (element.getValue(UserMetaData.USER_NAME).equals(
+							userName)
+							&& element.getValue(SRBMetaDataSet.USER_DOMAIN)
 									.equals(userDomain)) {
-						return rl[i].getValue(SRBMetaDataSet.ACCESS_CONSTRAINT)
-								.toString();
+						return element.getValue(
+								GeneralMetaData.ACCESS_CONSTRAINT).toString();
 					}
 				}
 			}
@@ -3058,12 +3122,12 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Gets all the non-null permissions of all SRB users for this SRBFile:
 	 * write, read, all, annotate or null.
-	 *<P>
+	 * <P>
 	 * 
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public MetaDataRecordList[] getPermissions(boolean allUsers)
+	public MetaDataRecordList[] getPermissions(final boolean allUsers)
 			throws IOException {
 		if (allUsers) {
 			if (isDirectory()) {
@@ -3073,14 +3137,14 @@ public class SRBFile extends RemoteFile {
 						MetaDataCondition.EQUAL, getAbsolutePath()), };
 				MetaDataSelect selects[] = {
 						MetaDataSet
-								.newSelection(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT),
+								.newSelection(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT),
 						MetaDataSet.newSelection(UserMetaData.USER_NAME),
 						MetaDataSet.newSelection(SRBMetaDataSet.USER_DOMAIN) };
 				return fileSystem.query(conditions, selects);
 			} else {
 				MetaDataSelect selects[] = {
 						MetaDataSet
-								.newSelection(SRBMetaDataSet.ACCESS_CONSTRAINT),
+								.newSelection(GeneralMetaData.ACCESS_CONSTRAINT),
 						MetaDataSet.newSelection(UserMetaData.USER_NAME),
 						MetaDataSet.newSelection(SRBMetaDataSet.USER_DOMAIN), };
 				return query(selects);
@@ -3103,7 +3167,7 @@ public class SRBFile extends RemoteFile {
 						MetaDataSet
 								.newSelection(SRBMetaDataSet.ACCESS_DIRECTORY_NAME),
 						MetaDataSet
-								.newSelection(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT),
+								.newSelection(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT),
 						MetaDataSet.newSelection(UserMetaData.USER_NAME),
 						MetaDataSet.newSelection(SRBMetaDataSet.USER_DOMAIN), };
 				return fileSystem.query(conditions, selects);
@@ -3115,7 +3179,7 @@ public class SRBFile extends RemoteFile {
 								MetaDataCondition.EQUAL, userDomain), };
 				MetaDataSelect selects[] = {
 						MetaDataSet
-								.newSelection(SRBMetaDataSet.ACCESS_CONSTRAINT),
+								.newSelection(GeneralMetaData.ACCESS_CONSTRAINT),
 						MetaDataSet.newSelection(UserMetaData.USER_NAME),
 						MetaDataSet.newSelection(SRBMetaDataSet.USER_DOMAIN), };
 				return query(conditions, selects);
@@ -3137,8 +3201,9 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void changePermissions(String permission, String newUserName,
-			String userMdasDomain) throws IOException {
+	public void changePermissions(final String permission,
+			final String newUserName, final String userMdasDomain)
+			throws IOException {
 		changePermissions(permission, newUserName, userMdasDomain, false);
 	}
 
@@ -3158,8 +3223,9 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void changePermissions(String permission, String newUserName,
-			String userMdasDomain, boolean recursive) throws IOException {
+	public void changePermissions(String permission, final String newUserName,
+			final String userMdasDomain, final boolean recursive)
+			throws IOException {
 		int retractionType = -1;
 
 		if (permission == null) {
@@ -3223,12 +3289,12 @@ public class SRBFile extends RemoteFile {
 	 * Replicates this SRBFile to a new resource. Each replicant will increment
 	 * its replication number by 1 from the last replication.
 	 * Directories/collections will be recursively replicated.
-	 *<P>
+	 * <P>
 	 * In SRB, one can make copies of a data set and store the copies in
 	 * different locations. But, all these copies in SRB are considered to be
 	 * identifiable by the same identifier. That is, each copy is considered to
 	 * be equivalent to each other.
-	 *<P>
+	 * <P>
 	 * When a user reads a replicated data set, SRB cycles through all the
 	 * copies of the datset and reads the one that is accessible at that time.
 	 * It uses a simple replica identification mechanism to order this list of
@@ -3239,16 +3305,17 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void replicate(String newResource) throws IOException {
+	@Override
+	public void replicate(final String newResource) throws IOException {
 		if (isDirectory()) {
 			SRBFile list[] = (SRBFile[]) listFiles();
 
-			for (int i = 0; i < list.length; i++) {
-				if (list[i].isFile(false)) {
+			for (SRBFile element : list) {
+				if (element.isFile(false)) {
 					srbFileSystem.srbObjReplicate(catalogType, fileName,
 							getParent(), newResource, null);
 				} else {
-					list[i].replicate(newResource, false);
+					element.replicate(newResource, false);
 				}
 			}
 		} else {
@@ -3261,7 +3328,7 @@ public class SRBFile extends RemoteFile {
 	 * Replicates this SRBFile to a new resource. Each replicant will increment
 	 * its replication number by 1 from the last replication.
 	 * Directories/collections will be recursively replicated.
-	 *<P>
+	 * <P>
 	 * Used internally when recursively replicating a directory.
 	 * 
 	 * @param newResource
@@ -3269,7 +3336,7 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	private void replicate(String newResource, boolean update)
+	private void replicate(final String newResource, final boolean update)
 			throws IOException {
 		// Why am I doing recursive this way? Isn't there a single server call?
 		// answer: no.
@@ -3278,12 +3345,12 @@ public class SRBFile extends RemoteFile {
 		if (isDirectory(update)) {
 			SRBFile list[] = (SRBFile[]) listFiles();
 
-			for (int i = 0; i < list.length; i++) {
-				if (list[i].isFile(false)) {
+			for (SRBFile element : list) {
+				if (element.isFile(false)) {
 					srbFileSystem.srbObjReplicate(catalogType, fileName,
 							getParent(), newResource, null);
 				} else {
-					list[i].replicate(newResource, false);
+					element.replicate(newResource, false);
 				}
 			}
 		} else {
@@ -3299,16 +3366,16 @@ public class SRBFile extends RemoteFile {
 	 * @param backupResource
 	 *            - The backup resource
 	 */
-	public void backup(String backupResource) throws IOException {
+	public void backup(final String backupResource) throws IOException {
 		if (isDirectory()) {
 			String list[] = list();
 
-			for (int i = 0; i < list.length; i++) {
-				if (list[i].startsWith("/")) {
-					new SRBFile(srbFileSystem, list[i]).backup(backupResource);
+			for (String element : list) {
+				if (element.startsWith("/")) {
+					new SRBFile(srbFileSystem, element).backup(backupResource);
 				} else {
 					new SRBFile(srbFileSystem, getAbsolutePath() + "/"
-							+ list[i]).backup(backupResource);
+							+ element).backup(backupResource);
 				}
 			}
 		} else {
@@ -3325,6 +3392,7 @@ public class SRBFile extends RemoteFile {
 	 * @return the checksum value. Returns null if this SRBFile object is a
 	 *         directory.
 	 */
+	@Override
 	public String checksum() throws IOException {
 		if (isFile()) {
 			byte[] checksum = srbFileSystem.srbObjChksum(getName(),
@@ -3354,7 +3422,7 @@ public class SRBFile extends RemoteFile {
 	 * @return the checksum value. Returns null if this SRBFile object is a
 	 *         directory.
 	 */
-	public String checksum(boolean force) throws IOException {
+	public String checksum(final boolean force) throws IOException {
 		return checksum(false, true);
 	}
 
@@ -3373,7 +3441,8 @@ public class SRBFile extends RemoteFile {
 	 * @return the checksum value. Returns null if this SRBFile object is a
 	 *         directory.
 	 */
-	private String checksum(boolean force, boolean update) throws IOException {
+	private String checksum(final boolean force, final boolean update)
+			throws IOException {
 		if (isFile(update)) {
 			if (force) {
 				return new String(srbFileSystem.srbObjChksum(getName(),
@@ -3427,10 +3496,11 @@ public class SRBFile extends RemoteFile {
 	 * @param dataSize
 	 *            The size of the dataset if known. 0 = unknown.
 	 */
-	public void register(String registeringObjectPath, long dataSize)
+	public void register(final String registeringObjectPath, long dataSize)
 			throws IOException {
-		if (dataSize < 0)
+		if (dataSize < 0) {
 			dataSize = 0;
+		}
 		srbFileSystem.srbRegisterDataset(catalogType, getName(), dataType,
 				resource, getParent(), registeringObjectPath, dataSize);
 	}
@@ -3454,8 +3524,8 @@ public class SRBFile extends RemoteFile {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBFileSystem#executeProxyCommand
 	 */
-	public InputStream executeProxyCommand(String command, String commandArgs)
-			throws IOException {
+	public InputStream executeProxyCommand(final String command,
+			final String commandArgs) throws IOException {
 		return srbFileSystem.executeProxyCommand(command, commandArgs, null,
 				getPath(), -1);
 	}
@@ -3464,16 +3534,16 @@ public class SRBFile extends RemoteFile {
 	 * Links <code>newLink</code> with this object as the source. The user
 	 * should have at least 'read' access permission for the target.
 	 */
-	public void link(SRBFile newLink) throws IOException {
+	public void link(final SRBFile newLink) throws IOException {
 		if (isDirectory()) {
 			// recursive copy
 			GeneralFile[] fileList = listFiles();
 			SRBFile temp;
 			newLink.mkdir();
 
-			for (int i = 0; i < fileList.length; i++) {
-				temp = new SRBFile(newLink, fileList[i].getName());
-				((SRBFile) fileList[i]).link(temp);
+			for (GeneralFile element : fileList) {
+				temp = new SRBFile(newLink, element.getName());
+				((SRBFile) element).link(temp);
 			}
 		} else {
 			srbFileSystem.srbModifyDataset(0, fileName, getParent(), "", "",
@@ -3493,6 +3563,7 @@ public class SRBFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> can be read; otherwise
 	 *         <code>false</code>.
 	 */
+	@Override
 	public boolean canRead() {
 		MetaDataRecordList[] canRead = null;
 		String readable = null;
@@ -3509,17 +3580,18 @@ public class SRBFile extends RemoteFile {
 								SRBMetaDataSet.ACCESS_DIRECTORY_NAME, operator,
 								getAbsolutePath()) };
 				MetaDataSelect[] selects = { MetaDataSet
-						.newSelection(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT) };
+						.newSelection(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT) };
 				canRead = fileSystem.query(conditions, selects, 3);
 
-				if (canRead == null)
+				if (canRead == null) {
 					return false;
+				}
 
-				for (int i = 0; i < canRead.length; i++) {
-					if (canRead[i]
-							.getValue(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT) != null) {
-						readable = canRead[i].getValue(
-								SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT)
+				for (MetaDataRecordList element : canRead) {
+					if (element
+							.getValue(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT) != null) {
+						readable = element.getValue(
+								DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT)
 								.toString();
 						if (readable.equals("all") || readable.equals("write")
 								|| readable.equals("read")) {
@@ -3532,28 +3604,30 @@ public class SRBFile extends RemoteFile {
 						MetaDataSet.newCondition(UserMetaData.USER_NAME,
 								operator, userName),
 						MetaDataSet.newCondition(
-								GeneralMetaData.DIRECTORY_NAME, operator,
+								StandardMetaData.DIRECTORY_NAME, operator,
 								getParent()),
-						MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+						MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 								operator, getName()) };
 				MetaDataSelect[] selects = { MetaDataSet
-						.newSelection(SRBMetaDataSet.ACCESS_CONSTRAINT) };
+						.newSelection(GeneralMetaData.ACCESS_CONSTRAINT) };
 				canRead = fileSystem.query(conditions, selects, 3);
 
-				if (canRead == null)
+				if (canRead == null) {
 					return false;
+				}
 
 				// only can be one recordlist returned
-				readable = canRead[0]
-						.getValue(SRBMetaDataSet.ACCESS_CONSTRAINT).toString();
+				readable = canRead[0].getValue(
+						GeneralMetaData.ACCESS_CONSTRAINT).toString();
 				if (readable.equals("all") || readable.equals("write")
 						|| readable.equals("read")) {
 					return true;
 				}
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -3570,7 +3644,7 @@ public class SRBFile extends RemoteFile {
 	 */
 	// used internal to reduce calls to the SRB when certain info is already
 	// known
-	boolean canRead(String kindOfFile) {
+	boolean canRead(final String kindOfFile) {
 		MetaDataRecordList[] canRead = null;
 		String readable = null;
 		String userName = srbFileSystem.getUserName();
@@ -3586,17 +3660,18 @@ public class SRBFile extends RemoteFile {
 								SRBMetaDataSet.ACCESS_DIRECTORY_NAME, operator,
 								getAbsolutePath()) };
 				MetaDataSelect[] selects = { MetaDataSet
-						.newSelection(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT) };
+						.newSelection(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT) };
 				canRead = fileSystem.query(conditions, selects, 3);
 
-				if (canRead == null)
+				if (canRead == null) {
 					return false;
+				}
 
-				for (int i = 0; i < canRead.length; i++) {
-					if (canRead[i]
-							.getValue(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT) != null) {
-						readable = canRead[i].getValue(
-								SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT)
+				for (MetaDataRecordList element : canRead) {
+					if (element
+							.getValue(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT) != null) {
+						readable = element.getValue(
+								DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT)
 								.toString();
 						if (readable.equals("all") || readable.equals("write")
 								|| readable.equals("read")) {
@@ -3609,20 +3684,21 @@ public class SRBFile extends RemoteFile {
 						MetaDataSet.newCondition(UserMetaData.USER_NAME,
 								operator, userName),
 						MetaDataSet.newCondition(
-								GeneralMetaData.DIRECTORY_NAME, operator,
+								StandardMetaData.DIRECTORY_NAME, operator,
 								getParent()),
-						MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+						MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 								operator, getName()) };
 				MetaDataSelect[] selects = { MetaDataSet
-						.newSelection(SRBMetaDataSet.ACCESS_CONSTRAINT) };
+						.newSelection(GeneralMetaData.ACCESS_CONSTRAINT) };
 				canRead = fileSystem.query(conditions, selects, 3);
 
-				if (canRead == null)
+				if (canRead == null) {
 					return false;
+				}
 
 				// only can be one recordlist returned
-				readable = canRead[0]
-						.getValue(SRBMetaDataSet.ACCESS_CONSTRAINT).toString();
+				readable = canRead[0].getValue(
+						GeneralMetaData.ACCESS_CONSTRAINT).toString();
 				if (readable.equals("all") || readable.equals("write")
 						|| readable.equals("read")) {
 					return true;
@@ -3631,8 +3707,9 @@ public class SRBFile extends RemoteFile {
 				return canRead();
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -3647,6 +3724,7 @@ public class SRBFile extends RemoteFile {
 	 *         the application is allowed to write to the file; otherwise
 	 *         <code>false</code>.
 	 */
+	@Override
 	public boolean canWrite() {
 		MetaDataRecordList[] canWrite = null;
 		String writeable = null;
@@ -3663,17 +3741,18 @@ public class SRBFile extends RemoteFile {
 								SRBMetaDataSet.ACCESS_DIRECTORY_NAME, operator,
 								getAbsolutePath()) };
 				MetaDataSelect[] selects = { MetaDataSet
-						.newSelection(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT) };
+						.newSelection(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT) };
 				canWrite = fileSystem.query(conditions, selects, 3);
 
-				if (canWrite == null)
+				if (canWrite == null) {
 					return false;
+				}
 
-				for (int i = 0; i < canWrite.length; i++) {
-					if (canWrite[i]
-							.getValue(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT) != null) {
-						writeable = canWrite[i].getValue(
-								SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT)
+				for (MetaDataRecordList element : canWrite) {
+					if (element
+							.getValue(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT) != null) {
+						writeable = element.getValue(
+								DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT)
 								.toString();
 						if ((writeable.equals("all"))
 								|| (writeable.equals("write"))) {
@@ -3686,27 +3765,29 @@ public class SRBFile extends RemoteFile {
 						MetaDataSet.newCondition(UserMetaData.USER_NAME,
 								operator, userName),
 						MetaDataSet.newCondition(
-								GeneralMetaData.DIRECTORY_NAME, operator,
+								StandardMetaData.DIRECTORY_NAME, operator,
 								getParent()),
-						MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+						MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 								operator, getName()) };
 				MetaDataSelect[] selects = { MetaDataSet
-						.newSelection(SRBMetaDataSet.ACCESS_CONSTRAINT) };
+						.newSelection(GeneralMetaData.ACCESS_CONSTRAINT) };
 				canWrite = fileSystem.query(conditions, selects, 3);
 
-				if (canWrite == null)
+				if (canWrite == null) {
 					return false;
+				}
 
 				// only can be one recordlist returned
 				writeable = canWrite[0].getValue(
-						SRBMetaDataSet.ACCESS_CONSTRAINT).toString();
+						GeneralMetaData.ACCESS_CONSTRAINT).toString();
 				if ((writeable.equals("all")) || (writeable.equals("write"))) {
 					return true;
 				}
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -3724,7 +3805,7 @@ public class SRBFile extends RemoteFile {
 	 */
 	// used internal to reduce calls to the SRB when certain info is already
 	// known
-	boolean canWrite(String kindOfFile) {
+	boolean canWrite(final String kindOfFile) {
 		MetaDataRecordList[] canWrite = null;
 		String writeable = null;
 		String userName = srbFileSystem.getUserName();
@@ -3740,17 +3821,18 @@ public class SRBFile extends RemoteFile {
 								SRBMetaDataSet.ACCESS_DIRECTORY_NAME, operator,
 								getAbsolutePath()) };
 				MetaDataSelect[] selects = { MetaDataSet
-						.newSelection(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT) };
+						.newSelection(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT) };
 				canWrite = fileSystem.query(conditions, selects, 3);
 
-				if (canWrite == null)
+				if (canWrite == null) {
 					return false;
+				}
 
-				for (int i = 0; i < canWrite.length; i++) {
-					if (canWrite[i]
-							.getValue(SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT) != null) {
-						writeable = canWrite[i].getValue(
-								SRBMetaDataSet.DIRECTORY_ACCESS_CONSTRAINT)
+				for (MetaDataRecordList element : canWrite) {
+					if (element
+							.getValue(DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT) != null) {
+						writeable = element.getValue(
+								DirectoryMetaData.DIRECTORY_ACCESS_CONSTRAINT)
 								.toString();
 						if ((writeable.equals("all"))
 								|| (writeable.equals("write"))) {
@@ -3763,20 +3845,21 @@ public class SRBFile extends RemoteFile {
 						MetaDataSet.newCondition(UserMetaData.USER_NAME,
 								operator, userName),
 						MetaDataSet.newCondition(
-								GeneralMetaData.DIRECTORY_NAME, operator,
+								StandardMetaData.DIRECTORY_NAME, operator,
 								getParent()),
-						MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+						MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 								operator, getName()) };
 				MetaDataSelect[] selects = { MetaDataSet
-						.newSelection(SRBMetaDataSet.ACCESS_CONSTRAINT) };
+						.newSelection(GeneralMetaData.ACCESS_CONSTRAINT) };
 				canWrite = fileSystem.query(conditions, selects, 3);
 
-				if (canWrite == null)
+				if (canWrite == null) {
 					return false;
+				}
 
 				// only can be one recordlist returned
 				writeable = canWrite[0].getValue(
-						SRBMetaDataSet.ACCESS_CONSTRAINT).toString();
+						GeneralMetaData.ACCESS_CONSTRAINT).toString();
 				if ((writeable.equals("all")) || (writeable.equals("write"))) {
 					return true;
 				}
@@ -3784,8 +3867,9 @@ public class SRBFile extends RemoteFile {
 				return canWrite();
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -3808,6 +3892,7 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an I/O error occurred
 	 */
+	@Override
 	public boolean createNewFile() throws IOException {
 		try {
 			if (!isFile()) {
@@ -3822,11 +3907,13 @@ public class SRBFile extends RemoteFile {
 				return true;
 			}
 		} catch (SRBException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 			// catch already exists and just return false
-			if (e.getType() != -3210)
+			if (e.getType() != -3210) {
 				throw e;
+			}
 		}
 
 		return false;
@@ -3901,19 +3988,24 @@ public class SRBFile extends RemoteFile {
 	 * @throws IOException
 	 *             If a file could not be created
 	 */
-	public static GeneralFile createTempFile(String prefix, String suffix,
-			GeneralFile directory) throws IOException, IllegalArgumentException {
+	public static GeneralFile createTempFile(final String prefix,
+			String suffix, GeneralFile directory) throws IOException,
+			IllegalArgumentException {
 		String randomChars = "";
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 8; i++) {
 			randomChars += ((char) (65 + Math.random() * 25));
+		}
 
-		if (prefix == null)
+		if (prefix == null) {
 			throw new NullPointerException();
-		if (prefix.length() < 3)
+		}
+		if (prefix.length() < 3) {
 			throw new IllegalArgumentException("Prefix string too short");
+		}
 
-		if (suffix == null)
+		if (suffix == null) {
 			suffix = ".tmp";
+		}
 
 		if (directory == null) {
 			SRBFileSystem fs = new SRBFileSystem();
@@ -3924,9 +4016,9 @@ public class SRBFile extends RemoteFile {
 		GeneralFile temp = FileFactory.newFile(directory, prefix + randomChars
 				+ suffix);
 
-		if (temp.createNewFile())
+		if (temp.createNewFile()) {
 			return temp;
-		else {
+		} else {
 			throw new IOException("The temp file already exists.");
 		}
 	}
@@ -3939,6 +4031,7 @@ public class SRBFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file or directory is
 	 *         successfully deleted; <code>false</code> otherwise
 	 */
+	@Override
 	public boolean delete() {
 		return delete(false);
 	}
@@ -3951,7 +4044,7 @@ public class SRBFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file or directory is
 	 *         successfully deleted; <code>false</code> otherwise
 	 */
-	public boolean delete(boolean force) {
+	public boolean delete(final boolean force) {
 		try {
 			// Trashcan new as of SRB3.1
 			if (!force && (srbFileSystem.getVersionNumber() > 3)) {
@@ -3986,8 +4079,9 @@ public class SRBFile extends RemoteFile {
 				}
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 			return false;
 		}
 		return false;
@@ -4007,6 +4101,7 @@ public class SRBFile extends RemoteFile {
 	 * Note: this method should <i>not</i> be used for file-locking, as the
 	 * resulting protocol cannot be made to work reliably.
 	 */
+	@Override
 	public void deleteOnExit() {
 		deleteOnExit = true;
 	}
@@ -4024,11 +4119,13 @@ public class SRBFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
-	public boolean equals(Object obj) {
+	@Override
+	public boolean equals(final Object obj) {
 		// Does not compare other user or host information of the filesystems?
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			if (obj instanceof SRBFile) {
 				SRBFile temp = (SRBFile) obj;
@@ -4037,8 +4134,9 @@ public class SRBFile extends RemoteFile {
 				}
 			}
 		} catch (ClassCastException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 		return false;
 	}
@@ -4049,6 +4147,7 @@ public class SRBFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname exists; <code>false</code> otherwise
 	 */
+	@Override
 	public boolean exists() {
 		try {
 			MetaDataRecordList[] rl = null;
@@ -4060,43 +4159,46 @@ public class SRBFile extends RemoteFile {
 			if (getReplicaNumber() >= 0) {
 				conditions = new MetaDataCondition[2];
 				conditions[0] = MetaDataSet.newCondition(
-						GeneralMetaData.DIRECTORY_NAME, operator, getParent());
+						StandardMetaData.DIRECTORY_NAME, operator, getParent());
 				conditions[1] = MetaDataSet.newCondition(
-						GeneralMetaData.FILE_NAME, operator, getName());
+						StandardMetaData.FILE_NAME, operator, getName());
 				conditions[1] = MetaDataSet.newCondition(
 						SRBMetaDataSet.FILE_REPLICATION_ENUM, operator,
 						replicaNumber);
 			} else {
 				conditions = new MetaDataCondition[2];
 				conditions[0] = MetaDataSet.newCondition(
-						GeneralMetaData.DIRECTORY_NAME, operator, getParent());
+						StandardMetaData.DIRECTORY_NAME, operator, getParent());
 				conditions[1] = MetaDataSet.newCondition(
-						GeneralMetaData.FILE_NAME, operator, getName());
+						StandardMetaData.FILE_NAME, operator, getName());
 			}
 
 			MetaDataSelect selects[] = { MetaDataSet
-					.newSelection(GeneralMetaData.FILE_NAME) };
+					.newSelection(StandardMetaData.FILE_NAME) };
 
 			rl = fileSystem.query(conditions, selects, 3);
 
-			if (rl != null)
+			if (rl != null) {
 				return true;
+			}
 
 			// if it is a directory
 			conditions = new MetaDataCondition[1];
-			conditions[0] = MetaDataSet
-					.newCondition(GeneralMetaData.DIRECTORY_NAME, operator,
-							getAbsolutePath());
+			conditions[0] = MetaDataSet.newCondition(
+					StandardMetaData.DIRECTORY_NAME, operator,
+					getAbsolutePath());
 			selects[0] = MetaDataSet
-					.newSelection(GeneralMetaData.DIRECTORY_NAME);
+					.newSelection(StandardMetaData.DIRECTORY_NAME);
 			rl = fileSystem.query(conditions, selects, 3);
 
-			if (rl != null)
+			if (rl != null) {
 				return true;
+			}
 
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -4113,6 +4215,7 @@ public class SRBFile extends RemoteFile {
 	 *             construction of the canonical pathname may require filesystem
 	 *             queries
 	 */
+	@Override
 	public String getCanonicalPath() throws IOException {
 		if ((directory != null) && (!(directory.size() == 0))) {
 			int size = directory.size();
@@ -4134,6 +4237,7 @@ public class SRBFile extends RemoteFile {
 	 * @return The name of the file or directory denoted by this abstract
 	 *         pathname.
 	 */
+	@Override
 	public String getName() {
 		// strip &COPY=
 		int index = fileName.indexOf("&COPY=");
@@ -4147,6 +4251,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * @return This abstract pathname as a pathname string.
 	 */
+	@Override
 	public String getPath() {
 		// The path always gets converted to absolute form on construction
 		return originalFilePath;
@@ -4159,6 +4264,7 @@ public class SRBFile extends RemoteFile {
 	 * 
 	 * @return A hash code for this abstract pathname
 	 */
+	@Override
 	public int hashCode() {
 		return getAbsolutePath().toLowerCase().hashCode() ^ 1234321;
 	}
@@ -4170,6 +4276,7 @@ public class SRBFile extends RemoteFile {
 	 * @return <code>true</code> if this abstract pathname is absolute,
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isAbsolute() {
 		// all path names are made absolute at construction.
 		return true;
@@ -4178,7 +4285,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Tests whether the file denoted by this abstract pathname is a SRB
 	 * container.
-	 *<P>
+	 * <P>
 	 * 
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname exists <em>and</em> is a container;
@@ -4191,7 +4298,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Tests whether the file denoted by this abstract pathname is a directory.
 	 * Also known on the SRB as a collection.
-	 *<P>
+	 * <P>
 	 * A SRB collection is a logical name given to a set of data sets. All data
 	 * sets stored in SRB/MCAT are stored in some collection. A collection can
 	 * have sub-collections, and hence provides a hierarchical structure. A
@@ -4206,6 +4313,7 @@ public class SRBFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isDirectory() {
 		if (useCache) {
 			return isDirectory(false);
@@ -4217,7 +4325,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Tests whether the file denoted by this abstract pathname is a directory.
 	 * Also known on the SRB as a collection.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param update
 	 *            If true, send a new query to the SRB to determine if this
@@ -4228,7 +4336,7 @@ public class SRBFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
 	 */
-	public boolean isDirectory(boolean update) {
+	public boolean isDirectory(final boolean update) {
 		if (update || (pathNameType == PATH_IS_UNKNOWN)) {
 			// run the code below
 		} else if (pathNameType == PATH_IS_FILE) {
@@ -4239,10 +4347,10 @@ public class SRBFile extends RemoteFile {
 
 		MetaDataRecordList[] rl = null;
 		MetaDataCondition[] conditions = { MetaDataSet.newCondition(
-				GeneralMetaData.DIRECTORY_NAME, MetaDataCondition.EQUAL,
+				StandardMetaData.DIRECTORY_NAME, MetaDataCondition.EQUAL,
 				getAbsolutePath()) };
 		MetaDataSelect[] selects = { MetaDataSet
-				.newSelection(GeneralMetaData.DIRECTORY_NAME) };
+				.newSelection(StandardMetaData.DIRECTORY_NAME) };
 
 		try {
 			rl = fileSystem.query(conditions, selects, 3);
@@ -4253,8 +4361,9 @@ public class SRBFile extends RemoteFile {
 			}
 
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -4265,7 +4374,7 @@ public class SRBFile extends RemoteFile {
 	 * file. A file is <em>normal</em> if it is not a directory or a container.
 	 * Any non-directory or other subclass of SRBFile, such as a SRBContainer,
 	 * file created by a Java application is guaranteed to be a normal file.
-	 *<P>
+	 * <P>
 	 * In the terminology of SRB, files are known as data sets. A data set is a
 	 * "stream-of-bytes" entity that can be uniquely identified. For example, a
 	 * file in HPSS or Unix is a data set, or a LOB stored in a SRB Vault
@@ -4277,6 +4386,7 @@ public class SRBFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a normal file;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean isFile() {
 		if (useCache) {
 			return isFile(false);
@@ -4288,7 +4398,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Tests whether the file denoted by this abstract pathname is a file. Also
 	 * known on the SRB as a dataset.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param update
 	 *            If true, send a new query to the SRB to determine if this
@@ -4299,7 +4409,7 @@ public class SRBFile extends RemoteFile {
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
 	 */
-	public boolean isFile(boolean update) {
+	public boolean isFile(final boolean update) {
 		if ((pathNameType == PATH_IS_UNKNOWN) || update) {
 			// run the code below
 		} else if (pathNameType == PATH_IS_FILE) {
@@ -4310,12 +4420,12 @@ public class SRBFile extends RemoteFile {
 
 		MetaDataRecordList[] rl = null;
 		MetaDataCondition[] conditions = {
-				MetaDataSet.newCondition(GeneralMetaData.DIRECTORY_NAME,
+				MetaDataSet.newCondition(StandardMetaData.DIRECTORY_NAME,
 						MetaDataCondition.EQUAL, getParent()),
-				MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+				MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 						MetaDataCondition.EQUAL, getName()) };
 		MetaDataSelect[] selects = { MetaDataSet
-				.newSelection(GeneralMetaData.FILE_NAME) };
+				.newSelection(StandardMetaData.FILE_NAME) };
 
 		try {
 			rl = fileSystem.query(conditions, selects, 3);
@@ -4326,8 +4436,9 @@ public class SRBFile extends RemoteFile {
 			}
 
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -4339,6 +4450,7 @@ public class SRBFile extends RemoteFile {
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname is hidden.
 	 */
+	@Override
 	public boolean isHidden() {
 		return false; // SRB files can't be hidden
 	}
@@ -4352,6 +4464,7 @@ public class SRBFile extends RemoteFile {
 	 *         January 1, 1970), or <code>0L</code> if the file does not exist
 	 *         or if an I/O error occurs
 	 */
+	@Override
 	public long lastModified() {
 		long lastModified = 0;
 		String result = null;
@@ -4363,12 +4476,14 @@ public class SRBFile extends RemoteFile {
 				lastModified = format.parse(result).getTime();
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 			return 0;
 		} catch (ParseException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 			return 0;
 		}
 		return lastModified;
@@ -4377,14 +4492,14 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Returns an array of strings naming the files and directories in the
 	 * directory denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * There is no guarantee that the name strings in the resulting array will
 	 * appear in any specific order; they are not, in particular, guaranteed to
 	 * appear in alphabetical order.
-	 *<P>
+	 * <P>
 	 * If this SRBFile object denotes a file, the directory containing that file
 	 * will be listed instead.
-	 *<P>
+	 * <P>
 	 * This method will return all the files in the directory. Listing
 	 * directories with a large number of files may take a very long time. The
 	 * more generic SRBFile.query() method could be used to iterate through the
@@ -4395,10 +4510,11 @@ public class SRBFile extends RemoteFile {
 	 *         empty if the directory is empty. Returns null if an I/O error
 	 *         occurs.
 	 */
+	@Override
 	public String[] list() {
 		MetaDataCondition conditions[] = new MetaDataCondition[1];
 		MetaDataSelect selects[] = { MetaDataSet
-				.newSelection(GeneralMetaData.FILE_NAME) };
+				.newSelection(StandardMetaData.FILE_NAME) };
 		MetaDataRecordList[] rl1 = null;
 		MetaDataRecordList[] rl2 = null;
 		MetaDataRecordList[] temp = null;
@@ -4415,22 +4531,22 @@ public class SRBFile extends RemoteFile {
 
 			// get all the files
 			conditions[0] = MetaDataSet.newCondition(
-					GeneralMetaData.DIRECTORY_NAME, MetaDataCondition.EQUAL,
+					StandardMetaData.DIRECTORY_NAME, MetaDataCondition.EQUAL,
 					path);
 			rl1 = fileSystem.query(conditions, selects,
-					fileSystem.DEFAULT_RECORDS_WANTED);
+					GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 			if (completeDirectoryList) {
 				rl1 = MetaDataRecordList.getAllResults(rl1);
 			}
 
 			// get all the sub-directories
 			selects[0] = MetaDataSet
-					.newSelection(GeneralMetaData.DIRECTORY_NAME);
+					.newSelection(StandardMetaData.DIRECTORY_NAME);
 			conditions[0] = MetaDataSet.newCondition(
 					DirectoryMetaData.PARENT_DIRECTORY_NAME,
 					MetaDataCondition.EQUAL, path);
 			rl2 = fileSystem.query(conditions, selects,
-					fileSystem.DEFAULT_RECORDS_WANTED);
+					GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 			if (completeDirectoryList) {
 				rl2 = MetaDataRecordList.getAllResults(rl2);
 			}
@@ -4439,17 +4555,18 @@ public class SRBFile extends RemoteFile {
 			if (rl2 != null) {
 				String absolutePath = null;
 				String relativePath = null;
-				for (int i = 0; i < rl2.length; i++) {
+				for (MetaDataRecordList element : rl2) {
 					// only one record per rl
-					absolutePath = rl2[i].getStringValue(0);
+					absolutePath = element.getStringValue(0);
 					relativePath = absolutePath.substring(absolutePath
 							.lastIndexOf("/") + 1);
-					rl2[i].setValue(0, relativePath);
+					element.setValue(0, relativePath);
 				}
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 			return null;
 		}
 
@@ -4469,10 +4586,10 @@ public class SRBFile extends RemoteFile {
 		}
 
 		list = new Vector();
-		for (int i = 0; i < temp.length; i++) {
-			if (temp[i].getStringValue(0) != null) {
+		for (MetaDataRecordList element : temp) {
+			if (element.getStringValue(0) != null) {
 				// only one record per rl
-				list.add(temp[i].getStringValue(0));
+				list.add(element.getStringValue(0));
 			}
 		}
 
@@ -4486,13 +4603,15 @@ public class SRBFile extends RemoteFile {
 	 * 
 	 * @see list()
 	 */
-	public String[] list(MetaDataCondition[] conditions) {
-		if (conditions == null)
+	@Override
+	public String[] list(final MetaDataCondition[] conditions) {
+		if (conditions == null) {
 			return list();
+		}
 
 		MetaDataCondition tempConditions[] = null;
 		MetaDataSelect selects[] = { MetaDataSet
-				.newSelection(GeneralMetaData.FILE_NAME) };
+				.newSelection(StandardMetaData.FILE_NAME) };
 		MetaDataRecordList[] rl1 = null;
 		MetaDataRecordList[] rl2 = null;
 		MetaDataRecordList[] temp = null;
@@ -4507,7 +4626,7 @@ public class SRBFile extends RemoteFile {
 				path = getParent();
 			}
 			tempConditions = MetaDataSet.mergeConditions(MetaDataSet
-					.newCondition(GeneralMetaData.DIRECTORY_NAME,
+					.newCondition(StandardMetaData.DIRECTORY_NAME,
 							MetaDataCondition.EQUAL, path), conditions);
 
 			// get all the files
@@ -4518,7 +4637,7 @@ public class SRBFile extends RemoteFile {
 
 			// get all the sub-directories
 			selects[0] = MetaDataSet
-					.newSelection(GeneralMetaData.DIRECTORY_NAME);
+					.newSelection(StandardMetaData.DIRECTORY_NAME);
 			tempConditions = MetaDataSet.mergeConditions(MetaDataSet
 					.newCondition(DirectoryMetaData.PARENT_DIRECTORY_NAME,
 							MetaDataCondition.EQUAL, path),
@@ -4532,17 +4651,18 @@ public class SRBFile extends RemoteFile {
 			if (rl2 != null) {
 				String absolutePath = null;
 				String relativePath = null;
-				for (int i = 0; i < rl2.length; i++) {
+				for (MetaDataRecordList element : rl2) {
 					// only one record per rl
-					absolutePath = rl2[i].getStringValue(0);
+					absolutePath = element.getStringValue(0);
 					relativePath = absolutePath.substring(absolutePath
 							.lastIndexOf("/") + 1);
-					rl2[i].setValue(0, relativePath);
+					element.setValue(0, relativePath);
 				}
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 			return null;
 		}
 
@@ -4562,10 +4682,10 @@ public class SRBFile extends RemoteFile {
 		}
 
 		list = new Vector();
-		for (int i = 0; i < temp.length; i++) {
-			if (temp[i].getStringValue(0) != null) {
+		for (MetaDataRecordList element : temp) {
+			if (element.getStringValue(0) != null) {
 				// only one record per rl
-				list.add(temp[i].getStringValue(0));
+				list.add(element.getStringValue(0));
 			}
 		}
 
@@ -4575,6 +4695,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Creates the directory named by this abstract pathname.
 	 */
+	@Override
 	public boolean mkdir() {
 		try {
 			if (!isDirectory()) {
@@ -4583,8 +4704,9 @@ public class SRBFile extends RemoteFile {
 				return true;
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -4593,7 +4715,7 @@ public class SRBFile extends RemoteFile {
 	/**
 	 * Renames the file denoted by this abstract pathname. Will attempt to
 	 * overwrite existing files with the same name at the destination.
-	 *<P>
+	 * <P>
 	 * Whether or not this method can move a file from one filesystem to another
 	 * is platform-dependent. The return value should always be checked to make
 	 * sure that the rename operation was successful.
@@ -4609,21 +4731,23 @@ public class SRBFile extends RemoteFile {
 	 * @throws NullPointerException
 	 *             - If dest is null
 	 */
-	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException {
+	@Override
+	public boolean renameTo(final GeneralFile dest)
+			throws IllegalArgumentException {
 		if (dest instanceof SRBFile) {
 			try {
 				if (isFile()) {
 					if (getParent().equals(dest.getParent())) {
 						// only renaming data
 						srbFileSystem.srbModifyDataset(catalogType, fileName,
-								getParent(), "", serverLocalPath, dest
-										.getName(), "",
+								getParent(), "", serverLocalPath,
+								dest.getName(), "",
 								SRBMetaDataSet.D_CHANGE_DNAME);
 					} else if (getName().equals(dest.getName())) {
 						// only moving to new collection
 						srbFileSystem.srbModifyDataset(catalogType, fileName,
-								getParent(), "", serverLocalPath, dest
-										.getParent(), "",
+								getParent(), "", serverLocalPath,
+								dest.getParent(), "",
 								SRBMetaDataSet.D_CHANGE_GROUP);
 					} else {
 						// changing name of object as well as its collection
@@ -4641,8 +4765,9 @@ public class SRBFile extends RemoteFile {
 									dest.getParent(), "",
 									SRBMetaDataSet.D_CHANGE_GROUP);
 						} catch (IOException e) {
-							if (SRBCommands.DEBUG > 0)
+							if (SRBCommands.DEBUG > 0) {
 								e.printStackTrace();
+							}
 							// change the name back
 							srbFileSystem
 									.srbModifyDataset(catalogType, tempName,
@@ -4657,8 +4782,9 @@ public class SRBFile extends RemoteFile {
 									serverLocalPath, dest.getName(), "",
 									SRBMetaDataSet.D_CHANGE_DNAME);
 						} catch (IOException e) {
-							if (SRBCommands.DEBUG > 0)
+							if (SRBCommands.DEBUG > 0) {
 								e.printStackTrace();
+							}
 							// change the it back
 							srbFileSystem.srbModifyDataset(catalogType,
 									tempName, dest.getParent(), "",
@@ -4687,8 +4813,9 @@ public class SRBFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				if (SRBCommands.DEBUG > 0)
+				if (SRBCommands.DEBUG > 0) {
 					e.printStackTrace();
+				}
 			}
 		} else {
 			return super.renameTo(dest);
@@ -4720,7 +4847,9 @@ public class SRBFile extends RemoteFile {
 	 * This method will only change the lastModified time to the current time.
 	 * The SRB will overwrite the input from this method
 	 */
-	public boolean setLastModified(long time) throws IllegalArgumentException {
+	@Override
+	public boolean setLastModified(final long time)
+			throws IllegalArgumentException {
 		// can't do this in the SRB.
 		throw new UnsupportedOperationException();
 	}
@@ -4736,6 +4865,7 @@ public class SRBFile extends RemoteFile {
 	 * changed on a per user basis. Changing the file permissions for everyone
 	 * is not possible.
 	 */
+	@Override
 	public boolean setReadOnly() {
 		// can't do this in the SRB.
 		throw new UnsupportedOperationException();
@@ -4755,8 +4885,7 @@ public class SRBFile extends RemoteFile {
 	 * <blockquote><tt>
 	 * new {@link #SRBFile(java.net.URI) SRBFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
-   * </tt>
-	 * </blockquote>
+	 * </tt> </blockquote>
 	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
@@ -4773,24 +4902,26 @@ public class SRBFile extends RemoteFile {
 	 * @see java.net.URI
 	 * @see java.net.URI#toURL()
 	 */
+	@Override
 	public URI toURI() {
 		URI uri = null;
 
 		try {
 			if (isDirectory()) {
 				uri = new URI("srb", srbFileSystem.getUserName() + "."
-						+ srbFileSystem.getDomainName(), srbFileSystem
-						.getHost(), srbFileSystem.getPort(), getAbsolutePath()
-						+ "/", "", "");
+						+ srbFileSystem.getDomainName(),
+						srbFileSystem.getHost(), srbFileSystem.getPort(),
+						getAbsolutePath() + "/", "", "");
 			} else {
 				uri = new URI("srb", srbFileSystem.getUserName() + "."
-						+ srbFileSystem.getDomainName(), srbFileSystem
-						.getHost(), srbFileSystem.getPort(), getAbsolutePath(),
-						"", "");
+						+ srbFileSystem.getDomainName(),
+						srbFileSystem.getHost(), srbFileSystem.getPort(),
+						getAbsolutePath(), "", "");
 			}
 		} catch (URISyntaxException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return uri;
@@ -4810,8 +4941,7 @@ public class SRBFile extends RemoteFile {
 	 * <blockquote><tt>
 	 * new {@link #SRBFile(java.net.URI) SRBFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
-   * </tt>
-	 * </blockquote>
+	 * </tt> </blockquote>
 	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
@@ -4828,9 +4958,11 @@ public class SRBFile extends RemoteFile {
 	 * @see java.net.URI
 	 * @see java.net.URI#toURL()
 	 */
-	public URI toURI(boolean includePassword) {
-		if (!includePassword)
+	@Override
+	public URI toURI(final boolean includePassword) {
+		if (!includePassword) {
 			return toURI();
+		}
 
 		URI uri = null;
 
@@ -4848,8 +4980,9 @@ public class SRBFile extends RemoteFile {
 						srbFileSystem.getPort(), getAbsolutePath(), "", "");
 			}
 		} catch (URISyntaxException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return uri;
@@ -4878,6 +5011,7 @@ public class SRBFile extends RemoteFile {
 	 * @see java.net.URI#toURL()
 	 * @see java.net.URL
 	 */
+	@Override
 	public URL toURL() throws MalformedURLException {
 		URL url = null;
 
@@ -4901,6 +5035,7 @@ public class SRBFile extends RemoteFile {
 	 * formated according to the SRB URI model. Note: the user password will not
 	 * be included in the URI.
 	 */
+	@Override
 	public String toString() {
 		return new String("srb://" + srbFileSystem.getUserName() + "."
 				+ srbFileSystem.getDomainName() + "@" + srbFileSystem.getHost()

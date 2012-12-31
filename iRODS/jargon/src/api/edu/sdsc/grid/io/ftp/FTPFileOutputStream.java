@@ -48,11 +48,16 @@
 //
 package edu.sdsc.grid.io.ftp;
 
-import org.globus.ftp.exception.*;
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.LocalFile;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import java.io.*;
+import org.globus.ftp.exception.FTPException;
+
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.RemoteFileOutputStream;
+import edu.sdsc.grid.io.local.LocalFile;
 
 /**
  * A FTPFileOutputStream writes bytes to a file in a FTP file system. <br>
@@ -104,7 +109,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public FTPFileOutputStream(FTPFileSystem fileSystem, String name)
+	public FTPFileOutputStream(final FTPFileSystem fileSystem, final String name)
 			throws IOException {
 		super(fileSystem, name);
 	}
@@ -129,7 +134,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public FTPFileOutputStream(FTPFile file) throws IOException {
+	public FTPFileOutputStream(final FTPFile file) throws IOException {
 		super(file);
 	}
 
@@ -158,11 +163,11 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		this.file = (FTPFile) file;
 		temp = (LocalFile) LocalFile.createTempFile(""
-				+ (int) (Math.random() * 999), ""
-				+ new java.util.Date().getTime());
+				+ (int) (Math.random() * 999),
+				"" + new java.util.Date().getTime());
 		out = FileFactory.newFileOutputStream(temp);
 	}
 
@@ -176,7 +181,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(int b) throws IOException {
+	public void write(final int b) throws IOException {
 		out.write(b);
 	}
 
@@ -190,7 +195,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte b[]) throws IOException {
+	public void write(final byte b[]) throws IOException {
 		out.write(b);
 	}
 
@@ -208,7 +213,8 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte b[], int off, int len) throws IOException {
+	public void write(final byte b[], final int off, final int len)
+			throws IOException {
 		out.write(b, off, len);
 	}
 
@@ -230,8 +236,8 @@ public class FTPFileOutputStream extends RemoteFileOutputStream {
 			// only partially overwrote the existing file
 			// download it
 			LocalFile temp2 = (LocalFile) LocalFile.createTempFile(""
-					+ (int) (Math.random() * 999), ""
-					+ new java.util.Date().getTime());
+					+ (int) (Math.random() * 999),
+					"" + new java.util.Date().getTime());
 			file.copyTo(temp2);
 
 			// should create a new DataSource and append the existing files

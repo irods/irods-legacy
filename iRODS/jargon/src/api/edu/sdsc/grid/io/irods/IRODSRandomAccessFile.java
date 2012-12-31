@@ -45,18 +45,26 @@
 //
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.*;
-
-import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileSystem;
+import edu.sdsc.grid.io.GeneralMetaData;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.RemoteRandomAccessFile;
+import edu.sdsc.grid.io.StandardMetaData;
 
 /**
  * Instances of this class support both reading and writing to a iRODS random
  * access file.
- *<P>
+ * <P>
  * This class behaves exactly as described in
  * {@link edu.sdsc.grid.io.GeneralRandomAccessFile}
- *<P>
+ * <P>
  * A random access file behaves like a large array of bytes stored in the file
  * system. There is a kind of cursor, or index into the implied array, called
  * the <em>file pointer</em>; input operations read bytes starting at the file
@@ -95,12 +103,12 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 * Creates a random access file stream to read from, and optionally to write
 	 * to, a file with the specified name. A new file descriptor is obtained
 	 * from the IRODS which represents the connection to the file.
-	 *<P>
+	 * <P>
 	 * The <tt>mode</tt> argument specifies the access mode with which the file
 	 * is to be opened. The permitted values and their meanings are as specified
 	 * for the <a href="#mode"><tt>GeneralRandomAccessFile(File,String)</tt></a>
 	 * constructor.
-	 *<P>
+	 * <P>
 	 * On construction a check is made to see if read access to the file is
 	 * allowed. If the mode allows writing, write access to the file is also
 	 * checked.
@@ -121,9 +129,10 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 *             If denied read access to the file or the mode is "rw" and
 	 *             denied write access to the file.
 	 */
-	public IRODSRandomAccessFile(IRODSFileSystem irodsFileSystem,
-			String filePath, String mode) throws IllegalArgumentException,
-			FileNotFoundException, SecurityException, IOException {
+	public IRODSRandomAccessFile(final IRODSFileSystem irodsFileSystem,
+			final String filePath, final String mode)
+			throws IllegalArgumentException, FileNotFoundException,
+			SecurityException, IOException {
 		this(new IRODSFile(irodsFileSystem, filePath), mode);
 	}
 
@@ -183,7 +192,7 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 * file's content to be written to storage; using <tt>"rws"</tt> requires
 	 * updates to both the file's content and its metadata to be written, which
 	 * generally requires at least one more low-level I/O operation.
-	 *<P>
+	 * <P>
 	 * On construction a check is made to see if read access to the file is
 	 * allowed. If the mode allows writing, write access to the file is also
 	 * checked.
@@ -204,7 +213,7 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 *             If denied read access to the file or the mode is "rw" and
 	 *             denied write access to the file.
 	 */
-	public IRODSRandomAccessFile(IRODSFile file, String mode)
+	public IRODSRandomAccessFile(final IRODSFile file, final String mode)
 			throws IllegalArgumentException, FileNotFoundException,
 			SecurityException, IOException {
 		super(file, mode);
@@ -233,7 +242,7 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 *             If an I/O error occurs
 	 */
 	@Override
-	protected void open(GeneralFile file) throws FileNotFoundException,
+	protected void open(final GeneralFile file) throws FileNotFoundException,
 			SecurityException, IOException {
 		// had to overwrite
 		rwCheck(file, mode);
@@ -245,8 +254,9 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 			fd = ((IRODSFile) file).createNewFile(true, true);
 		}
 		// already open from create
-		if (fd >= 0)
+		if (fd >= 0) {
 			return;
+		}
 
 		try {
 			if (rw == 0) {
@@ -265,7 +275,7 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	}
 
 	@Override
-	protected void rwCheck(GeneralFile file, String mode)
+	protected void rwCheck(final GeneralFile file, String mode)
 			throws IllegalArgumentException, SecurityException {
 		mode = mode.toLowerCase();
 
@@ -293,11 +303,12 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 * @throws ClassCastException
 	 *             - if the argument is not a IRODSFileSystem object.
 	 */
-	protected void setFileSystem(GeneralFileSystem fileSystem)
+	protected void setFileSystem(final GeneralFileSystem fileSystem)
 			throws IllegalArgumentException, ClassCastException {
-		if (fileSystem == null)
+		if (fileSystem == null) {
 			throw new IllegalArgumentException(
 					"Illegal fileSystem, cannot be null");
+		}
 
 		this.fileSystem = (IRODSFileSystem) fileSystem;
 	}
@@ -311,14 +322,13 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 */
 	@Override
 	public GeneralFileSystem getFileSystem() {
-		if (fileSystem != null)
+		if (fileSystem != null) {
 			return fileSystem;
+		}
 
 		throw new NullPointerException();
 	}
 
-
-	
 	/**
 	 * Reads a byte of data from this file. The byte is returned as an integer
 	 * in the range 0 to 255 (<code>0x00-0x0ff</code>). This method blocks if no
@@ -361,7 +371,7 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 *             If an I/O error has occurred.
 	 */
 	@Override
-	protected int readBytes(byte buffer[], int offset, int len)
+	protected int readBytes(final byte buffer[], final int offset, final int len)
 			throws IOException {
 		int read = fileSystem.commands.fileRead(fd, buffer, offset, len);
 		filePointer += read;
@@ -382,11 +392,10 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 *             If an I/O error has occurred.
 	 */
 	@Override
-	protected void writeBytes(byte buffer[], int offset, int len)
-			throws IOException {
+	protected void writeBytes(final byte buffer[], final int offset,
+			final int len) throws IOException {
 		filePointer += fileSystem.commands.fileWrite(fd, buffer, offset, len);
 	}
-
 
 	/**
 	 * Returns the current offset in this file.
@@ -423,7 +432,7 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 *             error occurs.
 	 */
 	@Override
-	public void seek(long position, int origin) throws IOException {
+	public void seek(final long position, final int origin) throws IOException {
 		if (position < 0) {
 			throw new IllegalArgumentException();
 		}
@@ -453,9 +462,10 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 		try {
 			rl = fileSystem.query(conditions, selects, 3);
 
-			if (rl != null)
+			if (rl != null) {
 				return Long.parseLong(rl[0].getValue(GeneralMetaData.SIZE)
 						.toString());
+			}
 		} catch (IOException e) {
 
 		}
@@ -490,7 +500,7 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 	 *             on truncate
 	 */
 	@Override
-	public void setLength(long newLength) throws IOException {
+	public void setLength(final long newLength) throws IOException {
 		long length = length();
 
 		if (newLength > length) {
@@ -516,7 +526,8 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 			fileSystem.commands.fileClose(fd);
 			fileSystem = null;
 		}
-		if (fileFormat != null)
+		if (fileFormat != null) {
 			fileFormat = null;
+		}
 	}
 }

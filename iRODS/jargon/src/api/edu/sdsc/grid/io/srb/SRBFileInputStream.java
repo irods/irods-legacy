@@ -31,17 +31,26 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
+import java.io.IOException;
 
-import java.io.*;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileSystem;
+import edu.sdsc.grid.io.GeneralMetaData;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.RemoteFileInputStream;
+import edu.sdsc.grid.io.StandardMetaData;
 
 /**
  * A SRBFileInputStream obtains input bytes from a file in a SRB file system.
  * What files are available depends on the host environment.
- *<P>
+ * <P>
  * SRBFileInputStream is meant for reading streams of raw bytes such as image
  * data.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert
  * @since JARGON1.4
@@ -88,7 +97,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public SRBFileInputStream(SRBFileSystem fileSystem, String name)
+	public SRBFileInputStream(final SRBFileSystem fileSystem, final String name)
 			throws IOException {
 		super(fileSystem, name);
 
@@ -117,7 +126,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public SRBFileInputStream(SRBFile file) throws IOException {
+	public SRBFileInputStream(final SRBFile file) throws IOException {
 		super(file);
 		fileSystem = (SRBFileSystem) file.getFileSystem();
 	}
@@ -135,11 +144,12 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * @throws ClassCastException
 	 *             - if the argument is not a SRBFileSystem object.
 	 */
-	protected void setFileSystem(GeneralFileSystem fileSystem)
+	protected void setFileSystem(final GeneralFileSystem fileSystem)
 			throws IllegalArgumentException, ClassCastException {
-		if (fileSystem == null)
+		if (fileSystem == null) {
 			throw new IllegalArgumentException(
 					"Illegal fileSystem, cannot be null");
+		}
 
 		this.fileSystem = (SRBFileSystem) fileSystem;
 	}
@@ -152,8 +162,9 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * @return RemoteFileSystem
 	 */
 	public GeneralFileSystem getFileSystem() {
-		if (fileSystem != null)
+		if (fileSystem != null) {
 			return fileSystem;
+		}
 
 		throw new NullPointerException();
 	}
@@ -165,7 +176,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		this.file = (SRBFile) file;
 		fd = ((SRBFileSystem) file.getFileSystem()).srbObjOpen(file.getName(),
 				SRBRandomAccessFile.O_RDONLY, file.getParent());
@@ -281,7 +292,8 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * @see java.io.InputStream#read()
 	 */
 	@Override
-	public int read(byte b[], int off, int len) throws IOException {
+	public int read(final byte b[], final int off, final int len)
+			throws IOException {
 		try {
 			byte buffer[] = null;
 
@@ -315,7 +327,7 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public long skip(long n) throws IOException {
+	public long skip(final long n) throws IOException {
 		long length = available();
 		if (length <= 0) {
 			return 0;
@@ -366,16 +378,17 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 
 		}
 
-		if (available <= 0)
+		if (available <= 0) {
 			return 0;
-		else
+		} else {
 			return available;
+		}
 	}
 
 	/**
 	 * Closes this file input stream and releases any system resources
 	 * associated with the stream.
-	 *<p>
+	 * <p>
 	 * If this stream has an associated channel then the channel is closed as
 	 * well.
 	 * 
@@ -388,8 +401,9 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 			fileSystem.srbObjClose(fd);
 			fileSystem = null;
 		}
-		if (file != null)
+		if (file != null) {
 			file = null;
+		}
 	}
 
 	@Override
@@ -419,10 +433,9 @@ public class SRBFileInputStream extends RemoteFileInputStream {
 	 * <p>
 	 * The initial {@link java.nio.channels.FileChannel#position()
 	 * </code>position<code>} of the returned channel will be equal to the
-	 * number of bytes read from the file so far. Reading bytes from this
-	 * stream will increment the channel's position. Changing the channel's
-	 * position, either explicitly or by reading, will change this stream's file
-	 * position.
+	 * number of bytes read from the file so far. Reading bytes from this stream
+	 * will increment the channel's position. Changing the channel's position,
+	 * either explicitly or by reading, will change this stream's file position.
 	 * 
 	 * @return the file channel associated with this file input stream
 	 */

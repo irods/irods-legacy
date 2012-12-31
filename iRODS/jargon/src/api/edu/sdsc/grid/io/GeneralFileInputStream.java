@@ -44,15 +44,16 @@
 //
 package edu.sdsc.grid.io;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A GeneralFileInputStream obtains input bytes from a file in a file system.
  * What files are available depends on the host environment.
- *<P>
+ * <P>
  * GeneralFileInputStream is meant for reading streams of raw bytes such as
  * image data.
- *<P>
+ * <P>
  * The original intention for this class was to subclass
  * java.io.FileInputStream. But that is not currently the case.
  * <P>
@@ -61,7 +62,7 @@ import java.io.*;
  * @since JARGON1.4
  */
 public abstract class GeneralFileInputStream extends InputStream // extends
-																	// FileInputStream
+// FileInputStream
 {
 
 	/**
@@ -87,8 +88,8 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public GeneralFileInputStream(GeneralFileSystem fileSystem, String name)
-			throws IOException {
+	public GeneralFileInputStream(final GeneralFileSystem fileSystem,
+			final String name) throws IOException {
 		if ((fileSystem == null) || (name == null)) {
 			throw new NullPointerException();
 		}
@@ -116,7 +117,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public GeneralFileInputStream(GeneralFile file) throws IOException {
+	public GeneralFileInputStream(final GeneralFile file) throws IOException {
 		open(file);
 	}
 
@@ -211,7 +212,7 @@ public abstract class GeneralFileInputStream extends InputStream // extends
 	 * @see java.io.InputStream#read(byte[], int, int)
 	 */
 	@Override
-	public int read(byte b[]) throws IOException {
+	public int read(final byte b[]) throws IOException {
 		return read(b, 0, b.length);
 	}
 

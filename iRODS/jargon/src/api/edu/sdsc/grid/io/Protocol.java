@@ -42,20 +42,22 @@
 package edu.sdsc.grid.io;
 
 /**
- * Describes the high-level namespace for metadata fields.  This is implemented by subclasses for each specific <code>Protocol</code>
- * Example namespaces incude IRODS and SRB.  Each <code>Protocol</code> subclass will create a {@link edu.sdsc.grid.io.MetaDataSet MetaDataSet} with 
- * the actual translation values between 'common names' and integer value, and vice versa.  The <code>MetaDataSet</code> is typically initialized by a 
- * static initializer.
+ * Describes the high-level namespace for metadata fields. This is implemented
+ * by subclasses for each specific <code>Protocol</code> Example namespaces
+ * incude IRODS and SRB. Each <code>Protocol</code> subclass will create a
+ * {@link edu.sdsc.grid.io.MetaDataSet MetaDataSet} with the actual translation
+ * values between 'common names' and integer value, and vice versa. The
+ * <code>MetaDataSet</code> is typically initialized by a static initializer.
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class Protocol {
-	
+
 	protected String name;
 	protected String help;
 	protected MetaDataSet metaDataSet;
-	
-	protected Protocol(String name, String help) {
+
+	protected Protocol(final String name, final String help) {
 		this.name = name;
 		this.help = help;
 	}

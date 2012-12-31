@@ -48,9 +48,7 @@
 //
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.*;
-
-import java.io.*;
+import java.io.IOException;
 
 import org.irods.jargon.core.accessobject.FileCatalogObjectAO;
 import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
@@ -59,10 +57,13 @@ import org.irods.jargon.core.exception.JargonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.RemoteFileOutputStream;
+
 /**
  * A IRODSFileOutputStream writes bytes to a file in a file system. What files
  * are available depends on the host environment.
- *<P>
+ * <P>
  * IRODSFileOutputStream is meant for writing streams of raw bytes such as image
  * data.
  * 
@@ -70,9 +71,9 @@ import org.slf4j.LoggerFactory;
  * @since JARGON2.0
  */
 public final class IRODSFileOutputStream extends RemoteFileOutputStream {
-	
+
 	public static final Logger log = LoggerFactory
-	.getLogger(IRODSFileOutputStream.class);
+			.getLogger(IRODSFileOutputStream.class);
 	/**
 	 * Holds the server connection used by this stream.
 	 */
@@ -83,7 +84,7 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 * to a new irods server
 	 */
 	private IRODSFileSystem reroutedFileSystem = null;
-			
+
 	/**
 	 * Creates a <code>FileOuputStream</code> by opening a connection to an
 	 * actual file, the file named by the path name <code>name</code> in the
@@ -102,11 +103,11 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public IRODSFileOutputStream(IRODSFileSystem fileSystem, String name)
-			throws IOException {
+	public IRODSFileOutputStream(final IRODSFileSystem fileSystem,
+			final String name) throws IOException {
 		this(fileSystem, name, "");
 	}
-	
+
 	/**
 	 * Creates a <code>FileOuputStream</code> by opening a connection to an
 	 * actual file, the file named by the path name <code>name</code> in the
@@ -121,25 +122,24 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 * @param name
 	 *            the system-dependent file name.
 	 * @param resourceName
-	 * 			 the target resource to 
+	 *            the target resource to
 	 * @exception IOException
 	 *                if the file does not exist, is a directory rather than a
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public IRODSFileOutputStream(IRODSFileSystem fileSystem, String name, String resourceName)
-			throws IOException {
+	public IRODSFileOutputStream(final IRODSFileSystem fileSystem,
+			final String name, final String resourceName) throws IOException {
 		super(fileSystem, name);
 
 		this.fileSystem = fileSystem;
-		
+
 		try {
 			this.lookForReroutingOfConnection(name, resourceName);
 		} catch (JargonException e) {
 			throw new IOException(e.getMessage());
 		}
 	}
-
 
 	/**
 	 * Creates a <code>FileInputStream</code> by opening a connection to an
@@ -161,11 +161,12 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public IRODSFileOutputStream(IRODSFile file) throws IOException {
+	public IRODSFileOutputStream(final IRODSFile file) throws IOException {
 		super(file);
 		fileSystem = (IRODSFileSystem) file.getFileSystem();
 		try {
-			this.lookForReroutingOfConnection(file.getAbsolutePath(), file.getResource());
+			this.lookForReroutingOfConnection(file.getAbsolutePath(),
+					file.getResource());
 		} catch (JargonException e) {
 			throw new IOException(e.getMessage());
 		}
@@ -180,8 +181,9 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 		// calls close()
 		super.finalize();
 
-		if (fileSystem != null)
+		if (fileSystem != null) {
 			fileSystem = null;
+		}
 	}
 
 	/**
@@ -191,13 +193,14 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	protected void open(GeneralFile file) throws IOException {
-		if (!file.exists())
+	protected void open(final GeneralFile file) throws IOException {
+		if (!file.exists()) {
 			fd = ((IRODSFileSystem) file.getFileSystem()).commands.fileCreate(
 					(IRODSFile) file, false, true);
-		else
+		} else {
 			fd = ((IRODSFileSystem) file.getFileSystem()).commands.fileOpen(
 					(IRODSFile) file, false, true);
+		}
 	}
 
 	/**
@@ -214,7 +217,8 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte buffer[], int offset, int length) throws IOException {
+	public void write(final byte buffer[], final int offset, final int length)
+			throws IOException {
 		fileSystem.commands.fileWrite(fd, buffer, offset, length);
 	}
 
@@ -236,7 +240,7 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 			fileSystem.commands.fileClose(fd);
 			fileSystem = null;
 		}
-		
+
 		// if there was a rerouted connection, shut down that IRODSFileSystem
 		// entirely
 		if (reroutedFileSystem != null) {
@@ -244,7 +248,7 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 			reroutedFileSystem.close();
 		}
 	}
-	
+
 	/**
 	 * Method takes the iRODS absolute path for the stream file, and evaluates
 	 * whether the connection should be rerouted to another server. This will
@@ -260,8 +264,9 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 				.instance(fileSystem.commands);
 		FileCatalogObjectAO fileCatalogObjectAO = irodsAccessObjectFactory
 				.getFileCatalogObjectAO();
-		IRODSFileSystem tempReroutedFileSystem = fileCatalogObjectAO.rerouteIrodsFileWhenIRODSIsSource(
-				irodsAbsolutePath, resourceName);
+		IRODSFileSystem tempReroutedFileSystem = fileCatalogObjectAO
+				.rerouteIrodsFileWhenIRODSIsSource(irodsAbsolutePath,
+						resourceName);
 		if (tempReroutedFileSystem == null) {
 			log.info("no override of stream connection");
 			return;
@@ -269,19 +274,28 @@ public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 
 		log.debug("connection will be rerouted, switch to the new connection and close the file that was opened, close old file...");
 		try {
-			/* note that close will look at reroutedFileSystem and close it, this is done so that when close is called by a client
-			 * it will disconnect from the rerouted connection.  The client will be unaware that the additional connection exists, and otherwise,
-			 * an agent connection will be retained and then closed without disconnecting.  There is a bit of a shuffle of the file system object
-			 * in this class, it keeps references to the original, as well as the rerouted.  For this reason, the close of the file descriptor needs to happen
-			 * before the rerouted connection is assigned, or the close connection will just close the newly opened rerouted connection.
+			/*
+			 * note that close will look at reroutedFileSystem and close it,
+			 * this is done so that when close is called by a client it will
+			 * disconnect from the rerouted connection. The client will be
+			 * unaware that the additional connection exists, and otherwise, an
+			 * agent connection will be retained and then closed without
+			 * disconnecting. There is a bit of a shuffle of the file system
+			 * object in this class, it keeps references to the original, as
+			 * well as the rerouted. For this reason, the close of the file
+			 * descriptor needs to happen before the rerouted connection is
+			 * assigned, or the close connection will just close the newly
+			 * opened rerouted connection.
 			 * 
-			 * The timing is a bit clunky in this version of Jargon, but could not be avoided.
+			 * The timing is a bit clunky in this version of Jargon, but could
+			 * not be avoided.
 			 */
 			close();
 			fileSystem = tempReroutedFileSystem;
 			reroutedFileSystem = tempReroutedFileSystem;
 			log.debug("open file at resource server...");
-			IRODSFile irodsFile = new IRODSFile(reroutedFileSystem, irodsAbsolutePath);
+			IRODSFile irodsFile = new IRODSFile(reroutedFileSystem,
+					irodsAbsolutePath);
 			irodsFile.setResource(resourceName);
 			open(irodsFile);
 		} catch (Exception e) {

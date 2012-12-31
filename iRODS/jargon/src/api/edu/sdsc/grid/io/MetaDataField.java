@@ -45,13 +45,13 @@ package edu.sdsc.grid.io;
  * A "meta data field" is an attribute of a file. It could be the name of the
  * file, it's creation date, it's owner, or any of the other types of metadata
  * maintained by the SRB or whomever.
- *<P>
+ * <P>
  * Metadata groups contain a list of metadata fields. Each field is described by
  * a MetaDataField object. The object may be queried to get a description of the
  * field, the data types it supports, etc.
- *<P>
+ * <P>
  * There are no 'set' methods. Once constructed, the object cannot be changed.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
@@ -127,8 +127,8 @@ public final class MetaDataField implements Comparable {
 	 * pair are floats, the data type is set to float. If an enum is given, the
 	 * data type is always String.
 	 */
-	public MetaDataField(String fieldName, String description, int type,
-			Protocol protocol) {
+	public MetaDataField(final String fieldName, final String description,
+			final int type, final Protocol protocol) {
 		this.fieldName = fieldName;
 		this.description = description;
 		this.type = type;
@@ -146,8 +146,8 @@ public final class MetaDataField implements Comparable {
 	 *            extra extensible schema or table name used to make this value
 	 *            uniquely refer to a certain metadata attribute.
 	 */
-	public MetaDataField(String fieldName, String description, int type,
-			Protocol protocol, String extensibleName) {
+	public MetaDataField(final String fieldName, final String description,
+			final int type, final Protocol protocol, final String extensibleName) {
 		this.fieldName = fieldName;
 		this.description = description;
 		this.type = type;
@@ -194,7 +194,7 @@ public final class MetaDataField implements Comparable {
 	/**
 	 * Returns the protocol for this field at the specified index.
 	 */
-	Protocol getProtocol(int index) {
+	Protocol getProtocol(final int index) {
 		return protocols[index];
 	}
 
@@ -202,7 +202,7 @@ public final class MetaDataField implements Comparable {
 	 * @return The extra extensible schema or table name used to make this value
 	 *         uniquely refer to a certain metadata attribute.
 	 */
-	public String getExtensibleName(Protocol protocol) {
+	public String getExtensibleName(final Protocol protocol) {
 		if (extensible != null) {
 			if (protocol != null) {
 				for (int i = 0; i < protocols.length; i++) {
@@ -222,14 +222,16 @@ public final class MetaDataField implements Comparable {
 	 * Returns true if and only if this field is an extensible field under the
 	 * given protocol.
 	 */
-	public boolean isExtensible(Protocol protocol) {
-		if (extensible == null)
+	public boolean isExtensible(final Protocol protocol) {
+		if (extensible == null) {
 			return false;
+		}
 
 		for (int i = 0; i < protocols.length; i++) {
 			if (protocols[i].equals(protocol)) {
-				if (extensible[i] != null)
+				if (extensible[i] != null) {
 					return true;
+				}
 			}
 		}
 
@@ -239,9 +241,9 @@ public final class MetaDataField implements Comparable {
 	/**
 	 * Test if this field uses the given protocol.
 	 */
-	public boolean usesProtocol(Protocol protocol) {
-		for (int i = 0; i < protocols.length; i++) {
-			if (protocols[i].equals(protocol)) {
+	public boolean usesProtocol(final Protocol protocol) {
+		for (Protocol protocol2 : protocols) {
+			if (protocol2.equals(protocol)) {
 				return true;
 			}
 		}
@@ -251,7 +253,7 @@ public final class MetaDataField implements Comparable {
 	/**
 	 * Adds a metadata protocol for this field.
 	 */
-	public void addProtocol(Protocol protocol) {
+	public void addProtocol(final Protocol protocol) {
 		// if first one
 		if (protocols[0] == null) {
 			protocols[0] = protocol;
@@ -259,8 +261,8 @@ public final class MetaDataField implements Comparable {
 		}
 
 		// check see if already exists
-		for (int i = 0; i < protocols.length; i++) {
-			if (protocols[i].equals(protocol)) {
+		for (Protocol protocol2 : protocols) {
+			if (protocol2.equals(protocol)) {
 				return;
 			}
 		}
@@ -275,7 +277,7 @@ public final class MetaDataField implements Comparable {
 	/**
 	 * Adds an extensible name value, associated with a metadata protocol.
 	 */
-	public void addProtocol(Protocol protocol, String extensibleName) {
+	public void addProtocol(final Protocol protocol, final String extensibleName) {
 		addProtocol(protocol);
 		if (extensible == null) {
 			extensible = new String[1];
@@ -303,11 +305,12 @@ public final class MetaDataField implements Comparable {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		MetaDataField field = null;
 
-		if (obj == null)
+		if (obj == null) {
 			return false;
+		}
 
 		try {
 			field = (MetaDataField) obj;
@@ -322,10 +325,9 @@ public final class MetaDataField implements Comparable {
 			if (description == field.getDescription()) {
 				if (type == field.getType()) {
 					if (extensible != null) {
-						for (int i = 0; i < protocol.length; i++) {
-							extensibleName = getExtensibleName(protocol[i]);
-							extensibleName2 = field
-									.getExtensibleName(protocol[i]);
+						for (Protocol element : protocol) {
+							extensibleName = getExtensibleName(element);
+							extensibleName2 = field.getExtensibleName(element);
 							if (extensibleName != null) {
 								if (!extensibleName.equals(extensibleName2)) {
 									return false;
@@ -352,7 +354,7 @@ public final class MetaDataField implements Comparable {
 		return fieldName + ": " + description;
 	}
 
-	public int compareTo(Object obj) {
+	public int compareTo(final Object obj) {
 
 		return toString().compareTo(obj.toString());
 	}

@@ -46,21 +46,21 @@
 //
 package edu.sdsc.grid.io;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * A RemoteFileOutputStream writes bytes to a file in a file system. What files
  * are available depends on the host environment.
- *<P>
+ * <P>
  * RemoteFileOutputStream is meant for writing streams of raw bytes such as
  * image data.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert
  * @since JARGON1.4
  */
 public abstract class RemoteFileOutputStream extends GeneralFileOutputStream {
-	
+
 	/**
 	 * Creates a <code>FileOuputStream</code> by opening a connection to an
 	 * actual file, the file named by the path name <code>name</code> in the
@@ -79,8 +79,8 @@ public abstract class RemoteFileOutputStream extends GeneralFileOutputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public RemoteFileOutputStream(GeneralFileSystem fileSystem, String name)
-			throws IOException {
+	public RemoteFileOutputStream(final GeneralFileSystem fileSystem,
+			final String name) throws IOException {
 		super(fileSystem, name);
 	}
 
@@ -104,7 +104,7 @@ public abstract class RemoteFileOutputStream extends GeneralFileOutputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public RemoteFileOutputStream(GeneralFile file) throws IOException {
+	public RemoteFileOutputStream(final GeneralFile file) throws IOException {
 		super(file);
 	}
 

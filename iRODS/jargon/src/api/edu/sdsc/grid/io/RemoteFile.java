@@ -50,12 +50,12 @@ import java.net.URI;
  * An abstract representation of file and directory pathnames on a remote
  * server. This abstract class can be subclassed to create a file object for
  * refering to a remote file on a particular kind fo remote server.
- *<P>
+ * <P>
  * Shares many similarities with the java.io.File class: User interfaces and
  * operating systems use system-dependent pathname strings to name files and
  * directories. This class presents an abstract, system-independent view of
  * hierarchical pathnames. An abstract pathname has two components:
- *<P>
+ * <P>
  * An optional system-dependent prefix string, such as a disk-drive specifier,
  * "/" for the UNIX root directory, or "\\" for a Microsoft Windows UNC
  * pathname, and <br>
@@ -72,7 +72,7 @@ import java.net.URI;
  * names within it may be separated by the default name-separator character or
  * by any other name-separator character that is supported by the underlying
  * system.
- *<P>
+ * <P>
  * A pathname, whether abstract or in string form, may be either absolute or
  * relative. An absolute pathname is complete in that no other information is
  * required in order to locate the file that it denotes. A relative pathname, in
@@ -81,42 +81,42 @@ import java.net.URI;
  * pathnames against the current user directory. This directory is named by the
  * system property user.dir, and is typically the directory in which the Java
  * virtual machine was invoked.
- *<P>
+ * <P>
  * The prefix concept is used to handle root directories on UNIX platforms, and
  * drive specifiers, root directories and UNC pathnames on Microsoft Windows
  * platforms, as follows:
- *<P>
+ * <P>
  * For UNIX platforms, the prefix of an absolute pathname is always "/".
  * Relative pathnames have no prefix. The abstract pathname denoting the root
  * directory has the prefix "/" and an empty name sequence.
- *<P>
+ * <P>
  * For Microsoft Windows platforms, the prefix of a pathname that contains a
  * drive specifier consists of the drive letter followed by ":" and possibly
  * followed by "\" if the pathname is absolute. The prefix of a UNC pathname is
  * "\\"; the hostname and the share name are the first two names in the name
  * sequence. A relative pathname that does not specify a drive has no prefix.
- *<P>
+ * <P>
  * Instances of the RemoteFile class are immutable; that is, once created, the
  * abstract pathname represented by a RemoteFile object will never change.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @see java.io.File
- * @see edu.sdsc.grid.io.GeneralFile 
+ * @see edu.sdsc.grid.io.GeneralFile
  */
 public abstract class RemoteFile extends GeneralFile {
-	
+
 	/**
 	 * Creates a new RemoteFile instance by converting the given pathname string
 	 * into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the remote server
 	 * @param filePath
 	 *            A pathname string
 	 */
-	public RemoteFile(RemoteFileSystem fileSystem, String filePath)
+	public RemoteFile(final RemoteFileSystem fileSystem, final String filePath)
 			throws NullPointerException {
 		this(fileSystem, "", filePath);
 	}
@@ -124,11 +124,11 @@ public abstract class RemoteFile extends GeneralFile {
 	/**
 	 * Creates a new RemoteFile instance from a parent pathname string and a
 	 * child pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new RemoteFile instance is created as if by
 	 * invoking the single-argument RemoteFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent pathname string is taken to denote a directory, and
 	 * the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -138,7 +138,7 @@ public abstract class RemoteFile extends GeneralFile {
 	 * system-dependent default directory. Otherwise each pathname string is
 	 * converted into an abstract pathname and the child abstract pathname is
 	 * resolved against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the remote server
@@ -147,19 +147,19 @@ public abstract class RemoteFile extends GeneralFile {
 	 * @param child
 	 *            The child pathname string
 	 */
-	public RemoteFile(RemoteFileSystem fileSystem, String parent, String child)
-			throws NullPointerException {
+	public RemoteFile(final RemoteFileSystem fileSystem, final String parent,
+			final String child) throws NullPointerException {
 		super(fileSystem, parent, child);
 	}
 
 	/**
 	 * Creates a new RemoteFile instance from a parent abstract pathname and a
 	 * child pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new RemoteFile instance is created as if by
 	 * invoking the single-argument RemoteFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent abstract pathname is taken to denote a directory,
 	 * and the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -169,14 +169,14 @@ public abstract class RemoteFile extends GeneralFile {
 	 * against a system-dependent default directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the child abstract
 	 * pathname is resolved against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param parent
 	 *            The parent abstract pathname
 	 * @param child
 	 *            The child pathname string
 	 */
-	public RemoteFile(RemoteFile parent, String child)
+	public RemoteFile(final RemoteFile parent, final String child)
 			throws NullPointerException {
 		this((RemoteFileSystem) parent.getFileSystem(), parent.getParent(),
 				child);
@@ -185,14 +185,14 @@ public abstract class RemoteFile extends GeneralFile {
 	/**
 	 * Creates a new RemoteFile instance by converting the given file: URI into
 	 * an abstract pathname.
-	 *<P>
+	 * <P>
 	 * The exact form of a file: URI is system-dependent, hence the
 	 * transformation performed by this constructor is also system-dependent.
-	 *<P>
+	 * <P>
 	 * For a given abstract pathname f it is guaranteed that
-	 *<P>
+	 * <P>
 	 * &nbsp;&nbsp;&nbsp;&nbsp;new RemoteFile( f.toURI()).equals( f)
-	 *<P>
+	 * <P>
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
 	 * Java virtual machine. This relationship typically does not hold, however,
@@ -207,7 +207,7 @@ public abstract class RemoteFile extends GeneralFile {
 	 * @throws IllegalArgumentException
 	 *             If the preconditions on the parameter do not hold.
 	 */
-	public RemoteFile(URI uri) throws NullPointerException,
+	public RemoteFile(final URI uri) throws NullPointerException,
 			IllegalArgumentException {
 		super(uri);
 
@@ -235,12 +235,12 @@ public abstract class RemoteFile extends GeneralFile {
 	/**
 	 * Replicates this RemoteFile to a new resource. Directories/collections
 	 * will be recursively replicated.
-	 *<P>
+	 * <P>
 	 * In some remote systems, one can make copies of a data set and store the
 	 * copies in different locations. But, all these copies are considered to be
 	 * identifiable by the same identifier. That is, each copy is considered to
 	 * be equivalent to each other.
-	 *<P>
+	 * <P>
 	 * When a user reads a replicated data set, the remote system cycles through
 	 * all the copies of the datset and reads the one that is accessible at that
 	 * time.
@@ -266,8 +266,7 @@ public abstract class RemoteFile extends GeneralFile {
 	 * <blockquote><tt>
 	 * new {@link #RemoteFile(java.net.URI) RemoteFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
-   * </tt>
-	 * </blockquote>
+	 * </tt> </blockquote>
 	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
@@ -284,7 +283,7 @@ public abstract class RemoteFile extends GeneralFile {
 	 * @see java.net.URI
 	 * @see java.net.URI#toURL()
 	 */
-	public URI toURI(boolean includePassword) {
+	public URI toURI(final boolean includePassword) {
 		return toURI();
 	}
 }

@@ -25,10 +25,11 @@ public class SelectField {
 		if (selectField == null) {
 			throw new JargonException("select field was null");
 		}
-		return new SelectField(selectField.getName(), String
-				.valueOf(selectField.getNumericValue()), selectFieldType,
+		return new SelectField(selectField.getName(),
+				String.valueOf(selectField.getNumericValue()), selectFieldType,
 				selectFieldSource);
 	}
+
 	public static SelectField instance(final String selectFieldName,
 			final String selectFieldNumericTranslation,
 			final SelectFieldTypes selectFieldType,
@@ -36,6 +37,7 @@ public class SelectField {
 		return new SelectField(selectFieldName, selectFieldNumericTranslation,
 				selectFieldType, selectFieldSource);
 	}
+
 	private final String selectFieldColumnName;
 	private final String selectFieldNumericTranslation;
 

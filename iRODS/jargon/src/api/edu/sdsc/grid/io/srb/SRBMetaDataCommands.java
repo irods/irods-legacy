@@ -51,6 +51,9 @@ import edu.sdsc.grid.io.MetaDataField;
 import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.MetaDataTable;
+import edu.sdsc.grid.io.ResourceMetaData;
+import edu.sdsc.grid.io.StandardMetaData;
+import edu.sdsc.grid.io.UserMetaData;
 
 /**
  * SRBMetaDataCommands handles the SRB server call srbGetDataDirInfo and all
@@ -72,14 +75,14 @@ class SRBMetaDataCommands {
 
 	/**
 	 * Constructor
-	 *<P>
+	 * <P>
 	 * 
 	 * @param userInfoDirectory
 	 *            the directory to find the user info
 	 * @throws IOException
 	 *             if the connection to the SRB fails.
 	 */
-	SRBMetaDataCommands(SRBCommands commands) throws IOException {
+	SRBMetaDataCommands(final SRBCommands commands) throws IOException {
 		this.commands = commands;
 	}
 
@@ -87,46 +90,52 @@ class SRBMetaDataCommands {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() {
-		if (commands != null)
+		if (commands != null) {
 			commands = null;
+		}
 	}
 
 	// Various methods for handling metadata used by srbGetDataDirInfo(...).
-	static String getOperator(MetaDataCondition condition) {
+	static String getOperator(final MetaDataCondition condition) {
 		int operator = condition.getOperator();
 		if (operator == MetaDataCondition.IN) {
 			return " " + MetaDataCondition.getOperatorString(operator) + " (";
-		} else
+		} else {
 			return " " + MetaDataCondition.getOperatorString(operator) + " ";
+		}
 	}
 
-	static String getOperator(int operator) {
+	static String getOperator(final int operator) {
 		if (operator == MetaDataCondition.IN) {
 			return " " + MetaDataCondition.getOperatorString(operator) + " (";
-		} else
+		} else {
 			return " " + MetaDataCondition.getOperatorString(operator) + " ";
+		}
 	}
 
-	static String getEndOperator(MetaDataCondition condition) {
+	static String getEndOperator(final MetaDataCondition condition) {
 		if (condition.getOperator() == MetaDataCondition.IN) {
 			return ")";
-		} else
+		} else {
 			return "";
+		}
 	}
 
-	static String getEndOperator(int condition) {
+	static String getEndOperator(final int condition) {
 		if (condition == MetaDataCondition.IN) {
 			return ")";
-		} else
+		} else {
 			return "";
+		}
 	}
 
 	/**
 	 * used to properly group the value with the operator, string values are in
 	 * single quotes, ints are not...
 	 */
-	private String quotes(int type) {
+	private String quotes(final int type) {
 		switch (type) {
 		case MetaDataField.INT:
 		case MetaDataField.LONG:
@@ -140,7 +149,6 @@ class SRBMetaDataCommands {
 	}
 
 	private String fixLIKE(String value) {
-		String temp = value;
 		int index = value.indexOf("*");
 		while (index >= 0) {
 			value = value.substring(0, index) + "%"
@@ -163,7 +171,8 @@ class SRBMetaDataCommands {
 		return value;
 	}
 
-	private MetaDataTable fixLIKE(MetaDataTable table, boolean hasLike) {
+	private MetaDataTable fixLIKE(final MetaDataTable table,
+			final boolean hasLike) {
 		int rowCount = table.getRowCount(), columnCount = table
 				.getColumnCount();
 		int index = -1;
@@ -208,10 +217,11 @@ class SRBMetaDataCommands {
 
 	// for the qVal when the conditions contain a table
 	// new query protocol
-	private String setTableGenQuery(MetaDataTable table,
-			MetaDataCondition condition) {
-		if (table == null)
+	private String setTableGenQuery(final MetaDataTable table,
+			final MetaDataCondition condition) {
+		if (table == null) {
 			return "";
+		}
 
 		String fieldName = condition.getFieldName();
 		String operator = getOperator(condition);
@@ -251,8 +261,8 @@ class SRBMetaDataCommands {
 		return queryStatement;
 	}
 
-	private String setTableGenQueryRow(int row, MetaDataTable table,
-			MetaDataCondition condition) {
+	private String setTableGenQueryRow(final int row,
+			final MetaDataTable table, final MetaDataCondition condition) {
 		String queryStatement;
 		int operator = table.getOperator(row);
 		if (operator == MetaDataCondition.IN
@@ -278,7 +288,8 @@ class SRBMetaDataCommands {
 	}
 
 	// To set the ID value early enough in the new query protocol
-	private int[] setTableConditionIDs(MetaDataTable table, String fieldName) {
+	private int[] setTableConditionIDs(final MetaDataTable table,
+			final String fieldName) {
 		// 1st row
 		int[] ids = null;
 		int size = table.getRowCount();
@@ -331,20 +342,22 @@ class SRBMetaDataCommands {
 	/**
 	 * Removes null values from an array.
 	 */
-	static final Object[] cleanNulls(Object[] obj) {
+	static final Object[] cleanNulls(final Object[] obj) {
 		Vector temp = new Vector(obj.length);
 		boolean add = false;
-		int i = 0, j = 0;
+		int i = 0;
 
 		for (i = 0; i < obj.length; i++) {
 			if (obj[i] != null) {
 				temp.add(obj[i]);
-				if (!add)
+				if (!add) {
 					add = true;
+				}
 			}
 		}
-		if (!add)
+		if (!add) {
 			return null;
+		}
 
 		// needs its own check
 		if ((obj.length == 1) && (obj[0] == null)) {
@@ -358,9 +371,10 @@ class SRBMetaDataCommands {
 	/**
 	 * Removes null and duplicate values from an array.
 	 */
-	static final Object[] cleanNullsAndDuplicates(Object[] obj) {
-		if (obj == null)
+	static final Object[] cleanNullsAndDuplicates(final Object[] obj) {
+		if (obj == null) {
 			return null;
+		}
 
 		Vector temp = new Vector(obj.length);
 		boolean anyAdd = false;
@@ -379,13 +393,15 @@ class SRBMetaDataCommands {
 
 				if (obj[i] != null) {
 					temp.add(obj[i]);
-					if (!anyAdd)
+					if (!anyAdd) {
 						anyAdd = true;
+					}
 				}
 			}
 		}
-		if (!anyAdd)
+		if (!anyAdd) {
 			return null;
+		}
 
 		// needs its own check
 		if ((obj.length == 1) && (obj[0] == null)) {
@@ -407,9 +423,8 @@ class SRBMetaDataCommands {
 	 * @param need
 	 *            to pass along in case the style is MetaDataCondition.TABLE
 	 */
-	private String addValue(int style, MetaDataCondition condition) {
+	private String addValue(final int style, final MetaDataCondition condition) {
 		String qValCondition = "";
-		int operator;
 		qValCondition += getOperator(condition);
 		switch (style) {
 		case MetaDataCondition.SCALAR:
@@ -521,12 +536,13 @@ class SRBMetaDataCommands {
 	 * 
 	 * @return The query result, use srbGenGetMoreRows() to retrieve more rows.
 	 */
-	SRBMetaDataRecordList[] srbGenQuery(int catType, String myMcatZone,
-			MetaDataCondition[] metaDataConditions,
-			MetaDataSelect[] metaDataSelects, int rowsWanted, boolean orderBy,
-			boolean nonDistinct) throws IOException {
-		if (SRBCommands.DEBUG > 0)
+	SRBMetaDataRecordList[] srbGenQuery(final int catType,
+			final String myMcatZone, MetaDataCondition[] metaDataConditions,
+			final MetaDataSelect[] metaDataSelects, int rowsWanted,
+			boolean orderBy, final boolean nonDistinct) throws IOException {
+		if (SRBCommands.DEBUG > 0) {
 			System.err.println("\n srbGenQuery");
+		}
 
 		/*
 		 * The conversion of the query in the SRB query protocol takes the
@@ -548,7 +564,6 @@ class SRBMetaDataCommands {
 
 		int i = 0, j = 0, temp = 0;
 
-		String queryStatement;
 		int fieldID = Integer.MIN_VALUE;
 
 		SRBMetaDataRecordList[] recordList = null;
@@ -568,8 +583,8 @@ class SRBMetaDataCommands {
 		MetaDataSelect[] selects = new MetaDataSelect[selectsLength];
 
 		int[] conditionIDs = null;
-		Vector hasDefinableCondition = new Vector();
-		Vector hasDefinableSelect = new Vector();
+		new Vector();
+		new Vector();
 
 		int conditionsLength = 0;
 		if (metaDataConditions != null) {
@@ -635,8 +650,7 @@ class SRBMetaDataCommands {
 								SRBMetaDataSet.DEFINABLE_METADATA_FOR_FILES)
 								|| conditions[i]
 										.getFieldName()
-										.equals(
-												SRBMetaDataSet.DEFINABLE_METADATA_FOR_DIRECTORIES)) {
+										.equals(SRBMetaDataSet.DEFINABLE_METADATA_FOR_DIRECTORIES)) {
 							conditionsLength += 5 * conditions[i]
 									.getTableValue().getColumnCount() - 1;
 						} else {
@@ -679,9 +693,9 @@ class SRBMetaDataCommands {
 							// skip it
 						} else if (conditions[i].getStyle() == MetaDataCondition.TABLE) {
 							// conditions use User Definable metadata
-							int[] conIDs = setTableConditionIDs(conditions[i]
-									.getTableValue(), conditions[i]
-									.getFieldName());
+							int[] conIDs = setTableConditionIDs(
+									conditions[i].getTableValue(),
+									conditions[i].getFieldName());
 
 							if (conditions.length < conditionIDs.length + temp) {
 								// Because they && the same condition use this
@@ -730,8 +744,9 @@ class SRBMetaDataCommands {
 
 		// remove duplicate/null selects.
 		selects = (MetaDataSelect[]) cleanNullsAndDuplicates(selects);
-		if (selects == null)
+		if (selects == null) {
 			return null;
+		}
 		selectsLength = selects.length;
 		int[] selectsIDs = new int[selectsLength];
 		int[] selectsValues = new int[selectsLength];
@@ -755,21 +770,21 @@ class SRBMetaDataCommands {
 
 				if (fieldID == -1) {
 					tempSelects[0] = MetaDataSet
-							.newSelection(SRBMetaDataSet.FILE_NAME);
+							.newSelection(StandardMetaData.FILE_NAME);
 					tempSelects[1] = MetaDataSet
-							.newSelection(SRBMetaDataSet.DIRECTORY_NAME);
+							.newSelection(StandardMetaData.DIRECTORY_NAME);
 					tempSelects[2] = MetaDataSet.newSelection(
 							SRBMetaDataSet.METADATA_NUM, 9);
 					metaDataNumAt = 2;
 				} else if (fieldID == -2) {
 					tempSelects[0] = MetaDataSet
-							.newSelection(SRBMetaDataSet.DIRECTORY_NAME);
+							.newSelection(StandardMetaData.DIRECTORY_NAME);
 					tempSelects[1] = MetaDataSet.newSelection(
 							SRBMetaDataSet.METADATA_NUM_DIRECTORY, 9);
 					metaDataNumAt = 1;
 				} else if (fieldID == -3) {
 					tempSelects[0] = MetaDataSet
-							.newSelection(SRBMetaDataSet.USER_NAME);
+							.newSelection(UserMetaData.USER_NAME);
 					tempSelects[1] = MetaDataSet
 							.newSelection(SRBMetaDataSet.USER_DOMAIN);
 					tempSelects[2] = MetaDataSet.newSelection(
@@ -777,7 +792,7 @@ class SRBMetaDataCommands {
 					metaDataNumAt = 2;
 				} else if (fieldID == -4) {
 					tempSelects[0] = MetaDataSet
-							.newSelection(SRBMetaDataSet.RESOURCE_NAME);
+							.newSelection(ResourceMetaData.RESOURCE_NAME);
 					tempSelects[1] = MetaDataSet.newSelection(
 							SRBMetaDataSet.METADATA_NUM_RESOURCE, 9);
 					metaDataNumAt = 1;
@@ -812,9 +827,9 @@ class SRBMetaDataCommands {
 
 				if (fieldID == -1) {
 					tempSelects[0] = MetaDataSet
-							.newSelection(SRBMetaDataSet.FILE_NAME);
+							.newSelection(StandardMetaData.FILE_NAME);
 					tempSelects[1] = MetaDataSet
-							.newSelection(SRBMetaDataSet.DIRECTORY_NAME);
+							.newSelection(StandardMetaData.DIRECTORY_NAME);
 					tempSelects[2] = MetaDataSet
 							.newSelection(SRBMetaDataSet.DEFINABLE_METADATA_FOR_FILES0);
 					tempSelects[3] = MetaDataSet
@@ -838,7 +853,7 @@ class SRBMetaDataCommands {
 				}
 				if (fieldID == -2) {
 					tempSelects[0] = MetaDataSet
-							.newSelection(SRBMetaDataSet.DIRECTORY_NAME);
+							.newSelection(StandardMetaData.DIRECTORY_NAME);
 					tempSelects[1] = MetaDataSet
 							.newSelection(SRBMetaDataSet.DEFINABLE_METADATA_FOR_DIRECTORIES0);
 					tempSelects[2] = MetaDataSet
@@ -862,7 +877,7 @@ class SRBMetaDataCommands {
 				}
 				if (fieldID == -3) {
 					tempSelects[0] = MetaDataSet
-							.newSelection(SRBMetaDataSet.USER_NAME);
+							.newSelection(UserMetaData.USER_NAME);
 					tempSelects[1] = MetaDataSet
 							.newSelection(SRBMetaDataSet.USER_DOMAIN);
 					tempSelects[2] = MetaDataSet
@@ -888,7 +903,7 @@ class SRBMetaDataCommands {
 				}
 				if (fieldID == -4) {
 					tempSelects[0] = MetaDataSet
-							.newSelection(SRBMetaDataSet.RESOURCE_NAME);
+							.newSelection(ResourceMetaData.RESOURCE_NAME);
 					tempSelects[1] = MetaDataSet
 							.newSelection(SRBMetaDataSet.DEFINABLE_METADATA_FOR_RESOURCES0);
 					tempSelects[2] = MetaDataSet
@@ -916,8 +931,9 @@ class SRBMetaDataCommands {
 				// merge new selects to the begin for orderBy
 				selects = MetaDataSet.mergeSelects(tempSelects, selects);
 				selects = (MetaDataSelect[]) cleanNullsAndDuplicates(selects);
-				if (selects == null)
+				if (selects == null) {
 					return null;
+				}
 
 				// easier to just start over
 				i = -1;
@@ -985,7 +1001,7 @@ class SRBMetaDataCommands {
 				if (conditionIDs[i] >= 0) {
 					Host.copyInt(conditionIDs[i], packedQuery, temp);
 					temp += SRBCommands.INT_LENGTH;
-					if (commands.DEBUG > 4) {
+					if (SRBCommands.DEBUG > 4) {
 						System.err.println("conditionID " + conditionIDs[i]);
 					}
 				}
@@ -1088,7 +1104,7 @@ class SRBMetaDataCommands {
 			}
 		}
 
-		commands.startSRBCommand(commands.F_GEN_QUERY, 4);
+		commands.startSRBCommand(SRBCommands.F_GEN_QUERY, 4);
 
 		commands.sendArg(catType);
 		commands.sendArg(myMcatZone);
@@ -1102,8 +1118,9 @@ class SRBMetaDataCommands {
 			if (e.getType() == -3005) {
 				// the database contains no objects matching the query.
 				return null;
-			} else
+			} else {
 				throw e;
+			}
 		}
 		recordList = commands.returnSRBMetaDataRecordList(false, null);
 		if (metaDataNumList != null) {

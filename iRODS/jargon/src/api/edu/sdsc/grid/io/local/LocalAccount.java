@@ -43,18 +43,18 @@
 //
 package edu.sdsc.grid.io.local;
 
-import edu.sdsc.grid.io.*;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.sdsc.grid.io.GeneralAccount;
+
 /**
  * An object to hold the user information used when connecting to a remote
  * server.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since Jargon1.0
@@ -83,7 +83,7 @@ public class LocalAccount extends GeneralAccount {
 	 * @param homeDirectory
 	 *            home directory on the local filesystem
 	 */
-	public LocalAccount(String homeDir) {
+	public LocalAccount(final String homeDir) {
 		super(homeDir);
 	}
 
@@ -91,15 +91,14 @@ public class LocalAccount extends GeneralAccount {
 	 * Sets the home directory of this GeneralAccount.
 	 */
 	@Override
-	public void setHomeDirectory(String homeDir) {
+	public void setHomeDirectory(final String homeDir) {
 		if (homeDir == null) {
 			try {
 				homeDirectory = System.getProperty("user.home");
 			} catch (java.security.AccessControlException e) {
-				log
-						.error(
-								"java security access control exception, logged and ignored",
-								e);
+				log.error(
+						"java security access control exception, logged and ignored",
+						e);
 				// rare security problems, just give up
 				homeDirectory = "/";
 			}
@@ -120,10 +119,11 @@ public class LocalAccount extends GeneralAccount {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			if (obj instanceof LocalAccount) {
 				if (((LocalAccount) obj).getHomeDirectory().equals(

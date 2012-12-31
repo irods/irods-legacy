@@ -43,12 +43,12 @@
 //
 package edu.sdsc.grid.io.local;
 
-import edu.sdsc.grid.io.*;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
+
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
 
 /**
  * A wrapper class for java.io.RandomAccessFile.
@@ -125,7 +125,8 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 *             If denied read access to the file or the mode is "rw" and
 	 *             denied write access to the file.
 	 */
-	public LocalRandomAccessFile(String name, String mode) throws IOException {
+	public LocalRandomAccessFile(final String name, final String mode)
+			throws IOException {
 		this(new LocalFile(name), mode);
 	}
 
@@ -187,7 +188,8 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 *             If denied read access to the file or the mode is "rw" and
 	 *             denied write access to the file.
 	 */
-	public LocalRandomAccessFile(File file, String mode) throws IOException {
+	public LocalRandomAccessFile(final File file, final String mode)
+			throws IOException {
 		this(new LocalFile(file), mode);
 	}
 
@@ -249,7 +251,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 *             If denied read access to the file or the mode is "rw" and
 	 *             denied write access to the file.
 	 */
-	public LocalRandomAccessFile(LocalFile file, String mode)
+	public LocalRandomAccessFile(final LocalFile file, final String mode)
 			throws IOException {
 		super(file, mode);
 	}
@@ -269,7 +271,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	}
 
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		if (!file.exists()) {
 			file.createNewFile();
 		} else if (file.isDirectory()) {
@@ -289,12 +291,13 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 
 	// Private method in wrapper, so call public.
 	@Override
-	protected int readBytes(byte b[], int offset, int len) throws IOException {
+	protected int readBytes(final byte b[], final int offset, final int len)
+			throws IOException {
 		return wrapper.read(b, offset, len);
 	}
 
 	@Override
-	public int skipBytes(int n) throws IOException {
+	public int skipBytes(final int n) throws IOException {
 		return wrapper.skipBytes(n);
 	}
 
@@ -302,13 +305,14 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	// Write methods
 	// ----------------------------------------------------------------------
 	@Override
-	public void write(int b) throws IOException {
+	public void write(final int b) throws IOException {
 		wrapper.write(b);
 	}
 
 	// Private method in wrapper, so call public.
 	@Override
-	protected void writeBytes(byte b[], int offset, int len) throws IOException {
+	protected void writeBytes(final byte b[], final int offset, final int len)
+			throws IOException {
 		wrapper.write(b, offset, len);
 	}
 
@@ -343,7 +347,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 *             error occurs.
 	 */
 	@Override
-	public void seek(long position) throws IOException {
+	public void seek(final long position) throws IOException {
 		wrapper.seek(position);
 	}
 
@@ -369,7 +373,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 *             error occurs.
 	 */
 	@Override
-	public void seek(long position, int origin) throws IOException {
+	public void seek(final long position, final int origin) throws IOException {
 		switch (origin) {
 		case 1:
 			seek(position + getFilePointer());
@@ -398,14 +402,14 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 
 	/**
 	 * Sets the length of this file.
-	 *<P>
+	 * <P>
 	 * If the present length of the file as returned by the <code>length</code>
 	 * method is greater than the <code>newLength</code> argument then the file
 	 * will be truncated. In this case, if the file offset as returned by the
 	 * <code>getFilePointer</code> method is greater then <code>newLength</code>
 	 * then after this method returns the offset will be equal to
 	 * <code>newLength</code>.
-	 *<P>
+	 * <P>
 	 * If the present length of the file as returned by the <code>length</code>
 	 * method is smaller than the <code>newLength</code> argument then the file
 	 * will be extended. In this case, the contents of the extended portion of
@@ -417,7 +421,7 @@ public class LocalRandomAccessFile extends GeneralRandomAccessFile {
 	 *             If an I/O error occurs
 	 */
 	@Override
-	public void setLength(long newLength) throws IOException {
+	public void setLength(final long newLength) throws IOException {
 		wrapper.setLength(newLength);
 	}
 

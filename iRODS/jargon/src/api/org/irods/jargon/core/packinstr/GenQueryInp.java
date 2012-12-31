@@ -1,4 +1,3 @@
-
 package org.irods.jargon.core.packinstr;
 
 import static edu.sdsc.grid.io.irods.IRODSConstants.options;

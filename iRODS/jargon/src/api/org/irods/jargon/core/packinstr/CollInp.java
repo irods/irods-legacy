@@ -43,38 +43,49 @@ public class CollInp extends AbstractIRODSPackingInstruction {
 	private final boolean recursiveOperation;
 	private final boolean forceOperation;
 
-	public static final CollInp instance(String collectionName,
-			boolean recursiveOperation) throws JargonException {
+	public static final CollInp instance(final String collectionName,
+			final boolean recursiveOperation) throws JargonException {
 		return new CollInp(collectionName, recursiveOperation);
 	}
-	
-	public static final CollInp instance(String collectionName,
-			boolean recursiveOperation, boolean forceOperation) throws JargonException {
+
+	public static final CollInp instance(final String collectionName,
+			final boolean recursiveOperation, final boolean forceOperation)
+			throws JargonException {
 		return new CollInp(collectionName, recursiveOperation, forceOperation);
 	}
-	
+
 	/**
-	 * Create the packing instruction to delete this collection from irods, moving the deleted files to the trash.
-	 * @param collectionName <code>String</code> with the absolute path to the iRODS collection to be deleted.
+	 * Create the packing instruction to delete this collection from irods,
+	 * moving the deleted files to the trash.
+	 * 
+	 * @param collectionName
+	 *            <code>String</code> with the absolute path to the iRODS
+	 *            collection to be deleted.
 	 * @return <code>CollInp</code> packing instruction.
 	 * @throws JargonException
 	 */
-	public static final CollInp instanceForRecursiveDeleteCollectionNoForce(final String collectionName) throws JargonException {
+	public static final CollInp instanceForRecursiveDeleteCollectionNoForce(
+			final String collectionName) throws JargonException {
 		return new CollInp(collectionName, true, false);
 	}
-	
+
 	/**
-	 * Create the packing instruction to delete this collection from irods, without moving the deleted files and collections to the trash
-	 * @param collectionName <code>String</code> with the absolute path to the iRODS collection to be deleted.
+	 * Create the packing instruction to delete this collection from irods,
+	 * without moving the deleted files and collections to the trash
+	 * 
+	 * @param collectionName
+	 *            <code>String</code> with the absolute path to the iRODS
+	 *            collection to be deleted.
 	 * @return <code>CollInp</code> packing instruction.
 	 * @throws JargonException
 	 */
-	public static final CollInp instanceForRecursiveDeleteCollectionWithForce(final String collectionName) throws JargonException {
+	public static final CollInp instanceForRecursiveDeleteCollectionWithForce(
+			final String collectionName) throws JargonException {
 		return new CollInp(collectionName, true, true);
 	}
- 
-	private CollInp(String collectionName, boolean recursiveOperation)
-			throws JargonException {
+
+	private CollInp(final String collectionName,
+			final boolean recursiveOperation) throws JargonException {
 		super();
 		if (collectionName == null || collectionName.length() == 0) {
 			throw new JargonException("collection name is null or blank");
@@ -84,8 +95,9 @@ public class CollInp extends AbstractIRODSPackingInstruction {
 		this.forceOperation = false;
 	}
 
-	private CollInp(String collectionName, boolean recursiveOperation,
-			boolean forceOperation) throws JargonException {
+	private CollInp(final String collectionName,
+			final boolean recursiveOperation, final boolean forceOperation)
+			throws JargonException {
 		super();
 		if (collectionName == null || collectionName.length() == 0) {
 			throw new JargonException("collection name is null or blank");
@@ -93,7 +105,7 @@ public class CollInp extends AbstractIRODSPackingInstruction {
 		this.collectionName = collectionName;
 		this.recursiveOperation = recursiveOperation;
 		this.forceOperation = forceOperation;
-		
+
 	}
 
 	public String getCollectionName() {
@@ -119,7 +131,7 @@ public class CollInp extends AbstractIRODSPackingInstruction {
 		if (this.isForceOperation()) {
 			kvps.add(KeyValuePair.instance(FORCE_FLAG, ""));
 		}
-		
+
 		if (this.isRecursiveOperation()) {
 			kvps.add(KeyValuePair.instance(RECURSIVE_OPR, ""));
 		}
@@ -127,7 +139,5 @@ public class CollInp extends AbstractIRODSPackingInstruction {
 		message.addTag(createKeyValueTag(kvps));
 		return message;
 	}
-
-	
 
 }

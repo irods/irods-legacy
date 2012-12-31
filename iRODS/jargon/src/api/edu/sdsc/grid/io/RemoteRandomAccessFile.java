@@ -53,7 +53,7 @@ import java.io.IOException;
  * @since JARGON1.0
  */
 public abstract class RemoteRandomAccessFile extends GeneralRandomAccessFile {
-	
+
 	/**
 	 * Doesn't really do much, perhaps in the future. Instead @see
 	 * GeneralRandomAccessFile or the subclass which called this constructor.
@@ -62,11 +62,9 @@ public abstract class RemoteRandomAccessFile extends GeneralRandomAccessFile {
 	 *             if the file is a directory rather than a regular file, or
 	 *             cannot be opened or created for any other reason
 	 */
-	protected RemoteRandomAccessFile(RemoteFile file, String mode)
+	protected RemoteRandomAccessFile(final RemoteFile file, final String mode)
 			throws IOException {
 		super(file, mode);
 	}
-
-
 
 }

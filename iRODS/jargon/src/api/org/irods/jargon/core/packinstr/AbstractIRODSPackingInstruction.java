@@ -13,34 +13,35 @@ import edu.sdsc.grid.io.irods.Tag;
 
 /**
  * Generic representation of a packing instruction fo rhte IRODS XML Protocol
+ * 
  * @author Mike Conway - DICE (www.irods.org)
  * 
  */
 public abstract class AbstractIRODSPackingInstruction implements IRodsPI {
-	
+
 	public static final String KEY_VAL_PAIR_PI = "KeyValPair_PI";
 	public static final String SS_LEN = "ssLen";
 	public static final String KEYWORD = "keyWord";
-	public static final String S_VALUE	= "svalue";
-	
+	public static final String S_VALUE = "svalue";
+
 	public static final String INX_VAL_PAIR_PI = "InxValPair_PI";
 	public static final String IS_LEN = "islen";
 	public static final String INX = "inx";
 	private int apiNumber = 0;
-	
+
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	public AbstractIRODSPackingInstruction() {
 	}
-	
-	Tag createKeyValueTag(List<KeyValuePair> kvps) throws JargonException {
+
+	Tag createKeyValueTag(final List<KeyValuePair> kvps) throws JargonException {
 		/*
 		 * Must be like the following: <KeyValPair_PI> <ssLen>3</ssLen>
 		 * <keyWord>dataType</keyWord> <keyWord>destRescName</keyWord>
 		 * <keyWord>dataIncluded</keyWord> <svalue>generic</svalue>
 		 * <svalue>resourceB</svalue> <svalue></svalue> </KeyValPair_PI>
 		 */
-		
+
 		if (kvps == null) {
 			throw new JargonException("kvps are null");
 		}
@@ -52,7 +53,7 @@ public abstract class AbstractIRODSPackingInstruction implements IRodsPI {
 		if (kvps.size() == 0) {
 			return pair;
 		}
-		
+
 		// add keys
 		for (KeyValuePair kvp : kvps) {
 			pair.addTag(KEYWORD, kvp.getKey());
@@ -64,7 +65,7 @@ public abstract class AbstractIRODSPackingInstruction implements IRodsPI {
 		if (ssLength == 0) {
 			return pair;
 		}
-		
+
 		// add values
 		for (KeyValuePair kvp : kvps) {
 			pair.addTag(S_VALUE, kvp.getValue());
@@ -73,17 +74,17 @@ public abstract class AbstractIRODSPackingInstruction implements IRodsPI {
 		if (log.isDebugEnabled()) {
 			log.debug("kvp tag: {}", pair.parseTag());
 		}
-		
+
 		return pair;
 	}
-	
-	Tag createInxValueTag(List<InxVal> ivps) throws JargonException {
-		
+
+	Tag createInxValueTag(final List<InxVal> ivps) throws JargonException {
+
 		/*
-		 * A key/value pair with an integer key and a string value
-		 * #define InxValPair_PI "int isLen; int *inx(isLen); str *svalue[isLen];" 
+		 * A key/value pair with an integer key and a string value #define
+		 * InxValPair_PI "int isLen; int *inx(isLen); str *svalue[isLen];"
 		 */
-		
+
 		if (ivps == null) {
 			throw new JargonException("ivps is null");
 		}
@@ -95,7 +96,7 @@ public abstract class AbstractIRODSPackingInstruction implements IRodsPI {
 		if (ivps.size() == 0) {
 			return pair;
 		}
-		
+
 		// add keys
 		for (InxVal ivp : ivps) {
 			pair.addTag(INX, ivp.getName().toString());
@@ -107,7 +108,7 @@ public abstract class AbstractIRODSPackingInstruction implements IRodsPI {
 		if (isLength == 0) {
 			return pair;
 		}
-		
+
 		// add values
 		for (InxVal ivp : ivps) {
 			pair.addTag(S_VALUE, ivp.getValue());
@@ -116,10 +117,10 @@ public abstract class AbstractIRODSPackingInstruction implements IRodsPI {
 		if (log.isDebugEnabled()) {
 			log.debug("ivp tag: {}", pair.parseTag());
 		}
-		
+
 		return pair;
 	}
-	
+
 	public String getParsedTags() throws JargonException {
 
 		Tag message = getTagValue();
@@ -133,16 +134,15 @@ public abstract class AbstractIRODSPackingInstruction implements IRodsPI {
 		return tagOut;
 
 	}
-	
+
 	public abstract Tag getTagValue() throws JargonException;
-	
+
 	public int getApiNumber() {
 		return apiNumber;
 	}
 
-	protected void setApiNumber(int apiNumber) {
+	protected void setApiNumber(final int apiNumber) {
 		this.apiNumber = apiNumber;
 	}
-
 
 }

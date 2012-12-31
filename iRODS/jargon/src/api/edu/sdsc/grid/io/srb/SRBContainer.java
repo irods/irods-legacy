@@ -76,13 +76,13 @@ import edu.sdsc.grid.io.local.LocalFile;
  * HPSS). The whole container is retrieved from tape, cached on SRB disk, and
  * then multiple files can be quickly read and written on the container copy on
  * disk. The SRB handles the book-keeping for the container.
- *<P>
+ * <P>
  * SRBContainer subclasses SRBFile and have certain similarities with SRB
  * directories/collections, the logical groupings of files on the SRB.
  * Containers represent a physical grouping of files on a particular SRB
  * resource. Containers can be placed anywhere on the SRB the user has write
  * privileges.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since JARGON1.0
@@ -133,7 +133,7 @@ public class SRBContainer extends SRBFile {
 	 * @param filePath
 	 *            The pathname string
 	 */
-	public SRBContainer(SRBFileSystem fileSystem, String filePath) {
+	public SRBContainer(final SRBFileSystem fileSystem, final String filePath) {
 		super(fileSystem, filePath);
 	}
 
@@ -148,8 +148,8 @@ public class SRBContainer extends SRBFile {
 	 * @param containerMaxSize
 	 *            The size of the container, in bytes
 	 */
-	public SRBContainer(SRBFileSystem fileSystem, String filePath,
-			long containerMaxSize) {
+	public SRBContainer(final SRBFileSystem fileSystem, final String filePath,
+			final long containerMaxSize) {
 		super(fileSystem, filePath);
 
 		setContainerMaxSize(containerMaxSize);
@@ -158,12 +158,12 @@ public class SRBContainer extends SRBFile {
 	/**
 	 * Creates a new <code>SRBContainer</code> instance by converting the given
 	 * pathname string into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * If <code>parent</code> is <code>null</code> then the new
 	 * <code>SRBContainer</code> instance is created as if by invoking the
 	 * single-argument <code>SRBContainer</code> constructor on the given
 	 * <code>child</code> pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent abstract pathname is taken to denote a directory,
 	 * and the child pathname string is taken to denote the container name. If
 	 * the <code>child</code> pathname string is absolute then it is converted
@@ -173,26 +173,26 @@ public class SRBContainer extends SRBFile {
 	 * against the SRB default container directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the <code>child</code>
 	 * abstract pathname is resolved against the <code>parent</code>.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param parent
 	 *            The parent abstract pathname
 	 * @param child
 	 *            The child pathname string
 	 */
-	public SRBContainer(SRBFile parent, String child) {
+	public SRBContainer(final SRBFile parent, final String child) {
 		super(parent, child);
 	}
 
 	/**
 	 * Creates a new <code>SRBContainer</code> instance by converting the given
 	 * pathname string into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * If <code>parent</code> is <code>null</code> then the new
 	 * <code>SRBContainer</code> instance is created as if by invoking the
 	 * single-argument <code>SRBContainer</code> constructor on the given
 	 * <code>child</code> pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent abstract pathname is taken to denote a directory,
 	 * and the child pathname string is taken to denote the container name. If
 	 * the <code>child</code> pathname string is absolute then it is converted
@@ -202,7 +202,7 @@ public class SRBContainer extends SRBFile {
 	 * against the SRB default container directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the <code>child</code>
 	 * abstract pathname is resolved against the <code>parent</code>.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param parent
 	 *            The parent abstract pathname
@@ -211,7 +211,8 @@ public class SRBContainer extends SRBFile {
 	 * @param containerMaxSize
 	 *            The size of the container, in bytes
 	 */
-	public SRBContainer(SRBFile parent, String child, long containerMaxSize) {
+	public SRBContainer(final SRBFile parent, final String child,
+			final long containerMaxSize) {
 		super(parent, child);
 
 		setContainerMaxSize(containerMaxSize);
@@ -220,12 +221,12 @@ public class SRBContainer extends SRBFile {
 	/**
 	 * Creates a new <code>SRBContainer</code> instance by converting the given
 	 * pathname string into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * If <code>parent</code> is <code>null</code> then the new
 	 * <code>SRBContainer</code> instance is created as if by invoking the
 	 * single-argument <code>SRBContainer</code> constructor on the given
 	 * <code>child</code> pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent abstract pathname is taken to denote a directory,
 	 * and the child pathname string is taken to denote the container name. If
 	 * the <code>child</code> pathname string is absolute then it is converted
@@ -235,7 +236,7 @@ public class SRBContainer extends SRBFile {
 	 * against the SRB default container directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the <code>child</code>
 	 * abstract pathname is resolved against the <code>parent</code>.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the SRB
@@ -244,19 +245,20 @@ public class SRBContainer extends SRBFile {
 	 * @param child
 	 *            The child pathname string
 	 */
-	public SRBContainer(SRBFileSystem fileSystem, String parent, String child) {
+	public SRBContainer(final SRBFileSystem fileSystem, final String parent,
+			final String child) {
 		super(fileSystem, parent, child);
 	}
 
 	/**
 	 * Creates a new <code>SRBContainer</code> instance by converting the given
 	 * pathname string into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * If <code>parent</code> is <code>null</code> then the new
 	 * <code>SRBContainer</code> instance is created as if by invoking the
 	 * single-argument <code>SRBContainer</code> constructor on the given
 	 * <code>child</code> pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent abstract pathname is taken to denote a directory,
 	 * and the child pathname string is taken to denote the container name. If
 	 * the <code>child</code> pathname string is absolute then it is converted
@@ -266,7 +268,7 @@ public class SRBContainer extends SRBFile {
 	 * against the SRB default container directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the <code>child</code>
 	 * abstract pathname is resolved against the <code>parent</code>.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the SRB
@@ -277,8 +279,8 @@ public class SRBContainer extends SRBFile {
 	 * @param containerMaxSize
 	 *            The size of the container, in bytes
 	 */
-	public SRBContainer(SRBFileSystem fileSystem, String parent, String child,
-			long containerMaxSize) {
+	public SRBContainer(final SRBFileSystem fileSystem, final String parent,
+			final String child, final long containerMaxSize) {
 		super(fileSystem, parent, child);
 
 		setContainerMaxSize(containerMaxSize);
@@ -287,7 +289,7 @@ public class SRBContainer extends SRBFile {
 	/**
 	 * Creates a new <code>SRBContainer</code> instance by converting the given
 	 * uri string into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the SRB
@@ -298,7 +300,7 @@ public class SRBContainer extends SRBFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public SRBContainer(URI uri) throws IOException {
+	public SRBContainer(final URI uri) throws IOException {
 		super(uri);
 
 		setContainerMaxSize(containerMaxSize);
@@ -320,7 +322,7 @@ public class SRBContainer extends SRBFile {
 	 * Sets the container size of this SRBContainer object, in bytes. The max
 	 * size of a container cannot be changed if the container already exists on
 	 * the SRB.
-	 *<P>
+	 * <P>
 	 * Currently, containers cannot have a max size over 2GB, though they will
 	 * accept files larger than 2GB. If the container runs out of space it will
 	 * be renamed to a new container plus some random digits and a new container
@@ -331,9 +333,10 @@ public class SRBContainer extends SRBFile {
 	 * @throws IllegalArgumentException
 	 *             If the <code>containerMaxSize</code> is less than zero.
 	 */
-	public void setContainerMaxSize(long containerMaxSize) {
-		if (containerMaxSize < 0)
+	public void setContainerMaxSize(final long containerMaxSize) {
+		if (containerMaxSize < 0) {
 			throw new IllegalArgumentException();
+		}
 		this.containerMaxSize = containerMaxSize;
 	}
 
@@ -394,14 +397,14 @@ public class SRBContainer extends SRBFile {
 	 * cannot be added to a container. One reason being a name conflict will
 	 * occur.
 	 */
-	public void include(GeneralFile file) throws IOException {
+	public void include(final GeneralFile file) throws IOException {
 		if (!exists()) {
 			createNewFile();
 		}
 
 		int fd = srbFileSystem.srbObjCreate(catalogType, file.getName()
-				+ "&CONTAINER=" + getAbsolutePath(), dataType, resource, file
-				.getParent(), "", file.length());
+				+ "&CONTAINER=" + getAbsolutePath(), dataType, resource,
+				file.getParent(), "", file.length());
 
 		byte inputBuffer[] = new byte[BUFFER_MAX_SIZE];
 		long length = file.length();
@@ -425,14 +428,14 @@ public class SRBContainer extends SRBFile {
 	// GeneralFile Methods
 	// ----------------------------------------------------------------------
 	@Override
-	public MetaDataRecordList[] query(MetaDataSelect[] selects)
+	public MetaDataRecordList[] query(final MetaDataSelect[] selects)
 			throws IOException {
 		return query(selects, SRBFileSystem.DEFAULT_RECORDS_WANTED);
 	}
 
 	@Override
-	public MetaDataRecordList[] query(MetaDataSelect[] selects,
-			int recordsWanted) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataSelect[] selects,
+			final int recordsWanted) throws IOException {
 		MetaDataCondition iConditions[] = { MetaDataSet.newCondition(
 				SRBMetaDataSet.CONTAINER_NAME, MetaDataCondition.EQUAL,
 				getAbsolutePath()) };
@@ -441,8 +444,8 @@ public class SRBContainer extends SRBFile {
 	}
 
 	@Override
-	public void copyTo(GeneralFile file, boolean forceOverwrite,
-			boolean bulkCopy) throws IOException {
+	public void copyTo(final GeneralFile file, final boolean forceOverwrite,
+			final boolean bulkCopy) throws IOException {
 		String list[] = list();
 		GeneralFile temp;
 
@@ -454,21 +457,21 @@ public class SRBContainer extends SRBFile {
 		}
 
 		if (file instanceof SRBContainer) {
-			for (int i = 0; i < list.length; i++) {
+			for (String element : list) {
 				((SRBContainer) file).include(new SRBFile(srbFileSystem,
-						list[i]));
+						element));
 			}
 		} else {
-			for (int i = 0; i < list.length; i++) {
-				temp = FileFactory.newFile(this, list[i]);
+			for (String element : list) {
+				temp = FileFactory.newFile(this, element);
 				temp.copyTo(FileFactory.newFile(file, temp.getName()));
 			}
 		}
 	}
 
 	@Override
-	public void copyFrom(GeneralFile file, boolean forceOverwrite,
-			boolean bulkCopy) throws IOException {
+	public void copyFrom(final GeneralFile file, final boolean forceOverwrite,
+			final boolean bulkCopy) throws IOException {
 		String list[] = file.list();
 
 		if (!exists()) {
@@ -478,8 +481,8 @@ public class SRBContainer extends SRBFile {
 		if (file.isFile()) {
 			include(file);
 		} else {
-			for (int i = 0; i < list.length; i++) {
-				include(FileFactory.newFile(file, list[i]));
+			for (String element : list) {
+				include(FileFactory.newFile(file, element));
 			}
 		}
 	}
@@ -495,7 +498,7 @@ public class SRBContainer extends SRBFile {
 	 *             methods.
 	 */
 	@Deprecated
-	public void copyFromLocal(LocalFile localFile) throws IOException {
+	public void copyFromLocal(final LocalFile localFile) throws IOException {
 		if (localFile.isDirectory()) {
 			copyFrom(localFile, false, false);
 		}
@@ -512,7 +515,7 @@ public class SRBContainer extends SRBFile {
 	 *             methods.
 	 */
 	@Deprecated
-	public void copyFromLocal(String localFilePath) throws IOException {
+	public void copyFromLocal(final String localFilePath) throws IOException {
 		LocalFile localFile = new LocalFile(localFilePath);
 		if (localFile.isDirectory()) {
 			copyFrom(localFile, false, false);
@@ -539,7 +542,7 @@ public class SRBContainer extends SRBFile {
 	 *             If localFile is null.
 	 */
 	@Deprecated
-	public void copyToLocal(LocalFile localFile) throws IOException {
+	public void copyToLocal(final LocalFile localFile) throws IOException {
 		copyTo(localFile, false, false);
 	}
 
@@ -559,7 +562,7 @@ public class SRBContainer extends SRBFile {
 	 *             If localFile is null.
 	 */
 	@Deprecated
-	public void copyToLocal(String localFilePath) throws IOException {
+	public void copyToLocal(final String localFilePath) throws IOException {
 		copyTo(new LocalFile(localFilePath), false, false);
 	}
 
@@ -584,7 +587,7 @@ public class SRBContainer extends SRBFile {
 	 *             If remoteFile is null.
 	 */
 	@Deprecated
-	public void copyToRemote(RemoteFile remoteFile) throws IOException,
+	public void copyToRemote(final RemoteFile remoteFile) throws IOException,
 			ClassCastException {
 		copyTo(remoteFile);
 	}
@@ -615,11 +618,11 @@ public class SRBContainer extends SRBFile {
 		rl = query(conditions, selects);
 
 		if (rl != null) {
-			for (int i = 0; i < rl.length; i++) {
-				if (rl[i].getValue(UserMetaData.USER_NAME).equals(userName)
-						&& rl[i].getValue(SRBMetaDataSet.USER_DOMAIN).equals(
+			for (MetaDataRecordList element : rl) {
+				if (element.getValue(UserMetaData.USER_NAME).equals(userName)
+						&& element.getValue(SRBMetaDataSet.USER_DOMAIN).equals(
 								userDomain)) {
-					return rl[i].getValue(GeneralMetaData.ACCESS_CONSTRAINT)
+					return element.getValue(GeneralMetaData.ACCESS_CONSTRAINT)
 							.toString();
 				}
 			}
@@ -637,7 +640,7 @@ public class SRBContainer extends SRBFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public MetaDataRecordList[] getPermissions(boolean allUsers)
+	public MetaDataRecordList[] getPermissions(final boolean allUsers)
 			throws IOException {
 		return query(GeneralMetaData.ACCESS_CONSTRAINT);
 	}
@@ -651,7 +654,7 @@ public class SRBContainer extends SRBFile {
 	 *            The storage resource name of the new copy.
 	 */
 	@Override
-	public void replicate(String newResource) throws IOException {
+	public void replicate(final String newResource) throws IOException {
 		srbFileSystem.srbReplContainer(catalogType, getPath(), newResource);
 	}
 
@@ -666,7 +669,7 @@ public class SRBContainer extends SRBFile {
 	 *            value is to synchronize all archival resources.
 	 */
 	@Override
-	public void backup(String syncType) throws IOException {
+	public void backup(final String syncType) throws IOException {
 		int syncFlag = 0;
 		String path = getAbsolutePath();
 
@@ -693,7 +696,7 @@ public class SRBContainer extends SRBFile {
 	 * Loads the local files on to the SRB in this container in the
 	 * <code>srbDirectory</code>.
 	 */
-	void bulkLoad(LocalFile[] files) throws IOException {
+	void bulkLoad(final LocalFile[] files) throws IOException {
 		/*
 		 * which container or resource, get size and MaxSize of container open
 		 * container or temp file for upload create two 8MB byte buffers create
@@ -711,9 +714,6 @@ public class SRBContainer extends SRBFile {
 		 */
 
 		int MAX_REGISTRATION_THREADS = 4;
-
-		long maxSize = -1;
-		long containerOffset = 0;
 
 		// Two buffers are used switching back and forth
 		// from loading to transfering files
@@ -745,8 +745,8 @@ public class SRBContainer extends SRBFile {
 		loadThread.start();
 
 		// Now start copying
-		for (int i = 0; i < files.length; i++) {
-			loadBuffer(files[i], load, this, registrationThreads, registration,
+		for (LocalFile file : files) {
+			loadBuffer(file, load, this, registrationThreads, registration,
 					null);
 		}
 
@@ -787,9 +787,9 @@ public class SRBContainer extends SRBFile {
 	int numRegistrationThreads = 0;
 
 	// file currently being loaded into the buffer
-	private void loadBuffer(GeneralFile file, LoadThread load,
-			SRBFile tempFile, Thread[] registrationThreads,
-			RegistrationThread[] registration, String topLevelFile)
+	private void loadBuffer(final GeneralFile file, final LoadThread load,
+			final SRBFile tempFile, final Thread[] registrationThreads,
+			final RegistrationThread[] registration, String topLevelFile)
 			throws IOException {
 		if (file == null) {
 			return;
@@ -803,11 +803,12 @@ public class SRBContainer extends SRBFile {
 			}
 
 			GeneralFile[] files = file.listFiles();
-			if (files == null)
+			if (files == null) {
 				return;
+			}
 
-			for (int i = 0; i < files.length; i++) {
-				loadBuffer(files[i], load, tempFile, registrationThreads,
+			for (GeneralFile file2 : files) {
+				loadBuffer(file2, load, tempFile, registrationThreads,
 						registration, topLevelFile);
 			}
 		} else {
@@ -956,7 +957,8 @@ public class SRBContainer extends SRBFile {
 		int buffer2Length = 0;
 		boolean keepLoading = true;
 
-		LoadThread(GeneralRandomAccessFile out, byte[] buffer1, byte[] buffer2) {
+		LoadThread(final GeneralRandomAccessFile out, final byte[] buffer1,
+				final byte[] buffer2) {
 			this.out = out;
 			this.buffer1 = buffer1;
 			this.buffer2 = buffer2;
@@ -1006,14 +1008,14 @@ public class SRBContainer extends SRBFile {
 		Vector files = new Vector();
 		Vector paths = new Vector();
 
-		RegistrationThread(SRBFileSystem fileSystem, int catType,
-				String bloadFilePath) throws IOException {
+		RegistrationThread(final SRBFileSystem fileSystem, final int catType,
+				final String bloadFilePath) throws IOException {
 			this.fileSystem = fileSystem;
 			this.catalogType = catType;
 			this.bloadFilePath = bloadFilePath;
 		}
 
-		void addFile(GeneralFile file, String relativePath) {
+		void addFile(final GeneralFile file, final String relativePath) {
 			files.add(file);
 			paths.add(relativePath);
 			newFiles = true;
@@ -1032,9 +1034,7 @@ public class SRBContainer extends SRBFile {
 			SRBMetaDataRecordList[] recordLists = new SRBMetaDataRecordList[files
 					.size()];
 
-			GeneralFile tempFile = null, tempFile2 = null;
-			String tempName = null, tempName2 = null;
-
+			GeneralFile tempFile = null;
 			String fileName = null;
 			String dirName = null;
 			long size = 0;
@@ -1047,26 +1047,26 @@ public class SRBContainer extends SRBFile {
 				// run in order...
 				size = tempFile.length();
 				dirName = (String) paths.get(i);
-				if (dirName != "")
+				if (dirName != "") {
 					dirName = getAbsolutePath() + separator + dirName;
-				else
+				} else {
 					dirName = getAbsolutePath();
+				}
 
-				rl = new SRBMetaDataRecordList(MetaDataSet
-						.getField(StandardMetaData.FILE_NAME), fileName);
-				rl.addRecord(MetaDataSet
-						.getField(StandardMetaData.DIRECTORY_NAME), dirName);
-				rl
-						.addRecord(
-								MetaDataSet.getField(GeneralMetaData.SIZE),
-								size);
+				rl = new SRBMetaDataRecordList(
+						MetaDataSet.getField(StandardMetaData.FILE_NAME),
+						fileName);
+				rl.addRecord(
+						MetaDataSet.getField(StandardMetaData.DIRECTORY_NAME),
+						dirName);
+				rl.addRecord(MetaDataSet.getField(GeneralMetaData.SIZE), size);
 				rl.addRecord(MetaDataSet.getField(SRBMetaDataSet.OFFSET),
 						registrationOffset);
 
 				recordLists[i - registeredFiles] = rl;
 			}
 
-			for (int i = 0; i < recordLists.length; i++) {
+			for (SRBMetaDataRecordList recordList : recordLists) {
 				try {// HACK
 					files.remove(0);
 					paths.remove(0);
@@ -1080,10 +1080,12 @@ public class SRBContainer extends SRBFile {
 
 		void register() {
 			try {
-				if (!newFiles)
+				if (!newFiles) {
 					return;
-				if (files.size() < 5)
+				}
+				if (files.size() < 5) {
 					return;
+				}
 				fileSystem.srbBulkLoad(catalogType, bloadFilePath,
 						getFileRegistry());
 			} catch (IOException e) {
@@ -1091,8 +1093,9 @@ public class SRBContainer extends SRBFile {
 		}
 
 		void forceRegister() {
-			if (!newFiles)
+			if (!newFiles) {
 				return;
+			}
 
 			try {
 				fileSystem.srbBulkLoad(catalogType, bloadFilePath,
@@ -1167,7 +1170,7 @@ public class SRBContainer extends SRBFile {
 	 *         lexicographically greater than the argument
 	 */
 	@Override
-	public int compareTo(GeneralFile pathname) {
+	public int compareTo(final GeneralFile pathname) {
 		return getAbsolutePath().compareTo(
 				((SRBContainer) pathname).getAbsolutePath());
 	}
@@ -1175,9 +1178,9 @@ public class SRBContainer extends SRBFile {
 	/**
 	 * Compares this container to another object. If the other object is an
 	 * container, then this function behaves like <code>{@link
-   * #compareTo(GeneralFile)}</code>
-	 * . Otherwise, it throws a <code>ClassCastException</code>, since
-	 * containers can only be compared to containers.
+	 * #compareTo(GeneralFile)}</code> . Otherwise, it throws a
+	 * <code>ClassCastException</code>, since containers can only be compared to
+	 * containers.
 	 * 
 	 * @param o
 	 *            The <code>Object</code> to be compared to this abstract
@@ -1193,7 +1196,7 @@ public class SRBContainer extends SRBFile {
 	 *             - if the argument is not an container
 	 */
 	@Override
-	public int compareTo(Object o) throws ClassCastException {
+	public int compareTo(final Object o) throws ClassCastException {
 		return compareTo((SRBContainer) o);
 	}
 
@@ -1221,9 +1224,8 @@ public class SRBContainer extends SRBFile {
 	 * Creates an empty file in the default temporary-file directory, using the
 	 * given prefix and suffix to generate its name. Invoking this method is
 	 * equivalent to invoking <code>{@link #createTempFile(java.lang.String,
-   * java.lang.String, edu.sdsc.grid.io.GeneralFile)
-   * createTempFile(prefix,&nbsp;suffix,&nbsp;null)}</code>
-	 * .
+	 * java.lang.String, edu.sdsc.grid.io.GeneralFile)
+	 * createTempFile(prefix,&nbsp;suffix,&nbsp;null)}</code> .
 	 * 
 	 * @param prefix
 	 *            The prefix string to be used in generating the file's name;
@@ -1243,8 +1245,8 @@ public class SRBContainer extends SRBFile {
 	 * @throws IOException
 	 *             If a file could not be created
 	 */
-	public static GeneralFile createTempFile(String prefix, String suffix)
-			throws IOException, IllegalArgumentException {
+	public static GeneralFile createTempFile(final String prefix,
+			final String suffix) throws IOException, IllegalArgumentException {
 		return createTempFile(prefix, suffix, null);
 	}
 
@@ -1317,15 +1319,19 @@ public class SRBContainer extends SRBFile {
 	 * @throws IOException
 	 *             If a file could not be created
 	 */
-	public static GeneralFile createTempFile(String prefix, String suffix,
-			GeneralFile directory) throws IOException, IllegalArgumentException {
-		if (prefix == null)
+	public static GeneralFile createTempFile(final String prefix,
+			String suffix, GeneralFile directory) throws IOException,
+			IllegalArgumentException {
+		if (prefix == null) {
 			throw new NullPointerException();
-		if (prefix.length() < 3)
+		}
+		if (prefix.length() < 3) {
 			throw new IllegalArgumentException("Prefix string too short");
+		}
 
-		if (suffix == null)
+		if (suffix == null) {
 			suffix = ".tmp";
+		}
 
 		if (directory == null) {
 			SRBFileSystem fs = new SRBFileSystem();
@@ -1359,7 +1365,7 @@ public class SRBContainer extends SRBFile {
 	 *         successfully deleted; <code>false</code> otherwise
 	 */
 	@Override
-	public boolean delete(boolean force) {
+	public boolean delete(final boolean force) {
 		try {
 			if (exists()) {
 				srbFileSystem.srbRmContainer(catalogType, getAbsolutePath(),
@@ -1385,7 +1391,7 @@ public class SRBContainer extends SRBFile {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
 			SRBContainer temp = (SRBContainer) obj;
 
@@ -1417,8 +1423,9 @@ public class SRBContainer extends SRBFile {
 
 			rl = srbFileSystem.query(conditions, selects, 3);
 
-			if (rl != null)
+			if (rl != null) {
 				return true;
+			}
 		} catch (IOException e) {
 			// don't do anything
 		}
@@ -1429,7 +1436,7 @@ public class SRBContainer extends SRBFile {
 	/**
 	 * Returns the absolute form of this abstract pathname. Equivalent to
 	 * <code>new&nbsp;SRBContainer(this.{@link #getFileSystem}(),
-   * this.{@link #getAbsolutePath}())</code>.
+	 * this.{@link #getAbsolutePath}())</code>.
 	 * 
 	 * @return The absolute abstract pathname denoting the same container as
 	 *         this abstract pathname
@@ -1485,8 +1492,9 @@ public class SRBContainer extends SRBFile {
 	 */
 	@Override
 	public boolean isContainer() {
-		if (exists())
+		if (exists()) {
 			return true;
+		}
 
 		return false;
 	}
@@ -1585,7 +1593,7 @@ public class SRBContainer extends SRBFile {
 	/**
 	 * Returns an array of strings naming the files and directories in the
 	 * container denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * There is no guarantee that the name strings in the resulting array will
 	 * appear in any specific order; they are not, in particular, guaranteed to
 	 * appear in alphabetical order.
@@ -1640,7 +1648,7 @@ public class SRBContainer extends SRBFile {
 	 *             If parameter <code>dest</code> is not a <code>SRBFile</code>.
 	 */
 	@Override
-	public boolean renameTo(GeneralFile dest) {
+	public boolean renameTo(final GeneralFile dest) {
 		try {
 			if (exists()) {
 				srbFileSystem.srbModifyDataset(catalogType, getName(),

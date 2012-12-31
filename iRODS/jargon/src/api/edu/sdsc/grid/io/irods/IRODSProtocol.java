@@ -68,7 +68,7 @@ public class IRODSProtocol extends Protocol {
 	 * If and only if the object is an instance of IRODSProtocol.
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj != null) {
 			if (obj instanceof IRODSProtocol) {
 				return true;

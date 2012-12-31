@@ -45,20 +45,25 @@
 //
 package edu.sdsc.grid.io.http;
 
-import edu.sdsc.grid.io.*;
-
-import java.io.*;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URLConnection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.sdsc.grid.io.GeneralAccount;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.RemoteFileSystem;
+
 /**
  * The HTTPFileSystem class is the class for connection implementations to HTTP
  * servers.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since Jargon2.0
@@ -92,7 +97,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             if an IOException occurs.
 	 */
-	public HTTPFileSystem(HTTPAccount httpAccount) throws IOException {
+	public HTTPFileSystem(final HTTPAccount httpAccount) throws IOException {
 		setAccount(httpAccount);
 		conn = httpAccount.getURL().openConnection();
 	}
@@ -109,7 +114,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             if an IOException occurs.
 	 */
-	public HTTPFileSystem(URI uri) throws IOException {
+	public HTTPFileSystem(final URI uri) throws IOException {
 		setAccount(uri);
 
 		conn = uri.toURL().openConnection();
@@ -122,9 +127,10 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	 * Loads the account information for this file system.
 	 */
 	@Override
-	protected void setAccount(GeneralAccount account) throws IOException {
-		if (account == null)
+	protected void setAccount(final GeneralAccount account) throws IOException {
+		if (account == null) {
 			throw new NullPointerException("Account information cannot be null");
+		}
 
 		httpAccount = (HTTPAccount) account.clone();
 		this.account = httpAccount;
@@ -133,9 +139,10 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	/**
 	 * Loads the account information for this file system.
 	 */
-	protected void setAccount(URI uri) throws IOException {
-		if (uri == null)
+	protected void setAccount(final URI uri) throws IOException {
+		if (uri == null) {
 			throw new NullPointerException("Account information cannot be null");
+		}
 
 		httpAccount = new HTTPAccount(uri);
 		this.account = httpAccount;
@@ -166,8 +173,8 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	 *
 	 */
 	@Override
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -175,8 +182,8 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	 *
 	 */
 	@Override
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted)
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int numberOfRecordsWanted)
 			throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -204,7 +211,7 @@ public class HTTPFileSystem extends RemoteFileSystem {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj instanceof HTTPFileSystem) {
 			if (toString().equals(obj.toString())) {
 				return true;

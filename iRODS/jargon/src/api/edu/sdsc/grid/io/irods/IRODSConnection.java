@@ -180,10 +180,12 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			if (IRODSConstants.CONNECTION_TIMEOUT_VALUE != IRODSConstants.CONNECTION_TIMEOUT_NO_TIMEOUT) {
 				log.warn("setting a connection timeout of:{}",
 						IRODSConstants.CONNECTION_TIMEOUT_VALUE);
-				connection.setSoTimeout(IRODSConstants.CONNECTION_TIMEOUT_VALUE);
+				connection
+						.setSoTimeout(IRODSConstants.CONNECTION_TIMEOUT_VALUE);
 			}
-			
-			irodsInputStream = new BufferedInputStream(connection.getInputStream());
+
+			irodsInputStream = new BufferedInputStream(
+					connection.getInputStream());
 			irodsOutputStream = connection.getOutputStream();
 		} catch (UnknownHostException e) {
 			log.error("exception opening socket to:" + irodsAccount.getHost()
@@ -620,7 +622,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	Tag readMessage(final boolean decode) throws IOException {
 		log.info("reading message");
 		Tag header = readHeader();
-		
+
 		if (header == null) {
 			log.error("encountered a null header alue when reading a message");
 			throw new RuntimeException("header was null when reading a message");
@@ -629,7 +631,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		Tag message = null;
 
 		// print how long this function call took
-		//log.info("{} millisecs", (new Date().getTime() - date));
+		// log.info("{} millisecs", (new Date().getTime() - date));
 
 		int messageLength = header.tags[1].getIntValue();
 		int errorLength = header.tags[2].getIntValue();

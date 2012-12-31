@@ -45,29 +45,35 @@
 //
 package edu.sdsc.grid.io.ftp;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Date;
+import java.util.Vector;
 
-import edu.sdsc.grid.io.local.*;
-import edu.sdsc.grid.io.*;
-
-import org.globus.ftp.*;
-import org.globus.ftp.exception.*;
+import org.globus.ftp.FTPClient;
+import org.globus.ftp.exception.FTPException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.RemoteFile;
+import edu.sdsc.grid.io.local.LocalFile;
+
 /**
  * An abstract representation of file and directory pathnames on a ftp server.
- *<P>
+ * <P>
  * Shares many similarities with the java.io.File class: User interfaces and
  * operating systems use system-dependent pathname strings to name files and
  * directories. This class presents an abstract, system-independent view of
  * hierarchical pathnames. An abstract pathname has two components:
- *<P>
+ * <P>
  * Instances of the FTPFile class are immutable; that is, once created, the
  * abstract pathname represented by a FTPFile object will never change.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @see java.io.File
@@ -97,14 +103,14 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * Creates a new FTPFile instance by converting the given pathname string
 	 * into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the ftp server
 	 * @param filePath
 	 *            A pathname string
 	 */
-	public FTPFile(FTPFileSystem fileSystem, String filePath)
+	public FTPFile(final FTPFileSystem fileSystem, final String filePath)
 			throws IOException {
 		this(fileSystem, "", filePath);
 	}
@@ -112,11 +118,11 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * Creates a new FTPFile instance from a parent pathname string and a child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new FTPFile instance is created as if by
 	 * invoking the single-argument FTPFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent pathname string is taken to denote a directory, and
 	 * the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -126,7 +132,7 @@ public class FTPFile extends RemoteFile {
 	 * system-dependent default directory. Otherwise each pathname string is
 	 * converted into an abstract pathname and the child abstract pathname is
 	 * resolved against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the ftp server
@@ -135,8 +141,8 @@ public class FTPFile extends RemoteFile {
 	 * @param child
 	 *            The child pathname string
 	 */
-	public FTPFile(FTPFileSystem fileSystem, String parent, String child)
-			throws IOException {
+	public FTPFile(final FTPFileSystem fileSystem, final String parent,
+			final String child) throws IOException {
 		super(fileSystem, parent, child);
 
 		ftpClient = fileSystem.getFTPClient();
@@ -145,11 +151,11 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * Creates a new FTPFile instance from a parent abstract pathname and a
 	 * child pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new FTPFile instance is created as if by
 	 * invoking the single-argument FTPFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent abstract pathname is taken to denote a directory,
 	 * and the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -159,24 +165,24 @@ public class FTPFile extends RemoteFile {
 	 * against a system-dependent default directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the child abstract
 	 * pathname is resolved against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param parent
 	 *            The parent abstract pathname
 	 * @param child
 	 *            The child pathname string
 	 */
-	public FTPFile(FTPFile parent, String child) throws IOException {
+	public FTPFile(final FTPFile parent, final String child) throws IOException {
 		this((FTPFileSystem) parent.getFileSystem(), parent.getParent(), child);
 	}
 
 	/**
 	 * Creates a new FTPFile instance by converting the given file: URI into an
 	 * abstract pathname.
-	 *<P>
+	 * <P>
 	 * FTP URI protocol:<br>
 	 * ftp:// [ userName [ : password ] @ ] host [ : port ][ / path ]
-	 *<P>
+	 * <P>
 	 * example:<br>
 	 * ftp://ftp@ftp.sdsc.edu:21/pub/testfile.txt
 	 * 
@@ -187,7 +193,7 @@ public class FTPFile extends RemoteFile {
 	 * @throws IllegalArgumentException
 	 *             If the preconditions on the parameter do not hold.
 	 */
-	public FTPFile(URI uri) throws IOException, URISyntaxException {
+	public FTPFile(final URI uri) throws IOException, URISyntaxException {
 		super(uri);
 
 		if (uri.getScheme().equals("ftp")) {
@@ -195,14 +201,14 @@ public class FTPFile extends RemoteFile {
 			if (userinfo != null) {
 				int index = userinfo.indexOf(":");
 				if (index >= 0) {
-					setFileSystem(new FTPFileSystem(new FTPAccount(uri
-							.getHost(), uri.getPort(), userinfo.substring(0,
-							index - 1), userinfo.substring(index + 1), uri
-							.getPath())));
+					setFileSystem(new FTPFileSystem(new FTPAccount(
+							uri.getHost(), uri.getPort(), userinfo.substring(0,
+									index - 1), userinfo.substring(index + 1),
+							uri.getPath())));
 				} else {
-					setFileSystem(new FTPFileSystem(new FTPAccount(uri
-							.getHost(), uri.getPort(), userinfo, "", uri
-							.getPath())));
+					setFileSystem(new FTPFileSystem(new FTPAccount(
+							uri.getHost(), uri.getPort(), userinfo, "",
+							uri.getPath())));
 				}
 			} else {
 				fileSystem = new FTPFileSystem(new FTPAccount(uri.getHost(),
@@ -234,7 +240,7 @@ public class FTPFile extends RemoteFile {
 	 * Not implemented
 	 */
 	@Override
-	public void replicate(String resource) {
+	public void replicate(final String resource) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -260,7 +266,7 @@ public class FTPFile extends RemoteFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
+	public void copyTo(GeneralFile destinationFile, final boolean forceOverwrite)
 			throws IOException {
 		if (destinationFile == null) {
 			throw new NullPointerException();
@@ -272,24 +278,27 @@ public class FTPFile extends RemoteFile {
 
 			destinationFile.mkdir();
 			if (fileList != null) {
-				for (int i = 0; i < fileList.length; i++) {
-					fileList[i].copyTo(FileFactory.newFile(
-							destinationFile.getFileSystem(), destinationFile.getAbsolutePath(),
-							fileList[i].getName()), forceOverwrite);
+				for (GeneralFile element : fileList) {
+					element.copyTo(FileFactory.newFile(
+							destinationFile.getFileSystem(),
+							destinationFile.getAbsolutePath(),
+							element.getName()), forceOverwrite);
 				}
 			}
 		} else {
 			if (destinationFile.isDirectory()) {
 				// change the destination from a directory to a file
-				destinationFile = FileFactory.newFile(destinationFile, getName());
+				destinationFile = FileFactory.newFile(destinationFile,
+						getName());
 			}
 			try {
 				if (destinationFile instanceof LocalFile) {
-					ftpClient.get(getPath(), ((LocalFile) destinationFile).getFile());
+					ftpClient.get(getPath(),
+							((LocalFile) destinationFile).getFile());
 				} else if (destinationFile instanceof FTPFile) {
-					ftpClient.transfer(getPath(), ((FTPFile) destinationFile)
-							.getFTPClient(), destinationFile.getPath(), !forceOverwrite,
-							null);
+					ftpClient.transfer(getPath(),
+							((FTPFile) destinationFile).getFTPClient(),
+							destinationFile.getPath(), !forceOverwrite, null);
 				} else {
 					super.copyTo(destinationFile);
 				}
@@ -315,8 +324,8 @@ public class FTPFile extends RemoteFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
-			throws IOException {
+	public void copyFrom(final GeneralFile sourceFile,
+			final boolean forceOverwrite) throws IOException {
 		if (sourceFile == null) {
 			throw new NullPointerException();
 		}
@@ -327,25 +336,26 @@ public class FTPFile extends RemoteFile {
 
 			mkdir();
 			if (fileList != null) {
-				for (int i = 0; i < fileList.length; i++) {
-					FileFactory.newFile(this, fileList[i].getName()).copyFrom(
-							fileList[i], forceOverwrite);
+				for (GeneralFile element : fileList) {
+					FileFactory.newFile(this, element.getName()).copyFrom(
+							element, forceOverwrite);
 				}
 			}
 		} else {
 			if (isDirectory()) {
 				// change the destination from a directory to a file
-				GeneralFile subFile = FileFactory.newFile(this, sourceFile.getName());
+				GeneralFile subFile = FileFactory.newFile(this,
+						sourceFile.getName());
 				subFile.copyFrom(sourceFile);
 				return;
 			}
 			try {
 				if (sourceFile instanceof LocalFile) {
-					ftpClient.put(((LocalFile) sourceFile).getFile(), getPath(),
-							!forceOverwrite);
+					ftpClient.put(((LocalFile) sourceFile).getFile(),
+							getPath(), !forceOverwrite);
 				} else if (sourceFile instanceof FTPFile) {
-					ftpClient.transfer(sourceFile.getPath(), ftpClient, getPath(),
-							!forceOverwrite, null);
+					ftpClient.transfer(sourceFile.getPath(), ftpClient,
+							getPath(), !forceOverwrite, null);
 				} else {
 					super.copyTo(sourceFile);
 				}
@@ -495,11 +505,11 @@ public class FTPFile extends RemoteFile {
 	/**
 	 * Returns an array of strings naming the files and directories in the
 	 * directory denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * There is no guarantee that the name strings in the resulting array will
 	 * appear in any specific order; they are not, in particular, guaranteed to
 	 * appear in alphabetical order.
-	 *<P>
+	 * <P>
 	 * If this GeneralFile object denotes a file, the results are unspecified.
 	 * 
 	 * @return An array of strings naming the files and directories in the
@@ -539,7 +549,7 @@ public class FTPFile extends RemoteFile {
 
 	/**
 	 * Renames the file denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * Whether or not this method can move a file from one filesystem to another
 	 * is platform-dependent. The return value should always be checked to make
 	 * sure that the rename operation was successful.
@@ -554,8 +564,8 @@ public class FTPFile extends RemoteFile {
 	 *             - If dest is null
 	 */
 	@Override
-	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
-			NullPointerException {
+	public boolean renameTo(final GeneralFile dest)
+			throws IllegalArgumentException, NullPointerException {
 		try {
 			if (dest instanceof FTPFile) {
 				if (ftpClient.equals(((FTPFile) dest).ftpClient)) {
@@ -565,15 +575,17 @@ public class FTPFile extends RemoteFile {
 					if (!dest.exists()) {
 						copyTo(dest);
 						delete();
-					} else
+					} else {
 						return false;
+					}
 				}
 			} else {
 				if (!dest.exists()) {
 					copyTo(dest);
 					delete();
-				} else
+				} else {
 					return false;
+				}
 			}
 		} catch (IOException e) {
 			return false;
@@ -592,14 +604,16 @@ public class FTPFile extends RemoteFile {
 		String username = ((FTPFileSystem) fileSystem).getUserName(), portString;
 		int port = ((FTPFileSystem) fileSystem).getPort();
 
-		if (username != null)
+		if (username != null) {
 			username += "@";
-		else
+		} else {
 			username = "";
-		if (port > 0 && port != 21)
+		}
+		if (port > 0 && port != 21) {
 			portString = ":" + port;
-		else
+		} else {
 			portString = ""; // standard look without the port 21
+		}
 
 		return "http://" + username + ((FTPFileSystem) fileSystem).getHost()
 				+ portString + getAbsolutePath();
@@ -619,8 +633,7 @@ public class FTPFile extends RemoteFile {
 	 * <blockquote><tt>
 	 * new {@link #GeneralFile(java.net.URI) GeneralFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
-	 * </tt>
-	 * </blockquote>
+	 * </tt> </blockquote>
 	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same

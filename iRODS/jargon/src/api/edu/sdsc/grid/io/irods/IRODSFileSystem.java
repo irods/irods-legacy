@@ -45,7 +45,6 @@
 //
 package edu.sdsc.grid.io.irods;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -76,7 +75,7 @@ import edu.sdsc.grid.io.UserMetaData;
  * iRods servers. It provides the framework to support a wide range of iRODS
  * semantics. Specifically, the functions needed to interact with a iRODS
  * server.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since JARGON2.0
@@ -95,8 +94,9 @@ public class IRODSFileSystem extends RemoteFileSystem {
 
 	// Add the metadata query attributes
 	static {
-		if (!ProtocolCatalog.has(new IRODSProtocol()))
+		if (!ProtocolCatalog.has(new IRODSProtocol())) {
 			ProtocolCatalog.add(new IRODSProtocol());
+		}
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * Opens a socket connection to read from and write to. Loads the default
 	 * iRODS user account information from their home directory. The account
 	 * information stored in this object cannot be changed once instantiated.
-	 *<P>
+	 * <P>
 	 * This constructor is provided for convenience however, it is recommended
 	 * that all necessary data be sent to the constructor and not left to the
 	 * defaults.
@@ -149,15 +149,13 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			log.info("connecting the commands to the irods socket");
 			commands.connect(irodsAccount);
 		} catch (JargonException e1) {
-			log
-					.error(
-							"jargon exception, will be rethrown as unchecked exception",
-							e1);
+			log.error(
+					"jargon exception, will be rethrown as unchecked exception",
+					e1);
 			e1.printStackTrace();
 			throw new RuntimeException(e1);
 		}
 
-		
 		// NOTE: factor out...
 		// Get the username if they logged in with just a GSSCredential
 		irodsAccount = lookupUserIfGSI(irodsAccount);
@@ -166,9 +164,9 @@ public class IRODSFileSystem extends RemoteFileSystem {
 
 	/**
 	 * @param irodsAccount
-	 * @return 
+	 * @return
 	 */
-	protected IRODSAccount lookupUserIfGSI(IRODSAccount irodsAccount) {
+	protected IRODSAccount lookupUserIfGSI(final IRODSAccount irodsAccount) {
 		if (irodsAccount.getUserName() == null
 				|| irodsAccount.getUserName().equals("")) {
 			log.info("user logged in with GSI credential");
@@ -191,27 +189,31 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			if (rl != null && rl.length > 0) {
 				if (log.isDebugEnabled()) {
 					try {
-					log.debug("setting irods account for GSI user:"
-						+ irodsAccount.getGSSCredential().getName().toString());
+						log.debug("setting irods account for GSI user:"
+								+ irodsAccount.getGSSCredential().getName()
+										.toString());
 					} catch (Exception e) {
 						// ignore
 					}
 				}
 				irodsAccount.setUserName(rl[0].getStringValue(0));
 				irodsAccount.setZone(rl[0].getStringValue(1));
-				irodsAccount.setHomeDirectory("/" + irodsAccount.getZone()
-						+ "/home/" + irodsAccount.getUserName());
+				irodsAccount.setHomeDirectory("/"
+						+ irodsAccount.getEffectiveClientRodsZone() + "/home/"
+						+ irodsAccount.getEffectiveClientUserName());
 				commands.getIrodsAccount().setUserName(rl[0].getStringValue(0));
 				commands.getIrodsAccount().setZone(rl[0].getStringValue(1));
-				commands.getIrodsAccount().setHomeDirectory("/" + irodsAccount.getZone()
-						+ "/home/" + irodsAccount.getUserName());
+				commands.getIrodsAccount().setHomeDirectory(
+						"/" + irodsAccount.getEffectiveClientRodsZone()
+								+ "/home/"
+								+ irodsAccount.getEffectiveClientUserName());
 			}
 		}
-		
+
 		if (log.isDebugEnabled()) {
 			log.debug("account after GSI checks:" + irodsAccount.toString());
 		}
-		
+
 		return irodsAccount;
 	}
 
@@ -223,20 +225,21 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @throws GSSException
 	 */
 	protected MetaDataCondition buildMetaDataConditionForGSIUser(
-			IRODSAccount irodsAccount) throws GSSException {
-		
+			final IRODSAccount irodsAccount) throws GSSException {
+
 		log.info("building a meta data condition for GSI");
 
 		// check the version number and obtain the user dn using alternative
 		// metadata values, the rods2.2 version
 		// saw a change in the metadata value for user DN from 205 to 1601
-		int versionValue = commands.getIrodsServerProperties().getRelVersion().compareTo(
-				"rods2.2");
-		
+		int versionValue = commands.getIrodsServerProperties().getRelVersion()
+				.compareTo("rods2.2");
+
 		if (log.isDebugEnabled()) {
-			log.debug("reported irods version was:" + commands.getIrodsServerProperties().getRelVersion());
+			log.debug("reported irods version was:"
+					+ commands.getIrodsServerProperties().getRelVersion());
 		}
-		
+
 		if (versionValue < 0) {
 			// reported version is less than the 'arguement', or prior to the
 			// protocol change
@@ -261,17 +264,19 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 */
 	@Override
 	protected void finalize() throws Throwable {
-		
+
 		if (log.isDebugEnabled()) {
 			log.debug("IRODSFileSystem finalizer");
 		}
-		
+
 		close();
 
-		if (account != null)
+		if (account != null) {
 			account = null;
-		if (commands != null)
+		}
+		if (commands != null) {
 			commands = null;
+		}
 	}
 
 	/**
@@ -279,8 +284,9 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 */
 	@Override
 	protected void setAccount(GeneralAccount account) throws IOException {
-		if (account == null)
+		if (account == null) {
 			account = new IRODSAccount();
+		}
 
 		this.account = (IRODSAccount) account.clone();
 	}
@@ -290,8 +296,9 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 */
 	@Override
 	public GeneralAccount getAccount() throws NullPointerException {
-		if (((IRODSAccount) account) != null)
+		if (((IRODSAccount) account) != null) {
 			return (IRODSAccount) account.clone();
+		}
 
 		throw new NullPointerException();
 	}
@@ -309,7 +316,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	/**
 	 * Only used by the IRODSFile( uri ) constructor.
 	 */
-	void setDefaultStorageResource(String resource) {
+	void setDefaultStorageResource(final String resource) {
 		((IRODSAccount) account).setDefaultStorageResource(resource);
 	}
 
@@ -368,11 +375,11 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public InputStream executeProxyCommand(final String command, final String commandArgs)
-			throws IOException {
+	public InputStream executeProxyCommand(final String command,
+			final String commandArgs) throws IOException {
 		return commands.executeCommand(command, commandArgs, "");
 	}
-	
+
 	/**
 	 * Proxy Operation that executes a command. The results of the command will
 	 * be returned by the InputStream. The protocol of the return value on the
@@ -382,16 +389,16 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @param command
 	 *            The command to run.
 	 * @param commandArgs
-	 *            The command argument string.
-	 *  * @param hostName
-	 *            The host upon which the command should be run;
+	 *            The command argument string. * @param hostName The host upon
+	 *            which the command should be run;
 	 * 
 	 * @return any byte stream output.
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public InputStream executeProxyCommandWithHostnameSpecified(final String command, final String commandArgs, final String hostName)
-			throws IOException {
+	public InputStream executeProxyCommandWithHostnameSpecified(
+			final String command, final String commandArgs,
+			final String hostName) throws IOException {
 		return commands.executeCommand(command, commandArgs, hostName);
 	}
 
@@ -408,8 +415,8 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 *         execution
 	 * @throws java.io.IOException
 	 */
-	public HashMap<String, String> executeRule(java.io.InputStream ruleStream)
-			throws IOException {
+	public HashMap<String, String> executeRule(
+			final java.io.InputStream ruleStream) throws IOException {
 		Parameter[] parameters = Rule.executeRule(this, ruleStream);
 		HashMap<String, String> map = new HashMap<String, String>(
 				parameters.length);
@@ -431,7 +438,8 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 *         execution
 	 * @throws java.io.IOException
 	 */
-	public HashMap<String, String> executeRule(String rule) throws IOException {
+	public HashMap<String, String> executeRule(final String rule)
+			throws IOException {
 		Parameter[] parameters = Rule.executeRule(this, rule);
 		HashMap<String, String> map = new HashMap<String, String>(
 				parameters.length);
@@ -455,7 +463,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @throws java.io.IOException
 	 */
 	public Map<String, Object> executeRuleReturnObjects(
-			java.io.InputStream ruleStream) throws IOException {
+			final java.io.InputStream ruleStream) throws IOException {
 		Parameter[] parameters = Rule.executeRule(this, ruleStream);
 		HashMap<String, Object> map = new HashMap<String, Object>(
 				parameters.length);
@@ -477,7 +485,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 *         execution
 	 * @throws java.io.IOException
 	 */
-	public Map<String, Object> executeRuleReturnObjects(String rule)
+	public Map<String, Object> executeRuleReturnObjects(final String rule)
 			throws IOException {
 		Parameter[] parameters = Rule.executeRule(this, rule);
 		HashMap<String, Object> map = new HashMap<String, Object>(
@@ -525,34 +533,46 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * larger than 2 GBytes. This mod is only needed for building the irods
 	 * server software. Please contact all@diceresearch.org for this mod.
 	 */
-	public void createTarFile(IRODSFile newTarFile, IRODSFile directoryToTar,
-			String resource) throws IOException {
+	public void createTarFile(final IRODSFile newTarFile,
+			final IRODSFile directoryToTar, final String resource)
+			throws IOException {
 		commands.createBundle(newTarFile, directoryToTar, resource);
 	}
 
 	/**
-	 * Extract the files in a given bundle (tar file) to the given iRODS collection.  
+	 * Extract the files in a given bundle (tar file) to the given iRODS
+	 * collection.
+	 * 
 	 * @param tarFile
 	 * @param extractLocation
 	 * @throws IOException
 	 */
-	public void extractTarFile(IRODSFile tarFile, IRODSFile extractLocation)
-			throws IOException {
+	public void extractTarFile(final IRODSFile tarFile,
+			final IRODSFile extractLocation) throws IOException {
 		commands.extractBundle(tarFile, extractLocation);
 	}
-	
+
 	/**
-	 * Return an instance of a <code>IRODSAccessObjectFactory</code>.  The factory is an adapted version of the factory in the newer jargon-core API, and should be 
-	 * considered a transitional refactoring step.  This factory can be used to obtain various 'access objects' that can assist with interactions with iRODS.  
+	 * Return an instance of a <code>IRODSAccessObjectFactory</code>. The
+	 * factory is an adapted version of the factory in the newer jargon-core
+	 * API, and should be considered a transitional refactoring step. This
+	 * factory can be used to obtain various 'access objects' that can assist
+	 * with interactions with iRODS.
 	 * <p/>
-	 * Access objects should not be considered thread-safe, and should not be shared between threads, as they share the same connection
+	 * Access objects should not be considered thread-safe, and should not be
+	 * shared between threads, as they share the same connection
 	 * <p/>
-	 * In this version of Jargon, all interactions are coded into one large <code>IRODSCommands</code> object.  Introducing a simplified version of access objects into this
-	 * version of Jargon will assist in efforts to refactor and reduce the centrality of <code>IRODSCommands</code.
-	 * @return {@link IRODSAccessObjectFactory} that can create objects to interact with iRODS.
+	 * In this version of Jargon, all interactions are coded into one large
+	 * <code>IRODSCommands</code> object. Introducing a simplified version of
+	 * access objects into this version of Jargon will assist in efforts to
+	 * refactor and reduce the centrality of <code>IRODSCommands</code.
+	 * 
+	 * @return {@link IRODSAccessObjectFactory} that can create objects to
+	 *         interact with iRODS.
 	 * @throws JargonException
 	 */
-	public IRODSAccessObjectFactory getIrodsAccessObjectFactory() throws JargonException {
+	public IRODSAccessObjectFactory getIrodsAccessObjectFactory()
+			throws JargonException {
 		return IRODSAccessObjectFactoryImpl.instance(commands);
 	}
 
@@ -569,10 +589,11 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			IRODSFileSystem temp = (IRODSFileSystem) obj;
 
@@ -604,7 +625,8 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("irods://");
-		builder.append(getUserName());
+		builder.append(((IRODSAccount) getAccount())
+				.getEffectiveClientUserName());
 		builder.append('@');
 		builder.append(getHost());
 		builder.append(':');
@@ -642,7 +664,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * Queries the file server to find all files that match the set of
 	 * conditions in <code>conditions</code>. For all those that match, the
 	 * fields indicated in the <code>selects</code> are returned as a
-	 * MetaDataRecordList[].  This will be a 'select distinct' style query.
+	 * MetaDataRecordList[]. This will be a 'select distinct' style query.
 	 * 
 	 * @param conditions
 	 *            The conditional statements that describe the values to query
@@ -660,8 +682,8 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 *         <code>null</code> if there are no results.
 	 */
 	@Override
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted)
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int numberOfRecordsWanted)
 			throws IOException {
 		return query(conditions, selects, numberOfRecordsWanted, true);
 	}
@@ -691,14 +713,13 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @return The metadata results from the filesystem, returns
 	 *         <code>null</code> if there are no results.
 	 */
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted, boolean distinctQuery)
-			throws IOException {
-		return query(conditions, selects, numberOfRecordsWanted, Namespace.FILE, distinctQuery);
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int numberOfRecordsWanted,
+			final boolean distinctQuery) throws IOException {
+		return query(conditions, selects, numberOfRecordsWanted,
+				Namespace.FILE, distinctQuery);
 	}
 
-	
-	
 	/**
 	 * Queries the file server to find all files that match the set of
 	 * conditions in <code>conditions</code>. For all those that match, the
@@ -721,17 +742,19 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @return The metadata results from the filesystem, returns
 	 *         <code>null</code> if there are no results.
 	 */
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, Namespace namespace, boolean distinctQuery) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final Namespace namespace,
+			final boolean distinctQuery) throws IOException {
 		return query(conditions, selects,
-				GeneralFileSystem.DEFAULT_RECORDS_WANTED, namespace, distinctQuery);
+				GeneralFileSystem.DEFAULT_RECORDS_WANTED, namespace,
+				distinctQuery);
 	}
-	
+
 	/**
 	 * Queries the file server to find all files that match the set of
 	 * conditions in <code>conditions</code>. For all those that match, the
 	 * fields indicated in the <code>selects</code> are returned as a
-	 * MetaDataRecordList[].  This will be a 'select distinct' query.
+	 * MetaDataRecordList[]. This will be a 'select distinct' query.
 	 * 
 	 * @param conditions
 	 *            The conditional statements that describe the values to query
@@ -749,16 +772,17 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @return The metadata results from the filesystem, returns
 	 *         <code>null</code> if there are no results.
 	 */
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, Namespace namespace) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final Namespace namespace)
+			throws IOException {
 		return query(conditions, selects, namespace, true);
 	}
-	
+
 	/**
 	 * Queries the file server to find all files that match the set of
 	 * conditions in <code>conditions</code>. For all those that match, the
 	 * fields indicated in the <code>selects</code> are returned as a
-	 * MetaDataRecordList[].  Defaults to a 'select distinct' style query
+	 * MetaDataRecordList[]. Defaults to a 'select distinct' style query
 	 * 
 	 * @param conditions
 	 *            The conditional statements that describe the values to query
@@ -779,14 +803,13 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 *         <code>null</code> if there are no results.
 	 */
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted,
-			Namespace namespace) throws IOException {
+			MetaDataSelect[] selects, final int numberOfRecordsWanted,
+			final Namespace namespace) throws IOException {
 		conditions = (MetaDataCondition[]) cleanNulls(conditions);
 		selects = (MetaDataSelect[]) cleanNulls(selects);
-		return query(conditions, selects, numberOfRecordsWanted,
-				namespace, true);
+		return query(conditions, selects, numberOfRecordsWanted, namespace,
+				true);
 	}
-
 
 	/**
 	 * Queries the file server to find all files that match the set of
@@ -817,8 +840,9 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 *         <code>null</code> if there are no results.
 	 */
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted,
-			Namespace namespace, boolean distinctQuery) throws IOException {
+			MetaDataSelect[] selects, final int numberOfRecordsWanted,
+			final Namespace namespace, final boolean distinctQuery)
+			throws IOException {
 		conditions = (MetaDataCondition[]) cleanNulls(conditions);
 		selects = (MetaDataSelect[]) cleanNulls(selects);
 		return commands.query(conditions, selects, numberOfRecordsWanted,
@@ -828,9 +852,10 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	/**
 	 * Removes null values from an array.
 	 */
-	static final Object[] cleanNulls(Object[] obj) {
-		if (obj == null)
+	static final Object[] cleanNulls(final Object[] obj) {
+		if (obj == null) {
 			return null;
+		}
 
 		Vector<Object> temp = new Vector<Object>(obj.length);
 		boolean add = false;
@@ -839,12 +864,14 @@ public class IRODSFileSystem extends RemoteFileSystem {
 		for (i = 0; i < obj.length; i++) {
 			if (obj[i] != null) {
 				temp.add(obj[i]);
-				if (!add)
+				if (!add) {
 					add = true;
+				}
 			}
 		}
-		if (!add)
+		if (!add) {
 			return null;
+		}
 
 		// needs its own check
 		if ((obj.length == 1) && (obj[0] == null)) {
@@ -855,9 +882,9 @@ public class IRODSFileSystem extends RemoteFileSystem {
 				temp.get(0).getClass(), 0));
 	}
 
-	
 	/**
 	 * Get the basic server info for the connected server.
+	 * 
 	 * @return <code>String</code> with basic server info from iRODS.
 	 * @throws IOException
 	 */

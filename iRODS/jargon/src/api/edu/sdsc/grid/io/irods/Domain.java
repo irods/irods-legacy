@@ -7,7 +7,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Query and manipulate ICAT tokens, kept in the tabel <code>r_tokn_main</code>.
- * This class should be considered obsolete and subject to removal and revamping.
+ * This class should be considered obsolete and subject to removal and
+ * revamping.
  * 
  * @author iktome
  */
@@ -16,12 +17,11 @@ public class Domain {
 	protected final String typeName;
 	protected final String tableName;
 	protected final IRODSFileSystem irodsFileSystem;
-	
-	private  Logger log = LoggerFactory.getLogger(this.getClass());
 
+	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	Domain(IRODSFileSystem irodsFileSystem, String name, String typeName,
-			String tableName) {
+	Domain(final IRODSFileSystem irodsFileSystem, final String name,
+			final String typeName, final String tableName) {
 		this.name = name;
 		this.typeName = typeName;
 		this.tableName = tableName;
@@ -56,25 +56,25 @@ public class Domain {
 				typeName);
 	}
 
-	public void addType(String newType) throws IOException {
+	public void addType(final String newType) throws IOException {
 		addType(newType, "null", "null", "null");
 	}
 
 	// at tokenNamespace Name Value [Value2] [Value3] (add token)
-	public void addType(String newType, String value, String value2,
-			String value3) throws IOException {
+	public void addType(final String newType, final String value,
+			final String value2, final String value3) throws IOException {
 		String[] args = { "add", "token", getTypeName(), newType, value,
 				value2, value3 };
 		irodsFileSystem.commands.admin(args);
 	}
 
 	// rt tokenNamespace Name Value (remove token)
-	public void deleteType(String newType) throws IOException {
+	public void deleteType(final String newType) throws IOException {
 		String[] args = { "rm", "token", getTypeName(), newType };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyType(String subjectName, String newType)
+	public void modifyType(final String subjectName, final String newType)
 			throws IOException {
 		String[] args = { "modify", name, subjectName, "type", newType };
 		irodsFileSystem.commands.admin(args);

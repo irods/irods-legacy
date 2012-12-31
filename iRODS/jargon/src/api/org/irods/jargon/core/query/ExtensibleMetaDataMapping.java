@@ -34,6 +34,7 @@ public final class ExtensibleMetaDataMapping {
 
 	private static Logger log = LoggerFactory
 			.getLogger(ExtensibleMetaDataMapping.class);
+
 	/**
 	 * Create an object to hold an immutable mapping of extensible metadata
 	 * columns and values using default behavior, which is to derive mappings
@@ -49,8 +50,7 @@ public final class ExtensibleMetaDataMapping {
 			log.debug("retuning cached extensibleMetaDataMapping");
 			return extensibleMetaDataMapping;
 		}
-		log
-				.debug("cacheing and returning extensibleMetaDataMapping using the default properties mapping");
+		log.debug("cacheing and returning extensibleMetaDataMapping using the default properties mapping");
 		ExtensibleMetaDataSource extensibleMetaDataSource = new ExtensibleMetadataPropertiesSource();
 		ExtensibleMetaDataMapping extensibleMetaDataMapping = extensibleMetaDataSource
 				.generateExtensibleMetaDataMapping();

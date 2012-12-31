@@ -48,14 +48,15 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
+import java.io.IOException;
 
-import java.io.*;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.RemoteFileOutputStream;
 
 /**
  * A SRBFileOutputStream writes bytes to a file in a file system. What files are
  * available depends on the host environment.
- *<P>
+ * <P>
  * SRBFileOutputStream is meant for writing streams of raw bytes such as image
  * data.
  * 
@@ -96,7 +97,7 @@ public class SRBFileOutputStream extends RemoteFileOutputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public SRBFileOutputStream(SRBFileSystem fileSystem, String name)
+	public SRBFileOutputStream(final SRBFileSystem fileSystem, final String name)
 			throws IOException {
 		super(fileSystem, name);
 
@@ -123,7 +124,7 @@ public class SRBFileOutputStream extends RemoteFileOutputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public SRBFileOutputStream(SRBFile file) throws IOException {
+	public SRBFileOutputStream(final SRBFile file) throws IOException {
 		super(file);
 		fileSystem = (SRBFileSystem) file.getFileSystem();
 	}
@@ -138,7 +139,7 @@ public class SRBFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		if (!file.exists()) {
 			// files don't appear on SRB until they they have been closed
 			// for the first time. This was causing some confusion.
@@ -163,7 +164,8 @@ public class SRBFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte buffer[], int offset, int length) throws IOException {
+	public void write(final byte buffer[], final int offset, final int length)
+			throws IOException {
 		byte b[] = new byte[length];
 		System.arraycopy(buffer, offset, b, 0, length);
 		fileSystem.srbObjWrite(fd, b, length);

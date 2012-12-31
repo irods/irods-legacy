@@ -12,13 +12,13 @@ import edu.sdsc.grid.io.GeneralFileSystem;
  * 
  */
 public final class ConnectionConstants {
-	
+
 	/**
-	 * Indicates whether to reroute connections for files and collections when they 
-	 * are on another resource server.
+	 * Indicates whether to reroute connections for files and collections when
+	 * they are on another resource server.
 	 */
 	public static final boolean REROUTE_CONNECTIONS = true;
-	
+
 	public static final String REROUTE_CONNECTIONS_MIN_RODS_VERSION = "rods2.5";
 
 	public static final String JARGON_CONNECTION_ENCODING = "utf-8";
@@ -90,8 +90,8 @@ public final class ConnectionConstants {
 	 * Standard challenge length. Used in challenge response.
 	 */
 	public static final int CHALLENGE_LENGTH = 64;
-	
-	public static final long  MAX_SZ_FOR_SINGLE_BUF  =   (32*1024*1024);
+
+	public static final long MAX_SZ_FOR_SINGLE_BUF = (32 * 1024 * 1024);
 
 	private ConnectionConstants() {
 	}

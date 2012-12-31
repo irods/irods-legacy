@@ -49,12 +49,12 @@ package edu.sdsc.grid.io;
  * a wide range of remote semantics. Specifically, the functions needed to
  * interact with a remote system are provided abstractly by RemoteFileSystem and
  * concretely by its subclass(es).
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class RemoteFileSystem extends GeneralFileSystem {
-	
+
 	/**
 	 * Returns the host used by the remote account using this RemoteFileSystem.
 	 */

@@ -43,9 +43,11 @@
 //
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.*;
-
 import java.io.IOException;
+
+import edu.sdsc.grid.io.GeneralFileSystem;
+import edu.sdsc.grid.io.MetaDataField;
+import edu.sdsc.grid.io.MetaDataRecordList;
 
 /**
  * Results of long queries will only return a partial list to save on bandwidth
@@ -86,7 +88,8 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * selectArray initially sent.
 	 */
 	public IRODSMetaDataRecordList(final IRODSCommands irodsConnection,
-			final MetaDataField[] fields, final Object[] recordValues, final int continuationIndex) {
+			final MetaDataField[] fields, final Object[] recordValues,
+			final int continuationIndex) {
 		super(fields, recordValues);
 
 		this.irodsConnection = irodsConnection;
@@ -97,7 +100,8 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public IRODSMetaDataRecordList(final MetaDataField field, final int recordValue) {
+	public IRODSMetaDataRecordList(final MetaDataField field,
+			final int recordValue) {
 		super(field, recordValue);
 	}
 
@@ -105,7 +109,8 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public IRODSMetaDataRecordList(MetaDataField field, float recordValue) {
+	public IRODSMetaDataRecordList(final MetaDataField field,
+			final float recordValue) {
 		super(field, recordValue);
 	}
 
@@ -113,7 +118,8 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public IRODSMetaDataRecordList(MetaDataField field, long recordValue) {
+	public IRODSMetaDataRecordList(final MetaDataField field,
+			final long recordValue) {
 		super(field, recordValue);
 	}
 
@@ -121,7 +127,8 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public IRODSMetaDataRecordList(MetaDataField field, Integer recordValue) {
+	public IRODSMetaDataRecordList(final MetaDataField field,
+			final Integer recordValue) {
 		super(field, recordValue);
 	}
 
@@ -129,7 +136,8 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public IRODSMetaDataRecordList(MetaDataField field, Float recordValue) {
+	public IRODSMetaDataRecordList(final MetaDataField field,
+			final Float recordValue) {
 		super(field, recordValue);
 	}
 
@@ -137,7 +145,8 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public IRODSMetaDataRecordList(MetaDataField field, String recordValue) {
+	public IRODSMetaDataRecordList(final MetaDataField field,
+			final String recordValue) {
 		super(field, recordValue);
 	}
 
@@ -147,8 +156,9 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 */
 	@Override
 	protected void finalize() {
-		if (irodsConnection != null)
+		if (irodsConnection != null) {
 			irodsConnection = null;
+		}
 	}
 
 	/**
@@ -158,7 +168,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * will be overwritten by <code>recordList</code>. (Though in the case of
 	 * IRODSCommands the values will always be equal.)
 	 */
-	boolean combineRecordLists(MetaDataRecordList recordList) {
+	boolean combineRecordLists(final MetaDataRecordList recordList) {
 		if (recordList != null) {
 			for (int i = 0; i < fields.length; i++) {
 				for (int j = 0; j < recordList.getFieldCount(); j++) {
@@ -191,7 +201,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * Sets the int used by the IRODS server to refer to a query. (Kind of like
 	 * a file descriptor.)
 	 */
-	void setContinuationIndex(int continuationIndex) {
+	void setContinuationIndex(final int continuationIndex) {
 		this.continuationIndex = continuationIndex;
 	}
 
@@ -234,13 +244,13 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * haven't been returned. Otherwise null.
 	 */
 	@Override
-	public MetaDataRecordList[] getMoreResults(int numOfResults)
+	public MetaDataRecordList[] getMoreResults(final int numOfResults)
 			throws IOException {
-		
+
 		if (continuationIndex < 0) {
 			return null;
 		}
-		
+
 		if (irodsConnection == null) {
 			// Maybe more query is left and something went wrong
 			// but irodsConnection wasn't loaded.

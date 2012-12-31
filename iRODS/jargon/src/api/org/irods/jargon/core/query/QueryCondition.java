@@ -19,6 +19,7 @@ public class QueryCondition {
 			throws JargonQueryException {
 		return new QueryCondition(fieldName, operator, value);
 	}
+
 	private final String fieldName;
 	private final String operator;
 

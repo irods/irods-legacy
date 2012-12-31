@@ -41,7 +41,6 @@
 //
 package edu.sdsc.grid.io;
 
-
 /**
  * A "meta data condition" describes a conditional expression to be used to
  * guide a metadata query. That expression contains three components:
@@ -504,10 +503,10 @@ public final class MetaDataCondition {
 			throw new IllegalArgumentException("Wrong operator.");
 		}
 	}
-	
+
 	/**
 	 * Construct a enum conditional with the given field name, operator, and
-	 * enum of values. The type is inferred from the given values. 
+	 * enum of values. The type is inferred from the given values.
 	 */
 	MetaDataCondition(final MetaDataField field, final int operator,
 			final Object[] values) {

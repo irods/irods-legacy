@@ -44,7 +44,8 @@
 //
 package edu.sdsc.grid.io.local;
 
-import edu.sdsc.grid.io.*;
+import edu.sdsc.grid.io.MetaDataField;
+import edu.sdsc.grid.io.MetaDataRecordList;
 
 /**
  * LocalMetaDataRecordList does nothing. It exists for compatability.
@@ -94,7 +95,7 @@ public class LocalMetaDataRecordList extends MetaDataRecordList {
 	 * @throws UnsupportedOperationException
 	 */
 	@Override
-	public MetaDataRecordList[] getMoreResults(int numOfResults) {
+	public MetaDataRecordList[] getMoreResults(final int numOfResults) {
 		throw new UnsupportedOperationException();
 	}
 

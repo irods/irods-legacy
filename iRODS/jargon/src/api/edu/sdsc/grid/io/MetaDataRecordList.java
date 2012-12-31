@@ -50,10 +50,10 @@ import java.util.Vector;
 
 /**
  * The results of a query.
- *<P>
+ * <P>
  * Results of long queries will only return a partial list to save on bandwidth
  * which can be iterated through by further calls to the server.
- *<P>
+ * <P>
  * Subclasses work closely with the file server to do a multi-step query that
  * does not have to return everything immediately. The SRBMetaDataRecordList
  * class, for instance, works with partial query results and, on need, issues a
@@ -62,7 +62,7 @@ import java.util.Vector;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class MetaDataRecordList extends Object {
-	
+
 	/**
 	 * Stores the descriptions and names of the related fields for all the
 	 * values returned.
@@ -71,7 +71,7 @@ public abstract class MetaDataRecordList extends Object {
 
 	/**
 	 * The query returned from the server might look like:
-	 *<P>
+	 * <P>
 	 * field name: "data name" "owner" "size" <br>
 	 * record1: test1.txt testuser 300 <br>
 	 * record2: test2.txt testuser 500 <br>
@@ -81,10 +81,12 @@ public abstract class MetaDataRecordList extends Object {
 
 	/**
    *
-   */ 
-	protected MetaDataRecordList(MetaDataField[] fields, Object[] recordValues) {
-		if (fields == null)
+   */
+	protected MetaDataRecordList(final MetaDataField[] fields,
+			final Object[] recordValues) {
+		if (fields == null) {
 			throw new NullPointerException("fields cannot be null");
+		}
 
 		int fieldsLength = fields.length;
 		if (fieldsLength != recordValues.length) {
@@ -100,9 +102,10 @@ public abstract class MetaDataRecordList extends Object {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public MetaDataRecordList(MetaDataField field, int recordValue) {
-		if (field == null)
+	public MetaDataRecordList(final MetaDataField field, final int recordValue) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null");
+		}
 
 		fields = new MetaDataField[1];
 		fields[0] = field;
@@ -115,9 +118,10 @@ public abstract class MetaDataRecordList extends Object {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public MetaDataRecordList(MetaDataField field, float recordValue) {
-		if (field == null)
+	public MetaDataRecordList(final MetaDataField field, final float recordValue) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null");
+		}
 
 		fields = new MetaDataField[1];
 		fields[0] = field;
@@ -130,9 +134,10 @@ public abstract class MetaDataRecordList extends Object {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public MetaDataRecordList(MetaDataField field, long recordValue) {
-		if (field == null)
+	public MetaDataRecordList(final MetaDataField field, final long recordValue) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null");
+		}
 
 		fields = new MetaDataField[1];
 		fields[0] = field;
@@ -140,14 +145,16 @@ public abstract class MetaDataRecordList extends Object {
 		records = new Object[1];
 		records[0] = new Long(recordValue);
 	}
-	
+
 	/**
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public MetaDataRecordList(MetaDataField field, Integer recordValue) {
-		if (field == null)
+	public MetaDataRecordList(final MetaDataField field,
+			final Integer recordValue) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null");
+		}
 
 		fields = new MetaDataField[1];
 		fields[0] = field;
@@ -160,9 +167,10 @@ public abstract class MetaDataRecordList extends Object {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public MetaDataRecordList(MetaDataField field, Float recordValue) {
-		if (field == null)
+	public MetaDataRecordList(final MetaDataField field, final Float recordValue) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null");
+		}
 
 		fields = new MetaDataField[1];
 		fields[0] = field;
@@ -175,9 +183,11 @@ public abstract class MetaDataRecordList extends Object {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public MetaDataRecordList(MetaDataField field, String recordValue) {
-		if (field == null)
+	public MetaDataRecordList(final MetaDataField field,
+			final String recordValue) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null");
+		}
 
 		fields = new MetaDataField[1];
 		fields[0] = field;
@@ -190,9 +200,11 @@ public abstract class MetaDataRecordList extends Object {
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
 	 */
-	public MetaDataRecordList(MetaDataField field, MetaDataTable recordValue) {
-		if (field == null)
+	public MetaDataRecordList(final MetaDataField field,
+			final MetaDataTable recordValue) {
+		if (field == null) {
 			throw new NullPointerException("field cannot be null");
+		}
 
 		fields = new MetaDataField[1];
 		fields[0] = field;
@@ -207,10 +219,12 @@ public abstract class MetaDataRecordList extends Object {
 	 */
 	@Override
 	protected void finalize() {
-		if (records != null)
+		if (records != null) {
 			records = null;
-		if (fields != null)
+		}
+		if (fields != null) {
 			fields = null;
+		}
 	}
 
 	/**
@@ -219,10 +233,11 @@ public abstract class MetaDataRecordList extends Object {
 	 * query.
 	 */
 	public int getFieldCount() {
-		if (fields != null)
+		if (fields != null) {
 			return fields.length;
-		else
+		} else {
 			return -1;
+		}
 	}
 
 	/**
@@ -235,21 +250,23 @@ public abstract class MetaDataRecordList extends Object {
 	/**
 	 * Get the MetaDataField object describing the indicated field.
 	 */
-	public MetaDataField getField(int index) {
-		if (fields != null)
+	public MetaDataField getField(final int index) {
+		if (fields != null) {
 			return fields[index];
-		else
+		} else {
 			return null;
+		}
 	}
 
 	/**
 	 * Get the field name for the indicated field. This is a shorthand for:<br>
 	 * getField(index).getName()
 	 */
-	public String getFieldName(int index) {
+	public String getFieldName(final int index) {
 		if ((fields != null) && (index < fields.length)) {
-			if (fields[index] != null)
+			if (fields[index] != null) {
 				return fields[index].getName();
+			}
 		}
 		return null;
 	}
@@ -258,11 +275,12 @@ public abstract class MetaDataRecordList extends Object {
 	 * Get the data type for the field's values. This is a shorthand for:<br>
 	 * getField(index).getType()
 	 */
-	public int getFieldType(int index) {
-		if (fields != null)
+	public int getFieldType(final int index) {
+		if (fields != null) {
 			return fields[index].getType();
-		else
+		} else {
 			return -1;
+		}
 	}
 
 	/**
@@ -271,7 +289,7 @@ public abstract class MetaDataRecordList extends Object {
 	 * @return the index of the field, or -1 if this recordlist does not contain
 	 *         that field
 	 */
-	public int getFieldIndex(String fieldName) {
+	public int getFieldIndex(final String fieldName) {
 		if ((fields != null) && fieldName != null) {
 			for (int i = 0; i < fields.length; i++) {
 				if (fields[i].getName().equals(fieldName)) {
@@ -287,10 +305,11 @@ public abstract class MetaDataRecordList extends Object {
 	 * Returns the number of records in the list.
 	 */
 	public int getRecordCount() {
-		if (records != null)
+		if (records != null) {
 			return records.length;
-		else
+		} else {
 			return -1;
+		}
 	}
 
 	/*
@@ -310,11 +329,13 @@ public abstract class MetaDataRecordList extends Object {
 	 * @throws IllegalArgumentException
 	 *             If the value at this index is a table.
 	 */
-	public int getIntValue(int index) {
-		if (records == null)
+	public int getIntValue(final int index) {
+		if (records == null) {
 			throw new NullPointerException();
-		if (records[index] == null)
+		}
+		if (records[index] == null) {
 			throw new NullPointerException("Value at index is null.");
+		}
 
 		if (records[index] instanceof MetaDataTable) {
 			throw new IllegalArgumentException(
@@ -327,7 +348,7 @@ public abstract class MetaDataRecordList extends Object {
 			return Integer.parseInt(records[index].toString());
 		}
 	}
-	
+
 	/**
 	 * Get the value for the field. The call's data type (int, float, or string)
 	 * need not match the value's data type (as returned by getFieldType),
@@ -336,11 +357,13 @@ public abstract class MetaDataRecordList extends Object {
 	 * @throws IllegalArgumentException
 	 *             If the value at this index is a table.
 	 */
-	public long getLongValue(int index) {
-		if (records == null)
+	public long getLongValue(final int index) {
+		if (records == null) {
 			throw new NullPointerException();
-		if (records[index] == null)
+		}
+		if (records[index] == null) {
 			throw new NullPointerException("Value at index is null.");
+		}
 
 		if (records[index] instanceof MetaDataTable) {
 			throw new IllegalArgumentException(
@@ -350,7 +373,6 @@ public abstract class MetaDataRecordList extends Object {
 		}
 	}
 
-
 	/**
 	 * Get the value for the field. The call's data type (int, float, or string)
 	 * need not match the value's data type (as returned by getFieldType),
@@ -359,11 +381,13 @@ public abstract class MetaDataRecordList extends Object {
 	 * @throws IllegalArgumentException
 	 *             If the value at this index is a table.
 	 */
-	public float getFloatValue(int index) {
-		if (records == null)
+	public float getFloatValue(final int index) {
+		if (records == null) {
 			throw new NullPointerException();
-		if (records[index] == null)
+		}
+		if (records[index] == null) {
 			throw new NullPointerException("Value at index is null.");
+		}
 
 		if (records[index] instanceof MetaDataTable) {
 			throw new IllegalArgumentException(
@@ -385,11 +409,13 @@ public abstract class MetaDataRecordList extends Object {
 	 * @throws IllegalArgumentException
 	 *             If the value at this index is a table.
 	 */
-	public String getStringValue(int index) {
-		if (records == null)
+	public String getStringValue(final int index) {
+		if (records == null) {
 			throw new NullPointerException();
-		if (records[index] == null)
+		}
+		if (records[index] == null) {
 			return null;
+		}
 		/*
 		 * if (fields[index].getType() == MetaDataField.TABLE) { throw new
 		 * IllegalArgumentException( "Value at this index is a table."); } else
@@ -417,11 +443,13 @@ public abstract class MetaDataRecordList extends Object {
 	 * @throws IllegalArgumentException
 	 *             If the value at this index is not a table.
 	 */
-	public MetaDataTable getTableValue(int index) {
-		if (records == null)
+	public MetaDataTable getTableValue(final int index) {
+		if (records == null) {
 			throw new NullPointerException();
-		if (records[index] == null)
+		}
+		if (records[index] == null) {
 			return null;
+		}
 
 		if (records[index] instanceof MetaDataTable) {
 			try {
@@ -445,14 +473,14 @@ public abstract class MetaDataRecordList extends Object {
 	/**
 	 * Returns the values in the list.
 	 */
-	public Object getValue(int index) {
+	public Object getValue(final int index) {
 		return records[index];
 	}
 
 	/**
 	 * Returns the value matching this field.
 	 */
-	public Object getValue(MetaDataField field) {
+	public Object getValue(final MetaDataField field) {
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].equals(field)) {
 				return records[i];
@@ -465,11 +493,11 @@ public abstract class MetaDataRecordList extends Object {
 	/**
 	 * Returns the value matching this field.
 	 */
-	public Object getValue(String field) {
+	public Object getValue(final String field) {
 		return getValue(MetaDataSet.getField(field));
 	}
 
-	public void setValue(int index, int value)
+	public void setValue(final int index, final int value)
 			throws ArrayIndexOutOfBoundsException {
 		int fieldType = fields[index].getType();
 		if (fieldType == MetaDataField.FLOAT) {
@@ -484,7 +512,7 @@ public abstract class MetaDataRecordList extends Object {
 		}
 	}
 
-	public void setValue(int index, float value)
+	public void setValue(final int index, final float value)
 			throws ArrayIndexOutOfBoundsException {
 		int fieldType = fields[index].getType();
 		if (fieldType == MetaDataField.INT) {
@@ -499,7 +527,7 @@ public abstract class MetaDataRecordList extends Object {
 		}
 	}
 
-	public void setValue(int index, String value)
+	public void setValue(final int index, final String value)
 			throws ArrayIndexOutOfBoundsException {
 		int fieldType = fields[index].getType();
 		if (fieldType == MetaDataField.INT) {
@@ -514,7 +542,7 @@ public abstract class MetaDataRecordList extends Object {
 		}
 	}
 
-	public void setValue(int index, MetaDataTable value)
+	public void setValue(final int index, final MetaDataTable value)
 			throws ArrayIndexOutOfBoundsException {
 		int fieldType = fields[index].getType();
 		if (fieldType == MetaDataField.TABLE) {
@@ -530,7 +558,7 @@ public abstract class MetaDataRecordList extends Object {
 	 * <code>field</code>. Returns false if the MetaDataField does not exist in
 	 * this MetaDataRecordList.
 	 */
-	public boolean setValue(MetaDataField field, int value)
+	public boolean setValue(final MetaDataField field, final int value)
 			throws ArrayIndexOutOfBoundsException {
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].equals(field)) {
@@ -546,7 +574,7 @@ public abstract class MetaDataRecordList extends Object {
 	 * <code>field</code>. Returns false if the MetaDataField does not exist in
 	 * this MetaDataRecordList.
 	 */
-	public boolean setValue(MetaDataField field, float value)
+	public boolean setValue(final MetaDataField field, final float value)
 			throws ArrayIndexOutOfBoundsException {
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].equals(field)) {
@@ -562,7 +590,7 @@ public abstract class MetaDataRecordList extends Object {
 	 * <code>field</code>. Returns false if the MetaDataField does not exist in
 	 * this MetaDataRecordList.
 	 */
-	public boolean setValue(MetaDataField field, String value)
+	public boolean setValue(final MetaDataField field, final String value)
 			throws ArrayIndexOutOfBoundsException {
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].equals(field)) {
@@ -578,7 +606,7 @@ public abstract class MetaDataRecordList extends Object {
 	 * <code>field</code>. Returns false if the MetaDataField does not exist in
 	 * this MetaDataRecordList.
 	 */
-	public boolean setValue(MetaDataField field, MetaDataTable value)
+	public boolean setValue(final MetaDataField field, final MetaDataTable value)
 			throws ArrayIndexOutOfBoundsException {
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].equals(field)) {
@@ -592,7 +620,8 @@ public abstract class MetaDataRecordList extends Object {
 	/**
    *
    */
-	protected boolean addRecord(MetaDataField field, Object recordValue) {
+	protected boolean addRecord(final MetaDataField field,
+			final Object recordValue) {
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].equals(field)) {
 				// just overwrite duplicates?
@@ -619,25 +648,26 @@ public abstract class MetaDataRecordList extends Object {
 	/**
    *
    */
-	public void addRecord(MetaDataField field, int recordValue) {
+	public void addRecord(final MetaDataField field, final int recordValue) {
 		addRecord(field, new Integer(recordValue));
 		// convert to correct Class type
 		setValue(field, recordValue);
 	}
 
-	public void addRecord(MetaDataField field, float recordValue) {
+	public void addRecord(final MetaDataField field, final float recordValue) {
 		addRecord(field, new Float(recordValue));
 		// convert to correct Class type
 		setValue(field, recordValue);
 	}
 
-	public void addRecord(MetaDataField field, String recordValue) {
+	public void addRecord(final MetaDataField field, final String recordValue) {
 		addRecord(field, (Object) recordValue);
 		// convert to correct Class type
 		setValue(field, recordValue);
 	}
 
-	public void addRecord(MetaDataField field, MetaDataTable recordValue) {
+	public void addRecord(final MetaDataField field,
+			final MetaDataTable recordValue) {
 		if (field.getType() != MetaDataField.TABLE) {
 			throw new IllegalArgumentException(field
 					+ " only accepts MetaDataTable values.");
@@ -646,7 +676,7 @@ public abstract class MetaDataRecordList extends Object {
 		addRecord(field, (Object) recordValue);
 	}
 
-	public void removeRecord(int index) {
+	public void removeRecord(final int index) {
 		MetaDataField[] tempFields = fields;
 		Object[] tempRecords = records;
 
@@ -663,7 +693,7 @@ public abstract class MetaDataRecordList extends Object {
 				tempRecords.length - 1 - index);
 	}
 
-	public void removeRecord(MetaDataField field) {
+	public void removeRecord(final MetaDataField field) {
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i].equals(field)) {
 				removeRecord(i);
@@ -711,18 +741,17 @@ public abstract class MetaDataRecordList extends Object {
 			Vector<MetaDataRecordList> recordLists = new Vector();
 			while ((rl != null) && (rl[rl.length - 1] != null)
 					&& !rl[rl.length - 1].isQueryComplete()) {
-				for (int i = 0; i < rl.length; i++) {
-					recordLists.add(rl[i]);
+				for (MetaDataRecordList element : rl) {
+					recordLists.add(element);
 				}
 				rl = rl[rl.length - 1].getMoreResults();
 			}
 			if (rl != null && rl[rl.length - 1] != null) {
-				for (int i = 0; i < rl.length; i++) {
-					recordLists.add(rl[i]);
+				for (MetaDataRecordList element : rl) {
+					recordLists.add(element);
 				}
 			}
-			return recordLists
-					.toArray(new MetaDataRecordList[0]);
+			return recordLists.toArray(new MetaDataRecordList[0]);
 		}
 	}
 
@@ -752,10 +781,11 @@ public abstract class MetaDataRecordList extends Object {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			MetaDataRecordList temp = (MetaDataRecordList) obj;
 			MetaDataField[] tempFields = temp.fields;
@@ -772,8 +802,9 @@ public abstract class MetaDataRecordList extends Object {
 						break;
 					}
 				}
-				if (!exists)
+				if (!exists) {
 					return false;
+				}
 				exists = false;
 			}
 
@@ -785,8 +816,9 @@ public abstract class MetaDataRecordList extends Object {
 						break;
 					}
 				}
-				if (!exists)
+				if (!exists) {
 					return false;
+				}
 				exists = false;
 			}
 		} catch (ClassCastException e) {

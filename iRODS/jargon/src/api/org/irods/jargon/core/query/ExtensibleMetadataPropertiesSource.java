@@ -76,8 +76,7 @@ public class ExtensibleMetadataPropertiesSource implements
 	public ExtensibleMetaDataMapping generateExtensibleMetaDataMapping()
 			throws JargonException {
 
-		log
-				.debug("cloning the properties and building an ExtensibleMetaDataMapping");
+		log.debug("cloning the properties and building an ExtensibleMetaDataMapping");
 		if (extensibleMetaDataProperties == null) {
 			throw new JargonException(
 					"the properties I want to use to build the metadata mapping are null");
@@ -126,13 +125,12 @@ public class ExtensibleMetadataPropertiesSource implements
 
 		for (Object key : properties.keySet()) {
 			keyString = (String) key;
-			extensibleMetaDataProperties.put(keyString, properties
-					.getProperty((String) key));
+			extensibleMetaDataProperties.put(keyString,
+					properties.getProperty((String) key));
 		}
 
 		if (log.isDebugEnabled()) {
-			log
-					.debug("extensible meta data properties dump======================");
+			log.debug("extensible meta data properties dump======================");
 			for (String key : extensibleMetaDataProperties.keySet()) {
 				log.debug("   key:" + key + "  value:"
 						+ extensibleMetaDataProperties.get(key));

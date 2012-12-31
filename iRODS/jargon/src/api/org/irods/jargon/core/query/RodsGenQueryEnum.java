@@ -169,8 +169,8 @@ public enum RodsGenQueryEnum {
 	COL_ZONE_ID("ZONE_ID", 101), COL_ZONE_MODIFY_TIME("ZONE_MODIFY_TIME", 107), COL_ZONE_NAME(
 			"ZONE_NAME", 102), COL_ZONE_TYPE("ZONE_TYPE", 103);
 
-	static RodsGenQueryEnum getAttributeBasedOnId(String attribNumericValue)
-			throws JargonException {
+	static RodsGenQueryEnum getAttributeBasedOnId(
+			final String attribNumericValue) throws JargonException {
 		if (attribNumericValue == null) {
 			throw new JargonException("null attribute value");
 		}
@@ -213,7 +213,7 @@ public enum RodsGenQueryEnum {
 	 *         RodsGenQueryEnum} that gives information about the query field
 	 * @throws JargonException
 	 */
-	static RodsGenQueryEnum getAttributeBasedOnName(String attribName)
+	static RodsGenQueryEnum getAttributeBasedOnName(final String attribName)
 			throws JargonException {
 		if (attribName == null || attribName.length() == 0) {
 			throw new JargonException("missing attribute name");
@@ -231,7 +231,7 @@ public enum RodsGenQueryEnum {
 
 	}
 
-	static int getNumericFromStringValue(String stringValue) {
+	static int getNumericFromStringValue(final String stringValue) {
 		int queryVal = -1;
 		for (RodsGenQueryEnum rodsGenQueryEnum : RodsGenQueryEnum.values()) {
 			if (rodsGenQueryEnum.getName().equals(stringValue)) {
@@ -246,7 +246,7 @@ public enum RodsGenQueryEnum {
 
 	private int numericValue;
 
-	RodsGenQueryEnum(String name, int numericValue) {
+	RodsGenQueryEnum(final String name, final int numericValue) {
 		this.name = name;
 		this.numericValue = numericValue;
 	}

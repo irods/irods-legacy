@@ -69,7 +69,7 @@ public class MetaDataTable {
 	 * red using rgb units, but if the item had an alpha channel, ie the units
 	 * are different, then no items would match the query.<P>
 	 */
-	public MetaDataTable(int[] operators, String[][] values) {
+	public MetaDataTable(final int[] operators, final String[][] values) {
 		if ((values == null) || (operators == null)) {
 			throw new NullPointerException(
 					"Values and operators cannot be null.");
@@ -91,7 +91,7 @@ public class MetaDataTable {
 		}
 	}
 
-	public void setStringValue(int i, int j, String value) {
+	public void setStringValue(final int i, final int j, final String value) {
 		Object row = values.get(i);
 		Array.set(row, j, value);
 		values.set(i, row);
@@ -111,21 +111,23 @@ public class MetaDataTable {
 	/**
    *
    */
-	public int getOperator(int index) {
+	public int getOperator(final int index) {
 		return ((Integer) operators.get(index)).intValue();
 	}
 
 	/**
    *
    */
-	public int getIntValue(int row, int column) {
+	public int getIntValue(final int row, final int column) {
 		String[] temp = (String[]) values.get(row);
 		String value = temp[column];
 
-		if ((row >= getRowCount()) || (column >= getColumnCount()))
+		if ((row >= getRowCount()) || (column >= getColumnCount())) {
 			throw new IllegalArgumentException();
-		if ((row < 0) || (column < 0))
+		}
+		if ((row < 0) || (column < 0)) {
 			throw new IllegalArgumentException();
+		}
 
 		return Integer.parseInt(value.toString());
 	}
@@ -133,14 +135,16 @@ public class MetaDataTable {
 	/**
    *
    */
-	public float getFloatValue(int row, int column) {
+	public float getFloatValue(final int row, final int column) {
 		String[] temp = (String[]) values.get(row);
 		String value = temp[column];
 
-		if ((row >= getRowCount()) || (column >= getColumnCount()))
+		if ((row >= getRowCount()) || (column >= getColumnCount())) {
 			throw new IllegalArgumentException();
-		if ((row < 0) || (column < 0))
+		}
+		if ((row < 0) || (column < 0)) {
 			throw new IllegalArgumentException();
+		}
 
 		return Float.parseFloat(value.toString());
 	}
@@ -148,14 +152,16 @@ public class MetaDataTable {
 	/**
    *
    */
-	public String getStringValue(int row, int column) {
+	public String getStringValue(final int row, final int column) {
 		String[] temp = (String[]) values.get(row);
 		String value = temp[column];
 
-		if ((row >= getRowCount()) || (column >= getColumnCount()))
+		if ((row >= getRowCount()) || (column >= getColumnCount())) {
 			throw new IllegalArgumentException();
-		if ((row < 0) || (column < 0))
+		}
+		if ((row < 0) || (column < 0)) {
 			throw new IllegalArgumentException();
+		}
 
 		return value;
 	}
@@ -165,7 +171,7 @@ public class MetaDataTable {
 	 *         the row that's first column, the "attribute" column, equals
 	 *         <code>match</code>.
 	 */
-	public String getStringValue(String match) {
+	public String getStringValue(final String match) {
 		for (int i = 0; i < values.size(); i++) {
 			if (getStringValue(i, 0).equals(match)) {
 				return getStringValue(i, 1);
@@ -178,7 +184,7 @@ public class MetaDataTable {
 	 * @return The string matching the <code>column</code> index from the row
 	 *         that's first column equals <code>match</code>.
 	 */
-	public String getStringValue(String match, int column) {
+	public String getStringValue(final String match, final int column) {
 		for (int i = 0; i < values.size(); i++) {
 			if (getStringValue(i, 0).equals(match)) {
 				return getStringValue(i, column);
@@ -205,7 +211,7 @@ public class MetaDataTable {
 	 * Sets the operator. Must be done after the value is set as it does some
 	 * conversions for LIKE.
 	 */
-	private void setOperator(int operator) {
+	private void setOperator(final int operator) {
 		if ((operator < MetaDataCondition.EQUAL)
 				|| (operator > MetaDataCondition.SOUNDS_NOT_LIKE)) {
 			throw new IllegalArgumentException("Invalid operator.");
@@ -216,7 +222,7 @@ public class MetaDataTable {
 	/**
 	 * Adds these values to this table, as the new last row.
 	 */
-	public void addRow(String[] values, int operator) {
+	public void addRow(final String[] values, final int operator) {
 		if (values != null) {
 			boolean add = false;
 			for (int i = 0; i < values.length; i++) {
@@ -239,7 +245,7 @@ public class MetaDataTable {
 	/**
 	 * Removes the row specified by <code>index</code> from this table.
 	 */
-	public void removeRow(int index) {
+	public void removeRow(final int index) {
 		values.remove(index);
 		operators.remove(index);
 	}
@@ -264,11 +270,12 @@ public class MetaDataTable {
    *
    */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		MetaDataTable table = null;
 
-		if (obj == null)
+		if (obj == null) {
 			return false;
+		}
 
 		try {
 			table = (MetaDataTable) obj;

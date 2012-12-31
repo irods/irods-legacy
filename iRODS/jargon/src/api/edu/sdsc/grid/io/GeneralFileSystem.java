@@ -41,8 +41,8 @@
 //
 package edu.sdsc.grid.io;
 
-import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * The GeneralFileSystem class is the common superclass for connection
@@ -50,7 +50,7 @@ import java.io.FileNotFoundException;
  * specific file system semantics. Specifically, the functions needed to
  * interact with a file system are provided abstractly by GeneralFileSystem and
  * concretely by its subclass(es).
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
@@ -119,8 +119,9 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * Returns a copy of the account object used by this GeneralFileSystem.
 	 */
 	public GeneralAccount getAccount() throws NullPointerException {
-		if (account != null)
+		if (account != null) {
 			return (GeneralAccount) account.clone();
+		}
 
 		throw new NullPointerException();
 	}
@@ -143,7 +144,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * @param bufferSize
 	 *            The buffer size used by the SRB socket write.
 	 */
-	public static void setWriteBufferSize(int bufferSize) {
+	public static void setWriteBufferSize(final int bufferSize) {
 		if (bufferSize > 0) {
 			writeBufferSize = bufferSize;
 		}
@@ -159,7 +160,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	/**
 	 * Queries all files in the metadata catalog and uses metadata values,
 	 * <code>fieldName</code>, to be returned.
-	 *<P>
+	 * <P>
 	 * This is a convenience method, the same as the code:<br>
 	 * <code>query( MetaDataSet.newSelection( fieldName ) );</code>
 	 * 
@@ -168,7 +169,8 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * @return The metadata values for this file refered to by
 	 *         <code>fieldName</code>
 	 */
-	public MetaDataRecordList[] query(String fieldName) throws IOException {
+	public MetaDataRecordList[] query(final String fieldName)
+			throws IOException {
 		return query(
 				new MetaDataSelect[] { MetaDataSet.newSelection(fieldName) },
 				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
@@ -177,7 +179,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	/**
 	 * Queries all files in the metadata catalog and uses metadata values,
 	 * <code>selects</code>, to be returned.
-	 *<P>
+	 * <P>
 	 * This is a convenience method, the same as the code:<br>
 	 * <code>query( MetaDataSet.newSelection( fieldNames ) );</code>
 	 * 
@@ -186,7 +188,8 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * @return The metadata values for this file refered to by
 	 *         <code>fieldNames</code>
 	 */
-	public MetaDataRecordList[] query(String[] fieldNames) throws IOException {
+	public MetaDataRecordList[] query(final String[] fieldNames)
+			throws IOException {
 		return query(MetaDataSet.newSelection(fieldNames),
 				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
@@ -195,7 +198,8 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * Queries all files in the metadata catalog and uses one metadata value,
 	 * <code>select</code>, to be returned.
 	 */
-	public MetaDataRecordList[] query(MetaDataSelect select) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataSelect select)
+			throws IOException {
 		return query(new MetaDataSelect[] { select },
 				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
@@ -204,7 +208,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * Queries all files in the metadata catalog and uses metadata values,
 	 * <code>selects</code>, to be returned.
 	 */
-	public MetaDataRecordList[] query(MetaDataSelect[] selects)
+	public MetaDataRecordList[] query(final MetaDataSelect[] selects)
 			throws IOException {
 		return query(selects, GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}
@@ -213,8 +217,8 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 * Queries all files in the metadata catalog and uses metadata values,
 	 * <code>selects</code>, to be returned.
 	 */
-	public MetaDataRecordList[] query(MetaDataSelect[] selects,
-			int recordsWanted) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataSelect[] selects,
+			final int recordsWanted) throws IOException {
 		return query(null, selects, recordsWanted);
 	}
 
@@ -231,8 +235,8 @@ public abstract class GeneralFileSystem extends Object implements Cloneable {
 	 *            The attributes to be returned from those values that met the
 	 *            conditions, like SELECT in SQL.
 	 */
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects) throws IOException {
 		return query(conditions, selects,
 				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
 	}

@@ -55,10 +55,10 @@ import edu.sdsc.grid.io.GeneralFileOutputStream;
 /**
  * A LocalFileOutputStream writes bytes to a file in a file system. What files
  * are available depends on the host environment.
- *<P>
+ * <P>
  * LocalFileOutputStream is meant for writing streams of raw bytes such as image
  * data.
- *<P>
+ * <P>
  * Basically just wraps java.io.FileOuputStream.
  * <P>
  * 
@@ -90,7 +90,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public LocalFileOutputStream(String name) throws IOException {
+	public LocalFileOutputStream(final String name) throws IOException {
 		super(new LocalFileSystem(), name);
 	}
 
@@ -114,7 +114,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public LocalFileOutputStream(LocalFile file) throws IOException {
+	public LocalFileOutputStream(final LocalFile file) throws IOException {
 		super(file);
 	}
 
@@ -141,7 +141,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		out = new FileOutputStream(((LocalFile) file).getFile());
 	}
 
@@ -155,7 +155,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(int b) throws IOException {
+	public void write(final int b) throws IOException {
 		out.write(b);
 	}
 
@@ -169,7 +169,7 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte b[]) throws IOException {
+	public void write(final byte b[]) throws IOException {
 		out.write(b);
 	}
 
@@ -187,7 +187,8 @@ public class LocalFileOutputStream extends GeneralFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte b[], int off, int len) throws IOException {
+	public void write(final byte b[], final int off, final int len)
+			throws IOException {
 		out.write(b, off, len);
 	}
 

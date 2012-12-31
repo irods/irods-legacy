@@ -45,26 +45,35 @@
 //
 package edu.sdsc.grid.io.http;
 
-import java.io.*;
-import java.net.*;
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.sdsc.grid.io.*;
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileInputStream;
+import edu.sdsc.grid.io.GeneralFileOutputStream;
+import edu.sdsc.grid.io.RemoteFile;
 
 //consider instead http://www.innovation.ch/java/HTTPClient/
 
 /**
  * An abstract representation of file and directory pathnames on a http server.
- *<P>
+ * <P>
  * Shares many similarities with the java.io.File class: User interfaces and
  * operating systems use system-dependent pathname strings to name files and
  * directories. This class presents an abstract, system-independent view of
  * hierarchical pathnames. An abstract pathname has two components:
- *<P>
+ * <P>
  * Instances of the HTTPFile class are immutable; that is, once created, the
  * abstract pathname represented by a HTTPFile object will never change.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @see java.io.File
@@ -95,14 +104,14 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Creates a new HTTPFile instance by converting the given pathname string
 	 * into an abstract pathname.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the http server
 	 * @param filePath
 	 *            A pathname string
 	 */
-	public HTTPFile(HTTPFileSystem fileSystem, String filePath)
+	public HTTPFile(final HTTPFileSystem fileSystem, final String filePath)
 			throws IOException {
 		this(fileSystem, filePath, "");
 	}
@@ -110,11 +119,11 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Creates a new HTTPFile instance from a parent pathname string and a child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new HTTPFile instance is created as if by
 	 * invoking the single-argument HTTPFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent pathname string is taken to denote a directory, and
 	 * the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -124,7 +133,7 @@ public class HTTPFile extends RemoteFile {
 	 * system-dependent default directory. Otherwise each pathname string is
 	 * converted into an abstract pathname and the child abstract pathname is
 	 * resolved against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param fileSystem
 	 *            The connection to the http server
@@ -133,8 +142,8 @@ public class HTTPFile extends RemoteFile {
 	 * @param child
 	 *            The child pathname string
 	 */
-	public HTTPFile(HTTPFileSystem fileSystem, String parent, String child)
-			throws IOException {
+	public HTTPFile(final HTTPFileSystem fileSystem, final String parent,
+			final String child) throws IOException {
 		super(fileSystem, parent, child);
 		httpFileSystem = fileSystem;
 	}
@@ -142,11 +151,11 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Creates a new HTTPFile instance from a parent abstract pathname and a
 	 * child pathname string.
-	 *<P>
+	 * <P>
 	 * If parent is null then the new HTTPFile instance is created as if by
 	 * invoking the single-argument HTTPFile constructor on the given child
 	 * pathname string.
-	 *<P>
+	 * <P>
 	 * Otherwise the parent abstract pathname is taken to denote a directory,
 	 * and the child pathname string is taken to denote either a directory or a
 	 * file. If the child pathname string is absolute then it is converted into
@@ -156,14 +165,15 @@ public class HTTPFile extends RemoteFile {
 	 * against a system-dependent default directory. Otherwise each pathname
 	 * string is converted into an abstract pathname and the child abstract
 	 * pathname is resolved against the parent.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param parent
 	 *            The parent abstract pathname
 	 * @param child
 	 *            The child pathname string
 	 */
-	public HTTPFile(HTTPFile parent, String child) throws IOException {
+	public HTTPFile(final HTTPFile parent, final String child)
+			throws IOException {
 		this((HTTPFileSystem) parent.getFileSystem(), parent.getAbsolutePath(),
 				child);
 	}
@@ -171,10 +181,10 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Creates a new HTTPFile instance by converting the given file: URI into an
 	 * abstract pathname.
-	 *<P>
+	 * <P>
 	 * HTTP URI protocol:<br>
 	 * http:// [ userName [ : password ] @ ] host [ : port ][ / path ]
-	 *<P>
+	 * <P>
 	 * example:<br>
 	 * http://http@http.sdsc.edu:21/pub/testfile.txt
 	 * 
@@ -185,7 +195,7 @@ public class HTTPFile extends RemoteFile {
 	 * @throws IllegalArgumentException
 	 *             If the preconditions on the parameter do not hold.
 	 */
-	public HTTPFile(URI uri) throws IOException, URISyntaxException {
+	public HTTPFile(final URI uri) throws IOException, URISyntaxException {
 		super(uri);
 		setFileSystem(new HTTPFileSystem(uri));
 		setFileName(uri.getPath());
@@ -209,12 +219,12 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Replicates this RemoteFile to a new resource. Directories/collections
 	 * will be recursively replicated.
-	 *<P>
+	 * <P>
 	 * In some remote systems, one can make copies of a data set and store the
 	 * copies in different locations. But, all these copies are considered to be
 	 * identifiable by the same identifier. That is, each copy is considered to
 	 * be equivalent to each other.
-	 *<P>
+	 * <P>
 	 * When a user reads a replicated data set, the remote system cycles through
 	 * all the copies of the datset and reads the one that is accessible at that
 	 * time.
@@ -225,7 +235,7 @@ public class HTTPFile extends RemoteFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void replicate(String newResource) throws IOException {
+	public void replicate(final String newResource) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -245,10 +255,11 @@ public class HTTPFile extends RemoteFile {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			if (obj instanceof HTTPFile) {
 				HTTPFile temp = (HTTPFile) obj;
@@ -398,8 +409,9 @@ public class HTTPFile extends RemoteFile {
 	@Override
 	public long length() {
 		long length = httpFileSystem.conn.getContentLength();
-		if (length < 0)
+		if (length < 0) {
 			return 0;
+		}
 
 		return length;
 	}
@@ -407,11 +419,11 @@ public class HTTPFile extends RemoteFile {
 	/**
 	 * Returns an array of strings naming the files and directories in the
 	 * directory denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * There is no guarantee that the name strings in the resulting array will
 	 * appear in any specific order; they are not, in particular, guaranteed to
 	 * appear in alphabetical order.
-	 *<P>
+	 * <P>
 	 * If this GeneralFile object denotes a file, the results are unspecified.
 	 * 
 	 * @return An array of strings naming the files and directories in the
@@ -433,7 +445,7 @@ public class HTTPFile extends RemoteFile {
 
 	/**
 	 * Renames the file denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * Whether or not this method can move a file from one filesystem to another
 	 * is platform-dependent. The return value should always be checked to make
 	 * sure that the rename operation was successful.
@@ -448,8 +460,8 @@ public class HTTPFile extends RemoteFile {
 	 *             - If dest is null
 	 */
 	@Override
-	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
-			NullPointerException {
+	public boolean renameTo(final GeneralFile dest)
+			throws IllegalArgumentException, NullPointerException {
 		try {
 			if (dest instanceof HTTPFile) {
 				return false;
@@ -457,8 +469,9 @@ public class HTTPFile extends RemoteFile {
 				if (!dest.exists()) {
 					copyTo(dest);
 					delete();
-				} else
+				} else {
 					return false;
+				}
 			}
 		} catch (IOException e) {
 			return false;
@@ -475,14 +488,16 @@ public class HTTPFile extends RemoteFile {
 		String username = httpFileSystem.getUserName(), portString;
 		int port = httpFileSystem.getPort();
 
-		if (username != null)
+		if (username != null) {
 			username += "@";
-		else
+		} else {
 			username = "";
-		if (port > 0 && port != 80)
+		}
+		if (port > 0 && port != 80) {
 			portString = ":" + port;
-		else
+		} else {
 			portString = ""; // looks better without the port 80
+		}
 
 		return "http://" + username + httpFileSystem.getHost() + portString
 				+ getAbsolutePath();
@@ -502,8 +517,7 @@ public class HTTPFile extends RemoteFile {
 	 * <blockquote><tt>
 	 * new {@link #GeneralFile(java.net.URI) GeneralFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
-	 * </tt>
-	 * </blockquote>
+	 * </tt> </blockquote>
 	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
@@ -557,25 +571,27 @@ public class HTTPFile extends RemoteFile {
 	public URL toURL() throws MalformedURLException {
 		return new URL(toString());
 	}
-	
+
 	/**
-	* Unsupported operation
+	 * Unsupported operation
 	 */
 	@Override
-	public void copyFrom(GeneralFile file) throws IOException {
-		throw new UnsupportedOperationException("output to an HTTP file is not supported");
+	public void copyFrom(final GeneralFile file) throws IOException {
+		throw new UnsupportedOperationException(
+				"output to an HTTP file is not supported");
 	}
 
 	/**
-	* Unsupported operation
+	 * Unsupported operation
 	 */
 	@Override
-	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
-			throws IOException {
-		throw new UnsupportedOperationException("output to an HTTP file is not supported");
-	
+	public void copyFrom(final GeneralFile sourceFile,
+			final boolean forceOverwrite) throws IOException {
+		throw new UnsupportedOperationException(
+				"output to an HTTP file is not supported");
+
 	}
-	
+
 	/**
 	 * Copies this file to another file. This object is the source file. The
 	 * destination file is given as the argument. If the destination file, does
@@ -590,7 +606,7 @@ public class HTTPFile extends RemoteFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void copyTo(GeneralFile destinationFile) throws IOException {
+	public void copyTo(final GeneralFile destinationFile) throws IOException {
 		copyTo(destinationFile, false);
 	}
 
@@ -608,7 +624,7 @@ public class HTTPFile extends RemoteFile {
 	 *             If an IOException occurs.
 	 */
 	@Override
-	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
+	public void copyTo(GeneralFile destinationFile, final boolean forceOverwrite)
 			throws IOException {
 		byte buffer[] = null;
 		GeneralFileInputStream in = null;
@@ -625,11 +641,11 @@ public class HTTPFile extends RemoteFile {
 
 			destinationFile.mkdir();
 			if (fileList != null) {
-				for (int i = 0; i < fileList.length; i++) {
-					fileList[i].copyTo(FileFactory.newFile(destinationFile
-							.getFileSystem(),
-							destinationFile.getAbsolutePath(), fileList[i]
-									.getName()), forceOverwrite);
+				for (GeneralFile element : fileList) {
+					element.copyTo(FileFactory.newFile(
+							destinationFile.getFileSystem(),
+							destinationFile.getAbsolutePath(),
+							element.getName()), forceOverwrite);
 				}
 			}
 		} else {
@@ -659,20 +675,22 @@ public class HTTPFile extends RemoteFile {
 				buffer = new byte[BUFFER_MAX_SIZE];
 				do {
 					n = in.read(buffer);
-					if (n >= 0)
+					if (n >= 0) {
 						ilength -= n;
-					else
+					} else {
 						throw new EOFException();
+					}
 					out.write(buffer, 0, n);
 				} while (ilength > BUFFER_MAX_SIZE);
 			}
 			buffer = new byte[(int) ilength];
 			do {
 				n = in.read(buffer);
-				if (n >= 0)
+				if (n >= 0) {
 					ilength -= n;
-				else
+				} else {
 					throw new EOFException();
+				}
 				out.write(buffer, 0, n);
 			} while (ilength > 0);
 

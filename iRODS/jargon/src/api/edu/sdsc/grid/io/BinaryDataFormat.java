@@ -321,10 +321,11 @@ public final class BinaryDataFormat extends Object {
 	 * @throws NullPointerException
 	 *             if the given format is a null
 	 */
-	public BinaryDataFormat(BinaryDataFormat format)
+	public BinaryDataFormat(final BinaryDataFormat format)
 			throws NullPointerException {
-		if (format == null)
+		if (format == null) {
 			throw new NullPointerException();
+		}
 
 		// Copy the given attributes to be the current values
 		isMBF = format.isMBF;
@@ -366,23 +367,31 @@ public final class BinaryDataFormat extends Object {
 	 * 
 	 * @return true if the objects are equal; false otherwise
 	 */
-	public final boolean equals(BinaryDataFormat bdf) {
-		if (isMBF != bdf.isMBF)
+	public final boolean equals(final BinaryDataFormat bdf) {
+		if (isMBF != bdf.isMBF) {
 			return false;
-		if (shortSize != bdf.shortSize)
+		}
+		if (shortSize != bdf.shortSize) {
 			return false;
-		if (intSize != bdf.intSize)
+		}
+		if (intSize != bdf.intSize) {
 			return false;
-		if (longSize != bdf.longSize)
+		}
+		if (longSize != bdf.longSize) {
 			return false;
-		if (longLongSize != bdf.longLongSize)
+		}
+		if (longLongSize != bdf.longLongSize) {
 			return false;
-		if (floatSize != bdf.floatSize)
+		}
+		if (floatSize != bdf.floatSize) {
 			return false;
-		if (doubleSize != bdf.doubleSize)
+		}
+		if (doubleSize != bdf.doubleSize) {
 			return false;
-		if (longDoubleSize != bdf.longDoubleSize)
+		}
+		if (longDoubleSize != bdf.longDoubleSize) {
 			return false;
+		}
 		return true;
 	}
 
@@ -395,9 +404,10 @@ public final class BinaryDataFormat extends Object {
 	 * @return true if the objects are equal; false otherwise
 	 */
 	@Override
-	public final boolean equals(Object obj) {
-		if (super.equals(obj) == false)
+	public final boolean equals(final Object obj) {
+		if (super.equals(obj) == false) {
 			return false;
+		}
 		BinaryDataFormat bdf = (BinaryDataFormat) obj;
 		return equals(bdf);
 	}
@@ -473,9 +483,11 @@ public final class BinaryDataFormat extends Object {
 	 * @throws IllegalArgumentException
 	 *             if nBytes is <= 0
 	 */
-	public final void setShortSize(int nBytes) throws IllegalArgumentException {
-		if (nBytes <= 0)
+	public final void setShortSize(final int nBytes)
+			throws IllegalArgumentException {
+		if (nBytes <= 0) {
 			throw new IllegalArgumentException();
+		}
 		shortSize = (byte) nBytes;
 		sameShortSize = (nBytes == Host.getStorageSize(Host.SHORT));
 	}
@@ -489,9 +501,11 @@ public final class BinaryDataFormat extends Object {
 	 * @throws IllegalArgumentException
 	 *             if nBytes is <= 0
 	 */
-	public final void setIntSize(int nBytes) throws IllegalArgumentException {
-		if (nBytes <= 0)
+	public final void setIntSize(final int nBytes)
+			throws IllegalArgumentException {
+		if (nBytes <= 0) {
 			throw new IllegalArgumentException();
+		}
 		intSize = (byte) nBytes;
 		sameIntSize = (nBytes == Host.getStorageSize(Host.INT));
 	}
@@ -505,9 +519,11 @@ public final class BinaryDataFormat extends Object {
 	 * @throws IllegalArgumentException
 	 *             if nBytes is <= 0
 	 */
-	public final void setLongSize(int nBytes) throws IllegalArgumentException {
-		if (nBytes <= 0)
+	public final void setLongSize(final int nBytes)
+			throws IllegalArgumentException {
+		if (nBytes <= 0) {
 			throw new IllegalArgumentException();
+		}
 		longSize = (byte) nBytes;
 		sameLongSize = (nBytes == Host.getStorageSize(Host.LONG));
 	}
@@ -526,10 +542,11 @@ public final class BinaryDataFormat extends Object {
 	 * @throws IllegalArgumentException
 	 *             if nBytes is <= 0
 	 */
-	public final void setLongLongSize(int nBytes)
+	public final void setLongLongSize(final int nBytes)
 			throws IllegalArgumentException {
-		if (nBytes <= 0)
+		if (nBytes <= 0) {
 			throw new IllegalArgumentException();
+		}
 		longLongSize = (byte) nBytes;
 		sameLongLongSize = (nBytes == Host.getStorageSize(Host.LONGLONG));
 	}
@@ -547,11 +564,14 @@ public final class BinaryDataFormat extends Object {
 	 * @throws IllegalArgumentException
 	 *             if nBytes is <= 0 or not 4, 8, or 16
 	 */
-	public final void setFloatSize(int nBytes) throws IllegalArgumentException {
-		if (nBytes <= 0)
+	public final void setFloatSize(final int nBytes)
+			throws IllegalArgumentException {
+		if (nBytes <= 0) {
 			throw new IllegalArgumentException();
-		if (nBytes != 4 && nBytes != 8 && nBytes != 16)
+		}
+		if (nBytes != 4 && nBytes != 8 && nBytes != 16) {
 			throw new IllegalArgumentException();
+		}
 		floatSize = (byte) nBytes;
 		sameFloatSize = (nBytes == Host.getStorageSize(Host.FLOAT));
 	}
@@ -569,11 +589,14 @@ public final class BinaryDataFormat extends Object {
 	 * @throws IllegalArgumentException
 	 *             if nBytes is <= 0 or not 4, 8, or 16
 	 */
-	public final void setDoubleSize(int nBytes) throws IllegalArgumentException {
-		if (nBytes <= 0)
+	public final void setDoubleSize(final int nBytes)
+			throws IllegalArgumentException {
+		if (nBytes <= 0) {
 			throw new IllegalArgumentException();
-		if (nBytes != 4 && nBytes != 8 && nBytes != 16)
+		}
+		if (nBytes != 4 && nBytes != 8 && nBytes != 16) {
 			throw new IllegalArgumentException();
+		}
 		doubleSize = (byte) nBytes;
 		sameDoubleSize = (nBytes == Host.getStorageSize(Host.DOUBLE));
 	}
@@ -596,12 +619,14 @@ public final class BinaryDataFormat extends Object {
 	 * @throws IllegalArgumentException
 	 *             if nBytes is <= 0 or not 4, 8, or 16
 	 */
-	public final void setLongDoubleSize(int nBytes)
+	public final void setLongDoubleSize(final int nBytes)
 			throws IllegalArgumentException {
-		if (nBytes <= 0)
+		if (nBytes <= 0) {
 			throw new IllegalArgumentException();
-		if (nBytes != 4 && nBytes != 8 && nBytes != 16)
+		}
+		if (nBytes != 4 && nBytes != 8 && nBytes != 16) {
 			throw new IllegalArgumentException();
+		}
 		longDoubleSize = (byte) nBytes;
 		sameLongDoubleSize = (nBytes == Host.getStorageSize(Host.LONGDOUBLE));
 	}
@@ -719,11 +744,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final short shortValue(byte[] bytes) {
+	public final short shortValue(final byte[] bytes) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, shortSize);
+			}
 			return Host.castToShort(bytes);
 		}
 
@@ -731,16 +757,20 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = shortSize;
 		short value = 0;
 		if (isMBF) {
-			if ((bytes[0] & (byte) 0x80) > 0)
+			if ((bytes[0] & (byte) 0x80) > 0) {
 				value = ~0; // Pad with 1's for negative
-			for (int i = 0; i < nBytes; i++)
+			}
+			for (int i = 0; i < nBytes; i++) {
 				value = (short) ((value << 8) | ((bytes[i]) & 0x000000FF));
+			}
 			return value;
 		}
-		if ((bytes[nBytes - 1] & (byte) 0x80) > 0)
+		if ((bytes[nBytes - 1] & (byte) 0x80) > 0) {
 			value = ~0; // Pad with 1's for negative
-		for (int i = nBytes - 1; i >= 0; i--)
+		}
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (short) ((value << 8) | ((bytes[i]) & 0x000000FF));
+		}
 		return value;
 	}
 
@@ -769,11 +799,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value (as an int)
 	 */
-	public final int unsignedShortValue(byte[] bytes) {
+	public final int unsignedShortValue(final byte[] bytes) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, shortSize);
+			}
 			return Host.castToShort(bytes);
 		}
 
@@ -781,13 +812,15 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = shortSize;
 		int value = 0;
 		if (isMBF) {
-			for (int i = 0; i < nBytes; i++)
+			for (int i = 0; i < nBytes; i++) {
 				value = (value << 8) | ((bytes[i]) & 0x000000FF);
+			}
 			value &= ~(~0 << Host.getSignificantBits(Host.SHORT));
 			return value;
 		}
-		for (int i = nBytes - 1; i >= 0; i--)
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (value << 8) | ((bytes[i]) & 0x000000FF);
+		}
 		value &= ~(~0 << Host.getSignificantBits(Host.SHORT));
 		return value;
 	}
@@ -818,11 +851,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final int intValue(byte[] bytes) {
+	public final int intValue(final byte[] bytes) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, intSize);
+			}
 			return Host.castToInt(bytes);
 		}
 
@@ -830,16 +864,20 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = intSize;
 		int value = 0;
 		if (isMBF) {
-			if ((bytes[0] & (byte) 0x80) > 0)
+			if ((bytes[0] & (byte) 0x80) > 0) {
 				value = ~0; // Pad with 1's for negative
-			for (int i = 0; i < nBytes; i++)
+			}
+			for (int i = 0; i < nBytes; i++) {
 				value = ((value << 8) | ((bytes[i]) & 0x000000FF));
+			}
 			return value;
 		}
-		if ((bytes[nBytes - 1] & (byte) 0x80) > 0)
+		if ((bytes[nBytes - 1] & (byte) 0x80) > 0) {
 			value = ~0; // Pad with 1's for negative
-		for (int i = nBytes - 1; i >= 0; i--)
+		}
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = ((value << 8) | ((bytes[i]) & 0x000000FF));
+		}
 		return value;
 	}
 
@@ -868,11 +906,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value (as a long)
 	 */
-	public final long unsignedIntValue(byte[] bytes) {
+	public final long unsignedIntValue(final byte[] bytes) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, intSize);
+			}
 			return Host.castToInt(bytes);
 		}
 
@@ -880,13 +919,15 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = intSize;
 		long value = 0L;
 		if (isMBF) {
-			for (int i = 0; i < nBytes; i++)
+			for (int i = 0; i < nBytes; i++) {
 				value = (value << 8) | (((long) bytes[i]) & (long) 0x000000FF);
+			}
 			value &= ~(~(long) 0 << Host.getSignificantBits(Host.INT));
 			return value;
 		}
-		for (int i = nBytes - 1; i >= 0; i--)
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (value << 8) | (((long) bytes[i]) & (long) 0x000000FF);
+		}
 		value &= ~(~(long) 0 << Host.getSignificantBits(Host.INT));
 		return value;
 	}
@@ -917,11 +958,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final long longValue(byte[] bytes) {
+	public final long longValue(final byte[] bytes) {
 		if (sameLongSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longSize);
+			}
 			return Host.castToLong(bytes);
 		}
 
@@ -929,16 +971,20 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longSize;
 		long value = 0L;
 		if (isMBF) {
-			if ((bytes[0] & (byte) 0x80) > 0)
+			if ((bytes[0] & (byte) 0x80) > 0) {
 				value = ~0; // Pad with 1's for negative
-			for (int i = 0; i < nBytes; i++)
+			}
+			for (int i = 0; i < nBytes; i++) {
 				value = ((value << 8) | (((long) bytes[i]) & 0x000000FF));
+			}
 			return value;
 		}
-		if ((bytes[nBytes - 1] & (byte) 0x80) > 0)
+		if ((bytes[nBytes - 1] & (byte) 0x80) > 0) {
 			value = ~0; // Pad with 1's for negative
-		for (int i = nBytes - 1; i >= 0; i--)
+		}
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = ((value << 8) | (((long) bytes[i]) & 0x000000FF));
+		}
 		return value;
 	}
 
@@ -966,11 +1012,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final long unsignedLongValue(byte[] bytes) {
+	public final long unsignedLongValue(final byte[] bytes) {
 		if (sameLongSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longSize);
+			}
 			return Host.castToLong(bytes);
 		}
 
@@ -978,12 +1025,14 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longSize;
 		long value = 0L;
 		if (isMBF) {
-			for (int i = 0; i < nBytes; i++)
+			for (int i = 0; i < nBytes; i++) {
 				value = (value << 8) | (((long) bytes[i]) & (long) 0x000000FF);
+			}
 			return value;
 		}
-		for (int i = nBytes - 1; i >= 0; i--)
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (value << 8) | (((long) bytes[i]) & (long) 0x000000FF);
+		}
 		return value;
 	}
 
@@ -1018,11 +1067,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final long longLongValue(byte[] bytes) {
+	public final long longLongValue(final byte[] bytes) {
 		if (sameLongLongSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longLongSize);
+			}
 			return Host.castToLongLong(bytes);
 		}
 
@@ -1030,16 +1080,20 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longLongSize;
 		long value = 0L;
 		if (isMBF) {
-			if ((bytes[0] & (byte) 0x80) > 0)
+			if ((bytes[0] & (byte) 0x80) > 0) {
 				value = ~0; // Pad with 1's for negative
-			for (int i = 0; i < nBytes; i++)
+			}
+			for (int i = 0; i < nBytes; i++) {
 				value = ((value << 8) | (((long) bytes[i]) & 0x000000FF));
+			}
 			return value;
 		}
-		if ((bytes[nBytes - 1] & (byte) 0x80) > 0)
+		if ((bytes[nBytes - 1] & (byte) 0x80) > 0) {
 			value = ~0; // Pad with 1's for negative
-		for (int i = nBytes - 1; i >= 0; i--)
+		}
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = ((value << 8) | (((long) bytes[i]) & 0x000000FF));
+		}
 		return value;
 	}
 
@@ -1069,11 +1123,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final long unsignedLongLongValue(byte[] bytes) {
+	public final long unsignedLongLongValue(final byte[] bytes) {
 		if (sameLongLongSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longLongSize);
+			}
 			return Host.castToLongLong(bytes);
 		}
 
@@ -1081,12 +1136,14 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longLongSize;
 		long value = 0L;
 		if (isMBF) {
-			for (int i = 0; i < nBytes; i++)
+			for (int i = 0; i < nBytes; i++) {
 				value = (value << 8) | (((long) bytes[i]) & (long) 0x000000FF);
+			}
 			return value;
 		}
-		for (int i = nBytes - 1; i >= 0; i--)
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (value << 8) | (((long) bytes[i]) & (long) 0x000000FF);
+		}
 		return value;
 	}
 
@@ -1111,11 +1168,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final float floatValue(byte[] bytes) {
+	public final float floatValue(final byte[] bytes) {
 		if (sameFloatSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, floatSize);
+			}
 			return Host.castToFloat(bytes);
 		}
 
@@ -1123,14 +1181,16 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = floatSize;
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Swap and cast to double, then to float
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return (float) Host.castToDouble(bytes);
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Swap and cast to long double, then to float
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return (float) Host.castToLongDouble(bytes);
 		}
 
@@ -1160,11 +1220,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final double doubleValue(byte[] bytes) {
+	public final double doubleValue(final byte[] bytes) {
 		if (sameDoubleSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, doubleSize);
+			}
 			return Host.castToDouble(bytes);
 		}
 
@@ -1172,14 +1233,16 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = doubleSize;
 		if (Host.getStorageSize(Host.FLOAT) == nBytes) {
 			// Swap and cast to float, then to double
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return Host.castToFloat(bytes);
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Swap and cast to long double, then to double
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return Host.castToLongDouble(bytes);
 		}
 
@@ -1214,11 +1277,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the host-format value
 	 */
-	public final double longDoubleValue(byte[] bytes) {
+	public final double longDoubleValue(final byte[] bytes) {
 		if (sameLongDoubleSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longDoubleSize);
+			}
 			return Host.castToLongDouble(bytes);
 		}
 
@@ -1226,14 +1290,16 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longDoubleSize;
 		if (Host.getStorageSize(Host.FLOAT) == nBytes) {
 			// Swap and cast to float, then to long double
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return Host.castToFloat(bytes);
 		}
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Swap and cast to double, then to long double
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return Host.castToDouble(bytes);
 		}
 
@@ -1273,11 +1339,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final short shortValue(byte[] bytes, int offset) {
+	public final short shortValue(final byte[] bytes, final int offset) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, shortSize);
+			}
 			return Host.castToShort(bytes, offset);
 		}
 
@@ -1285,16 +1352,20 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = shortSize;
 		short value = 0;
 		if (isMBF) {
-			if ((bytes[offset] & (byte) 0x80) > 0)
+			if ((bytes[offset] & (byte) 0x80) > 0) {
 				value = ~0; // Pad with 1's for negative
-			for (int i = 0; i < nBytes; i++)
+			}
+			for (int i = 0; i < nBytes; i++) {
 				value = (short) ((value << 8) | ((bytes[offset + i]) & 0x000000FF));
+			}
 			return value;
 		}
-		if ((bytes[offset + nBytes - 1] & (byte) 0x80) > 0)
+		if ((bytes[offset + nBytes - 1] & (byte) 0x80) > 0) {
 			value = ~0; // Pad with 1's for negative
-		for (int i = nBytes - 1; i >= 0; i--)
+		}
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (short) ((value << 8) | ((bytes[offset + i]) & 0x000000FF));
+		}
 		return value;
 	}
 
@@ -1325,11 +1396,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value (as an int)
 	 */
-	public final int unsignedShortValue(byte[] bytes, int offset) {
+	public final int unsignedShortValue(final byte[] bytes, final int offset) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, shortSize);
+			}
 			return Host.castToShort(bytes, offset);
 		}
 
@@ -1337,15 +1409,15 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = shortSize;
 		int value = 0;
 		if (isMBF) {
-			for (int i = 0; i < nBytes; i++)
-				value = (value << 8)
-						| ((bytes[offset + i]) & 0x000000FF);
+			for (int i = 0; i < nBytes; i++) {
+				value = (value << 8) | ((bytes[offset + i]) & 0x000000FF);
+			}
 			value &= ~(~0 << Host.getSignificantBits(Host.SHORT));
 			return value;
 		}
-		for (int i = nBytes - 1; i >= 0; i--)
-			value = (value << 8)
-					| ((bytes[offset + i]) & 0x000000FF);
+		for (int i = nBytes - 1; i >= 0; i--) {
+			value = (value << 8) | ((bytes[offset + i]) & 0x000000FF);
+		}
 		value &= ~(~0 << Host.getSignificantBits(Host.SHORT));
 		return value;
 	}
@@ -1378,11 +1450,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final int intValue(byte[] bytes, int offset) {
+	public final int intValue(final byte[] bytes, final int offset) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, intSize);
+			}
 			return Host.castToInt(bytes, offset);
 		}
 
@@ -1390,16 +1463,20 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = intSize;
 		int value = 0;
 		if (isMBF) {
-			if ((bytes[offset] & (byte) 0x80) > 0)
+			if ((bytes[offset] & (byte) 0x80) > 0) {
 				value = ~0; // Pad with 1's for negative
-			for (int i = 0; i < nBytes; i++)
+			}
+			for (int i = 0; i < nBytes; i++) {
 				value = ((value << 8) | ((bytes[offset + i]) & 0x000000FF));
+			}
 			return value;
 		}
-		if ((bytes[offset + nBytes - 1] & (byte) 0x80) > 0)
+		if ((bytes[offset + nBytes - 1] & (byte) 0x80) > 0) {
 			value = ~0; // Pad with 1's for negative
-		for (int i = nBytes - 1; i >= 0; i--)
+		}
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = ((value << 8) | ((bytes[offset + i]) & 0x000000FF));
+		}
 		return value;
 	}
 
@@ -1430,11 +1507,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value (as a long)
 	 */
-	public final long unsignedIntValue(byte[] bytes, int offset) {
+	public final long unsignedIntValue(final byte[] bytes, final int offset) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, intSize);
+			}
 			return Host.castToInt(bytes, offset);
 		}
 
@@ -1442,15 +1520,17 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = intSize;
 		long value = 0L;
 		if (isMBF) {
-			for (int i = 0; i < nBytes; i++)
+			for (int i = 0; i < nBytes; i++) {
 				value = (value << 8)
 						| (((long) bytes[offset + i]) & (long) 0x000000FF);
+			}
 			value &= ~(~(long) 0 << Host.getSignificantBits(Host.INT));
 			return value;
 		}
-		for (int i = nBytes - 1; i >= 0; i--)
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (value << 8)
 					| (((long) bytes[offset + i]) & (long) 0x000000FF);
+		}
 		value &= ~(~(long) 0 << Host.getSignificantBits(Host.INT));
 		return value;
 	}
@@ -1483,11 +1563,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final long longValue(byte[] bytes, int offset) {
+	public final long longValue(final byte[] bytes, final int offset) {
 		if (sameLongSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longSize);
+			}
 			return Host.castToLong(bytes, offset);
 		}
 
@@ -1495,16 +1576,20 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longSize;
 		long value = 0L;
 		if (isMBF) {
-			if ((bytes[offset] & (byte) 0x80) > 0)
+			if ((bytes[offset] & (byte) 0x80) > 0) {
 				value = ~0; // Pad with 1's for negative
-			for (int i = 0; i < nBytes; i++)
+			}
+			for (int i = 0; i < nBytes; i++) {
 				value = ((value << 8) | (((long) bytes[offset + i]) & 0x000000FF));
+			}
 			return value;
 		}
-		if ((bytes[offset + nBytes - 1] & (byte) 0x80) > 0)
+		if ((bytes[offset + nBytes - 1] & (byte) 0x80) > 0) {
 			value = ~0; // Pad with 1's for negative
-		for (int i = nBytes - 1; i >= 0; i--)
+		}
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = ((value << 8) | (((long) bytes[offset + i]) & 0x000000FF));
+		}
 		return value;
 	}
 
@@ -1534,11 +1619,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final long unsignedLongValue(byte[] bytes, int offset) {
+	public final long unsignedLongValue(final byte[] bytes, final int offset) {
 		if (sameLongSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longSize);
+			}
 			return Host.castToLong(bytes, offset);
 		}
 
@@ -1546,14 +1632,16 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longSize;
 		long value = 0L;
 		if (isMBF) {
-			for (int i = 0; i < nBytes; i++)
+			for (int i = 0; i < nBytes; i++) {
 				value = (value << 8)
 						| (((long) bytes[offset + i]) & (long) 0x000000FF);
+			}
 			return value;
 		}
-		for (int i = nBytes - 1; i >= 0; i--)
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (value << 8)
 					| (((long) bytes[offset + i]) & (long) 0x000000FF);
+		}
 		return value;
 	}
 
@@ -1590,11 +1678,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final long longLongValue(byte[] bytes, int offset) {
+	public final long longLongValue(final byte[] bytes, final int offset) {
 		if (sameLongLongSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longLongSize);
+			}
 			return Host.castToLongLong(bytes, offset);
 		}
 
@@ -1602,16 +1691,20 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longLongSize;
 		long value = 0L;
 		if (isMBF) {
-			if ((bytes[offset] & (byte) 0x80) > 0)
+			if ((bytes[offset] & (byte) 0x80) > 0) {
 				value = ~0; // Pad with 1's for negative
-			for (int i = 0; i < nBytes; i++)
+			}
+			for (int i = 0; i < nBytes; i++) {
 				value = ((value << 8) | (((long) bytes[offset + i]) & 0x000000FF));
+			}
 			return value;
 		}
-		if ((bytes[offset + nBytes - 1] & (byte) 0x80) > 0)
+		if ((bytes[offset + nBytes - 1] & (byte) 0x80) > 0) {
 			value = ~0; // Pad with 1's for negative
-		for (int i = nBytes - 1; i >= 0; i--)
+		}
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = ((value << 8) | (((long) bytes[offset + i]) & 0x000000FF));
+		}
 		return value;
 	}
 
@@ -1643,11 +1736,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final long unsignedLongLongValue(byte[] bytes, int offset) {
+	public final long unsignedLongLongValue(final byte[] bytes, final int offset) {
 		if (sameLongLongSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longLongSize);
+			}
 			return Host.castToLongLong(bytes, offset);
 		}
 
@@ -1655,14 +1749,16 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longLongSize;
 		long value = 0L;
 		if (isMBF) {
-			for (int i = 0; i < nBytes; i++)
+			for (int i = 0; i < nBytes; i++) {
 				value = (value << 8)
 						| (((long) bytes[offset + i]) & (long) 0x000000FF);
+			}
 			return value;
 		}
-		for (int i = nBytes - 1; i >= 0; i--)
+		for (int i = nBytes - 1; i >= 0; i--) {
 			value = (value << 8)
 					| (((long) bytes[offset + i]) & (long) 0x000000FF);
+		}
 		return value;
 	}
 
@@ -1689,11 +1785,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final float floatValue(byte[] bytes, int offset) {
+	public final float floatValue(final byte[] bytes, final int offset) {
 		if (sameFloatSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, floatSize);
+			}
 			return Host.castToFloat(bytes, offset);
 		}
 
@@ -1701,14 +1798,16 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = floatSize;
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Swap and cast to double, then to float
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return (float) Host.castToDouble(bytes, offset);
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Swap and cast to long double, then to float
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return (float) Host.castToLongDouble(bytes, offset);
 		}
 
@@ -1740,11 +1839,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final double doubleValue(byte[] bytes, int offset) {
+	public final double doubleValue(final byte[] bytes, final int offset) {
 		if (sameDoubleSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, doubleSize);
+			}
 			return Host.castToDouble(bytes, offset);
 		}
 
@@ -1752,14 +1852,16 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = doubleSize;
 		if (Host.getStorageSize(Host.FLOAT) == nBytes) {
 			// Swap and cast to float, then to double
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return Host.castToFloat(bytes, offset);
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Swap and cast to long double, then to double
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return Host.castToLongDouble(bytes, offset);
 		}
 
@@ -1796,11 +1898,12 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the host-format value
 	 */
-	public final double longDoubleValue(byte[] bytes, int offset) {
+	public final double longDoubleValue(final byte[] bytes, final int offset) {
 		if (sameLongDoubleSize) {
 			// Same number of bytes as this host - swap and cast
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longDoubleSize);
+			}
 			return Host.castToLongDouble(bytes, offset);
 		}
 
@@ -1808,14 +1911,16 @@ public final class BinaryDataFormat extends Object {
 		int nBytes = longDoubleSize;
 		if (Host.getStorageSize(Host.FLOAT) == nBytes) {
 			// Swap and cast to float, then to long double
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return Host.castToFloat(bytes, offset);
 		}
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Swap and cast to double, then to long double
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return Host.castToDouble(bytes, offset);
 		}
 
@@ -1859,7 +1964,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void shortValues(byte[] bytes, short[] values, int nValues) {
+	public final void shortValues(final byte[] bytes, final short[] values,
+			final int nValues) {
 		int nBytes = shortSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -1902,8 +2008,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void unsignedShortValues(byte[] bytes, short[] values,
-			int nValues) {
+	public final void unsignedShortValues(final byte[] bytes,
+			final short[] values, final int nValues) {
 		int nBytes = shortSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -1946,7 +2052,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void intValues(byte[] bytes, int[] values, int nValues) {
+	public final void intValues(final byte[] bytes, final int[] values,
+			final int nValues) {
 		int nBytes = intSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -1992,7 +2099,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void unsignedIntValues(byte[] bytes, int[] values, int nValues) {
+	public final void unsignedIntValues(final byte[] bytes, final int[] values,
+			final int nValues) {
 		int nBytes = intSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -2035,7 +2143,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void longValues(byte[] bytes, long[] values, int nValues) {
+	public final void longValues(final byte[] bytes, final long[] values,
+			final int nValues) {
 		int nBytes = longSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -2078,8 +2187,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void unsignedLongValues(byte[] bytes, long[] values,
-			int nValues) {
+	public final void unsignedLongValues(final byte[] bytes,
+			final long[] values, final int nValues) {
 		int nBytes = longSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -2127,7 +2236,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void longLongValues(byte[] bytes, long[] values, int nValues) {
+	public final void longLongValues(final byte[] bytes, final long[] values,
+			final int nValues) {
 		int nBytes = longLongSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -2175,8 +2285,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void unsignedLongLongValues(byte[] bytes, long[] values,
-			int nValues) {
+	public final void unsignedLongLongValues(final byte[] bytes,
+			final long[] values, final int nValues) {
 		int nBytes = longLongSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -2214,7 +2324,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void floatValues(byte[] bytes, float[] values, int nValues) {
+	public final void floatValues(final byte[] bytes, final float[] values,
+			final int nValues) {
 		int nBytes = floatSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -2252,7 +2363,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void doubleValues(byte[] bytes, double[] values, int nValues) {
+	public final void doubleValues(final byte[] bytes, final double[] values,
+			final int nValues) {
 		int nBytes = doubleSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -2293,8 +2405,8 @@ public final class BinaryDataFormat extends Object {
 	 * @param nValues
 	 *            the number of values to return
 	 */
-	public final void longDoubleValues(byte[] bytes, double[] values,
-			int nValues) {
+	public final void longDoubleValues(final byte[] bytes,
+			final double[] values, final int nValues) {
 		int nBytes = longDoubleSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -2335,12 +2447,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeShort(short value, byte[] bytes) {
+	public final int encodeShort(short value, final byte[] bytes) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyShort(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, shortSize);
+			}
 			return shortSize;
 		}
 
@@ -2385,12 +2498,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeShort(int value, byte[] bytes) {
+	public final int encodeShort(final int value, final byte[] bytes) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyShort(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, shortSize);
+			}
 			return shortSize;
 		}
 
@@ -2435,12 +2549,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedShort(short value, byte[] bytes) {
+	public final int encodeUnsignedShort(short value, final byte[] bytes) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedShort(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, shortSize);
+			}
 			return shortSize;
 		}
 
@@ -2484,12 +2599,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedShort(int value, byte[] bytes) {
+	public final int encodeUnsignedShort(final int value, final byte[] bytes) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedShort(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, shortSize);
+			}
 			return shortSize;
 		}
 
@@ -2535,12 +2651,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeInt(int value, byte[] bytes) {
+	public final int encodeInt(int value, final byte[] bytes) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyInt(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, intSize);
+			}
 			return intSize;
 		}
 
@@ -2585,12 +2702,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedInt(int value, byte[] bytes) {
+	public final int encodeUnsignedInt(int value, final byte[] bytes) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedInt(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, intSize);
+			}
 			return intSize;
 		}
 
@@ -2635,12 +2753,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedInt(long value, byte[] bytes) {
+	public final int encodeUnsignedInt(long value, final byte[] bytes) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedInt((int) value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, intSize);
+			}
 			return intSize;
 		}
 
@@ -2685,12 +2804,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLong(long value, byte[] bytes) {
+	public final int encodeLong(long value, final byte[] bytes) {
 		if (sameLongSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyLong(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longSize);
+			}
 			return longSize;
 		}
 
@@ -2734,12 +2854,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedLong(long value, byte[] bytes) {
+	public final int encodeUnsignedLong(long value, final byte[] bytes) {
 		if (sameLongSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedLong(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longSize);
+			}
 			return longSize;
 		}
 
@@ -2789,12 +2910,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLongLong(long value, byte[] bytes) {
+	public final int encodeLongLong(long value, final byte[] bytes) {
 		if (sameLongLongSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyLongLong(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longLongSize);
+			}
 			return longLongSize;
 		}
 
@@ -2843,12 +2965,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedLongLong(long value, byte[] bytes) {
+	public final int encodeUnsignedLongLong(long value, final byte[] bytes) {
 		if (sameLongLongSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedLongLong(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longLongSize);
+			}
 			return longLongSize;
 		}
 
@@ -2892,12 +3015,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeFloat(float value, byte[] bytes) {
+	public final int encodeFloat(final float value, final byte[] bytes) {
 		if (sameFloatSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyFloat(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, floatSize);
+			}
 			return floatSize;
 		}
 
@@ -2906,15 +3030,17 @@ public final class BinaryDataFormat extends Object {
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Cast to double, then copy and swap
 			Host.copyDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Cast to long double, then copy and swap
 			Host.copyLongDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 
@@ -2947,12 +3073,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeFloat(double value, byte[] bytes) {
+	public final int encodeFloat(final double value, final byte[] bytes) {
 		if (sameFloatSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyFloat((float) value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, floatSize);
+			}
 			return floatSize;
 		}
 
@@ -2961,15 +3088,17 @@ public final class BinaryDataFormat extends Object {
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Cast to double, then copy and swap
 			Host.copyDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Cast to long double, then copy and swap
 			Host.copyLongDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 
@@ -3002,12 +3131,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeDouble(double value, byte[] bytes) {
+	public final int encodeDouble(final double value, final byte[] bytes) {
 		if (sameDoubleSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, doubleSize);
+			}
 			return doubleSize;
 		}
 
@@ -3016,15 +3146,17 @@ public final class BinaryDataFormat extends Object {
 		if (Host.getStorageSize(Host.FLOAT) == nBytes) {
 			// Cast to float, then copy and swap
 			Host.copyFloat((float) value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Cast to long double, then copy and swap
 			Host.copyLongDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 
@@ -3062,12 +3194,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLongDouble(double value, byte[] bytes) {
+	public final int encodeLongDouble(final double value, final byte[] bytes) {
 		if (sameLongDoubleSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyLongDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, longDoubleSize);
+			}
 			return longDoubleSize;
 		}
 
@@ -3076,15 +3209,17 @@ public final class BinaryDataFormat extends Object {
 		if (Host.getStorageSize(Host.FLOAT) == nBytes) {
 			// Cast to float, then copy and swap
 			Host.copyFloat((float) value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Cast to double, then copy and swap
 			Host.copyDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 
@@ -3123,12 +3258,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeShort(short value, byte[] bytes, int offset) {
+	public final int encodeShort(short value, final byte[] bytes,
+			final int offset) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyShort(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, shortSize);
+			}
 			return shortSize;
 		}
 
@@ -3175,12 +3312,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeShort(int value, byte[] bytes, int offset) {
+	public final int encodeShort(final int value, final byte[] bytes,
+			final int offset) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyShort((short) value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, shortSize);
+			}
 			return shortSize;
 		}
 
@@ -3227,12 +3366,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedShort(short value, byte[] bytes, int offset) {
+	public final int encodeUnsignedShort(short value, final byte[] bytes,
+			final int offset) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedShort(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, shortSize);
+			}
 			return shortSize;
 		}
 
@@ -3278,12 +3419,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedShort(int value, byte[] bytes, int offset) {
+	public final int encodeUnsignedShort(final int value, final byte[] bytes,
+			final int offset) {
 		if (sameShortSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedShort((short) value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, shortSize);
+			}
 			return shortSize;
 		}
 
@@ -3331,12 +3474,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeInt(int value, byte[] bytes, int offset) {
+	public final int encodeInt(int value, final byte[] bytes, final int offset) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyInt(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, intSize);
+			}
 			return intSize;
 		}
 
@@ -3383,12 +3527,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedInt(int value, byte[] bytes, int offset) {
+	public final int encodeUnsignedInt(int value, final byte[] bytes,
+			final int offset) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedInt(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, intSize);
+			}
 			return intSize;
 		}
 
@@ -3435,12 +3581,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedInt(long value, byte[] bytes, int offset) {
+	public final int encodeUnsignedInt(final long value, final byte[] bytes,
+			final int offset) {
 		if (sameIntSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedInt(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, intSize);
+			}
 			return intSize;
 		}
 
@@ -3488,12 +3636,13 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLong(long value, byte[] bytes, int offset) {
+	public final int encodeLong(long value, final byte[] bytes, final int offset) {
 		if (sameLongSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyLong(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longSize);
+			}
 			return longSize;
 		}
 
@@ -3539,12 +3688,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedLong(long value, byte[] bytes, int offset) {
+	public final int encodeUnsignedLong(long value, final byte[] bytes,
+			final int offset) {
 		if (sameLongSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedLong(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longSize);
+			}
 			return longSize;
 		}
 
@@ -3596,12 +3747,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLongLong(long value, byte[] bytes, int offset) {
+	public final int encodeLongLong(long value, final byte[] bytes,
+			final int offset) {
 		if (sameLongLongSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyLongLong(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longLongSize);
+			}
 			return longLongSize;
 		}
 
@@ -3652,12 +3805,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedLongLong(long value, byte[] bytes, int offset) {
+	public final int encodeUnsignedLongLong(long value, final byte[] bytes,
+			final int offset) {
 		if (sameLongLongSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyUnsignedLongLong(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longLongSize);
+			}
 			return longLongSize;
 		}
 
@@ -3703,12 +3858,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeFloat(float value, byte[] bytes, int offset) {
+	public final int encodeFloat(final float value, final byte[] bytes,
+			final int offset) {
 		if (sameFloatSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyFloat(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, floatSize);
+			}
 			return floatSize;
 		}
 
@@ -3717,15 +3874,17 @@ public final class BinaryDataFormat extends Object {
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Cast to double, then copy and swap
 			Host.copyDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Cast to long double, then copy and swap
 			Host.copyLongDouble(value, bytes);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, nBytes);
+			}
 			return nBytes;
 		}
 
@@ -3760,12 +3919,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeFloat(double value, byte[] bytes, int offset) {
+	public final int encodeFloat(final double value, final byte[] bytes,
+			final int offset) {
 		if (sameFloatSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyFloat((float) value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, floatSize);
+			}
 			return floatSize;
 		}
 
@@ -3774,15 +3935,17 @@ public final class BinaryDataFormat extends Object {
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Cast to double, then copy and swap
 			Host.copyDouble(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return nBytes;
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Cast to long double, then copy and swap
 			Host.copyLongDouble(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return nBytes;
 		}
 
@@ -3817,12 +3980,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeDouble(double value, byte[] bytes, int offset) {
+	public final int encodeDouble(final double value, final byte[] bytes,
+			final int offset) {
 		if (sameDoubleSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyDouble(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, doubleSize);
+			}
 			return doubleSize;
 		}
 
@@ -3831,15 +3996,17 @@ public final class BinaryDataFormat extends Object {
 		if (Host.getStorageSize(Host.FLOAT) == nBytes) {
 			// Cast to float, then copy and swap
 			Host.copyFloat((float) value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return nBytes;
 		}
 		if (Host.getStorageSize(Host.LONGDOUBLE) == nBytes) {
 			// Cast to long double, then copy and swap
 			Host.copyLongDouble(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return nBytes;
 		}
 
@@ -3879,12 +4046,14 @@ public final class BinaryDataFormat extends Object {
 	 *            the starting offset into the byte array
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLongDouble(double value, byte[] bytes, int offset) {
+	public final int encodeLongDouble(final double value, final byte[] bytes,
+			final int offset) {
 		if (sameLongDoubleSize) {
 			// Same number of bytes as this host - cast and swap
 			Host.copyLongDouble(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, longDoubleSize);
+			}
 			return longDoubleSize;
 		}
 
@@ -3893,15 +4062,17 @@ public final class BinaryDataFormat extends Object {
 		if (Host.getStorageSize(Host.FLOAT) == nBytes) {
 			// Cast to float, then copy and swap
 			Host.copyFloat((float) value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return nBytes;
 		}
 		if (Host.getStorageSize(Host.DOUBLE) == nBytes) {
 			// Cast to double, then copy and swap
 			Host.copyDouble(value, bytes, offset);
-			if (!sameByteOrder)
+			if (!sameByteOrder) {
 				Host.swap(bytes, offset, nBytes);
+			}
 			return nBytes;
 		}
 
@@ -3938,7 +4109,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeShorts(short[] values, int nValues, byte[] bytes) {
+	public final int encodeShorts(final short[] values, final int nValues,
+			final byte[] bytes) {
 		int nBytes = shortSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -3977,8 +4149,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedShorts(short[] values, int nValues,
-			byte[] bytes) {
+	public final int encodeUnsignedShorts(final short[] values,
+			final int nValues, final byte[] bytes) {
 		int nBytes = shortSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4015,7 +4187,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeInts(int[] values, int nValues, byte[] bytes) {
+	public final int encodeInts(final int[] values, final int nValues,
+			final byte[] bytes) {
 		int nBytes = intSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4053,7 +4226,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedInts(int[] values, int nValues, byte[] bytes) {
+	public final int encodeUnsignedInts(final int[] values, final int nValues,
+			final byte[] bytes) {
 		int nBytes = intSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4090,7 +4264,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLongs(long[] values, int nValues, byte[] bytes) {
+	public final int encodeLongs(final long[] values, final int nValues,
+			final byte[] bytes) {
 		int nBytes = longSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4132,8 +4307,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedLongs(long[] values, int nValues,
-			byte[] bytes) {
+	public final int encodeUnsignedLongs(final long[] values,
+			final int nValues, final byte[] bytes) {
 		int nBytes = longSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4175,7 +4350,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLongLongs(long[] values, int nValues, byte[] bytes) {
+	public final int encodeLongLongs(final long[] values, final int nValues,
+			final byte[] bytes) {
 		int nBytes = longLongSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4219,8 +4395,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeUnsignedLongLongs(long[] values, int nValues,
-			byte[] bytes) {
+	public final int encodeUnsignedLongLongs(final long[] values,
+			final int nValues, final byte[] bytes) {
 		int nBytes = longLongSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4257,7 +4433,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeFloats(float[] values, int nValues, byte[] bytes) {
+	public final int encodeFloats(final float[] values, final int nValues,
+			final byte[] bytes) {
 		int nBytes = floatSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4294,7 +4471,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeDoubles(double[] values, int nValues, byte[] bytes) {
+	public final int encodeDoubles(final double[] values, final int nValues,
+			final byte[] bytes) {
 		int nBytes = doubleSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {
@@ -4336,8 +4514,8 @@ public final class BinaryDataFormat extends Object {
 	 *            the byte array supplying the data
 	 * @return the number of bytes set during encoding
 	 */
-	public final int encodeLongDoubles(double[] values, int nValues,
-			byte[] bytes) {
+	public final int encodeLongDoubles(final double[] values,
+			final int nValues, final byte[] bytes) {
 		int nBytes = longDoubleSize;
 		int offset = 0;
 		for (int i = nValues - 1; i >= 0; i--) {

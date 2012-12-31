@@ -43,13 +43,17 @@
 //
 package edu.sdsc.grid.io.local;
 
-import edu.sdsc.grid.io.*;
-
 import java.io.IOException;
-import java.io.FileNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.sdsc.grid.io.GeneralAccount;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileSystem;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
 
 /**
  * The LocalFileSystem class is the class for connection implementations to the
@@ -72,7 +76,7 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 * Opens a socket connection to read from and write to. Loads the default
 	 * Local user account information from their home directory. The account
 	 * information stored in this object cannot be changed once constructed.
-	 *<P>
+	 * <P>
 	 * This constructor is provided for convenience however, it is recommended
 	 * that all necessary data be sent to the constructor and not left to the
 	 * defaults.
@@ -90,7 +94,7 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 * Opens a socket connection to read from and write to. Opens the account
 	 * held in the LocalAccount object. The account information stored in this
 	 * object cannot be changed once constructed.
-	 *<P>
+	 * <P>
 	 * This constructor is provided for convenience however, it is recommended
 	 * that all necessary data be sent to the constructor and not left to the
 	 * defaults.
@@ -102,11 +106,12 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 * @throws IOException
 	 *             if an IOException occurs.
 	 */
-	public LocalFileSystem(LocalAccount localAccount) {
-		if (localAccount == null)
+	public LocalFileSystem(final LocalAccount localAccount) {
+		if (localAccount == null) {
 			account = new LocalAccount();
-		else
+		} else {
 			account = (LocalAccount) localAccount.clone();
+		}
 	}
 
 	// ----------------------------------------------------------------------
@@ -118,10 +123,11 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 */
 	@Override
 	protected void setAccount(GeneralAccount account) {
-		if (account == null)
+		if (account == null) {
 			account = new LocalAccount();
-		else
+		} else {
 			this.account = (LocalAccount) account.clone();
+		}
 	}
 
 	/**
@@ -147,8 +153,8 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 * returned in the result object.
 	 */
 	@Override
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -156,22 +162,22 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 * Queries the file system to find all files that match a set of conditions.
 	 * For all those that match, the fields indicated in the select array are
 	 * returned in the result object.
-	 *<P>
+	 * <P>
 	 * While condition and select array objects have all been checked for
 	 * self-consistency during their construction, there are additional problems
 	 * that must be detected at query time:
-	 *<P>
+	 * <P>
 	 * <ul>
 	 * <li>Redundant selection fields
 	 * <li>Redundant query fields
 	 * <li>Fields incompatible with a file system
 	 * </ul>
-	 *<P>
+	 * <P>
 	 * For instance, it is possible to build a condition object appropriate for
 	 * the Local system, then pass that object in a local file system query.
 	 * That will find that the condition is incompatible and generate a mismatch
 	 * exception.
-	 *<P>
+	 * <P>
 	 * Query is implemented by the file-system-specific classes, like that for
 	 * the SRB, FTP, etc. Those classes must re-map condition and select field
 	 * names and operator codes to those required by a particular file system
@@ -191,8 +197,9 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 *            conditions, like SELECT in SQL.
 	 */
 	@Override
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int recordsWanted) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int recordsWanted)
+			throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -209,10 +216,11 @@ public class LocalFileSystem extends GeneralFileSystem {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			LocalFileSystem temp = (LocalFileSystem) obj;
 

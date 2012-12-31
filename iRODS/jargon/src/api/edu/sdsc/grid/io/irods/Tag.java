@@ -58,47 +58,47 @@ public class Tag implements Cloneable {
 	 */
 	String value;
 
-	public Tag(String tagName) {
+	public Tag(final String tagName) {
 		this.tagName = tagName;
 	}
 
-	public Tag(String tagName, int value) {
-		this.tagName = tagName;
-		this.value = "" + value;
-	}
-
-	public Tag(String tagName, long value) {
+	public Tag(final String tagName, final int value) {
 		this.tagName = tagName;
 		this.value = "" + value;
 	}
 
-	public Tag(String tagName, String value) {
+	public Tag(final String tagName, final long value) {
+		this.tagName = tagName;
+		this.value = "" + value;
+	}
+
+	public Tag(final String tagName, final String value) {
 		this.tagName = tagName;
 		this.value = value;
 	}
 
-	public Tag(String tagName, Tag tag) {
+	public Tag(final String tagName, final Tag tag) {
 		this(tagName, new Tag[] { tag });
 	}
 
-	public Tag(String tagName, Tag[] tags) {
+	public Tag(final String tagName, final Tag[] tags) {
 		this.tagName = tagName;
 		this.tags = tags;
 	}
 
-	public void setTagName(String tagName) {
+	public void setTagName(final String tagName) {
 		this.tagName = tagName;
 	}
 
-	public void setValue(int value) {
+	public void setValue(final int value) {
 		this.value = "" + value;
 	}
 
-	public void setValue(long value) {
+	public void setValue(final long value) {
 		this.value = "" + value;
 	}
 
-	public void setValue(String value, boolean decode) {
+	public void setValue(String value, final boolean decode) {
 		if (value == null) {
 			this.value = null;
 			return;
@@ -115,10 +115,11 @@ public class Tag implements Cloneable {
 	}
 
 	public Object getValue() {
-		if (tags != null)
+		if (tags != null) {
 			return tags.clone();
-		else
+		} else {
 			return value;
+		}
 	}
 
 	public int getIntValue() {
@@ -141,15 +142,17 @@ public class Tag implements Cloneable {
 		return tags.length;
 	}
 
-	public Tag getTag(String tagName) {
-		if (tags == null)
+	public Tag getTag(final String tagName) {
+		if (tags == null) {
 			return null;
+		}
 
 		// see if tagName exists in first level
 		// if it isn't the toplevel, just leave it.
-		for (int i = 0; i < tags.length; i++) {
-			if (tags[i].getName().equals(tagName))
-				return tags[i];
+		for (Tag tag : tags) {
+			if (tag.getName().equals(tagName)) {
+				return tag;
+			}
 		}
 		return null;
 	}
@@ -161,9 +164,10 @@ public class Tag implements Cloneable {
 	 * So if tagname = taggy, and index = 2, get the 3rd subtag with the name of
 	 * 'taggy'.
 	 */
-	public Tag getTag(String tagName, int index) {
-		if (tags == null)
+	public Tag getTag(final String tagName, final int index) {
+		if (tags == null) {
 			return null;
+		}
 
 		// see if tagName exists in first level
 		// if it isn't the toplevel, just leave it.
@@ -181,10 +185,11 @@ public class Tag implements Cloneable {
 
 	public Tag[] getTags() {
 		// clone so it can't over write when set value is called?
-		if (tags != null)
+		if (tags != null) {
 			return tags;
-		else
+		} else {
 			return null;
+		}
 	}
 
 	/**
@@ -192,8 +197,9 @@ public class Tag implements Cloneable {
 	 * unless we've finally reached a leaf.
 	 */
 	public Object[] getTagValues() {
-		if (tags == null)
+		if (tags == null) {
 			return null;
+		}
 
 		Object[] val = new Object[tags.length];
 		for (int i = 0; i < tags.length; i++) {
@@ -205,11 +211,11 @@ public class Tag implements Cloneable {
 	/**
 	 * Convenience for addTag( new Tag(name, val) )
 	 */
-	public void addTag(String name, String val) {
+	public void addTag(final String name, final String val) {
 		addTag(new Tag(name, val));
 	}
 
-	public void addTag(Tag add) {
+	public void addTag(final Tag add) {
 		if (tags != null) {
 			Tag[] temp = tags;
 			tags = new Tag[temp.length + 1];
@@ -220,7 +226,7 @@ public class Tag implements Cloneable {
 		}
 	}
 
-	public void addTags(Tag[] add) {
+	public void addTags(final Tag[] add) {
 		if (tags != null) {
 			Tag[] temp = tags;
 			tags = new Tag[temp.length + add.length];
@@ -237,7 +243,7 @@ public class Tag implements Cloneable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj instanceof Tag) {
 			Tag newTag = (Tag) obj;
 			if (newTag.getName().equals(tagName)) {
@@ -267,8 +273,8 @@ public class Tag implements Cloneable {
 		StringBuffer parsed = new StringBuffer(OPEN_START_TAG + tagName
 				+ CLOSE_START_TAG);
 		if (tags != null) {
-			for (int i = 0; i < tags.length; i++) {
-				parsed.append(tags[i].parseTag());
+			for (Tag tag : tags) {
+				parsed.append(tag.parseTag());
 			}
 		} else {
 			parsed.append(escapeChars(value));
@@ -279,8 +285,9 @@ public class Tag implements Cloneable {
 	}
 
 	String escapeChars(String out) {
-		if (out == null)
+		if (out == null) {
 			return null;
+		}
 		out = out.replaceAll("&", "&amp;");
 		out = out.replaceAll("<", "&lt;");
 		out = out.replaceAll(">", "&gt;");
@@ -291,10 +298,11 @@ public class Tag implements Cloneable {
 	/**
 	 * Just a simple message to check if there was an error.
 	 */
-	public static void status(Tag message) throws IOException {
+	public static void status(final Tag message) throws IOException {
 		Tag s = message.getTag("status");
-		if ((s != null) && (s.getIntValue() < 0))
+		if ((s != null) && (s.getIntValue() < 0)) {
 			throw new IRODSException("" + s.getIntValue());
+		}
 	}
 
 	/**
@@ -304,13 +312,13 @@ public class Tag implements Cloneable {
 	 * @throws UnsupportedEncodingException
 	 *             shouldn't throw, already tested for
 	 */
-	public static Tag readNextTag(byte[] data, String encoding)
+	public static Tag readNextTag(final byte[] data, final String encoding)
 			throws UnsupportedEncodingException {
 		return readNextTag(data, true, encoding);
 	}
 
-	public static Tag readNextTag(byte[] data, boolean decode, String encoding)
-			throws UnsupportedEncodingException {
+	public static Tag readNextTag(final byte[] data, final boolean decode,
+			final String encoding) throws UnsupportedEncodingException {
 		if (data == null) {
 			log.debug("tag info is null");
 			return null;
@@ -319,7 +327,7 @@ public class Tag implements Cloneable {
 		String d = new String(data, encoding);
 
 		log.debug("string from tag read:{}", d);
-		
+
 		// remove the random '\n'
 		// had to find the end, sometimes '\n' is there, sometimes not.
 		d = d.replaceAll(CLOSE_END_TAG + "\n", "" + CLOSE_END_TAG);
@@ -327,8 +335,9 @@ public class Tag implements Cloneable {
 		int start = d.indexOf(OPEN_START_TAG), end = d.indexOf(CLOSE_START_TAG,
 				start);
 		int offset = 0;
-		if (start < 0)
+		if (start < 0) {
 			return null;
+		}
 
 		String tagName = d.substring(start + 1, end);
 		end = d.lastIndexOf(OPEN_END_TAG + tagName + CLOSE_END_TAG);
@@ -352,8 +361,8 @@ public class Tag implements Cloneable {
 	 * @throws UnsupportedEncodingException
 	 *             shouldn't throw, already tested for
 	 */
-	private static int readSubTag(Tag tag, String data, int offset,
-			boolean decode) throws UnsupportedEncodingException {
+	private static int readSubTag(final Tag tag, final String data, int offset,
+			final boolean decode) throws UnsupportedEncodingException {
 		// easier to just write a second slightly modified method
 		// instead of try to mix the two together,
 		// even though they are very similar.
@@ -386,14 +395,14 @@ public class Tag implements Cloneable {
 	/**
 	 * Creates the KeyValPair_PI tag.
 	 */
-	public static Tag createKeyValueTag(String keyword, String value) {
+	public static Tag createKeyValueTag(final String keyword, final String value) {
 		return createKeyValueTag(new String[][] { { keyword, value } });
 	}
 
 	/**
 	 * Creates the KeyValPair_PI tag.
 	 */
-	public static Tag createKeyValueTag(String[][] keyValue) {
+	public static Tag createKeyValueTag(final String[][] keyValue) {
 		/*
 		 * Must be like the following: <KeyValPair_PI> <ssLen>3</ssLen>
 		 * <keyWord>dataType</keyWord> <keyWord>destRescName</keyWord>
@@ -406,8 +415,9 @@ public class Tag implements Cloneable {
 		int i = 0, ssLength = 0;
 
 		// return the empty Tag
-		if (keyValue == null)
+		if (keyValue == null) {
 			return pair;
+		}
 
 		for (; i < keyValue.length; i++) {
 			if (keyValue[i] != null && keyValue[i][0] != null) {
@@ -418,8 +428,9 @@ public class Tag implements Cloneable {
 
 		// just use index zero because they have to be in order...
 		pair.tags[0].setValue(ssLength);
-		if (i == 0)
+		if (i == 0) {
 			return pair;
+		}
 
 		for (i = 0; i < keyValue.length; i++) {
 			if (keyValue[i] != null && keyValue[i][0] != null) {

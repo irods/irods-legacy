@@ -8,26 +8,31 @@ import org.irods.jargon.core.exception.JargonException;
 import edu.sdsc.grid.io.MetaDataSelect;
 
 /**
- * Contains information about a meta data select, along with other values used in the process of translating a select
- * into the actual GenQueryInp select value.
+ * Contains information about a meta data select, along with other values used
+ * in the process of translating a select into the actual GenQueryInp select
+ * value.
  * 
- * This is a transitional arrangement meant to accommodate extensible metadata, and to simplify processing of <code>IRODSMetaDataSet</code>
+ * This is a transitional arrangement meant to accommodate extensible metadata,
+ * and to simplify processing of <code>IRODSMetaDataSet</code>
  * 
  * @author Mike Conway - DICE (www.irods.org)
- *
+ * 
  */
 public class IRODSMetaDataSelectWrapper {
 	private final MetaDataSelect originalMetaDataSelect;
 	private SelectType selectType = SelectType.UNTRANSLATED_METADATA;
 	private String translatedMetaDataNumber = "";
-	
-	public enum SelectType { UNTRANSLATED_METADATA, IRODS_GEN_QUERY_METADATA, EXTENSIBLE_METADATA, AVU_METADATA }
-	
-	public IRODSMetaDataSelectWrapper(MetaDataSelect originalMetaDataSelect) throws JargonException {
+
+	public enum SelectType {
+		UNTRANSLATED_METADATA, IRODS_GEN_QUERY_METADATA, EXTENSIBLE_METADATA, AVU_METADATA
+	}
+
+	public IRODSMetaDataSelectWrapper(
+			final MetaDataSelect originalMetaDataSelect) throws JargonException {
 		if (originalMetaDataSelect == null) {
 			throw new JargonException("null originalMetaDataSelect");
 		}
-		
+
 		this.originalMetaDataSelect = originalMetaDataSelect;
 	}
 
@@ -35,7 +40,7 @@ public class IRODSMetaDataSelectWrapper {
 		return selectType;
 	}
 
-	public void setSelectType(SelectType selectType) {
+	public void setSelectType(final SelectType selectType) {
 		this.selectType = selectType;
 	}
 
@@ -43,14 +48,15 @@ public class IRODSMetaDataSelectWrapper {
 		return translatedMetaDataNumber;
 	}
 
-	public void setTranslatedMetaDataNumber(String translatedMetaDataNumber) {
+	public void setTranslatedMetaDataNumber(
+			final String translatedMetaDataNumber) {
 		this.translatedMetaDataNumber = translatedMetaDataNumber;
 	}
 
 	public MetaDataSelect getOriginalMetaDataSelect() {
 		return originalMetaDataSelect;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -65,5 +71,5 @@ public class IRODSMetaDataSelectWrapper {
 		sb.append(translatedMetaDataNumber);
 		return sb.toString();
 	}
-	
+
 }

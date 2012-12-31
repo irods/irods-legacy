@@ -49,25 +49,25 @@ package edu.sdsc.grid.io;
  * defined interfaces that are implemented by protocol-specific metadata groups.
  * The UserMetaData interface contract is that the implementor supports meta
  * data we might find as common user metadata, such as:
- *<ul>
+ * <ul>
  * <li>USER_ID
  * <li>USER_NAME
  * <li>USER_GROUP_NAME
  * <li>USER_ADDRESS
  * <li>USER_PHONE
  * <li>USER_EMAIL
- *</ul>
- *<P>
+ * </ul>
+ * <P>
  * An implementation specific class, such as the SRB user metadata support these
  * fields, but also may support further user metadata fields, such as:
- *<ul>
+ * <ul>
  * <li>USER_TYPE_NAME
  * <li>USER_DOMAIN
  * <li>USER_AUDIT_TIME_STAMP
  * <li>USER_AUDIT_COMMENTS
  * <li>USER_DISTINGUISHED_NAME
  * <li>USER_AUTHENTICATION_SCHEME
- *</ul>
+ * </ul>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */

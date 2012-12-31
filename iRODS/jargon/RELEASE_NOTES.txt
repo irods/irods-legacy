@@ -1,15 +1,15 @@
 
-Jargon 3.1.0 Release Notes
+Jargon 3.2.0 Release Notes
 ================================================================================================
-
+*** Pre-release code ****
 Project: Jargon - IRODS Java API
-Date: 3/15/2011
-Release Version: Jargon 3.1.0
+Date: 12/31/2012 
+Release Version: Jargon 3.2.0
 ================================================================================================
 
 News
 
-This release is for the current 'classic' Jargon API, for release of iRODS 3.0.  This is differentiated from the newer 'Jargon-core' libraries which are now available and recommended.  
+This release is for the current 'classic' Jargon API, for release of iRODS 3.2.  This is differentiated from the newer 'Jargon-core' libraries which are now available and recommended.  
 
 This 'classic' version of the API is supported, and the API will remain stable, as there are many implementations that depend on it.  Most of the 'new development' and new features activity
 will be in Jargon-core.  To get the code, and for bug tracking and feature requests, please use the GForge page at: [[https://code.renci.org/gf/project/jargon/]]
@@ -19,13 +19,13 @@ available on the new RENCI Maven repository.
 
 GForge for Jargon-core is at:  [[https://code.renci.org/gf/project/jargon/]]
 
-There is a new GForge location for this Jargon 2.5 release.  The GForge project page for the 'classic' Jargon, which is called "Jargon-trunk' can be found at [[https://code.renci.org/gf/project/jargontrunk/]] Issue tracking, discussions, and feature requests are available.  Future releases of iRODS will include a move of the 'classic' Jargon code to git and Maven.  At this point the use of Bugzilla for Jargon issue tracking is deprecated.  As usual, issues can also be reported on the iRODS Chat group.
+There is a new GForge location for this Jargon 3.2 release.  The GForge project page for the 'classic' Jargon, which is called "Jargon-trunk' can be found at [[https://code.renci.org/gf/project/jargontrunk/]] Issue tracking, discussions, and feature requests are available.  Future releases of iRODS will include a move of the 'classic' Jargon code to git and Maven.  At this point the use of Bugzilla for Jargon issue tracking is deprecated.  As usual, issues can also be reported on the iRODS Chat group.
 
 Requirements
 
 -Jargon depends on Java 1.5+
 -Jargon is built using Apache ANT
--Jargon has been tested against iRODS2.2, iRODS2.3, iRODS2.4, iRODS2.4.1, iRODS2.5, iRODS3.0, iRODS3.1
+-Jargon has been tested against iRODS2.2, iRODS2.3, iRODS2.4, iRODS2.4.1, iRODS2.5, iRODS3.0, iRODS3.1, iRODS3.2
 
 libraries
 ---------
@@ -39,8 +39,13 @@ libraries
 ================================================================================================
 Features and Changes
 
+*[#998] client user name
+**Integrated patch to enable use of client user name
 
--Remove legacy unit tests
+*[#438] iRODS 3.0 Release activities
+**Removing from SVN and moving to GIT and GForge
+
+
 ================================================================================================
 Outstanding Issues
 

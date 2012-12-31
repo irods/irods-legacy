@@ -53,7 +53,6 @@ import java.net.Socket;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.util.Date;
 
 import org.irods.jargon.core.accessobject.BulkFileOperationsAO;
 import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
@@ -123,15 +122,6 @@ public class IRODSCommands {
 	private IRODSServerProperties irodsServerProperties;
 
 	/**
-	 * Used in Debug mode
-	 */
-	private long date;
-
-	IRODSCommands() {
-
-	}
-
-	/**
 	 * Handles connection protocol.
 	 * 
 	 * @throws IOException
@@ -151,14 +141,6 @@ public class IRODSCommands {
 		// irodsAccount was already cloned by the IRODSFileSystem
 		setIrodsAccount(connectIrodsAccount);
 		irodsConnection = IRODSConnection.instance(irodsAccount, encoding);
-
-		if (log.isDebugEnabled()) {
-			date = new Date().getTime();
-			log.info("Connecting to server, " + getIrodsAccount().getHost()
-					+ ":" + getIrodsAccount().getPort() + " running version: "
-					+ IRODSAccount.version + " as username: "
-					+ getIrodsAccount().getUserName() + "\ntime: " + date);
-		}
 
 		// Send the user info
 		message = sendStartupPacket(getIrodsAccount());
@@ -504,7 +486,7 @@ public class IRODSCommands {
 		if (type == null || type.length() == 0) {
 			String err = "null or blank type";
 			log.error(err);
-			throw new IllegalArgumentException(err); 
+			throw new IllegalArgumentException(err);
 		}
 
 		if (message == null) {
@@ -524,11 +506,13 @@ public class IRODSCommands {
 							errorLength, byteStreamLength, intInfo));
 			irodsConnection.send(message);
 			if (errorLength > 0) {
-				irodsConnection.send(new BufferedInputStream(errorStream), errorLength);
+				irodsConnection.send(new BufferedInputStream(errorStream),
+						errorLength);
 				errorStream.close();
 			}
 			if (byteStreamLength > 0) {
-				irodsConnection.send(new BufferedInputStream(byteStream), byteStreamLength);
+				irodsConnection.send(new BufferedInputStream(byteStream),
+						byteStreamLength);
 				byteStream.close();
 			}
 			irodsConnection.flush();
@@ -1099,7 +1083,7 @@ public class IRODSCommands {
 		 * openFlags; double offset; double dataSize; int numThreads; int
 		 * oprType; struct *SpecColl_PI; struct KeyValPair_PI;"
 		 */
-		
+
 		if (log.isInfoEnabled()) {
 			log.info("get of source:" + source.getAbsolutePath()
 					+ " into dest:" + destination.getAbsolutePath()
@@ -1252,7 +1236,7 @@ public class IRODSCommands {
 
 		long length = source.length();
 
-		if (length > MAX_SZ_FOR_SINGLE_BUF) { 
+		if (length > MAX_SZ_FOR_SINGLE_BUF) {
 			if (log.isInfoEnabled()) {
 				log.info("put operation will use parallel transfer, size:"
 						+ length
@@ -1292,7 +1276,8 @@ public class IRODSCommands {
 			if (threads > 0) {
 				InputStream[] inputs = new InputStream[threads];
 				for (int i = 0; i < threads; i++) {
-					inputs[i] = new BufferedInputStream(FileFactory.newFileInputStream(source));
+					inputs[i] = new BufferedInputStream(
+							FileFactory.newFileInputStream(source));
 				}
 
 				synchronized (this) {
@@ -1326,7 +1311,11 @@ public class IRODSCommands {
 							pass, // connection info
 							inputs[threads - 1], // sourceFile
 							transferLength * (threads - 1), // offset
-							(int) (length - transferLength * (threads - 1)) // length FIXME:should this be int?
+							(int) (length - transferLength * (threads - 1)) // length
+																			// FIXME:should
+																			// this
+																			// be
+																			// int?
 					);
 					transferThreads[threads - 1] = new Thread(
 							transfer[threads - 1]);
@@ -1388,8 +1377,14 @@ public class IRODSCommands {
 							Tag.createKeyValueTag(keyword), });
 			// send the message, no result expected.
 			// exception thrown on error.
-			irodsFunction(RODS_API_REQ, message, 0, null, length,
-					new BufferedInputStream(FileFactory.newFileInputStream(source)), DATA_OBJ_PUT_AN);
+			irodsFunction(
+					RODS_API_REQ,
+					message,
+					0,
+					null,
+					length,
+					new BufferedInputStream(FileFactory
+							.newFileInputStream(source)), DATA_OBJ_PUT_AN);
 			log.info("transfer complete");
 		}
 	}
@@ -2157,6 +2152,7 @@ public class IRODSCommands {
 			incThread++;
 		}
 
+		@Override
 		protected void finalize() throws Throwable {
 			if (local != null) {
 				local.close();

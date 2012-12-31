@@ -50,13 +50,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import edu.sdsc.grid.io.*;
-import org.ietf.jgss.*;
+import org.ietf.jgss.GSSCredential;
+
+import edu.sdsc.grid.io.RemoteAccount;
 
 /**
  * An object to hold the user information used when connecting to a FTP file
  * system.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
@@ -95,8 +96,8 @@ public class FTPAccount extends RemoteAccount {
 	 * @param homeDirectory
 	 *            home directory on the ftp system
 	 */
-	public FTPAccount(String host, int port, String userName, String password,
-			String homeDirectory) {
+	public FTPAccount(final String host, final int port, final String userName,
+			final String password, final String homeDirectory) {
 		super(host, port, userName, password, homeDirectory);
 	}
 
@@ -116,8 +117,8 @@ public class FTPAccount extends RemoteAccount {
 	 * @param homeDirectory
 	 *            home directory on the ftp system
 	 */
-	public FTPAccount(String host, int port, String userName,
-			GSSCredential credential, String homeDirectory) {
+	public FTPAccount(final String host, final int port, final String userName,
+			final GSSCredential credential, final String homeDirectory) {
 		super(host, port, userName, "", homeDirectory);
 		this.credential = credential;
 		useGridFTP = true;
@@ -144,19 +145,20 @@ public class FTPAccount extends RemoteAccount {
 	 *             if homeDirectory is null.
 	 */
 	@Override
-	public void setHomeDirectory(String homeDirectory) {
-		if (homeDirectory == null)
+	public void setHomeDirectory(final String homeDirectory) {
+		if (homeDirectory == null) {
 			throw new NullPointerException(
 					"The home directory string cannot be null");
+		}
 
 		this.homeDirectory = homeDirectory;
 	}
 
 	@Override
-	public void setPort(int port) {
-		if (port > 0)
+	public void setPort(final int port) {
+		if (port > 0) {
 			this.port = port;
-		else {
+		} else {
 			// default ftp port
 			this.port = 21;
 		}
@@ -188,11 +190,11 @@ public class FTPAccount extends RemoteAccount {
 		return useGridFTP;
 	}
 
-	public void setUseGridFTP(boolean useGridFTP) {
+	public void setUseGridFTP(final boolean useGridFTP) {
 		this.useGridFTP = useGridFTP;
 	}
 
-	public void setGSSCredential(GSSCredential credential) {
+	public void setGSSCredential(final GSSCredential credential) {
 		this.credential = credential;
 	}
 
@@ -215,21 +217,26 @@ public class FTPAccount extends RemoteAccount {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null || !(obj instanceof FTPAccount))
+			if (obj == null || !(obj instanceof FTPAccount)) {
 				return false;
+			}
 
 			FTPAccount temp = (FTPAccount) obj;
 
-			if (!getHost().equals(temp.getHost()))
+			if (!getHost().equals(temp.getHost())) {
 				return false;
-			if (getPort() != temp.getPort())
+			}
+			if (getPort() != temp.getPort()) {
 				return false;
-			if (!getUserName().equals(temp.getUserName()))
+			}
+			if (!getUserName().equals(temp.getUserName())) {
 				return false;
-			if (!getPassword().equals(temp.getPassword()))
+			}
+			if (!getPassword().equals(temp.getPassword())) {
 				return false;
+			}
 
 			// else //everything is equal
 			return true;

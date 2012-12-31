@@ -798,8 +798,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 				log.error("exception deriving extensibleMetaDataMapping", e);
 				throw new RuntimeException(e);
 			}
-			log
-					.debug("IRODSMetaDataSet now has a cached ExtensibleMetaDataMapping");
+			log.debug("IRODSMetaDataSet now has a cached ExtensibleMetaDataMapping");
 		}
 
 		// R_ZONE_MAIN:
@@ -1105,11 +1104,10 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 				protocol));
 		group.add(new MetaDataField(FILE_OWNER_ZONE, "DataObject Owner Zone",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						FILE_REPLICA_STATUS,
-						"DataObject Replica Status (?I believe this indicates if this replica is current)",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				FILE_REPLICA_STATUS,
+				"DataObject Replica Status (?I believe this indicates if this replica is current)",
+				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(FILE_STATUS, "DataObject Data Status (?)",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(FILE_CHECKSUM, "DataObject Checksum",
@@ -1117,10 +1115,8 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(FILE_EXPIRY,
 				"DataObject Expiration time (currently unused)",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(FILE_MAP_ID,
-						"DataObject Map Identifier (?)", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(FILE_MAP_ID,
+				"DataObject Map Identifier (?)", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(FILE_NAME, "filename",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(DIRECTORY_NAME, "directory path",
@@ -1134,16 +1130,14 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(CREATION_DATE,
 				"number of seconds this file was created after the unix epoch",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						MODIFICATION_DATE,
-						"number of seconds this file was modified after the unix epoch",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						FILE_ACCESS_TYPE,
-						"Data Access Type: a number corresponding to access permissions",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				MODIFICATION_DATE,
+				"number of seconds this file was modified after the unix epoch",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				FILE_ACCESS_TYPE,
+				"Data Access Type: a number corresponding to access permissions",
+				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(FILE_ACCESS_NAME,
 				"Data Access Name: a name corresponding to access permissions",
 				MetaDataField.STRING, protocol));
@@ -1183,11 +1177,10 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(DIRECTORY_MODIFY_DATE,
 				"Time that this record was last modified (Unix Time)",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DIRECTORY_TYPE,
-						"Type of directory on the iRODS server, e.g. a mount point or a tar file mount",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DIRECTORY_TYPE,
+				"Type of directory on the iRODS server, e.g. a mount point or a tar file mount",
+				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(DIRECTORY_ACCESS_TYPE,
 				"Directory access constraint/permissions (integer).",
 				MetaDataField.INT, protocol));
@@ -1260,7 +1253,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(USER_DN,
 				"User GSI Distinguished Name (irods2.2+)",
 				MetaDataField.STRING, protocol));
-		group.add(new MetaDataField(IRODSMetaDataSet.USER_DN_2_1,
+		group.add(new MetaDataField(UserMetaData.USER_DN_2_1,
 				"User GSI Distinguished Name (prior to irods2.2)",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(USER_INFO,
@@ -1375,7 +1368,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 * Default constructor called once from the initializer/static methods used
 	 * to setup querying for iRODS.
 	 */
-	IRODSMetaDataSet(IRODSProtocol protocol) {
+	IRODSMetaDataSet(final IRODSProtocol protocol) {
 		super();
 		IRODSMetaDataSet.protocol = protocol;
 	}
@@ -1384,7 +1377,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 * Given the string <code>fieldName</code> return the appropriate
 	 * MetaDataField for use in a metadata query.
 	 */
-	public static MetaDataField getField(String fieldName) {
+	public static MetaDataField getField(final String fieldName) {
 		if (log.isDebugEnabled()) {
 			log.debug("getting irods metadata field for field name:"
 					+ fieldName);
@@ -1409,8 +1402,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 
 		// if the field is still null, try to resolve it as extensible metadata
 		if (field == null) {
-			log
-					.debug("field was still null, attempting to look up as extensbile metadata");
+			log.debug("field was still null, attempting to look up as extensbile metadata");
 
 			String extensibleFieldName = extensibleMetaDataMapping
 					.getColumnNameFromIndex(fieldName);
@@ -1457,13 +1449,15 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 *            <code>String</code> that represents
 	 * @return
 	 */
-	public static String getID(String fieldName) {
+	public static String getID(final String fieldName) {
 		log.debug("doing a getID for field:{}", fieldName);
 
 		Object temp = jargonToIRODS.get(fieldName);
 
 		if (temp == null) {
-			log.debug("not IRODSMetaDataSet field, returning passed-in field name instead:{}",fieldName);
+			log.debug(
+					"not IRODSMetaDataSet field, returning passed-in field name instead:{}",
+					fieldName);
 			return fieldName;
 		} else {
 			String tempString = temp.toString();

@@ -44,7 +44,7 @@ package edu.sdsc.grid.io;
 /**
  * Some meta data fields have a specific list of values that they allow. A
  * "meta data value enum" describes one such value.
- *<P>
+ * <P>
  * There are no 'set' methods. Once constructed, the object cannot be changed.
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
@@ -69,7 +69,7 @@ public final class MetaDataValueEnum {
 	 * called by MetaDataGroup classes when they set up their descriptions of
 	 * themselves.
 	 */
-	MetaDataValueEnum(String value, String description) {
+	MetaDataValueEnum(final String value, final String description) {
 		this.value = value;
 		this.description = description;
 	}

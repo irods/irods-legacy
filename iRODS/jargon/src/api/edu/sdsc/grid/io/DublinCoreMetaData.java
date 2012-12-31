@@ -49,7 +49,7 @@ package edu.sdsc.grid.io;
  * defined interfaces that are implemented by protocol-specific metadata groups.
  * The DublinCoreMetaData interface contract is that the implementor supports
  * meta data we might find as common dublin core metadata, such as:
- *<ul>
+ * <ul>
  * <li>DC_DATA_NAME
  * <li>DC_COLLECTION
  * <li>DC_CONTRIBUTOR_TYPE
@@ -78,7 +78,7 @@ package edu.sdsc.grid.io;
  * <li>DC_CONTRIBUTOR_PHONE
  * <li>DC_CONTRIBUTOR_WEB
  * <li>DC_CONTRIBUTOR_AFFILIATION
- *</ul>
+ * </ul>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */

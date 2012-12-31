@@ -41,13 +41,10 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
-import java.net.Socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 
 import org.globus.common.CoGProperties;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
@@ -60,11 +57,15 @@ import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
+import edu.sdsc.grid.io.local.LocalFile;
+
 /**
  * Instances of this class support socket I/O to a Srb server.
- *<P>
+ * <P>
  * Handles socket level protocol for interacting with the SRB.
- *<P>
+ * <P>
  * See also: <a href="doc-files/SRBProtocol.htm">SRB protocol</a>
  * 
  * <P>
@@ -80,7 +81,7 @@ class GSIAuth {
 	/**
 	 * Checks the authentication using GSI of a SRB connection which has already
 	 * passed the uner info part of the handshake.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param account
 	 *            the SRB connection information
@@ -93,8 +94,8 @@ class GSIAuth {
 	 * @throws IOException
 	 *             If the authentication to the SRB fails.
 	 */
-	GSIAuth(SRBAccount account, Socket srbConnection, OutputStream out,
-			InputStream in) throws IOException {
+	GSIAuth(final SRBAccount account, final Socket srbConnection,
+			final OutputStream out, final InputStream in) throws IOException {
 		sendGSIAuth(account, srbConnection, out, in);
 	}
 
@@ -113,8 +114,8 @@ class GSIAuth {
 	 * @throws IOException
 	 *             If the authentication to the SRB fails.
 	 */
-	void sendGSIAuth(SRBAccount account, Socket srbConnection,
-			OutputStream out, InputStream in) throws IOException {
+	void sendGSIAuth(final SRBAccount account, final Socket srbConnection,
+			final OutputStream out, final InputStream in) throws IOException {
 		CoGProperties cog = null;
 		String defaultCA = null;
 		GSSCredential credential = null;
@@ -144,7 +145,7 @@ class GSIAuth {
 			context.requestCredDeleg(false);
 			context.requestMutualAuth(true);
 
-			GSIGssSocket ggSocket = new GSIGssSocket(srbConnection, context);
+			new GSIGssSocket(srbConnection, context);
 			gssout = new GSIGssOutputStream(out, context);
 			gssin = new GSIGssInputStream(in, context);
 
@@ -192,7 +193,7 @@ class GSIAuth {
 		}
 	}
 
-	static String getDN(SRBAccount account) throws IOException {
+	static String getDN(final SRBAccount account) throws IOException {
 		StringBuffer dn = null;
 		int index = -1, index2 = -1;
 		try {
@@ -227,13 +228,14 @@ class GSIAuth {
 		}
 	}
 
-	static GSSCredential getCredential(SRBAccount account) throws GSSException,
-			IOException {
+	static GSSCredential getCredential(final SRBAccount account)
+			throws GSSException, IOException {
 		byte[] data = null;
 		GSSCredential credential = account.getGSSCredential();
 		if (credential != null) {
-			if (credential.getRemainingLifetime() <= 0)
+			if (credential.getRemainingLifetime() <= 0) {
 				throw new GSSException(GSSException.CREDENTIALS_EXPIRED);
+			}
 
 			return credential;
 		}
@@ -271,8 +273,9 @@ class GSIAuth {
 					GSSCredential.INITIATE_AND_ACCEPT);
 		}
 
-		if (credential.getRemainingLifetime() <= 0)
+		if (credential.getRemainingLifetime() <= 0) {
 			throw new GSSException(GSSException.CREDENTIALS_EXPIRED);
+		}
 
 		return credential;
 	}

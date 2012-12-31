@@ -281,7 +281,7 @@ public final class Host extends Object {
 	 *            the type code for the data type
 	 * @return the type name
 	 */
-	public final static String getName(int type) {
+	public final static String getName(final int type) {
 		return typeName[type];
 	}
 
@@ -293,7 +293,7 @@ public final class Host extends Object {
 	 *            the type code for the data type
 	 * @return the number of bytes
 	 */
-	public final static byte getStorageSize(int type) {
+	public final static byte getStorageSize(final int type) {
 		return typeSize[type];
 	}
 
@@ -305,7 +305,7 @@ public final class Host extends Object {
 	 *            the type code for the data type
 	 * @return the number of bytes
 	 */
-	public final static int getSignificantBits(int type) {
+	public final static int getSignificantBits(final int type) {
 		return typeBits[type];
 	}
 
@@ -318,7 +318,7 @@ public final class Host extends Object {
 	 *            the type code for the data type
 	 * @return the alignment in bytes
 	 */
-	public final static int getCompilerAlignment(int type) {
+	public final static int getCompilerAlignment(final int type) {
 		return typeCompilerAlignment[type];
 	}
 
@@ -339,7 +339,7 @@ public final class Host extends Object {
 	 * @param nBytes
 	 *            the number of bytes to swap
 	 */
-	public final static void swap(byte[] bytes, int nBytes) {
+	public final static void swap(final byte[] bytes, final int nBytes) {
 		byte tmp;
 
 		// Use an accelerated path for common swap sizes
@@ -406,7 +406,8 @@ public final class Host extends Object {
 	 * @param nBytes
 	 *            the number of bytes to swap
 	 */
-	public final static void swap(byte[] bytes, int offset, int nBytes) {
+	public final static void swap(final byte[] bytes, final int offset,
+			final int nBytes) {
 		byte tmp;
 
 		// Use an accelerated path for common swap sizes
@@ -474,7 +475,8 @@ public final class Host extends Object {
 	 * @param nTimes
 	 *            the number of times to do consecutive swaps
 	 */
-	public final static void swapMultiple(byte[] bytes, int nBytes, int nTimes) {
+	public final static void swapMultiple(final byte[] bytes, final int nBytes,
+			final int nTimes) {
 		int offset = 0;
 		for (int i = 0; i < nTimes; i++) {
 			swap(bytes, offset, nBytes);
@@ -502,8 +504,8 @@ public final class Host extends Object {
 	 * @param nTimes
 	 *            the number of times to do consecutive swaps
 	 */
-	public final static void swapMultiple(byte[] bytes, int offset, int nBytes,
-			int nTimes) {
+	public final static void swapMultiple(final byte[] bytes, int offset,
+			final int nBytes, final int nTimes) {
 		for (int i = 0; i < nTimes; i++) {
 			swap(bytes, offset, nBytes);
 			offset += nBytes;
@@ -533,7 +535,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the unsigned byte value (as an short)
 	 */
-	public final static short castToByte(byte[] bytes) {
+	public final static short castToByte(final byte[] bytes) {
 		return (short) (bytes[0] & 0x00FF);
 	}
 
@@ -549,7 +551,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the short value
 	 */
-	public final static short castToShort(byte[] bytes) {
+	public final static short castToShort(final byte[] bytes) {
 		return (short) (((bytes[0] & 0x00FF) << 8) | (bytes[1] & 0x00FF));
 	}
 
@@ -569,7 +571,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the unsigned short value (as an int)
 	 */
-	public final static int castToUnsignedShort(byte[] bytes) {
+	public final static int castToUnsignedShort(final byte[] bytes) {
 		return ((bytes[0] & 0x00FF) << 8) | (bytes[1] & 0x00FF);
 	}
 
@@ -585,9 +587,8 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the int value
 	 */
-	public final static int castToInt(byte[] bytes) {
-		return ((bytes[0] & 0x00FF) << 24)
-				| ((bytes[1] & 0x00FF) << 16)
+	public final static int castToInt(final byte[] bytes) {
+		return ((bytes[0] & 0x00FF) << 24) | ((bytes[1] & 0x00FF) << 16)
 				| ((bytes[2] & 0x00FF) << 8) | (bytes[3] & 0x00FF);
 	}
 
@@ -607,7 +608,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the unsigned int value (as a long)
 	 */
-	public final static long castToUnsignedInt(byte[] bytes) {
+	public final static long castToUnsignedInt(final byte[] bytes) {
 		return (((long) bytes[0] & 0x00FF) << 24)
 				| (((long) bytes[1] & 0x00FF) << 16)
 				| (((long) bytes[2] & 0x00FF) << 8)
@@ -626,7 +627,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the long value
 	 */
-	public final static long castToLong(byte[] bytes) {
+	public final static long castToLong(final byte[] bytes) {
 		return (((long) bytes[0] & 0x00FF) << 56)
 				| (((long) bytes[1] & 0x00FF) << 48)
 				| (((long) bytes[2] & 0x00FF) << 40)
@@ -649,7 +650,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the unsigned long value
 	 */
-	public final static long castToUnsignedLong(byte[] bytes) {
+	public final static long castToUnsignedLong(final byte[] bytes) {
 		// Since there is no larger type we can return this
 		// unsigned value in, we must return as a long.
 		// This makes the code here identical to castToLong().
@@ -678,7 +679,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the long long value
 	 */
-	public final static long castToLongLong(byte[] bytes) {
+	public final static long castToLongLong(final byte[] bytes) {
 		return (((long) bytes[0] & 0x00FF) << 56)
 				| (((long) bytes[1] & 0x00FF) << 48)
 				| (((long) bytes[2] & 0x00FF) << 40)
@@ -704,7 +705,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the unsigned long long value
 	 */
-	public final static long castToUnsignedLongLong(byte[] bytes) {
+	public final static long castToUnsignedLongLong(final byte[] bytes) {
 		// Since there is no larger type we can return this
 		// unsigned value in, we must return as a long.
 		// This makes the code here identical to castToLong().
@@ -730,9 +731,8 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the float value
 	 */
-	public final static float castToFloat(byte[] bytes) {
-		int i = ((bytes[0] & 0x00FF) << 24)
-				| ((bytes[1] & 0x00FF) << 16)
+	public final static float castToFloat(final byte[] bytes) {
+		int i = ((bytes[0] & 0x00FF) << 24) | ((bytes[1] & 0x00FF) << 16)
 				| ((bytes[2] & 0x00FF) << 8) | (bytes[3] & 0x00FF);
 		return Float.intBitsToFloat(i);
 	}
@@ -749,7 +749,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the double value
 	 */
-	public final static double castToDouble(byte[] bytes) {
+	public final static double castToDouble(final byte[] bytes) {
 		long l = (((long) bytes[0] & 0x00FF) << 56)
 				| (((long) bytes[1] & 0x00FF) << 48)
 				| (((long) bytes[2] & 0x00FF) << 40)
@@ -776,7 +776,7 @@ public final class Host extends Object {
 	 *            byte array
 	 * @return the long double value
 	 */
-	public final static double castToLongDouble(byte[] bytes) {
+	public final static double castToLongDouble(final byte[] bytes) {
 		long l = (((long) bytes[0] & 0x00FF) << 56)
 				| (((long) bytes[1] & 0x00FF) << 48)
 				| (((long) bytes[2] & 0x00FF) << 40)
@@ -809,7 +809,7 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the unsigned byte value (as a short)
 	 */
-	public final static short castToByte(byte[] bytes, int offset) {
+	public final static short castToByte(final byte[] bytes, final int offset) {
 		return (short) (bytes[offset] & 0x00FF);
 	}
 
@@ -827,7 +827,7 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the short value
 	 */
-	public final static short castToShort(byte[] bytes, int offset) {
+	public final static short castToShort(final byte[] bytes, final int offset) {
 		return (short) (((bytes[offset + 0] & 0x00FF) << 8) | (bytes[offset + 1] & 0x00FF));
 	}
 
@@ -849,7 +849,8 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the unsigned short value (as an int)
 	 */
-	public final static int castToUnsignedShort(byte[] bytes, int offset) {
+	public final static int castToUnsignedShort(final byte[] bytes,
+			final int offset) {
 		return ((bytes[offset + 0] & 0x00FF) << 8)
 				| (bytes[offset + 1] & 0x00FF);
 	}
@@ -868,7 +869,7 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the int value
 	 */
-	public final static int castToInt(byte[] bytes, int offset) {
+	public final static int castToInt(final byte[] bytes, final int offset) {
 		return ((bytes[offset + 0] & 0x00FF) << 24)
 				| ((bytes[offset + 1] & 0x00FF) << 16)
 				| ((bytes[offset + 2] & 0x00FF) << 8)
@@ -893,7 +894,8 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the unsigned int value (as a long)
 	 */
-	public final static long castToUnsignedInt(byte[] bytes, int offset) {
+	public final static long castToUnsignedInt(final byte[] bytes,
+			final int offset) {
 		return (((long) bytes[offset + 0] & 0x00FF) << 24)
 				| (((long) bytes[offset + 1] & 0x00FF) << 16)
 				| (((long) bytes[offset + 2] & 0x00FF) << 8)
@@ -914,7 +916,7 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the long value
 	 */
-	public final static long castToLong(byte[] bytes, int offset) {
+	public final static long castToLong(final byte[] bytes, final int offset) {
 		return (((long) bytes[offset + 0] & 0x00FF) << 56)
 				| (((long) bytes[offset + 1] & 0x00FF) << 48)
 				| (((long) bytes[offset + 2] & 0x00FF) << 40)
@@ -939,7 +941,8 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the unsigned long value
 	 */
-	public final static long castToUnsignedLong(byte[] bytes, int offset) {
+	public final static long castToUnsignedLong(final byte[] bytes,
+			final int offset) {
 		// Since there is no larger type we can return this
 		// unsigned value in, we must return as a long.
 		// This makes the code here identical to castToLong().
@@ -970,7 +973,7 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the long long value
 	 */
-	public final static long castToLongLong(byte[] bytes, int offset) {
+	public final static long castToLongLong(final byte[] bytes, final int offset) {
 		return (((long) bytes[offset + 0] & 0x00FF) << 56)
 				| (((long) bytes[offset + 1] & 0x00FF) << 48)
 				| (((long) bytes[offset + 2] & 0x00FF) << 40)
@@ -998,7 +1001,8 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the unsigned long long value
 	 */
-	public final static long castToUnsignedLongLong(byte[] bytes, int offset) {
+	public final static long castToUnsignedLongLong(final byte[] bytes,
+			final int offset) {
 		// Since there is no larger type we can return this
 		// unsigned value in, we must return as a long.
 		// This makes the code here identical to castToLong().
@@ -1026,7 +1030,7 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the float value
 	 */
-	public final static float castToFloat(byte[] bytes, int offset) {
+	public final static float castToFloat(final byte[] bytes, final int offset) {
 		int i = ((bytes[offset + 0] & 0x00FF) << 24)
 				| ((bytes[offset + 1] & 0x00FF) << 16)
 				| ((bytes[offset + 2] & 0x00FF) << 8)
@@ -1048,7 +1052,7 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the double value
 	 */
-	public final static double castToDouble(byte[] bytes, int offset) {
+	public final static double castToDouble(final byte[] bytes, final int offset) {
 		long l = (((long) bytes[offset + 0] & 0x00FF) << 56)
 				| (((long) bytes[offset + 1] & 0x00FF) << 48)
 				| (((long) bytes[offset + 2] & 0x00FF) << 40)
@@ -1077,7 +1081,8 @@ public final class Host extends Object {
 	 *            starting point in byte array
 	 * @return the long double value
 	 */
-	public final static double castToLongDouble(byte[] bytes, int offset) {
+	public final static double castToLongDouble(final byte[] bytes,
+			final int offset) {
 		long l = (((long) bytes[offset + 0] & 0x00FF) << 56)
 				| (((long) bytes[offset + 1] & 0x00FF) << 48)
 				| (((long) bytes[offset + 2] & 0x00FF) << 40)
@@ -1108,7 +1113,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyShort(byte value, byte[] bytes) {
+	public final static void copyShort(final byte value, final byte[] bytes) {
 		short s = value; // Sign extend
 		bytes[0] = (byte) (s >> 8);
 		bytes[1] = (byte) (s);
@@ -1124,7 +1129,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyShort(short value, byte[] bytes) {
+	public final static void copyShort(final short value, final byte[] bytes) {
 		bytes[0] = (byte) (value >> 8);
 		bytes[1] = (byte) (value);
 	}
@@ -1139,7 +1144,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyShort(int value, byte[] bytes) {
+	public final static void copyShort(final int value, final byte[] bytes) {
 		// Identical to copyShort(short,byte[])
 		bytes[0] = (byte) (value >> 8);
 		bytes[1] = (byte) (value);
@@ -1155,7 +1160,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyShort(long value, byte[] bytes) {
+	public final static void copyShort(final long value, final byte[] bytes) {
 		// Identical to copyShort(short,byte[])
 		bytes[0] = (byte) (value >> 8);
 		bytes[1] = (byte) (value);
@@ -1172,7 +1177,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedShort(byte value, byte[] bytes) {
+	public final static void copyUnsignedShort(final byte value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = value;
 	}
@@ -1187,7 +1193,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedShort(short value, byte[] bytes) {
+	public final static void copyUnsignedShort(final short value,
+			final byte[] bytes) {
 		bytes[0] = (byte) (value >>> 8); // zero extend
 		bytes[1] = (byte) (value);
 	}
@@ -1202,7 +1209,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedShort(int value, byte[] bytes) {
+	public final static void copyUnsignedShort(final int value,
+			final byte[] bytes) {
 		// Identical to copyUnsignedShort(short,byte[])
 		bytes[0] = (byte) (value >>> 8); // zero extend
 		bytes[1] = (byte) (value);
@@ -1218,7 +1226,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedShort(long value, byte[] bytes) {
+	public final static void copyUnsignedShort(final long value,
+			final byte[] bytes) {
 		// Identical to copyUnsignedShort(short,byte[])
 		bytes[0] = (byte) (value >>> 8); // zero extend
 		bytes[1] = (byte) (value);
@@ -1235,7 +1244,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyInt(byte value, byte[] bytes) {
+	public final static void copyInt(final byte value, final byte[] bytes) {
 		int i = value; // sign extend
 		bytes[0] = (byte) (i >> 24);
 		bytes[1] = (byte) (i >> 16);
@@ -1253,7 +1262,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyInt(short value, byte[] bytes) {
+	public final static void copyInt(final short value, final byte[] bytes) {
 		int i = value; // sign extend
 		bytes[0] = (byte) (i >> 24);
 		bytes[1] = (byte) (i >> 16);
@@ -1271,7 +1280,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyInt(int value, byte[] bytes) {
+	public final static void copyInt(final int value, final byte[] bytes) {
 		bytes[0] = (byte) (value >> 24);
 		bytes[1] = (byte) (value >> 16);
 		bytes[2] = (byte) (value >> 8);
@@ -1288,7 +1297,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyInt(long value, byte[] bytes) {
+	public final static void copyInt(final long value, final byte[] bytes) {
 		// Identical to copyInt(int,byte[])
 		bytes[0] = (byte) (value >> 24);
 		bytes[1] = (byte) (value >> 16);
@@ -1307,7 +1316,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedInt(byte value, byte[] bytes) {
+	public final static void copyUnsignedInt(final byte value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = 0; // zero extend
 		bytes[2] = 0; // zero extend
@@ -1324,7 +1334,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedInt(short value, byte[] bytes) {
+	public final static void copyUnsignedInt(final short value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = 0; // zero extend
 		bytes[2] = (byte) (value >>> 8); // zero extend
@@ -1341,7 +1352,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedInt(int value, byte[] bytes) {
+	public final static void copyUnsignedInt(final int value, final byte[] bytes) {
 		bytes[0] = (byte) (value >>> 24); // zero extend
 		bytes[1] = (byte) (value >>> 16); // zero extend
 		bytes[2] = (byte) (value >>> 8); // zero extend
@@ -1358,7 +1369,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedInt(long value, byte[] bytes) {
+	public final static void copyUnsignedInt(final long value,
+			final byte[] bytes) {
 		// Identical to copyUnsignedInt(int,byte[])
 		bytes[0] = (byte) (value >>> 24); // zero extend
 		bytes[1] = (byte) (value >>> 16); // zero extend
@@ -1377,7 +1389,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLong(byte value, byte[] bytes) {
+	public final static void copyLong(final byte value, final byte[] bytes) {
 		long lng = value; // sign extend
 		bytes[0] = (byte) (lng >> 56);
 		bytes[1] = (byte) (lng >> 48);
@@ -1399,7 +1411,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLong(short value, byte[] bytes) {
+	public final static void copyLong(final short value, final byte[] bytes) {
 		long lng = value; // sign extend
 		bytes[0] = (byte) (lng >> 56);
 		bytes[1] = (byte) (lng >> 48);
@@ -1421,7 +1433,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLong(int value, byte[] bytes) {
+	public final static void copyLong(final int value, final byte[] bytes) {
 		long lng = value; // sign extend
 		bytes[0] = (byte) (lng >> 56);
 		bytes[1] = (byte) (lng >> 48);
@@ -1443,7 +1455,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLong(long value, byte[] bytes) {
+	public final static void copyLong(final long value, final byte[] bytes) {
 		bytes[0] = (byte) (value >> 56);
 		bytes[1] = (byte) (value >> 48);
 		bytes[2] = (byte) (value >> 40);
@@ -1465,7 +1477,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedLong(byte value, byte[] bytes) {
+	public final static void copyUnsignedLong(final byte value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = 0; // zero extend
 		bytes[2] = 0; // zero extend
@@ -1486,7 +1499,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedLong(short value, byte[] bytes) {
+	public final static void copyUnsignedLong(final short value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = 0; // zero extend
 		bytes[2] = 0; // zero extend
@@ -1507,7 +1521,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedLong(int value, byte[] bytes) {
+	public final static void copyUnsignedLong(final int value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = 0; // zero extend
 		bytes[2] = 0; // zero extend
@@ -1528,7 +1543,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedLong(long value, byte[] bytes) {
+	public final static void copyUnsignedLong(final long value,
+			final byte[] bytes) {
 		bytes[0] = (byte) (value >>> 56); // zero extend
 		bytes[1] = (byte) (value >>> 48); // zero extend
 		bytes[2] = (byte) (value >>> 40); // zero extend
@@ -1553,7 +1569,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLongLong(byte value, byte[] bytes) {
+	public final static void copyLongLong(final byte value, final byte[] bytes) {
 		long lng = value; // sign extend
 		bytes[0] = (byte) (lng >> 56);
 		bytes[1] = (byte) (lng >> 48);
@@ -1578,7 +1594,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLongLong(short value, byte[] bytes) {
+	public final static void copyLongLong(final short value, final byte[] bytes) {
 		long lng = value; // sign extend
 		bytes[0] = (byte) (lng >> 56);
 		bytes[1] = (byte) (lng >> 48);
@@ -1603,7 +1619,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLongLong(int value, byte[] bytes) {
+	public final static void copyLongLong(final int value, final byte[] bytes) {
 		long lng = value; // sign extend
 		bytes[0] = (byte) (lng >> 56);
 		bytes[1] = (byte) (lng >> 48);
@@ -1628,7 +1644,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLongLong(long value, byte[] bytes) {
+	public final static void copyLongLong(final long value, final byte[] bytes) {
 		bytes[0] = (byte) (value >> 56);
 		bytes[1] = (byte) (value >> 48);
 		bytes[2] = (byte) (value >> 40);
@@ -1653,7 +1669,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedLongLong(byte value, byte[] bytes) {
+	public final static void copyUnsignedLongLong(final byte value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = 0; // zero extend
 		bytes[2] = 0; // zero extend
@@ -1677,7 +1694,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedLongLong(short value, byte[] bytes) {
+	public final static void copyUnsignedLongLong(final short value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = 0; // zero extend
 		bytes[2] = 0; // zero extend
@@ -1701,7 +1719,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedLongLong(int value, byte[] bytes) {
+	public final static void copyUnsignedLongLong(final int value,
+			final byte[] bytes) {
 		bytes[0] = 0; // zero extend
 		bytes[1] = 0; // zero extend
 		bytes[2] = 0; // zero extend
@@ -1725,7 +1744,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyUnsignedLongLong(long value, byte[] bytes) {
+	public final static void copyUnsignedLongLong(final long value,
+			final byte[] bytes) {
 		bytes[0] = (byte) (value >>> 56); // zero extend
 		bytes[1] = (byte) (value >>> 48); // zero extend
 		bytes[2] = (byte) (value >>> 40); // zero extend
@@ -1747,7 +1767,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyFloat(float value, byte[] bytes) {
+	public final static void copyFloat(final float value, final byte[] bytes) {
 		int v = Float.floatToIntBits(value);
 		bytes[0] = (byte) (v >> 24);
 		bytes[1] = (byte) (v >> 16);
@@ -1765,7 +1785,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyFloat(double value, byte[] bytes) {
+	public final static void copyFloat(final double value, final byte[] bytes) {
 		int v = Float.floatToIntBits((float) value);
 		bytes[0] = (byte) (v >> 24);
 		bytes[1] = (byte) (v >> 16);
@@ -1784,7 +1804,7 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyDouble(double value, byte[] bytes) {
+	public final static void copyDouble(final double value, final byte[] bytes) {
 		long v = Double.doubleToLongBits(value);
 		bytes[0] = (byte) (v >> 56);
 		bytes[1] = (byte) (v >> 48);
@@ -1810,7 +1830,8 @@ public final class Host extends Object {
 	 * @param bytes
 	 *            byte array to receive value
 	 */
-	public final static void copyLongDouble(double value, byte[] bytes) {
+	public final static void copyLongDouble(final double value,
+			final byte[] bytes) {
 		long v = Double.doubleToLongBits(value);
 		bytes[0] = (byte) (v >> 56);
 		bytes[1] = (byte) (v >> 48);
@@ -1838,7 +1859,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyShort(byte value, byte[] bytes, int offset) {
+	public final static void copyShort(final byte value, final byte[] bytes,
+			final int offset) {
 		short s = value; // sign extend
 		bytes[offset + 0] = (byte) (s >> 8);
 		bytes[offset + 1] = (byte) (s);
@@ -1856,7 +1878,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyShort(short value, byte[] bytes, int offset) {
+	public final static void copyShort(final short value, final byte[] bytes,
+			final int offset) {
 		bytes[offset + 0] = (byte) (value >> 8);
 		bytes[offset + 1] = (byte) (value);
 	}
@@ -1873,7 +1896,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyShort(int value, byte[] bytes, int offset) {
+	public final static void copyShort(final int value, final byte[] bytes,
+			final int offset) {
 		// Identical to copyShort(short,byte[])
 		bytes[offset + 0] = (byte) (value >> 8);
 		bytes[offset + 1] = (byte) (value);
@@ -1891,7 +1915,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyShort(long value, byte[] bytes, int offset) {
+	public final static void copyShort(final long value, final byte[] bytes,
+			final int offset) {
 		// Identical to copyShort(short,byte[])
 		bytes[offset + 0] = (byte) (value >> 8);
 		bytes[offset + 1] = (byte) (value);
@@ -1910,8 +1935,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedShort(byte value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedShort(final byte value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = value;
 	}
@@ -1928,8 +1953,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedShort(short value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedShort(final short value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = (byte) (value >>> 8); // zero extend
 		bytes[offset + 1] = (byte) (value);
 	}
@@ -1946,8 +1971,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedShort(int value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedShort(final int value,
+			final byte[] bytes, final int offset) {
 		// Identical to copyUnsignedShort(short,byte[])
 		bytes[offset + 0] = (byte) (value >>> 8); // zero extend
 		bytes[offset + 1] = (byte) (value);
@@ -1965,8 +1990,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedShort(long value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedShort(final long value,
+			final byte[] bytes, final int offset) {
 		// Identical to copyUnsignedShort(short,byte[])
 		bytes[offset + 0] = (byte) (value >>> 8); // zero extend
 		bytes[offset + 1] = (byte) (value);
@@ -1985,7 +2010,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyInt(byte value, byte[] bytes, int offset) {
+	public final static void copyInt(final byte value, final byte[] bytes,
+			final int offset) {
 		int i = value; // sign extend
 		bytes[offset + 0] = (byte) (i >> 24);
 		bytes[offset + 1] = (byte) (i >> 16);
@@ -2005,7 +2031,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyInt(short value, byte[] bytes, int offset) {
+	public final static void copyInt(final short value, final byte[] bytes,
+			final int offset) {
 		int i = value; // sign extend
 		bytes[offset + 0] = (byte) (i >> 24);
 		bytes[offset + 1] = (byte) (i >> 16);
@@ -2025,7 +2052,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyInt(int value, byte[] bytes, int offset) {
+	public final static void copyInt(final int value, final byte[] bytes,
+			final int offset) {
 		bytes[offset + 0] = (byte) (value >> 24);
 		bytes[offset + 1] = (byte) (value >> 16);
 		bytes[offset + 2] = (byte) (value >> 8);
@@ -2044,7 +2072,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyInt(long value, byte[] bytes, int offset) {
+	public final static void copyInt(final long value, final byte[] bytes,
+			final int offset) {
 		// Identical to copyInt(int,byte[])
 		bytes[offset + 0] = (byte) (value >> 24);
 		bytes[offset + 1] = (byte) (value >> 16);
@@ -2065,8 +2094,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedInt(byte value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedInt(final byte value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = 0; // zero extend
 		bytes[offset + 2] = 0; // zero extend
@@ -2085,8 +2114,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedInt(short value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedInt(final short value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = 0; // zero extend
 		bytes[offset + 2] = (byte) (value >>> 8); // zero extend
@@ -2105,7 +2134,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedInt(int value, byte[] bytes, int offset) {
+	public final static void copyUnsignedInt(final int value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = (byte) (value >>> 24); // zero extend
 		bytes[offset + 1] = (byte) (value >>> 16); // zero extend
 		bytes[offset + 2] = (byte) (value >>> 8); // zero extend
@@ -2124,8 +2154,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedInt(long value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedInt(final long value,
+			final byte[] bytes, final int offset) {
 		// Identical to copyUnsignedInt(int,byte[])
 		bytes[offset + 0] = (byte) (value >>> 24); // zero extend
 		bytes[offset + 1] = (byte) (value >>> 16); // zero extend
@@ -2146,7 +2176,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLong(byte value, byte[] bytes, int offset) {
+	public final static void copyLong(final byte value, final byte[] bytes,
+			final int offset) {
 		long lng = value; // sign extend
 		bytes[offset + 0] = (byte) (lng >> 56);
 		bytes[offset + 1] = (byte) (lng >> 48);
@@ -2170,7 +2201,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLong(short value, byte[] bytes, int offset) {
+	public final static void copyLong(final short value, final byte[] bytes,
+			final int offset) {
 		long lng = value; // sign extend
 		bytes[offset + 0] = (byte) (lng >> 56);
 		bytes[offset + 1] = (byte) (lng >> 48);
@@ -2194,7 +2226,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLong(int value, byte[] bytes, int offset) {
+	public final static void copyLong(final int value, final byte[] bytes,
+			final int offset) {
 		long lng = value; // sign extend
 		bytes[offset + 0] = (byte) (lng >> 56);
 		bytes[offset + 1] = (byte) (lng >> 48);
@@ -2218,7 +2251,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLong(long value, byte[] bytes, int offset) {
+	public final static void copyLong(final long value, final byte[] bytes,
+			final int offset) {
 		bytes[offset + 0] = (byte) (value >> 56);
 		bytes[offset + 1] = (byte) (value >> 48);
 		bytes[offset + 2] = (byte) (value >> 40);
@@ -2242,8 +2276,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedLong(byte value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedLong(final byte value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = 0; // zero extend
 		bytes[offset + 2] = 0; // zero extend
@@ -2266,8 +2300,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedLong(short value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedLong(final short value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = 0; // zero extend
 		bytes[offset + 2] = 0; // zero extend
@@ -2290,8 +2324,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedLong(int value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedLong(final int value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = 0; // zero extend
 		bytes[offset + 2] = 0; // zero extend
@@ -2314,8 +2348,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedLong(long value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedLong(final long value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = (byte) (value >>> 56); // zero extend
 		bytes[offset + 1] = (byte) (value >>> 48); // zero extend
 		bytes[offset + 2] = (byte) (value >>> 40); // zero extend
@@ -2342,7 +2376,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLongLong(byte value, byte[] bytes, int offset) {
+	public final static void copyLongLong(final byte value, final byte[] bytes,
+			final int offset) {
 		long lng = value; // sign extend
 		bytes[offset + 0] = (byte) (lng >> 56);
 		bytes[offset + 1] = (byte) (lng >> 48);
@@ -2369,7 +2404,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLongLong(short value, byte[] bytes, int offset) {
+	public final static void copyLongLong(final short value,
+			final byte[] bytes, final int offset) {
 		long lng = value; // sign extend
 		bytes[offset + 0] = (byte) (lng >> 56);
 		bytes[offset + 1] = (byte) (lng >> 48);
@@ -2396,7 +2432,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLongLong(int value, byte[] bytes, int offset) {
+	public final static void copyLongLong(final int value, final byte[] bytes,
+			final int offset) {
 		long lng = value; // sign extend
 		bytes[offset + 0] = (byte) (lng >> 56);
 		bytes[offset + 1] = (byte) (lng >> 48);
@@ -2423,7 +2460,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLongLong(long value, byte[] bytes, int offset) {
+	public final static void copyLongLong(final long value, final byte[] bytes,
+			final int offset) {
 		bytes[offset + 0] = (byte) (value >> 56);
 		bytes[offset + 1] = (byte) (value >> 48);
 		bytes[offset + 2] = (byte) (value >> 40);
@@ -2450,8 +2488,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedLongLong(byte value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedLongLong(final byte value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = 0; // zero extend
 		bytes[offset + 2] = 0; // zero extend
@@ -2477,8 +2515,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedLongLong(short value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedLongLong(final short value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = 0; // zero extend
 		bytes[offset + 2] = 0; // zero extend
@@ -2504,8 +2542,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedLongLong(int value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedLongLong(final int value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = 0; // zero extend
 		bytes[offset + 1] = 0; // zero extend
 		bytes[offset + 2] = 0; // zero extend
@@ -2531,8 +2569,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyUnsignedLongLong(long value, byte[] bytes,
-			int offset) {
+	public final static void copyUnsignedLongLong(final long value,
+			final byte[] bytes, final int offset) {
 		bytes[offset + 0] = (byte) (value >>> 56); // zero extend
 		bytes[offset + 1] = (byte) (value >>> 48); // zero extend
 		bytes[offset + 2] = (byte) (value >>> 40); // zero extend
@@ -2556,7 +2594,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyFloat(float value, byte[] bytes, int offset) {
+	public final static void copyFloat(final float value, final byte[] bytes,
+			final int offset) {
 		int v = Float.floatToIntBits(value);
 		bytes[offset + 0] = (byte) (v >> 24);
 		bytes[offset + 1] = (byte) (v >> 16);
@@ -2576,7 +2615,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyFloat(double value, byte[] bytes, int offset) {
+	public final static void copyFloat(final double value, final byte[] bytes,
+			final int offset) {
 		int v = Float.floatToIntBits((float) value);
 		bytes[offset + 0] = (byte) (v >> 24);
 		bytes[offset + 1] = (byte) (v >> 16);
@@ -2597,7 +2637,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyDouble(double value, byte[] bytes, int offset) {
+	public final static void copyDouble(final double value, final byte[] bytes,
+			final int offset) {
 		long v = Double.doubleToLongBits(value);
 		bytes[offset + 0] = (byte) (v >> 56);
 		bytes[offset + 1] = (byte) (v >> 48);
@@ -2625,8 +2666,8 @@ public final class Host extends Object {
 	 * @param offset
 	 *            starting point in array
 	 */
-	public final static void copyLongDouble(double value, byte[] bytes,
-			int offset) {
+	public final static void copyLongDouble(final double value,
+			final byte[] bytes, final int offset) {
 		long v = Double.doubleToLongBits(value);
 		bytes[offset + 0] = (byte) (v >> 56);
 		bytes[offset + 1] = (byte) (v >> 48);
@@ -2658,29 +2699,33 @@ public final class Host extends Object {
 
 			sb.append(typeName[i]);
 			len = 15 - typeName[i].length();
-			for (int j = 0; j < len; j++)
+			for (int j = 0; j < len; j++) {
 				sb.append(' ');
+			}
 			sb.append(' ');
 
 			s = String.valueOf(typeSize[i]);
 			sb.append(s);
 			len = 4 - s.length();
-			for (int j = 0; j < len; j++)
+			for (int j = 0; j < len; j++) {
 				sb.append(' ');
+			}
 			sb.append(' ');
 
 			s = String.valueOf(typeBits[i]);
 			sb.append(s);
 			len = 4 - s.length();
-			for (int j = 0; j < len; j++)
+			for (int j = 0; j < len; j++) {
 				sb.append(' ');
+			}
 			sb.append(' ');
 
 			s = String.valueOf(typeCompilerAlignment[i]);
 			sb.append(s);
 			len = 4 - s.length();
-			for (int j = 0; j < len; j++)
+			for (int j = 0; j < len; j++) {
 				sb.append(' ');
+			}
 
 			System.out.println(sb);
 		}

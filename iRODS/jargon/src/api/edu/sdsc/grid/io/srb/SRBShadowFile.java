@@ -31,18 +31,18 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
-import java.io.IOException;
 import java.io.FileNotFoundException;
-
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Vector;
+
+import edu.sdsc.grid.io.GeneralFile;
 
 /**
  * If the SRBShadowFile refers to a file, this class can obtain input bytes from
  * a shadow file in a SRB file system. This SRBShadowFile can also represent a
  * shadow directory.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert
  * @since JARGON1.4
@@ -72,7 +72,7 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 * Creates a random access file stream to read from, a shadow file object
 	 * with the specified name. A new file descriptor is obtained from the SRB
 	 * which represents the connection to the file.
-	 *<P>
+	 * <P>
 	 * On construction a check is made to see if read access to the file is
 	 * allowed.
 	 * 
@@ -88,13 +88,14 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 * @throws SecurityException
 	 *             If denied read access to the file.
 	 */
-	public SRBShadowFile(SRBFile file, String shadowPath)
+	public SRBShadowFile(final SRBFile file, String shadowPath)
 			throws IllegalArgumentException, FileNotFoundException,
 			SecurityException, IOException {
 		super(file, "r");
 
-		if (shadowPath == null)
+		if (shadowPath == null) {
 			shadowPath = "";
+		}
 
 		this.shadowPath = shadowPath;
 		open(file);
@@ -104,7 +105,7 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 * Creates a random access file stream to read from, a shadow file object
 	 * with the specified name. A new file descriptor is obtained from the SRB
 	 * which represents the connection to the file.
-	 *<P>
+	 * <P>
 	 * On construction a check is made to see if read access to the file is
 	 * allowed.
 	 * 
@@ -120,15 +121,16 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 * @throws SecurityException
 	 *             If denied read access to the file.
 	 */
-	public SRBShadowFile(SRBShadowFile parent, String child)
+	public SRBShadowFile(final SRBShadowFile parent, final String child)
 			throws IllegalArgumentException, FileNotFoundException,
 			SecurityException, IOException {
 		super(parent.getSRBFile(), "r");
 
-		if (child == null)
+		if (child == null) {
 			parent.getShadowPath();
-		else
+		} else {
 			shadowPath = parent.getShadowPath() + GeneralFile.separator + child;
+		}
 
 		open(parent.getSRBFile());
 	}
@@ -143,10 +145,11 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		// can't do ths from super because shadowPath isn't set yet.
-		if (shadowPath == null)
+		if (shadowPath == null) {
 			return;
+		}
 
 		this.file = file;
 
@@ -156,8 +159,9 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	}
 
 	public SRBFile getSRBFile() {
-		if (file != null)
+		if (file != null) {
 			return (SRBFile) file;
+		}
 
 		throw new NullPointerException();
 	}
@@ -211,7 +215,7 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	 *             on truncate
 	 */
 	@Override
-	public void setLength(long newLength) throws IOException {
+	public void setLength(final long newLength) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -235,31 +239,31 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	// File Methods
 	// ----------------------------------------------------------------------
 	boolean exists() {
-		// real SRBFile.exists() isn't working for some reason
-		MetaDataRecordList[] rl = null;
-		int operator = MetaDataCondition.EQUAL;
-
 		// if it is a directory
-		if (fileType == 2)
+		if (fileType == 2) {
 			return true;
+		}
 
 		// if it is a file
-		if (fileType == 1)
+		if (fileType == 1) {
 			return true;
+		}
 
 		return false;
 	}
 
 	boolean isDirectory() {
-		if (fileType == 2)
+		if (fileType == 2) {
 			return true;
+		}
 
 		return false;
 	}
 
 	boolean isFile() {
-		if (fileType == 1)
+		if (fileType == 1) {
 			return true;
+		}
 
 		return false;
 	}
@@ -267,11 +271,11 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	/**
 	 * Returns an array of strings naming the files and directories in the
 	 * directory denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * There is no guarantee that the name strings in the resulting array will
 	 * appear in any specific order; they are not, in particular, guaranteed to
 	 * appear in alphabetical order.
-	 *<P>
+	 * <P>
 	 * This method will return all the files in the directory. Listing
 	 * directories with a large number of files may take a very long time.
 	 * 
@@ -309,11 +313,13 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 				result = in.read();
 			}
 		} catch (SRBException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		return (String[]) list.toArray(new String[0]);
@@ -322,11 +328,11 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 	/**
 	 * Returns an array of strings naming the files and directories in the
 	 * directory denoted by this abstract pathname.
-	 *<P>
+	 * <P>
 	 * There is no guarantee that the name strings in the resulting array will
 	 * appear in any specific order; they are not, in particular, guaranteed to
 	 * appear in alphabetical order.
-	 *<P>
+	 * <P>
 	 * This method will return all the files in the directory. Listing
 	 * directories with a large number of files may take a very long time.
 	 * 
@@ -345,8 +351,9 @@ public class SRBShadowFile extends SRBRandomAccessFile {
 				shadows[i] = new SRBShadowFile(this, list[i]);
 			}
 		} catch (IOException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 			return null;
 		}
 

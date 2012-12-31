@@ -46,7 +46,7 @@ public class IRODSAdmin {
 	public final Resource domainResource;
 	public final User user;
 
-	public IRODSAdmin(IRODSFileSystem fileSystem) throws IOException {
+	public IRODSAdmin(final IRODSFileSystem fileSystem) throws IOException {
 		this.fileSystem = fileSystem;
 		access = new Domain(fileSystem, "access", "access_type", "");
 		action = new Domain(fileSystem, "action", "action_type", "");
@@ -83,7 +83,7 @@ public class IRODSAdmin {
 	}
 
 	// mkgroup Name (make group)
-	public void createGroup(String groupName) throws IOException {
+	public void createGroup(final String groupName) throws IOException {
 		/*
 		 * <arg0>add</arg0> <arg1>user</arg1> <arg2>newgroup</arg2>
 		 * <arg3>rodsgroup</arg3> ??? <arg4>tempZone</arg4>
@@ -94,28 +94,28 @@ public class IRODSAdmin {
 	}
 
 	// rmgroup Name (remove group)
-	public void deleteGroup(String groupName) throws IOException {
+	public void deleteGroup(final String groupName) throws IOException {
 		String[] args = { "rm", "user", groupName, fileSystem.getZone() };
 		fileSystem.commands.admin(args);
 	}
 
 	// atg groupName userName (add to group - add a user to a group)
-	public void addUserToGroup(String groupName, String userName)
+	public void addUserToGroup(final String groupName, final String userName)
 			throws IOException {
 		String[] args = { "modify", "group", groupName, "add", userName };
 		fileSystem.commands.admin(args);
 	}
 
 	// rfg groupName userName (remove from group - remove a user from a group)
-	public void removeUserFromGroup(String groupName, String userName)
-			throws IOException {
+	public void removeUserFromGroup(final String groupName,
+			final String userName) throws IOException {
 		String[] args = { "modify", "group", groupName, "remove", userName };
 		fileSystem.commands.admin(args);
 	}
 
 	// atrg resourceGroupName resourceName (add (resource) to resource group)
-	public void addResourcetoGroup(String resourceGroup, String resourceName)
-			throws IOException {
+	public void addResourcetoGroup(final String resourceGroup,
+			final String resourceName) throws IOException {
 		String[] args = { "modify", "resourcegroup", resourceGroup, "add",
 				resourceName };
 		fileSystem.commands.admin(args);
@@ -123,8 +123,8 @@ public class IRODSAdmin {
 
 	// rfrg resourceGroupName resourceName (remove (resource) from resource
 	// group)
-	public void removeResourceFromGroup(String resourceGroup,
-			String resourceName) throws IOException {
+	public void removeResourceFromGroup(final String resourceGroup,
+			final String resourceName) throws IOException {
 		String[] args = { "modify", "resourcegroup", resourceGroup, "remove",
 				resourceName };
 		fileSystem.commands.admin(args);

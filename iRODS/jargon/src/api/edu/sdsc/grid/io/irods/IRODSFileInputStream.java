@@ -146,7 +146,8 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 		super(file);
 		fileSystem = (IRODSFileSystem) file.getFileSystem();
 		try {
-			this.lookForReroutingOfConnection(file.getAbsolutePath(), file.getResource());
+			this.lookForReroutingOfConnection(file.getAbsolutePath(),
+					file.getResource());
 		} catch (JargonException e) {
 			throw new IOException(e.getMessage());
 		}
@@ -464,8 +465,9 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 				.instance(fileSystem.commands);
 		FileCatalogObjectAO fileCatalogObjectAO = irodsAccessObjectFactory
 				.getFileCatalogObjectAO();
-		IRODSFileSystem tempReroutedFileSystem = fileCatalogObjectAO.rerouteIrodsFileWhenIRODSIsSource(
-				irodsAbsolutePath, resourceName);
+		IRODSFileSystem tempReroutedFileSystem = fileCatalogObjectAO
+				.rerouteIrodsFileWhenIRODSIsSource(irodsAbsolutePath,
+						resourceName);
 		if (tempReroutedFileSystem == null) {
 			log.info("no override of stream connection");
 			return;
@@ -473,13 +475,21 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 
 		log.debug("connection will be rerouted, switch to the new connection and close the file that was opened, close old file...");
 		try {
-			/* note that close will look at reroutedFileSystem and close it, this is done so that when close is called by a client
-			 * it will disconnect from the rerouted connection.  The client will be unaware that the additional connection exists, and otherwise,
-			 * an agent connection will be retained and then closed without disconnecting.  There is a bit of a shuffle of the file system object
-			 * in this class, it keeps references to the original, as well as the rerouted.  For this reason, the close of the file descriptor needs to happen
-			 * before the rerouted connection is assigned, or the close connection will just close the newly opened rerouted connection.
+			/*
+			 * note that close will look at reroutedFileSystem and close it,
+			 * this is done so that when close is called by a client it will
+			 * disconnect from the rerouted connection. The client will be
+			 * unaware that the additional connection exists, and otherwise, an
+			 * agent connection will be retained and then closed without
+			 * disconnecting. There is a bit of a shuffle of the file system
+			 * object in this class, it keeps references to the original, as
+			 * well as the rerouted. For this reason, the close of the file
+			 * descriptor needs to happen before the rerouted connection is
+			 * assigned, or the close connection will just close the newly
+			 * opened rerouted connection.
 			 * 
-			 * The timing is a bit clunky in this version of Jargon, but could not be avoided.
+			 * The timing is a bit clunky in this version of Jargon, but could
+			 * not be avoided.
 			 */
 			close();
 			setFileSystem(tempReroutedFileSystem);

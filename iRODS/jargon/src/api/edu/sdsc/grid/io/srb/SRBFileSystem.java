@@ -70,7 +70,7 @@ import edu.sdsc.grid.io.StandardMetaData;
  * The SRBFileSystem class is the class for connection implementations to SRB
  * servers. It provides the framework to support a wide range of SRB semantics.
  * Specifically, the functions needed to interact with a SRB server.
- *<P>
+ * <P>
  * Many of the methods remain package private, though a few "srb..." methods
  * have been made public. These methods are generally very low level and their
  * use is not recommended. Clear, high level equivalents are being developed
@@ -189,15 +189,16 @@ public class SRBFileSystem extends RemoteFileSystem {
 	int MAX_PORT = -1;
 
 	static {
-		if (!ProtocolCatalog.has(new SRBProtocol()))
+		if (!ProtocolCatalog.has(new SRBProtocol())) {
 			ProtocolCatalog.add(new SRBProtocol());
+		}
 	}
 
 	/**
 	 * Opens a socket connection to read from and write to. Loads the default
 	 * SRB user account information from their home directory. The account
 	 * information stored in this object cannot be changed once constructed.
-	 *<P>
+	 * <P>
 	 * This constructor is provided for convenience however, it is recommended
 	 * that all necessary data be sent to the constructor and not left to the
 	 * defaults.
@@ -223,7 +224,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             if an IOException occurs.
 	 */
-	public SRBFileSystem(SRBAccount srbAccount) throws IOException,
+	public SRBFileSystem(final SRBAccount srbAccount) throws IOException,
 			NullPointerException {
 		setAccount(srbAccount);
 		commands = new SRBCommands();
@@ -268,9 +269,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 								+ dn.substring(loc + email.length());
 						tempAccount = ticketFileSystem.srbGetUserByDn(
 								SRBFile.MDAS_CATALOG, dn);
-						if (tempAccount == null)
+						if (tempAccount == null) {
 							throw new SRBException("User not found for DN="
 									+ dn);
+						}
 					} else {
 						throw new SRBException("User not found for DN=" + dn);
 					}
@@ -353,10 +355,12 @@ public class SRBFileSystem extends RemoteFileSystem {
 		SRBFile.uriFileSystems.remove(this);
 
 		close();
-		if (commands != null)
+		if (commands != null) {
 			commands = null;
-		if (account != null)
+		}
+		if (account != null) {
 			account = null;
+		}
 	}
 
 	// General
@@ -365,8 +369,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 */
 	@Override
 	protected void setAccount(GeneralAccount account) throws IOException {
-		if (account == null)
+		if (account == null) {
 			account = new SRBAccount();
+		}
 
 		srbAccount = (SRBAccount) account.clone();
 		this.account = srbAccount;
@@ -374,7 +379,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 		setVersion(SRBAccount.getVersion());
 	}
 
-	private void setVersion(String version) {
+	private void setVersion(final String version) {
 		if (version == null) {
 			return;
 		}
@@ -411,8 +416,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 */
 	@Override
 	public GeneralAccount getAccount() throws NullPointerException {
-		if (srbAccount != null)
+		if (srbAccount != null) {
 			return (SRBAccount) srbAccount.clone();
+		}
 
 		throw new NullPointerException();
 	}
@@ -429,21 +435,21 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * Set the default storage resource. Only used when there wasn't one
 	 * provided and we had to query the SRB for it.
 	 */
-	void setDefaultStorageResource(String resource) {
+	void setDefaultStorageResource(final String resource) {
 		srbAccount.setDefaultStorageResource(resource);
 	}
 
 	/**
 	 * Only used by the SRBFile( uri ) constructor.
 	 */
-	void setProxyMcatZone(String zone) {
+	void setProxyMcatZone(final String zone) {
 		srbAccount.setProxyMcatZone(zone);
 	}
 
 	/**
 	 * Only used by the SRBFile( uri ) constructor.
 	 */
-	void setMcatZone(String zone) {
+	void setMcatZone(final String zone) {
 		srbAccount.setMcatZone(zone);
 	}
 
@@ -451,7 +457,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * Used to specify a port range available through a firewall. Needed because
 	 * some SRB commands open new ports on the client machine.
 	 */
-	public/* static */void setFirewallPorts(int minPort, int maxPort) {
+	public/* static */void setFirewallPorts(final int minPort, final int maxPort) {
 		if ((minPort >= 0) && (maxPort >= 0)) {
 			MIN_PORT = minPort;
 			MAX_PORT = maxPort;
@@ -462,7 +468,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * Sets the default number of records that will be returned by a query. Must
 	 * be a positive integer.
 	 */
-	public void setQueryRecordsWanted(int num) {
+	public void setQueryRecordsWanted(final int num) {
 		if (num > 0) {
 			DEFAULT_RECORDS_WANTED = num;
 		}
@@ -596,8 +602,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            search, if more records are available.
 	 */
 	@Override
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int recordsWanted) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int recordsWanted)
+			throws IOException {
 		return query(conditions, selects, recordsWanted, false, false);
 	}
 
@@ -620,9 +627,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            sorts the query's returned values. Ordered matching the order
 	 *            of the selects array.
 	 */
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int recordsWanted, boolean orderBy)
-			throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int recordsWanted,
+			final boolean orderBy) throws IOException {
 		return query(conditions, selects, recordsWanted, orderBy, false);
 	}
 
@@ -630,29 +637,29 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * Queries the file server to find all files that match a set of conditions.
 	 * For all those that match, the fields indicated in the select array are
 	 * returned in the result object.
-	 *<P>
+	 * <P>
 	 * While condition and select array objects have all been checked for
 	 * self-consistency during their construction, there are additional problems
 	 * that must be detected at query time:
-	 *<P>
+	 * <P>
 	 * <ul>
 	 * <li>Redundant selection fields
 	 * <li>Redundant condition fields
 	 * <li>Fields incompatible with a file server
 	 * </ul>
-	 *<P>
+	 * <P>
 	 * For instance, it is possible to build a condition object appropriate for
 	 * the SRB, then pass that object in a local file system query. That will
 	 * find that the condition is incompatible and generate a mismatch
 	 * exception.
-	 *<P>
+	 * <P>
 	 * Query is implemented by the file-server-specific classes, like that for
 	 * the SRB, FTP, etc. Those classes must re-map condition and select field
 	 * names and operator codes to those required by a particular file server
 	 * and protocol version. Once re-mapped, they issue the query and get
 	 * results. The results are then mapped back to the standard public field
 	 * names of the MetaDataGroups.
-	 *<P>
+	 * <P>
 	 * The orderBy variable sorts the query's returned values. The order will
 	 * match the order of the selects array. <br>
 	 * E.g., where selects[0] = SIZE<br>
@@ -676,9 +683,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @param nonDistinct
 	 *            If true, allows redundencies in returned data.
 	 */
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int recordsWanted, boolean orderBy,
-			boolean nonDistinct) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int recordsWanted,
+			final boolean orderBy, final boolean nonDistinct)
+			throws IOException {
 		/*
 		 * Query is implemented by the file-server-specific classes, like that
 		 * for the SRB, FTP, etc. Those classes must re-map condition and select
@@ -694,12 +702,13 @@ public class SRBFileSystem extends RemoteFileSystem {
 		// if (protocol == SRB)
 		boolean hasZone = false;
 		if (conditions != null) {
-			for (int i = 0; i < conditions.length; i++) {
-				if ((conditions[i] != null)
-						&& (conditions[i].getFieldName().equals(
+			for (MetaDataCondition condition : conditions) {
+				if ((condition != null)
+						&& (condition.getFieldName().equals(
 								StandardMetaData.DIRECTORY_NAME)
-								|| conditions[i].getFieldName().equals(
-										DirectoryMetaData.PARENT_DIRECTORY_NAME) || conditions[i]
+								|| condition
+										.getFieldName()
+										.equals(DirectoryMetaData.PARENT_DIRECTORY_NAME) || condition
 								.getFieldName().equals(
 										SRBMetaDataSet.CONTAINER_NAME))) {
 					hasZone = true;
@@ -747,10 +756,11 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		try {
-			if (obj == null)
+			if (obj == null) {
 				return false;
+			}
 
 			SRBFileSystem temp = (SRBFileSystem) obj;
 
@@ -824,7 +834,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * createUserInfoBuffer(account); }
 	 */
 
-	static byte[] createUserInfoBuffer(SRBAccount account) {
+	static byte[] createUserInfoBuffer(final SRBAccount account) {
 		/*
 		 * Zone srb 3.0 handshake typedef struct StartupInfo { // PacketHdr hdr;
 		 * char proxyUserName[NAMEDATALEN]; // proxy User Name char
@@ -900,10 +910,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 			// ProxyMcatZone
 			temp = account.getProxyMcatZone();
 			if (temp != null) {
-				System
-						.arraycopy(account.getProxyMcatZone().getBytes(), 0,
-								userInfoBuffer, 72, account.getProxyMcatZone()
-										.length());
+				System.arraycopy(account.getProxyMcatZone().getBytes(), 0,
+						userInfoBuffer, 72, account.getProxyMcatZone().length());
 			}
 
 			// ClientUserName
@@ -955,8 +963,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public InputStream executeProxyCommand(String command, String commandArgs)
-			throws IOException {
+	public InputStream executeProxyCommand(final String command,
+			final String commandArgs) throws IOException {
 		// This method can't be done at this level,
 		// So it had to be passed to SRBCommand
 		// Plus dealing with the return value as a byte[] wasn't viable
@@ -982,8 +990,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public InputStream executeProxyCommand(String command, String commandArgs,
-			String hostAddress, int portalFlag) throws IOException {
+	public InputStream executeProxyCommand(final String command,
+			final String commandArgs, final String hostAddress,
+			final int portalFlag) throws IOException {
 		return srbExecCommand(command, commandArgs, hostAddress, portalFlag);
 	}
 
@@ -1008,9 +1017,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public InputStream executeProxyCommand(String command, String commandArgs,
-			String hostAddress, String fileName, int portalFlag)
-			throws IOException {
+	public InputStream executeProxyCommand(final String command,
+			final String commandArgs, final String hostAddress,
+			final String fileName, final int portalFlag) throws IOException {
 		return srbExecCommand(command, commandArgs, hostAddress, fileName,
 				portalFlag);
 	}
@@ -1021,9 +1030,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * pathname <code>file</code>. The URL can then be read using the SRBFile,
 	 * SRBRandomAccessFile and others as if it were a standard SRB file.
 	 */
-	public void registerURL(SRBFile file, URL url) throws IOException {
-		srbRegisterDataset(0, file.getName(), "URL", file.getResource(), file
-				.getParent(), url.toString(), 0);
+	public void registerURL(final SRBFile file, final URL url)
+			throws IOException {
+		srbRegisterDataset(0, file.getName(), "URL", file.getResource(),
+				file.getParent(), url.toString(), 0);
 	}
 
 	// ----------------------------------------------------------------------
@@ -1081,9 +1091,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjCreate
 	 */
-	int srbObjCreate(int catType, String fileName, String dataTypeName,
-			String resourceName, String collectionName, String serverLocalPath,
-			long dataSize) throws IOException {
+	int srbObjCreate(final int catType, final String fileName,
+			String dataTypeName, String resourceName, String collectionName,
+			String serverLocalPath, final long dataSize) throws IOException {
 		if (dataTypeName == null) {
 			dataTypeName = "generic";// DefMdasDataTypeName
 		}
@@ -1113,7 +1123,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjOpen
 	 */
-	int srbObjOpen(String objID, int openFlag, String collectionName)
+	int srbObjOpen(final String objID, final int openFlag, String collectionName)
 			throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
@@ -1131,7 +1141,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjClose
 	 */
-	void srbObjClose(int srbFD) throws IOException {
+	void srbObjClose(final int srbFD) throws IOException {
 
 		commands.srbObjClose(srbFD);
 	}
@@ -1142,7 +1152,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjUnlink
 	 */
-	void srbObjUnlink(String objID, String collectionName) throws IOException {
+	void srbObjUnlink(final String objID, String collectionName)
+			throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1159,7 +1170,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjRead
 	 */
-	byte[] srbObjRead(int srbFD, int length) throws IOException {
+	byte[] srbObjRead(final int srbFD, final int length) throws IOException {
 
 		return commands.srbObjRead(srbFD, length);
 	}
@@ -1170,11 +1181,12 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjWrite
 	 */
-	int srbObjWrite(int srbFD, byte outputBuffer[], int length)
+	int srbObjWrite(final int srbFD, final byte outputBuffer[], final int length)
 			throws IOException {
 		// should 0 = write whole file?
-		if (length <= 0)
+		if (length <= 0) {
 			return 0;
+		}
 
 		return commands.srbObjWrite(srbFD, outputBuffer, length);
 	}
@@ -1185,7 +1197,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjSeek
 	 */
-	void srbObjSeek(int srbFD, long offset, int whence) throws IOException {
+	void srbObjSeek(final int srbFD, final long offset, final int whence)
+			throws IOException {
 
 		commands.srbObjSeek(srbFD, offset, whence);
 	}
@@ -1196,7 +1209,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjSync
 	 */
-	void srbObjSync(int srbFD) throws IOException {
+	void srbObjSync(final int srbFD) throws IOException {
 
 		commands.srbObjSync(srbFD);
 	}
@@ -1207,7 +1220,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjStat
 	 */
-	long[] srbObjStat(int catType, String pathName, int myType)
+	long[] srbObjStat(final int catType, String pathName, int myType)
 			throws IOException {
 		if (pathName == null) {
 			pathName = getHomeDirectory();
@@ -1235,8 +1248,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjStat64
 	 */
-	long[] srbObjStat64(int catType, String collectionName, String fileName)
-			throws IOException {
+	long[] srbObjStat64(final int catType, String collectionName,
+			final String fileName) throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1250,8 +1263,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 			// because the srb is expecting '/'
 			if (collectionName.substring(collectionName.length() - 1) == System
 					.getProperty("file.separator")) {
-				collectionName = collectionName.substring(0, collectionName
-						.length() - 2)
+				collectionName = collectionName.substring(0,
+						collectionName.length() - 2)
 						+ GeneralFile.separator;
 			} else {
 				collectionName = collectionName + GeneralFile.separator;
@@ -1267,8 +1280,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjReplicate
 	 */
-	void srbObjReplicate(int catType, String objID, String collectionName,
-			String newResourceName, String newPathName) throws IOException {
+	void srbObjReplicate(final int catType, final String objID,
+			String collectionName, String newResourceName,
+			final String newPathName) throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1290,9 +1304,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjMove
 	 */
-	void srbObjMove(int catType, String objID, String collectionName,
-			String srcResource, String newResourceName, String newPathName,
-			String container) throws IOException {
+	void srbObjMove(final int catType, final String objID,
+			String collectionName, String srcResource, String newResourceName,
+			final String newPathName, String container) throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1319,10 +1333,12 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjProxyOpr
 	 */
-	byte[] srbObjProxyOpr(int operation, int inputInt1, int inputInt2,
-			int inputInt3, int inputInt4, String inputStr1, String inputStr2,
-			String inputStr3, String inputStr4, byte[] inputBStrm1,
-			byte[] inputBStrm2, byte[] inputBStrm3) throws IOException {
+	byte[] srbObjProxyOpr(final int operation, final int inputInt1,
+			final int inputInt2, final int inputInt3, final int inputInt4,
+			final String inputStr1, final String inputStr2,
+			final String inputStr3, final String inputStr4,
+			final byte[] inputBStrm1, final byte[] inputBStrm2,
+			final byte[] inputBStrm3) throws IOException {
 
 		return commands.srbObjProxyOpr(operation, inputInt1, inputInt2,
 				inputInt3, inputInt4, inputStr1, inputStr2, inputStr3,
@@ -1335,8 +1351,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbCollSeek
 	 */
-	void srbCollSeek(int srbFD, int offset, int whence, int is64Flag)
-			throws IOException {
+	void srbCollSeek(final int srbFD, final int offset, final int whence,
+			final int is64Flag) throws IOException {
 
 		commands.srbCollSeek(srbFD, offset, whence, is64Flag);
 	}
@@ -1347,8 +1363,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbGetDatasetInfo
 	 */
-	SRBMetaDataRecordList[] srbGetDatasetInfo(int catType, String objID,
-			String collectionName, int recordsWanted) throws IOException {
+	SRBMetaDataRecordList[] srbGetDatasetInfo(final int catType,
+			final String objID, String collectionName, int recordsWanted)
+			throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1370,9 +1387,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbGenQuery
 	 */
-	SRBMetaDataRecordList[] srbGenQuery(int catType, String myMcatZone,
-			MetaDataCondition[] conditions, MetaDataSelect[] selects,
-			int recordsWanted, boolean orderBy, boolean nonDistinct)
+	SRBMetaDataRecordList[] srbGenQuery(final int catType,
+			final String myMcatZone, final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, int recordsWanted,
+			final boolean orderBy, final boolean nonDistinct)
 			throws IOException {
 		if (recordsWanted < 1) {
 			// use default
@@ -1391,9 +1409,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRegisterDataset
 	 */
-	void srbRegisterDataset(int catType, String objID, String dataTypeName,
-			String resourceName, String collectionName, String pathName,
-			long dataSize) throws IOException {
+	void srbRegisterDataset(final int catType, final String objID,
+			String dataTypeName, String resourceName, String collectionName,
+			final String pathName, final long dataSize) throws IOException {
 		if (dataTypeName == null) {
 			dataTypeName = "generic";// DefMdasDataTypeName
 		}
@@ -1418,9 +1436,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbModifyDataset
 	 */
-	int srbModifyDataset(int catType, String objID, String collectionName,
-			String resourceName, String pathName, String dataValue1,
-			String dataValue2, int actionType) throws IOException {
+	int srbModifyDataset(final int catType, final String objID,
+			String collectionName, String resourceName, String pathName,
+			final String dataValue1, final String dataValue2,
+			final int actionType) throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1470,14 +1489,16 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbChkMdasAuth
 	 */
-	void srbChkMdasAuth(String userName, String srbAuth, String mdasDomain)
-			throws IOException {
-		if ((userName == null) || (srbAuth == null))
+	void srbChkMdasAuth(final String userName, final String srbAuth,
+			String mdasDomain) throws IOException {
+		if ((userName == null) || (srbAuth == null)) {
 			throw new NullPointerException(
 					"Null value entered for Mdas authorization");
+		}
 
-		if (mdasDomain == null)
+		if (mdasDomain == null) {
 			mdasDomain = getDomainName();// default user mdas home domain
+		}
 
 		commands.srbChkMdasAuth(userName, srbAuth, mdasDomain);
 	}
@@ -1488,8 +1509,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbCreateCollect
 	 */
-	void srbCreateCollect(int catType, String parentCollection,
-			String newCollection) throws IOException {
+	void srbCreateCollect(final int catType, String parentCollection,
+			final String newCollection) throws IOException {
 		if (parentCollection == null) {
 			parentCollection = getHomeDirectory();// DefMdasCollectionName
 		} else if (!parentCollection.startsWith(SRB_ROOT)) {
@@ -1506,8 +1527,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbListCollect
 	 */
-	SRBMetaDataRecordList[] srbListCollect(int catType, String collectionName,
-			String flag, int recordsWanted) throws IOException {
+	SRBMetaDataRecordList[] srbListCollect(final int catType,
+			String collectionName, final String flag, int recordsWanted)
+			throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1530,9 +1552,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbModifyCollect
 	 */
-	void srbModifyCollect(int catType, String collectionName,
-			String dataValue1, String dataValue2, String dataValue3,
-			int actionType) throws IOException {
+	void srbModifyCollect(final int catType, String collectionName,
+			final String dataValue1, final String dataValue2,
+			final String dataValue3, final int actionType) throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1550,8 +1572,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbChkMdasSysAuth
 	 */
-	void srbChkMdasSysAuth(String userName, String srbAuth, String mdasDomain)
-			throws IOException {
+	void srbChkMdasSysAuth(final String userName, final String srbAuth,
+			final String mdasDomain) throws IOException {
 
 		commands.srbChkMdasSysAuth(userName, srbAuth, mdasDomain);
 	}
@@ -1586,9 +1608,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	public void srbRegisterUserGrp(int catType, String userGrpName,
-			String userGrpPasswd, String userGrpType, String userGrpAddress,
-			String userGrpPhone, String userGrpEmail) throws IOException {
+	public void srbRegisterUserGrp(final int catType, final String userGrpName,
+			final String userGrpPasswd, final String userGrpType,
+			final String userGrpAddress, final String userGrpPhone,
+			final String userGrpEmail) throws IOException {
 
 		commands.srbRegisterUserGrp(catType, userGrpName, userGrpPasswd,
 				userGrpType, userGrpAddress, userGrpPhone, userGrpEmail);
@@ -1626,10 +1649,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	public void srbRegisterUser(int catType, String userName,
-			String userDomain, String userPasswd, String userType,
-			String userAddress, String userPhone, String userEmail)
-			throws IOException {
+	public void srbRegisterUser(final int catType, final String userName,
+			final String userDomain, final String userPasswd,
+			final String userType, final String userAddress,
+			final String userPhone, final String userEmail) throws IOException {
 
 		commands.srbRegisterUser(catType, userName, userDomain, userPasswd,
 				userType, userAddress, userPhone, userEmail);
@@ -1655,10 +1678,11 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	public void srbModifyUser(int catType, String dataValue1,
-			String dataValue2, int actionType) throws IOException {
-		if (catType < 0)
+	public void srbModifyUser(int catType, final String dataValue1,
+			final String dataValue2, final int actionType) throws IOException {
+		if (catType < 0) {
 			catType = 0;
+		}
 
 		commands.srbModifyUser(catType, dataValue1, dataValue2, actionType);
 	}
@@ -1669,7 +1693,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbSetAuditTrail
 	 */
-	int srbSetAuditTrail(int set_value) throws IOException {
+	int srbSetAuditTrail(final int set_value) throws IOException {
 
 		return commands.srbSetAuditTrail(set_value);
 	}
@@ -1680,10 +1704,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjAudit
 	 */
-	void srbObjAudit(int catType, String userName, String objID,
-			String collectionName, String dataPath, String resourceName,
-			String accessMode, String comment, int success, String domainName)
-			throws IOException {
+	void srbObjAudit(final int catType, final String userName,
+			final String objID, String collectionName, final String dataPath,
+			String resourceName, final String accessMode, final String comment,
+			final int success, final String domainName) throws IOException {
 
 		if (resourceName == null) {
 			resourceName = getDefaultStorageResource();// DefMdasResourceName
@@ -1707,10 +1731,11 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRegisterReplica
 	 */
-	void srbRegisterReplica(int catType, String objID, String collectionName,
-			String origResourceName, String origPathName,
-			String newResourceName, String newPathName, String userName,
-			String domainName) throws IOException {
+	void srbRegisterReplica(final int catType, final String objID,
+			String collectionName, String origResourceName,
+			final String origPathName, final String newResourceName,
+			final String newPathName, final String userName,
+			final String domainName) throws IOException {
 		if (origResourceName == null) {
 			origResourceName = getDefaultStorageResource();// DefMdasResourceName
 		}
@@ -1733,7 +1758,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbGetPrivUsers
 	 */
-	SRBMetaDataRecordList[] srbGetPrivUsers(int catalog, int recordsWanted)
+	SRBMetaDataRecordList[] srbGetPrivUsers(final int catalog, int recordsWanted)
 			throws IOException {
 
 		if (recordsWanted < 1) {
@@ -1750,8 +1775,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbGetMoreRows
 	 */
-	SRBMetaDataRecordList[] srbGetMoreRows(int catalog, int contDesc,
-			int recordsWanted) throws IOException {
+	SRBMetaDataRecordList[] srbGetMoreRows(final int catalog,
+			final int contDesc, int recordsWanted) throws IOException {
 
 		if (recordsWanted < 1) {
 			// use default
@@ -1767,9 +1792,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbIssueTicket
 	 */
-	void srbIssueTicket(String objID, String collectionName,
-			String collectionFlag, String beginTime, String endTime,
-			int accessCnt, String ticketUser) throws IOException {
+	void srbIssueTicket(final String objID, String collectionName,
+			final String collectionFlag, final String beginTime,
+			final String endTime, final int accessCnt, final String ticketUser)
+			throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
 		} else if (!collectionName.startsWith(SRB_ROOT)) {
@@ -1787,7 +1813,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRemoveTicket
 	 */
-	void srbRemoveTicket(String ticket) throws IOException {
+	void srbRemoveTicket(final String ticket) throws IOException {
 
 		commands.srbRemoveTicket(ticket);
 	}
@@ -1798,7 +1824,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbUnregisterDataset
 	 */
-	void srbUnregisterDataset(String objID, String collectionName)
+	void srbUnregisterDataset(final String objID, String collectionName)
 			throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();// DefMdasCollectionName
@@ -1816,9 +1842,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbContainerCreate
 	 */
-	void srbContainerCreate(int catType, String containerName,
-			String containerType, String resourceName, long containerSize)
-			throws IOException {
+	void srbContainerCreate(final int catType, final String containerName,
+			final String containerType, String resourceName,
+			final long containerSize) throws IOException {
 		if (resourceName == null) {
 			resourceName = getDefaultStorageResource();// DefMdasResourceName
 		}
@@ -1833,8 +1859,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRegisterContainer
 	 */
-	void srbRegisterContainer(int catType, String containerName,
-			String resourceName, long containerSize) throws IOException {
+	void srbRegisterContainer(final int catType, final String containerName,
+			String resourceName, final long containerSize) throws IOException {
 		if (resourceName == null) {
 			resourceName = getDefaultStorageResource();// DefMdasResourceName
 		}
@@ -1849,9 +1875,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRegisterInContDataset
 	 */
-	void srbRegisterInContDataset(int catType, String objID,
-			String collectionName, String containerName, String dataTypeName,
-			long dataSize, long baseOffset) throws IOException {
+	void srbRegisterInContDataset(final int catType, final String objID,
+			String collectionName, final String containerName,
+			String dataTypeName, final long dataSize, final long baseOffset)
+			throws IOException {
 		if (dataTypeName == null) {
 			dataTypeName = "generic";// DefMdasDataTypeName
 		}
@@ -1873,8 +1900,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbGetContainerInfo
 	 */
-	SRBMetaDataRecordList[] srbGetContainerInfo(int catType,
-			String containerName, int recordsWanted) throws IOException {
+	SRBMetaDataRecordList[] srbGetContainerInfo(final int catType,
+			final String containerName, int recordsWanted) throws IOException {
 		if (recordsWanted < 1) {
 			// use default
 			recordsWanted = DEFAULT_RECORDS_WANTED;
@@ -1890,8 +1917,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbGetResOnChoice
 	 */
-	String srbGetResOnChoice(int catType, String logResName, String phyResName,
-			String inputFlag) throws IOException {
+	String srbGetResOnChoice(final int catType, final String logResName,
+			final String phyResName, final String inputFlag) throws IOException {
 
 		return commands.srbGetResOnChoice(catType, logResName, phyResName,
 				inputFlag);
@@ -1903,8 +1930,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRmContainer
 	 */
-	void srbRmContainer(int catType, String containerName, boolean force)
-			throws IOException {
+	void srbRmContainer(final int catType, final String containerName,
+			final boolean force) throws IOException {
 		commands.srbRmContainer(catType, containerName, force);
 	}
 
@@ -1914,8 +1941,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbSyncContainer
 	 */
-	void srbSyncContainer(int catType, String containerName, int syncFlag)
-			throws IOException {
+	void srbSyncContainer(final int catType, final String containerName,
+			final int syncFlag) throws IOException {
 		commands.srbSyncContainer(catType, containerName, syncFlag);
 	}
 
@@ -1925,7 +1952,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbReplContainer
 	 */
-	void srbReplContainer(int catType, String containerName,
+	void srbReplContainer(final int catType, final String containerName,
 			String newResourceName) throws IOException {
 		if (newResourceName == null) {
 			newResourceName = getDefaultStorageResource();// DefMdasResourceName
@@ -1940,8 +1967,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbObjOpenWithTicket
 	 */
-	int srbObjOpenWithTicket(String objID, int oflag, String collectionName,
-			String ticket) throws IOException {
+	int srbObjOpenWithTicket(final String objID, final int oflag,
+			final String collectionName, final String ticket)
+			throws IOException {
 
 		// return commands.srbObjOpenWithTicket( objID, oflag, collectionName,
 		// ticket );
@@ -1957,10 +1985,12 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRegInternalCompObj
 	 */
-	void srbRegInternalCompObj(String objName, String objCollName,
-			int objReplNum, int objSegNum, String intObjRescName,
-			String dataPathName, long dataSize, long offset, int inpIntReplNum,
-			int intSegNum, int objTypeInx, String phyResLoc) throws IOException {
+	void srbRegInternalCompObj(final String objName, final String objCollName,
+			final int objReplNum, final int objSegNum,
+			final String intObjRescName, final String dataPathName,
+			final long dataSize, final long offset, final int inpIntReplNum,
+			final int intSegNum, final int objTypeInx, final String phyResLoc)
+			throws IOException {
 		commands.srbRegInternalCompObj(objName, objCollName, objReplNum,
 				objSegNum, intObjRescName, dataPathName, dataSize, offset,
 				inpIntReplNum, intSegNum, objTypeInx, phyResLoc);
@@ -1972,8 +2002,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRmIntCompObj
 	 */
-	void srbRmIntCompObj(String objName, String objCollName, int objReplNum,
-			int objSegNum, int inpIntReplNum, int intSegNum) throws IOException {
+	void srbRmIntCompObj(final String objName, final String objCollName,
+			final int objReplNum, final int objSegNum, final int inpIntReplNum,
+			final int intSegNum) throws IOException {
 		commands.srbRmIntCompObj(objName, objCollName, objReplNum, objSegNum,
 				inpIntReplNum, intSegNum);
 	}
@@ -1984,8 +2015,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbRmCompObj
 	 */
-	void srbRmCompObj(String objName, String objCollName, int objReplNum,
-			int objSegNum) throws IOException {
+	void srbRmCompObj(final String objName, final String objCollName,
+			final int objReplNum, final int objSegNum) throws IOException {
 		commands.srbRmCompObj(objName, objCollName, objReplNum, objSegNum);
 	}
 
@@ -1995,10 +2026,12 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbModInternalCompObj
 	 */
-	void srbModInternalCompObj(String objID, String collectionName,
-			int objReplNum, int objSegNum, int inpIntReplNum, int intSegNum,
-			String data_value_1, String data_value_2, String data_value_3,
-			String data_value_4, int retraction_type) throws IOException {
+	void srbModInternalCompObj(final String objID, final String collectionName,
+			final int objReplNum, final int objSegNum, final int inpIntReplNum,
+			final int intSegNum, final String data_value_1,
+			final String data_value_2, final String data_value_3,
+			final String data_value_4, final int retraction_type)
+			throws IOException {
 		commands.srbModInternalCompObj(objID, collectionName, objReplNum,
 				objSegNum, inpIntReplNum, intSegNum, data_value_1,
 				data_value_2, data_value_3, data_value_4, retraction_type);
@@ -2021,9 +2054,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * dataValue1 - Input value 1. String dataValue2 - Input value 2. String
 	 * dataValue3 - Input value 3. String dataValue4 - Input value 4.
 	 */
-	public void srbModifyRescInfo(int catType, String resourceName,
-			int actionType, String dataValue1, String dataValue2,
-			String dataValue3, String dataValue4) throws IOException {
+	public void srbModifyRescInfo(final int catType, final String resourceName,
+			final int actionType, final String dataValue1,
+			final String dataValue2, final String dataValue3,
+			final String dataValue4) throws IOException {
 		commands.srbModifyRescInfo(catType, resourceName, actionType,
 				dataValue1, dataValue2, dataValue3, dataValue4);
 	}
@@ -2041,8 +2075,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * Address. String parentLoc - Parent location String serverUser - Server
 	 * User String serverUserDomain - Server User Domain.
 	 */
-	public void srbRegisterLocation(String locName, String fullAddr,
-			String parentLoc, String serverUser, String serverUserDomain)
+	public void srbRegisterLocation(final String locName,
+			final String fullAddr, final String parentLoc,
+			final String serverUser, final String serverUserDomain)
 			throws IOException {
 		commands.srbRegisterLocation(locName, fullAddr, parentLoc, serverUser,
 				serverUserDomain);
@@ -2060,8 +2095,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * Input - String typeName - The type name. String newValue - The new value.
 	 * String parentValue - Parent value.
 	 */
-	public void srbIngestToken(String typeName, String newValue,
-			String parentValue) throws IOException {
+	public void srbIngestToken(final String typeName, final String newValue,
+			final String parentValue) throws IOException {
 		commands.srbIngestToken(typeName, newValue, parentValue);
 	}
 
@@ -2078,9 +2113,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * type. String location - Location. String phyPath - Physical Path. String
 	 * class - className. int size - size.
 	 */
-	public void srbRegisterResource(String rescName, String rescType,
-			String location, String phyPath, String className, int size)
-			throws IOException {
+	public void srbRegisterResource(final String rescName,
+			final String rescType, final String location, final String phyPath,
+			final String className, final int size) throws IOException {
 		commands.srbRegisterResource(rescName, rescType, location, phyPath,
 				className, size);
 	}
@@ -2097,8 +2132,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * Input - String rescName - The resource name. String rescType - Resource
 	 * type. String phyResc - Physical resource. String phyPath - Physical path.
 	 */
-	public void srbRegisterLogicalResource(String rescName, String rescType,
-			String phyResc, String phyPath) throws IOException {
+	public void srbRegisterLogicalResource(final String rescName,
+			final String rescType, final String phyResc, final String phyPath)
+			throws IOException {
 		commands.srbRegisterLogicalResource(rescName, rescType, phyResc,
 				phyPath);
 	}
@@ -2116,9 +2152,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * rescType - Resource type. String oldLogicalRescName - old logical
 	 * resource name. String indefaultPath - Indefault Path.
 	 */
-	public void srbRegisterReplicateResourceInfo(String physicalRescName,
-			String rescType, String oldLogicalRescName, String inDefaultPath)
-			throws IOException {
+	public void srbRegisterReplicateResourceInfo(final String physicalRescName,
+			final String rescType, final String oldLogicalRescName,
+			final String inDefaultPath) throws IOException {
 		commands.srbRegisterReplicateResourceInfo(physicalRescName, rescType,
 				oldLogicalRescName, inDefaultPath);
 	}
@@ -2137,7 +2173,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @param deleteValue
 	 *            - The value (name) that is being deleted.
 	 */
-	public void srbDeleteValue(int valueType, String deleteValue)
+	public void srbDeleteValue(final int valueType, final String deleteValue)
 			throws IOException {
 		commands.srbDeleteValue(valueType, deleteValue);
 	}
@@ -2148,8 +2184,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbExecCommand
 	 */
-	InputStream srbExecCommand(String command, String commandArgs,
-			String hostAddress, int portalFlag) throws IOException {
+	InputStream srbExecCommand(final String command, final String commandArgs,
+			final String hostAddress, int portalFlag) throws IOException {
 		if (command == null) {
 			throw new NullPointerException("No command given");
 		}
@@ -2169,8 +2205,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbExecCommand
 	 */
-	InputStream srbExecCommand(String command, String commandArgs,
-			String hostAddress, String fileName, int portalFlag)
+	InputStream srbExecCommand(final String command, final String commandArgs,
+			String hostAddress, final String fileName, int portalFlag)
 			throws IOException {
 		if (command == null) {
 			throw new NullPointerException("No command given");
@@ -2202,7 +2238,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            The resource for the object to sync to. A null or empty string
 	 *            means synchronize existing copies.
 	 */
-	void srbSyncData(SRBFile file) throws IOException {
+	void srbSyncData(final SRBFile file) throws IOException {
 		if (file == null) {
 			throw new NullPointerException("No file given");
 		}
@@ -2222,8 +2258,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            - O_RDWR, O_WRONLY or O_RDONLY.
 	 * @return The file descriptor for the container.
 	 */
-	int srbContainerOpen(int catType, String containerName, int openFlag)
-			throws IOException {
+	int srbContainerOpen(final int catType, final String containerName,
+			final int openFlag) throws IOException {
 		if (containerName == null) {
 			throw new NullPointerException("No container given");
 		}
@@ -2239,7 +2275,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @param confFd
 	 *            - The fd returned from srbContainerOpen ().
 	 */
-	void srbContainerClose(int confFd) throws IOException {
+	void srbContainerClose(final int confFd) throws IOException {
 		commands.srbContainerClose(confFd);
 	}
 
@@ -2259,8 +2295,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @return the number of bytes copied. Returns a negative value upon
 	 *         failure.
 	 */
-	long srbObjCopy(String srcObjID, String srcCollection, String destObjID,
-			String destCollection, String destResource) throws IOException {
+	long srbObjCopy(final String srcObjID, final String srcCollection,
+			final String destObjID, final String destCollection,
+			final String destResource) throws IOException {
 		if (srcObjID == null) {
 			throw new NullPointerException("No container given");
 		}
@@ -2294,10 +2331,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @return The number of bytes copied. Returns a negative value upon
 	 *         failure.
 	 */
-	long srbObjPutClientInitiated(String destObjID, String destCollection,
-			String destResLoc, String dataType, String destPath,
-			String localFilePath, long srcSize, int forceFlag, int numThreads)
-			throws IOException {
+	long srbObjPutClientInitiated(final String destObjID,
+			final String destCollection, String destResLoc, String dataType,
+			String destPath, final String localFilePath, final long srcSize,
+			final int forceFlag, final int numThreads) throws IOException {
 		if (destResLoc == null) {
 			destResLoc = getDefaultStorageResource();// DefMdasResourceName
 		}
@@ -2330,9 +2367,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @return The number of bytes copied. Returns a negative value upon
 	 *         failure.
 	 */
-	synchronized long srbObjGetClientInitiated(String srcObjID,
-			String srcCollection, GeneralFile file, int flag, int numThreads,
-			boolean forceOverwrite) throws IOException {
+	synchronized long srbObjGetClientInitiated(final String srcObjID,
+			final String srcCollection, final GeneralFile file, final int flag,
+			int numThreads, final boolean forceOverwrite) throws IOException {
 		if ((srcObjID == null) || (srcCollection == null) || (file == null)) {
 			throw new NullPointerException();
 		}
@@ -2350,8 +2387,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbBulkRegister
 	 */
-	void srbBulkRegister(int catType, String bulkLoadFilePath,
-			SRBMetaDataRecordList[] rl) throws IOException {
+	void srbBulkRegister(final int catType, final String bulkLoadFilePath,
+			final SRBMetaDataRecordList[] rl) throws IOException {
 		if (bulkLoadFilePath == null) {
 			throw new NullPointerException();
 		}
@@ -2370,8 +2407,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbGetMcatZone
 	 */
-	void srbGetMcatZone(String userName, String domainName, String mcatName)
-			throws IOException {
+	void srbGetMcatZone(final String userName, final String domainName,
+			final String mcatName) throws IOException {
 		commands.srbGetMcatZone(userName, domainName, mcatName);
 	}
 
@@ -2391,7 +2428,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbSetupSession
 	 */
-	void srbSetupSession(String sessionKey) throws IOException {
+	void srbSetupSession(final String sessionKey) throws IOException {
 		commands.srbSetupSession(sessionKey);
 	}
 
@@ -2401,8 +2438,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbBulkLoad
 	 */
-	void srbBulkLoad(int catType, String bulkLoadFilePath,
-			SRBMetaDataRecordList[] rl) throws IOException {
+	void srbBulkLoad(final int catType, final String bulkLoadFilePath,
+			final SRBMetaDataRecordList[] rl) throws IOException {
 		if (bulkLoadFilePath == null) {
 			throw new NullPointerException();
 		}
@@ -2422,8 +2459,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbBulkLoad
 	 */
-	void srbBulkUnload(int catType, int flag, String srbUnloadDirPath,
-			String localDirPath) throws IOException {
+	void srbBulkUnload(final int catType, final int flag,
+			final String srbUnloadDirPath, final String localDirPath)
+			throws IOException {
 		if (srbUnloadDirPath == null) {
 			throw new NullPointerException();
 		}
@@ -2483,9 +2521,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            MODIFY_ZONE_STATUS<br>
 	 *            dv1 = new value (integer)<br>
 	 */
-	public void srbModifyZone(int catType, String zoneName, String dataValue1,
-			String dataValue2, String dataValue3, String dataValue4,
-			String dataValue5, int actionType) throws IOException {
+	public void srbModifyZone(final int catType, final String zoneName,
+			final String dataValue1, final String dataValue2,
+			final String dataValue3, final String dataValue4,
+			final String dataValue5, final int actionType) throws IOException {
 		commands.srbModifyZone(catType, zoneName, dataValue1, dataValue2,
 				dataValue3, dataValue4, dataValue5, actionType);
 	}
@@ -2496,8 +2535,9 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbBulkQueryAnswer
 	 */
-	MetaDataRecordList[] srbBulkQueryAnswer(int catType, String queryInfo,
-			MetaDataRecordList myresult, int rowsWanted) throws IOException {
+	MetaDataRecordList[] srbBulkQueryAnswer(final int catType,
+			final String queryInfo, final MetaDataRecordList myresult,
+			final int rowsWanted) throws IOException {
 		return commands.srbBulkQueryAnswer(catType, queryInfo, myresult,
 				rowsWanted);
 	}
@@ -2508,8 +2548,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @see edu.sdsc.grid.io.srb.SRBCommands#srbBulkMcatIngest
 	 */
-	void srbBulkMcatIngest(int catType, String ingestInfo,
-			SRBMetaDataRecordList[] rl) throws IOException {
+	void srbBulkMcatIngest(final int catType, final String ingestInfo,
+			final SRBMetaDataRecordList[] rl) throws IOException {
 		commands.srbBulkMcatIngest(catType, ingestInfo, rl);
 	}
 
@@ -2532,8 +2572,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @param flag - not used.
 	 */
-	synchronized void srbBackupData(int catType, String objID,
-			String collectionName, String backupResource, int flag)
+	synchronized void srbBackupData(final int catType, final String objID,
+			String collectionName, String backupResource, final int flag)
 			throws IOException {
 		if (collectionName == null) {
 			collectionName = getHomeDirectory();
@@ -2577,8 +2617,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * 
 	 * @return the checksum value
 	 */
-	byte[] srbObjChksum(String objID, String collectionName, int chksumFlag,
-			String inpChksum) throws IOException {
+	byte[] srbObjChksum(final String objID, final String collectionName,
+			final int chksumFlag, final String inpChksum) throws IOException {
 		return commands.srbObjChksum(objID, collectionName, chksumFlag,
 				inpChksum);
 	}
@@ -2611,10 +2651,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @param actionType
 	 *            The type of action. performed values supported are:
 	 */
-	void srbModifyUserNonPriv(int catType, String userNameDomain,
-			String dataValue1, String dataValue2, String dataValue3,
-			String dataValue4, String dataValue5, int actionType)
-			throws IOException {
+	void srbModifyUserNonPriv(final int catType, final String userNameDomain,
+			final String dataValue1, final String dataValue2,
+			final String dataValue3, final String dataValue4,
+			final String dataValue5, final int actionType) throws IOException {
 		commands.srbModifyUserNonPriv(catType, userNameDomain, dataValue1,
 				dataValue2, dataValue3, dataValue4, dataValue5, actionType);
 	}
@@ -2646,9 +2686,10 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 * @param actionType
 	 *            The type of action. performed values supported are:
 	 */
-	void srbModifyResource(int catType, String resourceName, String dataValue1,
-			String dataValue2, String dataValue3, String dataValue4,
-			int actionType) throws IOException {
+	void srbModifyResource(final int catType, String resourceName,
+			final String dataValue1, final String dataValue2,
+			final String dataValue3, final String dataValue4,
+			final int actionType) throws IOException {
 		if (resourceName == null) {
 			resourceName = getDefaultStorageResource();// DefMdasResourceName
 		}
@@ -2672,7 +2713,7 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            The Dn of the user
 	 * @return output for zone:user@domain
 	 */
-	public SRBAccount srbGetUserByDn(int catType, String userDn)
+	public SRBAccount srbGetUserByDn(final int catType, final String userDn)
 			throws IOException {
 		if (userDn == null) {
 			return null;
@@ -2700,11 +2741,13 @@ public class SRBFileSystem extends RemoteFileSystem {
 
 		domainName = userInfo.substring(index2 + 1, userInfo.length() - 1);
 
-		SRBAccount dnAccount = new SRBAccount(srbAccount.getHost(), srbAccount
-				.getPort(), userName, null, GeneralFile.PATH_SEPARATOR + zone
-				+ GeneralFile.PATH_SEPARATOR + SRBFile.LOCAL_HOME_DIRECTORY
-				+ GeneralFile.PATH_SEPARATOR + userName + "." + domainName,
-				domainName, srbAccount.getDefaultStorageResource());
+		SRBAccount dnAccount = new SRBAccount(srbAccount.getHost(),
+				srbAccount.getPort(), userName, null,
+				GeneralFile.PATH_SEPARATOR + zone + GeneralFile.PATH_SEPARATOR
+						+ SRBFile.LOCAL_HOME_DIRECTORY
+						+ GeneralFile.PATH_SEPARATOR + userName + "."
+						+ domainName, domainName,
+				srbAccount.getDefaultStorageResource());
 
 		return dnAccount;
 	}
@@ -2728,8 +2771,8 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            The size of pre-allocated outBuf.
 	 * @return The result of the remote procedure
 	 */
-	String srbObjProc(int fd, String procedureName, String input,
-			int outputLength) throws IOException {
+	String srbObjProc(final int fd, final String procedureName,
+			final String input, final int outputLength) throws IOException {
 		byte[] result = commands.srbObjProc(fd, procedureName, input,
 				outputLength);
 
@@ -2758,10 +2801,11 @@ public class SRBFileSystem extends RemoteFileSystem {
 	 *            They are used to specify the table and rows attributes to
 	 *            modify/add/delete.
 	 */
-	void srbModifyExtMetaData(int catType, String dataName, String collName,
-			String dataValue1, String dataValue2, String dataValue3,
-			String dataValue4, String dataValue5, int retractionType)
-			throws IOException {
+	void srbModifyExtMetaData(final int catType, final String dataName,
+			final String collName, final String dataValue1,
+			final String dataValue2, final String dataValue3,
+			final String dataValue4, final String dataValue5,
+			final int retractionType) throws IOException {
 		commands.srbModifyExtMetaData(catType, dataName, collName, dataValue1,
 				dataValue2, dataValue3, dataValue4, dataValue5, retractionType);
 	}

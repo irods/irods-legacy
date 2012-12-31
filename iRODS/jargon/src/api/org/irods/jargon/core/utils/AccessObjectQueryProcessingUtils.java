@@ -16,13 +16,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility methods for processing various query operations for Jargon Access Objects.  These methods are for internal use and 
- * have limited utility outside of that.
+ * Utility methods for processing various query operations for Jargon Access
+ * Objects. These methods are for internal use and have limited utility outside
+ * of that.
+ * 
  * @author Mike Conway - DICE (www.irods.org)
- *
+ * 
  */
 public class AccessObjectQueryProcessingUtils {
-	private static Logger log = LoggerFactory.getLogger(AccessObjectQueryProcessingUtils.class);
+	private static Logger log = LoggerFactory
+			.getLogger(AccessObjectQueryProcessingUtils.class);
 
 	/**
 	 * @param resultSet
@@ -30,7 +33,7 @@ public class AccessObjectQueryProcessingUtils {
 	 * @throws JargonException
 	 */
 	public static List<AvuData> buildAvuDataListFromResultSet(
-			IRODSQueryResultSet resultSet) throws JargonException {
+			final IRODSQueryResultSet resultSet) throws JargonException {
 		final List<AvuData> avuDatas = new ArrayList<AvuData>();
 		AvuData avuData = null;
 
@@ -42,8 +45,8 @@ public class AccessObjectQueryProcessingUtils {
 		}
 
 		for (IRODSQueryResultRow row : resultSet.getResults()) {
-			avuData = AvuData.instance(row.getColumn(0), row.getColumn(1), row
-					.getColumn(2));
+			avuData = AvuData.instance(row.getColumn(0), row.getColumn(1),
+					row.getColumn(2));
 			avuDatas.add(avuData);
 			if (log.isDebugEnabled()) {
 				log.debug("found avu for user:" + avuData);
@@ -51,14 +54,14 @@ public class AccessObjectQueryProcessingUtils {
 		}
 		return avuDatas;
 	}
-	
+
 	/**
 	 * @param metaDataDomain
 	 * @param irodsQueryResultSet
 	 * @return
 	 * @throws JargonException
 	 */
-	public static  List<MetaDataAndDomainData> buildMetaDataAndDomainDatalistFromResultSet(
+	public static List<MetaDataAndDomainData> buildMetaDataAndDomainDatalistFromResultSet(
 			final MetadataDomain metaDataDomain,
 			final IRODSQueryResultSet irodsQueryResultSet)
 			throws JargonException {
@@ -79,9 +82,7 @@ public class AccessObjectQueryProcessingUtils {
 
 		return metaDataResults;
 	}
-	
-	
-	
+
 	/**
 	 * @param metadataDomain
 	 * @param row
@@ -89,8 +90,8 @@ public class AccessObjectQueryProcessingUtils {
 	 * @throws JargonException
 	 */
 	private static MetaDataAndDomainData buildMetaDataAndDomainDataFromResultSetRow(
-			MetaDataAndDomainData.MetadataDomain metadataDomain,
-			IRODSQueryResultRow row) throws JargonException {
+			final MetaDataAndDomainData.MetadataDomain metadataDomain,
+			final IRODSQueryResultRow row) throws JargonException {
 
 		String domainId = row.getColumn(0);
 		String domainUniqueName = row.getColumn(1);
@@ -104,8 +105,5 @@ public class AccessObjectQueryProcessingUtils {
 		log.debug("metadataAndDomainData: {}", data);
 		return data;
 	}
-
-
-
 
 }

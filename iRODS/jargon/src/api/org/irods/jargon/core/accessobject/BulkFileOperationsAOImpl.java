@@ -15,8 +15,8 @@ import edu.sdsc.grid.io.irods.IRODSCommands;
  * @author Mike Conway - DICE (www.irods.org)
  * 
  */
-public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject implements
-		BulkFileOperationsAO {
+public class BulkFileOperationsAOImpl extends AbstractIRODSAccessObject
+		implements BulkFileOperationsAO {
 
 	public static final Logger log = LoggerFactory
 			.getLogger(BulkFileOperationsAOImpl.class);
@@ -34,10 +34,13 @@ public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject impleme
 		super(irodsCommands);
 	}
 
-
-	//@Override
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#createABundleFromIrodsFilesAndStoreInIrods(java.lang.String, java.lang.String, java.lang.String)
+	// @Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#
+	 * createABundleFromIrodsFilesAndStoreInIrods(java.lang.String,
+	 * java.lang.String, java.lang.String)
 	 */
 	public void createABundleFromIrodsFilesAndStoreInIrods(
 			final String absolutePathToBundleFileToBeCreatedOnIrods,
@@ -77,10 +80,13 @@ public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject impleme
 
 	}
 
-	
-	//@Override
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#createABundleFromIrodsFilesAndStoreInIrodsWithForceOption(java.lang.String, java.lang.String, java.lang.String)
+	// @Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#
+	 * createABundleFromIrodsFilesAndStoreInIrodsWithForceOption
+	 * (java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void createABundleFromIrodsFilesAndStoreInIrodsWithForceOption(
 			final String absolutePathToBundleFileToBeCreatedOnIrods,
@@ -120,10 +126,13 @@ public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject impleme
 
 	}
 
-	
-	//@Override
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#extractABundleIntoAnIrodsCollection(java.lang.String, java.lang.String, java.lang.String)
+	// @Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#
+	 * extractABundleIntoAnIrodsCollection(java.lang.String, java.lang.String,
+	 * java.lang.String)
 	 */
 	public void extractABundleIntoAnIrodsCollection(
 			final String absolutePathToBundleFileInIrodsToBeExtracted,
@@ -137,10 +146,13 @@ public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject impleme
 				resourceNameWhereBundleWillBeExtracted, false, false);
 	}
 
-
-	//@Override
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(java.lang.String, java.lang.String, java.lang.String)
+	// @Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#
+	 * extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization
+	 * (java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(
 			final String absolutePathToBundleFileInIrodsToBeExtracted,
@@ -154,10 +166,13 @@ public class BulkFileOperationsAOImpl  extends AbstractIRODSAccessObject impleme
 				resourceNameWhereBundleWillBeExtracted, false, true);
 	}
 
-	
-	//@Override
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#extractABundleIntoAnIrodsCollectionWithForceOption(java.lang.String, java.lang.String, java.lang.String)
+	// @Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.core.accessobject.BulkFileOperationsAO#
+	 * extractABundleIntoAnIrodsCollectionWithForceOption(java.lang.String,
+	 * java.lang.String, java.lang.String)
 	 */
 	public void extractABundleIntoAnIrodsCollectionWithForceOption(
 			final String absolutePathToBundleFileInIrodsToBeExtracted,

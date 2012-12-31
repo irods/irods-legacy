@@ -64,7 +64,7 @@ import edu.sdsc.grid.io.ZoneMetaData;
  * SRBMetaDataSet registers all the SRB metadata fields. The fields are divided
  * among various groups to make listing and using the metadata fields more
  * convienent.
- *<P>
+ * <P>
  * This class is basically a listing of all the queriable SRB metadata
  * fieldnames. A few hundred static final Strings which equal some more readable
  * name. These strings are then used when forming a MetaDataCondition or
@@ -2111,10 +2111,8 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(CREATION_DATE, "data creation time stamp",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(MODIFICATION_DATE,
-						"data modification time stamp", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(MODIFICATION_DATE,
+				"data modification time stamp", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(FILE_LAST_ACCESS_TIMESTAMP,
 				"last access time stamp", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(OWNER, "data creator name",
@@ -2154,20 +2152,16 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(FILE_PIN_OWNER_DOMAIN,
 				"domain of the pin owner", MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(FILE_PIN_EXPIRY,
-						"expiry timestamp for the pin", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(FILE_PIN_EXPIRY,
+				"expiry timestamp for the pin", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(FILE_EXPIRY_DATE,
 				"expiry time for the data replica", MetaDataField.STRING,
 				protocol));
 		group.add(new MetaDataField(FILE_IS_COMPRESSED,
 				"data compressed or not and how", MetaDataField.STRING,
 				protocol));
-		group
-				.add(new MetaDataField(FILE_IS_ENCRYPTED,
-						"data encrypted or not and how", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(FILE_IS_ENCRYPTED,
+				"data encrypted or not and how", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(FILE_EXPIRE_DATE_2,
 				"another expiry timestamp", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(DATA_ACCS_ID, "file access id",
@@ -2265,10 +2259,8 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(RSRC_CREATE_DATE,
 				"log rsource creation timestamp", MetaDataField.STRING,
 				protocol));
-		group
-				.add(new MetaDataField(RSRC_MODIFY_DATE,
-						"log resource modify timestamp", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(RSRC_MODIFY_DATE,
+				"log resource modify timestamp", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(RSRC_MAX_OBJ_SIZE,
 				"log resource max obj size", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(RSRC_OWNER_NAME,
@@ -2388,10 +2380,8 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(AUDIT_ACTION_DESCRIPTION,
 				"audit action description", MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(NEW_AUDIT_ACTION_DESCRIPTION,
-						"new audit action description", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(NEW_AUDIT_ACTION_DESCRIPTION,
+				"new audit action description", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(NEW_AUDIT_TIMESTAMP, "audit timestamp",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(NEW_AUDIT_COMMENTS, "audit comments",
@@ -2422,17 +2412,13 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(TICKET_BEGIN_TIME_D,
 				"data ticket validity start time", MetaDataField.STRING,
 				protocol));
-		group
-				.add(new MetaDataField(TICKET_END_TIME_D,
-						"data ticket validity endtime", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(TICKET_END_TIME_D,
+				"data ticket validity endtime", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(TICKET_ACC_COUNT_D,
 				"number of opens allowed on data ticket", MetaDataField.INT,
 				protocol));
-		group
-				.add(new MetaDataField(TICKET_ACC_LIST_D,
-						"access allowed on data ticket", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(TICKET_ACC_LIST_D,
+				"access allowed on data ticket", MetaDataField.STRING, protocol));
 
 		group.add(new MetaDataField(TICKET_C,
 				"identifier for ticket given for collection",
@@ -2444,10 +2430,8 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(TICKET_USER_C,
 				"allowed collection ticket user", MetaDataField.STRING,
 				protocol));
-		group
-				.add(new MetaDataField(TICKET_USER_DOMAIN_C,
-						"collection ticket user domain", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(TICKET_USER_DOMAIN_C,
+				"collection ticket user domain", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(TICKET_OWNER_C,
 				"collection ticket creator", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(TICKET_OWNER_DOMAIN_C,
@@ -2583,14 +2567,10 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(INT_RESOURCE_CLASS,
 				"class of resource in compound resource", MetaDataField.STRING,
 				protocol));
-		group
-				.add(new MetaDataField(COMP_OBJ_USER_NAME,
-						"user name of compound object", MetaDataField.STRING,
-						protocol));
-		group
-				.add(new MetaDataField(COMP_OBJ_USER_DOMAIN,
-						"user domn of compound object", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(COMP_OBJ_USER_NAME,
+				"user name of compound object", MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(COMP_OBJ_USER_DOMAIN,
+				"user domn of compound object", MetaDataField.STRING, protocol));
 		add(group);
 
 		// Dublin Core
@@ -2638,10 +2618,8 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(DC_SOURCE, "DC: Source Name",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(DC_RELATED_DATA_DESCRIPTION,
-						"DC: Related Data Description", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(DC_RELATED_DATA_DESCRIPTION,
+				"DC: Related Data Description", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(DC_RELATED_DATA, "DC: Date Related to ("
 				+ DC_DATA_NAME + "," + DC_COLLECTION + ")",
 				MetaDataField.STRING, protocol));
@@ -2693,16 +2671,12 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				"when the zone was modified", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(ZONE_COMMENTS,
 				"any comments about the zone", MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(ZONE_CONTACT,
-						"who is in charge of the zone", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(ZONE_CONTACT,
+				"who is in charge of the zone", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(ZONE_ADMIN_NAME, "zone admin's username",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(ZONE_ADMIN_DOMAIN_NAME,
-						"zone admin's user domain name", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(ZONE_ADMIN_DOMAIN_NAME,
+				"zone admin's user domain name", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(ZONE_LOCN_DESC, "location desc for zone",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(CURRENT_ZONE, "current/working zone",
@@ -2735,15 +2709,14 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				"definable metadata table for resources", MetaDataField.TABLE,
 				protocol));
 
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_FILES0,
-						"The first column of the definable "
-								+ "metadata table for files. The standard usage keeps attribute names of "
-								+ "the user defined metadata in this column. This field can be used in "
-								+ "conjuction with the metadata number, which specifies a row in the table,"
-								+ " to refer to a specific cell of the definable metadata table for files.",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_FILES0,
+				"The first column of the definable "
+						+ "metadata table for files. The standard usage keeps attribute names of "
+						+ "the user defined metadata in this column. This field can be used in "
+						+ "conjuction with the metadata number, which specifies a row in the table,"
+						+ " to refer to a specific cell of the definable metadata table for files.",
+				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_FILES1,
 				"The  column of the definable metadata table for users.",
 				MetaDataField.STRING, protocol));
@@ -2759,11 +2732,10 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_FILES5,
 				"The sixth column of the definable metadata table for users.",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_FILES6,
-						"The seventh column of the definable metadata table for users.",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_FILES6,
+				"The seventh column of the definable metadata table for users.",
+				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_FILES7,
 				"The eigth column of the definable metadata table for users.",
 				MetaDataField.STRING, protocol));
@@ -2817,61 +2789,50 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				MetaDataField.STRING, protocol));
 		// end definable files
 
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES0,
-						"The first column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES1,
-						"The second column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES2,
-						"The third column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES3,
-						"The fourth column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES4,
-						"The fifth column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES5,
-						"The sixth column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES6,
-						"The seventh column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES7,
-						"The eigth column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES8,
-						"The ninth column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_DIRECTORIES9,
-						"The tenth column of the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						METADATA_NUM_DIRECTORY,
-						"Used to specify a certain row in the definable metadata table for directories.",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES0,
+				"The first column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES1,
+				"The second column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES2,
+				"The third column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES3,
+				"The fourth column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES4,
+				"The fifth column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES5,
+				"The sixth column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES6,
+				"The seventh column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES7,
+				"The eigth column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES8,
+				"The ninth column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_DIRECTORIES9,
+				"The tenth column of the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				METADATA_NUM_DIRECTORY,
+				"Used to specify a certain row in the definable metadata table for directories.",
+				MetaDataField.STRING, protocol));
 
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_DIRECTORIES0_0,
 				"Used for comparator queuries of the metadata, user attribute",
@@ -2905,61 +2866,50 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 				MetaDataField.STRING, protocol));
 		// end definable directories
 
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES0,
-						"The first column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES1,
-						"The second column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES2,
-						"The third column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES3,
-						"The fourth column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES4,
-						"The fifth column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES5,
-						"The sixth column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES6,
-						"The seventh column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES7,
-						"The eigth column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES8,
-						"The ninth column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_RESOURCES9,
-						"The tenth column of the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						METADATA_NUM_RESOURCE,
-						"Used to specify a certain row in the definable metadata table for resources.",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES0,
+				"The first column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES1,
+				"The second column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES2,
+				"The third column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES3,
+				"The fourth column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES4,
+				"The fifth column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES5,
+				"The sixth column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES6,
+				"The seventh column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES7,
+				"The eigth column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES8,
+				"The ninth column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_RESOURCES9,
+				"The tenth column of the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				METADATA_NUM_RESOURCE,
+				"Used to specify a certain row in the definable metadata table for resources.",
+				MetaDataField.STRING, protocol));
 
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_RESOURCES0_0,
 				"Used for comparator queuries of the metadata, user attribute",
@@ -3005,11 +2955,10 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_USERS5,
 				"The sixth column of the definable metadata table for users.",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						DEFINABLE_METADATA_FOR_USERS6,
-						"The seventh column of the definable metadata table for users.",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				DEFINABLE_METADATA_FOR_USERS6,
+				"The seventh column of the definable metadata table for users.",
+				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_USERS7,
 				"The eigth column of the definable metadata table for users.",
 				MetaDataField.STRING, protocol));
@@ -3019,11 +2968,10 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_USERS9,
 				"The tenth column of the definable metadata table for users.",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						METADATA_NUM_USER,
-						"Used to specify a certain row in the definable metadata table for users.",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				METADATA_NUM_USER,
+				"Used to specify a certain row in the definable metadata table for users.",
+				MetaDataField.STRING, protocol));
 
 		group.add(new MetaDataField(DEFINABLE_METADATA_FOR_USERS0_0,
 				"Used for comparator queuries of the metadata, user attribute",
@@ -3104,31 +3052,26 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 
 		group = new MetaDataGroup(GROUP_STRUCTURED_METADATA,
 				"The user can store structured (treated as a blob) metadata information.");
-		group
-				.add(new MetaDataField(
-						STRUCTURED_METADATA_TYPE,
-						"type of user-inserted structured metadata for data in (STRUCTURED_METADATA_FILE_NAME) or (INTERNAL_STRUCTURED_METADATA)",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						STRUCTURED_METADATA_COMMENTS,
-						"comments on the structured metadata in (STRUCTURED_METADATA_FILE_NAME) or (INTERNAL_STRUCTURED_METADATA)",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						STRUCTURED_METADATA_FILE_NAME,
-						"data name of user-inserted structured metadata stored as another data object inside SRB see also (STRUCTURED_METADATA_DIRECTORY_NAME)",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						INTERNAL_STRUCTURED_METADATA,
-						"user-inserted structured metadata stored as a string inside MCAT",
-						MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						STRUCTURED_METADATA_DIRECTORY_NAME,
-						"collection name of user-inserted structured metadata stored as another data object inside SRB see also (92)",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				STRUCTURED_METADATA_TYPE,
+				"type of user-inserted structured metadata for data in (STRUCTURED_METADATA_FILE_NAME) or (INTERNAL_STRUCTURED_METADATA)",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				STRUCTURED_METADATA_COMMENTS,
+				"comments on the structured metadata in (STRUCTURED_METADATA_FILE_NAME) or (INTERNAL_STRUCTURED_METADATA)",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				STRUCTURED_METADATA_FILE_NAME,
+				"data name of user-inserted structured metadata stored as another data object inside SRB see also (STRUCTURED_METADATA_DIRECTORY_NAME)",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				INTERNAL_STRUCTURED_METADATA,
+				"user-inserted structured metadata stored as a string inside MCAT",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				STRUCTURED_METADATA_DIRECTORY_NAME,
+				"collection name of user-inserted structured metadata stored as another data object inside SRB see also (92)",
+				MetaDataField.STRING, protocol));
 		add(group);
 
 		group = new MetaDataGroup(
@@ -3241,10 +3184,8 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(DATA_PIN_OWNER_ZONE,
 				"zone for data pin owner", MetaDataField.STRING, protocol));
 
-		group
-				.add(new MetaDataField(COMP_OBJ_USER_ZONE,
-						"zone for composite obj owner", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(COMP_OBJ_USER_ZONE,
+				"zone for composite obj owner", MetaDataField.STRING, protocol));
 
 		group.add(new MetaDataField(PARENT_SERVER_LOCATION,
 				"parent of a location", MetaDataField.STRING, protocol));
@@ -3300,21 +3241,18 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 
 		group.add(new MetaDataField(CONTAINER_ID, "container id",
 				MetaDataField.STRING, protocol));
-		group
-				.add(new MetaDataField(
-						ORDERBY,
-						"return the query values sorted according to another "
-								+ "attribute. Used in the condition as a comma separated list: "
-								+ "ORDER_BY = FILE_TYPE_NAME, FILE_NAME",
-						MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(
+				ORDERBY,
+				"return the query values sorted according to another "
+						+ "attribute. Used in the condition as a comma separated list: "
+						+ "ORDER_BY = FILE_TYPE_NAME, FILE_NAME",
+				MetaDataField.STRING, protocol));
 
 		// SRB3.1
 		group.add(new MetaDataField(DELETE_FILE_ID,
 				"data_id of deleted data object", MetaDataField.INT, protocol));
-		group
-				.add(new MetaDataField(DELETE_FILE_REPLICATION_ENUM,
-						"repl_enum of deleted data object", MetaDataField.INT,
-						protocol));
+		group.add(new MetaDataField(DELETE_FILE_REPLICATION_ENUM,
+				"repl_enum of deleted data object", MetaDataField.INT, protocol));
 		group.add(new MetaDataField(DELETE_FILE_NAME,
 				"data_name of deleted data object", MetaDataField.STRING,
 				protocol));
@@ -3351,10 +3289,8 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(EXTENSIBLE_ATTR_OUTSIDE_NAME,
 				"extensible attribute outside name", MetaDataField.STRING,
 				protocol));
-		group
-				.add(new MetaDataField(EXTENSIBLE_ATTR_COMMENTS,
-						"extensible attribute comments", MetaDataField.STRING,
-						protocol));
+		group.add(new MetaDataField(EXTENSIBLE_ATTR_COMMENTS,
+				"extensible attribute comments", MetaDataField.STRING, protocol));
 		add(group);
 
 		/**
@@ -4969,10 +4905,10 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		jargonToSRBID.put(DEFINABLE_METADATA_FOR_RESOURCES, new Integer(-4));
 	} // end static
 
-	SRBMetaDataSet(SRBProtocol protocol) {
+	SRBMetaDataSet(final SRBProtocol protocol) {
 		super();
 
-		this.protocol = protocol;
+		SRBMetaDataSet.protocol = protocol;
 	}
 
 	static {
@@ -5011,7 +4947,7 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 	 * Given one of the static field names this method returns the SRB integer
 	 * id for that name.
 	 */
-	static final int getSRBID(String fieldName) {
+	static final int getSRBID(final String fieldName) {
 		Integer srbID = ((Integer) jargonToSRBID.get(fieldName));
 		if (srbID == null) {
 			// Not a standard SRB metadata attribute, might be extensible
@@ -5025,7 +4961,7 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 	 * attribute name, as a string.
 	 */
 	// only use as of SRB 3.1 is ORDERBY
-	static final String getSRBName(String fieldName) {
+	static final String getSRBName(final String fieldName) {
 		int id = getSRBID(fieldName);
 
 		// why not use the catalogNames[]?
@@ -5040,14 +4976,15 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 	/**
 	 * From the results of a SRB query the MetaDataField is returned.
 	 */
-	static final MetaDataField getGeneralMetaData(String srbTableName,
-			String srbAttributeName) {
+	static final MetaDataField getGeneralMetaData(final String srbTableName,
+			final String srbAttributeName) {
 		// table names are stored without the schema name, but are returned with
 		// it
 		// only want to look at the table name so we use substring here.
 		String temp = (String) srbToJargon.get(srbTableName
 				.substring(srbTableName.lastIndexOf(".") + 1)
-				+ nll + srbAttributeName + nll);
+				+ nll
+				+ srbAttributeName + nll);
 
 		if (temp == null) {
 			// extensible metadata is stored with the schema name,
@@ -5071,15 +5008,16 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 	 * Turns the JARGON api metadata attribute name into the SRB database table
 	 * name.
 	 */
-	static final String getSRBDatabaseName(String fieldName) {
+	static final String getSRBDatabaseName(final String fieldName) {
 		// really just need to somehow reverse lookup of srbToJargon
 		String databaseName = (String) jargonToSRB.get(fieldName);
 
-		if (databaseName == null)
+		if (databaseName == null) {
 			throw new NullPointerException(
 					"Programming error, was this metadata value: "
 							+ fieldName
 							+ ", given an integer value in SRBMetaDataSet.jargonNameToSRBID?");
+		}
 		return databaseName;
 	}
 
@@ -5091,8 +5029,8 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 	 * @param fileSystem
 	 *            SRB filesystem to gather the extensible metadata.
 	 */
-	public static MetaDataGroup[] getMetaDataGroups(GeneralFileSystem fileSystem)
-			throws IOException {
+	public static MetaDataGroup[] getMetaDataGroups(
+			final GeneralFileSystem fileSystem) throws IOException {
 		return getMetaDataGroups(fileSystem, null);
 	}
 
@@ -5107,9 +5045,11 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 	 *            Each zone has its own extensible metadata tables.
 	 */
 	public static MetaDataGroup[] getMetaDataGroups(
-			GeneralFileSystem fileSystem, String zoneName) throws IOException {
-		if (!(fileSystem instanceof SRBFileSystem))
+			final GeneralFileSystem fileSystem, final String zoneName)
+			throws IOException {
+		if (!(fileSystem instanceof SRBFileSystem)) {
 			return getMetaDataGroups();
+		}
 
 		String[] selectFieldNames = { SRBMetaDataSet.EXTENSIBLE_SCHEMA_NAME,
 				SRBMetaDataSet.EXTENSIBLE_TABLE_NAME,
@@ -5122,18 +5062,19 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		return getMetaDataGroups();
 	}
 
-	public static void setExtensibleSchema(GeneralFileSystem fileSystem,
-			String schema) throws IOException {
+	public static void setExtensibleSchema(final GeneralFileSystem fileSystem,
+			final String schema) throws IOException {
 		setExtensibleSchema(fileSystem, new String[] { schema });
 	}
 
-	public static void setExtensibleSchema(GeneralFileSystem fileSystem,
-			String[] schemas) throws IOException {
-		if (schemas == null)
+	public static void setExtensibleSchema(final GeneralFileSystem fileSystem,
+			final String[] schemas) throws IOException {
+		if (schemas == null) {
 			return;
+		}
 
 		String inValue = schemas[0];
-		for (int i = 1; i < schemas.length; i++) { 
+		for (int i = 1; i < schemas.length; i++) {
 			inValue += "," + schemas[i];
 		}
 
@@ -5153,9 +5094,10 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 		setExtensibleSchema(fileSystem.query(conditions, selects));
 	}
 
-	private static void setExtensibleSchema(MetaDataRecordList[] rl) {
-		if (rl == null)
+	private static void setExtensibleSchema(final MetaDataRecordList[] rl) {
+		if (rl == null) {
 			return;
+		}
 
 		// prepare for creating extensible groups
 		String groupName = rl[0].getStringValue(0); // SCHEMA_NAME
@@ -5170,23 +5112,27 @@ public final class SRBMetaDataSet extends MetaDataSet implements
 			}
 
 			group.add(new MetaDataField(rl[i].getStringValue(3), "" /*
-																	 * rl[i].getStringValue
+																	 * rl[i].
+																	 * getStringValue
 																	 * (4)
 																	 */,
 					MetaDataField.STRING, protocol, rl[i].getStringValue(1)));
 			Integer intX = new Integer(EXTENSIBLE_START_NUM + i);
-			srbToJargon.put(rl[i].getStringValue(1) + nll
-					+ rl[i].getStringValue(2) + nll, rl[i].getStringValue(3));
+			srbToJargon.put(
+					rl[i].getStringValue(1) + nll + rl[i].getStringValue(2)
+							+ nll, rl[i].getStringValue(3));
 			jargonToSRBID.put(rl[i].getStringValue(3), intX);
 		}
-		if (group != null)
+		if (group != null) {
 			add(group);
+		}
 	}
 
 	/**
    *
    */
-	static MetaDataField getField(GeneralFileSystem fileSystem, String fieldName) {
+	static MetaDataField getField(final GeneralFileSystem fileSystem,
+			final String fieldName) {
 		return null;
 	}
 }

@@ -43,9 +43,9 @@
 //
 package edu.sdsc.grid.io.srb;
 
+import java.io.IOException;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.io.IOException;
 
 /**
  * This class encompasses the legacy errors that can be returned by the SRB
@@ -70,7 +70,7 @@ public class SRBException extends IOException {
 	 * the message string. The first line of the error message will generally
 	 * have a negative integer at the end which is the SRB exception type.
 	 */
-	public SRBException(String message) {
+	public SRBException(final String message) {
 		super(message);
 
 		StringTokenizer token = new StringTokenizer(message, "\n");
@@ -82,34 +82,37 @@ public class SRBException extends IOException {
 			exceptionType = -1;
 		}
 
-		if (exceptionType >= 0)
+		if (exceptionType >= 0) {
 			exceptionType = -1;
+		}
 	}
 
 	/**
 	 * Construct an SRBException.
 	 */
-	public SRBException(String message, int srbExceptionType) {
+	public SRBException(final String message, final int srbExceptionType) {
 		super(message);
 
-		if (srbExceptionType < 0)
+		if (srbExceptionType < 0) {
 			exceptionType = srbExceptionType;
-		else
+		} else {
 			exceptionType = -1;
+		}
 	}
 
 	/**
 	 * Construct an SRBException with an empty message of the specified type.
 	 */
-	public SRBException(int srbExceptionType) {
+	public SRBException(final int srbExceptionType) {
 		super("");
 
-		if (srbExceptionType < 0)
+		if (srbExceptionType < 0) {
 			exceptionType = srbExceptionType;
-		else
+		} else {
 			throw new RuntimeException(
 					"Unknown SRB error type returned from server."
 							+ exceptionType);
+		}
 	}
 
 	/**
@@ -130,18 +133,20 @@ public class SRBException extends IOException {
 	/**
 	 * Get the standard SRB error message for any error type.
 	 */
-	public static String getStandardMessage(int srbExceptionType) {
-		if (srbExceptionType < 0)
+	public static String getStandardMessage(final int srbExceptionType) {
+		if (srbExceptionType < 0) {
 			return srbException.getProperty(String.valueOf(srbExceptionType),
 					"Unknown SRB error type requested");
-		else
+		} else {
 			throw new IllegalArgumentException(
 					"Unknown SRB error type requested" + srbExceptionType);
+		}
 	}
 
 	/**
 	 * Returns a string representation of the object.
 	 */
+	@Override
 	public String toString() {
 		return super.toString() + " " + getStandardMessage() + " " + getType();
 	}

@@ -41,11 +41,10 @@
 //
 package edu.sdsc.grid.io;
 
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.EOFException;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
+import java.io.IOException;
 import java.io.UTFDataFormatException;
 
 /**
@@ -90,16 +89,15 @@ import java.io.UTFDataFormatException;
  */
 
 public abstract class GeneralRandomAccessFile implements DataOutput, DataInput// ,
-																				// Cloneable
+// Cloneable
 {
-	
+
 	/**
 	 * Used to set the offset for seek calls to the beginning of the file. Same
 	 * as SEEK_SET (as in C/C++, but that name is less intuitive)
 	 */
 	public static final int SEEK_START = 0;
 
-	
 	/**
 	 * Used to set the offset for seek calls to the current offset of the file.
 	 * Same as SEEK_CUR (as in C/C++, but that name is less intuitive)
@@ -110,7 +108,6 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * Used to set the offset for seek calls to the end of the file.
 	 */
 	public static final int SEEK_END = 2;
-
 
 	/**
 	 * Holds the server information used by this file.
@@ -205,29 +202,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             If denied read access to the file or the mode is "rw" and
 	 *             denied write access to the file.
 	 */
-	public GeneralRandomAccessFile(GeneralFile file, String mode)
+	public GeneralRandomAccessFile(final GeneralFile file, final String mode)
 			throws IOException, SecurityException {
-		/*
-		 * The <tt>"rws"</tt> and <tt>"rwd"</tt> modes work much like the {@link
-		 * java.nio.channels.FileChannel#force(boolean) force(boolean)} method
-		 * of the {@link java.nio.channels.FileChannel} class, passing arguments
-		 * of <tt>true</tt> and <tt>false</tt>, respectively, except that they
-		 * always apply to every I/O operation and are therefore often more
-		 * efficient. If the file resides on a local storage device then when an
-		 * invocation of a method of this class returns it is guaranteed that
-		 * all changes made to the file by that invocation will have been
-		 * written to that device. This is useful for ensuring that critical
-		 * information is not lost in the event of a system crash. If the file
-		 * does not reside on a local device then no such guarantee is made.
-		 * 
-		 * <p> The <tt>"rwd"</tt> mode can be used to reduce the number of I/O
-		 * operations performed. Using <tt>"rwd"</tt> only requires updates to
-		 * the file's content to be written to storage; using <tt>"rws"</tt>
-		 * requires updates to both the file's content and its metadata to be
-		 * written, which generally requires at least one more low-level I/O
-		 * operation.
-		 */
-		int imode = -1;
 		this.file = file;
 		this.mode = mode;
 
@@ -249,7 +225,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	/**
 	 * Sets the boolean rw value according to the mode and checks that such
 	 * permissions are available.
-	 *<P>
+	 * <P>
 	 * "r" would allow for read-only access. "rw" would allow for read-write
 	 * access. Case-insensitive.
 	 * 
@@ -258,7 +234,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws SecurityException
 	 *             if the permissions are wrong.
 	 */
-	protected void rwCheck(GeneralFile file, String mode)
+	protected void rwCheck(final GeneralFile file, String mode)
 			throws IllegalArgumentException, SecurityException {
 		mode = mode.toLowerCase();
 
@@ -275,14 +251,16 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 					+ "\" must be one of \"r\", \"rw\", \"rws\", or \"rwd\"");
 		}
 
-		if (!file.canRead())
+		if (!file.canRead()) {
 			throw new SecurityException(
 					"Wrong permissions to access this file.");
+		}
 
 		if (rw > 0) {
-			if (!file.canWrite())
+			if (!file.canWrite()) {
 				throw new SecurityException(
 						"Wrong permissions to access this file.");
+			}
 		}
 	}
 
@@ -295,8 +273,9 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @see java.io.FileDescriptor
 	 */
 	public int getFD() {
-		if (fd != -1)
+		if (fd != -1) {
 			return fd;
+		}
 
 		throw new IllegalArgumentException("No file descriptor available.");
 	}
@@ -412,7 +391,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public int read(byte b[], int offset, int len) throws IOException {
+	public int read(final byte b[], final int offset, final int len)
+			throws IOException {
 		return readBytes(b, offset, len);
 	}
 
@@ -433,7 +413,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public int read(byte b[]) throws IOException {
+	public int read(final byte b[]) throws IOException {
 		return readBytes(b, 0, b.length);
 	}
 
@@ -451,7 +431,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void readFully(byte b[]) throws IOException {
+	public void readFully(final byte b[]) throws IOException {
 		readFully(b, 0, b.length);
 	}
 
@@ -473,13 +453,15 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void readFully(byte b[], int offset, int len) throws IOException {
+	public void readFully(final byte b[], final int offset, final int len)
+			throws IOException {
 		int inc = 0;
 		do {
 			int count = this.read(b, offset + inc, len - inc);
 
-			if (count < 0)
+			if (count < 0) {
 				throw new EOFException();
+			}
 
 			inc += count;
 		} while (inc < len);
@@ -503,7 +485,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public int skipBytes(int n) throws IOException {
+	public int skipBytes(final int n) throws IOException {
 		if (n <= 0) {
 			return 0;
 		}
@@ -528,7 +510,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void write(int b) throws IOException {
+	public void write(final int b) throws IOException {
 		byte buffer[] = { (byte) b };
 
 		writeBytes(buffer, 0, buffer.length);
@@ -559,7 +541,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void write(byte b[]) throws IOException {
+	public void write(final byte b[]) throws IOException {
 		writeBytes(b, 0, b.length);
 	}
 
@@ -576,7 +558,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void write(byte b[], int offset, int len) throws IOException {
+	public void write(final byte b[], final int offset, final int len)
+			throws IOException {
 		writeBytes(b, offset, len);
 	}
 
@@ -589,7 +572,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void write(String text) throws IOException {
+	public void write(final String text) throws IOException {
 		writeBytes(text.getBytes(), 0, text.length());
 	}
 
@@ -617,7 +600,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             if <code>pos</code> is less than <code>0</code> or if an I/O
 	 *             error occurs.
 	 */
-	public void seek(long position) throws IOException {
+	public void seek(final long position) throws IOException {
 		seek(position, SEEK_START);
 	}
 
@@ -655,14 +638,14 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 
 	/**
 	 * Sets the length of this file.
-	 *<P>
+	 * <P>
 	 * If the present length of the file as returned by the <code>length</code>
 	 * method is greater than the <code>newLength</code> argument then the file
 	 * will be truncated. In this case, if the file offset as returned by the
 	 * <code>getFilePointer</code> method is greater then <code>newLength</code>
 	 * then after this method returns the offset will be equal to
 	 * <code>newLength</code>.
-	 *<P>
+	 * <P>
 	 * If the present length of the file as returned by the <code>length</code>
 	 * method is smaller than the <code>newLength</code> argument then the file
 	 * will be extended. In this case, the contents of the extended portion of
@@ -711,8 +694,9 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public boolean readBoolean() throws IOException {
 		int value = this.read();
-		if (value < 0)
+		if (value < 0) {
 			throw new EOFException();
+		}
 
 		return (value != 0);
 	}
@@ -729,7 +713,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * </pre>
 	 * 
 	 * </blockquote>
-	 *<P>
+	 * <P>
 	 * This method blocks until the byte is read, the end of the stream is
 	 * detected, or an exception is thrown.
 	 * 
@@ -742,8 +726,9 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public byte readByte() throws IOException {
 		int value = this.read();
-		if (value < 0)
+		if (value < 0) {
 			throw new EOFException();
+		}
 
 		return (byte) (value);
 	}
@@ -752,7 +737,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * Reads an unsigned eight-bit number from this file. This method reads a
 	 * byte from this file, starting at the current file pointer, and returns
 	 * that byte.
-	 *<P>
+	 * <P>
 	 * This method blocks until the byte is read, the end of the stream is
 	 * detected, or an exception is thrown.
 	 * 
@@ -765,8 +750,9 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public int readUnsignedByte() throws IOException {
 		int value = this.read();
-		if (value < 0)
+		if (value < 0) {
 			throw new EOFException();
+		}
 
 		return value;
 	}
@@ -845,8 +831,9 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	public char readChar() throws IOException {
 		int s = this.read();
 		int t = this.read();
-		if ((s | t) < 0)
+		if ((s | t) < 0) {
 			throw new EOFException();
+		}
 
 		return (char) ((s << 8) + (t << 0));
 	}
@@ -1079,11 +1066,11 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * This method does not, therefore, support the full Unicode character set.
 	 * 
 	 * <p>
-	 * A line of text is terminated by a carriage-return character (<code>'&#92;r'</code>), a
-	 * newline character (<code>'&#92;n'</code>), a carriage-return character immediately
-	 * followed by a newline character, or the end of the file. Line-terminating
-	 * characters are discarded and are not included as part of the string
-	 * returned.
+	 * A line of text is terminated by a carriage-return character (
+	 * <code>'&#92;r'</code>), a newline character (<code>'&#92;n'</code>), a
+	 * carriage-return character immediately followed by a newline character, or
+	 * the end of the file. Line-terminating characters are discarded and are
+	 * not included as part of the string returned.
 	 * 
 	 * <p>
 	 * This method blocks until a newline character is read, a carriage return
@@ -1154,7 +1141,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void writeBoolean(boolean v) throws IOException {
+	public void writeBoolean(final boolean v) throws IOException {
 		write(v ? 1 : 0);
 	}
 
@@ -1167,7 +1154,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void writeByte(int v) throws IOException {
+	public void writeByte(final int v) throws IOException {
 		write(v);
 	}
 
@@ -1190,7 +1177,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeShort(int v) throws IOException {
+	public void writeShort(final int v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
 		int nBytes = fileFormat.encodeShort(v, bytes);
 		write(bytes, 0, nBytes);
@@ -1215,7 +1202,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeChar(int v) throws IOException {
+	public void writeChar(final int v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
 		int nBytes = fileFormat.encodeShort(v, bytes);
 		write(bytes, 0, nBytes);
@@ -1239,7 +1226,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeInt(int v) throws IOException {
+	public void writeInt(final int v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
 		int nBytes = fileFormat.encodeInt(v, bytes);
 		write(bytes, 0, nBytes);
@@ -1264,7 +1251,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeLong(long v) throws IOException {
+	public void writeLong(final long v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
 		int nBytes = fileFormat.encodeLong(v, bytes);
 		write(bytes, 0, nBytes);
@@ -1289,7 +1276,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeLongLong(long v) throws IOException {
+	public void writeLongLong(final long v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
 		int nBytes = fileFormat.encodeLongLong(v, bytes);
 		write(bytes, 0, nBytes);
@@ -1314,7 +1301,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeLongDouble(double v) throws IOException {
+	public void writeLongDouble(final double v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
 		int nBytes = fileFormat.encodeLongDouble(v, bytes);
 		write(bytes, 0, nBytes);
@@ -1339,7 +1326,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeFloat(float v) throws IOException {
+	public void writeFloat(final float v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
 		int nBytes = fileFormat.encodeFloat(v, bytes);
 		write(bytes, 0, nBytes);
@@ -1364,7 +1351,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeDouble(double v) throws IOException {
+	public void writeDouble(final double v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
 		int nBytes = fileFormat.encodeDouble(v, bytes);
 		write(bytes, 0, nBytes);
@@ -1380,7 +1367,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void writeBytes(String s) throws IOException {
+	public void writeBytes(final String s) throws IOException {
 		writeBytes(s.getBytes(), 0, s.length());
 	}
 
@@ -1395,7 +1382,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             if an I/O error occurs.
 	 * @see edu.sdsc.grid.io.GeneralRandomAccessFile#writeChar(int)
 	 */
-	public void writeChars(String s) throws IOException {
+	public void writeChars(final String s) throws IOException {
 		char[] chars = s.toCharArray();
 		for (int i = 0; i < s.length(); i++) {
 			writeChar(chars[i]);
@@ -1418,7 +1405,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs.
 	 */
-	public void writeUTF(String str) throws IOException {
+	public void writeUTF(final String str) throws IOException {
 
 		byte buffer[] = null;
 		int i = 0, n = 0, m = 0;
@@ -1473,15 +1460,17 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @param bdf
 	 *            the new file BinaryDataFormat object
 	 */
-	public void setBinaryDataFormat(BinaryDataFormat bdf) {
-		if (bdf == null)
+	public void setBinaryDataFormat(final BinaryDataFormat bdf) {
+		if (bdf == null) {
 			return; // No change
+		}
 		fileFormat = bdf;
 
-		if (fileFormat.isMBFByteOrder() == Host.isMBFByteOrder())
+		if (fileFormat.isMBFByteOrder() == Host.isMBFByteOrder()) {
 			swapNeeded = false;
-		else
+		} else {
 			swapNeeded = true;
+		}
 	}
 
 	/**
@@ -1515,7 +1504,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readBooleans(boolean[] values, int nValues)
+	public void readBooleans(final boolean[] values, final int nValues)
 			throws EOFException, IOException {
 		byte bytes[] = new byte[nValues];
 		readFully(bytes, 0, nValues);
@@ -1550,8 +1539,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readDoubles(double[] values, int nValues) throws EOFException,
-			IOException {
+	public void readDoubles(final double[] values, final int nValues)
+			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getDoubleSize();
 		byte bytes[] = new byte[nBytes];
 		readFully(bytes, 0, nBytes);
@@ -1584,8 +1573,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readFloats(float[] values, int nValues) throws EOFException,
-			IOException {
+	public void readFloats(final float[] values, final int nValues)
+			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getFloatSize();
 		byte bytes[] = new byte[nBytes];
 		readFully(bytes, 0, nBytes);
@@ -1617,8 +1606,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readInts(int[] values, int nValues) throws EOFException,
-			IOException {
+	public void readInts(final int[] values, final int nValues)
+			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getIntSize();
 		byte bytes[] = new byte[nBytes];
 		readFully(bytes, 0, nBytes);
@@ -1650,8 +1639,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readLongs(long[] values, int nValues) throws EOFException,
-			IOException {
+	public void readLongs(final long[] values, final int nValues)
+			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getLongSize();
 		byte bytes[] = new byte[nBytes];
 		readFully(bytes, 0, nBytes);
@@ -1684,7 +1673,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readLongDoubles(double[] values, int nValues)
+	public void readLongDoubles(final double[] values, final int nValues)
 			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getLongDoubleSize();
 		byte bytes[] = new byte[nBytes];
@@ -1717,8 +1706,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readLongLongs(long[] values, int nValues) throws EOFException,
-			IOException {
+	public void readLongLongs(final long[] values, final int nValues)
+			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getLongLongSize();
 		byte bytes[] = new byte[nBytes];
 		readFully(bytes, 0, nBytes);
@@ -1750,8 +1739,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readShorts(short[] values, int nValues) throws EOFException,
-			IOException {
+	public void readShorts(final short[] values, final int nValues)
+			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getShortSize();
 		byte bytes[] = new byte[nBytes];
 		readFully(bytes, 0, nBytes);
@@ -1784,7 +1773,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readUnsignedShorts(short[] values, int nValues)
+	public void readUnsignedShorts(final short[] values, final int nValues)
 			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getShortSize();
 		byte bytes[] = new byte[nBytes];
@@ -1818,7 +1807,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readUnsignedInts(int[] values, int nValues)
+	public void readUnsignedInts(final int[] values, final int nValues)
 			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getIntSize();
 		byte bytes[] = new byte[nBytes];
@@ -1852,7 +1841,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readUnsignedLongs(long[] values, int nValues)
+	public void readUnsignedLongs(final long[] values, final int nValues)
 			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getLongSize();
 		byte bytes[] = new byte[nBytes];
@@ -1886,7 +1875,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void readUnsignedLongLongs(long[] values, int nValues)
+	public void readUnsignedLongLongs(final long[] values, final int nValues)
 			throws EOFException, IOException {
 		int nBytes = nValues * fileFormat.getLongLongSize();
 		byte bytes[] = new byte[nBytes];
@@ -1912,10 +1901,12 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeBooleans(boolean[] values, int nValues) throws IOException {
+	public void writeBooleans(final boolean[] values, final int nValues)
+			throws IOException {
 		byte bytes[] = new byte[nValues];
-		for (int i = 0; i < nValues; i++)
+		for (int i = 0; i < nValues; i++) {
 			bytes[i] = (values[i] == false) ? (byte) 0 : (byte) 1;
+		}
 		write(bytes, 0, nValues);
 	}
 
@@ -1939,7 +1930,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeDoubles(double[] values, int nValues) throws IOException {
+	public void writeDoubles(final double[] values, final int nValues)
+			throws IOException {
 		int nBytes = nValues * fileFormat.getDoubleSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeDoubles(values, nValues, bytes);
@@ -1966,7 +1958,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeFloats(float[] values, int nValues) throws IOException {
+	public void writeFloats(final float[] values, final int nValues)
+			throws IOException {
 		int nBytes = nValues * fileFormat.getFloatSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeFloats(values, nValues, bytes);
@@ -1993,7 +1986,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeInts(int[] values, int nValues) throws IOException {
+	public void writeInts(final int[] values, final int nValues)
+			throws IOException {
 		int nBytes = nValues * fileFormat.getIntSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeInts(values, nValues, bytes);
@@ -2020,7 +2014,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeLongs(long[] values, int nValues) throws IOException {
+	public void writeLongs(final long[] values, final int nValues)
+			throws IOException {
 		int nBytes = nValues * fileFormat.getLongSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeLongs(values, nValues, bytes);
@@ -2047,7 +2042,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeShorts(short[] values, int nValues) throws IOException {
+	public void writeShorts(final short[] values, final int nValues)
+			throws IOException {
 		int nBytes = nValues * fileFormat.getShortSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeShorts(values, nValues, bytes);
@@ -2074,7 +2070,8 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeLongLongs(long[] values, int nValues) throws IOException {
+	public void writeLongLongs(final long[] values, final int nValues)
+			throws IOException {
 		int nBytes = nValues * fileFormat.getLongLongSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeLongLongs(values, nValues, bytes);
@@ -2101,7 +2098,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 */
-	public void writeLongDoubles(double[] values, int nValues)
+	public void writeLongDoubles(final double[] values, final int nValues)
 			throws IOException {
 		int nBytes = nValues * fileFormat.getLongDoubleSize();
 		byte[] bytes = new byte[nBytes];

@@ -23,7 +23,7 @@ public class JargonQueryException extends Exception {
 	/**
 	 * @param message
 	 */
-	public JargonQueryException(String message) {
+	public JargonQueryException(final String message) {
 		super(message);
 	}
 
@@ -31,14 +31,14 @@ public class JargonQueryException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public JargonQueryException(String message, Throwable cause) {
+	public JargonQueryException(final String message, final Throwable cause) {
 		super(message, cause);
 	}
 
 	/**
 	 * @param cause
 	 */
-	public JargonQueryException(Throwable cause) {
+	public JargonQueryException(final Throwable cause) {
 		super(cause);
 	}
 
@@ -46,7 +46,7 @@ public class JargonQueryException extends Exception {
 		return query;
 	}
 
-	public void setQuery(String query) {
+	public void setQuery(final String query) {
 		this.query = query;
 	}
 

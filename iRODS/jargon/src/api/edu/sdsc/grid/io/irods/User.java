@@ -34,7 +34,7 @@ import java.io.IOException;
  * @author iktome
  */
 public class User extends Domain {
-	public User(IRODSFileSystem fileSystem) {
+	public User(final IRODSFileSystem fileSystem) {
 		super(fileSystem, "user", "user_type", "r_user_main");
 	}
 
@@ -63,7 +63,8 @@ public class User extends Domain {
 	 *            storageadmin, rodscurators, ...
 	 * @throws java.io.IOException
 	 */
-	public void addUser(String userName, String userType) throws IOException {
+	public void addUser(final String userName, final String userType)
+			throws IOException {
 		addUser(userName, userType, "");
 	}
 
@@ -76,10 +77,11 @@ public class User extends Domain {
 	 * @param DN
 	 * @throws java.io.IOException
 	 */
-	public void addUser(String userName, String userType, String DN)
+	public void addUser(final String userName, final String userType, String DN)
 			throws IOException {
-		if (DN == null)
+		if (DN == null) {
 			DN = "";
+		}
 
 		// 5th arg is zone, which is blank to take default
 		String[] args = { "add", "user", userName, userType, "", DN };
@@ -93,17 +95,19 @@ public class User extends Domain {
 	 *            name[@department][#zone]
 	 * @throws java.io.IOException
 	 */
-	public void deleteUser(String userName) throws IOException {
+	public void deleteUser(final String userName) throws IOException {
 		String[] args = { "rm", "user", userName };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyZone(String userName, String newValue) throws IOException {
+	public void modifyZone(final String userName, final String newValue)
+			throws IOException {
 		String[] args = { "modify", "user", userName, "zone", newValue };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyDN(String userName, String newValue) throws IOException {
+	public void modifyDN(final String userName, final String newValue)
+			throws IOException {
 		if (irodsFileSystem.commands.getIrodsServerProperties().getRelVersion()
 				.equals("rods2.1")) {
 			// String[] args = { "modify", "user", userName, "dn", newValue };
@@ -116,28 +120,32 @@ public class User extends Domain {
 		}
 	}
 
-	public void modifyComment(String userName, String newValue)
+	public void modifyComment(final String userName, final String newValue)
 			throws IOException {
 		String[] args = { "modify", "user", userName, "comment", newValue };
 		irodsFileSystem.commands.admin(args);
 	}
 
-	public void modifyInfo(String userName, String newValue) throws IOException {
+	public void modifyInfo(final String userName, final String newValue)
+			throws IOException {
 		String[] args = { "modify", "user", userName, "info", newValue };
 		irodsFileSystem.commands.admin(args);
 	}
 
 	/**
-	 * This method is currently dead code, and will need enhancements to obfucate the password information in an upcoming version, per 
-	 *  Bug 83 -  user.modifyPassword fails in Jargon
+	 * This method is currently dead code, and will need enhancements to
+	 * obfucate the password information in an upcoming version, per Bug 83 -
+	 * user.modifyPassword fails in Jargon
+	 * 
 	 * @param userName
 	 * @param newValue
 	 * @throws IOException
 	 */
-	public void modifyPassword(String userName, String newValue)
+	public void modifyPassword(final String userName, final String newValue)
 			throws IOException {
-		throw new UnsupportedOperationException("method currently lacks obfuscation code and will requre an upgrade");
-		//String[] args = { "modify", "user", userName, "password", newValue };
-		//irodsFileSystem.commands.admin(args);
+		throw new UnsupportedOperationException(
+				"method currently lacks obfuscation code and will requre an upgrade");
+		// String[] args = { "modify", "user", userName, "password", newValue };
+		// irodsFileSystem.commands.admin(args);
 	}
 }

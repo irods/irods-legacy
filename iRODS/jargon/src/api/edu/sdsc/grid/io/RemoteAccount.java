@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An object to hold the user information used when connecting to a remote file
  * system.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
@@ -96,8 +96,8 @@ public abstract class RemoteAccount extends GeneralAccount {
 	 * @param homeDirectory
 	 *            home directory on the remote system
 	 */
-	public RemoteAccount(String host, int port, String userName,
-			String password, String homeDir) {
+	public RemoteAccount(final String host, final int port,
+			final String userName, final String password, final String homeDir) {
 		super(homeDir);
 		setHost(host);
 		setPort(port);
@@ -124,9 +124,10 @@ public abstract class RemoteAccount extends GeneralAccount {
 	 * @throws NullPointerException
 	 *             if host is null.
 	 */
-	public void setHost(String host) {
-		if (host == null)
+	public void setHost(final String host) {
+		if (host == null) {
 			throw new NullPointerException("The host string cannot be null");
+		}
 
 		this.host = host;
 	}
@@ -134,10 +135,10 @@ public abstract class RemoteAccount extends GeneralAccount {
 	/**
 	 * Sets the port of this RemoteAccount. Port numbers can not be negative.
 	 */
-	public void setPort(int port) {
-		if (port > 0)
+	public void setPort(final int port) {
+		if (port > 0) {
 			this.port = port;
-		else {
+		} else {
 			throw new IllegalArgumentException("Invalid port number");
 		}
 	}
@@ -145,14 +146,14 @@ public abstract class RemoteAccount extends GeneralAccount {
 	/**
 	 * Sets the userName of this RemoteAccount.
 	 */
-	public void setUserName(String userName) {
+	public void setUserName(final String userName) {
 		this.userName = userName;
 	}
 
 	/**
 	 * Sets the client password.
 	 */
-	public void setPassword(String password) {
+	public void setPassword(final String password) {
 		this.password = password;
 	}
 
@@ -191,7 +192,7 @@ public abstract class RemoteAccount extends GeneralAccount {
 	 *            If true, the account's password will be included in the URI,
 	 *            if possible.
 	 */
-	public URI toURI(boolean includePassword) {
+	public URI toURI(final boolean includePassword) {
 
 		try {
 			return new URI(toString());

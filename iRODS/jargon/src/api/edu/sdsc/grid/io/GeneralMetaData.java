@@ -49,7 +49,7 @@ package edu.sdsc.grid.io;
  * defined interfaces that are implemented by protocol-specific metadata groups.
  * The GeneralMetaData interface contract is that the implementor supports meta
  * data we might find as common general metadata, such as:
- *<ul>
+ * <ul>
  * <li>FILE_NAME
  * <li>FILE_GROUP_NAME
  * <li>SIZE
@@ -59,11 +59,11 @@ package edu.sdsc.grid.io;
  * <li>ACCESS_CONSTRAINT
  * <li>FILE_COMMENTS
  * <li>DIRECTORY_NAME
- *</ul>
- *<P>
+ * </ul>
+ * <P>
  * An implementation specific class, such as SRB general metadata support these
  * fields, but also may support further other metadata fields, such as:
- *<ul>
+ * <ul>
  * <li>Replication number
  * <li>File type
  * <li>Data classification name
@@ -74,7 +74,7 @@ package edu.sdsc.grid.io;
  * <li>Deleted flag
  * <li>Owner domain
  * <li>Owner email address
- *</ul>
+ * </ul>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */

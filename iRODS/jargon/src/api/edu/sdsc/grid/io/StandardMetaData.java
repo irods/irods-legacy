@@ -45,7 +45,7 @@ package edu.sdsc.grid.io;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public interface StandardMetaData {
-	
+
 	public final static String FILE_NAME = "file name";
 	public final static String DIRECTORY_NAME = "directory name";
 

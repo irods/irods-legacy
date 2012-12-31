@@ -48,13 +48,13 @@ public final class GenUpdateInp extends AbstractIRODSPackingInstruction
 
 	private static Logger log = LoggerFactory.getLogger(GenUpdateInp.class);
 
-	public static GenUpdateInp instance(UpdateType updateType,
-			List<InxVal> columnValues) throws JargonException {
+	public static GenUpdateInp instance(final UpdateType updateType,
+			final List<InxVal> columnValues) throws JargonException {
 		return new GenUpdateInp(updateType, columnValues);
 	}
 
-	private GenUpdateInp(UpdateType updateType, List<InxVal> columnValues)
-			throws JargonException {
+	private GenUpdateInp(final UpdateType updateType,
+			final List<InxVal> columnValues) throws JargonException {
 
 		if (updateType == null) {
 			throw new JargonException("update type is null");
@@ -65,8 +65,7 @@ public final class GenUpdateInp extends AbstractIRODSPackingInstruction
 		}
 
 		this.updateType = updateType;
-		this.columnValues = Collections
-				.unmodifiableList(columnValues);
+		this.columnValues = Collections.unmodifiableList(columnValues);
 	}
 
 	@Override
@@ -84,7 +83,7 @@ public final class GenUpdateInp extends AbstractIRODSPackingInstruction
 
 		Tag message = new Tag(PI_TAG, new Tag[] {
 		// operation type
-				new Tag(TYPE, sendType) });
+		new Tag(TYPE, sendType) });
 
 		/*
 		 * subtags that follow the inx format #define InxValPair_PI
@@ -129,5 +128,4 @@ public final class GenUpdateInp extends AbstractIRODSPackingInstruction
 		return columnValues;
 	}
 
-	
 }

@@ -46,17 +46,19 @@
 //
 package edu.sdsc.grid.io.http;
 
-import edu.sdsc.grid.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import java.io.*;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.RemoteFileOutputStream;
 
 /**
  * A HTTPFileOutputStream writes bytes to a file in a file system. What files
  * are available depends on the host environment.
- *<P>
+ * <P>
  * HTTPFileOutputStream is meant for writing streams of raw bytes such as image
  * data.
- *<P>
+ * <P>
  * Basically just wraps java.io.FileOuputStream.
  * <P>
  * 
@@ -97,8 +99,8 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 *                regular file, or for some other reason cannot be opened
 	 *                for reading.
 	 */
-	public HTTPFileOutputStream(HTTPFileSystem fileSystem, String name)
-			throws IOException {
+	public HTTPFileOutputStream(final HTTPFileSystem fileSystem,
+			final String name) throws IOException {
 		super(fileSystem, name);
 	}
 
@@ -122,7 +124,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 *                for reading.
 	 * @see java.io.File#getPath()
 	 */
-	public HTTPFileOutputStream(HTTPFile file) throws IOException {
+	public HTTPFileOutputStream(final HTTPFile file) throws IOException {
 		super(file);
 	}
 
@@ -150,7 +152,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	protected void open(GeneralFile file) throws IOException {
+	protected void open(final GeneralFile file) throws IOException {
 		out = ((HTTPFile) file).httpFileSystem.conn.getOutputStream();
 	}
 
@@ -164,7 +166,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(int b) throws IOException {
+	public void write(final int b) throws IOException {
 		out.write(b);
 	}
 
@@ -178,7 +180,7 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte b[]) throws IOException {
+	public void write(final byte b[]) throws IOException {
 		out.write(b);
 	}
 
@@ -196,7 +198,8 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream {
 	 *                if an I/O error occurs.
 	 */
 	@Override
-	public void write(byte b[], int off, int len) throws IOException {
+	public void write(final byte b[], final int off, final int len)
+			throws IOException {
 		out.write(b, off, len);
 	}
 

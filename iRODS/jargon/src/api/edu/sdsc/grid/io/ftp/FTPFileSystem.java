@@ -45,20 +45,26 @@
 //
 package edu.sdsc.grid.io.ftp;
 
-import edu.sdsc.grid.io.*;
-
-import java.io.*;
+import java.io.IOException;
 import java.net.URI;
 
-import org.globus.ftp.*;
-import org.globus.ftp.exception.*;
+import org.globus.ftp.FTPClient;
+import org.globus.ftp.GridFTPClient;
+import org.globus.ftp.exception.FTPException;
+import org.globus.ftp.exception.ServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.sdsc.grid.io.GeneralAccount;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.RemoteFileSystem;
 
 /**
  * The FTPFileSystem class is the class for connection implementations to FTP
  * and GridFTP servers.
- *<P>
+ * <P>
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
@@ -93,13 +99,13 @@ public class FTPFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             if an IOException occurs.
 	 */
-	public FTPFileSystem(FTPAccount ftpAccount) throws IOException {
+	public FTPFileSystem(final FTPAccount ftpAccount) throws IOException {
 		setAccount(ftpAccount);
 
 		try {
 			if (ftpAccount.useGridFTP) {
-				ftpClient = new GridFTPClient(ftpAccount.getHost(), ftpAccount
-						.getPort());
+				ftpClient = new GridFTPClient(ftpAccount.getHost(),
+						ftpAccount.getPort());
 				if (ftpAccount.getGSSCredential() != null) {
 					((GridFTPClient) ftpClient).authenticate(ftpAccount
 							.getGSSCredential());
@@ -107,17 +113,17 @@ public class FTPFileSystem extends RemoteFileSystem {
 					ftpAccount.setUserName("anonymous");
 					ftpAccount.setPassword("");
 				}
-				ftpClient.authorize(ftpAccount.getUserName(), ftpAccount
-						.getPassword());
+				ftpClient.authorize(ftpAccount.getUserName(),
+						ftpAccount.getPassword());
 			} else {
-				ftpClient = new FTPClient(ftpAccount.getHost(), ftpAccount
-						.getPort());
+				ftpClient = new FTPClient(ftpAccount.getHost(),
+						ftpAccount.getPort());
 				if (getUserName() == null) {
 					ftpAccount.setUserName("anonymous");
 					ftpAccount.setPassword("");
 				}
-				ftpClient.authorize(ftpAccount.getUserName(), ftpAccount
-						.getPassword());
+				ftpClient.authorize(ftpAccount.getUserName(),
+						ftpAccount.getPassword());
 			}
 		} catch (FTPException e) {
 			IOException io = new IOException();
@@ -138,19 +144,19 @@ public class FTPFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             if an IOException occurs.
 	 */
-	public FTPFileSystem(URI uri) throws IOException {
+	public FTPFileSystem(final URI uri) throws IOException {
 		setAccount(uri);
 
 		// or just the IOException because I already use so many other places?
 		try {
-			ftpClient = new FTPClient(ftpAccount.getHost(), ftpAccount
-					.getPort());
+			ftpClient = new FTPClient(ftpAccount.getHost(),
+					ftpAccount.getPort());
 			if (getUserName() == null) {
 				ftpAccount.setUserName("anonymous");
 				ftpAccount.setPassword("");
 			}
-			ftpClient.authorize(ftpAccount.getUserName(), ftpAccount
-					.getPassword());
+			ftpClient.authorize(ftpAccount.getUserName(),
+					ftpAccount.getPassword());
 		} catch (FTPException e) {
 			IOException io = new IOException();
 			io.initCause(e);
@@ -162,20 +168,22 @@ public class FTPFileSystem extends RemoteFileSystem {
 	 * Loads the account information for this file system.
 	 */
 	@Override
-	protected void setAccount(GeneralAccount account) throws IOException {
-		if (account == null)
+	protected void setAccount(final GeneralAccount account) throws IOException {
+		if (account == null) {
 			throw new NullPointerException("Account information cannot be null");
+		}
 
 		ftpAccount = (FTPAccount) account.clone();
 		this.account = ftpAccount;
 	}
 
-	protected void setAccount(URI uri) throws IOException {
-		if (uri == null)
+	protected void setAccount(final URI uri) throws IOException {
+		if (uri == null) {
 			throw new NullPointerException("Account information cannot be null");
+		}
 
-		ftpAccount = new FTPAccount(uri.getHost(), uri.getPort(), uri
-				.getUserInfo(), "", uri.getPath());
+		ftpAccount = new FTPAccount(uri.getHost(), uri.getPort(),
+				uri.getUserInfo(), "", uri.getPath());
 		this.account = ftpAccount;
 	}
 
@@ -191,8 +199,8 @@ public class FTPFileSystem extends RemoteFileSystem {
 	 *
 	 */
 	@Override
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects) throws IOException {
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -200,8 +208,8 @@ public class FTPFileSystem extends RemoteFileSystem {
 	 *
 	 */
 	@Override
-	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects, int numberOfRecordsWanted)
+	public MetaDataRecordList[] query(final MetaDataCondition[] conditions,
+			final MetaDataSelect[] selects, final int numberOfRecordsWanted)
 			throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -229,7 +237,7 @@ public class FTPFileSystem extends RemoteFileSystem {
 	 *         <code>false</code> otherwise
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj instanceof FTPFileSystem) {
 			if (toString().equals(obj.toString())) {
 				return true;

@@ -60,6 +60,7 @@ import java.util.List;
 import edu.sdsc.grid.io.FileFactory;
 import edu.sdsc.grid.io.GeneralFile;
 import edu.sdsc.grid.io.GeneralFileSystem;
+import edu.sdsc.grid.io.GeneralMetaData;
 import edu.sdsc.grid.io.GeneralRandomAccessFile;
 import edu.sdsc.grid.io.Host;
 import edu.sdsc.grid.io.Lucid;
@@ -69,14 +70,17 @@ import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.MetaDataTable;
+import edu.sdsc.grid.io.ResourceMetaData;
+import edu.sdsc.grid.io.StandardMetaData;
+import edu.sdsc.grid.io.UserMetaData;
 import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.grid.io.local.LocalRandomAccessFile;
 
 /**
  * Instances of this class support socket I/O to a Srb server.
- *<P>
+ * <P>
  * Handles socket level protocol for interacting with the SRB.
- *<P>
+ * <P>
  * See also: <a href="doc-files/SRBProtocol.htm">SRB protocol</a>
  * 
  * <P>
@@ -85,7 +89,7 @@ import edu.sdsc.grid.io.local.LocalRandomAccessFile;
  * @since JARGON1.0
  */
 class SRBCommands {
-	
+
 	/**
 	 * A positive debug value turns on debugging. Higher values turn on more,
 	 * maybe.
@@ -387,7 +391,7 @@ class SRBCommands {
 
 	/**
 	 * Opens a socket connection to read from and write to.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param userInfoDirectory
 	 *            the directory to find the user info
@@ -400,14 +404,16 @@ class SRBCommands {
 	/**
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
-	 *<P>
+	 * <P>
 	 * 
 	 * @throws IOException
 	 *             If can't close socket.
 	 */
+	@Override
 	protected void finalize() throws IOException {
-		if (outputBuffer != null)
+		if (outputBuffer != null) {
 			outputBuffer = null;
+		}
 		close();
 		if (out != null) {
 			out = null;
@@ -432,13 +438,12 @@ class SRBCommands {
 	 * @throws IOException
 	 *             if the host cannot be opened or created.
 	 */
-	synchronized int connect(SRBAccount account, byte userInfoBuffer[])
-			throws IOException {
-		int status = -1;
+	synchronized int connect(final SRBAccount account,
+			final byte userInfoBuffer[]) throws IOException {
 		byte temp[];
 		String host = account.getHost();
 		int port = account.getPort();
-		versionNumber = account.getVersionNumber();
+		versionNumber = SRBAccount.getVersionNumber();
 		zone = account.getMcatZone();
 		this.account = (SRBAccount) account.clone();
 
@@ -487,18 +492,20 @@ class SRBCommands {
 			//
 			close();
 
-			if (DEBUG > 1)
+			if (DEBUG > 1) {
 				System.err.println("Redirected by srbMaster to srbServer:"
 						+ port);
+			}
 
 			//
 			// Connect to srbServer at the new port
 			//
 			openSocket(host, port);
 		} else {
-			if (DEBUG > 1)
+			if (DEBUG > 1) {
 				System.err.println("Connecting to srbServer through "
 						+ "srbMaster server.");
+			}
 		}
 
 		return sendUserInfo(account, userInfoBuffer, port);
@@ -513,8 +520,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             if the host cannot be opened or created.
 	 */
-	synchronized int sendUserInfo(SRBAccount account, byte userInfoBuffer[],
-			int port) throws IOException {
+	synchronized int sendUserInfo(final SRBAccount account,
+			final byte userInfoBuffer[], final int port) throws IOException {
 		int status = -1;
 		byte temp[];
 		String password = account.getPassword();
@@ -540,8 +547,9 @@ class SRBCommands {
 		// clear the output buffer
 		outputBuffer = new byte[OUTPUT_BUFFER_LENGTH];
 
-		if (DEBUG > 1)
+		if (DEBUG > 1) {
 			System.err.println("Sending password...");
+		}
 		//
 		// Send the authorization.
 		// SRB supports 4 types of authentication scheme,
@@ -622,8 +630,9 @@ class SRBCommands {
 		//
 		boolean versionChange = SRBAccount
 				.systemPropertyVersion(srbGetSvrVersion());
-		if (versionChange)
-			versionNumber = account.getVersionNumber();
+		if (versionChange) {
+			versionNumber = SRBAccount.getVersionNumber();
+		}
 
 		if ((status == -1004) || (status == -1005) || (status == -1006)
 				|| (status == -1017)) {
@@ -693,14 +702,18 @@ class SRBCommands {
 	synchronized boolean isClosed() throws IOException {
 		// So if null, maybe it just isn't connected yet, but I think for
 		// safety...
-		if (connection == null)
+		if (connection == null) {
 			return true;
-		if (connection.isClosed())
+		}
+		if (connection.isClosed()) {
 			return true;
-		if (out == null)
+		}
+		if (out == null) {
 			return true;
-		if (in == null)
+		}
+		if (in == null) {
 			return true;
+		}
 
 		return false;
 	}
@@ -710,7 +723,6 @@ class SRBCommands {
 	 * Encrypt1 authorization scheme.
 	 */
 	void sendEncrypt1Auth(String password) throws IOException {
-		int status = -1, readBytes = -1, writeBytes = -1;
 		long seed = 0;
 		long seed2 = 0;
 		long maxValue = 64;
@@ -724,10 +736,11 @@ class SRBCommands {
 
 		in.read(encryptedMessage, 0, ENCRYPT1_MESSAGE_SIZE - 1);
 		for (int i = 0; i < ENCRYPT1_MESSAGE_SIZE - 1; i++) {
-			if (encryptedMessage[i] < 0)
+			if (encryptedMessage[i] < 0) {
 				initialMessage[i] = encryptedMessage[i] + 256;
-			else
+			} else {
 				initialMessage[i] = encryptedMessage[i];
+			}
 		}
 
 		// ignore final 0
@@ -743,22 +756,24 @@ class SRBCommands {
 						\u002e\u006c\u0031\u0036\u0028\u0029\u003b\u002f\u002a
         */
 			} catch (Throwable e) {
-				if (DEBUG > 0)
+				if (DEBUG > 0) {
 					e.printStackTrace();
+				}
 			}
 		}
 
 		if (password != null) {
 			int[] passwordInts = new int[password.length()];
 			byte[] passwordBytes = password.getBytes();
-			for (int i = 0; i < passwordInts.length; i++)
+			for (int i = 0; i < passwordInts.length; i++) {
 				passwordInts[i] = passwordBytes[i];
+			}
 
 			vHashString(hashPassword, passwordInts);
 			vHashString(hashInitialMessage, initialMessage);
 
 			maxValue = 1073741823; // 0x3FFFFFFFL
-			maxValueDouble = (double) maxValue;
+			maxValueDouble = maxValue;
 			seed = (hashPassword[0] ^ hashInitialMessage[0]) % maxValue;
 			seed2 = (hashPassword[1] ^ hashInitialMessage[1]) % maxValue;
 
@@ -767,7 +782,7 @@ class SRBCommands {
 				seed2 = (seed + seed2 + 33) % maxValue;
 
 				encryptedMessage[i] = (byte) (Math
-						.floor((((double) seed) / maxValueDouble) * 31) + 64);
+						.floor(((seed) / maxValueDouble) * 31) + 64);
 			}
 		}
 
@@ -784,40 +799,46 @@ class SRBCommands {
 	/**
 	 * Converts an array into two unsigned integers.
 	 */
-	static void vHashString(long[] result, int[] password) {
+	static void vHashString(final long[] result, final int[] password) {
 		long nr = 1345345333;
 		long add = 7;
 		long nr2 = 305419889;
 		int currentValue;
 
-		for (int i = 0; i < password.length; i++) {
-			currentValue = password[i];
+		for (int element : password) {
+			currentValue = element;
 
-			long UNSIGNED_INT_MAX = (Integer.MAX_VALUE + (long) 1) * ((long) 2);
+			long UNSIGNED_INT_MAX = (Integer.MAX_VALUE + (long) 1) * (2);
 			long temp = (nr << 8);
-			if (temp > (UNSIGNED_INT_MAX))
+			if (temp > (UNSIGNED_INT_MAX)) {
 				temp = (int) temp;
-			if (temp < (-UNSIGNED_INT_MAX))
+			}
+			if (temp < (-UNSIGNED_INT_MAX)) {
 				temp = (UNSIGNED_INT_MAX) + temp;
+			}
 			nr = nr ^ ((((nr & 63) + add) * currentValue) + temp);
 			if (nr < 0) {
 				nr = UNSIGNED_INT_MAX + nr;
 			}
 
 			temp = (nr2 << 8);
-			if (temp > (UNSIGNED_INT_MAX))
+			if (temp > (UNSIGNED_INT_MAX)) {
 				temp = (int) temp;
-			if (temp < 0)
+			}
+			if (temp < 0) {
 				temp = (UNSIGNED_INT_MAX) + temp;
+			}
 			nr2 += temp ^ nr;
-			if (nr2 > (UNSIGNED_INT_MAX))
+			if (nr2 > (UNSIGNED_INT_MAX)) {
 				nr2 = (int) nr2;
-			if (nr2 < 0)
+			}
+			if (nr2 < 0) {
 				nr2 = (UNSIGNED_INT_MAX) + nr2;
+			}
 			add += currentValue;
 		}
-		result[0] = nr & (((int) 1 << 31) - 1);
-		result[1] = nr2 & (((int) 1 << 31) - 1);
+		result[0] = nr & ((1 << 31) - 1);
+		result[1] = nr2 & ((1 << 31) - 1);
 		return;
 	}
 
@@ -843,7 +864,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             if a IOException occurs
 	 */
-	private void openSocket(String host, int port) throws IOException {
+	private void openSocket(final String host, final int port)
+			throws IOException {
 		try {
 			connection = new Socket(host, port);
 			in = connection.getInputStream();
@@ -878,8 +900,9 @@ class SRBCommands {
 				}
 			}
 		} catch (Throwable e) {
-			if (DEBUG > 0)
+			if (DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 		return false;
 	}
@@ -894,7 +917,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	private void send(byte[] value) throws IOException {
+	private void send(final byte[] value) throws IOException {
 
 		if ((value.length + outputOffset) >= OUTPUT_BUFFER_LENGTH) {
 			// in cases where OUTPUT_BUFFER_LENGTH isn't big enough
@@ -904,16 +927,14 @@ class SRBCommands {
 			outputOffset = 0;
 		} else {
 			// the message sent isn't longer than OUTPUT_BUFFER_LENGTH
-			System
-					.arraycopy(value, 0, outputBuffer, outputOffset,
-							value.length);
+			System.arraycopy(value, 0, outputBuffer, outputOffset, value.length);
 			outputOffset += value.length;
 
 			if (DEBUG > 5) {
 				System.err.print("Send: " + new String(value));
 				if (DEBUG > 6) {
-					for (int i = 0; i < value.length; i++) {
-						System.err.print(value[i] + " ");
+					for (byte element : value) {
+						System.err.print(element + " ");
 					}
 				}
 			}
@@ -934,7 +955,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	private void send(byte[] value, int offset, int length) throws IOException {
+	private void send(final byte[] value, final int offset, final int length)
+			throws IOException {
 		byte temp[] = new byte[length];
 
 		System.arraycopy(value, offset, temp, 0, length);
@@ -950,7 +972,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	private void send(String value) throws IOException {
+	private void send(final String value) throws IOException {
 		send(value.getBytes());
 	}
 
@@ -962,7 +984,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	private void send(int value) throws IOException {
+	private void send(final int value) throws IOException {
 		byte bytes[] = new byte[INT_LENGTH];
 
 		Host.copyInt(value, bytes);
@@ -979,7 +1001,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	private void send(long value) throws IOException {
+	private void send(final long value) throws IOException {
 		byte bytes[] = new byte[LONG_LENGTH];
 
 		Host.copyLong(value, bytes);
@@ -1031,7 +1053,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	private byte[] read(int length) throws ClosedChannelException,
+	private byte[] read(final int length) throws ClosedChannelException,
 			InterruptedIOException, IOException {
 		if (length <= 0) {
 			return null;
@@ -1069,8 +1091,8 @@ class SRBCommands {
 		if (DEBUG > 5) {
 			System.err.print("Read: " + new String(value));
 			if (DEBUG > 6) {
-				for (int i = 0; i < value.length; i++) {
-					System.err.print(value[i] + " ");
+				for (byte element : value) {
+					System.err.print(element + " ");
 				}
 			}
 		}
@@ -1181,7 +1203,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	private String readString(int length) throws IOException {
+	private String readString(final int length) throws IOException {
 		String value = new String(read(length));
 
 		return value;
@@ -1209,7 +1231,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void startSRBCommand(int functionId, int nargs) throws IOException {
+	void startSRBCommand(final int functionId, final int nargs)
+			throws IOException {
 		String doFunction = "F \0"; // Always starts a command
 
 		send(doFunction.getBytes());
@@ -1227,7 +1250,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(int arg) throws IOException {
+	void sendArg(final int arg) throws IOException {
 		send(INT_LENGTH);
 		send(arg);
 	}
@@ -1241,7 +1264,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(long arg) throws IOException {
+	void sendArg(final long arg) throws IOException {
 		send(LONG_LENGTH);
 		send(arg);
 	}
@@ -1255,7 +1278,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(String arg) throws IOException {
+	void sendArg(final String arg) throws IOException {
 		if (arg == null) {
 			// send a null 4 bytes, for the string length.
 			send(new byte[4]);
@@ -1274,7 +1297,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(byte arg[]) throws IOException {
+	void sendArg(final byte arg[]) throws IOException {
 		if (arg == null) {
 			// send a null 4 bytes, for the byte[] length.
 			send(new byte[4]);
@@ -1287,10 +1310,10 @@ class SRBCommands {
 	/**
 	 * Sends the length of an argument, then the argument itself. After a SRB
 	 * command is started all the command arguments must be sent in this format.
-	 *<P>
+	 * <P>
 	 * This method allows only part of a byte array to be sent, from 0 to
 	 * length.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param arg
 	 *            The argument sent to the server.
@@ -1299,7 +1322,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(byte arg[], int length) throws IOException {
+	void sendArg(final byte arg[], final int length) throws IOException {
 		if (arg == null) {
 			// send a null 4 bytes, for the byte[] length.
 			send(new byte[4]);
@@ -1312,10 +1335,10 @@ class SRBCommands {
 	/**
 	 * Sends the length of an argument, then the argument itself. After a SRB
 	 * command is started all the command arguments must be sent in this format.
-	 *<P>
+	 * <P>
 	 * This method allows only part of a byte array to be sent, from offset to
 	 * length.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param arg
 	 *            The argument sent to the server.
@@ -1326,7 +1349,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(byte arg[], int offset, int length) throws IOException {
+	void sendArg(final byte arg[], final int offset, final int length)
+			throws IOException {
 		if (arg == null) {
 			// send a null 4 bytes, for the byte[] length.
 			send(new byte[4]);
@@ -1345,34 +1369,34 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(int arg[]) throws IOException {
+	void sendArg(final int arg[]) throws IOException {
 		send(arg.length * INT_LENGTH);
-		for (int i = 0; i < arg.length; i++) {
-			send(arg[i]);
+		for (int element : arg) {
+			send(element);
 		}
 	}
 
 	/**
 	 * Sends the length of an argument, then the argument itself. After a SRB
 	 * command is started all the command arguments must be sent in this format.
-	 *<P>
+	 * <P>
 	 * The array must have uniform dimensions. (The string lengths must be
 	 * equal.)
-	 *<P>
+	 * <P>
 	 * 
 	 * @param arg
 	 *            The argument sent to the server.
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(char arg[][]) throws IOException {
+	void sendArg(final char arg[][]) throws IOException {
 		int argLength = arg.length * arg[0].length;
 		byte byteArg[] = new byte[argLength];
 
 		int k = 0;
-		for (int i = 0; i < arg.length; i++) {
-			for (int j = 0; j < arg[i].length; j++) {
-				byteArg[k] = (byte) arg[i][j];
+		for (char[] element : arg) {
+			for (int j = 0; j < element.length; j++) {
+				byteArg[k] = (byte) element[j];
 				k++;
 			}
 		}
@@ -1384,7 +1408,7 @@ class SRBCommands {
 	/**
 	 * Sends the length of an argument, then the argument itself. After a SRB
 	 * command is started all the command arguments must be sent in this format.
-	 *<P>
+	 * <P>
 	 * This method recreates the structure that is returned by a query. See
 	 * also, returnSRBMetaDataRecordList() and mdasC_sql_result_struct *myresult
 	 * from the C client.
@@ -1394,11 +1418,9 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	void sendArg(SRBMetaDataRecordList[] rl) throws IOException {
+	void sendArg(final SRBMetaDataRecordList[] rl) throws IOException {
 		byte[] nullByte = { 0 }; // seriously, I have to do it this way?
 		String nll = new String(nullByte);
-
-		int argLength = 0;
 
 		// number of metadata attributes
 		int result_count = rl[0].getFieldCount();
@@ -1416,8 +1438,8 @@ class SRBCommands {
 
 		for (int i = 0; i < rl[0].getFieldCount(); i++) {
 			values += SRBMetaDataSet.getSRBDatabaseName(rl[0].getFieldName(i));
-			for (int j = 0; j < rl.length; j++) {
-				values += rl[j].getStringValue(i) + nll;
+			for (SRBMetaDataRecordList element : rl) {
+				values += element.getStringValue(i) + nll;
 			}
 		}
 
@@ -1524,8 +1546,9 @@ class SRBCommands {
 				bytesRead = in.read(resultBuffer, 0, ERROR_MSG_LENGTH
 						* maxErrorMsgs);
 
-				if (bytesRead <= 0)
+				if (bytesRead <= 0) {
 					break;
+				}
 
 				for (int i = 0; i < bytesRead; i++) {
 					if ((char) resultBuffer[i] == 'V') {
@@ -1584,8 +1607,9 @@ class SRBCommands {
 				}
 			}
 			// windows wasn't catching the status until another read
-			if (resultBuffer[bytesRead - 1] != 48)
+			if (resultBuffer[bytesRead - 1] != 48) {
 				status();
+			}
 
 			throw new SRBException(exception, exceptionType);
 		} else {
@@ -1722,7 +1746,8 @@ class SRBCommands {
 	 *         client.
 	 */
 	SRBMetaDataRecordList[] returnSRBMetaDataRecordList(
-			boolean usePortalHeader, InputStream in) throws IOException {
+			final boolean usePortalHeader, final InputStream in)
+			throws IOException {
 		// if using a different InputStream
 		InputStream tempIn = null;
 		if (in != null) {
@@ -1731,17 +1756,18 @@ class SRBCommands {
 			read(4);
 		}
 
-		int i = 0, j = 0, k = 0, temp = 0;
+		int i = 0, j = 0, k = 0;
 		int bufferLength;
 		if (singlePortBulkUnload) {
 			read(4);
 		}
 
 		// total buffer length to read
-		if (usePortalHeader)
+		if (usePortalHeader) {
 			bufferLength = Host.castToInt(read(INT_LENGTH));
-		else
+		} else {
 			bufferLength = readInt();
+		}
 
 		int status = (int) readUnsignedInt();
 
@@ -1761,13 +1787,15 @@ class SRBCommands {
 			}
 		}
 
-		if (usePortalHeader)
+		if (usePortalHeader) {
 			read(4); // junk
+		}
 
 		// quick check if the server returned an error
 		if (status < 0) {
-			if (DEBUG > 2)
+			if (DEBUG > 2) {
 				System.err.println(status);
+			}
 			if (status == -3005) {
 				read(1); // the final '0';
 				return null;
@@ -1787,8 +1815,9 @@ class SRBCommands {
 		// total buffer length - length variables
 		// (bufferLength, fieldCount, etc.)
 		int lengthVars = 16;
-		if (usePortalHeader)
+		if (usePortalHeader) {
 			lengthVars += 7;
+		}
 
 		byte resultBuffer[] = read(bufferLength - lengthVars);
 
@@ -1815,11 +1844,11 @@ class SRBCommands {
 
 			if (DEBUG > 4) {
 				for (i = 0; i < resultBuffer.length; i++) {
-					if (resultBuffer[i] > 32)
+					if (resultBuffer[i] > 32) {
 						System.err.print((char) resultBuffer[i]);
-					else if (resultBuffer[i] > 1)
+					} else if (resultBuffer[i] > 1) {
 						System.err.print(resultBuffer[i]);
-					else if (i > 1) {
+					} else if (i > 1) {
 						if ((resultBuffer[i - 1] != 1)
 								&& (resultBuffer[i - 2] != 0)
 								&& (resultBuffer[i] != 1)) {
@@ -1907,13 +1936,14 @@ class SRBCommands {
 	 *         class replaces mdasC_sql_result_struct *myresult from the C
 	 *         client.
 	 */
-	SRBMetaDataRecordList[] parseSRBMetaDataRecordList(int fieldCount,
-			int recordCount, int continuationIndex, String[] tabName,
-			String[] attributeName, String[][] returnValue) throws IOException {
+	SRBMetaDataRecordList[] parseSRBMetaDataRecordList(final int fieldCount,
+			final int recordCount, final int continuationIndex,
+			final String[] tabName, final String[] attributeName,
+			final String[][] returnValue) throws IOException {
 		SRBMetaDataRecordList[] rl;
 		MetaDataField[] fields, fields2 = null;
 		Object[] singleReturnValue, singleReturnValue2 = null;
-		int i = 0, j = 0, k = 0, l = 0, temp = 0;
+		int i = 0, j = 0, k = 0, l = 0;
 
 		// Get a list of the fields the query returned
 		fields = new MetaDataField[fieldCount];
@@ -1957,17 +1987,19 @@ class SRBCommands {
 						// for uniqueness. oneIndex and twoIndex keep track of
 						// where
 						for (k = 0; k < fieldCount; k++) {
-							if (fields[k].getName() == SRBMetaDataSet.FILE_NAME) {
+							if (fields[k].getName() == StandardMetaData.FILE_NAME) {
 								compare1 = returnValue[k][i];
 								oneIndex = k;
-								if (twoIndex >= 0)
+								if (twoIndex >= 0) {
 									break;
+								}
 							}
-							if (fields[k].getName() == SRBMetaDataSet.DIRECTORY_NAME) {
+							if (fields[k].getName() == StandardMetaData.DIRECTORY_NAME) {
 								compare2 = returnValue[k][i];
 								twoIndex = k;
-								if (oneIndex >= 0)
+								if (oneIndex >= 0) {
 									break;
+								}
 							}
 						}
 					} else if (nextFieldName == SRBMetaDataSet.DEFINABLE_METADATA_FOR_DIRECTORIES1) {
@@ -1976,7 +2008,7 @@ class SRBCommands {
 						// for uniqueness. oneIndex and twoIndex keep track of
 						// where
 						for (k = 0; k < fieldCount; k++) {
-							if (fields[k].getName() == SRBMetaDataSet.DIRECTORY_NAME) {
+							if (fields[k].getName() == StandardMetaData.DIRECTORY_NAME) {
 								compare1 = returnValue[k][i];
 								oneIndex = k;
 								break;
@@ -1988,7 +2020,7 @@ class SRBCommands {
 						// for uniqueness. oneIndex and twoIndex keep track of
 						// where
 						for (k = 0; k < fieldCount; k++) {
-							if (fields[k].getName() == SRBMetaDataSet.RESOURCE_NAME) {
+							if (fields[k].getName() == ResourceMetaData.RESOURCE_NAME) {
 								compare1 = returnValue[k][i];
 								oneIndex = k;
 								break;
@@ -2000,17 +2032,19 @@ class SRBCommands {
 						// for uniqueness. oneIndex and twoIndex keep track of
 						// where
 						for (k = 0; k < fieldCount; k++) {
-							if (fields[k].getName() == SRBMetaDataSet.USER_NAME) {
+							if (fields[k].getName() == UserMetaData.USER_NAME) {
 								compare1 = returnValue[k][i];
 								oneIndex = k;
-								if (twoIndex >= 0)
+								if (twoIndex >= 0) {
 									break;
+								}
 							}
 							if (fields[k].getName() == SRBMetaDataSet.USER_DOMAIN) {
 								compare2 = returnValue[k][i];
 								twoIndex = k;
-								if (oneIndex >= 0)
+								if (oneIndex >= 0) {
 									break;
+								}
 							}
 						}
 					}
@@ -2040,12 +2074,14 @@ class SRBCommands {
 						for (k = 0; k < metaDataRows; k++) {
 							for (l = 0; l < tableValues[k].length; l++) {
 								tableValues[k][l] = returnValue[j + l][k + i];
-								if (empty && !tableValues[k][l].equals(""))
+								if (empty && !tableValues[k][l].equals("")) {
 									empty = false;
+								}
 							}
 							operators[k] = MetaDataCondition.EQUAL;
-							if (empty)
+							if (empty) {
 								tableValues[k] = null;
+							}
 						}
 
 						// So if the entire row was empty strings, throw it away
@@ -2064,9 +2100,10 @@ class SRBCommands {
 							tableValues = (String[][]) _tableValues
 									.toArray(new String[0][0]);
 							operators = new int[tableValues.length];
-							for (int _i = 0; _i < _operators.size(); _i++)
+							for (int _i = 0; _i < _operators.size(); _i++) {
 								operators[_i] = ((Integer) _operators.get(_i))
 										.intValue();
+							}
 						}
 
 						if (tableValues == null) {
@@ -2114,8 +2151,9 @@ class SRBCommands {
 						} else if (fields[k].getName() == SRBMetaDataSet.DEFINABLE_METADATA_FOR_RESOURCES0) {
 							fields2[l] = MetaDataSet
 									.getField(SRBMetaDataSet.DEFINABLE_METADATA_FOR_RESOURCES);
-						} else
+						} else {
 							fields2[l] = fields[k];
+						}
 						l++;
 					}
 				}
@@ -2199,9 +2237,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized int srbObjCreate(int catType, String objID,
-			String dataTypeName, String resourceName, String collectionName,
-			String localPathName, long dataSize) throws IOException {
+	synchronized int srbObjCreate(final int catType, final String objID,
+			final String dataTypeName, final String resourceName,
+			final String collectionName, final String localPathName,
+			final long dataSize) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjCreate " + objID + " "
@@ -2222,8 +2261,9 @@ class SRBCommands {
 		int fd = returnInt();
 		if (fd < 0) {
 			throw new SRBException(fd);
-		} else
+		} else {
 			return fd;
+		}
 	}
 
 	/**
@@ -2245,8 +2285,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized int srbObjOpen(String objID, int openFlag,
-			String collectionName) throws IOException {
+	synchronized int srbObjOpen(final String objID, final int openFlag,
+			final String collectionName) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjOpen");
@@ -2262,8 +2302,9 @@ class SRBCommands {
 		int fd = returnInt();
 		if (fd < 0) {
 			throw new SRBException(fd);
-		} else
+		} else {
 			return fd;
+		}
 	}
 
 	/**
@@ -2274,7 +2315,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbObjClose(int srbFD) throws IOException {
+	synchronized void srbObjClose(final int srbFD) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjClose");
@@ -2302,8 +2343,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbObjUnlink(String objID, String collectionName)
-			throws IOException {
+	synchronized void srbObjUnlink(final String objID,
+			final String collectionName) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjUnlink");
@@ -2332,7 +2373,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized byte[] srbObjRead(int srbFD, int length) throws IOException {
+	synchronized byte[] srbObjRead(final int srbFD, final int length)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjRead");
@@ -2360,8 +2402,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized int srbObjWrite(int srbFD, byte output[], int length)
-			throws IOException {
+	synchronized int srbObjWrite(final int srbFD, final byte output[],
+			final int length) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjWrite");
@@ -2376,8 +2418,9 @@ class SRBCommands {
 		int result = returnInt();
 		if (result < 0) {
 			throw new SRBException("Write failed", result);
-		} else
+		} else {
 			return result;
+		}
 	}
 
 	/**
@@ -2396,8 +2439,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbObjSeek(int desc, long offset, int whence)
-			throws IOException {
+	synchronized void srbObjSeek(final int desc, final long offset,
+			final int whence) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjSeek");
@@ -2424,7 +2467,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbObjSync(int desc) throws IOException {
+	synchronized void srbObjSync(final int desc) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjSync");
@@ -2455,8 +2498,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized long[] srbObjStat(int catType, String filePath, int myType)
-			throws IOException {
+	synchronized long[] srbObjStat(final int catType, final String filePath,
+			final int myType) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjStat");
@@ -2465,8 +2508,6 @@ class SRBCommands {
 		long temp = 0;
 		int i = 0, j = 0;
 		int endLoop = 0; // stores array index of when to end a for loop
-		int resultLength = 0;
-
 		startSRBCommand(F_SRBO_STAT, 3);
 		sendArg(catType);
 		sendArg(filePath);
@@ -2547,7 +2588,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	long[] srbObjStat64(int catType, String path) throws IOException {
+	long[] srbObjStat64(final int catType, final String path)
+			throws IOException {
 		return srbObjStat(catType, path, 0);// IS_UNKNOWN);
 
 	}
@@ -2572,9 +2614,9 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbObjReplicate(int catType, String objID,
-			String collectionName, String newResourceName, String newPathName)
-			throws IOException {
+	synchronized void srbObjReplicate(final int catType, final String objID,
+			final String collectionName, final String newResourceName,
+			final String newPathName) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjReplicate");
@@ -2617,9 +2659,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbObjMove(int catType, String objID,
-			String collectionName, String srcResource, String newResourceName,
-			String newPathName, String container) throws IOException {
+	synchronized void srbObjMove(final int catType, final String objID,
+			final String collectionName, final String srcResource,
+			final String newResourceName, final String newPathName,
+			final String container) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjMove");
@@ -2706,10 +2749,12 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized byte[] srbObjProxyOpr(int operation, int inputInt1,
-			int inputInt2, int inputInt3, int inputInt4, String inputStr1,
-			String inputStr2, String inputStr3, String inputStr4,
-			byte[] inputBStrm1, byte[] inputBStrm2, byte[] inputBStrm3)
+	synchronized byte[] srbObjProxyOpr(final int operation,
+			final int inputInt1, final int inputInt2, final int inputInt3,
+			final int inputInt4, final String inputStr1,
+			final String inputStr2, final String inputStr3,
+			final String inputStr4, final byte[] inputBStrm1,
+			final byte[] inputBStrm2, final byte[] inputBStrm3)
 			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -2763,7 +2808,7 @@ class SRBCommands {
 	/**
 	 * Seek into a collection. A collection must have been opened using
 	 * srbObjOpen.
-	 *<P>
+	 * <P>
 	 * 
 	 * @param desc
 	 *            The object descriptor (from the srbObjOpen call) to seek.
@@ -2780,8 +2825,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbCollSeek(int desc, int offset, int whence, int is64Flag)
-			throws IOException {
+	synchronized void srbCollSeek(final int desc, final int offset,
+			final int whence, final int is64Flag) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbCollSeek");
@@ -2816,9 +2861,9 @@ class SRBCommands {
 	 * @return SRBMetaDataRecordList. Use srbGetMoreRows() to retrieve more
 	 *         rows.
 	 */
-	synchronized SRBMetaDataRecordList[] srbGetDatasetInfo(int catType,
-			String objID, String collectionName, int rowsWanted)
-			throws IOException {
+	synchronized SRBMetaDataRecordList[] srbGetDatasetInfo(final int catType,
+			final String objID, final String collectionName,
+			final int rowsWanted) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbGetDatasetInfo");
@@ -2863,10 +2908,12 @@ class SRBCommands {
 	 *         Note : We cannot use the generic routine clCall() because the
 	 *         input byte stream is not a char string.
 	 */
-	synchronized SRBMetaDataRecordList[] srbGenQuery(int catType,
-			String myMcatZone, MetaDataCondition[] metaDataConditions,
-			MetaDataSelect[] metaDataSelects, int rowsWanted, boolean orderBy,
-			boolean nonDistinct) throws IOException {
+	synchronized SRBMetaDataRecordList[] srbGenQuery(final int catType,
+			final String myMcatZone,
+			final MetaDataCondition[] metaDataConditions,
+			final MetaDataSelect[] metaDataSelects, final int rowsWanted,
+			final boolean orderBy, final boolean nonDistinct)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbGenQuery " + srbGetDataDirInfoCount);
@@ -2899,9 +2946,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbRegisterDataset(int catType, String objID,
-			String dataTypeName, String resourceName, String collectionName,
-			String pathName, long dataSize) throws IOException {
+	synchronized void srbRegisterDataset(final int catType, final String objID,
+			final String dataTypeName, final String resourceName,
+			final String collectionName, final String pathName,
+			final long dataSize) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegisterDataset");
@@ -2948,10 +2996,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized int srbModifyDataset(int catType, String objID,
-			String collectionName, String resourceName, String pathName,
-			String dataValue1, String dataValue2, int actionType)
-			throws IOException {
+	synchronized int srbModifyDataset(final int catType, final String objID,
+			final String collectionName, final String resourceName,
+			final String pathName, final String dataValue1,
+			final String dataValue2, final int actionType) throws IOException {
 		if (DEBUG > 0) {
 			System.err.println("\n srbModifyDataset");
 			if (DEBUG > 2) {
@@ -2980,8 +3028,9 @@ class SRBCommands {
 		int status = returnInt();
 		if (status < 0) {
 			throw new SRBException(status);
-		} else
+		} else {
 			return status;
+		}
 	}
 
 	/**
@@ -2996,8 +3045,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbChkMdasAuth(String userName, String srbAuth,
-			String mdasDomain) throws IOException {
+	synchronized void srbChkMdasAuth(final String userName,
+			final String srbAuth, final String mdasDomain) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbChkMdasAuth");
@@ -3028,8 +3077,9 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbCreateCollect(int catType, String parentCollect,
-			String newCollect) throws IOException {
+	synchronized void srbCreateCollect(final int catType,
+			final String parentCollect, final String newCollect)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbCreateCollect");
@@ -3063,8 +3113,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized SRBMetaDataRecordList[] srbListCollect(int catType,
-			String collectionName, String flag, int rowsWanted)
+	synchronized SRBMetaDataRecordList[] srbListCollect(final int catType,
+			final String collectionName, final String flag, final int rowsWanted)
 			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -3101,9 +3151,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbModifyCollect(int catType, String collectionName,
-			String dataValue1, String dataValue2, String dataValue3,
-			int actionType) throws IOException {
+	synchronized void srbModifyCollect(final int catType,
+			final String collectionName, final String dataValue1,
+			final String dataValue2, final String dataValue3,
+			final int actionType) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbModifyCollect " + catType + " "
@@ -3139,8 +3190,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbChkMdasSysAuth(String userName, String srbAuth,
-			String mdasDomain) throws IOException {
+	synchronized void srbChkMdasSysAuth(final String userName,
+			final String srbAuth, final String mdasDomain) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbChkMdasSysAuth");
@@ -3183,9 +3234,11 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbRegisterUserGrp(int catType, String userGrpName,
-			String userGrpPasswd, String userGrpType, String userGrpAddress,
-			String userGrpPhone, String userGrpEmail) throws IOException {
+	synchronized void srbRegisterUserGrp(final int catType,
+			final String userGrpName, final String userGrpPasswd,
+			final String userGrpType, final String userGrpAddress,
+			final String userGrpPhone, final String userGrpEmail)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegisterUserGrp");
@@ -3234,10 +3287,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbRegisterUser(int catType, String userName,
-			String userDomain, String userPasswd, String userType,
-			String userAddress, String userPhone, String userEmail)
-			throws IOException {
+	synchronized void srbRegisterUser(final int catType, final String userName,
+			final String userDomain, final String userPasswd,
+			final String userType, final String userAddress,
+			final String userPhone, final String userEmail) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegisterUser");
@@ -3275,8 +3328,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbModifyUser(int catType, String dataValue1,
-			String dataValue2, int actionType) throws IOException {
+	synchronized void srbModifyUser(final int catType, final String dataValue1,
+			final String dataValue2, final int actionType) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbModifyUser");
@@ -3310,7 +3363,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized int srbSetAuditTrail(int set_value) throws IOException {
+	synchronized int srbSetAuditTrail(final int set_value) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbSetAuditTrail");
@@ -3348,10 +3401,11 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbObjAudit(int catType, String userName, String objID,
-			String collectionName, String dataPath, String resourceName,
-			String accessMode, String comment, int success, String domainName)
-			throws IOException {
+	synchronized void srbObjAudit(final int catType, final String userName,
+			final String objID, final String collectionName,
+			final String dataPath, final String resourceName,
+			final String accessMode, final String comment, final int success,
+			final String domainName) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjAudit");
@@ -3401,10 +3455,11 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbRegisterReplica(int catType, String objID,
-			String collectionName, String origResourceName,
-			String origPathName, String newResourceName, String newPathName,
-			String userName, String domainName) throws IOException {
+	synchronized void srbRegisterReplica(final int catType, final String objID,
+			final String collectionName, final String origResourceName,
+			final String origPathName, final String newResourceName,
+			final String newPathName, final String userName,
+			final String domainName) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegisterReplica");
@@ -3442,8 +3497,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized SRBMetaDataRecordList[] srbGetPrivUsers(int catalog,
-			int rowsWanted) throws IOException {
+	synchronized SRBMetaDataRecordList[] srbGetPrivUsers(final int catalog,
+			final int rowsWanted) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbGetPrivUsers");
@@ -3478,8 +3533,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized SRBMetaDataRecordList[] srbGetMoreRows(int catalog,
-			int contDesc, int rowsWanted) throws IOException {
+	synchronized SRBMetaDataRecordList[] srbGetMoreRows(final int catalog,
+			final int contDesc, final int rowsWanted) throws IOException {
 		// method no longer used as of jargon1.4.22
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -3487,8 +3542,9 @@ class SRBCommands {
 					+ " " + rowsWanted);
 		}
 
-		if (contDesc < 0)
+		if (contDesc < 0) {
 			return null;
+		}
 
 		return srbGenGetMoreRows(catalog, contDesc, rowsWanted);
 	}
@@ -3510,15 +3566,16 @@ class SRBCommands {
 	 *            The number of rows to be returned.
 	 * @return Further results from the query.
 	 */
-	SRBMetaDataRecordList[] srbGenGetMoreRows(int catalog, int contDesc,
-			int rowsWanted) throws IOException {
+	SRBMetaDataRecordList[] srbGenGetMoreRows(final int catalog,
+			final int contDesc, final int rowsWanted) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbGenGetMoreRows " + catalog + " "
 					+ contDesc + " " + rowsWanted);
 		}
-		if (contDesc < 0)
+		if (contDesc < 0) {
 			return null;
+		}
 
 		try {
 			startSRBCommand(F_GEN_GET_MORE_ROWS, 3);
@@ -3534,8 +3591,9 @@ class SRBCommands {
 			if (e.getType() == -3005) {
 				// MCAT error, the object queried does not exist
 				return null;
-			} else
+			} else {
 				throw e;
+			}
 		}
 	}
 
@@ -3568,9 +3626,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbIssueTicket(String objID, String collectionName,
-			String collectionFlag, String beginTime, String endTime,
-			int accessCnt, String ticketUser) throws IOException {
+	synchronized void srbIssueTicket(final String objID,
+			final String collectionName, final String collectionFlag,
+			final String beginTime, final String endTime, final int accessCnt,
+			final String ticketUser) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbIssueTicket");
@@ -3602,7 +3661,7 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbRemoveTicket(String ticket) throws IOException {
+	synchronized void srbRemoveTicket(final String ticket) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRemoveTicket");
@@ -3630,8 +3689,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbUnregisterDataset(String objID, String collectionName)
-			throws IOException {
+	synchronized void srbUnregisterDataset(final String objID,
+			final String collectionName) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbUnregisterDataset");
@@ -3667,8 +3726,9 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbContainerCreate(int catType, String containerName,
-			String containerType, String resourceName, long containerSize)
+	synchronized void srbContainerCreate(final int catType,
+			final String containerName, final String containerType,
+			final String resourceName, final long containerSize)
 			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -3704,8 +3764,9 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbRegisterContainer(int catType, String containerName,
-			String resourceName, long containerSize) throws IOException {
+	synchronized void srbRegisterContainer(final int catType,
+			final String containerName, final String resourceName,
+			final long containerSize) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegisterContainer");
@@ -3746,9 +3807,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbRegisterInContDataset(int catType, String objID,
-			String collectionName, String containerName, String dataTypeName,
-			long dataSize, long baseOffset) throws IOException {
+	synchronized void srbRegisterInContDataset(final int catType,
+			final String objID, final String collectionName,
+			final String containerName, final String dataTypeName,
+			final long dataSize, final long baseOffset) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegisterInContDataset");
@@ -3785,8 +3847,9 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized SRBMetaDataRecordList[] srbGetContainerInfo(int catType,
-			String containerName, int rowsWanted) throws IOException {
+	synchronized SRBMetaDataRecordList[] srbGetContainerInfo(final int catType,
+			final String containerName, final int rowsWanted)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbGetContainerInfo");
@@ -3820,8 +3883,9 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized String srbGetResOnChoice(int catType, String logResName,
-			String phyResName, String inputFlag) throws IOException {
+	synchronized String srbGetResOnChoice(final int catType,
+			final String logResName, final String phyResName,
+			final String inputFlag) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjProxyOpr");
@@ -3847,8 +3911,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbRmContainer(int catType, String containerName,
-			boolean force) throws IOException {
+	synchronized void srbRmContainer(final int catType,
+			final String containerName, final boolean force) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRmContainer");
@@ -3896,8 +3960,8 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbSyncContainer(int catType, String containerName,
-			int syncFlag) throws IOException {
+	synchronized void srbSyncContainer(final int catType,
+			final String containerName, final int syncFlag) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbSyncContainer");
@@ -3928,8 +3992,9 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
-	synchronized void srbReplContainer(int catType, String containerName,
-			String newResourceName) throws IOException {
+	synchronized void srbReplContainer(final int catType,
+			final String containerName, final String newResourceName)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbReplContainer");
@@ -3979,10 +4044,12 @@ class SRBCommands {
 	 *            Valid only when objTypeInx >=0. This is the resouce location
 	 *            used to do the unlinking.
 	 */
-	synchronized void srbRegInternalCompObj(String objName, String objCollName,
-			int objReplNum, int objSegNum, String intObjRescName,
-			String dataPathName, long dataSize, long offset, int inpIntReplNum,
-			int intSegNum, int objTypeInx, String phyResLoc) throws IOException {
+	synchronized void srbRegInternalCompObj(final String objName,
+			final String objCollName, final int objReplNum,
+			final int objSegNum, final String intObjRescName,
+			final String dataPathName, final long dataSize, final long offset,
+			final int inpIntReplNum, final int intSegNum, final int objTypeInx,
+			final String phyResLoc) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegInternalCompObj");
@@ -4026,8 +4093,9 @@ class SRBCommands {
 	 * @param intSegNum
 	 *            The segment number of the int compound obj.
 	 */
-	synchronized void srbRmIntCompObj(String objName, String objCollName,
-			int objReplNum, int objSegNum, int inpIntReplNum, int intSegNum)
+	synchronized void srbRmIntCompObj(final String objName,
+			final String objCollName, final int objReplNum,
+			final int objSegNum, final int inpIntReplNum, final int intSegNum)
 			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -4057,8 +4125,9 @@ class SRBCommands {
 	 * - The collection int objReplNum - The replication number of the compound
 	 * obj int objSegNum - The segment number of the compound obj.
 	 */
-	synchronized void srbRmCompObj(String objName, String objCollName,
-			int objReplNum, int objSegNum) throws IOException {
+	synchronized void srbRmCompObj(final String objName,
+			final String objCollName, final int objReplNum, final int objSegNum)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRmCompObj");
@@ -4092,11 +4161,12 @@ class SRBCommands {
 	 * type of retraction. See srbC_mdas_externs.h for the actionType
 	 * definition.
 	 */
-	synchronized void srbModInternalCompObj(String objID,
-			String collectionName, int objReplNum, int objSegNum,
-			int inpIntReplNum, int intSegNum, String data_value_1,
-			String data_value_2, String data_value_3, String data_value_4,
-			int retraction_type) throws IOException {
+	synchronized void srbModInternalCompObj(final String objID,
+			final String collectionName, final int objReplNum,
+			final int objSegNum, final int inpIntReplNum, final int intSegNum,
+			final String data_value_1, final String data_value_2,
+			final String data_value_3, final String data_value_4,
+			final int retraction_type) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbModInternalCompObj");
@@ -4134,9 +4204,11 @@ class SRBCommands {
 	 * dataValue1 - Input value 1. String dataValue2 - Input value 2. String
 	 * dataValue3 - Input value 3. String dataValue4 - Input value 4.
 	 */
-	synchronized void srbModifyRescInfo(int catType, String resourceName,
-			int actionType, String dataValue1, String dataValue2,
-			String dataValue3, String dataValue4) throws IOException {
+	synchronized void srbModifyRescInfo(final int catType,
+			final String resourceName, final int actionType,
+			final String dataValue1, final String dataValue2,
+			final String dataValue3, final String dataValue4)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbModifyRescInfo");
@@ -4166,8 +4238,9 @@ class SRBCommands {
 	 * Address. String parentLoc - Parent location String serverUser - Server
 	 * User String serverUserDomain - Server User Domain.
 	 */
-	synchronized void srbRegisterLocation(String locName, String fullAddr,
-			String parentLoc, String serverUser, String serverUserDomain)
+	synchronized void srbRegisterLocation(final String locName,
+			final String fullAddr, final String parentLoc,
+			final String serverUser, final String serverUserDomain)
 			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -4195,8 +4268,8 @@ class SRBCommands {
 	 * Input - String typeName - The type name. String newValue - The new value.
 	 * String parentValue - Parent value.
 	 */
-	synchronized void srbIngestToken(String typeName, String newValue,
-			String parentValue) throws IOException {
+	synchronized void srbIngestToken(final String typeName,
+			final String newValue, final String parentValue) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbIngestToken");
@@ -4222,9 +4295,9 @@ class SRBCommands {
 	 * type. String location - Location. String phyPath - Physical Path. String
 	 * class - className. int size - size.
 	 */
-	synchronized void srbRegisterResource(String rescName, String rescType,
-			String location, String phyPath, String className, int size)
-			throws IOException {
+	synchronized void srbRegisterResource(final String rescName,
+			final String rescType, final String location, final String phyPath,
+			final String className, final int size) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegisterResource");
@@ -4252,8 +4325,9 @@ class SRBCommands {
 	 * Input - String rescName - The resource name. String rescType - Resource
 	 * type. String phyResc - Physical resource. String phyPath - Physical path.
 	 */
-	synchronized void srbRegisterLogicalResource(String rescName,
-			String rescType, String phyResc, String phyPath) throws IOException {
+	synchronized void srbRegisterLogicalResource(final String rescName,
+			final String rescType, final String phyResc, final String phyPath)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbRegisterLogicalResource");
@@ -4280,8 +4354,9 @@ class SRBCommands {
 	 * rescType - Resource type. String oldLogicalRescName - old logical
 	 * resource name. String indefaultPath - Indefault Path.
 	 */
-	synchronized void srbRegisterReplicateResourceInfo(String physicalRescName,
-			String rescType, String oldLogicalRescName, String indefaultPath)
+	synchronized void srbRegisterReplicateResourceInfo(
+			final String physicalRescName, final String rescType,
+			final String oldLogicalRescName, final String indefaultPath)
 			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -4308,8 +4383,8 @@ class SRBCommands {
 	 * Input - int valueType - the value (token) type. String deleteValue - The
 	 * value (name) that is being deleted.
 	 */
-	synchronized void srbDeleteValue(int valueType, String deleteValue)
-			throws IOException {
+	synchronized void srbDeleteValue(final int valueType,
+			final String deleteValue) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbDeleteValue");
@@ -4348,8 +4423,9 @@ class SRBCommands {
 	 *            ascii) myresult->row_count should contain the number of
 	 *            datsets to be registered.
 	 */
-	synchronized void srbBulkRegister(int catType, String containerName,
-			SRBMetaDataRecordList[] rl) throws IOException {
+	synchronized void srbBulkRegister(final int catType,
+			final String containerName, final SRBMetaDataRecordList[] rl)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbBulkRegister");
@@ -4387,9 +4463,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	synchronized InputStream srbExecCommand(String command, String commandArgs,
-			String hostAddress, int portalFlag, int fireWallMinPort,
-			int fireWallMaxPort) throws IOException {
+	synchronized InputStream srbExecCommand(final String command,
+			final String commandArgs, final String hostAddress,
+			final int portalFlag, int fireWallMinPort, final int fireWallMaxPort)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbExecCommand");
@@ -4407,8 +4484,9 @@ class SRBCommands {
 				try {
 					serverSocket = new ServerSocket(fireWallMinPort);
 				} catch (IOException e) {
-					if (SRBCommands.DEBUG > 0)
+					if (SRBCommands.DEBUG > 0) {
 						e.printStackTrace();
+					}
 				}
 				fireWallMinPort++;
 			} while (!serverSocket.isBound());
@@ -4467,9 +4545,10 @@ class SRBCommands {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	synchronized InputStream srbExecCommand(String command, String commandArgs,
-			String hostAddress, String fileName, int portalFlag,
-			int fireWallMinPort, int fireWallMaxPort) throws IOException {
+	synchronized InputStream srbExecCommand(final String command,
+			final String commandArgs, final String hostAddress,
+			final String fileName, final int portalFlag, int fireWallMinPort,
+			final int fireWallMaxPort) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbExecCommand");
@@ -4487,8 +4566,9 @@ class SRBCommands {
 				try {
 					serverSocket = new ServerSocket(fireWallMinPort);
 				} catch (IOException e) {
-					if (SRBCommands.DEBUG > 0)
+					if (SRBCommands.DEBUG > 0) {
 						e.printStackTrace();
+					}
 				}
 				fireWallMinPort++;
 			} while (!serverSocket.isBound());
@@ -4540,8 +4620,9 @@ class SRBCommands {
 	 *            The resource for the object to sync to. A null or empty string
 	 *            means synchronize existing copies.
 	 */
-	synchronized void srbSyncData(int catType, String objID,
-			String collectionName, String resource) throws IOException {
+	synchronized void srbSyncData(final int catType, final String objID,
+			final String collectionName, final String resource)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbSyncData");
@@ -4572,8 +4653,8 @@ class SRBCommands {
 	 *            - O_RDWR, O_WRONLY or O_RDONLY.
 	 * @return The file descriptor for the container.
 	 */
-	synchronized int srbContainerOpen(int catType, String containerName,
-			int openFlag) throws IOException {
+	synchronized int srbContainerOpen(final int catType,
+			final String containerName, final int openFlag) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbContainerOpen");
@@ -4597,7 +4678,7 @@ class SRBCommands {
 	 * @param confFd
 	 *            - The fd returned from srbContainerOpen ().
 	 */
-	synchronized void srbContainerClose(int confFd) throws IOException {
+	synchronized void srbContainerClose(final int confFd) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbContainerClose");
@@ -4630,8 +4711,9 @@ class SRBCommands {
 	 * @return the number of bytes copied. Returns a negative value upon
 	 *         failure.
 	 */
-	synchronized long srbObjCopy(String srcObjID, String srcCollection,
-			String destObjID, String destCollection, String destResource)
+	synchronized long srbObjCopy(final String srcObjID,
+			final String srcCollection, final String destObjID,
+			final String destCollection, final String destResource)
 			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -4699,10 +4781,11 @@ class SRBCommands {
 	 * @return The number of bytes copied. Returns a negative value upon
 	 *         failure.
 	 */
-	synchronized long srbObjPutClientInitiated(String destObjID,
-			String destCollection, String destResLoc, String dataType,
-			String destPath, String localFilePath, long srcSize, int forceFlag,
-			int numThreads) throws IOException {
+	synchronized long srbObjPutClientInitiated(final String destObjID,
+			final String destCollection, final String destResLoc,
+			final String dataType, final String destPath,
+			final String localFilePath, final long srcSize,
+			final int forceFlag, int numThreads) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjPutClientInitiated" + " destObjID "
@@ -4797,8 +4880,8 @@ class SRBCommands {
 					}
 					close();
 					// Kind of redundant to send account twice...oh well
-					connect(account, SRBFileSystem
-							.createUserInfoBuffer(account));
+					connect(account,
+							SRBFileSystem.createUserInfoBuffer(account));
 					throw e;
 				}
 			}
@@ -4809,8 +4892,9 @@ class SRBCommands {
 			temp = new byte[4];
 			bytesRead = transferSocket[0].getInputStream().read(temp);
 			while (bytesRead < 4) {
-				if (bytesRead < 0)
+				if (bytesRead < 0) {
 					throw new ProtocolException();
+				}
 				temp[bytesRead - 1] = (byte) transferSocket[0].getInputStream()
 						.read();
 			}
@@ -4818,8 +4902,9 @@ class SRBCommands {
 			// 4 bytes for number of threads
 			bytesRead = transferSocket[0].getInputStream().read(temp);
 			while (bytesRead < 4) {
-				if (bytesRead < 0)
+				if (bytesRead < 0) {
 					throw new ProtocolException();
+				}
 				temp[bytesRead - 1] = (byte) transferSocket[0].getInputStream()
 						.read();
 			}
@@ -4835,17 +4920,19 @@ class SRBCommands {
 			temp = new byte[8];
 			bytesRead = transferSocket[0].getInputStream().read(temp);
 			while (bytesRead < 8) {
-				if (bytesRead < 0)
+				if (bytesRead < 0) {
 					throw new ProtocolException();
+				}
 				temp[bytesRead - 1] = (byte) transferSocket[0].getInputStream()
 						.read();
 			}
 			if (srcSize != Host.castToLong(temp)) {
 				// probably error?
-				if (DEBUG > 0)
+				if (DEBUG > 0) {
 					System.err.println("Local file size " + srcSize
 							+ " does not equal file size expected by server "
 							+ Host.castToLong(temp));
+				}
 			}
 
 			for (int i = 0; i < numThreads; i++) {
@@ -4856,8 +4943,9 @@ class SRBCommands {
 			}
 
 			try {
-				if (transferThreads.isAlive())
+				if (transferThreads.isAlive()) {
 					transferThreads.join();
+				}
 			} catch (InterruptedException e) {
 				if (DEBUG > 2) {
 					System.err.println("Probably not an important error");
@@ -4903,9 +4991,10 @@ class SRBCommands {
 	 *            number of threads
 	 * @return The number of bytes copied.
 	 */
-	synchronized long srbObjGetClientInitiated(String srcObjID,
-			String srcCollection, GeneralFile destination, int flag,
-			int numThreads, boolean forceOverwrite) throws IOException {
+	synchronized long srbObjGetClientInitiated(final String srcObjID,
+			final String srcCollection, final GeneralFile destination,
+			final int flag, final int numThreads, final boolean forceOverwrite)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjGetClientInitiated " + srcObjID + " "
@@ -4956,14 +5045,16 @@ class SRBCommands {
 				} catch (UnsupportedOperationException e) {
 					// this should only happen to fileSystems that can't
 					// truncate
-					if (SRBCommands.DEBUG > 0)
+					if (SRBCommands.DEBUG > 0) {
 						e.printStackTrace();
+					}
 					destination.delete();
 					raf = FileFactory.newRandomAccessFile(destination, "rw");
 				} catch (IOException e) {
 					// I guess they might throw IOException instead
-					if (SRBCommands.DEBUG > 0)
+					if (SRBCommands.DEBUG > 0) {
 						e.printStackTrace();
+					}
 					destination.delete();
 					raf = FileFactory.newRandomAccessFile(destination, "rw");
 				}
@@ -5035,13 +5126,15 @@ class SRBCommands {
 			newPortList = (int) readUnsignedInt();
 		}
 
-		if (newPortList < 0)
-			throw new SRBException((int) newPortList);
+		if (newPortList < 0) {
+			throw new SRBException(newPortList);
+		}
 
 		// read 4 bytes, can be an error message.
 		int error = readInt();
-		if (error < 0)
+		if (error < 0) {
 			throw new SRBException(error);
+		}
 
 		status();
 
@@ -5092,8 +5185,9 @@ class SRBCommands {
 		/**
 		 * Used by client parallel transfer put and get
 		 */
-		TransferThread(Object syncObject, Socket transferSocket,
-				GeneralFile file, long srcSize, Object listener, int threadID) {
+		TransferThread(final Object syncObject, final Socket transferSocket,
+				final GeneralFile file, final long srcSize,
+				final Object listener, final int threadID) {
 			whichThread = threadID;
 			this.transferSocket = transferSocket;
 			this.file = file;
@@ -5103,9 +5197,9 @@ class SRBCommands {
 			this.syncObject = syncObject;
 		}
 
-		TransferThread(Object syncObject, Socket transferSocket,
-				GeneralRandomAccessFile raf, long srcSize, Object listener,
-				int threadID) {
+		TransferThread(final Object syncObject, final Socket transferSocket,
+				final GeneralRandomAccessFile raf, final long srcSize,
+				final Object listener, final int threadID) {
 			whichThread = threadID;
 			this.transferSocket = transferSocket;
 			this.raf = raf;
@@ -5118,8 +5212,9 @@ class SRBCommands {
 		/**
 		 * Used by bulk unload
 		 */
-		TransferThread(Socket transferSocket, SRBMetaDataRecordList[] rl,
-				String targetDirectoryPath, String sourcePath)
+		TransferThread(final Socket transferSocket,
+				final SRBMetaDataRecordList[] rl,
+				final String targetDirectoryPath, final String sourcePath)
 				throws IOException {
 			this.transferSocket = transferSocket;
 			this.rl = rl;
@@ -5130,9 +5225,10 @@ class SRBCommands {
 
 			raf = correctedRAFPath(0);
 			length = Long.parseLong(rl[0].getValue(
-					rl[0].getFieldIndex(SRBMetaDataSet.SIZE)).toString());
+					rl[0].getFieldIndex(GeneralMetaData.SIZE)).toString());
 		}
 
+		@Override
 		protected void finalize() throws Throwable {
 			if (transferSocket != null) {
 				transferSocket.close();
@@ -5149,10 +5245,10 @@ class SRBCommands {
 		/**
      *
      */
-		private GeneralRandomAccessFile correctedRAFPath(int i)
+		private GeneralRandomAccessFile correctedRAFPath(final int i)
 				throws IOException {
 			// get SRB directory path from rl
-			String dir = rl[i].getValue(SRBMetaDataSet.DIRECTORY_NAME)
+			String dir = rl[i].getValue(StandardMetaData.DIRECTORY_NAME)
 					.toString();
 
 			LocalFile subDir;
@@ -5168,13 +5264,13 @@ class SRBCommands {
 			subDir.mkdirs();
 
 			return FileFactory.newRandomAccessFile(new LocalFile(subDir, rl[i]
-					.getValue(SRBMetaDataSet.FILE_NAME).toString()), "rw");
+					.getValue(StandardMetaData.FILE_NAME).toString()), "rw");
 		}
 
 		public void run() {
 			try {
-				DataInputStream in = new DataInputStream(transferSocket
-						.getInputStream());
+				DataInputStream in = new DataInputStream(
+						transferSocket.getInputStream());
 				OutputStream out = transferSocket.getOutputStream();
 
 				int operation; // Whether PUT(=3) or GET(=4), etc.
@@ -5190,9 +5286,9 @@ class SRBCommands {
 
 				// read the header
 				operation = in.readInt();
-				if ((operation < DONE) || (operation > GET))
+				if ((operation < DONE) || (operation > GET)) {
 					throw new ProtocolException("Unknown transfer operation");
-				else if (operation == PUT) {
+				} else if (operation == PUT) {
 					innerRAF = FileFactory.newRandomAccessFile(raf.getFile(),
 							"r");
 				} else if (operation == GET) {
@@ -5206,12 +5302,13 @@ class SRBCommands {
 				in.read(buffer);
 				offset = Host.castToUnsignedLong(buffer);
 
-				if (offset < 0)
+				if (offset < 0) {
 					return;
+				}
 
-				if (transferLength <= 0)
+				if (transferLength <= 0) {
 					return;
-				else {
+				} else {
 					// transferLength has a max of 8mb?
 					buffer = new byte[(int) transferLength];
 				}
@@ -5297,7 +5394,7 @@ class SRBCommands {
 												.parseLong(rl[i + 1]
 														.getValue(
 																rl[i + 1]
-																		.getFieldIndex(SRBMetaDataSet.SIZE))
+																		.getFieldIndex(GeneralMetaData.SIZE))
 														.toString());
 										innerRAF = correctedRAFPath(i + 1);
 									}
@@ -5312,8 +5409,7 @@ class SRBCommands {
 										length = Long
 												.parseLong(rl[0]
 														.getValue(
-																rl[0]
-																		.getFieldIndex(SRBMetaDataSet.SIZE))
+																rl[0].getFieldIndex(GeneralMetaData.SIZE))
 														.toString());
 
 										if (rl == null) {
@@ -5385,15 +5481,17 @@ class SRBCommands {
 							in.read(buffer);
 							offset = Host.castToUnsignedLong(buffer);
 
-							if (offset < 0)
+							if (offset < 0) {
 								break;
+							}
 
-							if (transferLength <= 0)
+							if (transferLength <= 0) {
 								break;
-							else if (transferLength >= Integer.MAX_VALUE)
+							} else if (transferLength >= Integer.MAX_VALUE) {
 								buffer = new byte[Integer.MAX_VALUE - 1];
-							else
+							} else {
 								buffer = new byte[(int) transferLength];
+							}
 						}
 						break;
 					// case WRITE:
@@ -5405,26 +5503,29 @@ class SRBCommands {
 
 						// read the header
 						operation = in.readInt();
-						if ((operation < DONE) || (operation > GET))
+						if ((operation < DONE) || (operation > GET)) {
 							throw new ProtocolException(
 									"Unknown transfer operation");
+						}
 
 						transferLength = in.readInt();
 
 						buffer = new byte[LONG_LENGTH];
 						in.read(buffer);
 						offset = Host.castToUnsignedLong(buffer);
-						if (offset < 0)
+						if (offset < 0) {
 							break;
+						}
 
-						if (transferLength <= 0)
+						if (transferLength <= 0) {
 							break;
-						else if (transferLength == buffer.length) {
+						} else if (transferLength == buffer.length) {
 							// don't do anything
-						} else if (transferLength >= Integer.MAX_VALUE)
+						} else if (transferLength >= Integer.MAX_VALUE) {
 							buffer = new byte[Integer.MAX_VALUE - 1];
-						else
+						} else {
 							buffer = new byte[(int) transferLength];
+						}
 						break;
 					case DONE:
 					default:
@@ -5476,11 +5577,13 @@ class SRBCommands {
 					}
 					transferSocket = null;
 				}
-				if (SRBCommands.DEBUG > 0)
+				if (SRBCommands.DEBUG > 0) {
 					e.printStackTrace();
+				}
 			} catch (IOException e) {
-				if (SRBCommands.DEBUG > 0)
+				if (SRBCommands.DEBUG > 0) {
 					e.printStackTrace();
+				}
 				throw new RuntimeException("IOException in thread.", e);
 			}
 		}
@@ -5500,8 +5603,8 @@ class SRBCommands {
 	 *            the CALLER must have allocated enough space to hold the result
 	 *            returned
 	 */
-	synchronized void srbGetMcatZone(String userName, String domainName,
-			String mcatName) throws IOException {
+	synchronized void srbGetMcatZone(final String userName,
+			final String domainName, final String mcatName) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbGetMcatZone");
@@ -5552,7 +5655,8 @@ class SRBCommands {
 	 *            a string representation of the session key from
 	 *            sscSetupSession (encrypted in the public key)
 	 */
-	synchronized void srbSetupSession(String sessionKey) throws IOException {
+	synchronized void srbSetupSession(final String sessionKey)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbSetupSession");
@@ -5584,8 +5688,9 @@ class SRBCommands {
 	 *            will perform atol), offSetList (in ascii), the number of
 	 *            datsets to be registered.
 	 */
-	synchronized void srbBulkLoad(int catType, String bulkLoadFilePath,
-			SRBMetaDataRecordList[] rl) throws IOException {
+	synchronized void srbBulkLoad(final int catType,
+			final String bulkLoadFilePath, final SRBMetaDataRecordList[] rl)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbBulkLoad");
@@ -5616,8 +5721,9 @@ class SRBCommands {
 	 *            The collection to unload
 	 * @return
 	 */
-	synchronized void srbBulkUnload(int catType, int flag,
-			String srbUnloadDirPath, String localDirPath) throws IOException {
+	synchronized void srbBulkUnload(final int catType, final int flag,
+			final String srbUnloadDirPath, final String localDirPath)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbBulkUnload");
@@ -5754,21 +5860,23 @@ class SRBCommands {
 		}
 
 		try {
-			for (int i = 0; i < transferThread.length; i++) {
-				if (transferThread[i] != null) {
-					if (transferThread[i].isAlive()) {
-						transferThread[i].join();
+			for (Thread element : transferThread) {
+				if (element != null) {
+					if (element.isAlive()) {
+						element.join();
 					}
 				}
 			}
 		} catch (InterruptedException e) {
-			if (SRBCommands.DEBUG > 0)
+			if (SRBCommands.DEBUG > 0) {
 				e.printStackTrace();
+			}
 		}
 
 		// reset
-		if (singlePortBulkUnload)
+		if (singlePortBulkUnload) {
 			singlePortBulkUnload = false;
+		}
 	}
 
 	/**
@@ -5816,10 +5924,10 @@ class SRBCommands {
 	 *            MODIFY_ZONE_STATUS<br>
 	 *            dv1 = new value (integer)<br>
 	 */
-	synchronized void srbModifyZone(int catType, String zoneName,
-			String dataValue1, String dataValue2, String dataValue3,
-			String dataValue4, String dataValue5, int actionType)
-			throws IOException {
+	synchronized void srbModifyZone(final int catType, final String zoneName,
+			final String dataValue1, final String dataValue2,
+			final String dataValue3, final String dataValue4,
+			final String dataValue5, final int actionType) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbModifyZone");
@@ -5857,9 +5965,9 @@ class SRBCommands {
 	 * 
 	 * @return the query result, metadata record list.
 	 */
-	synchronized MetaDataRecordList[] srbBulkQueryAnswer(int catType,
-			String queryInfo, MetaDataRecordList myresult, int rowsWanted)
-			throws IOException {
+	synchronized MetaDataRecordList[] srbBulkQueryAnswer(final int catType,
+			final String queryInfo, final MetaDataRecordList myresult,
+			final int rowsWanted) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbBulkQueryAnswer");
@@ -5889,8 +5997,9 @@ class SRBCommands {
 	 * @param The
 	 *            MetaDataRecordList that contains the objects to be ingested.
 	 */
-	synchronized void srbBulkMcatIngest(int catType, String ingestInfo,
-			SRBMetaDataRecordList[] rl) throws IOException {
+	synchronized void srbBulkMcatIngest(final int catType,
+			final String ingestInfo, final SRBMetaDataRecordList[] rl)
+			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbBulkMcatIngest");
@@ -5925,9 +6034,9 @@ class SRBCommands {
 	 * @param flag
 	 *            - not used.
 	 */
-	synchronized void srbBackupData(int catType, String objID,
-			String collectionName, String backupResource, int flag)
-			throws IOException {
+	synchronized void srbBackupData(final int catType, final String objID,
+			final String collectionName, final String backupResource,
+			final int flag) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbBackupData");
@@ -5969,8 +6078,9 @@ class SRBCommands {
 	 * 
 	 * @return the checksum value
 	 */
-	synchronized byte[] srbObjChksum(String objID, String collectionName,
-			int chksumFlag, String inpChksum) throws IOException {
+	synchronized byte[] srbObjChksum(final String objID,
+			final String collectionName, final int chksumFlag,
+			final String inpChksum) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjChksum");
@@ -6028,10 +6138,11 @@ class SRBCommands {
 	 * @param actionType
 	 *            The type of action. performed values supported are:
 	 */
-	synchronized void srbModifyUserNonPriv(int catType, String userNameDomain,
-			String dataValue1, String dataValue2, String dataValue3,
-			String dataValue4, String dataValue5, int actionType)
-			throws IOException {
+	synchronized void srbModifyUserNonPriv(final int catType,
+			final String userNameDomain, final String dataValue1,
+			final String dataValue2, final String dataValue3,
+			final String dataValue4, final String dataValue5,
+			final int actionType) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbModifyUserNonPriv");
@@ -6076,9 +6187,10 @@ class SRBCommands {
 	 * @param actionType
 	 *            The type of action. performed values supported are:
 	 */
-	synchronized void srbModifyResource(int catType, String resourceName,
-			String dataValue1, String dataValue2, String dataValue3,
-			String dataValue4, int actionType) throws IOException {
+	synchronized void srbModifyResource(final int catType,
+			final String resourceName, final String dataValue1,
+			final String dataValue2, final String dataValue3,
+			final String dataValue4, final int actionType) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbModifyResource");
@@ -6112,7 +6224,6 @@ class SRBCommands {
 			System.err.println("\n srbGetSvrVersion");
 		}
 
-		int STRING_LEN1 = 512;
 		byte[] buffer = new byte[1];
 		String version = "";
 
@@ -6143,7 +6254,7 @@ class SRBCommands {
 	 *            The Dn of the user
 	 * @return output for zone:user@domain
 	 */
-	String srbGetUserByDn(int catType, int flag, String userDn)
+	String srbGetUserByDn(final int catType, final int flag, final String userDn)
 			throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
@@ -6187,8 +6298,8 @@ class SRBCommands {
 	 *            The size of pre-allocated outBuf.
 	 * @return The result of the remote procedure
 	 */
-	byte[] srbObjProc(int fd, String procedureName, String input,
-			int outputLength) throws IOException {
+	byte[] srbObjProc(final int fd, final String procedureName,
+			final String input, final int outputLength) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbObjProc");
@@ -6219,10 +6330,11 @@ class SRBCommands {
 	 *            They are used to specify the table and rows attributes to
 	 *            modify/add/delete.
 	 */
-	void srbModifyExtMetaData(int catType, String objID, String collectionName,
-			String dataValue1, String dataValue2, String dataValue3,
-			String dataValue4, String dataValue5, int retractionType)
-			throws IOException {
+	void srbModifyExtMetaData(final int catType, final String objID,
+			final String collectionName, final String dataValue1,
+			final String dataValue2, final String dataValue3,
+			final String dataValue4, final String dataValue5,
+			final int retractionType) throws IOException {
 		if (DEBUG > 0) {
 			date = new Date().getTime();
 			System.err.println("\n srbModifyExtMetaData");
