@@ -1,0 +1,5 @@
+// irodsflickr module microservices
+// Service name				# args		Service function
+{"msiFlickHarvester",		2,		(funcPtr) msiFlickHarvester},
+{"msiFlickrOAuthExample1",	2,		(funcPtr) msiFlickrOAuthExample1},
+{"msiFlickrOAuthExample2",	2,		(funcPtr) msiFlickrOAuthExample2},

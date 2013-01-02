@@ -1,0 +1,8 @@
+Name:			irodsflickr
+Brief:			Microservices for interacting with photo sharing site flickr.com.
+Description:		Set of microservices for transferring data between flickr and iRODS. Requires libcurl (http://curl.haxx.se/libcurl/). See README.txt for cURL licence and copyright info.
+Dependencies:
+Enabled:		no
+Creator:		Antoine de Torcy, Univ. of North Carolina at Chapel Hill
+Created:		02-03-2012
+License:		BSD
