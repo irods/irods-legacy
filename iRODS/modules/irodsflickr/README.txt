@@ -35,7 +35,9 @@ in this Software without prior written authorization of the copyright holder.
 
 ----------------------------------------------------------------------
 
-cJSON Copyright (c) 2009 Dave Gamble
+cJSON License (from https://github.com/kbranigan/cJSON):
+
+Copyright (c) 2009 Dave Gamble
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
