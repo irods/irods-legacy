@@ -301,7 +301,7 @@ static int signAuthenticatedRequest(oauth_t *oauth, const char *method) {
 	char base_string[URL_LEN];
 
 	/* Prepare key */
-	// Key = CONSUMER_SECRET + "&" + REQUEST_TOKEN_SECRET
+	// Key = CONSUMER_SECRET + "&" + ACCESS_TOKEN_SECRET
 	snprintf(my_key, KEY_LEN, "%s&%s", oauth->consumer_secret, oauth->token_secret);
 
 	/* Prepare base string */
