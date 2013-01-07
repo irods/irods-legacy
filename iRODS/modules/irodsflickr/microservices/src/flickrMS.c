@@ -20,6 +20,44 @@
 #include <curl/easy.h>
 
 
+/* Keep structure definitions local */
+typedef struct {
+  char *ptr;
+  size_t len;		/* not counting terminating null char */
+} string_t;
+
+
+typedef struct {
+	char objPath[MAX_NAME_LEN];
+	int l1descInx;
+	rsComm_t *rsComm;
+} writeDataInp_t;
+
+
+typedef struct {
+	char userID[NAME_LEN];
+	char apiKey[LONG_NAME_LEN];
+	char secret[LONG_NAME_LEN];
+} flickrInfo_t;
+
+
+typedef struct {
+	char *callback;
+	char *nonce;
+	char *timestamp;
+	char *consumer_key;
+	char *consumer_secret;
+	char *signature_method;
+	char *signature;
+	char *token;
+	char *token_secret;
+	char *verifier;
+	char *version;
+	string_t response;		/* CURL read buffer */
+} oauth_t;
+
+
+
 
 #if 0
 /* Custom message handler callback that writes to iRODS log */
@@ -56,7 +94,7 @@ static size_t write_string(void *ptr, size_t size, size_t nmeb, void *stream)
 	tmpPtr = realloc(string->ptr, newLen + 1);
 	if (!tmpPtr) {
 		rodsLog(LOG_ERROR, "%s", "write_string(): realloc failed.");
-		return 0;
+		return -1;
 	}
 	string->ptr = (char*)tmpPtr;
 
@@ -1134,7 +1172,7 @@ int msiFlickrOAuthExample2(msParam_t *input, msParam_t *output, ruleExecInfo_t *
 int msiFlickHarvester(msParam_t *input, msParam_t *output, ruleExecInfo_t *rei) {
 	oauth_t oauth;						/* OAuth params */
 	keyValPair_t *KVP;					/* will be output->inOutStruct */
-	char *flickrRootCollection, mystr[20];
+	char *flickrRootCollection, zoneInPath[NAME_LEN+2], mystr[20];
 	int status;
 
 	/* For testing mode when used with irule --test */
@@ -1159,6 +1197,13 @@ int msiFlickHarvester(msParam_t *input, msParam_t *output, ruleExecInfo_t *rei) 
 	if (!flickrRootCollection || strlen(flickrRootCollection) > MAX_NAME_LEN) {
 		rodsLog (LOG_ERROR, "msiFlickHarvester: invalid target_collection input.");
 		return (USER_INPUT_STRING_ERR);
+	}
+
+	/* Additional sanity test on target collection */
+	snprintf(zoneInPath, NAME_LEN+2, "/%s/", rei->rsComm->myEnv.rodsZone);
+	if (strstr(flickrRootCollection, zoneInPath) != flickrRootCollection) {
+		rodsLog (LOG_ERROR, "msiFlickHarvester: invalid zone in target_collection.");
+		return (USER_INPUT_PATH_ERR);
 	}
 
 
