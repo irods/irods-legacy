@@ -1918,8 +1918,17 @@ Res *smsi_substr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int rei
     Res *startres = (Res *)paramsr[1];
     Res *finishres = (Res *)paramsr[2];
 
-    char *buf = strdup(strres->text + RES_INT_VAL(startres));
-    buf[RES_INT_VAL(finishres) - RES_INT_VAL(startres)] = '\0';
+    int len = strlen(strres->text);
+    int start = RES_INT_VAL(startres);
+    int finish = RES_INT_VAL(finishres);
+    if(start<0 || start>len || finish<0 || finish>len || start>finish) {
+      generateAndAddErrMsg("invalid substr index error", node, RE_RUNTIME_ERROR, errmsg);
+      return newErrorRes(r, RE_RUNTIME_ERROR);
+
+    }
+
+    char *buf = strdup(strres->text + start);
+    buf[finish - start] = '\0';
 
     Res *retres = newStringRes(r, buf);
     free(buf);
