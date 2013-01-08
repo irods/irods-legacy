@@ -81,18 +81,38 @@ runTests(*Pattern) {
     *Time = double(*Finish) - double(*Start);
     writeLine("stdout", "time: *Time s");
 }
-# if this rule outputs a bunch of error code without segfault, this test succeeds
-testSubstr(*RES) {
-	assertError(``substr("str",-1,3)``, *RES);
-	assertError(``substr("str",0,4)``, *RES);
-	assertError(``substr("str",3,0)``, *RES);
-	assertError(``substr("str",0,3)``, *RES);
-	assertError(``substr("str",-2,-1)``, *RES);
-	assertError(``substr("str",4,5)``, *RES);
-        assert(``substr("str",0,3)=="str"``, *RES);
+testSubstr1(*RES) {
         assert(``substr("str",0,0)==""``, *RES);
+}
+testSubstr2(*RES) {
         assert(``substr("str",3,3)==""``, *RES);
-        assert(``substr("strings123123123",0,3)=="str"``, *RES);
+}
+testSubstr3(*RES) {
+	assert(``substr("str",0,3)=="str"``, *RES);
+}
+testSubstr4(*RES) {
+	assert(``substr("str",1,2)=="t"``, *RES);
+}
+testSubstrError1(*RES) {
+	assertError(``substr("str",-1,3)``, *RES);
+}
+testSubstrError2(*RES) {
+	assertError(``substr("str",0,4)``, *RES);
+}
+testSubstrError3(*RES) {
+	assertError(``substr("str",3,0)``, *RES);
+}
+testSubstrError4(*RES) {
+	assertError(``substr("str",0,-1)``, *RES);
+}
+testSubstrError5(*RES) {
+	assertError(``substr("str",4,3)``, *RES);
+}
+testSubstrError6(*RES) {
+	assertError(``substr("str",-2,-1)``, *RES);
+}
+testSubstrError7(*RES) {
+	assertError(``substr("str",4,5)``, *RES);
 }
 input null
 output ruleExecOut
