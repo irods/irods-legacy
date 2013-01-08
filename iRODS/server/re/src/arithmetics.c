@@ -399,7 +399,7 @@ Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, 
 
                             Res *res2 = evaluateExpression3(reco->subtrees[i2], 0, 0, rei, reiSaveFlag, env, errmsg, r);
                             if(getNodeType(res2) == N_ERROR) {
-				char *errAction = getNodeType(nodei)==N_APPLICATION ? N_APP_FUNC(reco->subtrees[i2])->text : reco->subtrees[i2]->text;
+				char *errAction = getNodeType(reco->subtrees[i2])==N_APPLICATION ? N_APP_FUNC(reco->subtrees[i2])->text : reco->subtrees[i2]->text;
                             #ifndef DEBUG
                                 sprintf(tmpStr,"executeRuleRecovery Failed for %s", errAction);
                                 rodsLogError(LOG_ERROR,RES_ERR_CODE(res2),tmpStr);
