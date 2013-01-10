@@ -19,7 +19,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hArlLvVZ";
+    optStr = "hArlLvt:VZ";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
@@ -88,6 +88,7 @@ usage () {
 " -l  long format",
 " -L  very long format",
 " -r  recursive - show subcollections",
+" -t  ticket - use a read (or write) ticket to access collection information",
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",

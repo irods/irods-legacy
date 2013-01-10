@@ -20,6 +20,16 @@ rodsPathInp_t *rodsPathInp)
 	return (USER__NULL_INPUT_ERR);
     }
 
+    if (myRodsArgs->ticket == True) {
+       if (myRodsArgs->ticketString == NULL) {
+	  rodsLog (LOG_ERROR,
+		   "initCondForPut: NULL ticketString error");
+	  return (USER__NULL_INPUT_ERR);
+       } else {
+	  setSessionTicket(conn, myRodsArgs->ticketString);
+       }
+    }
+
     initCondForLs (myRodsEnv, myRodsArgs, &genQueryInp);
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {

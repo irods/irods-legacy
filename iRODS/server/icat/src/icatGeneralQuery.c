@@ -1403,7 +1403,19 @@ genqAppendAccessCheck() {
 	 if (addedTicketCheck!=1 ) {
 	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
 	    cllBindVars[cllBindVarCount++]=sessionTicket;
-	    rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE_GQ);
+	    if (strstr(whereSQL, "parent_coll_name =") != NULL) {
+	      /*
+		If the where clause is checking on the parent
+		collection, assume that the needed ticket check is on
+		the parent.  This works for the 'ils' queries so that
+		a read (or write) ticket on a collection will find the
+		existing sub-collections.
+	       */
+	      rstrcat(whereSQL, "parent_coll_name IN (select coll_name from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ);
+	    }
+	    else {
+	      rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE_GQ);
+	    }
 	 }
 
       }
