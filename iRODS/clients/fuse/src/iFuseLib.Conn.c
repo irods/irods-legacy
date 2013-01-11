@@ -54,11 +54,15 @@ int _getAndUseConnForPathCache(iFuseConn_t **iFuseConn, pathCache_t *paca) {
     if(paca->iFuseConn != NULL) {
     	LOCK_STRUCT(*(paca->iFuseConn));
     	if(paca->iFuseConn->conn != NULL) {
-    		_useIFuseConn(paca->iFuseConn);
-    		UNLOCK_STRUCT(*(paca->iFuseConn));
-    		/* ifuseReconnect(paca->iFuseConn); */
-    		*iFuseConn = paca->iFuseConn;
-    		return 0;
+    		if(paca->iFuseConn->inuseCnt == 0) {
+				_useIFuseConn(paca->iFuseConn);
+				UNLOCK_STRUCT(*(paca->iFuseConn));
+				/* ifuseReconnect(paca->iFuseConn); */
+				*iFuseConn = paca->iFuseConn;
+				return 0;
+    		} else {
+				UNLOCK_STRUCT(*(paca->iFuseConn));
+    		}
     	} else {
     		UNLOCK_STRUCT(*(paca->iFuseConn));
     		/* disconnect by not freed yet */
