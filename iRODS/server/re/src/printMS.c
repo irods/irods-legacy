@@ -339,27 +339,26 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
 	char *writeStr;
 	int status;
 	
-	if (where->inOutStruct != NULL) {
+	if (where->inOutStruct) {
 		writeId = (char*)where->inOutStruct;	
 	}
 	else {
 		writeId = where->label;
 	}
 	
-	if (inBuf->inpOutBuf != NULL) {
-		writeStr = (char *) malloc(strlen((const char*)inBuf->inpOutBuf->buf) + MAX_COND_LEN);
-		strcpy(writeStr , (const char*)inBuf->inpOutBuf->buf);
+	if (inBuf->inpOutBuf) {
+		/* Buffer might no be null-terminated */
+		writeStr = (char*)malloc(inBuf->inpOutBuf->len + 1);
+		strncpy(writeStr, (char*)inBuf->inpOutBuf->buf, inBuf->inpOutBuf->len);
+		writeStr[inBuf->inpOutBuf->len] = '\0';
 	}
 	else {
-		writeStr = (char *) malloc(strlen(inBuf->label) + MAX_COND_LEN);
-		strcpy(writeStr , inBuf->label);
+		writeStr = strdup(inBuf->label);
 	}
 
 	status = _writeString(writeId, writeStr, rei);
 	
-	if (writeStr != NULL) {
-		free(writeStr);
-	}
+	if (writeStr) free(writeStr);
 
 	return (status);
 }
