@@ -316,7 +316,7 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
  * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut. It can be stdout or stderr.
- * \param[in] inBuf - a msParam of type STR_MS_T - related to the status output
+ * \param[in] inBuf - a msParam of type BUF_LEN_MS_T.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
