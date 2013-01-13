@@ -1112,12 +1112,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                 Res *res = newRes(r);
 		Res* timestr = params[0];
 		char* format;
-		if(TYPE(params[0])!=T_STRING ||
-			(n == 2 && TYPE(params[1])!=T_STRING)) { /* error not a string */
-                        res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
-                        snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res((Res *)params[0]), n==2?typeName_Res((Res *)params[1]):"null");
-                        addRErrorMsg(errmsg, RE_UNSUPPORTED_OP_OR_TYPE, errbuf);
-		} else {
+		if(TYPE(params[0])==T_STRING && (n == 1 ||
+			(n == 2 && TYPE(params[1])==T_STRING))) {
 			if(n == 2) {
 				format = params[1]->text;
 			} else {
@@ -1125,6 +1121,17 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 			}
 			strttime(timestr->text, format, &(RES_TIME_VAL(res)));
                         res->exprType = newSimpType(T_DATETIME,r);
+		} else if(n==1 && (TYPE(params[0])==T_DOUBLE || TYPE(params[0])==T_INT)){
+			if(TYPE(params[0])==T_DOUBLE) {
+				RES_TIME_VAL(res) = (long) RES_DOUBLE_VAL(timestr);
+			} else {
+				RES_TIME_VAL(res) = (long) RES_INT_VAL(timestr);
+			}
+                        res->exprType = newSimpType(T_DATETIME,r);
+		} else {  /* error not a string */
+                        res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
+                        snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res((Res *)params[0]), n==2?typeName_Res((Res *)params[1]):"null");
+                        addRErrorMsg(errmsg, RE_UNSUPPORTED_OP_OR_TYPE, errbuf);
 		}
                 return res;
         }
@@ -2746,7 +2753,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "time", newFunctionFD("->time", smsi_time, r));
     insertIntoHashTable(ft, "timestr", newFunctionFD("time->string", smsi_timestr, r));
     insertIntoHashTable(ft, "str", newFunctionFD("?->string", smsi_str, r));
-    insertIntoHashTable(ft, "datetime", newFunctionFD("string->time", smsi_datetime, r));
+    insertIntoHashTable(ft, "datetime", newFunctionFD("0 { string integer double }->time", smsi_datetime, r));
     insertIntoHashTable(ft, "timestrf", newFunctionFD("time * string->string", smsi_timestr, r));
     insertIntoHashTable(ft, "datetimef", newFunctionFD("string * string->time", smsi_datetime, r));
     insertIntoHashTable(ft, "double", newFunctionFD("f 0{string double time}->double", smsi_double, r));
