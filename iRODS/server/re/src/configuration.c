@@ -288,15 +288,20 @@ int createRuleIndex(ruleStruct_t *inRuleStruct) {
 	return 0;
 
 }
+static char prevIrbSet[RULE_SET_DEF_LENGTH];
 int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleStruct) {
     char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
-    strcpy(r2,irbSet);
+    rstrcpy(r2, irbSet, RULE_SET_DEF_LENGTH);
     int res = 0;
 
 #ifdef DEBUG
     /*Cache *cache;*/
 #endif
 
+    int diffIrbSet = strcmp(prevIrbSet, irbSet) != 0;
+    if(diffIrbSet) {
+        rstrcpy(prevIrbSet, irbSet, RULE_SET_DEF_LENGTH);
+    }
     /* get max timestamp */
     char fn[MAX_NAME_LEN];
     time_type timestamp = time_type_initializer, mtim;
@@ -330,7 +335,7 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
 
 	        if(cache == NULL) {
 	        	rodsLog(LOG_ERROR, "Failed to restore cache.");
-	        } else if(time_type_gt(timestamp, cache->timestamp)) {
+	        } else if(diffIrbSet || time_type_gt(timestamp, cache->timestamp)) {
 	        	 update = 1;
 	        	 free(cache->address);
 	        	 rodsLog(LOG_DEBUG, "Rule file modified, force refresh.");
@@ -411,7 +416,7 @@ ret:
 }
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
 {
-  int i;
+/*  int i; */
 /*  char l0[MAX_RULE_LENGTH]; */
 /*  char l1[MAX_RULE_LENGTH]; */
 /*  char l2[MAX_RULE_LENGTH]; */
@@ -421,7 +426,7 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
 /*   char buf[MAX_RULE_LENGTH]; */
    char *configDir;
 /*   char *t; */
-   i = inRuleStrct->MaxNumOfRules;
+/*   i = inRuleStrct->MaxNumOfRules; */
 
    if (ruleBaseName[0] == '/' || ruleBaseName[0] == '\\' ||
        ruleBaseName[1] == ':') {
