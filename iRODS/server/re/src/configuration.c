@@ -301,6 +301,7 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
     int diffIrbSet = strcmp(prevIrbSet, irbSet) != 0;
     if(diffIrbSet) {
         rstrcpy(prevIrbSet, irbSet, RULE_SET_DEF_LENGTH);
+	rodsLog(LOG_NOTICE, "Rule base set changed, new value is %s", prevIrbSet);
     }
     /* get max timestamp */
     char fn[MAX_NAME_LEN];
@@ -338,7 +339,7 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
 	        } else if(diffIrbSet || time_type_gt(timestamp, cache->timestamp)) {
 	        	 update = 1;
 	        	 free(cache->address);
-	        	 rodsLog(LOG_DEBUG, "Rule file modified, force refresh.");
+	        	 rodsLog(LOG_DEBUG, "Rule base set or rule files modified, force refresh.");
 	        } else {
 
 	        cache->cacheStatus = INITIALIZED;
