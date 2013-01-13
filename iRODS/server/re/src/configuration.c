@@ -150,10 +150,10 @@ int clearResources(int resources) {
 	}
 	return 0;
 }
-List hashtablesToClear = {NULL, NULL};
-List envToClear = {NULL, NULL};
-List regionsToClear = {NULL, NULL};
-List memoryToFree = {NULL, NULL};
+List hashtablesToClear = {0, NULL, NULL};
+List envToClear = {0, NULL, NULL};
+List regionsToClear = {0, NULL, NULL};
+List memoryToFree = {0, NULL, NULL};
 
 void delayClearResources(int resources) {
 	/*if((resources & RESC_RULE_INDEX) && ruleEngineConfig.ruleIndexStatus == INITIALIZED) {
