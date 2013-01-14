@@ -66,6 +66,7 @@ Cache *copyCache(unsigned char **p, size_t size, Cache *ptr) {
 	ecopy->sysFuncDescIndex = NULL;
 	ecopy->sysFuncDescIndexStatus = UNINITIALIZED;
 	ecopy->ruleEngineStatus = UNINITIALIZED;
+	MK_VAR_ARRAY_IN_STRUCT(char, ruleBase);
 
     deleteHashTable(objectMap, nop);
 

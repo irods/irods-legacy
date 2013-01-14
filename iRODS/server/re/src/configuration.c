@@ -288,7 +288,7 @@ int createRuleIndex(ruleStruct_t *inRuleStruct) {
 	return 0;
 
 }
-static char prevIrbSet[RULE_SET_DEF_LENGTH];
+
 int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleStruct) {
     char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
     rstrcpy(r2, irbSet, RULE_SET_DEF_LENGTH);
@@ -298,11 +298,6 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
     /*Cache *cache;*/
 #endif
 
-    int diffIrbSet = strcmp(prevIrbSet, irbSet) != 0;
-    if(diffIrbSet) {
-        rstrcpy(prevIrbSet, irbSet, RULE_SET_DEF_LENGTH);
-	rodsLog(LOG_NOTICE, "Rule base set changed, new value is %s", prevIrbSet);
-    }
     /* get max timestamp */
     char fn[MAX_NAME_LEN];
     time_type timestamp = time_type_initializer, mtim;
@@ -336,25 +331,32 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
 
 	        if(cache == NULL) {
 	        	rodsLog(LOG_ERROR, "Failed to restore cache.");
-	        } else if(diffIrbSet || time_type_gt(timestamp, cache->timestamp)) {
-	        	 update = 1;
-	        	 free(cache->address);
-	        	 rodsLog(LOG_DEBUG, "Rule base set or rule files modified, force refresh.");
 	        } else {
+	        	int diffIrbSet = strcmp(cache->ruleBase, irbSet) != 0;
+				if(diffIrbSet) {
+					rodsLog(LOG_DEBUG, "Rule base set changed, old value is %s", cache->ruleBase);
+				}
 
-	        cache->cacheStatus = INITIALIZED;
-            ruleEngineConfig = *cache;
-            /* generate extRuleSet */
-        	generateRegions();
-        	generateRuleSets();
-        	generateFunctionDescriptionTables();
-        	if(inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
-        		getSystemFunctions(ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion);
-        	}
-            /* ruleEngineConfig.extRuleSetStatus = LOCAL;
-            ruleEngineConfig.extFuncDescIndexStatus = LOCAL; */
-            /* createRuleIndex(inRuleStruct); */
-            RETURN;
+	        	if(diffIrbSet || time_type_gt(timestamp, cache->timestamp)) {
+					 update = 1;
+					 free(cache->address);
+					 rodsLog(LOG_DEBUG, "Rule base set or rule files modified, force refresh.");
+				} else {
+
+					cache->cacheStatus = INITIALIZED;
+					ruleEngineConfig = *cache;
+					/* generate extRuleSet */
+					generateRegions();
+					generateRuleSets();
+					generateFunctionDescriptionTables();
+					if(inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
+						getSystemFunctions(ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion);
+					}
+					/* ruleEngineConfig.extRuleSetStatus = LOCAL;
+					ruleEngineConfig.extFuncDescIndexStatus = LOCAL; */
+					/* createRuleIndex(inRuleStruct); */
+					RETURN;
+				}
 	        }
     	} else {
     		rodsLog(LOG_DEBUG, "Cannot open shared memory.");
@@ -393,6 +395,7 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
 	createRuleIndex(inRuleStruct);
 	/* set max timestamp */
 	time_type_set(ruleEngineConfig.timestamp, timestamp);
+	rstrcpy(ruleEngineConfig.ruleBase, irbSet, RULE_SET_DEF_LENGTH);
 
 #ifdef CACHE_ENABLE
 	if((processType == RULE_ENGINE_INIT_CACHE || update) && inRuleStruct == &coreRuleStrct) {

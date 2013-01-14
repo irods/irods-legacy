@@ -64,6 +64,7 @@ typedef struct cache {
     time_type timestamp;
     time_type updateTS;
     unsigned int version;
+    char ruleBase[RULE_SET_DEF_LENGTH];
 } Cache;
 
 #define isComponentInitialized(x) ((x)==INITIALIZED || (x)==COMPRESSED)
