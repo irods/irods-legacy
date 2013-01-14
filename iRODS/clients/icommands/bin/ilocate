@@ -21,6 +21,9 @@ then
 	echo "-0  Separate output via NULL characters instead of newlines (like find -print0)" 
 	echo "-t  Also show objects in trash"
 #	echo "-i  Ignore case"
+        echo " "
+	echo "ilocate is a script.  For version information, check ilocate's path and make"
+        echo "sure the correct version of the i-commands is in the PATH."
 	exit 0
 fi
 
