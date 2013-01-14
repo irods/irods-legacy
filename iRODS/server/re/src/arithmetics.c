@@ -1239,8 +1239,24 @@ void copyFromEnv(Res **args, char **inParams, int inParamsCount, Hashtable *env,
  */
 Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, int applyAll, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r)
 {
-	if (GlobalREAuditFlag > 0)
+	int restoreGlobalREAuditFlag = 0;
+	int globalREAuditFlag;
+	if (GlobalREAuditFlag > 0) {
+		/* get meta data */
+		Node *metadata = rule->subtrees[4];
+		int i;
+		for(i = 0;i<metadata->degree;i++) {
+			Node *attribute = metadata->subtrees[i]->subtrees[0];
+			Node *value = metadata->subtrees[i]->subtrees[1];
+			if(strcmp(attribute->text, "logging") == 0 && strcmp(value->text, "false") == 0) {
+				restoreGlobalREAuditFlag = 1;
+				globalREAuditFlag = GlobalREAuditFlag;
+				GlobalREAuditFlag = 0;
+				break;
+			}
+		}
 		reDebug("  ExecRule", -4, "", RULE_NAME(rule), NULL, env, rei); /* pass in NULL for inMsParamArray for now */
+	}
 	Node* ruleCondition = rule->subtrees[1];
 	Node* ruleAction = rule->subtrees[2];
 	Node* ruleRecovery = rule->subtrees[3];
@@ -1314,6 +1330,11 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, int applyAll, En
         region_free(rNew);
     	if (GlobalREAuditFlag > 0)
     		reDebug("  ExecRule", -4, "Done", RULE_NAME(rule), NULL, env, rei); /* pass in NULL for inMsParamArray for now */
+
+    	if(restoreGlobalREAuditFlag!=0) {
+    		GlobalREAuditFlag = globalREAuditFlag;
+    	}
+
         return statusRes;
 
 }
