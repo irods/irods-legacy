@@ -1,6 +1,6 @@
 #
 # HostAccessControl - The host based access configuration file.
-#                     It is used only if the following hook is commented out in your core.irb:
+#                     It is used only if the following hook is commented out in your core.re:
                       acChkHostAccessControl||msiCheckHostAccessControl|nop
 #
 # The first column specifies a user that is allowed to connect to
@@ -9,10 +9,17 @@
 # The third and fourth columns specify the address and the address mask.
 # Together, they define the client IP addresses/domains that are permitted
 # to connect to the iRODS server. The address column specifies the IP
-# address and the Mask column specifies which bits that will be ignored. 
+# address and the Mask column specifies which bits will be ignored
 # i.e., after those bits are taken out, the connection address 
-# must match the address in the address column.
+# must match the address in the address column; that is if the bit is
+# set in the mask, it will be ignored in the connecting address, so
+# 255 means any value is allowed.
 #
+# In the the following example, only user 'rods' can connect (from any host).
+# Since the mask bytes are 255, those are ignored and the 127.0.0.1 could be
+# any legal IP address:
 # <name>   <group>   <address>     <mask>
+#rods all 127.0.0.1 255.255.255.255
 #
-#all all 127.0.0.1 255.255.255.255
+# In the following example, any user can connect but only from one host:
+#all all 137.110.243.161 0.0.0.0
