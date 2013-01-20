@@ -26,7 +26,7 @@ MSIncDir =	$(modulesDir)/URL/microservices/include
 #
 # Objects
 #
-OBJECTS =	$(MSObjDir)/ftpMS.o
+OBJECTS =	$(MSObjDir)/curlMS.o 
 
 
 
@@ -38,13 +38,22 @@ INCLUDE_FLAGS =	-I$(MSIncDir)
 
 
 #
-# Include files and libraries for libcurl.
+# Include files and libraries for libcurl
 # Please run 'curl-config --cflags' and 'curl-config --libs'
 # on your system and edit the following two lines accordingly.
 #
-# INCLUDE_FLAGS += 
-LIBS = -L/usr/lib -lcurl
+INCLUDE_FLAGS += -I/opt/local/include
+LIBS = -L/opt/local/lib -lcurl -lidn -lssl -lcrypto -lssl -lcrypto -lz
 #LIBS = -L/usr/lib -lcurl -loauth
+
+
+
+#
+# Additional includes and libs for libxml2
+#
+INCLUDE_FLAGS += -I/opt/local/include/libxml2
+LIBS += -L/opt/local/lib -lxml2 -lz -lpthread -liconv -lm
+
 
 
 

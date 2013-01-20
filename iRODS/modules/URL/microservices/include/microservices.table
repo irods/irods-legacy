@@ -1,5 +1,8 @@
 // URL module microservices
 // Service name				# args		Service function
+{"msiCurlGetStr",			3,		(funcPtr) msiCurlGetStr},
+{"msiCurlGetObj",			3,		(funcPtr) msiCurlGetObj},
+{"msiCurlPost",				3,		(funcPtr) msiCurlPost},
 {"msiFtpGet",				3,		(funcPtr) msiFtpGet},
 {"msiTwitterPost",			4,		(funcPtr) msiTwitterPost},
 {"msiPostThis",				3,		(funcPtr) msiPostThis},
