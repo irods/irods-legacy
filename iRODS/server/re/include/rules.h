@@ -7,6 +7,36 @@
 #include "arithmetics.h"
 #include "typing.h"
 
+#ifndef HAS_MICROSDEF_T
+typedef struct {
+  char action[MAX_ACTION_SIZE];
+  int numberOfStringArgs;
+  funcPtr callAction;
+} microsdef_t;
+#endif
+
+#ifndef DEBUG
+extern int NumOfAction;
+extern microsdef_t MicrosTable[];
+#endif
+
+#ifdef USE_EIRODS
+#define MS_DEF_TYPE eirods::ms_table_entry
+#define GET_FUNC_PTR(ms_entry) ((ms_entry).callAction_)
+#define GET_NUM_ARGS(ms_entry) ((ms_entry).numberOfStringArgs_)
+#define LOOKUP_ACTION_TABLE(ms_entry, action) (actionTableLookUp3((ms_entry), (action)))
+int actionTableLookUp3 (MS_DEF_TYPE& microsdef, char *action);
+
+#else
+#define MS_DEF_TYPE microsdef_t *
+#define GET_FUNC_PTR(ms_entry) ((ms_entry)->callAction)
+#define GET_NUM_ARGS(ms_entry) ((ms_entry)->numberOfStringArgs)
+#define LOOKUP_ACTION_TABLE(ms_entry, action) (actionTableLookUp3(&(ms_entry), (action)))
+int actionTableLookUp3 (MS_DEF_TYPE* microsdef, char *action);
+
+#endif // ifdef USE_EIRODS
+
+
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
 int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r);
 int readRuleSetFromLocalFile(char *ruleBaseName, char *fileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r);
@@ -25,8 +55,6 @@ execCmdOut_t *addCmdExecOutToEnv(Env *global, Region *r);
 void freeCmdExecOut(execCmdOut_t *ruleExecOut);
 RuleDesc *getRuleDesc(int ri);
 int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *r);
-int actionTableLookUp (char *action);
-
 int overflow(char*expr,int len);
 Env *defaultEnv(Region *r);
 
