@@ -1,6 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* #define RE_LOG_RULES_TMP */
+#define HAS_MICROSDEF_T
 #include "reGlobals.h"
 #include "initServer.h"
 #include "reHelpers1.h"

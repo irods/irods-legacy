@@ -3,6 +3,9 @@
 #include "debug.h"
 #ifdef DEBUG
 #include "re.h"
+#else
+#include "reGlobalsExtern.h"
+#include "reHelpers1.h"
 #endif
 #include "rules.h"
 #include "index.h"
@@ -16,22 +19,6 @@
 #define RE_ERROR(cond) if(cond) { goto error; }
 
 extern int GlobalAllRuleExecFlag;
-
-#ifdef USE_EIRODS
-	#include "reAction.h"
-#else
-	#ifndef DEBUG
-		#include "reGlobalsExtern.h"
-		#include "reHelpers1.h"
-		typedef struct {
-		  char action[MAX_ACTION_SIZE];
-		  int numberOfStringArgs;
-		  funcPtr callAction;
-		} microsdef_t;
-		extern int NumOfAction;
-		extern microsdef_t MicrosTable[];
-	#endif
-#endif // ifdef USE_EIRODS
 
 /**
  * Read a set of rules from files.
@@ -660,9 +647,9 @@ RuleDesc* getRuleDesc(int ri)
 #ifdef USE_EIRODS
 // =-=-=-=-=-=-=-
 // function to look up and / or load a microservice for execution
-int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
-
-	std::string str_act( _action );
+int actionTableLookUp3 (MS_DEF_TYPE& microsdef, char *action)
+{
+    std::string str_act( _action );
 
     if( str_act[0] == 'a' && str_act[1] == 'c' )
 		return -1;
@@ -683,7 +670,6 @@ int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 	_entry = *MicrosTable[ str_act ];
 
 	return 0;
-
 } // actionTableLookUp
 #else
 int actionTableLookUp (char *action)
@@ -691,13 +677,22 @@ int actionTableLookUp (char *action)
 	int i;
 
 	for (i = 0; i < NumOfAction; i++) {
-		if (!strcmp(MicrosTable[i].action,action))
+		if (!strcmp(MicrosTable[i].action,action)) {
 			return (i);
+		}
 	}
 
 	return (UNMATCHED_ACTION_ERR);
 }
+
+int actionTableLookUp3 (MS_DEF_TYPE* microsdef, char *action)
+{
+	int i = actionTableLookUp(action);
+	*microsdef = &(MicrosTable[i]);
+	return i;
+}
 #endif
+
 
 
 /*

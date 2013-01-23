@@ -23,13 +23,6 @@
 	#ifndef DEBUG
 	#include "regExpMatch.h"
 	#include "rodsErrorTable.h"
-	typedef struct {
-	  char action[MAX_ACTION_SIZE];
-	  int numberOfStringArgs;
-	  funcPtr callAction;
-	} microsdef_t;
-	extern int NumOfAction;
-	extern microsdef_t MicrosTable[];
 	#endif
 #endif // ifdef USE_EIRODS
 
@@ -824,13 +817,9 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
 
 #ifdef USE_EIRODS
 //rodsLog( LOG_NOTICE, "calling pluggable MSVC from arithmetics.c:execAction3" );
-	// =-=-=-=-=-=-=-
-	// switch to using pluggable usvc
-	eirods::ms_table_entry ms_entry;
-    int actionInx = actionTableLookUp( ms_entry, action );
-#else
-	int actionInx = actionTableLookUp(action);
 #endif
+	MS_DEF_TYPE microsdef;
+	int actionInx = LOOKUP_ACTION_TABLE(microsdef, action);
 	if (actionInx < 0) { /* rule */
 		/* no action (microservice) found, try to lookup a rule */
 		Res *actionRet = execRule(actionName, args, nargs, applyAllRule, env, rei, reiSaveFlag, errmsg, r);
@@ -864,14 +853,11 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
     Res *res;
 #ifdef USE_EIRODS
 //rodsLog( LOG_NOTICE, "calling pluggable MSVC from arithmetics.c:execMicroService3" );
-	// =-=-=-=-=-=-=-
-	// switch to using pluggable usvc
-	eirods::ms_table_entry ms_entry;
-    actionInx = actionTableLookUp( ms_entry, msName );
-#else
-	/* look up the micro service */
-	actionInx = actionTableLookUp(msName);
 #endif
+	/* look up the micro service */
+	MS_DEF_TYPE microsdef;
+	actionInx = LOOKUP_ACTION_TABLE(microsdef, msName);
+
 	char errbuf[ERR_MSG_LEN];
 	if (actionInx < 0) {
             int ret = NO_MICROSERVICE_FOUND_ERR;
@@ -882,13 +868,8 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 
     }
 
-#ifdef USE_EIRODS
-	myFunc       = ms_entry.callAction_;
-	numOfStrArgs = ms_entry.numberOfStringArgs_;
-#else
-	myFunc =  MicrosTable[actionInx].callAction;
-	numOfStrArgs = MicrosTable[actionInx].numberOfStringArgs;
-#endif
+	myFunc       = GET_FUNC_PTR(microsdef);
+	numOfStrArgs = GET_NUM_ARGS(microsdef);
 
 	if (nargs != numOfStrArgs) {
             int ret = ACTION_ARG_COUNT_MISMATCH;

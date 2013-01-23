@@ -4,18 +4,11 @@
 #include "rules.h"
 #include "debug.h"
 #include "configuration.h"
-#define RE_ERROR(x) if(x) { goto error; }
-#ifndef DEBUG
-typedef struct {
-  char action[MAX_ACTION_SIZE];
-  int numberOfStringArgs;
-  funcPtr callAction;
-} microsdef_t;
-extern int NumOfAction;
-extern microsdef_t MicrosTable[];
-#else
+#ifdef DEBUG
 #include "re.h"
 #endif
+
+#define RE_ERROR(x) if(x) { goto error; }
 
 Hashtable *coreRuleFuncMapDefIndex = NULL;
 Hashtable *appRuleFuncMapDefIndex = NULL;
