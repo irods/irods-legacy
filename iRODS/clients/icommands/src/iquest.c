@@ -272,7 +272,7 @@ execAndShowSpecificQuery(rcComm_t *conn, char *sql,
 	printError(conn, status, "rcSpecificQuery");
 	return(status);
      }
-     printBasicGenQueryOut(genQueryOut, format);
+     printBasicGenQueryOut(genQueryOut, myFormat);
   }
 
   return(0);
