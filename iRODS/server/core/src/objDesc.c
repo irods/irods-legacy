@@ -346,6 +346,22 @@ keyValPair_t *condInput, char *destRescName, char *srcRescName)
 	}
     }
 
+    /* At this point, number of threads for both source and destination
+       have been set based on acSetNumThreads policy point, and neither
+       of them are set to 0 (to turn off threading). If both numDestThr 
+       and numSrcThr are set, choose the smallest one. The reasoning is 
+       that acSetNumThreads is used by a site to limit the default
+       maximum parallel threads, so we should honor the most restrictive
+       setting. */
+    if (numDestThr > 0 && numSrcThr > 0) {
+      if (getValByKey (condInput, RBUDP_TRANSFER_KW) != NULL) {
+        return 1;
+      } else if (numDestThr < numSrcThr) {
+        return numDestThr;
+      } else {
+        return numSrcThr;
+      }
+    }
     if (numDestThr > 0) {
 	if (getValByKey (condInput, RBUDP_TRANSFER_KW) != NULL) {
 	    return 1;
