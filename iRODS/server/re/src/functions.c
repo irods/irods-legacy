@@ -560,7 +560,7 @@ void reIterable_collection_finalize(ReIterableData *itrData, Region *r) {
 	}
 }
 ReIterable *getReIterable(ReIterableType nodeType) {
-int i;
+	int i;
 	for(i=0; i<NUM_RE_ITERABLE; i++) {
 		if(reIterableTable[i].nodeType == nodeType) {
 			return &(reIterableTable[i].reIterable);
@@ -576,9 +576,10 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 	Res *oldVal;
 	ReIterable* itr;
 	Node *subtreesNew[4];
+	char errbuf[ERR_MSG_LEN];
+
 	switch(ctype) {
 	case RE_NOT_ITERABLE:
-		char errbuf[ERR_MSG_LEN];
 		snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(subtrees[1]));
 		generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
 		return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
