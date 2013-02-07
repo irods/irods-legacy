@@ -367,7 +367,6 @@ ifdef HPSS
 # path defined by HPSS_LIB_DIR to the path in the LD_LIBRARY_PATH env variable.
 HPSS_LIB_DIR=/opt/hpss/lib
 HPSS_HDR_DIR=/opt/hpss/include
-ADDR_64BITS=
 endif
 
 # AMAZON_S3 - Define whether AMAZON S3 is supported on this server.

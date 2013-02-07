@@ -677,7 +677,7 @@ initHpssCos ()
 	  LONG_NAME_LEN)) > 0) {
 	    if (strcnt == 0) {
 		/* first string */
-		tmpHpssCos =  malloc (sizeof(hpssCosDef_t));
+		tmpHpssCos = (hpssCosDef_t *) malloc (sizeof(hpssCosDef_t));
 		bzero (tmpHpssCos, sizeof sizeof(hpssCosDef_t));
 		tmpHpssCos->cos = atoi (strbuf);
 	    } else if (strcnt == 1) {

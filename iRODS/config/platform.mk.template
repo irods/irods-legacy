@@ -21,6 +21,14 @@ RANLIB=
 AR=
 PERL=
 
+ifdef HPSS
+# For now, need to build iRODS with gcc instead of g++ when HPSS is included.
+# If the right gcc is not in the path, the lines below may need adjustment.
+CC=gcc
+LDR=gcc
+CC_IS_GCC=1
+endif
+
 ifeq ($(OS_platform), aix_platform)
 ifdef HPSS
 CC=xlc_r -q32

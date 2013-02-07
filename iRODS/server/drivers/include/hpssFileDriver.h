@@ -110,6 +110,10 @@ typedef struct HpssSession {
     int createMode;
 } hpssSession_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 hpssFileUnlink (rsComm_t *rsComm, char *filename);
 int
@@ -197,5 +201,9 @@ initHpssIodForRead (hpss_IOD_t *iod, iod_srcsinkdesc_t *src,
 iod_srcsinkdesc_t *sink, int hpssSrcFd, hpssSession_t *hpssSession);
 int
 postProcSessionThr (hpssSession_t *myHpssSession, char *hpssPath);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif	/* HPSS_FILE_DRIVER_H */
