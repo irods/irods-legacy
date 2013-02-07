@@ -560,7 +560,8 @@ void reIterable_collection_finalize(ReIterableData *itrData, Region *r) {
 	}
 }
 ReIterable *getReIterable(ReIterableType nodeType) {
-	for(int i =0;i<NUM_RE_ITERABLE; i++) {
+int i;
+	for(i=0; i<NUM_RE_ITERABLE; i++) {
 		if(reIterableTable[i].nodeType == nodeType) {
 			return &(reIterableTable[i].reIterable);
 		}
