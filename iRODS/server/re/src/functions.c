@@ -1210,7 +1210,7 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 
                     }
 		} else if(TYPE(val) == T_IRODS && strcmp(val->exprType->text, BUF_LEN_MS_T) == 0) {
-			bytesBuf_t *buf = (bytesBuf_t *) RES_UNINTER_STRUCT(val);
+			bytesBuf_t *buf = (bytesBuf_t *) RES_UNINTER_BUFFER(val);
 			int len = buf->len;
 			int i;
 			for(i=0;i<len;i++) {
