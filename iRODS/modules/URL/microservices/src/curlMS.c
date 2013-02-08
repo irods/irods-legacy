@@ -150,7 +150,7 @@ static size_t write_string(void *ptr, size_t size, size_t nmeb, void *stream)
 
 
 
-int msiCurlGetStr(msParam_t *url, msParam_t *buffer, msParam_t *status, ruleExecInfo_t *rei) {
+int msiCurlGetStr(msParam_t *url, msParam_t *buffer, ruleExecInfo_t *rei) {
 	CURL *curl;							/* curl handler */
 	CURLcode res;
 	char *my_url;
@@ -225,9 +225,8 @@ int msiCurlGetStr(msParam_t *url, msParam_t *buffer, msParam_t *status, ruleExec
 		return ACTION_FAILED_ERR;
 	}
 
-	/* Return string and bytes read */
+	/* Return string */
 	fillStrInMsParam(buffer, string.ptr); // does an strdup
-	fillIntInMsParam(status, (int)string.len);
 
 	/* Cleanup and done */
 	free (string.ptr);
@@ -236,7 +235,7 @@ int msiCurlGetStr(msParam_t *url, msParam_t *buffer, msParam_t *status, ruleExec
 
 
 
-int msiCurlGetObj(msParam_t *url, msParam_t *object, msParam_t *status, ruleExecInfo_t *rei) {
+int msiCurlGetObj(msParam_t *url, msParam_t *object, msParam_t *downloaded, ruleExecInfo_t *rei) {
 	CURL *curl;									/* curl handler */
 	CURLcode res;
 	char *my_url;
@@ -338,7 +337,7 @@ int msiCurlGetObj(msParam_t *url, msParam_t *object, msParam_t *status, ruleExec
 	}
 
 	/* Return bytes read/written */
-	fillIntInMsParam(status, prog.downloaded);
+	fillIntInMsParam(downloaded, prog.downloaded);
 
 	/* Cleanup and done */
 	return 0;
@@ -346,12 +345,18 @@ int msiCurlGetObj(msParam_t *url, msParam_t *object, msParam_t *status, ruleExec
 
 
 
-int msiCurlPost(msParam_t *url, msParam_t *data, msParam_t *status, ruleExecInfo_t *rei) {
-	CURL *curl;								/* curl handler */
+int msiCurlPost(msParam_t *url, msParam_t *postFields, msParam_t *response, ruleExecInfo_t *rei) {
+	CURL *curl;							/* curl handler */
 	CURLcode res;
 
-	char *my_url, *my_data;					/* input for POST request */
+	struct curl_slist *headers = NULL;
 
+	char *my_url, *my_headers, *data;	/* input for POST request */
+	char *encoded_data = NULL;
+
+	string_t string;					/* server response */
+
+	int must_encode = 0; // for the time being...
 
 	/* For testing mode when used with irule --test */
 	RE_TEST_MACRO ("    Calling msiCurlPost")
@@ -369,24 +374,52 @@ int msiCurlPost(msParam_t *url, msParam_t *data, msParam_t *status, ruleExecInfo
 		return (USER_INPUT_STRING_ERR);
 	}
 
-	/* Parse data, which can be NULL */
-	my_data = parseMspForStr(data);
 
+	/* Check for proper input type */
+	if (!postFields->type || strcmp(postFields->type, KeyValPair_MS_T)) {
+		rodsLog (LOG_ERROR, "msiCurlPost: postFields must be KeyValPair_MS_T.");
+		return (USER_PARAM_TYPE_ERR);
+	}
+
+
+	/* Parse POST fields */
+	data = getValByKey((keyValPair_t *)postFields->inOutStruct, "data");
+	my_headers = getValByKey((keyValPair_t *)postFields->inOutStruct, "headers");
+
+
+	/* Init string */
+	string.ptr = strdup("");
+	string.len = 0;
 
 	/* CURL easy handler init */
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 	curl = curl_easy_init();
 
 	if(curl) {
+		/* URL-encode data */
+		if (must_encode && data) {
+			encoded_data = curl_easy_escape(curl, data, 0);
+		}
+
+		/* Set headers */
+		if (my_headers && strlen(my_headers)) {
+			headers = curl_slist_append(headers, my_headers);
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		}
+
 		/* Set up easy handler */
 		curl_easy_setopt(curl, CURLOPT_URL, my_url);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, my_data);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_string);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &string);
 
 		/* CURL call */
 		res = curl_easy_perform(curl);
 
-		/* Cleanup curl handler */
+		/* Cleanup */
+		if (headers) curl_slist_free_all(headers);
+		if (encoded_data) curl_free(encoded_data);
 		curl_easy_cleanup(curl);
 	}
 	else {
@@ -401,8 +434,12 @@ int msiCurlPost(msParam_t *url, msParam_t *data, msParam_t *status, ruleExecInfo
 	/* CURL cleanup before returning */
 	curl_global_cleanup();
 
-	/* Return curl status */
-	fillIntInMsParam (status, res);
+	/* Return string and bytes read */
+	fillStrInMsParam(response, string.ptr); // does an strdup
+
+	/* Cleanup and done */
+	free (string.ptr);
+
 	return res;
 }
 
