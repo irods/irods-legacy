@@ -296,6 +296,11 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 			
 			/* invoke rsModAVUMetadata() */
 			rei->status = rsModAVUMetadata (rsComm, &modAVUMetadataInp);
+			if(rei->status < 0)
+			{
+				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: rsModAVUMetadata error for %s, status=%d",
+						modAVUMetadataInp.arg2, rei->status);
+			}
 		}
 	}
 
