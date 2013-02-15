@@ -442,7 +442,7 @@ endif
 # in iRODS.
 # PAM_AUTH = 1
 ifdef PAM_AUTH
-#PAM_AUTH_CHECK_PROG=../auth/PamAuthCheck
+#PAM_AUTH_CHECK_PROG=../server/bin/PamAuthCheck
 
 # Uncomment the following if you want to disallow extending the
 # lifetime of an already existing irods-pam password.  This will also
