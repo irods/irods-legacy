@@ -15,13 +15,14 @@
 int _makeQuery( char *sel, char *cond, char **sql);
 
 /**
- * \fn msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+ * \fn msiExecStrCondQueryWithOptionsNew(msParam_t* queryParam,
  *        msParam_t* zeroResultsIsOK,
  *        msParam_t* maxReturnedRowsParam, 
  *        msParam_t* genQueryOutParam, 
  *        ruleExecInfo_t *rei)
  *
  * \brief   This function takes a given condition string and options, creates an iCAT query, executes it and returns the values
+ * 			This function returns an empty result set if "zeroOK" instead of a string "emptySet".
  *
  * \module core
  *
@@ -52,7 +53,7 @@ int _makeQuery( char *sel, char *cond, char **sql);
  * \post none
  * \sa  msiExecStrCondQuery
 **/
-int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+int msiExecStrCondQueryWithOptionsNew(msParam_t* queryParam,
 				   msParam_t* zeroResultsIsOK,
 				   msParam_t* maxReturnedRowsParam, 
 				   msParam_t* genQueryOutParam,
@@ -99,8 +100,13 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
 	  return(i);
        else if (i == CAT_NO_ROWS_FOUND)
        {
-	  genQueryOutParam->type = strdup(STR_MS_T);
-	  fillStrInMsParam (genQueryOutParam,"emptySet");
+	  /* genQueryOutParam->type = strdup(STR_MS_T);
+	  fillStrInMsParam (genQueryOutParam,"emptySet"); */
+	  genQueryOutParam->type = strdup(GenQueryOut_MS_T);
+	  genQueryOut = (genQueryOut_t *) malloc(sizeof(genQueryOut_t));
+	  memset (genQueryOut, 0, sizeof (genQueryOut_t));
+	  genQueryOutParam->inOutStruct = genQueryOut;
+
 	  return(0);
        }
     }
@@ -116,6 +122,108 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
     return(0);
 }
 
+/**
+ * \fn msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+ *        msParam_t* zeroResultsIsOK,
+ *        msParam_t* maxReturnedRowsParam,
+ *        msParam_t* genQueryOutParam,
+ *        ruleExecInfo_t *rei)
+ *
+ * \brief   This function takes a given condition string and options, creates an iCAT query, executes it and returns the values
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Romain Guinot
+ * \date    2007
+ *
+ * \usage See clients/icommands/test/rules3.0/
+ *
+ * \param[in] queryParam - a msParam of type GenQueryInp_MS_T
+ * \param[in] zeroResultsIsOK - Optional - a msParam of type STR_MS_T - must equal "zeroOK"
+ * \param[in] maxReturnedRowsParam - Optional - a msParam of type STR_MS_T - as integer
+ * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified  none
+ * \iCatAttrDependence  none
+ * \iCatAttrModified  none
+ * \sideeffect  none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa  msiExecStrCondQuery
+**/
+int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+				   msParam_t* zeroResultsIsOK,
+				   msParam_t* maxReturnedRowsParam,
+				   msParam_t* genQueryOutParam,
+				   ruleExecInfo_t *rei)
+{
+    genQueryInp_t genQueryInp;
+    int i;
+    genQueryOut_t *genQueryOut = NULL;
+    char *query;
+    char *maxReturnedRowsStr;
+    int maxReturnedRows;
+
+    query = (char *) malloc(strlen((const char*)queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
+    strcpy(query, (const char*) queryParam->inOutStruct);
+
+    i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
+    if (i < 0)
+       return(i);
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+    i = fillGenQueryInpFromStrCond(query, &genQueryInp);
+    if (i < 0)
+       return(i);
+
+    if(maxReturnedRowsParam != NULL) {
+        maxReturnedRowsStr = (char *) maxReturnedRowsParam->inOutStruct;
+	if(strcmp(maxReturnedRowsStr, "NULL") != 0)
+	{
+	   maxReturnedRows = atoi (maxReturnedRowsStr);
+	   genQueryInp.maxRows= maxReturnedRows;
+	}
+	else
+	   genQueryInp.maxRows= MAX_SQL_ROWS;
+    }
+    else
+       genQueryInp.maxRows= MAX_SQL_ROWS;
+
+    genQueryInp.continueInx=0;
+
+    i = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+    if (zeroResultsIsOK !=NULL &&
+	strcmp((const char*)zeroResultsIsOK->inOutStruct, "zeroOK") == 0 )
+    {
+       if (i < 0 && i != CAT_NO_ROWS_FOUND)
+	  return(i);
+       else if (i == CAT_NO_ROWS_FOUND)
+       {
+	  genQueryOutParam->type = strdup(STR_MS_T);
+	  fillStrInMsParam (genQueryOutParam,"emptySet");
+
+	  return(0);
+       }
+    }
+    else
+    {
+       if (i < 0)
+	  return(i);
+    }
+    if (i < 0)
+       return(i);
+    genQueryOutParam->type = strdup(GenQueryOut_MS_T);
+    genQueryOutParam->inOutStruct = genQueryOut;
+    return(0);
+}
 
 /**
  * \fn msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
