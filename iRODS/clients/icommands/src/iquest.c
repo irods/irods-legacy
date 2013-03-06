@@ -27,6 +27,8 @@ usage () {
 "condition is of the form: <attribute> <rel-op> <value>",
 "rel-op is a relational operator: eg. =, <>, >,<, like, not like, between, etc.,",
 "value is either a constant or a wild-carded expression.",
+"Query in numeric mode are possible by replacing < operator for instance with n<.",
+"It will cast the attribute to numeric (decimal) in the SQL.",
 "One can also use a few aggregation operators such as sum,count,min,max and avg,",
 "or order and order_desc (descending) to specify an order (if needed).",
 "Use % and _ as wild-cards, and use \\ to escape them.",
