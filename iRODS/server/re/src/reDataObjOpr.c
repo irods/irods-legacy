@@ -791,7 +791,7 @@ ruleExecInfo_t *rei)
         bzero (&dataObjInp, sizeof (dataObjInp));
         myDataObjInp = &dataObjInp;
         validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG | REPL_NUM_FLAG |
-	  IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG;
+	  IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG | UNREG_FLAG;
         rei->status = parseMsKeyValStrForDataObjInp (inpParam, myDataObjInp,
           OBJ_PATH_KW, validKwFlags, &outBadKeyWd);
     } else {
