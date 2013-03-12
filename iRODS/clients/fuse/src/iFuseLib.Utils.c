@@ -22,10 +22,12 @@ fileCache_t *newFileCache(int iFd, char *objPath, char *localPath, char *cacheFi
     fileCache->fileSize = 0;
     fileCache->iFd = iFd;
 	fileCache->state = state;
+	fileCache->status = 0;
     INIT_STRUCT_LOCK(*fileCache);
     return fileCache;
 }
 
+/* precond: fileCache locked or single thread use */
 pathCache_t *newPathCache (char *inPath, fileCache_t *fileCache, struct stat *stbuf, time_t cachedTime) {
     pathCache_t *tmpPathCache;
 
@@ -35,7 +37,7 @@ pathCache_t *newPathCache (char *inPath, fileCache_t *fileCache, struct stat *st
     tmpPathCache->localPath = strdup (inPath);
     tmpPathCache->cachedTime = cachedTime;
     tmpPathCache->expired = 0;
-    tmpPathCache->fileCache = fileCache;
+    REF_NO_LOCK(tmpPathCache->fileCache, fileCache);
     tmpPathCache->iFuseConn = NULL;
 	INIT_STRUCT_LOCK(*tmpPathCache);
     if (stbuf != NULL) {
@@ -61,6 +63,7 @@ iFuseConn_t *newIFuseConn(int *status) {
     return tmpIFuseConn;
 
 }
+/* precond: fileCache locked or single thread use */
 iFuseDesc_t *newIFuseDesc (char *objPath, char *localPath, fileCache_t *fileCache, int *status) {
 	iFuseDesc_t *desc;
 	LOCK_STRUCT(*IFuseDescFreeList);
@@ -73,7 +76,7 @@ iFuseDesc_t *newIFuseDesc (char *objPath, char *localPath, fileCache_t *fileCach
 		desc = (iFuseDesc_t *) node->value;
 		listRemoveNoRegion(IFuseDescFreeList->list, node);
 		UNLOCK_STRUCT(*IFuseDescFreeList);
-        desc->fileCache = fileCache;
+        REF_NO_LOCK(desc->fileCache, fileCache);
 		desc->objPath = strdup (objPath);
 		desc->localPath = strdup (localPath);
         INIT_STRUCT_LOCK(*desc);
@@ -110,6 +113,7 @@ int _freePathCache (pathCache_t *tmpPathCache)
     return 0;
 }
 
+/* precond: lock desc */
 int _freeIFuseDesc (iFuseDesc_t *desc)
 {
     int i;

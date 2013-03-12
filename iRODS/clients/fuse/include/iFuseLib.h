@@ -237,7 +237,7 @@ ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv);
 int
 getNewlyCreatedDescByPath (char *path);
 int
-renmeLocalPath (char *from, char *to);
+renmeLocalPath (char *from, char *to, char *toIrodsPath);
 int	_chkCacheExpire (pathCacheQue_t *pathCacheQue);
 int _matchAndLockPathCache (char *inPath, pathCacheQue_t *pathQueArray, pathCache_t **outPathCache);
 int _iFuseConnInuse (iFuseConn_t *iFuseConn);

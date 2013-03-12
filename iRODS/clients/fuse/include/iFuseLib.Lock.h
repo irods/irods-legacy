@@ -90,22 +90,36 @@ extern iFuseDesc_t IFuseDesc[MAX_IFUSE_DESC];
 extern concurrentList_t *IFuseDescFreeList;
 
 #define UNREF(s, t) \
-	LOCK_STRUCT(*(s)); \
-	(s)->status--; \
-	if((s)->status == 0) { \
-		UNLOCK_STRUCT(*(s)); \
-		FREE_STRUCT_LOCK(*(s)); \
-		FREE(s, t); \
-	} else { \
-		UNLOCK_STRUCT(*(s)); \
-	} \
-	(s) = NULL;
+	if(s != NULL) { \
+		LOCK_STRUCT(*(s)); \
+		(s)->status--; \
+		if((s)->status == 0) { \
+			UNLOCK_STRUCT(*(s)); \
+			FREE_STRUCT_LOCK(*(s)); \
+			FREE(s, t); \
+		} else { \
+			UNLOCK_STRUCT(*(s)); \
+		} \
+		(s) = NULL; \
+	}
 
 #define REF(v, s) \
-	LOCK_STRUCT(*(s)); \
-	(s)->status++; \
-	UNLOCK_STRUCT(*(s)); \
-	(v) = (s);
+	if(s != NULL) { \
+		LOCK_STRUCT(*(s)); \
+		(s)->status++; \
+		UNLOCK_STRUCT(*(s)); \
+		(v) = (s);\
+	} else { \
+		v = NULL; \
+	}
+
+#define REF_NO_LOCK(v, s) \
+	if(s != NULL) { \
+		(s)->status++; \
+		(v) = (s);\
+	} else { \
+		v = NULL; \
+	}
 
 #define FREE(s, t) \
 	_free##t(s);

@@ -208,7 +208,7 @@ char *irodsPath)
 }
 
 int
-renmeLocalPath (char *from, char *to)
+renmeLocalPath (char *from, char *to, char *toIrodsPath)
 {
     int status;
     pathCache_t *fromPathCache = NULL;
@@ -221,25 +221,24 @@ renmeLocalPath (char *from, char *to)
     }
 
 	LOCK(PathCacheLock);
-    LOCK_STRUCT(*(fromPathCache->fileCache));
-	free(fromPathCache->fileCache->localPath);
-	fromPathCache->fileCache->localPath = strdup(to);
-	free(fromPathCache->fileCache->objPath);
-	fromPathCache->fileCache->objPath=(char *) malloc(MAX_NAME_LEN);
-	status = parseRodsPathStr ((char *) (to + 1) , &MyRodsEnv, fromPathCache->fileCache->objPath);
-	if (status < 0) {
-		rodsLogError (LOG_ERROR, status,
-		  "renmeOpenedIFuseDesc: parseRodsPathStr of %s error", to);
+	if(fromPathCache->fileCache != NULL) {
+		LOCK_STRUCT(*(fromPathCache->fileCache));
+		free(fromPathCache->fileCache->localPath);
+		fromPathCache->fileCache->localPath = strdup(to);
+		free(fromPathCache->fileCache->objPath);
+		fromPathCache->fileCache->objPath=strdup(toIrodsPath);
+
+		_pathReplace((char *) to, fromPathCache->fileCache, &fromPathCache->stbuf, &tmpPathCache);
+
 		UNLOCK_STRUCT(*(fromPathCache->fileCache));
-		UNLOCK_STRUCT(*(fromPathCache));
-		UNLOCK(PathCacheLock);
-		return -ENOTDIR;
+	} else {
+		_pathReplace((char *) to, NULL /* fromPathCache->fileCache */, &fromPathCache->stbuf, &tmpPathCache);
+
 	}
 
+	/* need to unlock fileCache here since the following function call ness to lock fileCache */
 	_pathNotExist((char *) from);
-	_pathReplace((char *) to, fromPathCache->fileCache, &fromPathCache->stbuf, &tmpPathCache);
 
-	UNLOCK_STRUCT(*(fromPathCache->fileCache));
 	UNLOCK_STRUCT(*fromPathCache);
 	UNLOCK(PathCacheLock);
 	return 0;

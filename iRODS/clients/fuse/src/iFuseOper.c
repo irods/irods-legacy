@@ -451,6 +451,8 @@ irodsRename (const char *from, const char *to)
         return -ENOTDIR;
     }
 
+    char *toIrodsPath = strdup(dataObjRenameInp.destDataObjInp.objPath);
+
     addKeyVal (&dataObjRenameInp.destDataObjInp.condInput, FORCE_FLAG_KW, "");
 
     dataObjRenameInp.srcDataObjInp.oprType =
@@ -467,10 +469,7 @@ irodsRename (const char *from, const char *to)
 
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
-    	status = renmeLocalPath ((char *) from, (char *) to);
-    	if (status >= 0) {
-    		return (0);
-    	}
+    	status = renmeLocalPath ((char *) from, (char *) to, (char *) toIrodsPath);
 #endif
     } else {
 		if (isReadMsgError (status)) {
@@ -484,6 +483,7 @@ irodsRename (const char *from, const char *to)
 		}
     }
     unuseIFuseConn (iFuseConn);
+    free(toIrodsPath);
 
     return (status);
 }
