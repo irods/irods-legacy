@@ -1,4 +1,4 @@
-# $1 = fuse mount point $2 = (optional) debug $3 = (optional) stdout
+# $1 = fuse mount point $2 = debug|release $3 = (optional) stdout
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 if [ "$2" == "debug" ]
 then
