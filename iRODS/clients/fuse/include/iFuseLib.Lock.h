@@ -1,4 +1,7 @@
 /* For more information please refer to files in the COPYRIGHT directory ***/
+
+/*#define FUSE_DEBUG 1*/
+
 /*
  * Locking order:
  *
@@ -68,8 +71,24 @@ typedef struct ConcurrentList {
 	void timeoutWait(boost::mutex &ConnManagerLock, boost::condition_variable &ConnManagerCond, int sleepTime);
 	void notifyTimeoutWait(boost::mutex &ConnManagerLock, boost::condition_variable &ConnManagerCond);
 #else
+#ifdef FUSE_DEBUG
+#define UNLOCK(Lock) \
+		if(FUSE_DEBUG)rodsLog(LOG_ERROR, "[ LOCK ]%s:%d %p", __FILE__, __LINE__, &(Lock)); \
+	(pthread_mutex_unlock (&(Lock)))
+
+#define LOCK(Lock) \
+		if(FUSE_DEBUG)rodsLog(LOG_ERROR, "[UNLOCK] %s:%d %p", __FILE__, __LINE__, &(Lock)); \
+	(pthread_mutex_lock (&(Lock)))
+
+#define FREE(s, t) \
+	rodsLog(LOG_ERROR, "[FREE "#t" %s:%d %p", __FILE__, __LINE__, s); \
+	_free##t(s);
+
+#else
 #define UNLOCK(Lock) (pthread_mutex_unlock (&(Lock)))
 #define LOCK(Lock) (pthread_mutex_lock (&(Lock)))
+#define FREE(s, t) _free##t(s);
+#endif
 #define INIT_STRUCT_LOCK(s) INIT_LOCK((s).lock)
 #define INIT_LOCK(s) (pthread_mutex_init (&(s), NULL))
 #define LOCK_STRUCT(s) LOCK((s).lock)
@@ -120,9 +139,6 @@ extern concurrentList_t *IFuseDescFreeList;
 	} else { \
 		v = NULL; \
 	}
-
-#define FREE(s, t) \
-	_free##t(s);
 
 fileCache_t *newFileCache(int iFd, char *objPath, char *localPath, char *cacheFilePath, time_t cachedTime, int mode, cacheState_t state);
 pathCache_t *newPathCache (char *inPath, fileCache_t *fileCache, struct stat *stbuf, time_t cachedTime);

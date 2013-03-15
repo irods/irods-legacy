@@ -95,7 +95,8 @@ int _iFuseFileCacheFlush(fileCache_t *fileCache) {
     stat(fileCache->fileCachePath, &stbuf);
     /* put cache file to server */
     iFuseConn_t *conn = getAndUseConnByPath(fileCache->localPath, &MyRodsEnv, &status);
-    status = ifusePut (conn->conn, fileCache->objPath, fileCache->fileCachePath, fileCache->mode, stbuf.st_size);
+
+    RECONNECT_IF_NECESSARY(status, conn, ifusePut (conn->conn, fileCache->objPath, fileCache->fileCachePath, fileCache->mode, stbuf.st_size));
     unuseIFuseConn(conn);
 
     if (status < 0) {
@@ -172,7 +173,7 @@ int ifuseFileCacheSwapOut (fileCache_t *fileCache) {
     stat(fileCache->fileCachePath, &stbuf);
     /* put cache file to server */
     iFuseConn_t *conn = getAndUseConnByPath(fileCache->localPath, &MyRodsEnv, &status);
-    status = ifusePut (conn->conn, fileCache->objPath, fileCache->fileCachePath, fileCache->mode, stbuf.st_size);
+    RECONNECT_IF_NECESSARY(status, conn, ifusePut (conn->conn, fileCache->objPath, fileCache->fileCachePath, fileCache->mode, stbuf.st_size));
     unuseIFuseConn(conn);
 
     if (status < 0) {

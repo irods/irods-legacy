@@ -74,20 +74,22 @@ int _getAndUseConnForPathCache(iFuseConn_t **iFuseConn, pathCache_t *paca) {
 	UNLOCK_STRUCT(*paca);
 	status = getAndUseIFuseConn(&tmpIFuseConn, &MyRodsEnv);
 	LOCK_STRUCT(*paca);
-	if(paca->iFuseConn != NULL) {
-		/* has been changed by other threads, unref connection */
-		UNREF(paca->iFuseConn, IFuseConn);
-	}
 	if(status < 0) {
 		rodsLog (LOG_ERROR,
 			  "ifuseClose: cannot get ifuse connection for %s error, status = %d",
 			   paca->localPath, status);
 		return status;
 	}
-	/* conn in use, cannot be deleted by conn manager
-	 * therefore, it is safe to do the following without locking conn */
-	REF(paca->iFuseConn, tmpIFuseConn);
-	*iFuseConn = paca->iFuseConn;
+	if(paca->iFuseConn != NULL) {
+		/* has been changed by other threads, or current paca->ifuseconn inuse,
+		 * return new ifuseconn without setting paca->ifuseconn */
+		*iFuseConn = tmpIFuseConn;
+	} else {
+		/* conn in use, cannot be deleted by conn manager
+		 * therefore, it is safe to do the following without locking conn */
+		REF(paca->iFuseConn, tmpIFuseConn);
+		*iFuseConn = paca->iFuseConn;
+	}
     return 0;
 }
 
@@ -348,6 +350,7 @@ connManager ()
 					removeFromConcurrentList2(ConnectedConn, tmpIFuseConn);
 					if(tmpIFuseConn->status == 0) { /* no struct is referring to it, we can unlock it and free it */
 						UNLOCK_STRUCT(*tmpIFuseConn);
+						/* rodsLog(LOG_ERROR, "[FREE IFUSE CONN] %s:%d %p", __FILE__, __LINE__, tmpIFuseConn); */
 						_freeIFuseConn(tmpIFuseConn);
 					} else { /* set to timed out */
 						_ifuseDisconnect(tmpIFuseConn);

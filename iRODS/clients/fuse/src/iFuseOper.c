@@ -265,6 +265,9 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
         unuseIFuseConn (iFuseConn);
         return 0;
     }
+
+/*    rodsLog (LOG_ERROR, "irodsMknod: %s conn: %p", path, iFuseConn);*/
+
     unuseIFuseConn (iFuseConn);
 
     return (0);
@@ -388,22 +391,16 @@ irodsRmdir (const char *path)
     addKeyVal (&collInp.condInput, FORCE_FLAG_KW, "");
 
     getAndUseIFuseConn (&iFuseConn, &MyRodsEnv);
-    status = rcRmColl (iFuseConn->conn, &collInp, 0);
+    RECONNECT_IF_NECESSARY(status, iFuseConn, rcRmColl (iFuseConn->conn, &collInp, 0));
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
         pathNotExist ((char *) path);
 #endif
         status = 0;
     } else {
-	if (isReadMsgError (status)) {
-	    ifuseReconnect (iFuseConn);
-            status = rcRmColl (iFuseConn->conn, &collInp, 0);
-	}
-	if (status < 0) {
-            rodsLogError (LOG_ERROR, status,
-              "irodsRmdir: rcRmColl of %s error", path);
-            status = -ENOENT;
-	}
+		rodsLogError (LOG_ERROR, status,
+		  "irodsRmdir: rcRmColl of %s error", path);
+		status = -ENOENT;
     }
 
     unuseIFuseConn (iFuseConn);
@@ -459,6 +456,8 @@ irodsRename (const char *from, const char *to)
       dataObjRenameInp.destDataObjInp.oprType = RENAME_UNKNOWN_TYPE;
 
     getAndUseIFuseConn (&iFuseConn, &MyRodsEnv);
+/*    rodsLog (LOG_ERROR, "irodsRenme: %s -> %s conn: %p", from, to, iFuseConn);*/
+
     status = rcDataObjRename (iFuseConn->conn, &dataObjRenameInp);
 
     if (status == CAT_NAME_EXISTS_AS_DATAOBJ || 
@@ -510,13 +509,26 @@ irodsChmod (const char *path, mode_t mode)
 
     matchAndLockPathCache((char *) path, &tmpPathCache);
 
-    if (tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE) {
-    	/* has not actually been created yet */
-    	tmpPathCache->fileCache->mode = mode;
-    	return (0);
+    if (tmpPathCache->fileCache != NULL) {
+    	LOCK_STRUCT(*tmpPathCache->fileCache);
+    	if(tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE) {
+			/* has not actually been created yet */
+			tmpPathCache->fileCache->mode = mode;
+			UNLOCK_STRUCT(*tmpPathCache->fileCache);
+			UNLOCK_STRUCT(*tmpPathCache);
+			return (0);
+    	}
+		UNLOCK_STRUCT(*tmpPathCache->fileCache);
     }
 
     UNLOCK_STRUCT(*tmpPathCache);
+
+    if(tmpPathCache->stbuf.st_nlink != 1) {
+    	rodsLog (LOG_NOTICE,
+    			"irodsChmod: modification of the mode of non file object is currently not supported", path);
+
+    	return 0;
+    }
 
     memset (&regParam, 0, sizeof (regParam));
     snprintf (dataMode, SHORT_STR_LEN, "%d", mode);
@@ -538,7 +550,7 @@ irodsChmod (const char *path, mode_t mode)
     modDataObjMetaInp.dataObjInfo = &dataObjInfo;
 
     getAndUseIFuseConn (&iFuseConn, &MyRodsEnv);
-    status = rcModDataObjMeta(iFuseConn->conn, &modDataObjMetaInp);
+    RECONNECT_IF_NECESSARY(status, iFuseConn, rcModDataObjMeta(iFuseConn->conn, &modDataObjMetaInp));
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
         pathCache_t *tmpPathCache;
@@ -551,15 +563,9 @@ irodsChmod (const char *path, mode_t mode)
 #endif
         status = 0;
     } else {
-    	if (isReadMsgError (status)) {
-    		ifuseReconnect (iFuseConn);
-            status = rcModDataObjMeta(iFuseConn->conn, &modDataObjMetaInp);
-    	}
-    	if (status < 0) {
-            rodsLogError(LOG_ERROR, status, 
+		rodsLogError(LOG_ERROR, status,
 	      "irodsChmod: rcModDataObjMeta failure");
-            status = -ENOENT;
-    	}
+		status = -ENOENT;
     }
 
     unuseIFuseConn (iFuseConn);
@@ -615,7 +621,7 @@ irodsTruncate (const char *path, off_t size)
     dataObjInp.dataSize = size;
 
     getAndUseIFuseConn (&iFuseConn, &MyRodsEnv);
-    status = rcDataObjTruncate (iFuseConn->conn, &dataObjInp);
+    RECONNECT_IF_NECESSARY(status, iFuseConn, rcDataObjTruncate (iFuseConn->conn, &dataObjInp));
     if (status >= 0) {
         pathCache_t *tmpPathCache;
 
@@ -625,15 +631,9 @@ irodsTruncate (const char *path, off_t size)
         UNLOCK_STRUCT(*tmpPathCache);
         status = 0;
     } else {
-    	if (isReadMsgError (status)) {
-    		ifuseReconnect (iFuseConn);
-            status = rcDataObjTruncate (iFuseConn->conn, &dataObjInp);
-    	}
-    	if (status < 0) {
-            rodsLogError (LOG_ERROR, status,
-              "irodsTruncate: rcDataObjTruncate of %s error", path);
-            status = -ENOENT;
-    	}
+		rodsLogError (LOG_ERROR, status,
+		  "irodsTruncate: rcDataObjTruncate of %s error", path);
+		status = -ENOENT;
     }
     unuseIFuseConn (iFuseConn);
 

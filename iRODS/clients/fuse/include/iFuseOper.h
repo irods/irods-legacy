@@ -11,6 +11,13 @@
 #include "iFuseLib.h"
 #include "iFuseLib.Lock.h"
 
+#define RECONNECT_IF_NECESSARY(s, c, o) \
+	(s) = (o); \
+	if (isReadMsgError (s)) { \
+		ifuseReconnect (c); \
+		(s) = (o); \
+    }
+
 #ifdef  __cplusplus
 extern "C" {
 #endif

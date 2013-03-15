@@ -60,6 +60,7 @@ iFuseConn_t *newIFuseConn(int *status) {
     INIT_LOCK(tmpIFuseConn->inuseLock);
 
     *status = ifuseConnect (tmpIFuseConn, &MyRodsEnv);
+	/*rodsLog(LOG_ERROR, "[ NEW IFUSE CONN] %s:%d %p", __FILE__, __LINE__, tmpIFuseConn);*/
     return tmpIFuseConn;
 
 }
@@ -160,6 +161,7 @@ concurrentList_t *newConcurrentList() {
 	INIT_STRUCT_LOCK(*cl);
 	return cl;
 }
+/*#define FUSE_DEBUG 0*/
 void addToConcurrentList(concurrentList_t *l, void *v) {
 	LOCK_STRUCT(*l);
 	listAppendNoRegion(l->list, v);
@@ -217,6 +219,7 @@ void deleteConcurrentList(concurrentList_t *l) {
 	free(l);
 }
 
+/*#define FUSE_DEBUG 1*/
 
 /* dummy function */
 char *cpStringExt(char *str, Region *r) {
