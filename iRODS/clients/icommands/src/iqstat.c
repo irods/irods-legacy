@@ -10,6 +10,7 @@
 
 #define MAX_SQL 300
 #define BIG_STR 200
+#define showFirstLine sizeFlag /* in rodsArg, use the sizeFlag field for show only first line of a rule */
 
 char cwd[BIG_STR];
 
@@ -25,7 +26,7 @@ void usage();
  */
 int
 printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, 
-		     char *descriptions[], int formatFlag)
+		     char *descriptions[], int formatFlag, int showFstLine)
 {
    int printCount;
    int i, j; 
@@ -39,9 +40,23 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 	 for (i=0;i<genQueryOut->rowCnt;i++) {
 	    if (i>0 && descriptions) printf("----\n");
 	    for (j=0;j<genQueryOut->attriCnt;j++) {
-	       char *tResult;
-	       tResult = genQueryOut->sqlResult[j].value;
-	       tResult += i*genQueryOut->sqlResult[j].len;
+	       char *tResult, *sResult;
+	       sResult = genQueryOut->sqlResult[j].value;
+	       sResult += i*genQueryOut->sqlResult[j].len;
+	       if(showFstLine) {
+	    	   char* l = sResult;
+	    	   while(isspace(*l)) {
+	    		   l++;
+	    	   }
+	    	   tResult = strdup(l);
+	    	   l = tResult;
+	    	   while(*l != '\0' && *l != '\r' && *l != '\n') {
+	    		   l++;
+	    	   }
+	    	   *l = '\0';
+	       } else {
+	    	   tResult = strdup(sResult);
+	       }
 	       if (descriptions) {
 		  if (strcmp(descriptions[j], "time")==0) {
 		     getLocalTimeFromRodsTime(tResult, localTime);
@@ -61,6 +76,8 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 		  }
 	       }
 	       printCount++;
+		   free(tResult);
+
 	    }
 	    if (formatFlag==1) printf("\n");
 	 }
@@ -73,7 +90,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 Via a general query, show rule information
 */
 int
-showRuleExec(char *name, char *ruleName, int allFlag)
+showRuleExec(char *name, char *ruleName, int allFlag, int showFstLine)
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
@@ -168,14 +185,14 @@ showRuleExec(char *name, char *ruleName, int allFlag)
    else {
       printf("Pending rule-executions for user %s\n",name);
    }
-   printCount+= printGenQueryResults(Conn, status, genQueryOut, columnNames,0);
+   printCount+= printGenQueryResults(Conn, status, genQueryOut, columnNames,0, showFstLine);
 
    while (status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       if (genQueryOut->rowCnt>0) printf("----\n");
       printCount+= printGenQueryResults(Conn, status, genQueryOut, 
-					columnNames, 0);
+					columnNames, 0, showFstLine);
    }
 
    return(0);
@@ -185,7 +202,7 @@ showRuleExec(char *name, char *ruleName, int allFlag)
 Via a general query, show rule information, brief form
 */
 int
-showRuleExecBrief(char *name, int allFlag)
+showRuleExecBrief(char *name, int allFlag, int firstLineRule)
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
@@ -243,13 +260,13 @@ showRuleExecBrief(char *name, int allFlag)
       }
    }
    printf("id     name\n");
-   printCount+= printGenQueryResults(Conn, status, genQueryOut, NULL, 1);
+   printCount+= printGenQueryResults(Conn, status, genQueryOut, NULL, 1, firstLineRule);
 
    while (status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       printCount+= printGenQueryResults(Conn, status, genQueryOut, 
-					NULL, 1);
+					NULL, 1, firstLineRule);
    }
    return (0);
 }
@@ -265,7 +282,7 @@ main(int argc, char **argv) {
 
    rodsLogLevel(LOG_ERROR);
 
-   status = parseCmdLineOpt (argc, argv, "alu:vVh", 0, &myRodsArgs);
+   status = parseCmdLineOpt (argc, argv, "alu:svVh", 0, &myRodsArgs);
    if (status) {
       printf("Use -h for help\n");
       exit(1);
@@ -300,14 +317,14 @@ main(int argc, char **argv) {
    nArgs = argc - myRodsArgs.optind;
    if (nArgs > 0) {
       status = showRuleExec(userName, argv[myRodsArgs.optind], 
-			    myRodsArgs.all);
+			    myRodsArgs.all, myRodsArgs.showFirstLine);
    }
    else {
       if (myRodsArgs.longOption==0) {
-	 status = showRuleExecBrief(userName, myRodsArgs.all);
+	 status = showRuleExecBrief(userName, myRodsArgs.all, myRodsArgs.showFirstLine);
       }
       else {
-	 status = showRuleExec(userName, "", myRodsArgs.all);
+	 status = showRuleExec(userName, "", myRodsArgs.all, myRodsArgs.showFirstLine);
       }
    }
    
@@ -325,12 +342,13 @@ Print the main usage/help information.
 void usage()
 {
    char *msgs[]={
-"Usage: iqstat [-luvVh] [-u user] [ruleId]", 
+"Usage: iqstat [-lusvVh] [-u user] [ruleId]",
 "Show information about your pending iRODS rule executions", 
 "or for the entered user.",
 " -a        display requests of all users",
 " -l        for long format",
 " -u user   for the specified user",
+" -s        show only the first line of rules"
 " ruleId for the specified rule",
 " ",
 "See also iqdel and iqmod",
