@@ -188,6 +188,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->add=True;
             argv[i]="-Z";
          }
+         if (strcmp("--showFirstLine", argv[i])==0) {
+        	 rodsArgs->showFirstLine = True;
+        	 argv[i]="-Z";
+         }
 #ifdef NETCDF_CLIENT
          if (strcmp("--reg", argv[i])==0) {
             rodsArgs->reg=True;

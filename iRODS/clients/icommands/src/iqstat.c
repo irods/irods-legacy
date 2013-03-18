@@ -10,7 +10,6 @@
 
 #define MAX_SQL 300
 #define BIG_STR 200
-#define showFirstLine sizeFlag /* in rodsArg, use the sizeFlag field for show only first line of a rule */
 
 char cwd[BIG_STR];
 
@@ -282,7 +281,7 @@ main(int argc, char **argv) {
 
    rodsLogLevel(LOG_ERROR);
 
-   status = parseCmdLineOpt (argc, argv, "alu:svVh", 0, &myRodsArgs);
+   status = parseCmdLineOpt (argc, argv, "alu:svVhZ", 1, &myRodsArgs);
    if (status) {
       printf("Use -h for help\n");
       exit(1);
@@ -342,13 +341,13 @@ Print the main usage/help information.
 void usage()
 {
    char *msgs[]={
-"Usage: iqstat [-lusvVh] [-u user] [ruleId]",
+"Usage: iqstat [-luvVh] [--showFirstLine] [-u user] [ruleId]",
 "Show information about your pending iRODS rule executions", 
 "or for the entered user.",
 " -a        display requests of all users",
 " -l        for long format",
 " -u user   for the specified user",
-" -s        show only the first line of rules"
+" --showFirstLine        show only the first line of rules"
 " ruleId for the specified rule",
 " ",
 "See also iqdel and iqmod",

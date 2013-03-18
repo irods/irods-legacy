@@ -91,6 +91,7 @@ typedef struct {
    int resource;
    char *resourceString;
    int remove;
+   int showFirstLine;
    int sizeFlag;
    rodsLong_t size;
    int srcResc;
