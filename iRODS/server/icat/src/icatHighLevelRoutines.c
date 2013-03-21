@@ -7325,10 +7325,9 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    if (status1 < 0 && inheritFlag!=0) {
       int i;
       char errMsg[105];
-      snprintf(errMsg, 100, "access level '%s' is valid only for collections",
-	       accessLevel);
+      snprintf(errMsg, 100, "either the collection does not exist or you do not have sufficient access");
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
-      return(CAT_INVALID_ARGUMENT);
+      return(CAT_NO_ACCESS_PERMISSION);
    }
 
    /* Not a collection (with access for non-Admin) */
