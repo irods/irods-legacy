@@ -19,6 +19,20 @@ rsAuthRequest (rsComm_t *rsComm, authRequestOut_t **authRequestOut)
 
     memset(buf, 0, sizeof(buf));
     get64RandomBytes(buf);
+
+    if (obfGetDefaultHashType()==HASH_TYPE_SHA1) {
+      /* indicate that this server prefers sha1 */
+      buf[0]='s';
+      buf[1]='h';
+      buf[2]='a';
+      buf[3]='1';
+    }
+    else {
+      /* make sure there's no accidential match with 'sha1';
+         the odds are almost 0 but this makes it completely 0. */
+      if (buf[0]=='s') buf[0]++;
+    }
+
     bufp = (char*)malloc(CHALLENGE_LEN+2);
     if (bufp == NULL) return(SYS_MALLOC_ERR);
     strncpy(bufp, buf, CHALLENGE_LEN+2);

@@ -217,7 +217,7 @@ endif
 
 ifdef RBUDP_TRANSFER
 MY_CFLAG+= -DRBUDP_TRANSFER -I$(libCoreIncDir) -I$(libApiIncDir)        \
-		-I$(libMd5IncDir) -I$(libRbudpIncDir)
+		-I$(libMd5IncDir) -I$(libSha1IncDir) -I$(libRbudpIncDir)
 endif
 
 ifdef UNI_CODE

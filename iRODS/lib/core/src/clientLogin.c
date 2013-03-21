@@ -245,11 +245,11 @@ clientLogin(rcComm_t *Conn)
    authResponseInp_t authRespIn;
    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
    char digest[RESPONSE_LEN+2];
-   char userNameAndZone[NAME_LEN*2];
+   char userNameAndZone[NAME_LEN*2+10];
+   int hashType=HASH_TYPE_MD5;
 #ifndef USE_BOOST_FS
    struct stat statbuf;
 #endif
-   MD5_CTX context;
 #ifdef OS_AUTH
    int doOsAuthentication = 0;
 #endif
@@ -331,7 +331,13 @@ clientLogin(rcComm_t *Conn)
 	     (unsigned char)md5Buf[13], 
 	     (unsigned char)md5Buf[14], 
 	     (unsigned char)md5Buf[15]);
-
+   if (md5Buf[0]=='s' &&
+       md5Buf[1]=='h' &&
+       md5Buf[2]=='a' &&
+       md5Buf[3]=='1') {
+     rodsLog(LOG_DEBUG, "Using SHA1 for hash type");
+     hashType=HASH_TYPE_SHA1;
+   }
 
    if (strncmp(ANONYMOUS_USER, Conn->proxyUser.userName, NAME_LEN) == 0) {
       md5Buf[CHALLENGE_LEN+1]='\0';
@@ -348,7 +354,7 @@ clientLogin(rcComm_t *Conn)
    }
 
    if (i != 0) {
-	   int doStty=0;
+         int doStty=0;
 
 #ifdef windows_platform
 	  if (ProcessType != CLIENT_PT)
@@ -373,9 +379,9 @@ clientLogin(rcComm_t *Conn)
       len = strlen(md5Buf);
       md5Buf[len-1]='\0'; /* remove trailing \n */
    }
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char*)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
-   MD5Final ((unsigned char*)digest, &context);
+      obfMakeOneWayHash(hashType,
+               (unsigned char*)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN, 
+	       (unsigned char*)digest);
    for (i=0;i<RESPONSE_LEN;i++) {
       if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't
 					    end early*/
@@ -391,9 +397,14 @@ clientLogin(rcComm_t *Conn)
 
    authRespIn.response=digest;
    /* the authentication is always for the proxyUser. */
-   strncpy(userNameAndZone, Conn->proxyUser.userName, NAME_LEN);
-   strncat(userNameAndZone, "#", NAME_LEN);
-   strncat(userNameAndZone, Conn->proxyUser.rodsZone, NAME_LEN*2);
+   strncpy(userNameAndZone, Conn->proxyUser.userName, sizeof(userNameAndZone));
+   strncat(userNameAndZone, "#", sizeof(userNameAndZone));
+   strncat(userNameAndZone, Conn->proxyUser.rodsZone, sizeof(userNameAndZone));
+   if (hashType==HASH_TYPE_SHA1) {
+     /* Add an indicator for SHA1 to the user name */
+     /* This is a hack, but alternatives would be much more complicated */
+     strncat(userNameAndZone, SHA1_FLAG_STRING, sizeof(userNameAndZone));
+   }
 #ifdef OS_AUTH
    /* here we attach a special string to the username
       so that the server knows to do OS authentication */
@@ -422,7 +433,7 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
    char digest[RESPONSE_LEN+2];
    char userNameAndZone[NAME_LEN*2];
-   MD5_CTX context;
+   int hashType=HASH_TYPE_MD5;
 
    if (Conn->loggedIn == 1) {
       /* already logged in */
@@ -437,13 +448,22 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    memset(md5Buf, 0, sizeof(md5Buf));
    strncpy(md5Buf, authReqOut->challenge, CHALLENGE_LEN);
 
+   if (md5Buf[0]=='s' &&
+       md5Buf[1]=='h' &&
+       md5Buf[2]=='a' &&
+       md5Buf[3]=='1') {
+     rodsLog(LOG_DEBUG, "Using SHA1 for hash type");
+     hashType=HASH_TYPE_SHA1;
+   }
+
    len = strlen(password);
    sprintf(md5Buf+CHALLENGE_LEN, "%s", password);
    md5Buf[CHALLENGE_LEN+len]='\0'; /* remove trailing \n */
 
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char*)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
-   MD5Final ((unsigned char*)digest, &context);
+   obfMakeOneWayHash(hashType,
+               (unsigned char*)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN, 
+	       (unsigned char*)digest);
+
    for (i=0;i<RESPONSE_LEN;i++) {
       if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't
 					    end early*/
@@ -463,6 +483,11 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    strncpy(userNameAndZone, Conn->proxyUser.userName, NAME_LEN);
    strncat(userNameAndZone, "#", NAME_LEN);
    strncat(userNameAndZone, Conn->proxyUser.rodsZone, NAME_LEN*2);
+   if (hashType==HASH_TYPE_SHA1) {
+     /* Add an indicator for SHA1 to the user name */
+     /* This is a hack, but alternatives would be much more complicated */
+     strncat(userNameAndZone, SHA1_FLAG_STRING, sizeof(userNameAndZone));
+   }
    authRespIn.username = userNameAndZone;
    status = rcAuthResponse(Conn, &authRespIn);
 

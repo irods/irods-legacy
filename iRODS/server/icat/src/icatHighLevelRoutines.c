@@ -3486,7 +3486,6 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    int status;
    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
    char digest[RESPONSE_LEN+2];
-   MD5_CTX context;
    char *cp;
    int i, OK, k;
    char userType[MAX_NAME_LEN];
@@ -3510,6 +3509,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    char userZone[NAME_LEN+2];
    rodsLong_t pamMinTime;
    rodsLong_t pamMaxTime;
+   char *pSha1;
+   int hashType;
 
 #if defined(OS_AUTH)
    int doOsAuthentication = 0;
@@ -3525,6 +3526,13 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    }
    *userPrivLevel = NO_USER_AUTH;
    *clientPrivLevel = NO_USER_AUTH;
+
+   hashType=HASH_TYPE_MD5;
+   pSha1 = strstr(username,SHA1_FLAG_STRING);
+   if (pSha1 != NULL) {
+     *pSha1='\0';  // truncate off the :::sha1 string
+     hashType=HASH_TYPE_SHA1;
+   }
 
    memset(md5Buf, 0, sizeof(md5Buf));
    strncpy(md5Buf, challenge, CHALLENGE_LEN);
@@ -3601,9 +3609,9 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       icatDescramble(cpw);
       strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
 
-      MD5Init (&context);
-      MD5Update (&context, (unsigned char *) md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
-      MD5Final ((unsigned char *) digest, &context);
+      obfMakeOneWayHash(hashType,
+                  (unsigned char *)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN,
+		  (unsigned char *)digest);
 
       for (i=0;i<RESPONSE_LEN;i++) {
 	 if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't end
@@ -3865,7 +3873,6 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash, char *otherUser) {
    int status;
    char md5Buf[100];
    unsigned char digest[RESPONSE_LEN+2];
-   MD5_CTX context;
    int i;
    char password[MAX_PASSWORD_LEN+10];
    char newPw[MAX_PASSWORD_LEN+10];
@@ -3931,9 +3938,8 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash, char *otherUser) {
    strncpy(md5Buf, hashValue, 100);
    strncat(md5Buf, password, 100);
 
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char *) md5Buf, 100);
-   MD5Final ((unsigned char *) digest, &context);
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+       (unsigned char *) md5Buf, 100, (unsigned char *) digest);
 
    md5ToStr(digest, newPw);
 /*   printf("newPw=%s\n", newPw); */

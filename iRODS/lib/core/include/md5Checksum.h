@@ -11,6 +11,7 @@
 #include "rods.h"
 #include "global.h"
 #include "md5.h"
+#include "sha1.h"
 
 #ifdef  __cplusplus
 extern "C" {

@@ -1231,6 +1231,49 @@ doCommand(char *cmdToken[]) {
       printf("Version 2 unscrambled form is:%s\n", unscrambled);
       return(0);
    }
+
+   /* sha1 is only used for testing so is not included in the help */
+   if (strcmp(cmdToken[0],"sha1") == 0) {
+     unsigned char buffer[30];
+      obfMakeOneWayHash(HASH_TYPE_SHA1, (unsigned char *)cmdToken[1], 
+			strlen(cmdToken[1]), buffer);
+      printf("%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x\
+%2.2x%2.2x%2.2x%2.2x\n",
+	     buffer[0], buffer[1], buffer[2], buffer[3],
+	     buffer[4], buffer[5], buffer[6], buffer[7],
+	     buffer[8], buffer[9], buffer[10], buffer[11],
+	     buffer[12], buffer[13], buffer[14], buffer[15]);
+      return(0);
+   }
+
+   /* md5 is only used for testing so is not included in the help */
+   if (strcmp(cmdToken[0],"md5") == 0) {
+     unsigned char buffer[30];
+      obfMakeOneWayHash(HASH_TYPE_MD5, (unsigned char *)cmdToken[1], 
+			strlen(cmdToken[1]), buffer);
+      printf("%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x\
+%2.2x%2.2x%2.2x%2.2x\n",
+	     buffer[0], buffer[1], buffer[2], buffer[3],
+	     buffer[4], buffer[5], buffer[6], buffer[7],
+	     buffer[8], buffer[9], buffer[10], buffer[11],
+	     buffer[12], buffer[13], buffer[14], buffer[15]);
+      return(0);
+   }
+
+   /* sethash is only used for testing so is not included in the help */
+   if (strcmp(cmdToken[0],"sethash") == 0) {
+     if (strcmp(cmdToken[1],"md5") == 0) {
+       obfSetDefaultHashType(HASH_TYPE_MD5);
+       printf("Default hash type set to MD5\n");
+       return(0);
+     }
+     if (strcmp(cmdToken[1],"sha1") == 0) {
+       obfSetDefaultHashType(HASH_TYPE_MD5);
+       printf("Default hash type set to SHA1\n");
+       return(0);
+     }
+   }
+
    if (*cmdToken[0] != '\0') {
       printf("unrecognized command, try 'help'\n");
       return(-2);

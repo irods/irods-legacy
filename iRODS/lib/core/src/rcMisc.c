@@ -1489,8 +1489,7 @@ getUnixGroupname(int gid, char *groupname, int groupname_len)
 
  */
 int get64RandomBytes(char *buf) {
-    MD5_CTX context;
-    char buffer[65]; /* each digest is 16 bytes, 4 of them */
+    char buffer[100]; /* each digest is 16 bytes, 4 of them, and extra space */
     int ints[30];
     int pid;
 #ifdef windows_platform
@@ -1540,23 +1539,16 @@ int get64RandomBytes(char *buf) {
     ints[2]=tv.tv_usec;
     ints[5]=tv.tv_sec;
 #endif
-    MD5Init (&context);
-    MD5Update (&context, (unsigned char*)&ints[0], 100);
-    MD5Final ((unsigned char*)buffer, &context);
-
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+                     (unsigned char *)&ints[0], 100, (unsigned char *)buffer);
     ints[0]=pid;
     ints[4]=(int)buffer[10];
-    MD5Init (&context);
-    MD5Update (&context, (unsigned char *)&ints[0], 100);
-    MD5Final ((unsigned char*)(buffer+16), &context);
-
-    MD5Init (&context);
-    MD5Update (&context, (unsigned char*)&ints[0], 100);
-    MD5Final ((unsigned char*)(buffer+32), &context);
-
-    MD5Init (&context);
-    MD5Update (&context, (unsigned char*)buffer, 40);
-    MD5Final ((unsigned char*)(buffer+48), &context);
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+                 (unsigned char *)&ints[0], 100, (unsigned char*)(buffer+16));
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+                 (unsigned char *)&ints[0], 100, (unsigned char*)(buffer+32));
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+                 (unsigned char *)&buffer[0], 40, (unsigned char*)(buffer+48));
 
     for (i=0;i<64;i++) {
        if (buffer[i]=='\0') {

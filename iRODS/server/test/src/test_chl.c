@@ -128,7 +128,6 @@ int testTempPwConvert(char *s1, char *s2) {
    char md5Buf[100];
    unsigned char digest[RESPONSE_LEN+2];
    char digestStr[100];
-   MD5_CTX context;
 
    /* 
       Calcuate the temp password: a hash of s1 (the user's main
@@ -139,9 +138,8 @@ int testTempPwConvert(char *s1, char *s2) {
    strncpy(md5Buf, s2, sizeof md5Buf);
    strncat(md5Buf, s1, sizeof md5Buf);
 
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char*)md5Buf, sizeof md5Buf);
-   MD5Final (digest, &context);
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT,(unsigned char*)md5Buf, sizeof md5Buf,
+		     digest);
 
    md5ToStr(digest, digestStr);
    printf("digestStr (derived temp pw)=%s\n", digestStr);
@@ -156,7 +154,6 @@ int testTempPwCombined(rsComm_t *rsComm, char *s1) {
    char md5Buf[100];
    unsigned char digest[RESPONSE_LEN+2];
    char digestStr[100];
-   MD5_CTX context;
 
    status = chlMakeTempPw(rsComm, pwValueToHash, "");
    if (status) return(status);
@@ -172,9 +169,8 @@ int testTempPwCombined(rsComm_t *rsComm, char *s1) {
    strncpy(md5Buf, pwValueToHash, sizeof md5Buf);
    strncat(md5Buf, s1, sizeof md5Buf);
 
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char*)md5Buf, sizeof md5Buf);
-   MD5Final (digest, &context);
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT, (unsigned char*)md5Buf, sizeof md5Buf,
+		     digest);
 
    md5ToStr(digest, digestStr);
    printf("digestStr (derived temp pw)=%s\n", digestStr);
@@ -188,7 +184,6 @@ int testTempPwForOther(rsComm_t *rsComm, char *s1, char *otherUser) {
    char md5Buf[100];
    unsigned char digest[RESPONSE_LEN+2];
    char digestStr[100];
-   MD5_CTX context;
 
    rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
    rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
@@ -207,9 +202,8 @@ int testTempPwForOther(rsComm_t *rsComm, char *s1, char *otherUser) {
    strncpy(md5Buf, pwValueToHash, sizeof md5Buf);
    strncat(md5Buf, s1, sizeof md5Buf);
 
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char*)md5Buf, sizeof md5Buf);
-   MD5Final (digest, &context);
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT, (unsigned char*)md5Buf, sizeof md5Buf,
+		     digest);
 
    md5ToStr(digest, digestStr);
    printf("digestStr (derived temp pw)=%s\n", digestStr);
