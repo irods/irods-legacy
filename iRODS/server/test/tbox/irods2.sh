@@ -45,6 +45,12 @@ date
 
 pgsql=`ls -d pgsql`
 
+# Once or twice a day, test with SHA1 as the default hash
+if [ $myhour -eq 14 ] ; then
+    $out1 = `printf ",s/defaultHashType=HASH_TYPE_MD5/defaultHashType=HASH_TYPE_SHA1/g\nw\nq" | ed iRODS/lib/core/src/obf.c`;
+    print $out1 . "\n";
+fi
+
 #cd /tbox/IRODS_BUILD/iRODS
 
 # Once or twice a day (during a certain hour), use MySQL as the ICAT.
