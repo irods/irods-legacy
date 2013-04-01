@@ -664,26 +664,26 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS)
 	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 # cll and chl
-$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS)
+$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(LIBRARY) $(SVR_ICAT_OBJS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS)
 
-$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
+$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS)
 
 # genq and genu
-$(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
+$(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(LIBRARY) $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS)
 
-$(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
+$(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(LIBRARY) $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS)
 
-$(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS)
+$(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(LIBRARY) $(SVR_ICAT_OBJS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS)
 
 
 

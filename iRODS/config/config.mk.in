@@ -404,13 +404,15 @@ endif
  
 # USE_BOOST -  specify whether the BOOST library should be used. BOOST_DIR is
 # the directory where the BOOST directory is located, which is normally
-# the .../iRODS/boost_irods directory.  First run 'buildboost.sh' in the
-# iRODS directory to create boost_irods.
+# /usr.  Previously it was in .../iRODS/boost_irods directory (after first
+# running 'buildboost.sh' to create it), but now we are using the
+# system installed Boost.
 # USE_BOOST=1
 ifdef USE_BOOST
 ifndef BOOST_DIR
 #BOOST_DIR=/home/mwan/myapps/boost/install
-BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
+#BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
+BOOST_DIR=/usr
 endif
 endif
 
