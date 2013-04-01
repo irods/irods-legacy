@@ -129,8 +129,22 @@ int cmlGetOneRowFromSqlBV (char *sql,
 		   icatSessionStruct *icss)
 {
     int i,j, stmtNum, ii;
-    
-    i = cllExecSqlWithResultBV(icss, &stmtNum, sql,
+    char updatedSql[MAX_SQL_SIZE + 1];
+	
+#ifdef ORA_ICAT
+	strncpy(updatedSql, sql, MAX_SQL_SIZE);
+	updatedSql[MAX_SQL_SIZE] = '\0';
+#else
+	strncpy(updatedSql, sql, MAX_SQL_SIZE);
+	updatedSql[MAX_SQL_SIZE] = '\0';
+	/* Verify there no limit or offset statement */
+	if ((strstr(updatedSql, "limit ") == NULL) && (strstr(updatedSql, "offset ") == NULL)) {
+                /* add 'limit 1' for performance improvement */
+		strncat(updatedSql, " limit 1", MAX_SQL_SIZE);
+		rodsLog(LOG_DEBUG1, "cmlGetOneRowFromSqlBV %s", updatedSql);
+	}
+#endif
+    i = cllExecSqlWithResultBV(icss, &stmtNum, updatedSql,
 			       bindVar1,bindVar2,bindVar3,bindVar4,
 			       bindVar5,0);
     if (i != 0) {
@@ -161,8 +175,23 @@ int cmlGetOneRowFromSql (char *sql,
 		   icatSessionStruct *icss)
 {
     int i,j, stmtNum, ii;
+    char updatedSql[MAX_SQL_SIZE + 1];
+	
+#ifdef ORA_ICAT
+	strncpy(updatedSql, sql, MAX_SQL_SIZE);
+	updatedSql[MAX_SQL_SIZE] = '\0';
+#else
+	strncpy(updatedSql, sql, MAX_SQL_SIZE);
+	updatedSql[MAX_SQL_SIZE] = '\0';
+	/* Verify there no limit or offset statement */
+	if ((strstr(updatedSql, "limit ") == NULL) && (strstr(updatedSql, "offset ") == NULL)) {
+	        /* add 'limit 1' for performance improvement */
+		strncat(updatedSql, " limit 1", MAX_SQL_SIZE);
+		rodsLog(LOG_DEBUG1, "cmlGetOneRowFromSql %s", updatedSql);
+	}
+#endif
     
-    i = cllExecSqlWithResultBV(icss, &stmtNum, sql,
+    i = cllExecSqlWithResultBV(icss, &stmtNum, updatedSql,
 				 0,0,0,0,0,0);
     if (i != 0) {
       if (i <= CAT_ENV_ERR) return(i); /* already an iRODS error code */
@@ -196,8 +225,23 @@ int cmlGetOneRowFromSqlV2 (char *sql,
 		   icatSessionStruct *icss)
 {
     int i,j, stmtNum, ii;
+    char updatedSql[MAX_SQL_SIZE + 1];
+	
+#ifdef ORA_ICAT
+	strncpy(updatedSql, sql, MAX_SQL_SIZE);
+	updatedSql[MAX_SQL_SIZE] = '\0';
+#else
+	strncpy(updatedSql, sql, MAX_SQL_SIZE);
+	updatedSql[MAX_SQL_SIZE] = '\0';
+	/* Verify there no limit or offset statement */
+	if ((strstr(updatedSql, "limit ") == NULL) && (strstr(updatedSql, "offset ") == NULL)) {
+	        /* add 'limit 1' for performance improvement */
+		strncat(updatedSql, " limit 1", MAX_SQL_SIZE);
+		rodsLog(LOG_DEBUG1, "cmlGetOneRowFromSqlV2 %s", updatedSql);
+	}
+#endif
     
-    i = cllExecSqlWithResultBV(icss, &stmtNum, sql,
+    i = cllExecSqlWithResultBV(icss, &stmtNum, updatedSql,
 				 bindVar1, bindVar2,0,0,0,0);
 
     if (i != 0) {
@@ -229,8 +273,23 @@ int cmlGetOneRowFromSqlV3 (char *sql,
 		   icatSessionStruct *icss)
 {
     int i,j, stmtNum, ii;
+    char updatedSql[MAX_SQL_SIZE + 1];
+	
+#ifdef ORA_ICAT
+	strncpy(updatedSql, sql, MAX_SQL_SIZE);
+	updatedSql[MAX_SQL_SIZE] = '\0';
+#else
+	strncpy(updatedSql, sql, MAX_SQL_SIZE);
+	updatedSql[MAX_SQL_SIZE] = '\0';
+	/* Verify there no limit or offset statement */
+	if ((strstr(updatedSql, "limit ") == NULL) && (strstr(updatedSql, "offset ") == NULL)) {
+	        /* add 'limit 1' for performance improvement */
+		strncat(updatedSql, " limit 1", MAX_SQL_SIZE);
+		rodsLog(LOG_DEBUG1, "cmlGetOneRowFromSqlV3 %s", updatedSql);
+	}
+#endif
     
-    i = cllExecSqlWithResult(icss, &stmtNum, sql);
+    i = cllExecSqlWithResult(icss, &stmtNum, updatedSql);
 
     if (i != 0) {
       if (i <= CAT_ENV_ERR) return(i); /* already an iRODS error code */
