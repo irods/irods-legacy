@@ -59,6 +59,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    char *tResult;
    int privLevel;
    int clientPrivLevel;
+   int aliasPrivLevel;
    int noNameMode;
    int statusRule;
 #ifdef GSI_DEBUG
@@ -68,6 +69,8 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       printf("X509_CERT_DIR:%s\n",getVar);
    }
 #endif
+
+   aliasPrivLevel=0;
 
    gsiAuthReqStatus=1;
 
@@ -196,19 +199,54 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       }
    }
    if (status == CAT_NO_ROWS_FOUND || genQueryOut==NULL) {
-      status = GSI_DN_DOES_NOT_MATCH_USER;
-      rodsLog (LOG_NOTICE,
+      /* First, try again, checking if the user is admin and, if so,
+      allow the aliasing (typically via clientUserName environment
+      variable) */
+      memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+      snprintf (condition1, MAX_NAME_LEN, "='%s'", clientName);
+      addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition1);
+
+      snprintf (condition2, MAX_NAME_LEN, "='%s'", "rodsadmin");
+      addInxVal (&genQueryInp.sqlCondInp, COL_USER_TYPE, condition2);
+
+      addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
+      genQueryInp.maxRows = 2;
+
+      status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+      if (status==0) {
+	/* OK, the DN belongs to an admin, now get the client user
+	   info */
+	aliasPrivLevel=LOCAL_PRIV_USER_AUTH;
+	memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+	snprintf (condition1, MAX_NAME_LEN, "='%s'", 
+		rsComm->clientUser.userName);
+	addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, condition1);
+
+	addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
+	addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
+	addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
+
+	genQueryInp.maxRows = 2;
+
+	status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+      }
+      else {
+	status = GSI_DN_DOES_NOT_MATCH_USER;
+	rodsLog (LOG_NOTICE,
 	       "igsiServersideAuth: DN mismatch, user=%s, Certificate DN=%s, status=%d",
 	       rsComm->clientUser.userName,
 	       clientName,
 	       status);
-      snprintf(gsiAuthReqErrorMsg, sizeof gsiAuthReqErrorMsg, 
+	snprintf(gsiAuthReqErrorMsg, sizeof gsiAuthReqErrorMsg, 
 	       "igsiServersideAuth: DN mismatch, user=%s, Certificate DN=%s, status=%d",
 	       rsComm->clientUser.userName,
 	       clientName,
 	       status);
-      gsiAuthReqError = status;
-      return(status);
+	gsiAuthReqError = status;
+	return(status);
+      }
    }
 
    if (status < 0) {
@@ -269,6 +307,10 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       clientPrivLevel = LOCAL_PRIV_USER_AUTH;
    }
 
+   if (aliasPrivLevel==LOCAL_PRIV_USER_AUTH) {
+     privLevel = LOCAL_PRIV_USER_AUTH;
+   }
+
    status = chkProxyUserPriv (rsComm, privLevel);
 
    if (status < 0) return status;
@@ -304,6 +346,16 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	 }
       }
    }
+   /* log the GSI login including the priv levels (similar to how
+      password logins are logged) */
+   rodsLog(LOG_NOTICE,
+	       "igsiServersideAuth set proxy authFlag to %d, client authFlag to %d, userDN:%s proxy:%s client:%s",
+	   rsComm->proxyUser.authInfo.authFlag = privLevel,
+	   rsComm->clientUser.authInfo.authFlag = clientPrivLevel,
+	   clientName,
+	   rsComm->proxyUser.userName,
+	   rsComm->clientUser.userName);
+
    return status;
 #else
     status = GSI_NOT_BUILT_INTO_SERVER;
