@@ -499,7 +499,7 @@ sslRead(int sock, void *buf, int len, irodsDescType_t irodsDescType,
         *bytesRead = 0;
 
     while (toRead > 0) {
-        if (tv != NULL) {
+        if (SSL_pending(ssl) == 0 && tv != NULL) {
             status = select (sock + 1, &set, NULL, NULL, &timeout);
             if (status == 0) {
                 /* timedout */
