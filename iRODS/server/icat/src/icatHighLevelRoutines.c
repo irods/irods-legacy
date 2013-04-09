@@ -4107,16 +4107,23 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
    cllBindVars[cllBindVarCount++]=myTime;
+#if MY_ICAT
+   status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+#else
    status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+#endif
 				   &icss);
-
    if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 3");
    cVal[0]=passwordInIcat;
    iVal[0]=MAX_PASSWORD_LEN;
    cVal[1]=passwordModifyTime;
    iVal[1]=sizeof(passwordModifyTime);
    status = cmlGetStringValuesFromSql(
+#if MY_ICAT
+	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) <= ?",
+#else
 	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
+#endif
 	    cVal, iVal, 2,
 	    selUserId, 
             IRODS_PAM_PASSWORD_MIN_TIME,
@@ -4204,7 +4211,11 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    char form4[]="insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)";
    char form5[]="insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
    char form6[]="delete from R_USER_AUTH where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name = ?";
+#if MY_ICAT
+   char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+#else
    char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+#endif
    char myTime[50];
    rodsLong_t iVal;
 
