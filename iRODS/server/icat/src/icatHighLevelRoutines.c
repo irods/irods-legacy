@@ -7572,7 +7572,11 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    cllBindVars[cllBindVarCount++]=pathStart;
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 8");
    status =  cmlExecuteNoAnswerSql(
-               "delete from R_OBJT_ACCESS where user_id=? and object_id in (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+#if (defined ORA_ICAT || defined MY_ICAT)
+                "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+#else
+                "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)))",
+#endif
                 &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       _rollback("chlModAccessControl");
@@ -7585,7 +7589,11 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
    status =  cmlExecuteNoAnswerSql(
-               "delete from R_OBJT_ACCESS where user_id=? and object_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
+#if (defined ORA_ICAT || defined MY_ICAT)
+ 	   "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
+#else
+ 	   "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+#endif
 	       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       _rollback("chlModAccessControl");
