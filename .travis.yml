@@ -1,0 +1,2 @@
+script: cd iRODS; ./irodssetup < ../.travis.irodssetup.input
+
