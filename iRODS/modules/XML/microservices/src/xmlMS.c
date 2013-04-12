@@ -129,6 +129,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	modAVUMetadataInp_t modAVUMetadataInp;
 	int max_attr_len = 2700;
 	char attrStr[max_attr_len];
+	rodsLong_t coll_id;
 
 
 
@@ -277,7 +278,6 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 			/* init modAVU input */
 			memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
 			modAVUMetadataInp.arg0 = "add";
-			modAVUMetadataInp.arg1 = "-d";
 
 			/* Use target object if one was provided, otherwise look for it in the XML doc */
 			if (myTargetObjInp->objPath != NULL && strlen(myTargetObjInp->objPath) > 0)
@@ -288,6 +288,13 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 			{
 				modAVUMetadataInp.arg2 = xmlURIUnescapeString((char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Target")),
 						MAX_NAME_LEN, NULL);
+			}
+
+			/* check if data or collection */
+			if (isColl(rsComm, modAVUMetadataInp.arg2, &coll_id) < 0) {
+				modAVUMetadataInp.arg1 = "-d";
+			} else {
+				modAVUMetadataInp.arg1 = "-C";
 			}
 
 			modAVUMetadataInp.arg3 = attrStr;
