@@ -25,7 +25,8 @@ DESCRIPTION
         (both SRB and IRODS), but I think mantaining them in CVS will
         help us keep them organized.
 
-        Wayne Schroeder, March, 2008
+        Wayne Schroeder
+        Initially added March 2008.
 
 Test scripts ran by TinderBox:
 
@@ -35,6 +36,12 @@ Test scripts ran by TinderBox:
 
 3) poundtest - once a day
 
-4) boost build and devtest - once a day
+4) build with boost and run devtest - once a day
+   (This no longer builds boost, but uses boost that was a previously
+   installed via a package mangager.)
 
-5) downloads and builds Postgres and reinstalls the ICAT - once a day
+5) download and build Postgres and reinstall the ICAT - once a day
+
+6) use MySQL for the ICAT - once a day
+   (MySQL has been previously installed via a package manager)
+
