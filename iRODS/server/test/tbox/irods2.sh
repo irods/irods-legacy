@@ -119,6 +119,19 @@ if [ $doBoostTest -eq 1 ]; then
     date
 fi
 
+doFuseTest=0
+if [ $myhour -eq 02 ]; then
+    doFuseTest=1
+fi
+if [ $error4 -ne 0 ] ; then
+    doFuseTest=0
+fi
+if [ $doFuseTest -eq 1 ]; then
+    server/test/tbox/fuseTest.sh
+    error4=$?
+    date
+fi
+
 doJavaTest=1
 if [ $error1 -ne 0 ] ; then
     doJavaTest=0

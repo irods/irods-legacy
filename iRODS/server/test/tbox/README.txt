@@ -45,3 +45,5 @@ Test scripts ran by TinderBox:
 6) use MySQL for the ICAT - once a day
    (MySQL has been previously installed via a package manager)
 
+7) test iRODS FUSE - once a day
+   (FUSE has been previously installed via a package manager.)
