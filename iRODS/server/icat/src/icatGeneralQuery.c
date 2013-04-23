@@ -1369,7 +1369,8 @@ genqAppendAccessCheck() {
 
    /* if an item in R_DATA_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
-   if (strstr(selectSQL, "R_DATA_MAIN") != NULL) {
+   if (strstr(selectSQL, "R_DATA_MAIN") != NULL ||
+       strstr(whereSQL, "R_DATA_MAIN") != NULL ) {
       if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
       if (sessionTicket[0]=='\0') {
          /* Normal access control */
@@ -1388,7 +1389,8 @@ genqAppendAccessCheck() {
 
    /* if an item in R_COLL_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
-   if (strstr(selectSQL, "R_COLL_MAIN") != NULL) {
+   if (strstr(selectSQL, "R_COLL_MAIN") != NULL ||
+       strstr(whereSQL, "R_COLL_MAIN") != NULL) {
       if (sessionTicket[0]=='\0') {
          /* Normal access control */
 	 if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);

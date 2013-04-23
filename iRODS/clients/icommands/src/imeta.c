@@ -181,7 +181,8 @@ showDataObj(char *name, char *attrName, int wild)
 	 return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
-	 printf("Dataobject %s does not exist.\n", fullName);
+	 printf("Dataobject %s does not exist\n", fullName);
+         printf("or, if 'strict' access control is enabled, you may not have access.\n");
 	 return(0);
       }
       printGenQueryResults(Conn, status, genQueryOut, columnNames);
