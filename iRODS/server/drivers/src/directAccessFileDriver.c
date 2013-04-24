@@ -13,6 +13,55 @@
 #include "directAccessFileDriver.h"
 
 
+/* Need to sequence the operations that are done with changed
+   user context (i.e. after setuid()), since the user context
+   is shared by all threads, and calls to setuid(user)/setuid(root)
+   might happend out of order wrt a particular function. */
+#include <pthread.h>
+static pthread_mutex_t DirectAccessMutex;
+static int DirectAccessMutexInitDone = 0;
+
+int
+directAccessAcquireLock()
+{
+  int rc;
+  
+  if (!DirectAccessMutexInitDone) {
+    rc = pthread_mutex_init(&DirectAccessMutex, NULL);
+    if (rc) {
+      rodsLog(LOG_ERROR, "directAccessAcquireLock: error in pthread_mutex_init: %s",
+              strerror(errno));
+      return rc;
+    }
+    DirectAccessMutexInitDone = 1;
+  }
+  
+  rc = pthread_mutex_lock(&DirectAccessMutex);
+  if (rc) {
+    rodsLog(LOG_ERROR, "directAccessAcquireLock: error in pthread_mutex_lock: %s",
+            strerror(errno));
+  }
+
+  return rc;
+}
+
+int
+directAccessReleaseLock()
+{
+  int rc = 0;
+
+  if (DirectAccessMutexInitDone) {
+    rc = pthread_mutex_unlock(&DirectAccessMutex);
+    if (rc) {
+      rodsLog(LOG_ERROR, "directAccessReleaseLock: error in pthread_mutex_unlock: %s",
+              strerror(errno));
+    }
+  }
+  
+  return rc;
+}
+
+
 /* These global variables and 4 functions are used to track 
    per file state across operations (if needed). Right now 
    this is only needed to store the file mode for new
@@ -152,6 +201,7 @@ directAccessFileCreate (rsComm_t *rsComm, char *fileName, int mode,
     char *fileUidStr;
     char *fileGidStr;
     char *fileModeStr = NULL;
+    int myerrno;
 
     opUid = directAccessGetOperationUid(rsComm);
     if (opUid < 0) {
@@ -164,6 +214,7 @@ directAccessFileCreate (rsComm_t *rsComm, char *fileName, int mode,
     /* initially create the file as root to avoid any
        directory permission issues. We'll chown it later
        if necessary. */
+    directAccessAcquireLock();
     changeToRootUser();
 
     myMask = umask((mode_t) 0000);
@@ -181,8 +232,10 @@ directAccessFileCreate (rsComm_t *rsComm, char *fileName, int mode,
     }
     
     if (fd < 0) {
+        myerrno = errno;
         changeToServiceUser();
-        fd = UNIX_FILE_CREATE_ERR - errno;
+        directAccessReleaseLock();
+        fd = UNIX_FILE_CREATE_ERR - myerrno;
 	if (errno == EEXIST) {
 	    rodsLog (LOG_DEBUG, "%s: open error for %s, file exists",
                      fname, fileName);
@@ -254,6 +307,7 @@ directAccessFileCreate (rsComm_t *rsComm, char *fileName, int mode,
     }
 
     changeToServiceUser();
+    directAccessReleaseLock();
     
     return (fd);
 
@@ -306,6 +360,7 @@ directAccessFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode,
     }
 
     /* perform the open as the user making the call */
+    directAccessAcquireLock();
     if (opUid) {
         changeToUser(opUid);
     }
@@ -316,6 +371,7 @@ directAccessFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode,
     fd = unixFileOpen(rsComm, fileName, flags, mode, condInput);
 
     changeToServiceUser();
+    directAccessReleaseLock();
     
     return (fd);
 
@@ -351,6 +407,7 @@ directAccessFileMkdir (rsComm_t *rsComm, char *dirname, int mode,
 
     /* initially create the file as root to avoid any
        directory permission issues. We'll chown it later. */
+    directAccessAcquireLock();
     changeToRootUser();
 
     status = unixFileMkdir(rsComm, dirname, mode, condInput);
@@ -377,6 +434,7 @@ directAccessFileMkdir (rsComm_t *rsComm, char *dirname, int mode,
     }
     
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
@@ -411,6 +469,7 @@ directAccessFileClose (rsComm_t *rsComm, int fd)
 
     fileState = directAccessFileGetState(fd);
 
+    directAccessAcquireLock();
     if (fileState != NULL || opUid == 0) {
         directAccessFreeFileState(fileState);
         changeToRootUser();
@@ -422,6 +481,7 @@ directAccessFileClose (rsComm_t *rsComm, int fd)
     status = unixFileClose(rsComm, fd);
 
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
@@ -448,6 +508,7 @@ directAccessFileUnlink (rsComm_t *rsComm, char *filename)
         return DIRECT_ACCESS_FILE_USER_INVALID_ERR;
     }
 
+    directAccessAcquireLock();
     if (opUid) {
         changeToUser(opUid);
     }
@@ -458,6 +519,7 @@ directAccessFileUnlink (rsComm_t *rsComm, char *filename)
     status = unixFileUnlink(rsComm, filename);
 
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
@@ -484,6 +546,7 @@ directAccessFileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName)
         return DIRECT_ACCESS_FILE_USER_INVALID_ERR;
     }
 
+    directAccessAcquireLock();
     if (opUid) {
         changeToUser(opUid);
     }
@@ -494,6 +557,7 @@ directAccessFileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName)
     status = unixFileRename(rsComm, oldFileName, newFileName);
 
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
@@ -520,6 +584,7 @@ directAccessFileTruncate (rsComm_t *rsComm, char *filename, rodsLong_t dataSize)
         return DIRECT_ACCESS_FILE_USER_INVALID_ERR;
     }
 
+    directAccessAcquireLock();
     if (opUid) {
         changeToUser(opUid);
     }
@@ -530,6 +595,7 @@ directAccessFileTruncate (rsComm_t *rsComm, char *filename, rodsLong_t dataSize)
     status = unixFileTruncate(rsComm, filename, dataSize);
 
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
@@ -556,6 +622,7 @@ directAccessFileChmod (rsComm_t *rsComm, char *filename, int mode)
         return DIRECT_ACCESS_FILE_USER_INVALID_ERR;
     }
 
+    directAccessAcquireLock();
     if (opUid) {
         changeToUser(opUid);
     }
@@ -566,6 +633,7 @@ directAccessFileChmod (rsComm_t *rsComm, char *filename, int mode)
     status = unixFileChmod(rsComm, filename, mode);
 
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
@@ -592,6 +660,7 @@ directAccessFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf)
         return DIRECT_ACCESS_FILE_USER_INVALID_ERR;
     }
 
+    directAccessAcquireLock();
     if (opUid) {
         changeToUser(opUid);
     }
@@ -602,6 +671,7 @@ directAccessFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf)
     status = unixFileStat(rsComm, filename, statbuf);
 
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
@@ -628,6 +698,7 @@ directAccessFileRmdir (rsComm_t *rsComm, char *dirname)
         return DIRECT_ACCESS_FILE_USER_INVALID_ERR;
     }
 
+    directAccessAcquireLock();
     if (opUid) {
         changeToUser(opUid);
     }
@@ -638,6 +709,7 @@ directAccessFileRmdir (rsComm_t *rsComm, char *dirname)
     status = unixFileRmdir(rsComm, dirname);
 
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
@@ -664,6 +736,7 @@ directAccessFileOpendir (rsComm_t *rsComm, char *dirname, void **outDirPtr)
         return DIRECT_ACCESS_FILE_USER_INVALID_ERR;
     }
 
+    directAccessAcquireLock();
     if (opUid) {
         changeToUser(opUid);
     }
@@ -674,6 +747,7 @@ directAccessFileOpendir (rsComm_t *rsComm, char *dirname, void **outDirPtr)
     status = unixFileOpendir(rsComm, dirname, outDirPtr);
 
     changeToServiceUser();
+    directAccessReleaseLock();
 
     return (status);
 
