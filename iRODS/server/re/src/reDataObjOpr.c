@@ -2431,6 +2431,8 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
+    int validKwFlags;
+    char *outBadKeyWd;
 
     RE_TEST_MACRO ("    Calling msiPhyPathReg")
 
@@ -2452,17 +2454,37 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    if ((rei->status = parseMspForCondInp (inpParam2, &myDataObjInp->condInput,
-      DEST_RESC_NAME_KW)) < 0) {
+
+//    if ((rei->status = parseMspForCondInp (inpParam2, &myDataObjInp->condInput,
+//      DEST_RESC_NAME_KW)) < 0) {
+//        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+//          "msiPhyPathReg: input inpParam2 error. status = %d", rei->status);
+//        return (rei->status);
+//    }
+
+    validKwFlags = DEST_RESC_NAME_FLAG | RESC_GROUP_NAME_FLAG;
+    rei->status = parseMsKeyValStrForDataObjInp (inpParam2, myDataObjInp,
+      DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
+
+    if (rei->status < 0) {
+      if (outBadKeyWd != NULL) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjPhymv: input inpParam2 error. status = %d", rei->status);
-        return (rei->status);
+          "msiPhyPathReg: input keyWd - %s error. status = %d",
+          outBadKeyWd, rei->status);
+        free (outBadKeyWd);
+      } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiPhyPathReg: input inpParam2 error. status = %d",
+          rei->status);
+      }
+      return (rei->status);
     }
+
 
     if ((rei->status = parseMspForCondInp (inpParam3, &myDataObjInp->condInput,
       FILE_PATH_KW)) < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjPhymv: input inpParam3 error. status = %d", rei->status);
+          "msiPhyPathReg: input inpParam3 error. status = %d", rei->status);
         return (rei->status);
     }
 
@@ -2490,6 +2512,7 @@ ruleExecInfo_t *rei)
 
     return (rei->status);
 }
+
 
 /**
  * \fn msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)

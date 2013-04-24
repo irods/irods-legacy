@@ -196,6 +196,7 @@ validKeyWd_t DataObjInpKeyWd[] = {
 	{RBUDP_TRANSFER_FLAG,	RBUDP_TRANSFER_KW},
 	{RBUDP_SEND_RATE_FLAG,	RBUDP_SEND_RATE_KW},
 	{RBUDP_PACK_SIZE_FLAG,	RBUDP_PACK_SIZE_KW},
+	{RESC_GROUP_NAME_FLAG,	RESC_GROUP_NAME_KW},
 };
 
 int NumDataObjInpKeyWd = sizeof (DataObjInpKeyWd) / sizeof (validKeyWd_t);
