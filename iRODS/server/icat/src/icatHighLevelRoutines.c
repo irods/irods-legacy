@@ -8163,10 +8163,19 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       }
       if (OK==0) return (CAT_INVALID_ARGUMENT); /* not really, but...*/
 
+      /* check that the user has write access to the source collection */
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 9");
+      status = cmlCheckDir(parentCollName,  rsComm->clientUser.userName,  
+		      rsComm->clientUser.rodsZone, 
+		      ACCESS_MODIFY_OBJECT, &icss);
+      if (status < 0) {
+	return(status);
+      }
+
       /* check that no other dataObj exists with the ObjName in the
 	 target collection */
       snprintf(collIdString, MAX_NAME_LEN, "%lld", targetCollId);
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 9");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 10");
       status = cmlGetIntegerValueFromSql(
          "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
 	 &otherDataId, endCollName, collIdString, 0, 0, 0, &icss);
@@ -8181,7 +8190,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       strncat(newCollName, endCollName, MAX_NAME_LEN);
       newNameLen = strlen(newCollName);
 
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 10");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 11");
       status = cmlGetIntegerValueFromSql(
 		 "select coll_id from R_COLL_MAIN where coll_name = ?",
 		 &otherCollId, newCollName, 0, 0, 0, 0, &icss);
@@ -8209,7 +8218,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=targetCollName;
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=objIdString;
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 11");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 12");
       status =  cmlExecuteNoAnswerSql(
   	           "update R_COLL_MAIN set coll_name = ?, parent_coll_name=?, modify_ts=? where coll_id = ?",
 		   &icss);
@@ -8237,7 +8246,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=collNameSlashLen;
       cllBindVars[cllBindVarCount++]=collNameSlash;
       cllBindVars[cllBindVarCount++]=oldCollName;
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 12");
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 13");
       status =  cmlExecuteNoAnswerSql(
 	             "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, ?), coll_name = ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name = ?",
 		     &icss);
@@ -8272,7 +8281,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    /* Both collection and dataObj failed, go thru the sql in smaller
       steps to return a specific error */
    snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 13");
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 14");
    status = cmlGetIntegerValueFromSql(
 	      "select coll_id from R_DATA_MAIN where data_id=?",
 	      &otherDataId, objIdString, 0, 0, 0, 0, &icss);
@@ -8281,7 +8290,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       return (CAT_NO_ACCESS_PERMISSION);
    }
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 14");
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 15");
    status = cmlGetIntegerValueFromSql(
        "select coll_id from R_COLL_MAIN where coll_id=?",
        &otherDataId, objIdString, 0, 0, 0, 0, &icss);
