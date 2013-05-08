@@ -25,7 +25,8 @@ set -x
 
 # Once a day, download and build postgres too
 myhour=`date | cut -b12-13`
-if [ $myhour =  11 ] ; then
+
+if [ $myhour =  01 ] ; then
   rm -rf pg* post* iRODS
   rm -f /tmp/postgresql* /tmp/unixODBC*
 fi
@@ -53,11 +54,11 @@ fi
 
 #cd /tbox/IRODS_BUILD/iRODS
 
+cd iRODS
 # Once or twice a day (during a certain hour), use MySQL as the ICAT.
 # This assumes MySQL has been installed on the host, as is the case
 # for the DICE Tinderbox test host 'pivo'.
-cd iRODS
-if [ $myhour -eq 08 ] ; then
+if [ $myhour -eq 03 ] ; then
     echo running setup to use MySQL instead of Postgres
     ./irodssetup < server/test/tbox/input1.txt.no.pg.mysql
 else 
@@ -107,7 +108,7 @@ if [ $doPoundTest -eq 1 ] ; then
 fi
 
 doBoostTest=0
-if [ $myhour -eq 03 ]; then
+if [ $myhour -eq 04 ]; then
     doBoostTest=1
 fi
 if [ $error4 -ne 0 ] ; then
