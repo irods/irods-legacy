@@ -24,6 +24,11 @@ if ($arg1 eq "-R") {
     exit(0);
 }
 
+$oneTime = 0;
+if ($arg1 eq "-o") {
+    $oneTime = 1;
+}
+
 while (2 > 1)
 {
     $out1 = `grep total tinderclient.log | grep exiting | grep -v echo`;
@@ -35,6 +40,9 @@ while (2 > 1)
 	printf($out);
 	$time=`date`;
 	print $time;
+    }
+    if ($oneTime) {
+	exit(0);
     }
     sleep $sleepTime;
 }

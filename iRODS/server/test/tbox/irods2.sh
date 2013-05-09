@@ -6,6 +6,8 @@ myhost=`hostname`
 mydate=`date`
 mypwd=`pwd`
 
+options=""
+
 echo "$myhost:$mypwd $mydate irods2.sh starting"
 
 #cd IRODS_BUILD
@@ -59,13 +61,16 @@ cd iRODS
 # This assumes MySQL has been installed on the host, as is the case
 # for the DICE Tinderbox test host 'pivo'.
 if [ $myhour -eq 03 ] ; then
+    options="$options MySQL"
     echo running setup to use MySQL instead of Postgres
     ./irodssetup < server/test/tbox/input1.txt.no.pg.mysql
 else 
     if [ $pgsql = "pgsql" ] ; then
+	options="$options PG"
 	echo reusing pgsql
 	./irodssetup < ../../input1.txt.reuse.pg
     else
+	options="$options NewPG"
 	echo building a new pgsql
 	./irodssetup < ../../input1.txt.no.pg
     fi
@@ -101,6 +106,7 @@ if [ $myhour -ne  18 ] ; then
     doPoundTest=0
 fi
 if [ $doPoundTest -eq 1 ] ; then
+    options="$options Pound"
     cd clients/concurrent-test
     ./poundtests.sh 2
     error4=$?
@@ -115,19 +121,21 @@ if [ $error4 -ne 0 ] ; then
     doBoostTest=0
 fi
 if [ $doBoostTest -eq 1 ]; then
+    options="$options Boost"
     server/test/tbox/boostTest.sh
     error4=$?
     date
 fi
 
 doFuseTest=0
-if [ $myhour -eq 02 ]; then
+if [ $myhour -eq 07 ]; then
     doFuseTest=1
 fi
 if [ $error4 -ne 0 ] ; then
     doFuseTest=0
 fi
 if [ $doFuseTest -eq 1 ]; then
+    options="$options FUSE"
     server/test/tbox/fuseTest.sh
     error4=$?
     date
@@ -214,6 +222,6 @@ mypwd=`pwd`
 
 mydate=`date`
 total=$(( $error1 + $error2 + $error3 + $error4 + $error5))
-echo "$mydate $mypwd/irods2.sh exiting total=($total)"
+echo "$mydate $mypwd/irods2.sh exiting total=($total)$options"
 
 exit $total
