@@ -2,4 +2,4 @@ before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq odbc-postgresql unixodbc-dev
 
-script: cd iRODS; ./irodssetup < ../.travis.irodssetup.input
+script: cd iRODS; ./irodssetup < ../.travis.irodssetup.input; yes | ./irodsctl devtest
