@@ -1,2 +1,6 @@
+before_install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq odbc-postgresql
+
 script: cd iRODS; ./irodssetup < ../.travis.irodssetup.input
 
