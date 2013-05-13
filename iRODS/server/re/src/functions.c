@@ -601,7 +601,7 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 	case RE_ITERABLE_INT_ARRAY:
 	case RE_ITERABLE_STRING_ARRAY:
 	case RE_ITERABLE_GEN_QUERY_OUT:
-	case RE_ITERABLE_LIST:
+	case RE_ITERABLE_LIST: {
 		res = newIntRes(r,0);
 		itrData = newReIterableData(subtrees[0]->text, subtrees[1], subtrees, node, rei, reiSaveFlag, env, errmsg);
 		/* save the old value of variable in the current env */
@@ -652,6 +652,11 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 			res = newIntRes(r,0);
 		}
 		return res;
+	}
+	default:
+		snprintf(errbuf, ERR_MSG_LEN, "Error occurred when trying to determine if type %s is iterable.", typeName_Res(subtrees[1]));
+		generateAndAddErrMsg(errbuf, node, RE_RUNTIME_ERROR, errmsg);
+		return newErrorRes(r, RE_RUNTIME_ERROR);
 	}
 
 }
