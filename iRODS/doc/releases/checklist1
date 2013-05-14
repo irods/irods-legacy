@@ -1,0 +1,52 @@
+This file describes the steps done in the days and weeks leading up to
+an iRODS release.  See the checklist2 file for steps taken to complete
+the release.
+
+Previous to the release, the release notes Wiki page needs to be
+developed.  See https://www.irods.org/index.php/Release_Notes_3.2 for
+an example.
+
+The Tinderbox ('tbox') testing should carefully monitored to confirm
+that all test types (run at various times in a 24 hour period) are run
+and succeed.  This includes the test with Boost, MySQL, installing
+Postgres, reusing Postgres, the Pound (concurrency) test, and the FUSE
+test.  Some command-line scripts make monitoring this easy.  For
+example, '/tbox/ch.pl -r' greps for the summary lines in the
+tinderbox.out log file for those that have recently completed; a
+recent change now includes the options (Boost, MySQL, etc) on these
+summary lines.
+
+The operation of the Tinderbox system is a also something that needs
+more documentation as currently I (Wayne) am the only one managing it.
+The build/testing part runs on pivo.ucsd.edu (Ubuntu) working in the
+/tbox directory.
+
+Testing should also be done on various platforms doing an 'irodssetup'
+(build, install using Postgres) and 'irodsctl devtest'.  A MacBook,
+iMac, and srbbrick (using Oracle-XE) are good to use.
+
+Similarly, the NMI Build and Test facility tests should be run on
+various additional platforms.  These also do a build/install (using
+Postgres) and a 'irodsctl devtest' using the svn code.  Currently,
+these plaforms are: x86_64_deb_6.0, x86_64_sol_5.11,
+x86_64_macos_10.7, x86_freebsd_7.4, x86_64_ubuntu_10.04.4,
+x86_64_ubuntu_12.04, and x86_64_fedora_15.
+
+The running of NMI B&T test is also something that needs documentation
+as I (Wayne) am the only one who knows how to run the iRODS tests at
+the NMI B&T facility.
+
+If there are changes to the ICAT database ('patches'), you should
+install the previous version, run the patch, do the upgrade, and run
+'irodsctl devtest'.  This should be done for each DBMS type: Postgres,
+Oracle, and MySQL.
+
+Postgres and MySQL are available on the pivo Tinderbox host.  Oracle
+(XE) is available on srbbrick15.
+
+Check warning messages on both Ubuntu other platforms.  Fix source
+code to eliminate those we can.  On Ubuntu 12.04.1 there were many
+warnings for variable-set-but-not-used but those are now being
+suppressed as irrelevant (see svn commit r5441).
+
+For performing the release, see the 'checklist2' file.

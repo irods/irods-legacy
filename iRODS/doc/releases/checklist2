@@ -1,0 +1,103 @@
+This is a description of the steps to be done to complete a release.
+The first set (to the ---- line) can be done ahead of time but are
+listed here to be re-checked.  See the checklist1 flie for a list of
+tasks that should be done leading up to the release.
+
+If not done before (as noted in checklist1), test one or
+more patch files for Postgres, Oracle and/or MySQL; depending on the
+complexity.
+
+Run specNameTest.pl to test special names.  (This is not part of the
+tinderbox tests but should succeed).
+
+Check warning messages on other platforms (in addition to Ubuntu), if
+there is time, and resolve them if straight-forward.
+
+Change version number/month-yr in lib/core/include/rodsVersion.h.
+
+Check for updated scripts in the scripts/perl directory and update
+version (date) in those changed.
+
+Add new icommands (if any) to the ihelp.c list.
+
+Need to include in the release_notes if old clients are compatible.  Check
+and add a section (see previous release notes).
+
+Check the INSTALL.txt file and update as needed for the current release.
+
+Update the scripts/perl/irodssetup.pl for the patch notice.  These are
+the printNotice text about 'When upgrading from' and they list release
+numbers and specific instructions.  See the svn log messages and
+history.
+
+Update config/doxygen.config PROJECT_NUMBER (version) (or Terrell will)
+  and doxygen-msi.config
+
+Figure out how to handle new API doxygen docs, put on wiki, add link.
+
+--------------------------------------------
+Make the release file:
+
+Do an 'svn export', not co (starting with 2.3)
+  'svn export svn://irodssvn.ucsd.edu/trunk'
+
+Keep track of the revision numbers for the release (use to use 'cvs tag' so
+  probably could for svn, but there was some issue with that, so just
+  note the number):
+      2.3 is r2515, 2.4 is 3188
+      2.4.1 is 3458
+      3.1 is 4882 -> 4887
+      3.2 may be 5239 -> now 5240
+
+Update time on (touch) rulegen.c to avoid a problem on some hosts
+  where something tries to regenerate it.
+
+3.0+: 
+remove jargon and clients/prods trees (if they are still in svn)
+
+tar cfz irods3.2.tgz iRODS
+  or
+  tar cf irods2.1.tar iRODS
+  and then gzip 
+--------------------------------------------
+
+Move it /misc/www/projects/irods/cgi-bin on an SDSC host
+(merrimac.sdsc.edu works)
+
+
+update the cgi program to use new version.
+ In /misc/www/projects/irods/cgi-bin (merrimac)
+ copy upload8.c to upload9.c   (Numbers are larger now, use latest and
+          copy the next number in sequence)
+ build on merrimac
+ gcc -o upload9.cgi upload9.c
+
+In /misc/www/projects/irods
+  ln -s download9.html download.html 
+
+The Wiki page uses download.html so that should be sufficient.
+  Sometime, we might try to rename so that it might not be cached
+
+--
+Update wiki pages:
+  release notes
+  Downloads
+  Main
+
+
+Send email irods-chat and (no more srb-chat)
+ "iROD-Chat" <iROD-Chat@googlegroups.com>
+
+--
+In the days following the release:
+
+Update Doxygen files (gen on Pivo or maybe Zuri, 'ruby runDoxygen.rb', 
+   put in merrimac/misc/www/projects/irods/doxygen)
+  (seems OK but ICAT ones missing, don't know if all are there)
+
+Build and update Mac-PowerPC and Mac-Intel download files
+   (did 2.5 but hadn't 3.0, did Intel for 3.1 and 3.2 &they can ask for PowerPC)
+
+Update i-cmd wiki help pages with new versions and new i-cmd pages
+
+Update wiki Roadmap page
