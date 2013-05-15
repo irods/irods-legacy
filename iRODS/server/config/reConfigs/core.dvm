@@ -151,3 +151,6 @@ KVPairs||rei->condInputData
 # connectReconnPort||rei->rsComm->reconnPort
 # connectReconnAddr||rei->rsComm->reconnAddr
 # ConnectCookie||rei->rsComm->cookie
+oprType||rei->doinp->oprType
+
+
