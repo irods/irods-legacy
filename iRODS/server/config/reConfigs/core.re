@@ -670,6 +670,9 @@ acPostProcForDataObjWrite(*WriteBuffer) { }
 # rule below used for testing. dont uncomment this....
 # acPostProcForDataObjRead(*ReadBuffer) {msiCutBufferInHalf(*ReadBuffer); }
 acPostProcForDataObjRead(*ReadBuffer) { }
+# 55) acPreProcForExecCmd - Rule for pre processing when remotely executing a command
+#     in server/bin/cmd
+acPreProcForExecCmd { }
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate {acSetCreateConditions; acDOC; }

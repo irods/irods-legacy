@@ -64,6 +64,15 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     rodsHostAddr_t addr;
+    ruleExecInfo_t rei;
+
+    initReiWithDataObjInp (&rei, rsComm, NULL);
+    status = applyRule ("acPreProcForExecCmd", NULL, &rei, NO_SAVE_REI);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+                 "initAgent: acPreProcForExecCmd error, status = %d", status);
+    	return (status);
+    }
 
     /* some sanity check on the cmd path */
     if (strchr (execCmdInp->cmd, '/') != NULL) {
