@@ -858,8 +858,9 @@ Res *smsi_succeed(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int r
 }
 Res *smsi_fail(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
-	Res *	res = newErrorRes(r, n == 0 ?FAIL_ACTION_ENCOUNTERED_ERR:RES_INT_VAL(subtrees[0]));
-	generateAndAddErrMsg("fail action encountered", node, RES_ERR_CODE(res), errmsg);
+	Res *res = newErrorRes(r, n == 0 ?FAIL_ACTION_ENCOUNTERED_ERR:RES_INT_VAL(subtrees[0]));
+	char *msg = (n == 0 || n == 1) ? (char *) "fail action encountered" : subtrees[1]->text;
+	generateAndAddErrMsg(msg, node, RES_ERR_CODE(res), errmsg);
         return res;
 }
 
@@ -2749,6 +2750,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "break", newFunctionFD("->integer", smsi_break, r));
     insertIntoHashTable(ft, "succeed", newFunctionFD("->integer", smsi_succeed, r));
     insertIntoHashTable(ft, "fail", newFunctionFD("integer ?->integer", smsi_fail, r));
+    insertIntoHashTable(ft, "failmsg", newFunctionFD("integer * string->integer", smsi_fail, r));
     insertIntoHashTable(ft, "assign", newFunctionFD("e 0 * e f 0->integer", smsi_assign, r));
     insertIntoHashTable(ft, "lmsg", newFunctionFD("string->integer", smsi_lmsg, r));
     insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
