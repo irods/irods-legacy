@@ -950,6 +950,11 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 	else if (numOfStrArgs == 10)
 		ii = (*(int (*)(msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t *))myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],
 		                myArgv[8],myArgv [9],rei);
+
+    /* move errmsgs from rei to errmsg */
+    replErrorStack(&rei->rsComm->rError, errmsg);
+    freeRErrorContent(&rei->rsComm->rError);
+
     if(ii<0) {
         res = newErrorRes(r, ii);
         RETURN;
