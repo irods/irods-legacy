@@ -671,7 +671,8 @@ acPostProcForDataObjWrite(*WriteBuffer) { }
 # acPostProcForDataObjRead(*ReadBuffer) {msiCutBufferInHalf(*ReadBuffer); }
 acPostProcForDataObjRead(*ReadBuffer) { }
 # 55) acPreProcForExecCmd - Rule for pre processing when remotely executing a command
-#     in server/bin/cmd
+#     in server/bin/cmd 
+#     parameter contains the command to be executed
 acPreProcForExecCmd(*cmd) { }
 # ----------------------------------------------------------------------------
 # These rules are for testing only
