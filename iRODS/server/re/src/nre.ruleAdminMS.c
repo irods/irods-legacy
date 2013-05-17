@@ -58,8 +58,7 @@
  * \post none
  * \sa none
 **/
-int
-msiAdmChangeCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
+int msiAdmChangeCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
 {
   /*  newFileNameParam contains the file name of the new core.
       The file should be in reConfigs directory */
@@ -318,91 +317,6 @@ int _admShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei, rulefmapdef_t *inRuleF
  * \post none
  * \sa msiAdmShowDVM, msiAdmShowFNM
 **/
-int msiAdmShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei)
-{
-  int i;
-
-
-    i = _admShowIRB(bufParam, rei, &appRuleStrct, 0);
-    if (i != 0)
-      return(i);
-    i = _admShowIRB(bufParam, rei, &coreRuleStrct, 1000);
-    return(i);
-}
-
-int _admShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei, ruleStruct_t *inRuleStrct, int inx)
-{
-    int n, i,j;
-    char outStr[MAX_RULE_LENGTH];
-    char ruleCondition[MAX_RULE_LENGTH];
-    char ruleAction[MAX_RULE_LENGTH];
-    char ruleRecovery[MAX_RULE_LENGTH];
-    char ruleHead[MAX_ACTION_SIZE]; 
-    char ruleBase[MAX_ACTION_SIZE]; 
-    char *actionArray[MAX_ACTION_IN_RULE];
-    char *recoveryArray[MAX_ACTION_IN_RULE];
-    /*char configDirEV[200];*/
-    char ruleSet[RULE_SET_DEF_LENGTH];
-    char oldRuleBase[MAX_ACTION_SIZE];
-
-    strcpy(ruleSet,"");
-    strcpy(oldRuleBase,"");
-
-  for( j = inx ; (j-inx) < inRuleStrct->MaxNumOfRules ; j++) {
-    getRule(j, ruleBase, ruleHead, ruleCondition,ruleAction,ruleRecovery, MAX_RULE_LENGTH);
-    if (strcmp(oldRuleBase,ruleBase)) {
-      if (strlen(oldRuleBase) > 0)
-	_writeString("stdout","---------------------------------------------------------------\n",rei);
-      strcpy(oldRuleBase,ruleBase);
-    }
-    n = getActionRecoveryList(ruleAction,ruleRecovery,actionArray,recoveryArray);
-    sprintf(outStr," %-5i%s.%s\n",j,ruleBase, ruleHead);
-    _writeString("stdout",outStr,rei);
-    if (strlen(ruleCondition) != 0) 
-      sprintf(outStr,"      IF (%s) {\n",ruleCondition);
-    else 
-      sprintf(outStr,"      {\n");
-    _writeString("stdout",outStr,rei);
-    for (i = 0; i < n; i++) {
-      /*
-      if (strlen(actionArray[i]) < 20) {
-	if (i == 0) 
-	  sprintf(outStr,"      DO   %-20.20s[%s]\n",actionArray[i],recoveryArray[i]);
-	else
-	  sprintf(outStr,"      AND  %-20.20s[%s]\n",actionArray[i],recoveryArray[i]);
-      }
-      else {
-	if (i == 0) 
-	  sprintf(outStr,"      DO   %s       [%s]\n",actionArray[i],recoveryArray[i]);
-	else
-	  sprintf(outStr,"      AND  %s       [%s]\n",actionArray[i],recoveryArray[i]);
-      }
-      */
-      if (strlen(actionArray[i]) < 20) {
-	if (recoveryArray[i] == NULL || 
-	    strlen(recoveryArray[i]) == 0 || 
-	    !strcmp(recoveryArray[i],"nop") || 
-	    !strcmp(recoveryArray[i],"null")) 
-	  sprintf(outStr,"        %-20.20s\n",actionArray[i]);
-	else
-	  sprintf(outStr,"        %-20.20s[%s]\n",actionArray[i],recoveryArray[i]);
-      }
-      else {
-	if (recoveryArray[i] == NULL || 
-	    strlen(recoveryArray[i]) == 0 || 
-	    !strcmp(recoveryArray[i],"nop") || 
-	    !strcmp(recoveryArray[i],"null")) 
-	  sprintf(outStr,"        %s\n",actionArray[i]);
-	else
-	  sprintf(outStr,"        %s       [%s]\n",actionArray[i],recoveryArray[i]);
-      }
-      _writeString("stdout",outStr,rei);
-    }
-    _writeString("stdout","      }\n",rei);
-  }
-  _writeString("stdout","---------------------------------------------------------------\n",rei);
-  return(0);
-}
 
 /**
  * \fn msiAdmClearAppRuleStruct (ruleExecInfo_t *rei)
@@ -441,23 +355,6 @@ int _admShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei, ruleStruct_t *inRuleSt
  * \post none
  * \sa msiAdmAddAppRuleStruct, msiAdmShowIRB, msiAdmShowDVM, msiAdmShowFNM
 **/
-int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei)
-{
-
-  int i;
-
-  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-    return (i);
-  i = clearRuleStruct(&appRuleStrct);
-  if (i < 0)
-    return(i);
-  i = clearDVarStruct(&appRuleVarDef);
-  if (i < 0)
-    return(i);
-  i = clearFuncMapStruct(&appRuleFuncMapDef);
-  return(i);
-
-}
 
 /**
  * \fn msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam, 
@@ -504,37 +401,6 @@ int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei)
  * \post none
  * \sa msiAdmClearAppRuleStruct, msiAdmShowIRB, msiAdmShowDVM, msiAdmShowFNM
 **/
-#ifndef RULE_ENGINE_N
-int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam, 
-  msParam_t *fnmFilesParam, ruleExecInfo_t *rei)
-{
-
-  int i;
-
-  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-    return (i);
-
-  RE_TEST_MACRO ("Loopback on admAddAppRuleStruct");
-
-  if (strlen((char *) irbFilesParam->inOutStruct) > 0) {
-    i = readRuleStructFromFile((char *) irbFilesParam->inOutStruct, &appRuleStrct);
-    if (i < 0)
-      return(i);
-  }
-  if (strlen((char *) dvmFilesParam->inOutStruct) > 0) {
-    i = readDVarStructFromFile((char *) dvmFilesParam->inOutStruct, &appRuleVarDef);
-    if (i < 0)
-      return(i);
-  }
-  if (strlen((char *) fnmFilesParam->inOutStruct) > 0) {
-    i = readFuncMapStructFromFile((char *) fnmFilesParam->inOutStruct, &appRuleFuncMapDef);
-    if (i < 0)
-      return(i);
-  }
-  return(0);
-  
-}
-#endif
 
 /**
  * \fn msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
@@ -576,47 +442,6 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
  * \post none
  * \sa msiAdmInsertRulesFromStructIntoDB, msiGetRulesFromDBIntoStruct, msiAdmWriteRulesFromStructIntoFile
 **/
-#ifndef RULE_ENGINE_N
-int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
-{
-
-  int i;
-  ruleStruct_t *coreRuleStrct;
-
-  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-    return (i);
-
-  RE_TEST_MACRO ("Loopback on msiAdmReadRulesFromFileIntoStruct");
-
-  
-  if (inIrbFileNameParam == NULL ||
-      strcmp (inIrbFileNameParam->type,STR_MS_T) != 0 ||
-      inIrbFileNameParam->inOutStruct == NULL ||
-      strlen((char *) inIrbFileNameParam->inOutStruct) == 0 )
-    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
-  if (outCoreRuleStruct->type != NULL &&
-      strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) == 0 &&
-      outCoreRuleStruct->inOutStruct != NULL) {
-    coreRuleStrct = (ruleStruct_t *) outCoreRuleStruct->inOutStruct;
-  }
-  else {
-    coreRuleStrct = (ruleStruct_t *) malloc (sizeof(ruleStruct_t));
-    coreRuleStrct->MaxNumOfRules = 0;    
-  }
-  i = readRuleStructFromFile((char*) inIrbFileNameParam->inOutStruct, coreRuleStrct);
-  if (i != 0) {
-    if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0 )    
-      free(coreRuleStrct);
-    return(i);
-  }
-
-  outCoreRuleStruct->inOutStruct = (void *) coreRuleStrct;
-  if (outCoreRuleStruct->type == NULL || 
-      strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0)
-    outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
-  return(0);
-}
-#endif
 
 /**
  * \fn msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)
@@ -656,30 +481,6 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
  * \post none
  * \sa msiAdmReadRulesFromFileIntoStruct, msiGetRulesFromDBIntoStruct, msiAdmWriteRulesFromStructIntoFile
 **/
-int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)
-{
-
-  ruleStruct_t *coreRuleStruct;
-  int i;
-
-  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-    return (i);
-
-  RE_TEST_MACRO ("Loopback on msiAdmInsertRulesFromStructIntoDB");
-
-  if (inIrbBaseNameParam == NULL || inCoreRuleStruct == NULL ||
-      strcmp (inIrbBaseNameParam->type,STR_MS_T) != 0 ||
-      strcmp (inCoreRuleStruct->type,RuleStruct_MS_T) != 0 ||
-      inIrbBaseNameParam->inOutStruct == NULL ||
-      inCoreRuleStruct->inOutStruct == NULL ||
-      strlen((char *) inIrbBaseNameParam->inOutStruct) == 0 )
-    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
-
-  coreRuleStruct = (ruleStruct_t *) inCoreRuleStruct->inOutStruct;
-  i = insertRulesIntoDB((char *) inIrbBaseNameParam->inOutStruct, coreRuleStruct, rei);
-  return(i);
-    
-}
 
 
 
@@ -722,48 +523,6 @@ int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *
  * \post none
  * \sa msiAdmReadRulesFromFileIntoStruct, msiAdmInsertRulesFromStructIntoDB, msiAdmWriteRulesFromStructIntoFile
 **/
-int
-msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionParam, 
-			    msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
-{
-    
-  int i;
-  ruleStruct_t *coreRuleStrct;
-
-  RE_TEST_MACRO ("Loopback on msiGetRulesFromDBIntoStruct");
-
-  if (inIrbBaseNameParam == NULL ||
-      strcmp (inIrbBaseNameParam->type,STR_MS_T) != 0 ||
-      inIrbBaseNameParam->inOutStruct == NULL ||
-      strlen((char *) inIrbBaseNameParam->inOutStruct) == 0 )
-    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
-  if (inVersionParam == NULL ||
-      strcmp (inVersionParam->type,STR_MS_T) != 0 ||
-      inVersionParam->inOutStruct == NULL ||
-      strlen((char *) inVersionParam->inOutStruct) == 0 )
-    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
-  if (outCoreRuleStruct->type != NULL &&
-      strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) == 0 &&
-      outCoreRuleStruct->inOutStruct != NULL) {
-    coreRuleStrct = (ruleStruct_t *) outCoreRuleStruct->inOutStruct;
-  }
-  else {
-    coreRuleStrct = (ruleStruct_t *) malloc (sizeof(ruleStruct_t));
-    coreRuleStrct->MaxNumOfRules = 0;
-  }
-  i = readRuleStructFromDB((char*) inIrbBaseNameParam->inOutStruct, (char*) inVersionParam->inOutStruct,  coreRuleStrct, rei);
-  if (i != 0) {
-    if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0 )
-      free(coreRuleStrct);
-    return(i);
-  }
-
-  outCoreRuleStruct->inOutStruct = (void *) coreRuleStrct;
-  if (outCoreRuleStruct->type == NULL ||
-      strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0)
-    outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
-  return(0);
-}
 
 
 /**
@@ -805,30 +564,6 @@ msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionP
  * \post none
  * \sa msiAdmReadRulesFromFileIntoStruct, msiAdmInsertRulesFromStructIntoDB, msiGetRulesFromDBIntoStruct
 **/
-
-int
-msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)
-{
-  int i;
-  ruleStruct_t *myRuleStruct;
-
-  if ((i = isUserPrivileged(rei->rsComm)) != 0)
-    return (i);
-
-  RE_TEST_MACRO ("Loopback on msiAdmWriteRulesFromStructIntoFile");
-
-  if (inIrbFileNameParam == NULL || inCoreRuleStruct == NULL ||
-      strcmp (inIrbFileNameParam->type,STR_MS_T) != 0 ||
-      strcmp (inCoreRuleStruct->type,RuleStruct_MS_T) != 0 ||
-      inIrbFileNameParam->inOutStruct == NULL ||
-      strlen((char *) inIrbFileNameParam->inOutStruct) == 0 )
-    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
-
-  myRuleStruct = (ruleStruct_t *) inCoreRuleStruct->inOutStruct;
-  i = writeRulesIntoFile((char *) inIrbFileNameParam->inOutStruct, myRuleStruct, rei);
-  return(i);
-
-}
 
 
 /**
