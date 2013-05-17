@@ -69,9 +69,9 @@ int msiExecStrCondQueryWithOptionsNew(msParam_t* queryParam,
     query = (char *) malloc(strlen((const char*)queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
     strcpy(query, (const char*) queryParam->inOutStruct);
 
-    i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
+    /* i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
     if (i < 0)
-       return(i);
+       return(i); */
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
     i = fillGenQueryInpFromStrCond(query, &genQueryInp);
     if (i < 0)
@@ -176,9 +176,9 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
     query = (char *) malloc(strlen((const char*)queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
     strcpy(query, (const char*) queryParam->inOutStruct);
 
-    i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
+    /* i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei); 
     if (i < 0)
-       return(i);
+       return(i); */
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
     i = fillGenQueryInpFromStrCond(query, &genQueryInp);
     if (i < 0)
@@ -281,9 +281,9 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
   if (i < 0)
     return(i);
   ***/
-  i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
+  /* i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
   if (i < 0)
-    return(i);
+    return(i); */
   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
   i = fillGenQueryInpFromStrCond(query, &genQueryInp);
   if (i < 0)
@@ -786,13 +786,13 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
 	strcpy(query, rawQuery);
 
 	/* parse variables and replace them with their value */
-	rei->status  = replaceVariablesAndMsParams("", query, rei->msParamArray, rei);
+	/* rei->status  = replaceVariablesAndMsParams("", query, rei->msParamArray, rei);
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiMakeGenQuery: replaceVariablesAndMsParams failed.");
 		free(rawQuery); // cppcheck - Memory leak: rawQuery
 		return(rei->status);
-	}
+	} */
 
 	/* allocate memory for genQueryInp */
 	genQueryInp = (genQueryInp_t*)malloc(sizeof(genQueryInp_t));

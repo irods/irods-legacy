@@ -318,6 +318,7 @@ int _admShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei, rulefmapdef_t *inRuleF
  * \post none
  * \sa msiAdmShowDVM, msiAdmShowFNM
 **/
+#ifndef RULE_ENGINE_N
 int msiAdmShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei)
 {
   int i;
@@ -403,6 +404,7 @@ int _admShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei, ruleStruct_t *inRuleSt
   _writeString("stdout","---------------------------------------------------------------\n",rei);
   return(0);
 }
+#endif
 
 /**
  * \fn msiAdmClearAppRuleStruct (ruleExecInfo_t *rei)

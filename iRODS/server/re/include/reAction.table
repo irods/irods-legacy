@@ -75,7 +75,9 @@ int msiDeleteUser(ruleExecInfo_t *rei);
 int msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei);
 int msiSendMail(msParam_t *toAddr, msParam_t *subjectLine, msParam_t *body, ruleExecInfo_t *rei);
 int msiAdmChangeCoreIRB(msParam_t *newF, ruleExecInfo_t *rei);
+#ifndef RULE_ENGIN_N
 int msiAdmShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
+#endif
 int msiAdmShowDVM(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmShowFNM(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmAppendToTopOfCoreIRB(msParam_t *bufP, ruleExecInfo_t *rei);
@@ -285,7 +287,9 @@ microsdef_t MicrosTable[] = {
   {"msiExtractNaraMetadata",0,(funcPtr) msiExtractNaraMetadata},
   {"msiSetMultiReplPerResc",0,(funcPtr) msiSetMultiReplPerResc},
   {"msiAdmChangeCoreIRB",1,(funcPtr) msiAdmChangeCoreIRB},
+#ifndef RULE_ENGINE_N
   {"msiAdmShowIRB",1,(funcPtr) msiAdmShowIRB},
+#endif
   {"msiAdmShowDVM",1,(funcPtr) msiAdmShowDVM},
   {"msiAdmShowFNM",1,(funcPtr) msiAdmShowFNM},
   {"msiAdmAppendToTopOfCoreIRB",1,(funcPtr) msiAdmAppendToTopOfCoreIRB},
