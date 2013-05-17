@@ -672,7 +672,7 @@ acPostProcForDataObjWrite(*WriteBuffer) { }
 acPostProcForDataObjRead(*ReadBuffer) { }
 # 55) acPreProcForExecCmd - Rule for pre processing when remotely executing a command
 #     in server/bin/cmd
-acPreProcForExecCmd { }
+acPreProcForExecCmd(*cmd) { }
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate {acSetCreateConditions; acDOC; }

@@ -67,7 +67,9 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     ruleExecInfo_t rei;
 
     initReiWithDataObjInp (&rei, rsComm, NULL);
-    status = applyRule ("acPreProcForExecCmd", NULL, &rei, NO_SAVE_REI);
+    char *args[1];
+    args[0] = execCmdInp->cmd;
+    status = applyRuleArg ("acPreProcForExecCmd", args, 1, &rei, NO_SAVE_REI);
     if (status < 0) {
         rodsLog (LOG_ERROR,
                  "initAgent: acPreProcForExecCmd error, status = %d", status);
