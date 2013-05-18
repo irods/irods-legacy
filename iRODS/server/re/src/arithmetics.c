@@ -1334,32 +1334,70 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
     char matcherName[MAX_NAME_LEN];
     switch (getNodeType(pattern)) {
     case N_APPLICATION:
-        matcherName[0]='~';
-        strcpy(matcherName+1, pattern->subtrees[0]->text);
-        RuleIndexListNode *node;
-        if(findNextRule2(matcherName, 0, &node) == 0) {
-            v = execRule(matcherName, &val, 1, 0, env, rei, reiSaveFlag, errmsg, r);
-            RE_ERROR2(getNodeType(v) == N_ERROR, "user defined pattern function error");
-            if(getNodeType(v)!=N_TUPLE) {
-            	Res **tupleComp = (Res **)region_alloc(r, sizeof(Res *));
-            	*tupleComp = v;
-            	v = newTupleRes(1, tupleComp ,r);
-            }
-        } else {
-            RE_ERROR2(v->text == NULL || strcmp(pattern->subtrees[0]->text, v->text)!=0, "pattern mismatch constructor");
-            Res **tupleComp = (Res **)region_alloc(r, sizeof(Res *) * v->degree);
-			memcpy(tupleComp, v->subtrees, sizeof(Res *) * v->degree);
-			v = newTupleRes(v->degree, tupleComp ,r);
-        }
-		res = matchPattern(p->subtrees[1], v, env, rei, reiSaveFlag, errmsg, r);
-        return res;
+    	if(strcmp(N_APP_FUNC(pattern)->text, ".")==0) {
+		char *key = NULL;
+	    	RE_ERROR2(TYPE(v) != T_STRING , "not a string.");
+		if(getNodeType(N_APP_ARG(pattern, 1)) == N_APPLICATION && N_APP_ARITY(N_APP_ARG(pattern, 1)) == 0) {
+			key = N_APP_FUNC(N_APP_ARG(pattern, 1))->text;
+		} else if (getNodeType(N_APP_ARG(pattern, 1)) == TK_STRING) {
+			key = N_APP_ARG(pattern, 1)->text;
+		} else {
+	    		RE_ERROR2(1, "malformatted key pattern.");
+		}
+		varName = N_APP_ARG(pattern, 0)->text;
+		if(getNodeType(N_APP_ARG(pattern, 0)) == TK_VAR && varName[0] == '*' && 
+			((res = (Res *) lookupFromEnv(env, varName))==NULL || TYPE(res) == T_UNSPECED)) { /* if local var is empty then create new kvp */
+				keyValPair_t *kvp = (keyValPair_t *) malloc(sizeof(keyValPair_t));
+				memset(kvp, 0, sizeof(keyValPair_t));
+				Res *res2 = newUninterpretedRes(r, KeyValPair_MS_T, kvp, NULL);
+				if(res != NULL) {
+					updateInEnv(env, varName, res2);
+				} else {
+					if(insertIntoHashTable(env->current, varName, res2) == 0) {
+						snprintf(localErrorMsg, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
+						generateErrMsg(errbuf,NODE_EXPR_POS(N_APP_ARG(pattern, 0)), N_APP_ARG(pattern, 0)->base, errbuf);
+						addRErrorMsg(errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
+						return newErrorRes(r, RE_UNABLE_TO_WRITE_LOCAL_VAR);
+					}
+				}
+			
+			res = res2;
+		} else {
+			res = evaluateExpression3(N_APP_ARG(pattern, 0), 0, 0, rei, reiSaveFlag, env, errmsg, r); /* kvp */
+		    	CASCADE_N_ERROR(res);
+		    	RE_ERROR2(TYPE(res) != T_IRODS || strcmp(res->exprType->text, KeyValPair_MS_T) !=0, "not a KeyValPair.");
+		}
+		addKeyVal((keyValPair_t*) RES_UNINTER_STRUCT(res), key, v->text);
+		return newIntRes(r, 0);
+	} else {
+		matcherName[0]='~';
+		strcpy(matcherName+1, pattern->subtrees[0]->text);
+		RuleIndexListNode *node;
+		if(findNextRule2(matcherName, 0, &node) == 0) {
+		    v = execRule(matcherName, &val, 1, 0, env, rei, reiSaveFlag, errmsg, r);
+		    RE_ERROR2(getNodeType(v) == N_ERROR, "user defined pattern function error");
+		    if(getNodeType(v)!=N_TUPLE) {
+		    	Res **tupleComp = (Res **)region_alloc(r, sizeof(Res *));
+		    	*tupleComp = v;
+		    	v = newTupleRes(1, tupleComp ,r);
+		    }
+		} else {
+		    RE_ERROR2(v->text == NULL || strcmp(pattern->subtrees[0]->text, v->text)!=0, "pattern mismatch constructor");
+		    Res **tupleComp = (Res **)region_alloc(r, sizeof(Res *) * v->degree);
+				memcpy(tupleComp, v->subtrees, sizeof(Res *) * v->degree);
+				v = newTupleRes(v->degree, tupleComp ,r);
+		}
+			res = matchPattern(p->subtrees[1], v, env, rei, reiSaveFlag, errmsg, r);
+		return res;
+	}
     case TK_VAR:
         varName = pattern->text;
         if(varName[0] == '*') {
         	if(lookupFromEnv(env, varName)==NULL) {
         		/* new variable */
 				if(insertIntoHashTable(env->current, varName, val) == 0) {
-					snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
+					snprintf(localErrorMsg, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
+        				generateErrMsg(errbuf,NODE_EXPR_POS(pattern), pattern->base, errbuf);
 					addRErrorMsg(errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
 					return newErrorRes(r, RE_UNABLE_TO_WRITE_LOCAL_VAR);
 				}

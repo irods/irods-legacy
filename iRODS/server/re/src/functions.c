@@ -878,6 +878,30 @@ Res *smsi_assign(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
     return ret;
 }
 
+Res *smsi_getValByKey(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    char errbuf[ERR_MSG_LEN];
+    keyValPair_t *kvp = (keyValPair_t *) RES_UNINTER_STRUCT(params[0]);
+    char *key = NULL;
+    if(getNodeType(params[1])==N_APPLICATION && N_APP_ARITY(params[1]) == 0) {
+        key = N_APP_FUNC(params[1])->text;
+    } else if(getNodeType(params[1])==TK_STRING) {
+	key = params[1]->text;
+    } else {
+	snprintf(errbuf, ERR_MSG_LEN, "malformatted key %s", params[1]->text);
+        generateAndAddErrMsg(errbuf, params[1], UNMATCHED_KEY_OR_INDEX, errmsg);
+        return newErrorRes(r, UNMATCHED_KEY_OR_INDEX);
+    }
+    
+    int i;
+    for(i=0; i<kvp->len; i++) {
+        if(strcmp(kvp->keyWord[i], key)==0) {
+	    return newStringRes(r, kvp->value[i]);
+        } 
+    }
+	snprintf(errbuf, ERR_MSG_LEN, "unmatched key %s", key);
+        generateAndAddErrMsg(errbuf, node, UNMATCHED_KEY_OR_INDEX, errmsg);
+        return newErrorRes(r, UNMATCHED_KEY_OR_INDEX);
+}
 Res *smsi_listvars(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 /*
 		char buf2[MAX_COND_LEN];
@@ -1677,6 +1701,7 @@ Res *smsi_errormsg(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int r
     freeRErrorContent(errmsg);
     free(errbuf);
     switch(getNodeType(res)) {
+
         case N_ERROR:
             return newIntRes(r, RES_ERR_CODE(res));
         default:
@@ -2798,6 +2823,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "%", newFunctionFD("integer * integer->integer",smsi_modulo, r));
     insertIntoHashTable(ft, "^", newFunctionFD("f double * f double->double",smsi_power, r));
     insertIntoHashTable(ft, "^^", newFunctionFD("f double * f double->double",smsi_root, r));
+    insertIntoHashTable(ft, ".", newFunctionFD("forall X, `KeyValPair_PI` * expression X->string",smsi_getValByKey, r));
     insertIntoHashTable(ft, "log", newFunctionFD("f double->double",smsi_log, r));
     insertIntoHashTable(ft, "exp", newFunctionFD("f double->double",smsi_exp, r));
     insertIntoHashTable(ft, "!", newFunctionFD("boolean->boolean",smsi_not, r));
