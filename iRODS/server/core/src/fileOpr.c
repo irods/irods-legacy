@@ -373,7 +373,7 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath)
 	/* match the rodsServerHost */
 	if (tmpRescInfo->rodsServerHost == rodsServerHost) {
 	    len = strlen (tmpRescInfo->rescVaultPath);
-	    if (strncmp (tmpRescInfo->rescVaultPath, filePath, len) == 0 &&
+	    if (len > 0 && strncmp (tmpRescInfo->rescVaultPath, filePath, len) == 0 &&
 	      (filePath[len] == '/' || filePath[len] == '\0')) {
 		*outVaultPath = tmpRescInfo->rescVaultPath;
 		return (len);
@@ -387,8 +387,8 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath)
 }
 
 /* matchCliVaultPath - if the input path is inside 
- * $(vaultPath)/myzone/home/userName, retun 1.
- * If it is in $(vaultPath) but not in $(vaultPath)/myzone/home/userName,
+ * $(vaultPath)/home/userName, return 1.
+ * If it is in $(vaultPath) but not in $(vaultPath)/home/userName,
  * return -1. If it is a non vault path, return 0.
  */ 
 int
@@ -406,13 +406,13 @@ rodsServerHost_t *rodsServerHost)
 	return (0);
     }
 
-    /* assume the path is $(vaultPath/myzone/home/userName */ 
+    /* assume the path is $(vaultPath)/home/userName */
 
     nameLen = strlen (rsComm->clientUser.userName);
 
     tmpPath = filePath + len + 1;    /* skip the vault path */
 
-    if (strncmp (tmpPath, "home/", 5) != -1) return -1;
+    if (strncmp (tmpPath, "home/", 5) != 0) return -1;
     tmpPath += 5;
     if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0 &&
      (tmpPath[nameLen] == '/' || tmpPath[len] == '\0'))  
