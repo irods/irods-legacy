@@ -4061,7 +4061,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 			      char **irodsPassword) {
    char myTime[50];
    char rBuf[200];
-   int i, j;
+   int i, j, k;
    char randomPw[50];
    char randomPwEncoded[50];
    int status;
@@ -4071,6 +4071,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
    int iVal[3];
    char selUserId[MAX_NAME_LEN];
    char expTime[50];
+   int pw_good;
 
    status = getLocalZone();
    if (status != 0) return(status);
@@ -4152,22 +4153,39 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
       return(0);
    }
 
+/* Generate a random password.  If the resultant scrambled password
+   has a ' in the string, this can cause issues on some systems,
+   notably Suse 12.  If this is the case we will just get another
+   random password.  Will loop 10 times and give up after that (use
+   the last one) and log it (which should never happen).
+*/
+   pw_good = 0;
+   k=0;
+   for (k=0;k<10 && pw_good==0;k++) {
+      j=0;
+      get64RandomBytes(rBuf);
+      for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
+         char c;
+	 c = rBuf[i] & 0x7f;
+	 if (c < '0') c+='0';
+	 if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
+	      (c > '0' && c < '9') ){
+	    randomPw[j++]=c;
+	 }
+      }
+      randomPw[j]='\0';
 
-   j=0;
-   get64RandomBytes(rBuf);
-   for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
-      char c;
-      c = rBuf[i] &0x7f;
-      if (c < '0') c+='0';
-      if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
-           (c > '0' && c < '9') ){
-         randomPw[j++]=c;
+      strncpy(randomPwEncoded, randomPw, 50);
+      icatScramble(randomPwEncoded); 
+      if( !strstr( randomPwEncoded, "\'" ) ) {
+         pw_good = true; 
+      } else {
+         rodsLog(LOG_NOTICE, "chlUpdateIrodsPamPassword getting a new password, [%s] has a single quote", randomPwEncoded );
       }
    }
-   randomPw[j]='\0';
-
-   strncpy(randomPwEncoded, randomPw, 50);
-   icatScramble(randomPwEncoded); 
+   if (k>=10) {
+      rodsLog(LOG_ERROR, "Warning chlUpdateIrodsPamPassword failed to get a get a new password without a single quote after 10 attempts, using last one generated");
+   }
 
    if (testTime!=NULL && strlen(testTime)>0) {
       strncpy(myTime, testTime, sizeof(myTime));
