@@ -70,6 +70,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
 
     if (regParam->len == 0) {
+        rodsLog(LOG_NOTICE, "Warning, _rsModDataObjMeta called with empty regParam, returning success");
         return (0);
     }
 
