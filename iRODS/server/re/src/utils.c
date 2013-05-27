@@ -480,7 +480,7 @@ Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rE
             return newErrorRes(r, RE_UNSUPPORTED_SESSION_VAR);
         }
         setVarValue(varMap, rei, val->text);
-        free(*varMap);
+        free(varMap);
         return newIntRes(r, 0);
     }
     else if(varName[0] == '*') {
