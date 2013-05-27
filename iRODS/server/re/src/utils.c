@@ -479,7 +479,8 @@ Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rE
             addRErrorMsg(errmsg, RE_UNSUPPORTED_SESSION_VAR, errbuf);
             return newErrorRes(r, RE_UNSUPPORTED_SESSION_VAR);
         }
-        setVarValue(varMap, rei, strdup(val->text));
+        setVarValue(varMap, rei, val->text);
+        free(*varMap);
         return newIntRes(r, 0);
     }
     else if(varName[0] == '*') {
