@@ -152,7 +152,11 @@ MY_CFLAG+= -D$(hardware_platform)
 endif
 
 ifeq ($(CC_IS_GCC), 1)
-MY_CFLAG+=-Wall -Wno-unused-but-set-variable
+MY_CFLAG+=-Wall
+GCC_VERSION_GE_45 := $(shell g++ -dumpversion | awk '{print $$1>=4.5?"1":"0"}')
+ifeq ($(GCC_VERSION_GE_45),1)
+MY_CFLAG+=-Wno-unused-but-set-variable
+endif
 endif
 
 # Alpha
