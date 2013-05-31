@@ -179,6 +179,9 @@ apidef_t RcApiTable[] = {
     {PAM_AUTH_REQUEST_AN, RODS_API_VERSION,
        NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 
        "pamAuthRequestInp_PI", 0,  "pamAuthRequestOut_PI", 0, (funcPtr) RS_PAM_AUTH_REQUEST},
+    {GET_LIMITED_PASSWORD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+       "getLimitedPasswordInp_PI", 0,  "getLimitedPasswordOut_PI", 
+       0, (funcPtr) RS_GET_LIMITED_PASSWORD},
     {OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION},
 #ifdef COMPAT_201

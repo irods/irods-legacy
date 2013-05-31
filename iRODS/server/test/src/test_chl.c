@@ -141,7 +141,7 @@ int testTempPwConvert(char *s1, char *s2) {
    obfMakeOneWayHash(HASH_TYPE_DEFAULT,(unsigned char*)md5Buf, sizeof md5Buf,
 		     digest);
 
-   md5ToStr(digest, digestStr);
+   hashToStr(digest, digestStr);
    printf("digestStr (derived temp pw)=%s\n", digestStr);
 
    return(0);
@@ -172,7 +172,7 @@ int testTempPwCombined(rsComm_t *rsComm, char *s1) {
    obfMakeOneWayHash(HASH_TYPE_DEFAULT, (unsigned char*)md5Buf, sizeof md5Buf,
 		     digest);
 
-   md5ToStr(digest, digestStr);
+   hashToStr(digest, digestStr);
    printf("digestStr (derived temp pw)=%s\n", digestStr);
 
    return(0);
@@ -205,7 +205,7 @@ int testTempPwForOther(rsComm_t *rsComm, char *s1, char *otherUser) {
    obfMakeOneWayHash(HASH_TYPE_DEFAULT, (unsigned char*)md5Buf, sizeof md5Buf,
 		     digest);
 
-   md5ToStr(digest, digestStr);
+   hashToStr(digest, digestStr);
    printf("digestStr (derived temp pw)=%s\n", digestStr);
 
    return(0);

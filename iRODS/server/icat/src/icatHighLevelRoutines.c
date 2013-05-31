@@ -1,4 +1,4 @@
-/*** Copyright (c), The Regents of the University of California            ***
+/*** COPYRIGHT (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /**************************************************************************
@@ -85,6 +85,8 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
    differently.  If they overlap, SQL errors can result */
 #define IRODS_PAM_PASSWORD_MIN_TIME "121"  /* must be > TEMP_PASSWORD_TIME */
 #define IRODS_PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
+#define IRODS_TTL_PASSWORD_MIN_TIME 121  /* must be > TEMP_PASSWORD_TIME */
+#define IRODS_TTL_PASSWORD_MAX_TIME 1209600    /* two weeks in seconds */
 #ifdef PAM_AUTH_NO_EXTEND
 #define IRODS_PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
 #else
@@ -3930,7 +3932,6 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash, char *otherUser) {
       }
    }
    hashValue[j]='\0';
-/*   printf("hashValue=%s\n", hashValue); */
 
    /* calcuate the temp password (a hash of the user's main pw and
       the hashValue) */
@@ -3941,8 +3942,7 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash, char *otherUser) {
    obfMakeOneWayHash(HASH_TYPE_DEFAULT,
        (unsigned char *) md5Buf, 100, (unsigned char *) digest);
 
-   md5ToStr(digest, newPw);
-/*   printf("newPw=%s\n", newPw); */
+   hashToStr(digest, newPw);
 
    rstrcpy(pwValueToHash, hashValue, MAX_PASSWORD_LEN);
 
@@ -3985,6 +3985,128 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash, char *otherUser) {
 
    memset(newPw, 0, MAX_PASSWORD_LEN);
    return(0);
+}
+
+int 
+chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
+   int status;
+   char md5Buf[100];
+   unsigned char digest[RESPONSE_LEN+2];
+   int i;
+   char password[MAX_PASSWORD_LEN+10];
+   char newPw[MAX_PASSWORD_LEN+10];
+   char myTime[50];
+   char myTimeExp[50];
+   char rBuf[200];
+   char hashValue[50];
+   int j=0;
+   char tSQL[MAX_SQL_SIZE];
+   char expTime[50];
+   int timeToLive;
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw");
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw SQL 1 ");
+
+   snprintf(tSQL, MAX_SQL_SIZE, 
+            "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and pass_expiry_ts != '%d'",
+	    TEMP_PASSWORD_TIME);
+
+   status = cmlGetStringValueFromSql(tSQL,
+	    password, MAX_PASSWORD_LEN, 
+	    rsComm->clientUser.userName, 
+            rsComm->clientUser.rodsZone, 0, &icss);
+   if (status !=0) {
+      if (status == CAT_NO_ROWS_FOUND) {
+	 status = CAT_INVALID_USER; /* Be a little more specific */
+      }
+      else {
+	 _rollback("chlMakeLimitedPw");
+      }
+      return(status);
+   }
+
+   icatDescramble(password);
+
+   j=0;
+   get64RandomBytes(rBuf);
+   for (i=0;i<50 && j<MAX_PASSWORD_LEN-1;i++) {
+      char c;
+      c = rBuf[i] &0x7f;
+      if (c < '0') c+='0';
+      if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
+           (c > '0' && c < '9') ){
+         hashValue[j++]=c;
+      }
+   }
+   hashValue[j]='\0';
+
+   /* calcuate the limited password (a hash of the user's main pw and
+      the hashValue) */
+   memset(md5Buf, 0, sizeof(md5Buf));
+   strncpy(md5Buf, hashValue, 100);
+   strncat(md5Buf, password, 100);
+
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+       (unsigned char *) md5Buf, 100, (unsigned char *) digest);
+
+   hashToStr(digest, newPw);
+
+   icatScramble(newPw);
+
+   rstrcpy(pwValueToHash, hashValue, MAX_PASSWORD_LEN);
+
+   getNowStr(myTime);
+
+   timeToLive = ttl*3600;  /* convert input hours to seconds */
+   if (timeToLive < IRODS_TTL_PASSWORD_MIN_TIME  or
+       timeToLive > IRODS_TTL_PASSWORD_MAX_TIME) {
+      return PAM_AUTH_PASSWORD_INVALID_TTL;
+   }
+
+   /* Insert the limited password */
+   snprintf(expTime, sizeof expTime, "%d", timeToLive);
+   cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+   cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone,
+   cllBindVars[cllBindVarCount++]=newPw;
+   cllBindVars[cllBindVarCount++]=expTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw SQL 2");
+  status =  cmlExecuteNoAnswerSql(
+              "insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)",
+	      &icss);
+   if (status !=0) {
+      rodsLog(LOG_NOTICE,
+	      "chlMakeLimitedPw cmlExecuteNoAnswerSql insert failure %d",
+	      status);
+      _rollback("chlMakeLimitedPw");
+      return(status);
+   }
+
+   /* Also delete any that are expired */
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw SQL 3");
+   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
+   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+   cllBindVars[cllBindVarCount++]=myTime;
+#if MY_ICAT
+   status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+#else
+   status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+#endif
+	   &icss);
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlMakeLimitedPw cmlExecuteNoAnswerSql commit failure %d",
+	      status);
+      return(status);
+   }
+
+   memset(newPw, 0, MAX_PASSWORD_LEN);
+   return(0);
+
 }
 
 /*

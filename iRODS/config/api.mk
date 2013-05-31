@@ -461,3 +461,6 @@ endif
 
 
 
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetLimitedPassword.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetLimitedPassword.o

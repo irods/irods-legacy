@@ -535,6 +535,7 @@ runCmd(2, "iadmin atg g1 user3"); # test SQL (just needs to be groupadmin to)
 runCmd(2, "ichmod -R write $U1 $Resc"); # test SQL (the non-admin)
 runCmd(0, "echo '1234\nabcd\nabcd' | ipasswd"); # change the password
 runCmd(0, "echo 'abcd\n1234\n1234' | ipasswd"); # change the password back
+runCmd(0, "iinit --ttl 1 1234"); # also run new SQL for TTL passwords
 runCmd(0, "iexit full");
 runCmd(1, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};

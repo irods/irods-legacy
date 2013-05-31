@@ -22,6 +22,8 @@ chksumLocFile (char *fileName, char *chksumStr);
 int
 md5ToStr (unsigned char *digest, char *chksumStr);
 int
+hashToStr (unsigned char *digest, char *digestStr);
+int
 rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput);
 
 #ifdef  __cplusplus
