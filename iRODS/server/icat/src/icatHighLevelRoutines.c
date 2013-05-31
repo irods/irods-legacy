@@ -3996,7 +3996,6 @@ chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
    char password[MAX_PASSWORD_LEN+10];
    char newPw[MAX_PASSWORD_LEN+10];
    char myTime[50];
-   char myTimeExp[50];
    char rBuf[200];
    char hashValue[50];
    int j=0;
