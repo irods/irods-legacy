@@ -4058,7 +4058,7 @@ chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
    getNowStr(myTime);
 
    timeToLive = ttl*3600;  /* convert input hours to seconds */
-   if (timeToLive < IRODS_TTL_PASSWORD_MIN_TIME  or
+   if (timeToLive < IRODS_TTL_PASSWORD_MIN_TIME  ||
        timeToLive > IRODS_TTL_PASSWORD_MAX_TIME) {
       return PAM_AUTH_PASSWORD_INVALID_TTL;
    }
@@ -4299,7 +4299,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
       strncpy(randomPwEncoded, randomPw, 50);
       icatScramble(randomPwEncoded); 
       if( !strstr( randomPwEncoded, "\'" ) ) {
-         pw_good = true; 
+         pw_good = 1; 
       } else {
          rodsLog(LOG_NOTICE, "chlUpdateIrodsPamPassword getting a new password, [%s] has a single quote", randomPwEncoded );
       }
