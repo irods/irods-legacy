@@ -1,8 +1,12 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-
-#define __USE_XOPEN
-#define _GNU_SOURCE
+	
+#ifndef __USE_XOPEN
+#define __USE_XOPEN 
+#endif
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 
+#endif
 #include "datetime.h"
 static char* defaultformat = "%b %d %Y %H:%M:%S";
 /*
