@@ -1,0 +1,51 @@
+/***************
+To have iRODS-Hadoop Driver, need to install
+Hadoop on your iRODS server. This needn't be a 
+full-fledged installation with daemons running,
+all necessary is for the .jar files and libraries
+to be accessible and for the config files to point
+at your already-existing Hadoop cluster,
+***************/
+
+step 1: install hadoop-1.1.2
+
+step 2: install iRODS-v3.3
+	2.1: $ vi ~/.bashrc
+	setup environment variables as documented in iRODS-Hadoop.pdf (i.e. JAVA_HOME, HADOOP_HOME, CLASSPATH, LD_LIBRARY_PATH)
+	2.2: make sure iRODS/server/drivers/src/hdfsFileDriverClasspath.txt contains the correct paths. 
+        An example of ~/.bashrc
+        export JAVA_HOME=/usr/lib/jvm/jdk1.6.0_31
+        export HADOOP_HOME=/data1/syctest/hadoop-1.1.2
+        export HADOOP_CONF_DIR=/your-path/hadoop-1.1.2/conf
+        export CLASSPATH=`cat
+/your-iRODS/irods-v3.3/server/drivers/src/hdfsFileDriverClasspath.txt`
+        export
+LD_LIBRARY_PATH="/your-path/hadoop-1.1.2/c++/Linux-i386-32/lib:/usr/lib/jvm/jdk1.6.0_31/jre/lib/i386/server"
+        export LIB_JVM_DIR=/usr/lib/jvm/jdk1.6.0_31/jre/lib/i386/server
+        export PATH=.:/usr/lib/jvm/jdk1.6.0_31/bin:$PATH
+   
+	2.3: $ cd iRODs-v3.3
+	     $ ./irodssetup
+        Make sure iRODS setup and up running OK,
+	
+step 3: use hdfs (using standalone HDFS install, single machine)
+       To startart HDFS in this standalone case:
+        $ cd /path-to/hadoop-1.1.2
+	$ bin/start-all.sh
+        $ jps
+          should had all these processes:Namenode, Datanode,
+          SecondaryNamenode,JobTracker,TaskTracker
+        eg. $ jps
+         27709 JobTracker
+         27843 TaskTracker
+         27622 SecondaryNameNode
+         27382 NameNode
+         27499 DataNode
+        $ bin/hadoop dfs -ls /
+        $ bin/hadoop dfs -mkdir mydfsVault
+
+	$ ./irodsctl start
+	$ iadmin at resc_type “hdfs file system”
+	$ iadmin mkresc hdfsResc  “hdfs file system” archive your-iRODS-host  /user/sheauc/mydfsVault
+	$ iput -R  hdfsResc localFile 
+

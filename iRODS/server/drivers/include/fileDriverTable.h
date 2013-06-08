@@ -32,6 +32,10 @@
 #include "directAccessFileDriver.h"
 #endif
 
+#ifdef HDFS
+#include "hdfsFileDriver.h"
+#endif
+
 #ifdef PYDAP
 #include "pydapDriver.h"
 #endif
@@ -259,9 +263,17 @@ fileDriver_t FileDriverTable[] = {
 #else
     {TDS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
+#ifdef HDFS
+    { HDFS_FILE_TYPE, hdfsFileCreate, hdfsFileOpen, hdfsFileRead, hdfsFileWrite,
+      hdfsFileClose, hdfsFileUnlink, hdfsFileStat, hdfsFileFstat, hdfsFileLseek,
+      hdfsFileFsync, hdfsFileMkdir, hdfsFileChmod, hdfsFileRmdir, hdfsFileOpendir,
+      hdfsFileClosedir, hdfsFileReaddir, hdfsFileStage, hdfsFileRename,
+      hdfsFileGetFsFreeSpace, hdfsFileTruncate, hdfsStageToCache, 
+      hdfsSyncToArch},
+#else
+    {HDFS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
 };
-
-
 
 
 

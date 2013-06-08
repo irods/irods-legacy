@@ -92,6 +92,14 @@ ifdef AMAZON_S3
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/s3FileDriver.o
 endif
 
+ifdef HDFS
+SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hdfsFileDriver.o
+INCLUDES += -I$${HADOOP_HOME}/src/c++/libhdfs
+INCLUDES += -I$${JAVA_HOME}/include
+INCLUDES += -I$${JAVA_HOME}/include/linux
+LDFLAGS += -L$${HADOOP_HOME}/c++/Linux-amd64-64/lib -lhdfs
+endif
+
 ifdef DDN_WOS
 SVR_DRIVERS_CPP_OBJS+=$(svrDriversObjDir)/wosFunctPP.o
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/wosFileDriver.o

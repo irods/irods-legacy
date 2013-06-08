@@ -309,6 +309,7 @@ typedef enum {
     PYDAP_FILE_TYPE,
     ERDDAP_FILE_TYPE,
     TDS_FILE_TYPE,
+    HDFS_FILE_TYPE
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600
