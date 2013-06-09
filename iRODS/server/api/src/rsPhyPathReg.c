@@ -877,6 +877,10 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     addKeyVal (&collCreateInp.condInput, COLLECTION_INFO1_KW, 
      dataObjInp.objPath);
 
+    char collInfo2[MAX_NAME_LEN];
+    snprintf(collInfo2, MAX_NAME_LEN, ";;;%s;;;0", rescInfo->rescName);
+    addKeyVal (&collCreateInp.condInput, COLLECTION_INFO2_KW, collInfo2);
+
     /* try to mod the coll first */
     status = rsModColl (rsComm, &collCreateInp);
 
