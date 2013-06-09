@@ -181,8 +181,9 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   GlobalAllRuleExecFlag = allRuleExecFlag;
 
-  if (GlobalREAuditFlag)
-    reDebug("ApplyAllRules", -1, inAction,inMsParamArray,rei);
+  if (GlobalREAuditFlag) {
+    reDebug(APPLY_ALL_RULES, -1, inAction,inMsParamArray,rei);
+  }
 
   if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
     i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
@@ -445,16 +446,31 @@ int computeExpression(char *inAction, msParamArray_t *inMsParamArray, ruleExecIn
 /* This function computes the expression in inAction using inMsParamArray as the env.
  * It doesn't update inMsParamArray with the new env. */
 int
-applyRule(char *inAction, msParamArray_t *inMsParamArray,
-	  ruleExecInfo_t *rei, int reiSaveFlag)
-{
+applyRule(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag) {
+	return applyRuleBase(inAction, inMsParamArray, 0, rei, reiSaveFlag);
+}
+
+/* This function computes the expression in inAction using inMsParamArray as the env and updates inMsParamArray with the new env. */
+int
+applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag) {
+    return applyRuleBase(inAction, inMsParamArray, 1, rei, reiSaveFlag);
+
+}
+
+int
+applyRuleBase(char *inAction, msParamArray_t *inMsParamArray, int updateInMsParam, ruleExecInfo_t *rei, int reiSaveFlag) {
     #if defined(DEBUG) || defined(RE_LOG_RULES_TMP)
     writeToTmp("entry.log", "applyRule: ");
     writeToTmp("entry.log", inAction);
     writeToTmp("entry.log", "\n");
     #endif
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "", inAction,NULL,NULL,rei);
+    if (GlobalREAuditFlag > 0) {
+  	  RuleEngineEventParam param;
+  	  param.actionName = inAction;
+  	  param.ruleIndex = -1;
+  	  reDebug(APPLY_RULE_BEGIN, -1, &param, NULL, NULL,rei);
+
+    }
 
 	Region *r = make_region(0, NULL);
 
@@ -473,39 +489,17 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	}
 	ret = processReturnRes(res);
     region_free(r);
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "Done", inAction,NULL,NULL,rei);
+    if (GlobalREAuditFlag > 0) {
+  	  RuleEngineEventParam param;
+  	  param.actionName = inAction;
+  	  param.ruleIndex = -1;
+      reDebug(APPLY_RULE_END, -1, &param, NULL,NULL,rei);
+    }
 
     return ret;
 
 }
 
-/* This function computes the expression in inAction using inMsParamArray as the env and updates inMsParamArray with the new env. */
-int
-applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray,
-	  ruleExecInfo_t *rei, int reiSaveFlag)
-{
-    #ifdef DEBUG
-    writeToTmp("entry.log", "applyRule: ");
-    writeToTmp("entry.log", inAction);
-    writeToTmp("entry.log", "\n");
-    #endif
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "", inAction,NULL,NULL,rei);
-
-	Region *r = make_region(0, NULL);
-
-    int ret;
-    Res *res;
-	res = parseAndComputeExpressionAdapter(inAction, inMsParamArray, 1, rei, reiSaveFlag, r);
-	ret = processReturnRes(res);
-    region_free(r);
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "Done", inAction,NULL,NULL,rei);
-
-    return ret;
-
-}
 
 
 
@@ -525,12 +519,21 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     /* set global flag */
     GlobalAllRuleExecFlag = allRuleExecFlag == 1? 2 : 1;
 
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyAllRules", -1, "", inAction,NULL, NULL,rei);
+    if (GlobalREAuditFlag > 0) {
+    	RuleEngineEventParam param;
+    	param.actionName = inAction;
+    	param.ruleIndex = -1;
+        reDebug(APPLY_ALL_RULES_BEGIN, -1, &param, NULL, NULL,rei);
+    }
 
     int ret = applyRule(inAction, inMsParamArray, rei, reiSaveFlag);
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyAllRules", -1, "Done", inAction,NULL,NULL,rei);
+
+    if (GlobalREAuditFlag > 0) {
+    	RuleEngineEventParam param;
+    	param.actionName = inAction;
+    	param.ruleIndex = -1;
+        reDebug(APPLY_ALL_RULES_END, -1, &param, NULL, NULL,rei);
+    }
 
     /* restore global flag */
     GlobalAllRuleExecFlag = tempFlag;
@@ -623,8 +626,13 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
 	    rodsLog (LOG_NOTICE,"+Executing MyRule for Action:%s\n",action);
     }
 #endif
-    if (GlobalREAuditFlag)
-        reDebug("ExecMyRule", -1, "", ruleDef,NULL, NULL,rei);
+    if (GlobalREAuditFlag) {
+    	RuleEngineEventParam param;
+    	param.actionName = ruleDef;
+    	param.ruleIndex = -1;
+    	reDebug(EXEC_MY_RULE_BEGIN, -1, &param, NULL, NULL,rei);
+    }
+
 
     char *outParamNames[MAX_PARAMS_LEN];
     int n = extractVarNames(outParamNames, outParamsDesc);
@@ -643,8 +651,12 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
       rodsLog (LOG_NOTICE,"execMyRule %s Failed with status %i",ruleDef, status);
     }
 
-    if (GlobalREAuditFlag)
-        reDebug("ExecMyRule", -1, "Done", ruleDef,NULL, NULL,rei);
+    if (GlobalREAuditFlag) {
+    	RuleEngineEventParam param;
+    	param.actionName = ruleDef;
+    	param.ruleIndex = -1;
+    	reDebug(EXEC_MY_RULE_END, -1, &param, NULL, NULL,rei);
+    }
     return(status);
 }
 
@@ -668,6 +680,10 @@ initRuleStruct(int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, c
       i = readRuleStructFromFile(processType, irbSet, &coreRuleStrct);
     if (i < 0)
       return(i);
+    /* read logging settings */
+    if(svrComm != NULL) { /* if this is not a process started by a client, then we used the default logging setting */
+    	readICatUserLogging(svrComm->clientUser.userName, &ruleEngineConfig.logging, svrComm);
+    }
     /*strcpy(r2,r3);
   }*/
   strcpy(r2,dvmSet);

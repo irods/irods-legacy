@@ -4,6 +4,7 @@
 #include "restructs.h"
 #include "conversion.h"
 #include "configuration.h"
+#include "reVariableMap.gen.h"
 /* make a new type by substituting tvars with fresh tvars */
 ExprType *dupType(ExprType *ty, Region *r) {
     Hashtable *varTable = newHashTable2(100, r);
@@ -463,41 +464,6 @@ void cpEnv2(Env *env, Region *oldr, Region *r) {
     }
 }
 
-Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r) {
-    int i;
-    char *varMap;
-    char errbuf[ERR_MSG_LEN];
-    if (varName[0] == '$') {
-        if(TYPE(val)!=T_STRING) {
-            snprintf(errbuf, ERR_MSG_LEN, "error: assign a nonstring value to session variable %s.", varName);
-            addRErrorMsg(errmsg, RE_UNSUPPORTED_OP_OR_TYPE, errbuf);
-            return newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
-        }
-        i = getVarMap("", varName, &varMap, 0);
-        if (i < 0) {
-            snprintf(errbuf, ERR_MSG_LEN, "error: unsupported session variable \"%s\".",varName);
-            addRErrorMsg(errmsg, RE_UNSUPPORTED_SESSION_VAR, errbuf);
-            return newErrorRes(r, RE_UNSUPPORTED_SESSION_VAR);
-        }
-        setVarValue(varMap, rei, val->text);
-        free(varMap);
-        return newIntRes(r, 0);
-    }
-    else if(varName[0] == '*') {
-        if(lookupFromEnv(env, varName)==NULL) {
-            /* new variable */
-            if(insertIntoHashTable(env->current, varName, val) == 0) {
-                snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
-                addRErrorMsg(errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
-                return newErrorRes(r, RE_UNABLE_TO_WRITE_LOCAL_VAR);
-            }
-        } else {
-                updateInEnv(env, varName, val);
-        }
-        return newIntRes(r, 0);
-    }
-    return newIntRes(r, 0);
-}
 
 void printType(ExprType *type, Hashtable *var_types) {
     char buf[1024];

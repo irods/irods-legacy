@@ -9,6 +9,11 @@
 #ifndef DEBUG
 #include "apiHeaderAll.h"
 #include "rsApiHandler.h"
+#include "dataObjOpr.h"
+#else
+int
+getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfo);
 #endif
 
 
@@ -369,7 +374,7 @@ int reIterable_genQuery_hasNext(ReIterableData *itrData, Region *r) {
 Res *reIterable_genQuery_next(ReIterableData *itrData, Region *r) {
 	ReIterable_genQuery_data *data = (ReIterable_genQuery_data *) itrData->itrSpecData;
 	Res *elem = getValueFromCollection(itrData->res->subtrees[1]->exprType->text, data->genQueryOut, data->i++, r);
-	setVariableValue(itrData->varName, elem, itrData->rei, itrData->env, itrData->errmsg, r);
+	setVariableValue(itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r);
 	Res *res = evaluateActions(itrData->subtrees[2], itrData->subtrees[3], 0, itrData->rei,itrData->reiSaveFlag,  itrData->env,itrData->errmsg,r);
 	clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
 	free(RES_UNINTER_STRUCT(elem));
@@ -418,7 +423,7 @@ int reIterable_list_hasNext(ReIterableData *itrData, Region *r) {
 Res *reIterable_list_next(ReIterableData *itrData, Region *r) {
 	ReIterable_list_data *data = (ReIterable_list_data *) itrData->itrSpecData;
 	Res *elem = data->elems[data->i++];
-	setVariableValue(itrData->varName, elem, itrData->rei, itrData->env, itrData->errmsg, r);
+	setVariableValue(itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r);
 	Res *res = evaluateActions(itrData->subtrees[2], itrData->subtrees[3], 0, itrData->rei,itrData->reiSaveFlag, itrData->env,itrData->errmsg, r);
 	return res;
 }
@@ -450,7 +455,7 @@ int reIterable_irods_hasNext(ReIterableData *itrData, Region *r) {
 Res *reIterable_irods_next(ReIterableData *itrData, Region *r) {
 	ReIterable_irods_data *data = (ReIterable_irods_data *) itrData->itrSpecData;
 	Res *elem = getValueFromCollection(itrData->res->exprType->text, RES_UNINTER_STRUCT(itrData->res), data->i++, r);
-	setVariableValue(itrData->varName, elem, itrData->rei, itrData->env, itrData->errmsg, r);
+	setVariableValue(itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r);
 	Res *res = evaluateActions(itrData->subtrees[2], itrData->subtrees[3], 0, itrData->rei,itrData->reiSaveFlag, itrData->env,itrData->errmsg, r);
 	return res;
 }
@@ -1251,7 +1256,26 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 			char *tmp = (char *)malloc(len+1);
 			memcpy(tmp, buf->buf, len);
 			tmp[len] = '\0';
-			return newStringRes(r, tmp);
+			res = newStringRes(r, tmp);
+		} else if(TYPE(val) == T_IRODS && strcmp(val->exprType->text, KeyValPair_MS_T) == 0) {
+			int size = 1024;
+			char *buf = (char *) malloc(size);
+			char *p = buf;
+			keyValPair_t *kvp = (keyValPair_t *) RES_UNINTER_STRUCT(val);
+			int i;
+			int kl;
+			int vl;
+			for(i=0;i<kvp->len;i++) {
+				kl = strlen(kvp->keyWord[i]);
+				vl = strlen(kvp->value[i]);
+				if(p + kl + 1 + vl +(i==0?0:4) >= buf+size) {
+					size*=2;
+					buf = (char *) realloc(buf, size);
+				}
+				snprintf(p, size - (p-buf), "%s%s=%s", i==0?"":"++++", kvp->keyWord[i], kvp->value[i]);
+			}
+			res = newStringRes(r, buf);
+			free(buf);
 		} else {
                     res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
                     snprintf(errmsgbuf, ERR_MSG_LEN, "error: unsupported type. can not convert %s to string.", typeName_Res(val));
@@ -1557,6 +1581,9 @@ Res *smsi_eq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
         case T_STRING:
 			return newBoolRes(r, strcmp(params[0]->text, params[1]->text) ==0?1:0);
             break;
+        case T_PATH:
+        	return newBoolRes(r, strcmp(params[0]->text, params[1]->text) ==0?1:0);
+        	break;
         default:
             break;
     }
@@ -1582,6 +1609,9 @@ Res *smsi_neq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
         case T_STRING:
 			return newBoolRes(r, strcmp(params[0]->text, params[1]->text) !=0?1:0);
             break;
+        case T_PATH:
+        	return newBoolRes(r, strcmp(params[0]->text, params[1]->text) !=0?1:0);
+        	break;
         default:
             break;
     }
@@ -1701,7 +1731,6 @@ Res *smsi_errormsg(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int r
     freeRErrorContent(errmsg);
     free(errbuf);
     switch(getNodeType(res)) {
-
         case N_ERROR:
             return newIntRes(r, RES_ERR_CODE(res));
         default:
@@ -2395,6 +2424,31 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
   return newIntRes(r, 0);
 }
 
+Res *smsi_getReLogging(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	int logging;
+	char *userName = paramsr[0]->text;
+	int i = readICatUserLogging(userName, &logging, rei->rsComm);
+	if(i<0) {
+		  generateAndAddErrMsg("error reading RE logging settings.", node, i, errmsg);
+		  return newErrorRes(r, i);
+
+	}
+	return newBoolRes(r, logging);
+}
+
+Res *smsi_setReLogging(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *userName = paramsr[0]->text;
+	int logging = RES_BOOL_VAL(paramsr[1]);
+
+	int i = writeICatUserLogging(userName, logging, rei->rsComm);
+	if(i<0) {
+		  generateAndAddErrMsg("error writing RE logging settings.", node, i, errmsg);
+		  return newErrorRes(r, i);
+
+	}
+	return newIntRes(r, 0);
+}
+
 
 Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
@@ -2455,6 +2509,25 @@ Res *smsi_applyAllRules(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei,
 
   return res;
 
+}
+
+
+Res *smsi_msiDataObjInfo(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	dataObjInfo_t *doi;
+	if(TYPE(subtrees[1]) != T_UNSPECED) {
+		freeAllDataObjInfo((dataObjInfo_t *) RES_UNINTER_STRUCT(subtrees[1]));
+	}
+	dataObjInp_t *doinp = (dataObjInp_t *) RES_UNINTER_STRUCT(subtrees[0]);
+
+    int status = getDataObjInfoIncSpecColl (rei->rsComm, doinp, &doi);
+    if(status < 0) {
+    	char errmsgBuf[ERR_MSG_LEN];
+    	snprintf(errmsgBuf, ERR_MSG_LEN, "error occurred when getting data object info for %p", rei->doinp->objPath);
+    	generateAndAddErrMsg(errmsgBuf, node, status, errmsg);
+    	return newErrorRes(r, status);
+    }
+    subtrees[1] = newUninterpretedRes(r, DataObjInfo_MS_T, doi, NULL);
+    return newIntRes(r, 0);
 }
 
 Res *smsi_path(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -2770,8 +2843,8 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "if", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
     insertIntoHashTable(ft, "for", newFunctionFD("e ? * e boolean * e ? * a ? * a ?->?",smsi_forExec, r));
     insertIntoHashTable(ft, "while", newFunctionFD("e boolean * a ? * a ?->?",smsi_whileExec, r));
-    insertIntoHashTable(ft, "foreach", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
-    insertIntoHashTable(ft, "foreach2", newFunctionFD("forall X, e X * e list X * a ? * a ?->?", smsi_forEach2Exec, r));
+    insertIntoHashTable(ft, "foreach", newFunctionFD("e f list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "foreach2", newFunctionFD("forall X, e X * f list X * a ? * a ?->?", smsi_forEach2Exec, r));
     insertIntoHashTable(ft, "break", newFunctionFD("->integer", smsi_break, r));
     insertIntoHashTable(ft, "succeed", newFunctionFD("->integer", smsi_succeed, r));
     insertIntoHashTable(ft, "fail", newFunctionFD("integer ?->integer", smsi_fail, r));
@@ -2830,8 +2903,8 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "&&", newFunctionFD("boolean * boolean->boolean",smsi_and, r));
     insertIntoHashTable(ft, "||", newFunctionFD("boolean * boolean->boolean",smsi_or, r));
     insertIntoHashTable(ft, "%%", newFunctionFD("boolean * boolean->boolean",smsi_or, r));
-    insertIntoHashTable(ft, "==", newFunctionFD("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_eq, r));
-    insertIntoHashTable(ft, "!=", newFunctionFD("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_neq, r));
+    insertIntoHashTable(ft, "==", newFunctionFD("forall X in {integer double boolean string time path}, f X * f X->boolean",smsi_eq, r));
+    insertIntoHashTable(ft, "!=", newFunctionFD("forall X in {integer double boolean string time path}, f X * f X->boolean",smsi_neq, r));
     insertIntoHashTable(ft, ">", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_gt, r));
     insertIntoHashTable(ft, "<", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_lt, r));
     insertIntoHashTable(ft, ">=", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_ge, r));
@@ -2873,10 +2946,14 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionFD("string * d `RuleSet_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
     insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionFD("string * `RuleSet_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
     insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+    insertIntoHashTable(ft, "getReLogging", newFunctionFD("string -> boolean", smsi_getReLogging, r));
+    insertIntoHashTable(ft, "setReLogging", newFunctionFD("string * boolean -> integer", smsi_setReLogging, r));
     insertIntoHashTable(ft, "collectionSpider", newFunctionFD("forall X in {string `CollInpNew_PI`}, expression ? * X * actions ? * actions ? -> integer", smsiCollectionSpider, r));
     insertIntoHashTable(ft, "path", newFunctionFD("string -> path", smsi_path, r));
     insertIntoHashTable(ft, "collection", newFunctionFD("path -> `CollInpNew_PI`", smsi_collection, r));
-    insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double", (SmsiFuncTypePtr) NULL, r));
+    insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));
+    insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double : 0 {string}", (SmsiFuncTypePtr) NULL, r));
+    insertIntoHashTable(ft, "rei->doi->writeFlag", newFunctionFD("integer : 0 {string}", (SmsiFuncTypePtr) NULL, r));
 
 #ifdef RE_BACKWARD_COMPATIBLE
     insertIntoHashTable(ft, "assignStr", newFunctionFD("e ? * e ?->integer", smsi_assignStr, r));

@@ -194,8 +194,19 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen, int pat
                     nextChar(e);
                     break;
                 } else {
+#ifndef CODE_GENERATION
                     skipComments(e);
                     continue;
+#else
+                    ch = nextChar(e);
+                    while (isalpha(ch)) {
+                        ch = nextChar(e);
+                    }
+					FPOS;
+					dupString(e, &start, (int) (pos.exprloc - start.exprloc), token->text);
+                    token->type = TK_TEXT;
+                    break;
+#endif
                 }
             } else if(ch == '-' || ch == '=') {
                 if(lookAhead(e,1)=='>') {
@@ -224,6 +235,7 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen, int pat
                 }
                 nextChar(e);
                 break;
+#ifndef CODE_GENERATION
             } else if (ch == '*' || ch == '$') { /* variable */
                 token->type = ch == '*' ? TK_LOCAL_VAR : TK_SESSION_VAR;
 
@@ -243,6 +255,27 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen, int pat
             	nextStringBase(e, token->text, "),; \t\r\n", 0, '\\', 0, token->vars); /* path can be used in a foreach loop or assignment, or as a function argument */
             	token->type = TK_PATH;
 				break;
+#else
+            } else if (ch == '/' && lookAhead(e, 1) == '*') { /* C comments */
+            	nextChar(e);
+            	do {
+            		ch = nextChar(e);
+            	} while(ch != -1 && (ch!='*' || lookAhead(e, 1)!='/'));
+        		if(ch == -1) {
+        			token->type = T_ERROR;
+        			break;
+        		} else {
+        			nextChar(e);
+        			nextChar(e);
+        			continue;
+        		}
+            } else if(ch == '&') {
+                (token->text)[0] = ch;
+                (token->text)[1] = '\0';
+                token->type = TK_MISC_OP;
+                nextChar(e);
+                break;
+#endif
             }
 
             char op[100];
@@ -2942,6 +2975,14 @@ PARSER_FUNC_BEGIN2(_Type, int prec, int lifted)
                     OPTIONAL_END(argList)
                     BUILD_NODE(T_CONS, cons, &start, n, n);
             END_TRY(type)
+            OPTIONAL_BEGIN(kind)
+            	TTEXT(":");
+            	NT2(_Type, 1, 0);
+            	SWAP;
+            	node = POP;
+            	node->exprType = POP;
+            	PUSH(node);
+            OPTIONAL_END(kind)
             if(!cont) {
                 arity ++;
                 TRY(typeEnd)

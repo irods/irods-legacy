@@ -8,6 +8,7 @@
 #include "typing.h"
 
 #ifndef HAS_MICROSDEF_T
+#define HAS_MICROSDEF_T
 typedef struct {
   char action[MAX_ACTION_SIZE];
   int numberOfStringArgs;
@@ -35,7 +36,6 @@ int actionTableLookUp3 (MS_DEF_TYPE& microsdef, char *action);
 int actionTableLookUp3 (MS_DEF_TYPE* microsdef, char *action);
 
 #endif // ifdef USE_EIRODS
-
 
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
 int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r);

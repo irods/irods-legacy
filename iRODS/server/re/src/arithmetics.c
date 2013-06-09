@@ -10,6 +10,9 @@
 #include "rules.h"
 #include "functions.h"
 #include "configuration.h"
+#include "reVariableMap.gen.h"
+#include "reVariableMap.h"
+#include "debug.h"
 
 
 
@@ -211,10 +214,14 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
         char *buf2;
         char buf3[ERR_MSG_LEN];
         ExprType *coercion = type;
+        ExprType *futureCoercion = NULL;
         if(getNodeType(coercion) == T_FLEX) {
             coercion = coercion->subtrees[0];
         } else if(getNodeType(coercion) == T_FIXD) {
         	coercion = coercion->subtrees[1];
+        }
+        if(coercion->exprType != NULL) {
+        	futureCoercion = coercion->exprType;
         }
         coercion = instantiate(coercion, tvarEnv, 0, r);
         if(getNodeType(coercion) == T_VAR) {
@@ -230,8 +237,9 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
             updateInHashTable(tvarEnv, getTVarName(T_VAR_ID(coercion), buf), defaultType);
             coercion = defaultType;
         }
+        Res *nres = NULL;
         if(typeEqSyntatic(coercion, res->exprType)) {
-            return res;
+            nres = res;
         } else {
             if(TYPE(res)==T_UNSPECED) {
                 generateErrMsg("error: dynamic coercion from an uninitialized value", NODE_EXPR_POS(node), node->base, buf);
@@ -240,20 +248,25 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
             }
             switch(getNodeType(coercion)) {
                 case T_DYNAMIC:
-                    return res;
+                	nres = res;
+                	break;
                 case T_INT:
                     switch(TYPE(res) ) {
                         case T_DOUBLE:
-                        case T_BOOL:
                             if((int)RES_DOUBLE_VAL(res)!=RES_DOUBLE_VAL(res)) {
                                 generateErrMsg("error: dynamic type conversion DOUBLE -> INTEGER: the double is not an integer", NODE_EXPR_POS(node), node->base, buf);
                                 addRErrorMsg(errmsg, RE_DYNAMIC_COERCION_ERROR, buf);
                                 return newErrorRes(r, RE_DYNAMIC_COERCION_ERROR);
                             } else {
-                                return newIntRes(r, RES_INT_VAL(res));
+                                nres = newIntRes(r, RES_INT_VAL(res));
                             }
+                            break;
+                        case T_BOOL:
+                        	nres = newIntRes(r, RES_BOOL_VAL(res));
+                        	break;
                         case T_STRING:
-                            return newIntRes(r, atoi(res->text));
+                            nres = newIntRes(r, atoi(res->text));
+                            break;
                         default:
                             break;
                     }
@@ -261,10 +274,14 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                 case T_DOUBLE:
                     switch(TYPE(res) ) {
                         case T_INT:
+                            nres = newDoubleRes(r, RES_INT_VAL(res));
+                            break;
                         case T_BOOL:
-                            return newDoubleRes(r, RES_DOUBLE_VAL(res));
+                            nres = newDoubleRes(r, RES_BOOL_VAL(res));
+                            break;
                         case T_STRING:
-                            return newDoubleRes(r, atof(res->text));
+                            nres = newDoubleRes(r, atof(res->text));
+                            break;
                         default:
                             break;
                     }
@@ -276,9 +293,9 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                         case T_BOOL:
                             buf2 = convertResToString(res);
 
-                            res = newStringRes(r, buf2);
+                            nres = newStringRes(r, buf2);
                             free(buf2);
-                            return res;
+                            break;
                         default:
                             break;
                     }
@@ -286,20 +303,25 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
 				case T_PATH:
 					switch(TYPE(res)) {
 					case T_STRING:
-						return newPathRes(r, res->text);
+						nres = newPathRes(r, res->text);
+						break;
 					default:
 						break;
 					}
+					break;
                 case T_BOOL:
                     switch(TYPE(res) ) {
                         case T_INT:
+                            nres = newBoolRes(r, RES_INT_VAL(res));
+                            break;
                         case T_DOUBLE:
-                            return newBoolRes(r, RES_BOOL_VAL(res));
+                            nres = newBoolRes(r, RES_DOUBLE_VAL(res));
+                            break;
                         case T_STRING:
                             if(strcmp(res->text, "true")==0) {
-                                return newBoolRes(r, 1);
+                                nres = newBoolRes(r, 1);
                             } else if(strcmp(res->text, "false")==0) {
-                                return newBoolRes(r, 0);
+                                nres = newBoolRes(r, 0);
                             } else {
                                 generateErrMsg("error: dynamic type conversion  string -> bool: the string is not in {true, false}", NODE_EXPR_POS(node), node->base, buf);
                                 addRErrorMsg(errmsg, RE_DYNAMIC_COERCION_ERROR, buf);
@@ -314,14 +336,22 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                     /* we can ignore the not top level type constructor and leave type checking to when it is derefed */
                     switch(TYPE(res)) {
                         case T_CONS:
-                            return res;
+                        	nres = res;
+                        	break;
                         case T_IRODS:
                             if(strcmp(res->exprType->text, IntArray_MS_T) == 0 ||
                                strcmp(res->exprType->text, StrArray_MS_T) == 0 ||
                                strcmp(res->exprType->text, GenQueryOut_MS_T) == 0) {
-                                return res;
+                            	nres = res;
                             }
                             break;
+                        case T_TUPLE:
+                        	if(res->exprType->degree == 2 &&
+                        			getNodeType(res->exprType->subtrees[0]) == T_IRODS && strcmp(res->exprType->subtrees[0]->text, GenQueryInp_MS_T) == 0 &&
+                        			getNodeType(res->exprType->subtrees[1]) == T_IRODS && strcmp(res->exprType->subtrees[1]->text, GenQueryOut_MS_T) == 0) {
+                        		nres = res;
+                        	}
+                        	break;
                         default:
                             break;
                     }
@@ -329,8 +359,11 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                 case T_DATETIME:
                     switch(TYPE(res)) {
                         case T_INT:
-                            newDatetimeRes(r, (time_t) RES_INT_VAL(res));
+                            nres = newDatetimeRes(r, (time_t) RES_INT_VAL(res));
                             break;
+                        case T_DOUBLE:
+                        	nres = newDatetimeRes(r, (time_t) RES_DOUBLE_VAL(res));
+                        	break;
                         default:
                             break;
                     }
@@ -338,14 +371,42 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                 default:
                     break;
             }
-            char typeBuf1[128], typeBuf2[128];
-            snprintf(buf, ERR_MSG_LEN, "error: coerce from type %s to type %s",
-            		typeToString(res->exprType, tvarEnv, typeBuf1, 128),
-            		typeToString(coercion, tvarEnv, typeBuf2, 128));
-            generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf3);
-            addRErrorMsg(errmsg, RE_TYPE_ERROR, buf3);
-            return newErrorRes(r, RE_TYPE_ERROR);
         }
+		char typeBuf1[128], typeBuf2[128];
+		if(nres != NULL) {
+			if(futureCoercion != NULL) {
+				if(getNodeType(futureCoercion) != T_VAR || futureCoercion->degree == 0) {
+					snprintf(buf, ERR_MSG_LEN, "error: flexible coercion target type supported only for union types, but is applied to %s",
+							typeToString(futureCoercion, tvarEnv, typeBuf1, 128));
+					generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf3);
+					addRErrorMsg(errmsg, RE_TYPE_ERROR, buf3);
+					return newErrorRes(r, RE_TYPE_ERROR);
+				}
+				switch(TYPE(nres)) {
+				case T_INT:
+					nres = newIntRes(r, RES_INT_VAL(nres));
+					nres->exprType->exprType = futureCoercion;
+					break;
+				case T_DOUBLE:
+					nres = newDoubleRes(r, RES_DOUBLE_VAL(nres));
+					nres->exprType->exprType = futureCoercion;
+					break;
+				default:
+					snprintf(buf, ERR_MSG_LEN, "error: flexible coercion source type supported only for integer or double, but is applied to %s",
+							typeToString(nres->exprType, tvarEnv, typeBuf1, 128));
+					generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf3);
+					addRErrorMsg(errmsg, RE_TYPE_ERROR, buf3);
+					return newErrorRes(r, RE_TYPE_ERROR);
+				}
+			}
+			return nres;
+		}
+		snprintf(buf, ERR_MSG_LEN, "error: coerce from type %s to type %s",
+				typeToString(res->exprType, tvarEnv, typeBuf1, 128),
+				typeToString(coercion, tvarEnv, typeBuf2, 128));
+		generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf3);
+		addRErrorMsg(errmsg, RE_TYPE_ERROR, buf3);
+		return newErrorRes(r, RE_TYPE_ERROR);
 }
 
 Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r) {
@@ -368,8 +429,8 @@ Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, 
                 }
                 res = evaluateExpression3(nodei, applyAll, 0, rei, reiSaveFlag, env, errmsg,r);
                 if(getNodeType(res) == N_ERROR) {
-			char *errAction = getNodeType(nodei)==N_APPLICATION ? N_APP_FUNC(nodei)->text : nodei->text;
-                    #ifndef DEBUG
+					#ifndef DEBUG
+                		char *errAction = getNodeType(nodei)==N_APPLICATION ? N_APP_FUNC(nodei)->text : nodei->text;
                         sprintf(tmpStr,"executeRuleAction Failed for %s",errAction);
                         rodsLogError(LOG_ERROR,RES_ERR_CODE(res),tmpStr);
                         rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",errAction,RES_ERR_CODE(res));
@@ -392,8 +453,8 @@ Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, 
 
                             Res *res2 = evaluateExpression3(reco->subtrees[i2], 0, 0, rei, reiSaveFlag, env, errmsg, r);
                             if(getNodeType(res2) == N_ERROR) {
-				char *errAction = getNodeType(reco->subtrees[i2])==N_APPLICATION ? N_APP_FUNC(reco->subtrees[i2])->text : reco->subtrees[i2]->text;
-                            #ifndef DEBUG
+							#ifndef DEBUG
+                            	char *errAction = getNodeType(reco->subtrees[i2])==N_APPLICATION ? N_APP_FUNC(reco->subtrees[i2])->text : reco->subtrees[i2]->text;
                                 sprintf(tmpStr,"executeRuleRecovery Failed for %s", errAction);
                                 rodsLogError(LOG_ERROR,RES_ERR_CODE(res2),tmpStr);
                             #endif
@@ -500,19 +561,6 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     FunctionDesc *fd = NULL;
     /* look up function descriptor */
     fd = (FunctionDesc *)lookupFromEnv(ruleEngineConfig.extFuncDescIndex, fn);
-        /* find matching arity */
-/*    if(fd!=NULL) {
-        if((fd->exprType->vararg == ONCE && T_FUNC_ARITY(fd->exprType) == n) ||
-            (fd->exprType->vararg == STAR && T_FUNC_ARITY(fd->exprType) - 2 <= n) ||
-            (fd->exprType->vararg == PLUS && T_FUNC_ARITY(fd->exprType) - 1 <= n)) {
-        } else {
-            snprintf(buf, ERR_MSG_LEN, "error: arity mismatch for function %s", fn);
-            generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf2);
-            addRErrorMsg(errmsg, -1, buf2);
-            res = newErrorRes(r, -1);
-            RETURN;
-        }
-    }*/
 
     localTypingConstraints = newList(r);
     char ioParam[MAX_FUNC_PARAMS];
@@ -534,7 +582,10 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
             case IO_TYPE_DYNAMIC: /* dynamic */
             	if(isVariableNode(appArgs[i])) {
 					args[i] = attemptToEvaluateVar3(appArgs[i]->text, appArgs[i], rei, reiSaveFlag, env, errmsg, newRegion);
-					if(TYPE(args[i]) == T_UNSPECED) {
+					if(getNodeType(args[i]) == N_ERROR) {
+						res = args[i];
+						RETURN;
+					} else if(TYPE(args[i]) == T_UNSPECED) {
 						ioParam[i] = 'o';
 					} else {
 						ioParam[i] = 'p';
@@ -611,9 +662,10 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 
 
 	if (GlobalREAuditFlag > 0) {
-		char tmpActStr[MAX_ACTION_SIZE];
-		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, fn, args, n);
-		reDebug("  ExecAction", -4, "", tmpActStr, node, env,rei);
+		RuleEngineEventParam param;
+		param.actionName = fn;
+		param.ruleIndex = -1;
+		reDebug(EXEC_ACTION_BEGIN, -4, &param, node, env,rei);
     }
 
     if(fd!=NULL) {
@@ -643,9 +695,11 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     }
 
 	if (GlobalREAuditFlag > 0) {
-		char tmpActStr[MAX_ACTION_SIZE];
-		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, fn, args, n);
-		reDebug("  ExecAction", -4, "Done", tmpActStr, node, env,rei);
+		RuleEngineEventParam param;
+		param.actionName = fn;
+		param.ruleIndex = -1;
+
+		reDebug(EXEC_ACTION_END, -4, &param, node, env,rei);
     }
 
     if(getNodeType(res)==N_ERROR) {
@@ -663,7 +717,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
                 res = (Res *)args[i];
                 RETURN ;
             }
-            resp = setVariableValue(appArgs[i]->text, args[i],rei,env,errmsg,r);
+            resp = setVariableValue(appArgs[i]->text, args[i], nodeArgs[i], rei,env,errmsg,r);
             /*char *buf = convertResToString(args[i]);
             printEnvIndent(env);
             printf("setting variable %s to %s\n", appArgs[i]->text, buf);
@@ -697,7 +751,7 @@ Res* attemptToEvaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSav
 			return res0;
 		}
 	} else if(vn[0]=='$') { /* session variable */
-        Res *res = getSessionVar("",vn,rei, env, errmsg,r);
+        Res *res = getSessionVar("",node, vn,rei, env, errmsg,r);
 		if(res==NULL) {
 			return newUnspecifiedRes(r);
 		} else {
@@ -712,6 +766,9 @@ Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, En
     char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
     char buf2[ERR_MSG_LEN];
     Res *res = attemptToEvaluateVar3(vn, node, rei, reiSaveFlag, env, errmsg, r);
+    if(getNodeType(res) == N_ERROR) {
+    	return res;
+    }
     if(res == NULL || TYPE(res) == T_UNSPECED) {
         if(vn[0]=='*') { /* local variable */
 		    snprintf(buf, ERR_MSG_LEN, "error: unable to read local variable %s.", vn);
@@ -738,9 +795,9 @@ Res* evaluateVar3(char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, En
  * return NULL error
  *        otherwise success
  */
-Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r) {
+Res* getSessionVar(char *action,  Node *node, char *varName,  ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r) {
   char *varMap;
-  void *varValue = NULL;
+  Res *varValue = NULL;
   int i, vinx;
   varValue = NULL;
 
@@ -750,57 +807,26 @@ Res* getSessionVar(char *action,  char *varName,  ruleExecInfo_t *rei, Env *env,
   vinx = getVarMap(action,varName, &varMap, 0); /* reVariableMap.c */
   while (vinx >= 0) {
 	/* Get the value of session variable referenced by varMap. */
-      i = getVarValue(varMap, rei, (char **)&varValue); /* reVariableMap.c */
-      /* convert to char * because getVarValue requires char * */
+      i = getVarValue(varMap, rei, &varValue, r); /* reVariableMap.c */
       if (i >= 0) {
-            if (varValue != NULL) {
-                Res *res = NULL;
-                FunctionDesc *fd = (FunctionDesc *) lookupFromEnv(ruleEngineConfig.extFuncDescIndex, varMap);
-                if (fd == NULL) {
-                    /* default to string */
-                    res = newStringRes(r, (char *) varValue);
-                    free(varValue);
-                } else {
-                    ExprType *type = T_FUNC_RET_TYPE(fd->exprType); /* get var type from varMap */
-                    switch (getNodeType(type)) {
-                        case T_STRING:
-                            res = newStringRes(r, (char *) varValue);
-                            free(varValue);
-                            break;
-                        case T_INT:
-                            res = newIntRes(r, atoi((char *)varValue));
-                            free(varValue);
-                            break;
-                        case T_DOUBLE:
-                            res = newDoubleRes(r, atof((char *)varValue));
-                            free(varValue);
-                            break;
-                        case T_IRODS:
-                            res = newUninterpretedRes(r, type->text, varValue, NULL);
-                            break;
-                        default:
-                            /* unsupported type error */
-                            res = newErrorRes(r, RE_UNSUPPORTED_SESSION_VAR_TYPE);
-                            addRErrorMsg(errmsg, RE_UNSUPPORTED_SESSION_VAR_TYPE, "error: unsupported session variable type");
-                            break;
-                    }
-                }
-                free(varMap);
-                return res;
-            } else {
-                return NULL;
-            }
+
+		FunctionDesc *fd = (FunctionDesc *) lookupFromEnv(ruleEngineConfig.extFuncDescIndex, varMap);
+		if (fd != NULL) {
+			ExprType *type = fd->exprType->subtrees[0]; /* get var type from varMap */
+			Hashtable *tvarEnv = newHashTable2(10, r);
+			varValue = processCoercion(node, varValue, type, tvarEnv, errmsg, r);
+		}
+		free(varMap);
+		return varValue;
     } else if (i == NULL_VALUE_ERR) { /* Try next varMap, starting from vinx+1. */
-      free(varMap);
-      vinx = getVarMap(action,varName, &varMap, vinx+1);
+		free(varMap);
+		vinx = getVarMap(action,varName, &varMap, vinx+1);
     } else { /* On error, return 0. */
-      free(varMap);
-      if (varValue != NULL) free (varValue);
-      return NULL;
+		free(varMap);
+		if (varValue != NULL) free (varValue);
+		return NULL;
     }
   }
-  /* varMap not found, return 0. */
-  if (varValue != NULL) free (varValue);
   return NULL;
 }
 
@@ -922,9 +948,10 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
         }
 
 	if (GlobalREAuditFlag > 0) {
-		char tmpActStr[MAX_ACTION_SIZE];
-		functionApplicationToString(tmpActStr,MAX_ACTION_SIZE, msName, args, nargs);
-		reDebug("    ExecMicroSrvc", -4, "", tmpActStr, node, env,rei);
+		RuleEngineEventParam param;
+		param.actionName = msName;
+		param.ruleIndex = -1;
+		reDebug(EXEC_MICRO_SERVICE_BEGIN, -4, &param, node, env,rei);
 	}
 
 	if (numOfStrArgs == 0)
@@ -952,13 +979,23 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 		                myArgv[8],myArgv [9],rei);
 
     /* move errmsgs from rei to errmsg */
-    replErrorStack(&rei->rsComm->rError, errmsg);
-    freeRErrorContent(&rei->rsComm->rError);
+	if(rei->rsComm != NULL) {
+		replErrorStack(&rei->rsComm->rError, errmsg);
+		freeRErrorContent(&rei->rsComm->rError);
+	}
 
     if(ii<0) {
         res = newErrorRes(r, ii);
         RETURN;
     }
+
+    if (GlobalREAuditFlag > 0) {
+		RuleEngineEventParam param;
+		param.actionName = msName;
+		param.ruleIndex = -1;
+		reDebug(EXEC_MICRO_SERVICE_END, -4, &param, node, env,rei);
+	}
+
     /* converts back env */
 	ret = updateMsParamArrayToEnvAndFreeNonIRODSType(rei->msParamArray, env, errmsg, r);
     if(ret!=0) {
@@ -1156,8 +1193,14 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 					continue;
 				}
 
-				if (GlobalREAuditFlag > 0)
-					reDebug("  GotRule", ruleInx, "", ruleName, NULL, env, rei); /* pass in NULL for inMsParamArray for now */
+				if (GlobalREAuditFlag > 0) {
+					RuleEngineEventParam param;
+					param.actionName = ruleName;
+					param.ruleIndex = ruleInx;
+					reDebug(GOT_RULE, 0, &param, rule, env, rei);
+
+				}
+
 		#ifndef DEBUG
 				if (reTestFlag > 0) {
 					if (reTestFlag == COMMAND_TEST_1)
@@ -1241,7 +1284,11 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, int applyAll, En
 				break;
 			}
 		}
-		reDebug("  ExecRule", -4, "", RULE_NAME(rule), NULL, env, rei); /* pass in NULL for inMsParamArray for now */
+
+		RuleEngineEventParam param;
+		param.actionName = RULE_NAME(rule);
+		param.ruleIndex = -1;
+		reDebug(EXEC_RULE_BEGIN, -4, &param, rule, env, rei); /* pass in NULL for inMsParamArray for now */
 	}
 	Node* ruleCondition = rule->subtrees[1];
 	Node* ruleAction = rule->subtrees[2];
@@ -1314,8 +1361,12 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, int applyAll, En
         cpEnv(global, r);
         /* deleteEnv(envNew, 2); */
         region_free(rNew);
-    	if (GlobalREAuditFlag > 0)
-    		reDebug("  ExecRule", -4, "Done", RULE_NAME(rule), NULL, env, rei); /* pass in NULL for inMsParamArray for now */
+    	if (GlobalREAuditFlag > 0) {
+    		RuleEngineEventParam param;
+    		param.actionName = RULE_NAME(rule);
+    		param.ruleIndex = -1;
+    		reDebug(EXEC_RULE_END, -4, &param, rule, env, rei);
+    	}
 
     	if(restoreGlobalREAuditFlag!=0) {
     		GlobalREAuditFlag = globalREAuditFlag;
@@ -1405,7 +1456,7 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 				updateInEnv(env, varName, val);
 			}
         } else if(varName[0] == '$') {
-        	return setVariableValue(varName, val, rei, env, errmsg, r);
+        	return setVariableValue(varName, val, pattern, rei, env, errmsg, r);
         }
         return newIntRes(r, 0);
 
@@ -1453,9 +1504,48 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 
 }
 
-            /** this allows use of cut as the last msi in the body so that other rules will not be processed
-                even when the current rule succeeds **/
-/*            if (cutFlag == 1)
-       		return(CUT_ACTION_ON_SUCCESS_PROCESSED_ERR);
-*/
-
+Res *setVariableValue(char *varName, Res *val, Node *node, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r) {
+    int i;
+    char *varMap;
+    char errbuf[ERR_MSG_LEN];
+    if (varName[0] == '$') {
+        i = getVarMap("", varName, &varMap, 0);
+        if (i < 0) {
+            snprintf(errbuf, ERR_MSG_LEN, "error: unsupported session variable \"%s\".",varName);
+            addRErrorMsg(errmsg, RE_UNSUPPORTED_SESSION_VAR, errbuf);
+            return newErrorRes(r, RE_UNSUPPORTED_SESSION_VAR);
+        }
+        FunctionDesc *fd = (FunctionDesc *) lookupFromEnv(ruleEngineConfig.extFuncDescIndex, varMap);
+    	Hashtable *tvarEnv = newHashTable2(10, r);
+        if (fd != NULL) {
+			ExprType *type = fd->exprType->subtrees[0]; /* get var type from varMap */
+        	val = processCoercion(node, val, type, tvarEnv, errmsg, r);
+            if(getNodeType(val)==N_ERROR) {
+                free(varMap);
+                return val;
+            }
+        }
+        ExprType *varType = getVarType(varMap, r);
+    	val = processCoercion(node, val, varType, tvarEnv, errmsg, r);
+        if(getNodeType(val)==N_ERROR) {
+            free(varMap);
+            return val;
+        }
+        setVarValue(varMap, rei, val);
+        free(varMap);
+        return newIntRes(r, 0);
+    } else if(varName[0] == '*') {
+        if(lookupFromEnv(env, varName)==NULL) {
+            /* new variable */
+            if(insertIntoHashTable(env->current, varName, val) == 0) {
+                snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
+                addRErrorMsg(errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
+                return newErrorRes(r, RE_UNABLE_TO_WRITE_LOCAL_VAR);
+            }
+        } else {
+                updateInEnv(env, varName, val);
+        }
+        return newIntRes(r, 0);
+    }
+    return newIntRes(r, 0);
+}

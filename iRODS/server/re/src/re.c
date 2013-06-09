@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include "re.h"
 
+#ifndef DEBUG
 int rule(char *name);
 
 int main(int argv, char **args) {
@@ -55,4 +56,5 @@ int rule(char *name) {
     return ret;
 
 }
+#endif
 

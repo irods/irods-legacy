@@ -328,6 +328,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/reStruct.o \
 		$(svrReObjDir)/reSysDataObjOpr.o \
 		$(svrReObjDir)/reVariableMap.o \
+		$(svrReObjDir)/reVariableMap.gen.o \
 		$(svrReObjDir)/regExpMatch.o \
 		$(svrReObjDir)/nre.ruleAdminMS.o \
 		$(svrReObjDir)/nre.systemMS.o \

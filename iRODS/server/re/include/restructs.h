@@ -8,12 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "debug.h"
+#include "reGlobalsExtern.h"
 #ifndef DEBUG
 #include "rodsType.h"
 #include "msParam.h"
-#else
-#include "re.h"
 #endif
 
 #include "reconstants.h"
@@ -150,6 +148,7 @@ typedef enum node_type {
     N_EXTERN_DEF = 62,
     N_DATA_DEF = 63,
     N_UNPARSED = 64,
+    /* K_FLEX = 90, */
     T_UNSPECED = 100, /* indicates a variable which is not assigned a value is passed in to a microservice */
     T_ERROR = 101,
     T_DYNAMIC = 200,
@@ -187,7 +186,16 @@ typedef enum node_type {
     PI_CASE = 2009,
     PI_DEFAULT = 2010,
     PI_TYPE = 2011,
-    PI_ARRAY_MEMBER = 2012
+    PI_ARRAY_MEMBER = 2012,
+    C_BASE_TYPE = 2020,
+    C_POINTER_TYPE = 2021,
+    C_ARRAY_TYPE = 2022,
+    C_ARRAY_TYPE_DIM = 2023,
+    C_STRUCT_TYPE = 2024,
+    C_STRUCT_MEMBER = 2025,
+    C_STRUCT_DEF = 2026,
+    C_DEF_SET = 2030,
+    C_DEF_SET_SET = 2031,
 } NodeType;
 
 typedef struct condIndexVal {
@@ -283,6 +291,27 @@ typedef struct token {
     long exprloc;
 } Token;
 
+/* rule engine events */
+typedef enum ruleEngineEvent {
+	EXEC_RULE_BEGIN, /* execute a rule */
+	EXEC_ACTION_BEGIN, /* execute an action */
+	EXEC_MICRO_SERVICE_BEGIN, /* execute a microservice */
+	EXEC_RULE_END, /* execute a rule */
+	EXEC_ACTION_END, /* execute an action */
+	EXEC_MICRO_SERVICE_END, /* execute a microservice */
+	GOT_RULE, /* got a rule from rule index */
+	APPLY_RULE_BEGIN, /* apply a rule */
+	APPLY_RULE_END, /* apply a rule */
+	APPLY_ALL_RULES_BEGIN, /* apply all rules */
+	APPLY_ALL_RULES_END, /* apply all rules */
+	EXEC_MY_RULE_BEGIN, /* execute user submitted rule */
+	EXEC_MY_RULE_END /* execute user submitted rule */
+} RuleEngineEvent;
+
+typedef struct ruleEngineEventParam {
+	int ruleIndex;
+	char *actionName;
+} RuleEngineEventParam;
 
 Node *newNode(NodeType type, char* text, Label * exprloc, Region *r);
 Node *newExprType(NodeType t, int degree, Node **subtrees, Region *r);
@@ -298,6 +327,7 @@ ExprType *newTupleTypeVarArg(int arity, int vararg, ExprType **paramTypes, Regio
 ExprType *newSimpType(NodeType t, Region *r);
 ExprType *newErrorType(int errcode, Region *r);
 ExprType *newIRODSType(char *name, Region *r);
+ExprType *newFlexKind(int arity, ExprType **typeArgs, Region *r);
 FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r);
 Node *newPartialApplication(Node *func, Node *arg, int nArgsLeft, Region *r);
 

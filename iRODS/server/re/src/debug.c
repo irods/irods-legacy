@@ -672,13 +672,12 @@ int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char 
 }
 
 /* mock functions */
-int reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, Env *env, ruleExecInfo_t *rei) { return 0; }
+int reDebug(RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node, Env *env, ruleExecInfo_t *rei) { return 0; }
 
 int copyRuleExecInfo(ruleExecInfo_t *a, ruleExecInfo_t *b) {return 0;}
 void *mallocAndZero(int size) { return NULL; }
 int freeRuleExecInfoStruct(ruleExecInfo_t *rei, int i) { return 0; }
 
-int getVarValue(char* varMap, ruleExecInfo_t *rei, char **varValue) { return 0; }
 int addKeyVal(keyValPair_t *k, char * key, char *val) { return 0;}
 int clearKeyVal(keyValPair_t *k) { return 0; }
 char * getAttrNameFromAttrId(int id) {return NULL;}
@@ -688,6 +687,10 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
 int _delayExec(char *inActionCall, char *recoveryActionCall,
 	       char *delayCondition,  ruleExecInfo_t *rei) {
     return 0;
+}
+
+int chlSetAVUMetadata(rsComm_t *rsComm, char *type, char *ame, char *attr, char *value, char *unit) {
+	return 0;
 }
 
 int msiGetMoreRows(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei) {
@@ -717,13 +720,77 @@ int
 parseHostAddrStr (char *hostAddr, rodsHostAddr_t *addr) {
     return 0;
 }
-int getVarMap(char* action,char* varName, char **varMap, int i) { return 0; }
-int setVarValue(char *varMap, ruleExecInfo_t *rei, void *newVarValue) { return 0; }
 
 int
 checkStringForSystem( char *inString) {
   return 0;
 }
+
+int
+addInxIval (inxIvalPair_t *inxIvalPair, int inx, int value) {
+	return 0;
+}
+int
+addInxVal (inxValPair_t *inxValPair, int inx, char *value) {
+	return 0;
+}
+
+int
+rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
+genQueryOut_t **genQueryOut) {
+	return 0;
+}
+
+sqlResult_t *
+getSqlResultByInx (genQueryOut_t *genQueryOut, int attriInx) {
+	return NULL;
+}
+
+int
+freeGenQueryOut (genQueryOut_t **genQueryOut) {
+	return 0;
+}
+
+int
+clearGenQueryInp(genQueryInp_t *gqinp) {
+	return 0;
+}
+
+int getDataObjInfoIncSpecColl(rsComm_t *rsComm, dataObjInp_t *doinp, dataObjInfo_t **doi) {
+	return 0;
+}
+
+int trimWS (char *s) {
+	return 0;
+}
+
+rulevardef_t coreRuleVarDef;
+rulevardef_t appRuleVarDef;
+
+int
+replErrorStack (rError_t *srcRError, rError_t *destRError)
+{
+    int i, len;
+    rErrMsg_t *errMsg;
+
+    if (srcRError == NULL || destRError == NULL) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    len = srcRError->len;
+
+    for (i = 0;i < len; i++) {
+        errMsg = srcRError->errMsg[i];
+	addRErrorMsg (destRError, errMsg->status, errMsg->msg);
+    }
+    return 0;
+}
+
+int freeAllDataObjInfo(dataObjInfo_t *dataObjInfoHead) {
+	return 0;
+}
+
+
 
 #endif
 

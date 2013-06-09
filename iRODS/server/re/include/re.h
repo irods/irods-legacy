@@ -6,8 +6,9 @@
 
 
 #ifdef DEBUG
-#define RODS_SERVER
+#ifndef RULE_ENGINE_N
 #define RULE_ENGINE_N
+#endif
 #include <string.h>
 #include <time.h>
 #include <rodsKeyWdDef.h>
@@ -40,6 +41,8 @@ int writeLine(msParam_t* out, msParam_t *str, ruleExecInfo_t *rei);
 int _delayExec(char *inActionCall, char *recoveryActionCall,
 	       char *delayCondition,  ruleExecInfo_t *rei);
 
+int chlSetAVUMetadata(rsComm_t *rsComm, char *type, char *ame, char *attr, char *value, char *unit);
+
 #undef rodsLog
 #undef rodsLogAndErrorMsg
 #undef LOG_NOTICE
@@ -54,11 +57,14 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
 #define rodsLog(a,...) printf("%s: ", a); printf(__VA_ARGS__)
 #define rodsLogAndErrorMsg(a,b,c,...) printf(__VA_ARGS__)
 
+#ifndef HAS_MICROSDEF_T
+#define HAS_MICROSDEF_T
 typedef struct {
   char action[MAX_ACTION_SIZE];
   int numberOfStringArgs;
   funcPtr callAction;
 } microsdef_t;
+#endif
 
 extern int NumOfAction;
 extern microsdef_t MicrosTable[];

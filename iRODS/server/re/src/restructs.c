@@ -114,6 +114,9 @@ ExprType *newUnaryType(NodeType nodeType, ExprType *typeArg, Region *r) {
     typeArgs[0] = typeArg;
     return newExprType(nodeType, 1, typeArgs, r);
 }
+/* ExprType *newFlexKind(int arity, ExprType **typeArgs, Region *r) {
+	return newExprType(K_FLEX, arity, typeArgs, r);
+} */
 
 FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r) {
     Res *desc = newRes(r);

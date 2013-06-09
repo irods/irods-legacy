@@ -64,6 +64,7 @@ typedef struct cache {
     time_type timestamp;
     time_type updateTS;
     unsigned int version;
+    int logging;
     char ruleBase[RULE_SET_DEF_LENGTH];
 } Cache;
 
@@ -152,6 +153,11 @@ void prependAppRule(RuleDesc *rd, Region *r);
 void popExtRuleSet(int checkPoint);
 void clearDelayed();
 int generateFunctionDescriptionTables();
+int readICatUserInfo(char *userName, char *attr, char userInfo[MAX_NAME_LEN], rsComm_t *rsComm);
+int writeICatUserInfo(char *userName, char *attr, char *userInfo, rsComm_t *rsComm);
+int readICatUserLogging(char *userName, int *logging, rsComm_t *rsComm);
+int writeICatUserLogging(char *userName, int logging, rsComm_t *rsComm);
 
+#define RE_LOGGING_ATTR "rulelogging"
 
 #endif /* _CONFIGURATION_H */

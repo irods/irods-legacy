@@ -444,6 +444,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 		while(b!=NULL && !IS_TVAR_NAME(b->key)) {
 			Res *res = (Res *)b->value;
 			msParam_t *v = NULL;
+			int needToFree = 0;
 			int varindex;
 			int ret;
 			for(varindex=0;varindex<var->len;varindex++) {
@@ -455,6 +456,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 			}
 			if(v == NULL) {
 				v = (msParam_t *) malloc(sizeof(msParam_t));
+				needToFree = 1;
 				ret = convertResToMsParam(v, res, errmsg);
 				if(var->msParam == NULL) {
 					var->len = 0;
@@ -470,7 +472,9 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 			if(ret != 0) {
 				/* error */
 				/* todo free msParamArray */
-				free(v);
+				if(needToFree) {
+					free(v);
+				}
 				return ret;
 			}
 

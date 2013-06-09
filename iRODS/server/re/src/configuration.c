@@ -11,6 +11,10 @@
 #include "functions.h"
 #include "filesystem.h"
 #include "sharedmemory.h"
+#include "icatHighLevelRoutines.h"
+#ifdef DEBUG
+#include "re.h"
+#endif
 Cache ruleEngineConfig = {
     NULL, /* unsigned char *address */
     NULL, /* unsigned char *pointers */
@@ -45,6 +49,8 @@ Cache ruleEngineConfig = {
     time_type_initializer, /* time_type timestamp */
     time_type_initializer, /* time_type updateTS */
     0, /* int version */
+    0, /* int logging */
+    "", /* char ruleBase[RULE_SET_DEF_LENGTH] */
 };
 
 void removeRuleFromExtIndex(char *ruleName, int i) {
@@ -501,6 +507,62 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
 
 int availableRules() {
 	return (isComponentInitialized(ruleEngineConfig.appRuleSetStatus) ? ruleEngineConfig.coreRuleSet->len : 0) + (isComponentInitialized(ruleEngineConfig.appRuleSetStatus) == INITIALIZED? ruleEngineConfig.appRuleSet->len : 0);
+}
+
+
+int readICatUserInfo(char *userName, char *attr, char userInfo[MAX_NAME_LEN], rsComm_t *rsComm) {
+	int status;
+	genQueryInp_t genQueryInp;
+	genQueryOut_t *genQueryOut = NULL;
+	char condstr[MAX_NAME_LEN];
+	sqlResult_t *r;
+	memset(&genQueryInp, 0, sizeof(genQueryInp));
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+
+	snprintf(condstr, MAX_NAME_LEN, "= '%s'", userName);
+	addInxVal(&genQueryInp.sqlCondInp, COL_USER_NAME, condstr);
+	snprintf(condstr, MAX_NAME_LEN, "= '%s'", attr);
+	addInxVal(&genQueryInp.sqlCondInp, COL_META_USER_ATTR_NAME, condstr);
+
+	addInxIval(&genQueryInp.selectInp, COL_META_USER_ATTR_VALUE, 1);
+
+	status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+	if ( status >= 0 && genQueryOut->rowCnt > 0 ) {
+		r = getSqlResultByInx (genQueryOut, COL_META_USER_ATTR_VALUE);
+		rstrcpy(userInfo, &r->value[0], MAX_NAME_LEN);
+		genQueryInp.continueInx =  genQueryOut->continueInx;
+	} else {
+		userInfo[0] = '\0';
+	}
+	clearGenQueryInp (&genQueryInp);
+	freeGenQueryOut (&genQueryOut);
+	return status;
+
+}
+
+int writeICatUserInfo(char *userName, char *attr, char *value, rsComm_t *rsComm) {
+	return chlSetAVUMetadata(rsComm, "-u", userName, attr, value, "");
+}
+
+int readICatUserLogging(char *userName, int *logging, rsComm_t *rsComm) {
+	char userInfo[MAX_NAME_LEN];
+	int i = readICatUserInfo(userName, RE_LOGGING_ATTR, userInfo, rsComm);
+	if(i<0) {
+		return i;
+	}
+			if(strcmp(userInfo, "true") == 0) {
+				*logging = 1;
+			} else if (strcmp(userInfo, "false") == 0){
+				*logging = 0;
+			} else {
+				return RE_RUNTIME_ERROR; /* todo change this to a more specific error code */
+			}
+	return 0;
+}
+int writeICatUserLogging(char *userName, int logging, rsComm_t *rsComm) {
+	char value[MAX_NAME_LEN];
+	rstrcpy(value, (char *)(logging?"true":"false"), MAX_NAME_LEN);
+	return writeICatUserInfo(userName, RE_LOGGING_ATTR, value, rsComm);
 }
 
 

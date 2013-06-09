@@ -4,15 +4,10 @@
 
 #ifndef RECONSTANTS_H
 #define RECONSTANTS_H
-#include "debug.h"
 
 #define MAX_PARAMS_LEN 100
 #define MAX_RULE_LEN (1024 * 64)
 #define MAX_NUM_DISJUNCTS 100
-
-#ifdef DEBUG
-#include "re.h"
-#endif
 
 #define DATETIME_MS_T "DATETIME_MS_T"
 
