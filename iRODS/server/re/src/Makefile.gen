@@ -2,13 +2,49 @@ IRODS_DIR=../../..
 
 CC=gcc
 
-CFLAGS=-I/usr/include/libxml2 -I"$(IRODS_DIR)/server/re/include" -I"$(IRODS_DIR)/server/drivers/include" -I"$(IRODS_DIR)/server/icat/include" -I"$(IRODS_DIR)/server/core/include" -I"$(IRODS_DIR)/lib/md5/include" -I"$(IRODS_DIR)/lib/api/include" -I"$(IRODS_DIR)/lib/core/include" -I"$(IRODS_DIR/lib/sha1/include" -DDEBUG -DCODE_GENERATION -DRULE_ENGINE_N -DRODS_SERVER
+CFLAGS=-I/usr/include/libxml2 -I"$(IRODS_DIR)/server/re/include" -I"$(IRODS_DIR)/server/drivers/include" -I"$(IRODS_DIR)/server/icat/include" -I"$(IRODS_DIR)/server/core/include" -I"$(IRODS_DIR)/lib/md5/include" -I"$(IRODS_DIR)/lib/api/include" -I"$(IRODS_DIR)/lib/core/include" -I"$(IRODS_DIR)/lib/sha1/include" -DDEBUG -DCODE_GENERATION -DRULE_ENGINE_N -DRODS_SERVER
 
-SRC=arithmetics.c cache.c configuration.c conversion.c data.c datetime.c debug.c filesystem.c functions.c hashtable.c index.c list.c locks.c parser.c region.c restructs.c reVariableMap.c reVariableMap.gen.c rules.c sharedmemory.c typing.c utils.c
+SRC=arithmetics.c \
+    cache.c \
+    configuration.c \
+    conversion.c \
+    data.c \
+    datetime.c \
+    debug.c \
+    filesystem.c \
+    functions.c \
+    hashtable.c \
+    index.c \
+    list.c \
+    locks.c \
+    parser.c \
+    region.c \
+    restructs.c \
+    reVariableMap.c \
+    reVariableMap.gen.c \
+    rules.c \
+    sharedmemory.c \
+    typing.c \
+    utils.c
+
+TEMPLATES=reVariableMap.gen.c.xsl \
+          reVariableMap.gen.h.xsl
+
+HEADERS=$(IRODS_DIR)/lib/core/include/objInfo.h \
+        $(IRODS_DIR)/server/re/include/reGlobalsExtern.h \
+        $(IRODS_DIR)/lib/core/include/rcConnect.h \
+        $(IRODS_DIR)/lib/api/include/dataObjInpOut.h \
+        $(IRODS_DIR)/lib/core/include/rodsUser.h \
+        $(IRODS_DIR)/lib/core/include/rodsDef.h \
+        $(IRODS_DIR)/lib/api/include/fileOpen.h
 
 LIBS=-lxslt -lpthread -lrt -lxml2
 
-all: codegen
+all: gen
+
+gen: codegen $(TEMPLATES)
+	./codegen reVariableMap.gen.h.xsl ../include/reVariableMap.gen.h $(HEADERS)
+	./codegen reVariableMap.gen.c.xsl reVariableMap.gen.c $(HEADERS)
 
 codegen: $(SRC)
 	$(CC) $(CFLAGS) $(LIBS) $(SRC) -o codegen
