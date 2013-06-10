@@ -501,7 +501,7 @@ processBreakPoint(int streamId, int *msgNum, int *seqNum,
     reDebugStackFull[i] = NULL;
   }*/
 int
-popStack(RuleEngineEvent label, char* step)
+popReStack(RuleEngineEvent label, char* step)
 {
 
 	  int i;
@@ -517,7 +517,7 @@ popStack(RuleEngineEvent label, char* step)
 }
 
 int
-pushStack(RuleEngineEvent label, char* step)
+pushReStack(RuleEngineEvent label, char* step)
 {
 
 	  int i;
@@ -725,9 +725,9 @@ reDebug(RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node
 		/* modify stack */
     	int pcType = reDebugPCType(label);
     	if((pcType & 1) != 0) {
-    		pushStack(label, param->actionName);
+    		pushReStack(label, param->actionName);
     	} else if ((pcType & 2) != 0) {
-    		popStack(label, param->actionName);
+    		popReStack(label, param->actionName);
     	}
 
 		if (curStat == REDEBUG_CONTINUE && reDebugStackCurrPtr <= reDebugStackPtr && (reDebugPCType(label) & reDebugStopAt) != 0) {

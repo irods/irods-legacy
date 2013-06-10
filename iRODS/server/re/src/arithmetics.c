@@ -335,6 +335,9 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                 case T_CONS:
                     /* we can ignore the not top level type constructor and leave type checking to when it is derefed */
                     switch(TYPE(res)) {
+                    	case T_PATH:
+                    		nres = res;
+                    		break;
                         case T_CONS:
                         	nres = res;
                         	break;

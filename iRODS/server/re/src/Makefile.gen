@@ -2,7 +2,7 @@ IRODS_DIR=../../..
 
 CC=gcc
 
-CFLAGS=-I/usr/include/libxml2 -I"$(IRODS_DIR)/server/re/include" -I"$(IRODS_DIR)/server/drivers/include" -I"$(IRODS_DIR)/server/icat/include" -I"$(IRODS_DIR)/server/core/include" -I"$(IRODS_DIR)/lib/md5/include" -I"$(IRODS_DIR)/lib/api/include" -I"$(IRODS_DIR)/lib/core/include" -DDEBUG -DCODE_GENERATION -DRULE_ENGINE_N -DRODS_SERVER
+CFLAGS=-I/usr/include/libxml2 -I"$(IRODS_DIR)/server/re/include" -I"$(IRODS_DIR)/server/drivers/include" -I"$(IRODS_DIR)/server/icat/include" -I"$(IRODS_DIR)/server/core/include" -I"$(IRODS_DIR)/lib/md5/include" -I"$(IRODS_DIR)/lib/api/include" -I"$(IRODS_DIR)/lib/core/include" -I"$(IRODS_DIR/lib/sha1/include" -DDEBUG -DCODE_GENERATION -DRULE_ENGINE_N -DRODS_SERVER
 
 SRC=arithmetics.c cache.c configuration.c conversion.c data.c datetime.c debug.c filesystem.c functions.c hashtable.c index.c list.c locks.c parser.c region.c restructs.c reVariableMap.c reVariableMap.gen.c rules.c sharedmemory.c typing.c utils.c
 
