@@ -460,6 +460,9 @@ endif
 # on a given connection. Right now this is only used for the PAM_AUTH 
 # mode, so must be turned on for the PAM_AUTH support to function properly.
 # USE_SSL = 1
+# EL5_SSL - add compatibility with openssl pre version 1.0 in Enterprise
+# Linux version 5
+# EL5_SSL = 1
 
 # NETCDF_API - specify whether to build iRODS with the NETCDF API. This 
 # option requires the installation of the NETCDF C library and header files.

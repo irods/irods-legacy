@@ -171,6 +171,9 @@ endif
 ifdef USE_SSL
 CFLAGS_OPTIONS += -D USE_SSL
 endif
+ifdef EL5_SSL
+CFLAGS_OPTIONS += -D EL5_SSL
+endif
 ifdef IRODS_SYSLOG
 CFLAGS_OPTIONS += -D IRODS_SYSLOG
 endif

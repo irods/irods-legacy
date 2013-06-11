@@ -11,6 +11,14 @@
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 
+
+#ifdef EL5_SSL
+/* add compatibility with openssl pre version 1.0 in Enterprise Linux 5 */
+#define sk_GENERAL_NAMES_free(st) SKM_sk_free(GENERAL_NAMES, (st))
+#define sk_GENERAL_NAMES_num(st) SKM_sk_num(GENERAL_NAMES, (st))
+#define sk_GENERAL_NAMES_value(st, i) SKM_sk_value(GENERAL_NAMES, (st), (i))
+#endif /* EL5_SSL */
+
 #include "rodsDef.h"
 #include "rcConnect.h"
 #include "rodsPackInstruct.h"
