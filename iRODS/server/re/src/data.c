@@ -7,7 +7,9 @@
 
 /*
  * S ::= struct Id? { F* }
- * F ::= Type Id Dim* ;
+ * F ::= Type Id Dim* Annotation* ;
+ * Annotation ::= Id AnnotationParamList?
+ * AnnotationParamList ::= ( Id , ... , Id )
  * Type ::= BaseType "*"*
  * BaseType ::= Id | struct Id
  * Dim ::= [ Id ]
@@ -16,7 +18,6 @@
 PARSER_FUNC_BEGIN(CDefSet)
 	int rulegen = 1;
 	int i=0;
-	Label start = *FPOS;
 	LOOP_BEGIN(d)
 		TRY(t)
 			TTEXT("typedef");
@@ -68,7 +69,6 @@ PARSER_FUNC_END(CIfdefBlock)
 PARSER_FUNC_BEGIN(CStructDef)
 	int rulegen = 1;
 	char structName[NAME_LEN];
-	Label start = *FPOS;
 	TTEXT("struct");
 	TRY(n)
 		TTYPE(TK_TEXT);
@@ -98,7 +98,6 @@ PARSER_FUNC_END(CStructDef)
 PARSER_FUNC_BEGIN(CVariableDef)
 	int rulegen = 1;
 	char memberName[NAME_LEN];
-	Label start = *FPOS;
 	NT(CType);
 	TTYPE(TK_TEXT);
 	rstrcpy(memberName, token->text, NAME_LEN);
@@ -106,13 +105,35 @@ PARSER_FUNC_BEGIN(CVariableDef)
 		NT(CArrayDim);
 		BUILD_NODE(C_ARRAY_TYPE, "[]", &start, 2, 2);
 	REPEAT_END(f)
+	REPEAT_BEGIN(a)
+		NT(CGAnnotation);
+	REPEAT_END(a)
+	BUILD_NODE(CG_ANNOTATIONS, "annotations", &start, COUNTER(a), COUNTER(a));
 	TTEXT(";");
-	BUILD_NODE(C_STRUCT_MEMBER, memberName, &start, 1, 1);
+	BUILD_NODE(C_STRUCT_MEMBER, memberName, &start, 2, 2);
 PARSER_FUNC_END(CVariableDef)
+
+PARSER_FUNC_BEGIN(CGAnnotation)
+	int rulegen = 1;
+	int n;
+	char annotationName[NAME_LEN];
+	TTYPE(TK_TEXT);
+	rstrcpy(annotationName, token->text, NAME_LEN);
+	TRY(plt)
+		LIST_BEGIN(pl)
+			NT(CGAnnotation)
+		LIST_DELIM(pl)
+			TTEXT(",");
+		LIST_END(pl)
+		n = COUNTER(pl);
+	OR(plt)
+		n = 0;
+	END_TRY(plt)
+	BUILD_NODE(CG_ANNOTATION, annotationName, &start, n, n);
+PARSER_FUNC_END(CGAnnotation)
 
 PARSER_FUNC_BEGIN(CType)
 	int rulegen = 1;
-	Label start = *FPOS;
 	NT(CBaseType);
 	REPEAT_BEGIN(f)
 		TTEXT("*");
@@ -122,7 +143,6 @@ PARSER_FUNC_END(CType)
 
 PARSER_FUNC_BEGIN(CBaseType)
 	int rulegen = 1;
-	Label start = *FPOS;
 	char type[NAME_LEN];
 	TRY(bt)
 		TTEXT("struct");
@@ -203,6 +223,10 @@ char *getTag(NodeType nt) {
 		return "base_type";
 	case C_DEF_SET:
 		return "def_set";
+	case CG_ANNOTATIONS:
+		return "annotations";
+	case CG_ANNOTATION:
+		return "annotation";
 	default:
 		return NULL;
 	}

@@ -1,9 +1,10 @@
 
-/* this is automatically generated code */
+/* this is automatically generated C code */
 
 #include "reVariableMap.gen.h"
 
 #include "reVariableMap.h"
+
 
 
 int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
@@ -24,6 +25,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
     return(i);
 
 	
+
 	  if (strcmp(varName, "rescName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescName, r);
@@ -31,6 +33,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescId") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->rescId, r);
@@ -38,6 +41,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "zoneName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->zoneName, r);
@@ -45,6 +49,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescLoc") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescLoc, r);
@@ -52,6 +57,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescType") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescType, r);
@@ -59,6 +65,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescTypeInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->rescTypeInx, r);
@@ -66,6 +73,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescClassInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->rescClassInx, r);
@@ -73,6 +81,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescStatus") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->rescStatus, r);
@@ -80,6 +89,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "paraOpr") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->paraOpr, r);
@@ -87,6 +97,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescClass") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescClass, r);
@@ -94,6 +105,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescVaultPath") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescVaultPath, r);
@@ -101,6 +113,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescInfo") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescInfo, r);
@@ -108,6 +121,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescComments") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescComments, r);
@@ -115,6 +129,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "gateWayAddr") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->gateWayAddr, r);
@@ -122,6 +137,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescMaxObjSize") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->rescMaxObjSize, r);
@@ -129,6 +145,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "freeSpace") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->freeSpace, r);
@@ -136,6 +153,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "freeSpaceTimeStamp") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->freeSpaceTimeStamp, r);
@@ -143,13 +161,15 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "freeSpaceTime") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescCreate") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescCreate, r);
@@ -157,6 +177,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescModify") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescModify, r);
@@ -164,13 +185,15 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rodsServerHost") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "quotaLimit") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->quotaLimit, r);
@@ -178,6 +201,7 @@ int getValFromRescInfo(char *varMap, rescInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "quotaOverrun") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->quotaOverrun, r);
@@ -210,161 +234,161 @@ int setValFromRescInfo(char *varMap, rescInfo_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "rescName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescId") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->rescId), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "zoneName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->zoneName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescLoc") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescLoc, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescType") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescType, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescTypeInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->rescTypeInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescClassInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->rescClassInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescStatus") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->rescStatus), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "paraOpr") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->paraOpr), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescClass") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescClass, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescVaultPath") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescVaultPath, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescInfo") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescInfo, LONG_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescComments") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescComments, LONG_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "gateWayAddr") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->gateWayAddr, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescMaxObjSize") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->rescMaxObjSize), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "freeSpace") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->freeSpace), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "freeSpaceTimeStamp") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->freeSpaceTimeStamp, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "freeSpaceTime") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescCreate") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescCreate, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescModify") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescModify, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rodsServerHost") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "quotaLimit") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->quotaLimit), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "quotaOverrun") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->quotaOverrun), newVarValue);
 			
 		return i;
@@ -388,138 +412,161 @@ ExprType *getVarTypeFromRescInfo(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "rescName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescId") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "zoneName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescLoc") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescType") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescTypeInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescClassInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescStatus") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "paraOpr") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescClass") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescVaultPath") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescInfo") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescComments") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "gateWayAddr") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescMaxObjSize") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "freeSpace") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "freeSpaceTimeStamp") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "freeSpaceTime") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescCreate") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescModify") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rodsServerHost") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "quotaLimit") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "quotaOverrun") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
@@ -529,6 +576,7 @@ ExprType *getVarTypeFromRescInfo(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromRescGrpInfo(char *varMap, rescGrpInfo_t *rei, Res **varValue, Region *r)
 {
@@ -548,6 +596,7 @@ int getValFromRescGrpInfo(char *varMap, rescGrpInfo_t *rei, Res **varValue, Regi
     return(i);
 
 	
+
 	  if (strcmp(varName, "rescGroupName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescGroupName, r);
@@ -555,6 +604,7 @@ int getValFromRescGrpInfo(char *varMap, rescGrpInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescInfo") == 0) {
 		
 			    i = getValFromRescInfo(varMapCPtr, rei->rescInfo, varValue, r);
@@ -562,6 +612,7 @@ int getValFromRescGrpInfo(char *varMap, rescGrpInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "status") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->status, r);
@@ -569,6 +620,7 @@ int getValFromRescGrpInfo(char *varMap, rescGrpInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dummy") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->dummy, r);
@@ -576,18 +628,18 @@ int getValFromRescGrpInfo(char *varMap, rescGrpInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "cacheNext") == 0) {
 		
 			    i = getValFromRescGrpInfo(varMapCPtr, rei->cacheNext, varValue, r);
-
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "next") == 0) {
 		
 			    i = getValFromRescGrpInfo(varMapCPtr, rei->next, varValue, r);
-
 			
 		return i;
 	  }
@@ -617,45 +669,43 @@ int setValFromRescGrpInfo(char *varMap, rescGrpInfo_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "rescGroupName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescGroupName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescInfo") == 0) {
-		
+	  	
 			    i = setValFromRescInfo(varMapCPtr, &(rei->rescInfo), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "status") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->status), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dummy") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->dummy), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "cacheNext") == 0) {
-		
+	  	
 			    i = setValFromRescGrpInfo(varMapCPtr, &(rei->cacheNext), newVarValue);
-
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "next") == 0) {
-		
+	  	
 			    i = setValFromRescGrpInfo(varMapCPtr, &(rei->next), newVarValue);
-
 			
 		return i;
 	  }
@@ -678,47 +728,52 @@ ExprType *getVarTypeFromRescGrpInfo(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "rescGroupName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescInfo") == 0) {
 		
 			    return getVarTypeFromRescInfo(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "status") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dummy") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "cacheNext") == 0) {
 		
 			    return getVarTypeFromRescGrpInfo(varMapCPtr, r);
-
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "next") == 0) {
 		
 			    return getVarTypeFromRescGrpInfo(varMapCPtr, r);
-
 			
 	  }
 	
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromKeyValPair(char *varMap, keyValPair_t *rei, Res **varValue, Region *r)
 {
@@ -738,6 +793,7 @@ int getValFromKeyValPair(char *varMap, keyValPair_t *rei, Res **varValue, Region
     return(i);
 
 	
+
 	  if (strcmp(varName, "len") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->len, r);
@@ -745,16 +801,18 @@ int getValFromKeyValPair(char *varMap, keyValPair_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "keyWord") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "value") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
@@ -784,21 +842,21 @@ int setValFromKeyValPair(char *varMap, keyValPair_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "len") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->len), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "keyWord") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "value") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
@@ -822,18 +880,21 @@ ExprType *getVarTypeFromKeyValPair(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "len") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "keyWord") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "value") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
@@ -843,6 +904,7 @@ ExprType *getVarTypeFromKeyValPair(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Region *r)
 {
@@ -862,6 +924,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
     return(i);
 
 	
+
 	  if (strcmp(varName, "objPath") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->objPath, r);
@@ -869,6 +932,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescName, r);
@@ -876,6 +940,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescGroupName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rescGroupName, r);
@@ -883,6 +948,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataType") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataType, r);
@@ -890,6 +956,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataSize") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->dataSize, r);
@@ -897,6 +964,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "chksum") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->chksum, r);
@@ -904,6 +972,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "version") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->version, r);
@@ -911,6 +980,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "filePath") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->filePath, r);
@@ -918,6 +988,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rescInfo") == 0) {
 		
 			    i = getValFromRescInfo(varMapCPtr, rei->rescInfo, varValue, r);
@@ -925,6 +996,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataOwnerName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataOwnerName, r);
@@ -932,6 +1004,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataOwnerZone") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataOwnerZone, r);
@@ -939,6 +1012,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "replNum") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->replNum, r);
@@ -946,6 +1020,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "replStatus") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->replStatus, r);
@@ -953,6 +1028,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "statusString") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->statusString, r);
@@ -960,6 +1036,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataId") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->dataId, r);
@@ -967,6 +1044,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collId") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->collId, r);
@@ -974,6 +1052,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataMapId") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->dataMapId, r);
@@ -981,6 +1060,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "flags") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->flags, r);
@@ -988,6 +1068,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataComments") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataComments, r);
@@ -995,6 +1076,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataMode") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataMode, r);
@@ -1002,6 +1084,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataExpiry") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataExpiry, r);
@@ -1009,6 +1092,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataCreate") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataCreate, r);
@@ -1016,6 +1100,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataModify") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataModify, r);
@@ -1023,6 +1108,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataAccess") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->dataAccess, r);
@@ -1030,6 +1116,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataAccessInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->dataAccessInx, r);
@@ -1037,6 +1124,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "writeFlag") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->writeFlag, r);
@@ -1044,6 +1132,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "destRescName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->destRescName, r);
@@ -1051,6 +1140,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "backupRescName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->backupRescName, r);
@@ -1058,6 +1148,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "subPath") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->subPath, r);
@@ -1065,13 +1156,15 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "specColl") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "regUid") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->regUid, r);
@@ -1079,6 +1172,7 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "otherFlags") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->otherFlags, r);
@@ -1086,17 +1180,18 @@ int getValFromDataObjInfo(char *varMap, dataObjInfo_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "condInput") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "next") == 0) {
 		
 			    i = getValFromDataObjInfo(varMapCPtr, rei->next, varValue, r);
-
 			
 		return i;
 	  }
@@ -1126,240 +1221,239 @@ int setValFromDataObjInfo(char *varMap, dataObjInfo_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "objPath") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->objPath, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescGroupName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rescGroupName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataType") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataType, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataSize") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->dataSize), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "chksum") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->chksum, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "version") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->version, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "filePath") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->filePath, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rescInfo") == 0) {
-		
+	  	
 			    i = setValFromRescInfo(varMapCPtr, &(rei->rescInfo), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataOwnerName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataOwnerName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataOwnerZone") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataOwnerZone, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "replNum") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->replNum), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "replStatus") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->replStatus), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "statusString") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->statusString, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataId") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->dataId), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collId") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->collId), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataMapId") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->dataMapId), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "flags") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->flags), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataComments") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataComments, LONG_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataMode") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataMode, SHORT_STR_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataExpiry") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataExpiry, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataCreate") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataCreate, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataModify") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataModify, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataAccess") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->dataAccess, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataAccessInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->dataAccessInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "writeFlag") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->writeFlag), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "destRescName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->destRescName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "backupRescName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->backupRescName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "subPath") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->subPath, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "specColl") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "regUid") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->regUid), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "otherFlags") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->otherFlags), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "condInput") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "next") == 0) {
-		
+	  	
 			    i = setValFromDataObjInfo(varMapCPtr, &(rei->next), newVarValue);
-
 			
 		return i;
 	  }
@@ -1382,214 +1476,248 @@ ExprType *getVarTypeFromDataObjInfo(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "objPath") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescGroupName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataType") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataSize") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "chksum") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "version") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "filePath") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rescInfo") == 0) {
 		
 			    return getVarTypeFromRescInfo(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataOwnerName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataOwnerZone") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "replNum") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "replStatus") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "statusString") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataId") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collId") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataMapId") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "flags") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataComments") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataMode") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataExpiry") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataCreate") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataModify") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataAccess") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataAccessInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "writeFlag") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "destRescName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "backupRescName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "subPath") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "specColl") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "regUid") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "otherFlags") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "condInput") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "next") == 0) {
 		
 			    return getVarTypeFromDataObjInfo(varMapCPtr, r);
-
 			
 	  }
 	
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 {
@@ -1609,6 +1737,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
     return(i);
 
 	
+
 	  if (strcmp(varName, "collId") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->collId, r);
@@ -1616,6 +1745,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collName, r);
@@ -1623,6 +1753,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collParentName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collParentName, r);
@@ -1630,6 +1761,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collOwnerName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collOwnerName, r);
@@ -1637,6 +1769,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collOwnerZone") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collOwnerZone, r);
@@ -1644,6 +1777,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collMapId") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->collMapId, r);
@@ -1651,6 +1785,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collAccessInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->collAccessInx, r);
@@ -1658,6 +1793,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collComments") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collComments, r);
@@ -1665,6 +1801,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collInheritance") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collInheritance, r);
@@ -1672,6 +1809,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collExpiry") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collExpiry, r);
@@ -1679,6 +1817,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collCreate") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collCreate, r);
@@ -1686,6 +1825,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collModify") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collModify, r);
@@ -1693,6 +1833,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collAccess") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collAccess, r);
@@ -1700,6 +1841,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collType") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collType, r);
@@ -1707,6 +1849,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collInfo1") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collInfo1, r);
@@ -1714,6 +1857,7 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "collInfo2") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->collInfo2, r);
@@ -1721,17 +1865,18 @@ int getValFromCollInfo(char *varMap, collInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "condInput") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "next") == 0) {
 		
 			    i = getValFromCollInfo(varMapCPtr, rei->next, varValue, r);
-
 			
 		return i;
 	  }
@@ -1761,128 +1906,127 @@ int setValFromCollInfo(char *varMap, collInfo_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "collId") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->collId), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collName, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collParentName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collParentName, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collOwnerName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collOwnerName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collOwnerZone") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collOwnerZone, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collMapId") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->collMapId), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collAccessInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->collAccessInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collComments") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collComments, LONG_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collInheritance") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collInheritance, LONG_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collExpiry") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collExpiry, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collCreate") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collCreate, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collModify") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collModify, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collAccess") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collAccess, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collType") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collType, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collInfo1") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collInfo1, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "collInfo2") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->collInfo2, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "condInput") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "next") == 0) {
-		
+	  	
 			    i = setValFromCollInfo(varMapCPtr, &(rei->next), newVarValue);
-
 			
 		return i;
 	  }
@@ -1905,118 +2049,136 @@ ExprType *getVarTypeFromCollInfo(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "collId") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collParentName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collOwnerName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collOwnerZone") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collMapId") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collAccessInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collComments") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collInheritance") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collExpiry") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collCreate") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collModify") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collAccess") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collType") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collInfo1") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "collInfo2") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "condInput") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "next") == 0) {
 		
 			    return getVarTypeFromCollInfo(varMapCPtr, r);
-
 			
 	  }
 	
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Region *r)
 {
@@ -2036,6 +2198,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
     return(i);
 
 	
+
 	  if (strcmp(varName, "status") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->status, r);
@@ -2043,6 +2206,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "statusStr") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->statusStr, r);
@@ -2050,6 +2214,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "ruleName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->ruleName, r);
@@ -2057,6 +2222,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rsComm") == 0) {
 		
 			    i = getValFromRsComm(varMapCPtr, rei->rsComm, varValue, r);
@@ -2064,20 +2230,23 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "msParamArray") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "inOutMsParamArray") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "l1descInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->l1descInx, r);
@@ -2085,6 +2254,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "doinp") == 0) {
 		
 			    i = getValFromDataObjInp(varMapCPtr, rei->doinp, varValue, r);
@@ -2092,6 +2262,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "doi") == 0) {
 		
 			    i = getValFromDataObjInfo(varMapCPtr, rei->doi, varValue, r);
@@ -2099,6 +2270,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rgi") == 0) {
 		
 			    i = getValFromRescGrpInfo(varMapCPtr, rei->rgi, varValue, r);
@@ -2106,6 +2278,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "uoic") == 0) {
 		
 			    i = getValFromUserInfo(varMapCPtr, rei->uoic, varValue, r);
@@ -2113,6 +2286,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "uoip") == 0) {
 		
 			    i = getValFromUserInfo(varMapCPtr, rei->uoip, varValue, r);
@@ -2120,6 +2294,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "coi") == 0) {
 		
 			    i = getValFromCollInfo(varMapCPtr, rei->coi, varValue, r);
@@ -2127,6 +2302,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "uoio") == 0) {
 		
 			    i = getValFromUserInfo(varMapCPtr, rei->uoio, varValue, r);
@@ -2134,6 +2310,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "condInputData") == 0) {
 		
 			    i = getValFromKeyValPair(varMapCPtr, rei->condInputData, varValue, r);
@@ -2141,6 +2318,7 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "ruleSet") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->ruleSet, r);
@@ -2148,10 +2326,10 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "next") == 0) {
 		
 			    i = getValFromRuleExecInfo(varMapCPtr, rei->next, varValue, r);
-
 			
 		return i;
 	  }
@@ -2181,121 +2359,120 @@ int setValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei, Res *newVarValu
 
 	
 	  if (strcmp(varName, "status") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->status), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "statusStr") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->statusStr, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "ruleName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->ruleName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rsComm") == 0) {
-		
+	  	
 			    i = setValFromRsComm(varMapCPtr, &(rei->rsComm), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "msParamArray") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "inOutMsParamArray") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "l1descInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->l1descInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "doinp") == 0) {
-		
+	  	
 			    i = setValFromDataObjInp(varMapCPtr, &(rei->doinp), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "doi") == 0) {
-		
+	  	
 			    i = setValFromDataObjInfo(varMapCPtr, &(rei->doi), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rgi") == 0) {
-		
+	  	
 			    i = setValFromRescGrpInfo(varMapCPtr, &(rei->rgi), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "uoic") == 0) {
-		
+	  	
 			    i = setValFromUserInfo(varMapCPtr, &(rei->uoic), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "uoip") == 0) {
-		
+	  	
 			    i = setValFromUserInfo(varMapCPtr, &(rei->uoip), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "coi") == 0) {
-		
+	  	
 			    i = setValFromCollInfo(varMapCPtr, &(rei->coi), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "uoio") == 0) {
-		
+	  	
 			    i = setValFromUserInfo(varMapCPtr, &(rei->uoio), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "condInputData") == 0) {
-		
+	  	
 			    i = setValFromKeyValPair(varMapCPtr, &(rei->condInputData), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "ruleSet") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->ruleSet, RULE_SET_DEF_LENGTH, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "next") == 0) {
-		
+	  	
 			    i = setValFromRuleExecInfo(varMapCPtr, &(rei->next), newVarValue);
-
 			
 		return i;
 	  }
@@ -2318,112 +2495,129 @@ ExprType *getVarTypeFromRuleExecInfo(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "status") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "statusStr") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "ruleName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rsComm") == 0) {
 		
 			    return getVarTypeFromRsComm(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "msParamArray") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "inOutMsParamArray") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "l1descInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "doinp") == 0) {
 		
 			    return getVarTypeFromDataObjInp(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "doi") == 0) {
 		
 			    return getVarTypeFromDataObjInfo(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rgi") == 0) {
 		
 			    return getVarTypeFromRescGrpInfo(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "uoic") == 0) {
 		
 			    return getVarTypeFromUserInfo(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "uoip") == 0) {
 		
 			    return getVarTypeFromUserInfo(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "coi") == 0) {
 		
 			    return getVarTypeFromCollInfo(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "uoio") == 0) {
 		
 			    return getVarTypeFromUserInfo(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "condInputData") == 0) {
 		
 			    return getVarTypeFromKeyValPair(varMapCPtr, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "ruleSet") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "next") == 0) {
 		
 			    return getVarTypeFromRuleExecInfo(varMapCPtr, r);
-
 			
 	  }
 	
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 {
@@ -2443,13 +2637,15 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
     return(i);
 
 	
+
 	  if (strcmp(varName, "irodsProt") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "sock") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->sock, r);
@@ -2457,6 +2653,7 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "connectCnt") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->connectCnt, r);
@@ -2464,20 +2661,23 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "localAddr") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "remoteAddr") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "clientAddr") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->clientAddr, r);
@@ -2485,34 +2685,39 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "proxyUser") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "clientUser") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "myEnv") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "cliVersion") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "option") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->option, r);
@@ -2520,27 +2725,31 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "procLogFlag") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rError") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "portalOpr") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "apiInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->apiInx, r);
@@ -2548,6 +2757,7 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "status") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->status, r);
@@ -2555,13 +2765,15 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "perfStat") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "windowSize") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->windowSize, r);
@@ -2569,6 +2781,7 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnFlag") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->reconnFlag, r);
@@ -2576,6 +2789,7 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnSock") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->reconnSock, r);
@@ -2583,6 +2797,7 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnPort") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->reconnPort, r);
@@ -2590,6 +2805,7 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnectedSock") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->reconnectedSock, r);
@@ -2597,6 +2813,7 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnAddr") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->reconnAddr, r);
@@ -2604,6 +2821,7 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "cookie") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->cookie, r);
@@ -2611,48 +2829,55 @@ int getValFromRsComm(char *varMap, rsComm_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnThr") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "lock") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "cond") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "agentState") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "clientState") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnThrState") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "gsiRequest") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->gsiRequest, r);
@@ -2685,217 +2910,217 @@ int setValFromRsComm(char *varMap, rsComm_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "irodsProt") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "sock") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->sock), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "connectCnt") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->connectCnt), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "localAddr") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "remoteAddr") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "clientAddr") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->clientAddr, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "proxyUser") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "clientUser") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "myEnv") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "cliVersion") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "option") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->option, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "procLogFlag") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rError") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "portalOpr") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "apiInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->apiInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "status") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->status), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "perfStat") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "windowSize") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->windowSize), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnFlag") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->reconnFlag), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnSock") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->reconnSock), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnPort") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->reconnPort), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnectedSock") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->reconnectedSock), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnAddr") == 0) {
-		
+	  	
 			    i = setStrDupLeafValue(&(rei->reconnAddr), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "cookie") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->cookie), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnThr") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "lock") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "cond") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "agentState") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "clientState") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnThrState") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "gsiRequest") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->gsiRequest), newVarValue);
 			
 		return i;
@@ -2919,186 +3144,217 @@ ExprType *getVarTypeFromRsComm(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "irodsProt") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "sock") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "connectCnt") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "localAddr") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "remoteAddr") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "clientAddr") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "proxyUser") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "clientUser") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "myEnv") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "cliVersion") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "option") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "procLogFlag") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rError") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "portalOpr") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "apiInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "status") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "perfStat") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "windowSize") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnFlag") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnSock") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnPort") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnectedSock") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnAddr") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "cookie") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnThr") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "lock") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "cond") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "agentState") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "clientState") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnThrState") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "gsiRequest") == 0) {
 		
 			    return newSimpType(T_INT, r);
@@ -3108,6 +3364,7 @@ ExprType *getVarTypeFromRsComm(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region *r)
 {
@@ -3127,6 +3384,7 @@ int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region
     return(i);
 
 	
+
 	  if (strcmp(varName, "objPath") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->objPath, r);
@@ -3134,6 +3392,7 @@ int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "createMode") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->createMode, r);
@@ -3141,6 +3400,7 @@ int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "openFlags") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->openFlags, r);
@@ -3148,6 +3408,7 @@ int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "offset") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->offset, r);
@@ -3155,6 +3416,7 @@ int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataSize") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->dataSize, r);
@@ -3162,6 +3424,7 @@ int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "numThreads") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->numThreads, r);
@@ -3169,6 +3432,7 @@ int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "oprType") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->oprType, r);
@@ -3176,16 +3440,18 @@ int getValFromDataObjInp(char *varMap, dataObjInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "specColl") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "condInput") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
@@ -3215,63 +3481,63 @@ int setValFromDataObjInp(char *varMap, dataObjInp_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "objPath") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->objPath, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "createMode") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->createMode), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "openFlags") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->openFlags), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "offset") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->offset), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataSize") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->dataSize), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "numThreads") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->numThreads), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "oprType") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->oprType), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "specColl") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "condInput") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
@@ -3295,54 +3561,63 @@ ExprType *getVarTypeFromDataObjInp(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "objPath") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "createMode") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "openFlags") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "offset") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataSize") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "numThreads") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "oprType") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "specColl") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "condInput") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
@@ -3352,6 +3627,7 @@ ExprType *getVarTypeFromDataObjInp(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region *r)
 {
@@ -3371,6 +3647,7 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
     return(i);
 
 	
+
 	  if (strcmp(varName, "oprType") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->oprType, r);
@@ -3378,6 +3655,7 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "numThreads") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->numThreads, r);
@@ -3385,6 +3663,7 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "srcL3descInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->srcL3descInx, r);
@@ -3392,6 +3671,7 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "destL3descInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->destL3descInx, r);
@@ -3399,6 +3679,7 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "srcRescTypeInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->srcRescTypeInx, r);
@@ -3406,6 +3687,7 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "destRescTypeInx") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->destRescTypeInx, r);
@@ -3413,6 +3695,7 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "offset") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->offset, r);
@@ -3420,6 +3703,7 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataSize") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->dataSize, r);
@@ -3427,9 +3711,10 @@ int getValFromDataOprInp(char *varMap, dataOprInp_t *rei, Res **varValue, Region
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "condInput") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
@@ -3459,63 +3744,63 @@ int setValFromDataOprInp(char *varMap, dataOprInp_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "oprType") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->oprType), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "numThreads") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->numThreads), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "srcL3descInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->srcL3descInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "destL3descInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->destL3descInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "srcRescTypeInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->srcRescTypeInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "destRescTypeInx") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->destRescTypeInx), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "offset") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->offset), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataSize") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->dataSize), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "condInput") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
@@ -3539,54 +3824,63 @@ ExprType *getVarTypeFromDataOprInp(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "oprType") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "numThreads") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "srcL3descInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "destL3descInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "srcRescTypeInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "destRescTypeInx") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "offset") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataSize") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "condInput") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
@@ -3596,6 +3890,7 @@ ExprType *getVarTypeFromDataOprInp(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromAuthInfo(char *varMap, authInfo_t *rei, Res **varValue, Region *r)
 {
@@ -3615,6 +3910,7 @@ int getValFromAuthInfo(char *varMap, authInfo_t *rei, Res **varValue, Region *r)
     return(i);
 
 	
+
 	  if (strcmp(varName, "authScheme") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->authScheme, r);
@@ -3622,6 +3918,7 @@ int getValFromAuthInfo(char *varMap, authInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "authFlag") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->authFlag, r);
@@ -3629,6 +3926,7 @@ int getValFromAuthInfo(char *varMap, authInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "flag") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->flag, r);
@@ -3636,6 +3934,7 @@ int getValFromAuthInfo(char *varMap, authInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "ppid") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->ppid, r);
@@ -3643,6 +3942,7 @@ int getValFromAuthInfo(char *varMap, authInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "host") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->host, r);
@@ -3650,6 +3950,7 @@ int getValFromAuthInfo(char *varMap, authInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "authStr") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->authStr, r);
@@ -3682,42 +3983,42 @@ int setValFromAuthInfo(char *varMap, authInfo_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "authScheme") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->authScheme, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "authFlag") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->authFlag), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "flag") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->flag), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "ppid") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->ppid), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "host") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->host, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "authStr") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->authStr, NAME_LEN, newVarValue);
 			
 		return i;
@@ -3741,36 +4042,42 @@ ExprType *getVarTypeFromAuthInfo(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "authScheme") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "authFlag") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "flag") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "ppid") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "host") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "authStr") == 0) {
 		
 			    return newSimpType(T_STRING, r);
@@ -3780,6 +4087,7 @@ ExprType *getVarTypeFromAuthInfo(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromUserOtherInfo(char *varMap, userOtherInfo_t *rei, Res **varValue, Region *r)
 {
@@ -3799,6 +4107,7 @@ int getValFromUserOtherInfo(char *varMap, userOtherInfo_t *rei, Res **varValue, 
     return(i);
 
 	
+
 	  if (strcmp(varName, "userInfo") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->userInfo, r);
@@ -3806,6 +4115,7 @@ int getValFromUserOtherInfo(char *varMap, userOtherInfo_t *rei, Res **varValue, 
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "userComments") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->userComments, r);
@@ -3813,6 +4123,7 @@ int getValFromUserOtherInfo(char *varMap, userOtherInfo_t *rei, Res **varValue, 
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "userCreate") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->userCreate, r);
@@ -3820,6 +4131,7 @@ int getValFromUserOtherInfo(char *varMap, userOtherInfo_t *rei, Res **varValue, 
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "userModify") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->userModify, r);
@@ -3852,28 +4164,28 @@ int setValFromUserOtherInfo(char *varMap, userOtherInfo_t **inrei, Res *newVarVa
 
 	
 	  if (strcmp(varName, "userInfo") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->userInfo, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "userComments") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->userComments, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "userCreate") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->userCreate, TIME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "userModify") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->userModify, TIME_LEN, newVarValue);
 			
 		return i;
@@ -3897,24 +4209,28 @@ ExprType *getVarTypeFromUserOtherInfo(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "userInfo") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "userComments") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "userCreate") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "userModify") == 0) {
 		
 			    return newSimpType(T_STRING, r);
@@ -3924,6 +4240,7 @@ ExprType *getVarTypeFromUserOtherInfo(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromUserInfo(char *varMap, userInfo_t *rei, Res **varValue, Region *r)
 {
@@ -3943,6 +4260,7 @@ int getValFromUserInfo(char *varMap, userInfo_t *rei, Res **varValue, Region *r)
     return(i);
 
 	
+
 	  if (strcmp(varName, "userName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->userName, r);
@@ -3950,6 +4268,7 @@ int getValFromUserInfo(char *varMap, userInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "rodsZone") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->rodsZone, r);
@@ -3957,6 +4276,7 @@ int getValFromUserInfo(char *varMap, userInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "userType") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->userType, r);
@@ -3964,6 +4284,7 @@ int getValFromUserInfo(char *varMap, userInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "sysUid") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->sysUid, r);
@@ -3971,16 +4292,18 @@ int getValFromUserInfo(char *varMap, userInfo_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "authInfo") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "userOtherInfo") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
@@ -4010,42 +4333,42 @@ int setValFromUserInfo(char *varMap, userInfo_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "userName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->userName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "rodsZone") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->rodsZone, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "userType") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->userType, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "sysUid") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->sysUid), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "authInfo") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "userOtherInfo") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
@@ -4069,36 +4392,42 @@ ExprType *getVarTypeFromUserInfo(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "userName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "rodsZone") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "userType") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "sysUid") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "authInfo") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "userOtherInfo") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
@@ -4108,6 +4437,7 @@ ExprType *getVarTypeFromUserInfo(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromVersion(char *varMap, version_t *rei, Res **varValue, Region *r)
 {
@@ -4127,6 +4457,7 @@ int getValFromVersion(char *varMap, version_t *rei, Res **varValue, Region *r)
     return(i);
 
 	
+
 	  if (strcmp(varName, "status") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->status, r);
@@ -4134,6 +4465,7 @@ int getValFromVersion(char *varMap, version_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "relVersion") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->relVersion, r);
@@ -4141,6 +4473,7 @@ int getValFromVersion(char *varMap, version_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "apiVersion") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->apiVersion, r);
@@ -4148,6 +4481,7 @@ int getValFromVersion(char *varMap, version_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnPort") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->reconnPort, r);
@@ -4155,6 +4489,7 @@ int getValFromVersion(char *varMap, version_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "reconnAddr") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->reconnAddr, r);
@@ -4162,6 +4497,7 @@ int getValFromVersion(char *varMap, version_t *rei, Res **varValue, Region *r)
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "cookie") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->cookie, r);
@@ -4194,42 +4530,42 @@ int setValFromVersion(char *varMap, version_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "status") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->status), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "relVersion") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->relVersion, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "apiVersion") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->apiVersion, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnPort") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->reconnPort), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "reconnAddr") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->reconnAddr, LONG_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "cookie") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->cookie), newVarValue);
 			
 		return i;
@@ -4253,36 +4589,42 @@ ExprType *getVarTypeFromVersion(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "status") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "relVersion") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "apiVersion") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnPort") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "reconnAddr") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "cookie") == 0) {
 		
 			    return newSimpType(T_INT, r);
@@ -4292,6 +4634,7 @@ ExprType *getVarTypeFromVersion(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromRodsHostAddr(char *varMap, rodsHostAddr_t *rei, Res **varValue, Region *r)
 {
@@ -4311,6 +4654,7 @@ int getValFromRodsHostAddr(char *varMap, rodsHostAddr_t *rei, Res **varValue, Re
     return(i);
 
 	
+
 	  if (strcmp(varName, "hostAddr") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->hostAddr, r);
@@ -4318,6 +4662,7 @@ int getValFromRodsHostAddr(char *varMap, rodsHostAddr_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "zoneName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->zoneName, r);
@@ -4325,6 +4670,7 @@ int getValFromRodsHostAddr(char *varMap, rodsHostAddr_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "portNum") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->portNum, r);
@@ -4332,6 +4678,7 @@ int getValFromRodsHostAddr(char *varMap, rodsHostAddr_t *rei, Res **varValue, Re
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dummyInt") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->dummyInt, r);
@@ -4364,28 +4711,28 @@ int setValFromRodsHostAddr(char *varMap, rodsHostAddr_t **inrei, Res *newVarValu
 
 	
 	  if (strcmp(varName, "hostAddr") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->hostAddr, LONG_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "zoneName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->zoneName, NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "portNum") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->portNum), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dummyInt") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->dummyInt), newVarValue);
 			
 		return i;
@@ -4409,24 +4756,28 @@ ExprType *getVarTypeFromRodsHostAddr(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "hostAddr") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "zoneName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "portNum") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dummyInt") == 0) {
 		
 			    return newSimpType(T_INT, r);
@@ -4436,6 +4787,7 @@ ExprType *getVarTypeFromRodsHostAddr(char *varMap, Region *r)
 
     return newErrorType(UNDEFINED_VARIABLE_MAP_ERR, r);
 }
+
 
 int getValFromFileOpenInp(char *varMap, fileOpenInp_t *rei, Res **varValue, Region *r)
 {
@@ -4455,13 +4807,15 @@ int getValFromFileOpenInp(char *varMap, fileOpenInp_t *rei, Res **varValue, Regi
     return(i);
 
 	
+
 	  if (strcmp(varName, "fileType") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "otherFlags") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->otherFlags, r);
@@ -4469,13 +4823,15 @@ int getValFromFileOpenInp(char *varMap, fileOpenInp_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "addr") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "fileName") == 0) {
 		
 			    i = getStrLeafValue(varValue, rei->fileName, r);
@@ -4483,6 +4839,7 @@ int getValFromFileOpenInp(char *varMap, fileOpenInp_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "flags") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->flags, r);
@@ -4490,6 +4847,7 @@ int getValFromFileOpenInp(char *varMap, fileOpenInp_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "mode") == 0) {
 		
 			    i = getIntLeafValue(varValue, rei->mode, r);
@@ -4497,6 +4855,7 @@ int getValFromFileOpenInp(char *varMap, fileOpenInp_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "dataSize") == 0) {
 		
 			    i = getLongLeafValue(varValue, rei->dataSize, r);
@@ -4504,9 +4863,10 @@ int getValFromFileOpenInp(char *varMap, fileOpenInp_t *rei, Res **varValue, Regi
 		return i;
 	  }
 	
+
 	  if (strcmp(varName, "condInput") == 0) {
 		
-			    i = UNDEFINED_VARIABLE_MAP_ERR;
+				i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
@@ -4536,56 +4896,56 @@ int setValFromFileOpenInp(char *varMap, fileOpenInp_t **inrei, Res *newVarValue)
 
 	
 	  if (strcmp(varName, "fileType") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "otherFlags") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->otherFlags), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "addr") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "fileName") == 0) {
-		
+	  	
 			    i = setStrLeafValue(rei->fileName, MAX_NAME_LEN, newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "flags") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->flags), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "mode") == 0) {
-		
+	  	
 			    i = setIntLeafValue(&(rei->mode), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "dataSize") == 0) {
-		
+	  	
 			    i = setLongLeafValue(&(rei->dataSize), newVarValue);
 			
 		return i;
 	  }
 	
 	  if (strcmp(varName, "condInput") == 0) {
-		
+	  	
 			    i = UNDEFINED_VARIABLE_MAP_ERR;
 			
 		return i;
@@ -4609,48 +4969,56 @@ ExprType *getVarTypeFromFileOpenInp(char *varMap, Region *r)
     return newErrorType(i, r);
 
 	
+	  	
 	  if (strcmp(varName, "fileType") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "otherFlags") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "addr") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "fileName") == 0) {
 		
 			    return newSimpType(T_STRING, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "flags") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "mode") == 0) {
 		
 			    return newSimpType(T_INT, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "dataSize") == 0) {
 		
 			    return newSimpType(T_DOUBLE, r);
 			
 	  }
 	
+	  	
 	  if (strcmp(varName, "condInput") == 0) {
 		
 			    return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r);

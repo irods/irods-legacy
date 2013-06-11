@@ -196,6 +196,8 @@ typedef enum node_type {
     C_STRUCT_DEF = 2026,
     C_DEF_SET = 2030,
     C_DEF_SET_SET = 2031,
+    CG_ANNOTATION = 2032,
+    CG_ANNOTATIONS = 2033,
 } NodeType;
 
 typedef struct condIndexVal {

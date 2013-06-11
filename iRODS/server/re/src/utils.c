@@ -465,6 +465,35 @@ void cpEnv2(Env *env, Region *oldr, Region *r) {
 }
 
 
+void printIndent(int n) {
+	int i;
+	for(i=0;i<n;i++) {
+		printf("\t");
+	}
+}
+
+
+void printEnvIndent(Env *env) {
+	Env *e = env->lower;
+	int i =0;
+		while(e!=NULL) {
+			i++;
+			e=e->lower;
+		}
+		printIndent(i);
+}
+
+void printTreeDeref(Node *n, int indent, Hashtable *var_types, Region *r) {
+	printIndent(indent);
+	printf("%s:%d->",n->text, getNodeType(n));
+        printType(n->coercionType, var_types);
+        printf("\n");
+	int i;
+	for(i=0;i<n->degree;i++) {
+		printTreeDeref(n->subtrees[i],indent+1, var_types, r);
+	}
+
+}
 void printType(ExprType *type, Hashtable *var_types) {
     char buf[1024];
     typeToString(type, var_types, buf, 1024);

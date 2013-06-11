@@ -70,5 +70,8 @@ int getParamIOType(char *iotypes, int index);
 FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc);
 Node *construct(char *fn, Node **args, int argc, Node* constype, Region *r);
 Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Region *r);
+char* matchWholeString(char *buf);
+char *wildCardToRegex(char *buf);
+
 #endif	/* FUNCTIONS_H */
 

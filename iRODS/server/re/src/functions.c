@@ -2786,23 +2786,6 @@ Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errm
     return res;
 }
 
-/*FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
-            ExprType *fTypeCopy = fDesc->type;
-
-            while((T_FUNC_VARARG(fTypeCopy) == ONCE && n != T_FUNC_ARITY(fTypeCopy))
-                    ||(T_FUNC_VARARG(fTypeCopy) == STAR && n < T_FUNC_ARITY(fTypeCopy) - 1)
-                    ||(T_FUNC_VARARG(fTypeCopy) == PLUS && n < T_FUNC_ARITY(fTypeCopy))) {
-                if(fDesc->next == NULL) {
-                    return NULL;
-                }
-                fDesc = fDesc->next;
-                fTypeCopy = fDesc->type;
-            }
-            return fDesc;
-}
-
-*/
-
 Node *construct(char *fn, Node **args, int argc, Node *constype, Region *r) {
     Node *res = newRes(r);
     res->text = cpStringExt(fn, r);
@@ -2816,6 +2799,45 @@ Node *construct(char *fn, Node **args, int argc, Node *constype, Region *r) {
 Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Region *r) {
     Node *res = args[0]->subtrees[proj];
     return res;
+}
+
+char *matchWholeString(char *buf) {
+    char *buf2 = (char *)malloc(sizeof(char)*strlen(buf)+2+1);
+    buf2[0]='^';
+    strcpy(buf2+1, buf);
+    buf2[strlen(buf)+1]='$';
+    buf2[strlen(buf)+2]='\0';
+    return buf2;
+}
+
+char *wildCardToRegex(char *buf) {
+    char *buf2 = (char *)malloc(sizeof(char)*strlen(buf)*3+2+1);
+    char *p = buf2;
+    int i;
+    *(p++)='^';
+    int n = strlen(buf);
+    for(i=0;i<n;i++) {
+    	switch(buf[i]) {
+    		case '*':
+    			*(p++) = '.';
+    			*(p++) = buf[i];
+    			break;
+    		case ']':
+    		case '[':
+    		case '^':
+    			*(p++) = '\\';
+    			*(p++) = buf[i];
+    			break;
+    		default:
+    			*(p++) = '[';
+    			*(p++) = buf[i];
+    			*(p++) = ']';
+    			break;
+    	}
+    }
+    *(p++)='$';
+    *(p++)='\0';
+    return buf2;
 }
 
 Res *smsi_segfault(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
