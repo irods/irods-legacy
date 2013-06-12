@@ -153,7 +153,7 @@ endif
 
 ifeq ($(CC_IS_GCC), 1)
 MY_CFLAG+=-Wall
-GCC_VERSION_GE_46 := $(shell g++ -dumpversion | awk '{print $$1>=4.6?"1":"0"}')
+GCC_VERSION_GE_46 := $(shell expr `g++ -dumpversion | cut -c1-3` \>= 4.6)
 ifeq ($(GCC_VERSION_GE_46),1)
 MY_CFLAG+=-Wno-unused-but-set-variable
 endif
