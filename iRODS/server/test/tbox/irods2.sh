@@ -49,10 +49,10 @@ date
 pgsql=`ls -d pgsql`
 
 # Once or twice a day, test with SHA1 as the default hash
-if [ $myhour -eq 14 ] ; then
+if [ $myhour -eq 00 ] ; then
     options="$options SHA1"
-    $out1 = `printf ",s/defaultHashType=HASH_TYPE_MD5/defaultHashType=HASH_TYPE_SHA1/g\nw\nq" | ed iRODS/lib/core/src/obf.c`;
-    print $out1 . "\n";
+    $out1=`printf ",s/defaultHashType=HASH_TYPE_MD5/defaultHashType=HASH_TYPE_SHA1/g\nw\nq" | ed iRODS/lib/core/src/obf.c`;
+    printf $out1 . "\n";
 fi
 
 #cd /tbox/IRODS_BUILD/iRODS
@@ -103,7 +103,7 @@ fi
 if [ $error3 -ne 0 ] ; then
     doPoundTest=0
 fi
-if [ $myhour -ne  18 ] ; then
+if [ $myhour -ne  16 ] ; then
     doPoundTest=0
 fi
 if [ $doPoundTest -eq 1 ] ; then
@@ -141,6 +141,23 @@ if [ $doFuseTest -eq 1 ]; then
     error4=$?
     date
 fi
+
+# Once or twice a day, test with C (gcc) instead of C++ (g++)
+if [ $myhour -eq 23 ] ; then
+    options="$options GCC"
+    out1=`printf ",s\CC=/usr/bin/g++\CC=/usr/bin/gcc\g\nw\nq" | ed config/platform.mk`
+    printf $out1 . "\n"
+    out1=`printf ",s\LDR=/usr/bin/g++\LDR=/usr/bin/gcc\g\nw\nq" | ed config/platform.mk`
+    printf $out1 . "\n"
+    make clean
+    make
+    error4=$?
+    if [ $error4 -eq 0 ] ; then
+	./irodsctl testWithoutConfirmation
+	error4=$?
+    fi
+fi
+
 
 doJavaTest=1
 if [ $error1 -ne 0 ] ; then
