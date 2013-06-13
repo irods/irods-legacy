@@ -12,6 +12,7 @@
 #include "filesystem.h"
 #include "sharedmemory.h"
 #include "icatHighLevelRoutines.h"
+#include "modAVUMetadata.h"
 #ifdef DEBUG
 #include "re.h"
 #endif
@@ -541,7 +542,16 @@ int readICatUserInfo(char *userName, char *attr, char userInfo[MAX_NAME_LEN], rs
 }
 
 int writeICatUserInfo(char *userName, char *attr, char *value, rsComm_t *rsComm) {
-	return chlSetAVUMetadata(rsComm, "-u", userName, attr, value, "");
+	modAVUMetadataInp_t modAVUMetadataInp;
+
+        modAVUMetadataInp.arg0 = "set";
+        modAVUMetadataInp.arg1 = "-u";
+        modAVUMetadataInp.arg2 = userName;
+        modAVUMetadataInp.arg3 = attr;
+        modAVUMetadataInp.arg4 = value;
+        modAVUMetadataInp.arg5 = "";
+
+	return rsModAVUMetadata(rsComm, &modAVUMetadataInp);
 }
 
 int readICatUserLogging(char *userName, int *logging, rsComm_t *rsComm) {
