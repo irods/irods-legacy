@@ -1,5 +1,0 @@
-# Enable mod_rewrite, start rewrite engine
-RewriteEngine on
-#
-# Internally rewrite search engine friendly static url to dynamic filepath and query
-RewriteRule ^rodsproxy/(.*)$ services/download.php?ruri=$1 [L]
