@@ -13,6 +13,9 @@ void usageTTL ();
    building their own iinit but it would strongly encourage the use of
    time-limited credentials. */
 /* #define TIME_TO_LIVE_REQUIRED 1 */
+/* Uncomment the line below if you also want a default TTL if none
+   is specified by the user. This TTL is specified in hours. */
+/* #define TIME_TO_LIVE_DEFAULT 8 */
 
 #define TTYBUF_LEN 100
 #define UPDATE_TEXT_LEN NAME_LEN*10
@@ -113,10 +116,16 @@ main(int argc, char **argv)
 
 #ifdef TIME_TO_LIVE_REQUIRED 
     if (myRodsArgs.ttl!=True) {
+#ifdef TIME_TO_LIVE_DEFAULT
+       ttl=TIME_TO_LIVE_DEFAULT;
+       printf("Notice: using default TTL (time to live) value of %d hours\n",
+	      ttl);
+#else
        printf("--ttl (Time To Live) is required, please try again\n");
        exit(2);
+#endif /* TIME_TO_LIVE_DEFAULT */
     }
-#endif
+#endif /* TIME_TO_LIVE_REQUIRED */
 
     ix = myRodsArgs.optind;
 

@@ -87,6 +87,8 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #define IRODS_PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
 #define IRODS_TTL_PASSWORD_MIN_TIME 121  /* must be > TEMP_PASSWORD_TIME */
 #define IRODS_TTL_PASSWORD_MAX_TIME 1209600    /* two weeks in seconds */
+/* For batch jobs that should run "forever", IRODS_TTL_PASSWORD_MAX_TIME
+   can be set very large, for example to 2147483647 to allow 68 years TTL. */
 #ifdef PAM_AUTH_NO_EXTEND
 #define IRODS_PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
 #else
