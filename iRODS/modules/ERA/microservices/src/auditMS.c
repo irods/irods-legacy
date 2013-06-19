@@ -8,8 +8,6 @@
 
 #include "auditMS.h"
 #include "auditUtil.h"
-
-
 /**
  * \fn msiGetAuditTrailInfoByUserID (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
@@ -465,3 +463,6 @@ msiGetAuditTrailInfoByTimeStamp(msParam_t *inpParam1, msParam_t *inpParam2, msPa
 	return (rei->status);
 
 }
+#include "auditUtil.h"
+
+
