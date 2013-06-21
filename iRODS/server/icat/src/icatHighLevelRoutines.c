@@ -5640,6 +5640,10 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       return(CAT_INVALID_ARGUMENT);
    }
 
+   if (userInfo->userName==0 || *userInfo->userName=='\0') {
+      return (CAT_INVALID_ARGUMENT);
+   }
+
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
        rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
 	  int status2;
