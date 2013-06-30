@@ -5632,16 +5632,15 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       return(CATALOG_NOT_CONNECTED);
    }
 
-   if (userInfo==0) {
-      return(CAT_INVALID_ARGUMENT);
+   if (!userInfo) {
+      return(SYS_INTERNAL_NULL_INPUT_ERR);
    }
 
-   if (userInfo->userType==0) {
-      return(CAT_INVALID_ARGUMENT);
-   }
+   trimWS(userInfo->userName);
+   trimWS(userInfo->userType);
 
-   if (userInfo->userName==0 || *userInfo->userName=='\0') {
-      return (CAT_INVALID_ARGUMENT);
+   if (!strlen(userInfo->userType) || !strlen(userInfo->userName)) {
+      return(CAT_INVALID_ARGUMENT);
    }
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
