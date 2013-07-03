@@ -1,23 +1,45 @@
 include(*path) = !(*path like regex ".*/[.]preview(/.*)?")
+ATTR_ID = "data:id"
+ATTR_NAME = "data:name"
+ATTR_DATA_SIZE = "data:size"
 ATTR_THUMB_PREVIEW = "data:thumbPreview"
 ATTR_PREVIEW = "data:preview"
 ATTR_HAS_VERSION = "data:hasVersion"
-ATTR_ID = "data:id"
+ATTR_TITLE = "data:title"
+ATTR_DESCRIPTION = "data:description"
+ATTR_REPLACES = "data:replaces"
+ATTR_REPLACED_BY = "data:replacedBy"
+ATTR_RELATED = "data:related"
+ATTR_CONTRIBUTOR = "data:contributor"
+
+
 
 # AVU Attr's that are mapped to Databook Attr's
 # Do not include system attributes such as data:name, data:dataSize, or data:id
 databookAttr(*Attr) =
 	match *Attr with
-		| "data:hasVersion" => true
-		| "data:preview" => true
-		| "data:thumbPreview" => true
+		| ATTR_HAS_VERSION => true
+		| ATTR_PREVIEW => true
+		| ATTR_THUMB_PREVIEW => true
+		| ATTR_CONTRIBUTOR => true
+		| ATTR_RELATED => true
+		| ATTR_REPLACED_BY => true
+		| ATTR_REPLACES => true
+		| ATTR_TITLE => true
+		| ATTR_DESCRIPTION => true
 		| *_ => false
 
 databookAttrType(*Attr) =
 	match *Attr with 
-		| "data:hasVersion" => "string"
-		| "data:preview" => "string"
-		| "data:thumbPreview" => "string"
+		| ATTR_HAS_VERSION => "string"
+		| ATTR_PREVIEW => "string"
+		| ATTR_THUMB_PREVIEW => "string"
+		| ATTR_CONTRIBUTOR => "string"
+		| ATTR_RELATED => "string"
+		| ATTR_REPLACED_BY => "string"
+		| ATTR_REPLACES => "string"
+		| ATTR_TITLE => "string"
+		| ATTR_DESCRIPTION => "string"
 		| *_ => let *dummy = writeLine("serverLog", "databookAttrType: unsupported data attribute *Attr, return default type 'string'") in
 			"string"
 
@@ -141,13 +163,13 @@ acPostProcForModifyCollMeta { }
 acPostProcForModifyDataObjMeta { }
 
 acPostProcForModifyCollectionAVU(*Option,*ItemType,*ItemName,*AName,*AValue) { 
-	on(include($objPath)) {
+	on(include(*ItemName)) {
 		postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, "");
 	}
 }
 
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { 
-	on(include($objPath)) {
+	on(include(*ItemName)) {
 		postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit);
 	}
 }
@@ -171,6 +193,7 @@ postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AU
 		}
 		# need to check *AValue format
 		*DatabookName=triml(*AName, ":");
+			writeLine("serverLog", "*Option");
 		if(*Option like "add*") {
 			*msg=join(list("addMeta", *Id, *DatabookName, *AValue, databookAttrType(*AName)));
 			*accessType=ACCESS_TYPE_METADATA_ADD;
@@ -179,6 +202,25 @@ postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AU
 			*accessType=ACCESS_TYPE_METADATA_REMOVE;
 		} else if(*Option like "set*") {
 			*msg=join(list("modMeta", *Id, *DatabookName, *AValue, databookAttrType(*AName)));
+			*accessType=ACCESS_TYPE_METADATA_MODIFY;
+		} else if(*Option like "mod*") {
+			writeLine("serverLog", "mod *ItemType *AName");
+		    if(*ItemType == "-d") {
+			(*Coll, *Data) = splitDataObjPath(*ItemName); 
+			writeLine("serverLog", "*Data, *Coll, *AName");
+			foreach(*RS in SELECT META_DATA_ATTR_VALUE WHERE DATA_NAME = *Data AND COLL_NAME = *Coll AND META_DATA_ATTR_NAME = *AName) {
+			writeLine("serverLog", "found value");
+			  *NValue = *RS.META_DATA_ATTR_VALUE;
+			  break;
+			}
+			writeLine("serverLog", "found?");
+		    } else {
+			foreach(*RS in SELECT META_COLL_ATTR_VALUE WHERE COLL_NAME = *ItemName AND META_COLL_ATTR_NAME = *AName) {
+			  *NValue = *RS.META_COLL_ATTR_VALUE;
+			  break;
+			}
+		    }
+			*msg=join(list("modMeta", *Id, *DatabookName, *NValue, databookAttrType(*AName)));
 			*accessType=ACCESS_TYPE_METADATA_MODIFY;
 		} else {
 			writeLine("serverLog", "unsupported option: *Option, *ItemName");

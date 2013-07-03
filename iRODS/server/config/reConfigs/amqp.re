@@ -3,6 +3,7 @@
 # send a msg
 amqpSend: string * string * ? -> integer
 amqpSend(*Host, *Queue, *Msg) {
+	writeLine("serverLog", "ampqSend: sending message '*Msg'");
 	*HostArg = execCmdArg(*Host);
 	*QueueArg = execCmdArg(*Queue);
 	*MsgArg = execCmdArg(*Msg);
@@ -26,15 +27,19 @@ amqpRecv(*Host, *Queue, *Emp, *Msg) {
 # Messages are of the format "Host:Queue:Msg", assuming that there is no ":" in Host or Queue
 startXmsgAmqpBridge(*Tic, *Log) {
 	delay("<EF>30s</EF>") {
+		XmsgAmqpBridge(*Tic, *Log);
+}}
+
+XmsgAmqpBridge(*Tic, *Log) {
 		*Found = false;
 		foreach(*A in listcorerules()) {
-			if(*A == "ampqSend") {
+			if(*A == "amqpSend") {
 				*Found = true;
 				break;
 			}
 		}
 		foreach(*A in listapprules()) {
-			if(*A == "ampqSend") {
+			if(*A == "amqpSend") {
 				*Found = true;
 				break;
 			}
@@ -71,22 +76,26 @@ startXmsgAmqpBridge(*Tic, *Log) {
 			}
 		}
 		# msiXmsgServerDisConnect(*Conn);
-	}
 }
+@("logging", "false")
 
 # AMQP to Xmsg bridge
 # Messages are read from *Queue on *Host, and written to stream with ticket *Tic
 startAmqpXmsgBridge(*Host, *Queue, *Tic, *Log) {
 	delay("<EF>30s</EF>") {
+		AmqpXmsgBridge(*Host, *Queue, *Tic, *Log);
+	}
+}
+AmqpXmsgBridge(*Host, *Queue, *Tic, *Log) {
 		*Found = false;
 		foreach(*A in listcorerules()) {
-			if(*A == "ampqRecv") {
+			if(*A == "amqpRecv") {
 				*Found = true;
 				break;
 			}
 		}
 		foreach(*A in listapprules()) {
-			if(*A == "ampqRecv") {
+			if(*A == "amqpRecv") {
 				*Found = true;
 				break;
 			}
@@ -120,5 +129,54 @@ startAmqpXmsgBridge(*Host, *Queue, *Tic, *Log) {
 			}
 		}
 		# msiXmsgServerDisConnect(*Conn);
+}
+@("logging", "false")
+
+# Xmsg to AMQP bridge which sents all Xmsgs from a channel to a queue
+startXmsgAmqpBridgeOneQueue(*Tic, *Host, *Queue, *Log) {
+	delay("<EF>30s</EF>") {
+		XmsgAmqpBridgeOneQueue(*Tic, *Host, *Queue, *Log);
 	}
 }
+
+XmsgAmqpBridgeOneQueue(*Tic, *Host, *Queue, *Log) {
+		*Found = false;
+		foreach(*A in listcorerules()) {
+			if(*A == "amqpSend") {
+				*Found = true;
+				break;
+			}
+		}
+		foreach(*A in listapprules()) {
+			if(*A == "amqpSend") {
+				*Found = true;
+				break;
+			}
+		}
+		if(!*Found) {
+			msiAdmAddAppRuleStruct("amqp", "", "");
+		}
+		# msiXmsgServerConnect(*Conn);
+		while(true) {
+			if(*Log) {
+				writeLine("serverLog", "waiting for message with ticket *Tic");
+			}
+			*ErrorCode = errorcode(readXMsg(str(*Tic), "", *MNum, *SNum, *MHdr, *XMsg, *MUser, *MAddr));
+			if(*ErrorCode < 0) {
+				if(*ErrorCode == -63000) {
+					writeLine("serverLog", "no more xmessages");
+					break;
+				} else {
+					fail(*ErrorCode);
+				}
+			} else {
+				if(*Log) {
+					writeLine("serverLog", "received xmessage '*XMsg'");
+				}
+	
+				amqpSend(*Host, *Queue, *XMsg);
+			}
+		}
+		# msiXmsgServerDisConnect(*Conn);
+}
+@("logging", "false")
