@@ -1041,7 +1041,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
         indexNode = (RuleIndexListNode *)lookupFromHashTable(civ->valIndex, res->text);
         if(indexNode == NULL) {
 #ifndef DEBUG
-            rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",ruleName, NO_MORE_RULES_ERR);
+            rodsLog (LOG_NOTICE,"cannot find rule in condIndex: %s",ruleName);
 #endif
             status = newErrorRes(r, NO_MORE_RULES_ERR);
             RETURN;
@@ -1051,7 +1051,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
 
         if(rd->ruleType != RK_REL && rd->ruleType != RK_FUNC) {
 #ifndef DEBUG
-            rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",ruleName, NO_MORE_RULES_ERR);
+            rodsLog (LOG_NOTICE,"wrong node type in condIndex: %s",ruleName);
 #endif
             status = newErrorRes(r, NO_MORE_RULES_ERR);
             RETURN;
@@ -1062,7 +1062,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
         status = execRuleNodeRes(rule, args, argc,  applyAll > 1? applyAll : 0, env, rei, reiSaveFlag, errmsg, r);
 
         if (getNodeType(status) == N_ERROR) {
-            rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",ruleName, RES_ERR_CODE(status));
+            rodsLog (LOG_NOTICE,"execRuleFromCondIndex: applyRule Failed: %s with status %i",ruleName, RES_ERR_CODE(status));
         }
 
     ret:
@@ -1105,7 +1105,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         if (statusI != 0) {
 			if(applyAllRule == 0) {
 	#ifndef DEBUG
-				rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",ruleName, statusI);
+				rodsLog (LOG_NOTICE,"execRule: no more rules: %s with status %i",ruleName, statusI);
 	#endif
 				statusRes = statusRes == NULL ? newErrorRes(r, NO_RULE_FOUND_ERR) : statusRes;
 			} else { // apply all rules succeeds even when 0 rule is applied
@@ -1206,7 +1206,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         }
     } else {
 #ifndef DEBUG
-            rodsLog (LOG_NOTICE,"applyRule Failed for action 2: %s with status %i",ruleName, RES_ERR_CODE(statusRes));
+            rodsLog (LOG_NOTICE,"execRule: applyRule Failed: %s with status %i",ruleName, RES_ERR_CODE(statusRes));
 #endif
         return statusRes;
     }
@@ -1301,7 +1301,7 @@ Res* execRuleNodeRes(Node *rule, Res** args, unsigned int argc, int applyAll, En
 
             if (getNodeType(statusRes) == N_ERROR) {
                     #ifndef DEBUG
-                    rodsLog (LOG_NOTICE,"applyRule Failed for action 2: %s with status %i",ruleHead->text, RES_ERR_CODE(statusRes));
+                    rodsLog (LOG_NOTICE,"execRuleNodeRes: applyRule Failed: %s with status %i",ruleHead->text, RES_ERR_CODE(statusRes));
                     #endif
             }
         } else {
@@ -1338,9 +1338,25 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
     Res *res;
     char *varName;
     char matcherName[MAX_NAME_LEN];
+    RuleIndexListNode *node;
+	
+    if(getNodeType(pattern) == N_APPLICATION && pattern->subtrees[1]->degree==0) {
+	char *fn = pattern->subtrees[0]->text;
+	if(findNextRule2(fn, 0, &node) == 0 && node->secondaryIndex == 0) {
+	  RuleDesc *rd = getRuleDesc(node->ruleIndex);
+	  if(rd->ruleType == RK_FUNC &&
+	     (getNodeType(rd->node->subtrees[2]) == TK_BOOL ||
+	     getNodeType(rd->node->subtrees[2]) == TK_STRING ||
+	     getNodeType(rd->node->subtrees[2]) == TK_INT ||
+	     getNodeType(rd->node->subtrees[2]) == TK_DOUBLE)) {
+	      pattern = rd->node->subtrees[2];
+	  }
+	}
+    }
+    
     switch (getNodeType(pattern)) {
     case N_APPLICATION:
-    	if(strcmp(N_APP_FUNC(pattern)->text, ".")==0) {
+	if(strcmp(N_APP_FUNC(pattern)->text, ".")==0) {
 		char *key = NULL;
 	    	RE_ERROR2(TYPE(v) != T_STRING , "not a string.");
 		if(getNodeType(N_APP_ARG(pattern, 1)) == N_APPLICATION && N_APP_ARITY(N_APP_ARG(pattern, 1)) == 0) {
@@ -1378,7 +1394,6 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 	} else {
 		matcherName[0]='~';
 		strcpy(matcherName+1, pattern->subtrees[0]->text);
-		RuleIndexListNode *node;
 		if(findNextRule2(matcherName, 0, &node) == 0) {
 		    v = execRule(matcherName, &val, 1, 0, env, rei, reiSaveFlag, errmsg, r);
 		    RE_ERROR2(getNodeType(v) == N_ERROR, "user defined pattern function error");
@@ -1440,13 +1455,13 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
     	RE_ERROR2(getNodeType(v) != N_VAL || (TYPE(v) != T_INT && TYPE(v) != T_DOUBLE), "pattern mismatch value is not an integer.");
     	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
     	CASCADE_N_ERROR(res);
-    	RE_ERROR2(atoi(res->text) != (TYPE(v) == T_INT ? RES_INT_VAL(v) : RES_DOUBLE_VAL(v)) , "pattern mismatch integer.");
+    	RE_ERROR2(RES_INT_VAL(res) != (TYPE(v) == T_INT ? RES_INT_VAL(v) : RES_DOUBLE_VAL(v)) , "pattern mismatch integer.");
 		return newIntRes(r, 0);
     case TK_DOUBLE:
     	RE_ERROR2(getNodeType(v) != N_VAL || (TYPE(v) != T_DOUBLE && TYPE(v) != T_INT), "pattern mismatch value is not a double.");
     	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
     	CASCADE_N_ERROR(res);
-    	RE_ERROR2(atof(res->text) != (TYPE(v) == T_DOUBLE ? RES_DOUBLE_VAL(v) : RES_INT_VAL(v)), "pattern mismatch integer.");
+    	RE_ERROR2(RES_DOUBLE_VAL(res) != (TYPE(v) == T_DOUBLE ? RES_DOUBLE_VAL(v) : RES_INT_VAL(v)), "pattern mismatch integer.");
 		return newIntRes(r, 0);
     default:
     	RE_ERROR2(1, "malformatted pattern error");
