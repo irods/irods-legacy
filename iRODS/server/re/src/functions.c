@@ -45,6 +45,8 @@ _rnew = _rnew2;}
 
 #define RE_BACKWARD_COMPATIBLE
 
+static char globalSessionId[MAX_NAME_LEN] = "Unspecified";
+
 /* todo include proper header files */
 int rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp);
 int rsCloseCollection (rsComm_t *rsComm, int *handleInxInp);
@@ -52,6 +54,17 @@ int rsReadCollection (rsComm_t *rsComm, int *handleInxInp, collEnt_t **collEnt);
 int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 int msiCloseGenQuery(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 int msiGetMoreRows(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei);
+
+
+Res *smsi_getGlobalSessionId(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	return newStringRes(r, globalSessionId);
+}
+
+Res *smsi_setGlobalSessionId(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *sid = subtrees[0]->text;
+	rstrcpy(globalSessionId, sid, MAX_NAME_LEN);
+        return newIntRes(r, 0);
+}
 
 void reIterable_genQuery_init(ReIterableData *itrData, Region *r);
 int reIterable_genQuery_hasNext(ReIterableData *itrData, Region *r);
@@ -2738,7 +2751,6 @@ Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *re
 
 }
 
-
 /* utilities */
 int fileConcatenate(char *file1, char *file2, char *file3) {
 	char buf[1024];
@@ -2846,7 +2858,6 @@ Res *smsi_segfault(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int 
 	putchar(*a);
         return NULL;
 }
-
 
 void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "do", newFunctionFD("e ?->?", smsi_do, r));
@@ -2973,6 +2984,8 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "collectionSpider", newFunctionFD("forall X in {string `CollInpNew_PI`}, expression ? * X * actions ? * actions ? -> integer", smsiCollectionSpider, r));
     insertIntoHashTable(ft, "path", newFunctionFD("string -> path", smsi_path, r));
     insertIntoHashTable(ft, "collection", newFunctionFD("path -> `CollInpNew_PI`", smsi_collection, r));
+    insertIntoHashTable(ft, "getGlobalSessionId", newFunctionFD("->string", smsi_getGlobalSessionId, r));
+    insertIntoHashTable(ft, "setGlobalSessionId", newFunctionFD("string->integer", smsi_setGlobalSessionId, r));
     insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));
     insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double : 0 {string}", (SmsiFuncTypePtr) NULL, r));
     insertIntoHashTable(ft, "rei->doi->writeFlag", newFunctionFD("integer : 0 {string}", (SmsiFuncTypePtr) NULL, r));
