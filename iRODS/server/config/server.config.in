@@ -22,7 +22,7 @@ icatHost zuri.sdsc.edu
 DBUsername schroede
 #
 # The following keywords are needed for Rule Engine Initialization.
-# reRuleSet holds a comma-separated list of iRODS Rule Base (.irb) files 
+# reRuleSet holds a comma-separated list of iRODS Rule Base (.re) files 
 #    to be used by the Rule Engine
 # reFuncMapSet  holds a comma-separated list of Function Name Mapping (.fnm) 
 #    files to be used by the Rule Engine
