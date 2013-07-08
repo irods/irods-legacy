@@ -1,5 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
+/** \file functions.c
+  */
 #include "index.h"
 #include "functions.h"
 #include "arithmetics.h"
@@ -896,6 +898,21 @@ Res *smsi_assign(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
     return ret;
 }
 
+/**
+\brief '.'
+\code
+<expr> ::= <expr> '.' ( <iden> | <str> )
+\endcode
+Examples:
+\code
+*kv.A = "a"; # Add key value pair
+*kv.A = "b"; # Update key value pair
+*kv.A == "a" # Get value by key
+*kv."A B" = "a";
+*kv."A B" = "b";
+*kv."A B" == "b"
+\endcode 
+ */
 Res *smsi_getValByKey(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     char errbuf[ERR_MSG_LEN];
     keyValPair_t *kvp = (keyValPair_t *) RES_UNINTER_STRUCT(params[0]);
@@ -2979,14 +2996,14 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionFD("string * d `RuleSet_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
     insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionFD("string * `RuleSet_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
     insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
-    insertIntoHashTable(ft, "getReLogging", newFunctionFD("string -> boolean", smsi_getReLogging, r));
-    insertIntoHashTable(ft, "setReLogging", newFunctionFD("string * boolean -> integer", smsi_setReLogging, r));
+/*    insertIntoHashTable(ft, "getReLogging", newFunctionFD("string -> boolean", smsi_getReLogging, r));
+    insertIntoHashTable(ft, "setReLogging", newFunctionFD("string * boolean -> integer", smsi_setReLogging, r));*/
     insertIntoHashTable(ft, "collectionSpider", newFunctionFD("forall X in {string `CollInpNew_PI`}, expression ? * X * actions ? * actions ? -> integer", smsiCollectionSpider, r));
     insertIntoHashTable(ft, "path", newFunctionFD("string -> path", smsi_path, r));
     insertIntoHashTable(ft, "collection", newFunctionFD("path -> `CollInpNew_PI`", smsi_collection, r));
     insertIntoHashTable(ft, "getGlobalSessionId", newFunctionFD("->string", smsi_getGlobalSessionId, r));
     insertIntoHashTable(ft, "setGlobalSessionId", newFunctionFD("string->integer", smsi_setGlobalSessionId, r));
-    insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));
+/*    insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));*/
     insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double : 0 {string}", (SmsiFuncTypePtr) NULL, r));
     insertIntoHashTable(ft, "rei->doi->writeFlag", newFunctionFD("integer : 0 {string}", (SmsiFuncTypePtr) NULL, r));
 
