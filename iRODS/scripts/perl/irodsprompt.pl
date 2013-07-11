@@ -18,7 +18,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodsprompt.pl"} = "September 2012";
+$version{"irodsprompt.pl"} = "July 2013";
 
 
 
