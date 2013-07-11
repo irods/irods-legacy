@@ -581,7 +581,7 @@
 #define MSO_OBJ_GET_FAILED                    -1115000
 #define REMOTE_IRODS_CONNECT_ERR              -1116000
 #define REMOTE_SRB_CONNECT_ERR                -1117000
-
+#define MSO_OBJ_PUT_FAILED                    -1118000
 /* parser error -1201000 */
 #ifndef RE_PARSER_ERROR
 #define RE_PARSER_ERROR -1201000

@@ -542,11 +542,12 @@ rescInfo_t *rescInfo)
 	      phyPathRegInp->objPath, myFile);
         } else if (RescTypeDef[rescTypeInx].incParentDir == 
             PHYPATH_IN_DIR_PTR) {
+	  /**** RAJA Mar 2013 changed for TDS  to take care of doubling of collection names as found by Howard Lander 
             char curdir[MAX_NAME_LEN];
             *curdir = '\0';
             getCurDirInOpenedDir (dirFd, curdir);
             if (strlen (curdir) > 0) {
-                /* see if we have done it already */
+                / * see if we have done it already *     /
                 int len = strlen (subPhyPathRegInp.objPath);
                 if (*curcoll == '\0'  || 
                   strcmp (&curcoll[len + 1], curdir) != 0) {
@@ -560,6 +561,10 @@ rescInfo_t *rescInfo)
                 snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
                   phyPathRegInp->objPath, rodsDirent->d_name);
             }
+	  *****/
+	  snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",                                                  
+		    phyPathRegInp->objPath, rodsDirent->d_name); 
+          /**** RAJA Mar 2013 changed above ****/
         } else {
 	    snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
 	      phyPathRegInp->objPath, rodsDirent->d_name);

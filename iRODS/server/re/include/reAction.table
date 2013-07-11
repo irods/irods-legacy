@@ -36,6 +36,8 @@ int msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *
 int msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam, msParam_t* inpFormatParam, ruleExecInfo_t *rei);
 int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei);
+int msiBytesBufToStr(msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei);
+
 int msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei);
 int msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei);
@@ -342,6 +344,7 @@ microsdef_t MicrosTable[] = {
   {"msiGetFormattedSystemTime", 3, (funcPtr) msiGetFormattedSystemTime},
   {"msiHumanToSystemTime", 2, (funcPtr) msiHumanToSystemTime},
   {"msiStrToBytesBuf", 2, (funcPtr) msiStrToBytesBuf},
+  {"msiBytesBufToStr", 2, (funcPtr) msiBytesBufToStr},
   {"msiApplyDCMetadataTemplate", 2, (funcPtr) msiApplyDCMetadataTemplate},
   {"msiListEnabledMS", 1, (funcPtr) msiListEnabledMS},
   {"msiServerBackup", 2, (funcPtr) msiServerBackup},

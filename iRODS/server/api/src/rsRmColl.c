@@ -198,6 +198,8 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
     int savedStatus = 0;
     int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
     int entCnt = 0;
+    ruleExecInfo_t rei;
+    collInfo_t collInfo;
 
     memset (&openCollInp, 0, sizeof (openCollInp));
     rstrcpy (openCollInp.collName, rmCollInp->collName, MAX_NAME_LEN);
@@ -292,7 +294,30 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
 		if (strcmp (collEnt->collName, collEnt->specColl.collection)
 		  == 0) continue;	/* no mount point */
 	    }
+	    /* added RAJA FEB 2013   for  applyRule for recursive removal */
+	    initReiWithCollInp (&rei, rsComm, &tmpCollInp, &collInfo);
+	    status = applyRule ("acPreprocForRmColl", NULL, &rei, NO_SAVE_REI);
+	    if (status < 0) {
+	      if (rei.status < 0) {
+		status = rei.status;
+	      }
+	      rodsLog (LOG_ERROR,
+		       "_rsPhyRmColl:acPreprocForRmColl error for %s,stat=%d",
+		       tmpCollInp.collName, status);
+	      return status;
+	    }
+	    /* added RAJA FEB 2013   for  applyRule for recursive removal */
 	    status = _rsRmCollRecur (rsComm, &tmpCollInp, collOprStat);
+	    /* added RAJA FEB 2013   for  applyRule for recursive removal */
+	    rei.status = status;
+	    rei.status = applyRule ("acPostProcForRmColl", NULL, &rei,
+				    NO_SAVE_REI);
+	    if (rei.status < 0) {
+	      rodsLog (LOG_ERROR,
+		       "_rsRmColl:acPostProcForRmColl error for %s,stat=%d",
+		       tmpCollInp.collName, status);
+	    }
+	    /* added RAJA FEB 2013   for  applyRule for recursive removal */
 	}
 	if (status < 0) savedStatus = status;
 	free (collEnt);     /* just free collEnt but not content */

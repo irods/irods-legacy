@@ -1,0 +1,739 @@
+WSO2 test:
+
+icd  /raja8/home/rods/wso
+iput wsotest2.mss
+imkdir /raja8/home/rods/wso/wsotest2
+imcoll -m msso /raja8/home/rods/wso/wsotest2.mss /raja8/home/rods/wso/wsotest2
+ils -l
+ils -L
+
+iput ./wsotest2.mpf /raja8/home/rods/wso/wsotest2/wsotest2.mpf
+
+ils -L /raja8/home/rods/wso/wsotest2
+
+iget /raja8/home/rods/wso/wsotest2/wsotest2.mpf -
+iget  /raja8/home/rods/wso/wsotest2/wsotest2.run -
+
+WSO test:
+
+icd  /raja8/home/rods/wso
+iput wsotest.mss
+imkdir /raja8/home/rods/wso/wsotest
+imcoll -m msso /raja8/home/rods/wso/wsotest.mss /raja8/home/rods/wso/wsotest
+
+iput ./wsotest1.mpf /raja8/home/rods/wso/wsotest/wsotest1.mpf 
+
+ils -L /raja8/home/rods/wso/wsotest
+
+iget /raja8/home/rods/wso/wsotest/wsotest1.mpf -
+iget /raja8/home/rods/wso/wsotest/wsotest1.run -
+
+
+
+
+
+Mytest:
+
+iput -D  "msso file" ./mssotest.mss /raja8/home/rods/msso/mssot1.mss
+imkdir /raja8/home/rods/msso/mssot1
+imcoll -m msso /raja8/home/rods/msso/mssot1.mss /raja8/home/rods/msso/mssot1
+
+iput ./mssotest.mpf /raja8/home/rods/msso/mssot1/mssot11.mpf   /* first iput  has 2 extra calls: creates a cachedir and extracts --  instead do a check or nop */
+iget /raja8/home/rods/msso/mssot1/mssot11.mpf -
+ils -L /raja8/home/rods/msso/mssot1                           
+
+iput ./mssotest.mpf /raja8/home/rods/msso/mssot1/mssot12.mpf
+iget /raja8/home/rods/msso/mssot1/mssot12.mpf -
+ils -L /raja8/home/rods/msso/mssot1                          /* has 6 extra class for each new pf file: 2 times of same 3 operations: stat-open-read  -- leave alone for now - may need to show 'results'*/
+
+==============================
+After imcoll
+rodsLog.2012.1.16:Jan 19 14:19:24 pid:865 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1/myFakeFile
+rodsLog.2012.1.16:Jan 19 14:19:24 pid:865 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1/myFakeFile for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:19:24 pid:865 NOTICE: Entering stageMssoSubStructFile
+rodsLog.2012.1.16:Jan 19 14:19:24 pid:865 NOTICE: Entering makeMssoCacheDir
+
+After iput mssot11.mpf
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering stageMssoSubStructFile
+X rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering makeMssoCacheDir
+X rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering extractMssoFile
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering mssoSubStructFileCreate with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering mssoSubStructFileWrite
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering mssoSubStructFileClose
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:20:50 pid:883 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+
+After iget mssot11.mpf
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering stageMssoSubStructFile
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering mssoSubStructFileOpen with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering mssoSubStructFileRead
+rodsLog.2012.1.16:Jan 19 14:22:29 pid:899 NOTICE: Entering mssoSubStructFileClose
+
+After ls -L
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileOpendir with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering stageMssoSubStructFile
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileClosedir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileOpendir with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:24:44 pid:926 NOTICE: Entering mssoSubStructFileClosedir
+--2--
+After iput mssot12.mpf
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering stageMssoSubStructFile
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering mssoSubStructFileCreate with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering mssoSubStructFileWrite
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering mssoSubStructFileClose
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:28:29 pid:959 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+
+After ils -L
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileOpendir with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering stageMssoSubStructFile
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+X rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+X rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+X rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileClosedir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileOpendir with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+X rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+X rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+X rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:31:47 pid:992 NOTICE: Entering mssoSubStructFileClosedir
+
+
+After iget mssot12.mpf
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering stageMssoSubStructFile
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering mssoSubStructFileOpen with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering mssoSubStructFileRead
+rodsLog.2012.1.16:Jan 19 14:32:45 pid:1004 NOTICE: Entering mssoSubStructFileClose
+
+After ils -L 
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileOpendir with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering stageMssoSubStructFile
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileClosedir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileOpendir with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileReaddir
+rodsLog.2012.1.16:Jan 19 14:34:03 pid:1022 NOTICE: Entering mssoSubStructFileClosedir
+
+
+
+To make database active and go beyond just realize objects through a statis path/
+
+1. ensureadding parameters
+2. ensurecapture of parameters
+3. store return data (probably more) and params in a Structured Package
+4. Retest for changes as data is accessed. Recreate object if underlying has changed.
+
+
+
+register workflow (needs workflow file)
+register an instanceof a workflow run (needs param file tied to a workflow file)
+run an instance of the workflow file. (may be    triggered by an iget)
+     files are realized and stored as structured objects in a work-flow collection 
+rerun should check for change
+
+MSSO Steps:
+  Register the workflow X.mss 
+      iput -D  "msso file" ./rulemsiWriteRodsLog.mss /raja8/home/rods/msso
+
+  Mount it as a "msso" type for a workflow directory (imcoll -m mss)
+      imcoll -m msso /raja8/home/rods/msso/rulemsiWriteRodsLog.mss /raja8/home/rods/msso/rulemsiWriteRodsLog
+
+  Add Y.mpf as a parameter file - add this to the workflow as an instance (ibun --add)
+      iput ./rulemsiWriteRodsLog1.mpf /raja8/home/rods/msso/rulemsiWriteRodsLog
+
+  Run Y.mpf  (version or overwrite??)
+      iget  [-F] /zone/home/rods/myworkflow1/parset1.mpf
+         iget will run workflow if file is not there... 
+
+
+  Check Y.ipf for "staleness" (can be for whole workflow)
+      iworkflow -s /zone/home/rods/myworkflow1/parset1.ipf
+  Purge Y.ipf (data and if -A, paramfile) (can be for whole workflow)
+      iworkflow -p [-A /zone/home/rods/myworkflow1/parset1.ipf
+  Unmount a whole workflow (removes the workflow file also)
+      iworkflow -U /zone/home/rods/myworkflow1
+
+IWF Steps:
+  Register the workflow X.iwf 
+      iput -D  "iwf file" myworkflow1.iwf /zone/home/rods/workflows
+  Mount it as a "iwf" type for a workflow directory (imcoll -m iwf)
+      iworkflow -m /zone/home/rods/workflows/myworkflow1.iwf /zone/home/rods/myworkflow1
+  Add Y.ipf as a parameter file - add this to the workflow as an instance (ibun --add)
+      iworkflow -a  /local/file/parset1.ipf /zone/home/rods/myworkflow1/parset1.ipf
+  Run Y.ipf  (version or overwrite??)
+      iget  [-F] /zone/home/rods/myworkflow1/parset1.ipf
+         iget will run workflow if file is not there... 
+   or iworkflow -r [-F] /zone/home/rods/myworkflow1/parset1.ipf
+
+  Check Y.ipf for "staleness" (can be for whole workflow)
+      iworkflow -s /zone/home/rods/myworkflow1/parset1.ipf
+  Purge Y.ipf (data and if -A, paramfile) (can be for whole workflow)
+      iworkflow -p [-A /zone/home/rods/myworkflow1/parset1.ipf
+  Unmount a whole workflow (removes the workflow file also)
+      iworkflow -U /zone/home/rods/myworkflow1
+
+
+
+
+mssoSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
+mssoSubStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
+mssoSubStructFileRead (rsComm_t *rsComm, int subInx, void *buf, int len)
+mssoSubStructFileWrite (rsComm_t *rsComm, int subInx, void *buf, int len)
+mssoSubStructFileClose (rsComm_t *rsComm, int subInx)
+mssoSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
+mssoSubStructFileStat (rsComm_t *rsComm, subFile_t *subFile,
+mssoSubStructFileFstat (rsComm_t *rsComm, int subInx, 
+mssoSubStructFileLseek (rsComm_t *rsComm, int subInx, rodsLong_t offset, 
+mssoSubStructFileRename (rsComm_t *rsComm, subFile_t *subFile, 
+mssoSubStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile)
+mssoSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
+mssoSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
+mssoSubStructFileReaddir (rsComm_t *rsComm, int subInx, 
+mssoSubStructFileClosedir (rsComm_t *rsComm, int subInx)
+mssoSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
+mssoStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
+mssoStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
+rsMssoStructFileOpen (rsComm_t *rsComm, specColl_t *specColl)
+stageMssoStructFile (int structFileInx)
+mkMssoCacheDir (int structFileInx)
+     irodsMssoOpen (char *pathname, int oflags, int mode)
+     encodeIrodsMssofd (int upperInt, int lowerInt)
+     decodeIrodsMssofd (int inpInt, int *upperInt, int *lowerInt)
+     irodsMssoClose (int fd)
+     irodsMssoRead (int fd, char *buf, int len)
+     irodsMssoWrite (int fd, char *buf, int len)
+extractMssoFile (int structFileInx)
+syncCacheDirToMssofile (int structFileInx, int oprType)
+   initMssoSubFileDesc ()
+   allocMssoSubFileDesc ()
+   freeMssoSubFileDesc (int mssoSubFileInx)
+
+   verifyStructFileDesc (int structFileInx, char *mssoPathname, specColl_t **specColl)
+    getSubStructFilePhyPath (char *phyPath, specColl_t *specColl, char *subFilePath)
+
+
+=============================
+                   After imcoll
+mssoSubStructFileStat with file:.../mssot1/myFakeFile
+rsMssotructFileOpen with file:.../mssot1/myFakeFile
+stageMssoSubStructFile
+makeMssoCacheDir
+                  After iput mssot11.mpf
+mssoSubStructFileStat
+rsMssotructFileOpen
+stageMssoSubStructFile
+X makeMssoCacheDir  --- probably can made here
+X extractMssoFile   --- extract should not be done here
+mssoSubStructFileStat
+rsMssotructFileOpen
+mssoSubStructFileStat
+rsMssotructFileOpen
+mssoSubStructFileCreate
+rsMssotructFileOpen
+mssoSubStructFileWrite
+mssoSubStructFileClose
+mssoSubStructFileStat
+rsMssotructFileOpen
+                     After iget mssot11.mpf
+mssoSubStructFileStat
+   rsMssotructFileOpen
+        stageMssoSubStructFile
+            Y makeMssoCacheDir  --- make f needed
+            Y extractMssoFile   
+
+mssoSubStructFileStat
+    rsMssotructFileOpen
+         mssoSubStructFileOpen
+            rsMssotructFileOpen
+         mssoSubStructFileRead
+mssoSubStructFileClose
+                      After ls -L
+mssoSubStructFileOpendir
+  rsMssotructFileOpen
+stageMssoSubStructFile
+mssoSubStructFileReaddir
+mssoSubStructFileReaddir
+mssoSubStructFileReaddir
+mssoSubStructFileStat       -- should show the "data files" also
+rsMssotructFileOpen
+mssoSubStructFileReaddir
+mssoSubStructFileClosedir
+mssoSubStructFileOpendir
+rsMssotructFileOpen
+mssoSubStructFileReaddir
+mssoSubStructFileReaddir
+mssoSubStructFileReaddir
+mssoSubStructFileStat
+rsMssotructFileOpen
+mssoSubStructFileReaddir
+mssoSubStructFileClosedir
+
+
+
+==========================
+Reagan:
+
+Realizable objects:
+
+The capabilities could include:
+
+1) -define a workflow that is registered into the data grid
+    -when the workflow is clicked, the workflow is executed.
+    - the results sets could be put in an associated directory (if there is
+      more than 1 file).
+    - if the directory is deleted, then it will be re-created if the
+      realizable object is clicked again
+    - we will need an option to delete the instantiated output files
+
+2) - logically replay the workflow chains that are needed to re-create
+      a realizable object.
+    - Print out all of the workflows that are needed.  This is a description
+      of the provenance information needed to re-create an object
+    - identify whether an input file has been changed, and then re-create
+      the derived products along the multiple chains.
+
+3) - define a policy encoded object that is registered into the data grid
+    - the associated workflow uses a micro-service to load rules into the
+      in memory rule base, and then provides access to an iRODS file.  Thus
+      two input files are needed, a rule file and a file that is being managed.
+    - the policy encoded object specifies the policies and procedures that
+      must be evaluated before the file can be accessed.
+
+4) - define a mso "mount point".  This is a workflow where the name of the
+      file that is being manipulated is specified as input.  It could be
+      thought of as a re-usable workflow that is not tied to a specific
+      input data set.
+
+
+
+
+====================================
+Breakpoint 1, mssoSubStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24740, subStructFileStatOut=0xbfd25b64)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:307
+307         rodsLog (LOG_NOTICE,"Entering mssoSubStructFileStat with file:%s",subFile->specColl->objPath);
+(gdb) where
+#0  mssoSubStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24740, subStructFileStatOut=0xbfd25b64)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:307
+#1  0x080d6dd5 in subStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24740, subStructFileStatOut=0xbfd25b64)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/structFileDriver.c:121
+#2  0x080fae43 in _rsSubStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24740, subStructFileStatOut=0xbfd25b64)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsSubStructFileStat.c:69
+#3  0x080fad02 in rsSubStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24740, subStructFileStatOut=0xbfd25b64)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsSubStructFileStat.c:19
+#4  0x080e5cef in l3Stat (rsComm=0xbfd25de4, dataObjInfo=0x88d8a58, myStat=0xbfd25b64) at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjClose.c:752
+#5  0x080d1b05 in specCollSubStat (rsComm=0xbfd25de4, specColl=0x88d77bc, subPath=0x88d37b0 "/raja8/home/rods/msso/mssot1/mssot12.mpf", 
+    specCollPerm=UNKNOW_COLL_PERM, dataObjInfo=0xbfd25bb4) at /data/sekar/iRODS/iRODS/server/core/src/specColl.c:561
+#6  0x080d0fc1 in statPathInSpecColl (rsComm=0xbfd25de4, objPath=0x88d37b0 "/raja8/home/rods/msso/mssot1/mssot12.mpf", inCachOnly=0, 
+    rodsObjStatOut=0xbfd25c74) at /data/sekar/iRODS/iRODS/server/core/src/specColl.c:311
+#7  0x080f8f58 in _rsObjStat (rsComm=0xbfd25de4, dataObjInp=0x88d37b0, rodsObjStatOut=0xbfd25c74) at /data/sekar/iRODS/iRODS/server/api/src/rsObjStat.c:120
+#8  0x080f8cb6 in rsObjStat (rsComm=0xbfd25de4, dataObjInp=0x88d37b0, rodsObjStatOut=0xbfd25c74) at /data/sekar/iRODS/iRODS/server/api/src/rsObjStat.c:38
+#9  0x080c8c5a in rsApiHandler (rsComm=0xbfd25de4, apiNumber=633, inputStructBBuf=0xbfd25d6c, bsBBuf=0xbfd25d64)
+    at /data/sekar/iRODS/iRODS/server/core/src/rsApiHandler.c:141
+#10 0x080c987a in readAndProcClientMsg (rsComm=0xbfd25de4, flags=2) at /data/sekar/iRODS/iRODS/server/core/src/rsApiHandler.c:572
+#11 0x0804bf21 in agentMain (rsComm=0xbfd25de4) at /data/sekar/iRODS/iRODS/server/core/src/rodsAgent.c:179
+#12 0x0804be80 in main (argc=1, argv=0xbfd27174) at /data/sekar/iRODS/iRODS/server/core/src/rodsAgent.c:155
+
+===========================
+307         rodsLog (LOG_NOTICE,"Entering mssoSubStructFileStat with file:%s",subFile->specColl->objPath);
+(gdb) where
+#0  mssoSubStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24620, subStructFileStatOut=0xbfd25a44)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:307
+#1  0x080d6dd5 in subStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24620, subStructFileStatOut=0xbfd25a44)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/structFileDriver.c:121
+#2  0x080fae43 in _rsSubStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24620, subStructFileStatOut=0xbfd25a44)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsSubStructFileStat.c:69
+#3  0x080fad02 in rsSubStructFileStat (rsComm=0xbfd25de4, subFile=0xbfd24620, subStructFileStatOut=0xbfd25a44)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsSubStructFileStat.c:19
+#4  0x080e5cef in l3Stat (rsComm=0xbfd25de4, dataObjInfo=0x88d8a58, myStat=0xbfd25a44) at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjClose.c:752
+#5  0x080d1b05 in specCollSubStat (rsComm=0xbfd25de4, specColl=0x88d77bc, subPath=0x88d37b0 "/raja8/home/rods/msso/mssot1/mssot12.mpf", 
+    specCollPerm=READ_COLL_PERM, dataObjInfo=0xbfd25b2c) at /data/sekar/iRODS/iRODS/server/core/src/specColl.c:561
+#6  0x080d1cc1 in resolvePathInSpecColl (rsComm=0xbfd25de4, objPath=0x88d37b0 "/raja8/home/rods/msso/mssot1/mssot12.mpf", specCollPerm=READ_COLL_PERM, 
+    inCachOnly=0, dataObjInfo=0xbfd25b2c) at /data/sekar/iRODS/iRODS/server/core/src/specColl.c:632
+#7  0x080bcd3e in getDataObjInfoIncSpecColl (rsComm=0xbfd25de4, dataObjInp=0x88d37b0, dataObjInfo=0xbfd25b2c)
+    at /data/sekar/iRODS/iRODS/server/core/src/dataObjOpr.c:1509
+#8  0x080e268a in _rsDataObjOpen (rsComm=0xbfd25de4, dataObjInp=0x88d37b0) at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjOpen.c:104
+#9  0x080e753c in _rsDataObjGet (rsComm=0xbfd25de4, dataObjInp=0x88d37b0, portalOprOut=0xbfd25c74, dataObjOutBBuf=0xbfd25c6c, handlerFlag=1)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjGet.c:81
+#10 0x080e7463 in rsDataObjGet (rsComm=0xbfd25de4, dataObjInp=0x88d37b0, portalOprOut=0xbfd25c74, dataObjOutBBuf=0xbfd25c6c)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjGet.c:38
+#11 0x080c8c85 in rsApiHandler (rsComm=0xbfd25de4, apiNumber=608, inputStructBBuf=0xbfd25d6c, bsBBuf=0xbfd25d64)
+    at /data/sekar/iRODS/iRODS/server/core/src/rsApiHandler.c:143
+#12 0x080c987a in readAndProcClientMsg (rsComm=0xbfd25de4, flags=2) at /data/sekar/iRODS/iRODS/server/core/src/rsApiHandler.c:572
+#13 0x0804bf21 in agentMain (rsComm=0xbfd25de4) at /data/sekar/iRODS/iRODS/server/core/src/rodsAgent.c:179
+#14 0x0804be80 in main (argc=1, argv=0xbfd27174) at /data/sekar/iRODS/iRODS/server/core/src/rodsAgent.c:155
+(gdb) cont
+Continuing.
+
+Breakpoint 2, mssoSubStructFileOpen (rsComm=0xbfd25de4, subFile=0xbfd25544) at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:98
+98          rodsLog (LOG_NOTICE,"Entering mssoSubStructFileOpen with file:%s",subFile->specColl->objPath);
+(gdb) where
+#0  mssoSubStructFileOpen (rsComm=0xbfd25de4, subFile=0xbfd25544) at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:98
+#1  0x080d6c36 in subStructFileOpen (rsComm=0xbfd25de4, subFile=0xbfd25544) at /data/sekar/iRODS/iRODS/server/drivers/src/structFileDriver.c:42
+#2  0x080fdbe7 in _rsSubStructFileGet (rsComm=0xbfd25de4, subFile=0xbfd25544, subFileGetOutBBuf=0xbfd25c6c)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsSubStructFileGet.c:77
+#3  0x080fdaae in rsSubStructFileGet (rsComm=0xbfd25de4, subFile=0xbfd25544, subFileGetOutBBuf=0xbfd25c6c)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsSubStructFileGet.c:19
+#4  0x080e7b05 in l3FileGetSingleBuf (rsComm=0xbfd25de4, l1descInx=3, dataObjOutBBuf=0xbfd25c6c)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjGet.c:281
+#5  0x080e7987 in l3DataGetSingleBuf (rsComm=0xbfd25de4, l1descInx=3, dataObjOutBBuf=0xbfd25c6c, portalOprOut=0xbfd25c74)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjGet.c:219
+#6  0x080e7639 in _rsDataObjGet (rsComm=0xbfd25de4, dataObjInp=0x88d37b0, portalOprOut=0xbfd5c74, dataObjOutBBuf=0xbfd25c6c, handlerFlag=1)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjGet.c:107
+#7  0x080e7463 in rsDataObjGet (rsComm=0xbfd25de4, dataObjInp=0x88d37b0, portalOprOut=0xbfd25c74, dataObjOutBBuf=0xbfd25c6c)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsDataObjGet.c:38
+#8  0x080c8c85 in rsApiHandler (rsComm=0xbfd25de4, apiNumber=608, inputStructBBuf=0xbfd25d6c, bsBBuf=0xbfd25d64)
+    at /data/sekar/iRODS/iRODS/server/core/src/rsApiHandler.c:143
+#9  0x080c987a in readAndProcClientMsg (rsComm=0xbfd25de4, flags=2) at /data/sekar/iRODS/iRODS/server/core/src/rsApiHandler.c:572
+#10 0x0804bf21 in agentMain (rsComm=0xbfd25de4) at /data/sekar/iRODS/iRODS/server/core/src/rodsAgent.c:179
+#11 0x0804be80 in main (argc=1, argv=0xbfd27174) at /data/sekar/iRODS/iRODS/server/core/src/rodsAgent.c:155
+(gdb) 
+
+
+
+in iget:  run /raja8/home/rods/msso/mssot1/mssot12.mpf -
+
+Breakpoint 1, mssoSubStructFileStat (rsComm=0xbfcf80a4, subFile=0xbfcf6a00, 
+    subStructFileStatOut=0xbfcf7e24)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:307
+warning: Source file is more recent than executable.
+307         rodsLog (LOG_NOTICE,"Entering mssoSubStructFileStat with file:%s",subFile->specColl->objPath);
+(gdb) print *subFile
+$1 = {addr = {hostAddr = "srbbrick8.ucsd.edu", '\000' <repeats 237 times>, 
+    zoneName = '\000' <repeats 63 times>, portNum = 0, dummyInt = 0}, 
+  subFilePath = "/raja8/home/rods/msso/mssot1/mssot12.mpf", '\000' <repeats 1047 times>, 
+  mode = 0, flags = 0, offset = 0, specColl = 0xa065b98}
+(gdb) 
+
+Breakpoint 2, rsMssoStructFileOpen (rsComm=0xbfcf80a4, specColl=0xa065b98)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:881
+881         rodsLog (LOG_NOTICE,"Entering rsMssotructFileOpen with file:%s for Collection %s",specColl->objPath, specColl->collection);
+(gdb) print *specColl
+$2 = {collClass = STRUCT_FILE_COLL, type = MSSO_STRUCT_FILE_T, 
+  collection = "/raja8/home/rods/msso/mssot1", '\000' <repeats 1059 times>, 
+  objPath = "/raja8/home/rods/msso/mssot1.mss", '\000' <repeats 1055 times>, 
+  resource = "demoResc", '\000' <repeats 55 times>, phyPath = '\000' <repeats 1087 times>, 
+  cacheDir = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0", '\000' <repeats 1028 times>, cacheDirty = 1, replNum = 0}
+(gdb) 
+
+Breakpoint 3, stageMssoStructFile (structFileInx=1)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:951
+951         rodsLog (LOG_NOTICE,"Entering stageMssoSubStructFile");
+(gdb) print *(StructFileDesc[structFileInx].specColl)
+$5 = {collClass = STRUCT_FILE_COLL, type = MSSO_STRUCT_FILE_T, 
+  collection = "/raja8/home/rods/msso/mssot1", '\000' <repeats 1059 times>, 
+  objPath = "/raja8/home/rods/msso/mssot1.mss", '\000' <repeats 1055 times>, 
+  resource = "demoResc", '\000' <repeats 55 times>, 
+  phyPath = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss", '\000' <repeats 1038 times>, 
+  cacheDir = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0", '\000' <repeats 1028 times>, cacheDirty = 1, replNum = 0}
+(gdb) print *(StructFileDesc[structFileInx].rescInfo)
+$6 = {rescName = "demoResc", '\000' <repeats 55 times>, rescId = 10010, 
+  zoneName = "raja8", '\000' <repeats 58 times>, 
+  rescLoc = "srbbrick8.ucsd.edu", '\000' <repeats 45 times>, 
+  rescType = "unix file system", '\000' <repeats 47 times>, rescTypeInx = 0, 
+  rescClassInx = 5, rescStatus = 0, paraOpr = 0, 
+  rescClass = "archive", '\000' <repeats 56 times>, 
+  rescVaultPath = "/data/sekar/iRODS/Vault", '\000' <repeats 1064 times>, 
+  rescInfo = '\000' <repeats 255 times>, rescComments = '\000' <repeats 255 times>, 
+  gateWayAddr = '\000' <repeats 63 times>, rescMaxObjSize = 0, freeSpace = 0, 
+  freeSpaceTimeStamp = '\000' <repeats 31 times>, freeSpaceTime = 0, 
+  rescCreate = "01321372182", '\000' <repeats 20 times>, 
+  rescModify = "01321372182", '\000' <repeats 20 times>, rodsServerHost = 0x9fd8128, 
+  quotaLimit = -1, quotaOverrun = 0}
+(gdb) 
+
+Breakpoint 1, mssoSubStructFileStat (rsComm=0xbfcf80a4, subFile=0xbfcf68e0, 
+    subStructFileStatOut=0xbfcf7d04)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:307
+307         rodsLog (LOG_NOTICE,"Entering mssoSubStructFileStat with file:%s",subFile->specColl->objPath);
+
+Breakpoint 1, mssoSubStructFileStat (rsComm=0xbfcf80a4, subFile=0xbfcf68e0, 
+    subStructFileStatOut=0xbfcf7d04)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:307
+307         rodsLog (LOG_NOTICE,"Entering mssoSubStructFileStat with file:%s",subFile->specColl->objPath);
+(gdb) print *subFile
+$7 = {addr = {hostAddr = "srbbrick8.ucsd.edu", '\000' <repeats 237 times>, 
+    zoneName = '\000' <repeats 63 times>, portNum = 0, dummyInt = 0}, 
+  subFilePath = "/raja8/home/rods/msso/mssot1/mssot12.mpf", '\000' <repeats 1047 times>, 
+  mode = 0, flags = 0, offset = 0, specColl = 0xa0689e0}
+(gdb) print subFile->specColl
+$8 = (specColl_t *) 0xa0689e0
+(gdb) print subStructFileStatOut
+$9 = (rodsStat_t **) 0xbfcf7d04
+(gdb) print *subStructFileStatOut
+$10 = (rodsStat_t *) 0x0
+(gdb) 
+
+(gdb) n
+310         specColl = subFile->specColl;
+(gdb) 
+311         structFileInx = rsMssoStructFileOpen (rsComm, specColl);
+(gdb) 
+
+Breakpoint 2, rsMssoStructFileOpen (rsComm=0xbfcf80a4, specColl=0xa0689e0)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:881
+881         rodsLog (LOG_NOTICE,"Entering rsMssotructFileOpen with file:%s for Collection %s",specColl->objPath, specColl->collection);
+(gdb) print *specColl
+$11 = {collClass = STRUCT_FILE_COLL, type = MSSO_STRUCT_FILE_T, 
+  collection = "/raja8/home/rods/msso/mssot1", '\000' <repeats 1059 times>, 
+  objPath = "/raja8/home/rods/msso/mssot1.mss", '\000' <repeats 1055 times>, 
+  resource = "demoResc", '\000' <repeats 55 times>, 
+  phyPath = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss", '\000' <repeats 1038 times>, 
+  cacheDir = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0", '\000' <repeats 1028 times>, cacheDirty = 1, replNum = 0}
+(gdb) n
+884         if (specColl == NULL) {
+(gdb) 
+892         structFileInx = matchStructFileDesc (specColl);
+(gdb) 
+894         if (structFileInx > 0) return structFileInx;
+(gdb) 
+940     }
+(gdb) print structFileInx
+No symbol "structFileInx" in current context.
+(gdb) 
+No symbol "structFileInx" in current context.
+(gdb) n
+mssoSubStructFileStat (rsComm=0xbfcf80a4, subFile=0xbfcf68e0, 
+    subStructFileStatOut=0xbfcf7d04)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:313
+313         if (structFileInx < 0) {
+(gdb) print structFileInx
+$12 = 1
+(gdb) n
+327         if (status < 0) return status;
+(gdb) print status
+$13 = 0
+(gdb) print fileStatInp
+$14 = {fileType = UNIX_FILE_TYPE, addr = {hostAddr = '\000' <repeats 255 times>, 
+    zoneName = '\000' <repeats 63 times>, portNum = 0, dummyInt = 0}, 
+  fileName = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0/mssot12.mpf", '\000' <repeats 1016 times>}
+(gdb) n
+329         rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
+(gdb) 
+330         fileStatInp.fileType = UNIX_FILE_TYPE;      /* the only type for cache */
+(gdb) 
+332         StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
+(gdb) 
+334         status = rsFileStat (rsComm, &fileStatInp, subStructFileStatOut);
+(gdb) print fileStatInp
+$15 = {fileType = UNIX_FILE_TYPE, addr = {
+    hostAddr = "srbbrick8.ucsd.edu", '\000' <repeats 237 times>, 
+    zoneName = '\000' <repeats 63 times>, portNum = 0, dummyInt = 0}, 
+  fileName = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0/mssot12.mpf", '\000' <repeats 1016 times>}
+(gdb) n
+336         return (status);
+(gdb) print status
+$16 = 0
+(gdb) print *fileStatInp
+No symbol "operator*" in current context.
+(gdb) print *subStructFileStatOut
+$17 = (rodsStat_t *) 0xa053fc8
+(gdb) print **subStructFileStatOut
+$18 = {st_size = 6, st_dev = 2065, st_ino = 219955228, st_mode = 33152, st_nlink = 1, 
+  st_uid = 500, st_gid = 500, st_rdev = 0, st_atim = 1327337685, st_mtim = 1327012109, 
+  st_ctim = 1327012109, st_blksize = 4096, st_blocks = 8}
+(gdb) 
+(gdb) n
+337     }
+(gdb) 
+subStructFileStat (rsComm=0xbfcf80a4, subFile=0xbfcf68e0, subStructFileStatOut=0xbfcf7d04)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/structFileDriver.c:122
+122         return (status);
+(gdb) 
+123     }
+(gdb) 
+_rsSubStructFileStat (rsComm=0xbfcf80a4, subFile=0xbfcf68e0, 
+    subStructFileStatOut=0xbfcf7d04)
+    at /data/sekar/iRODS/iRODS/server/api/src/rsSubStructFileStat.c:70
+70          if (status < 0) {
+(gdb) c
+Continuing.
+
+Breakpoint 2, rsMssoStructFileOpen (rsComm=0xbfcf80a4, specColl=0xa0689e0)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:881
+881         rodsLog (LOG_NOTICE,"Entering rsMssotructFileOpen with file:%s for Collection %s",specColl->objPath, specColl->collection);
+(gdb) print *specColl
+$19 = {collClass = STRUCT_FILE_COLL, type = MSSO_STRUCT_FILE_T, 
+  collection = "/raja8/home/rods/msso/mssot1", '\000' <repeats 1059 times>, 
+  objPath = "/raja8/home/rods/msso/mssot1.mss", '\000' <repeats 1055 times>, 
+  resource = "demoResc", '\000' <repeats 55 times>, 
+  phyPath = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss", '\000' <repeats 1038 times>, 
+  cacheDir = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0", '\000' <repeats 1028 times>, cacheDirty = 1, replNum = 0}
+(gdb) n
+884         if (specColl == NULL) {
+(gdb) 
+892         structFileInx = matchStructFileDesc (specColl);
+(gdb) 
+894         if (structFileInx > 0) return structFileInx;
+(gdb) 
+940     }
+(gdb) 
+mssoSubStructFileOpen (rsComm=0xbfcf80a4, subFile=0xbfcf7804)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:104
+104         if (structFileInx < 0) {
+(gdb) 
+112         specColl = StructFileDesc[structFileInx].specColl;
+(gdb) 
+114         subInx = allocMssoSubFileDesc ();
+(gdb) 
+116         if (subInx < 0) return subInx;
+(gdb) 
+118         MssoSubFileDesc[subInx].structFileInx = structFileInx;
+(gdb) 
+120         memset (&fileOpenInp, 0, sizeof (fileOpenInp));
+(gdb) 
+122           subFile->subFilePath);
+(gdb) 
+123         if (status < 0) return status;
+(gdb) 
+125         rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
+(gdb) 
+126         fileOpenInp.fileType = (fileDriverType_t)UNIX_FILE_TYPE;    /* the only type for cache */
+(gdb) 
+128         StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
+(gdb) n
+129         fileOpenInp.mode = subFile->mode;
+(gdb) 
+130         fileOpenInp.flags = subFile->flags;
+(gdb) 
+132         status = rsFileOpen (rsComm, &fileOpenInp);
+(gdb) print fileOpenInp
+$20 = {fileType = UNIX_FILE_TYPE, otherFlags = 0, addr = {
+    hostAddr = "srbbrick8.ucsd.edu", '\000' <repeats 237 times>, 
+    zoneName = '\000' <repeats 63 times>, portNum = 0, dummyInt = 0}, 
+  fileName = "/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0/mssot12.mpf", '\000' <repeats 1016 times>, flags = 0, mode = 384, dataSize = 0}
+(gdb) break mssoSubStructFileRead
+Breakpoint 4 at 0x80dcb30: file /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c, line 154.
+(gdb) break mssoSubStructFileClose
+Breakpoint 5 at 0x80dcd42: file /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c, line 222.
+(gdb) cont
+Continuing.
+
+Breakpoint 4, mssoSubStructFileRead (rsComm=0xbfcf80a4, subInx=1, buf=0xa0551b8, len=6)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:154
+154         rodsLog (LOG_NOTICE,"Entering mssoSubStructFileRead");
+(gdb) n
+157         if (subInx < 1 || subInx >= NUM_MSSO_SUB_FILE_DESC ||
+(gdb) 
+164         memset (&fileReadInp, 0, sizeof (fileReadInp));
+(gdb) 
+165         memset (&fileReadOutBBuf, 0, sizeof (fileReadOutBBuf));
+(gdb) 
+166         fileReadInp.fileInx = MssoSubFileDesc[subInx].fd;
+(gdb) print MssoSubFileDesc[subInx]
+$21 = {inuseFlag = 1, structFileInx = 1, fd = 3, 
+  cacheFilePath = '\000' <repeats 1087 times>}
+(gdb) print StructFileDesc[MssoSubFileDesc[subInx].structFileInx
+A syntax error in expression, near `'.
+(gdb) printStructFileDesc[MssoSubFileDesc[subInx].structFileInx]
+Undefined command: "printStructFileDesc".  Try "help".
+(gdb) print StructFileDesc[MssoSubFileDesc[subInx
+
+(gdb) c
+Continuing.
+
+Breakpoint 5, mssoSubStructFileClose (rsComm=0xbfcf80a4, subInx=1)
+    at /data/sekar/iRODS/iRODS/server/drivers/src/mssoStructFileDriver.c:222
+222         rodsLog (LOG_NOTICE,"Entering mssoSubStructFileClose");
+(gdb) 
+(gdb) c
+Continuing.
+
+Program exited normally.
+(gdb) 
+
+======================================
+iget
+Feb 14 10:55:35 pid:3168 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+Feb 14 10:55:35 pid:3168 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+Feb 14 10:55:35 pid:3168 NOTICE: Entering stageMssoSubStructFile with specColl->collection=/raja8/home/rods/msso/mssot1 and specColl->cacheDir=/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0 and subFile->subFilePath=/raja8/home/rods/msso/mssot1/mssot11.mpf and specColl->objPath= and specColl->phyPath=
+Feb 14 10:55:35 pid:3168 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+Feb 14 10:55:35 pid:3168 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+Feb 14 10:55:35 pid:3168 NOTICE: Entering mssoSubStructFileOpen with file:/raja8/home/rods/msso/mssot1.mss
+Feb 14 10:55:35 pid:3168 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+Feb 14 10:55:35 pid:3168 NOTICE: Entering mssoSubStructFileRead
+Feb 14 10:55:35 pid:3168 NOTICE: Entering mssoSubStructFileClose
+
+iput
+Feb 14 10:56:07 pid:3176 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+Feb 14 10:56:07 pid:3176 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+Feb 14 10:56:07 pid:3176 NOTICE: Entering stageMssoSubStructFile with specColl->collection=/raja8/home/rods/msso/mssot1 and specColl->cacheDir=/data/sekar/iRODS/Vault/home/rods/msso/mssot1.mss.cacheDir0 and subFile->subFilePath=/raja8/home/rods/msso/mssot1/mssot13.mpf and specColl->objPath= and specColl->phyPath=
+Feb 14 10:56:07 pid:3176 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+Feb 14 10:56:07 pid:3176 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+Feb 14 10:56:07 pid:3176 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+Feb 14 10:56:07 pid:3176 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+Feb 14 10:56:07 pid:3176 NOTICE: Entering mssoSubStructFileCreate with file:/raja8/home/rods/msso/mssot1.mss
+Feb 14 10:56:07 pid:3176 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+Feb 14 10:56:07 pid:3176 NOTICE: Entering mssoSubStructFileWrite
+Feb 14 10:56:07 pid:3176 NOTICE: Entering mssoSubStructFileClose
+Feb 14 10:56:07 pid:3176 NOTICE: Entering mssoSubStructFileStat with file:/raja8/home/rods/msso/mssot1.mss
+Feb 14 10:56:07 pid:3176 NOTICE: Entering rsMssotructFileOpen with file:/raja8/home/rods/msso/mssot1.mss for Collection /raja8/home/rods/msso/mssot1
+[sekar@srbbrick8 log]$ 

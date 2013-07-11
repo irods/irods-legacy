@@ -64,6 +64,8 @@ tarSubFileDesc_t TarSubFileDesc[NUM_TAR_SUB_FILE_DESC];
 #endif
 #ifdef MSSO_STRUCT_FILE
 mssoSubFileDesc_t MssoSubFileDesc[NUM_MSSO_SUB_FILE_DESC];
+int MssoSubFileStackTop = 0;
+mssoSubFileStack_t MssoSubFileStack[NUM_MSSO_SUB_FILE_DESC];
 #endif
 
 /* Server Authentication information */

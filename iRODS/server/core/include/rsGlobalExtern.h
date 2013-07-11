@@ -63,6 +63,8 @@ extern tarSubFileDesc_t TarSubFileDesc[];
 #endif
 #ifdef MSSO_STRUCT_FILE
 extern mssoSubFileDesc_t MssoSubFileDesc[];
+extern int MssoSubFileStackTop;
+extern mssoSubFileStack_t MssoSubFileStack[];
 #endif
 
 #ifdef RULE_ENGINE_N

@@ -1467,6 +1467,72 @@ msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei)
 	return 0;
 }
 
+/**
+ *\fn msiBytesBufToStr(msParam_t* buf_msp,  msParam_t* str_msp, ruleExecInfo_t *rei)
+ *
+ * \brief Writes  a bytesBuf_t into a character string 
+ *
+ * \module core
+ *
+ * \since 3.3
+ *
+ * \author  Arcot Rajasekar
+ * \date    2013-06-10
+ *
+ * \remark This may blow up if the buffer is not a character string. so be careful 
+ *
+ * \note The string can have length up to BUF_LEN_MS_T
+ *
+ * \usage
+ * 
+ * testrule||msiBytesBufToStr(*Buff, *St)##writeLine(stdout,*St)|nop
+ * ruleExecOut
+ *
+ * \param[in] buf_msp - a BUF_LEN_MS_T
+ * \param[out] str_msp - a STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
+int
+msiBytesBufToStr(msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei)
+{
+	char *outStr;
+	bytesBuf_t *inBuf;
+
+	/*check buf_msp */
+	if ( buf_msp == NULL && buf_msp->inOutStruct == NULL)  
+	{
+	  rodsLog (LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL.");
+	  return (USER__NULL_INPUT_ERR);
+	}
+	inBuf = buf_msp->inpOutBuf;
+	if (inBuf->len < 0 || inBuf->len > (MAX_SZ_FOR_SINGLE_BUF-10))  {
+	  rodsLog (LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL.");
+	  return (USER_INPUT_FORMAT_ERR);
+	}
+	outStr = (char *) malloc((inBuf->len + 1));
+	outStr[inBuf->len] = '\0';
+	strncpy(outStr,inBuf->buf, inBuf->len);
+	fillStrInMsParam(str_msp, outStr);
+	free(outStr);
+	
+	return 0;
+}
+
 
 
 /**

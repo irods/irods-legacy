@@ -12,6 +12,14 @@
 #include "rods.h"
 #include "structFileDriver.h"
 #include "execMyRule.h"
+
+#define NUM_MSSO_SUB_FILE_DESC 50
+#define MSSO_CACHE_DIR_STR "mssoCacheDir"
+#define MSSO_RUN_DIR_STR "runDir"
+#define MSSO_RUN_FILE_STR "run"
+#define MSSO_MPF_FILE_STR "mpf"
+
+
 typedef struct mssoSubFileDesc {
     int inuseFlag;
     int structFileInx;
@@ -20,11 +28,29 @@ typedef struct mssoSubFileDesc {
                                          * subFile */
 } mssoSubFileDesc_t;
 
-#define NUM_MSSO_SUB_FILE_DESC 50
-#define MSSO_CACHE_DIR_STR "mssoCacheDir"
-#define MSSO_RUN_DIR_STR "runDir"
-#define MSSO_RUN_FILE_STR "run"
-#define MSSO_MPF_FILE_STR "mpf"
+typedef struct mssoSubFileStack{
+    int structFileInx;
+    int fd;                         /* the fd of the opened cached subFile */
+    char cacheFilePath[MAX_NAME_LEN];
+    char *stageIn[100];   /* stages from irods to execuion area */
+    char *stageOut[100];  /* stages into irods from execution area */
+    char *copyToIrods[100];  /* copy into irods from execution area */
+    char *cleanOut[100];  /* clear from execution area */
+    char *checkForChange[100];  /* check if these files are newer than the change directort */
+    char stageArea[MAX_NAME_LEN]; /* is cmd/bin by default */
+    int stinCnt;
+    int stoutCnt;
+    int cpoutCnt;
+    int clnoutCnt;
+    int cfcCnt;
+    int noVersions;  
+    char newRunDirName[MAX_NAME_LEN]; /* name of new place for old  run dir  */
+    int oldRunDirTime; /* time of old run dir which was moved to make place to new one */
+
+} mssoSubFileStack_t;
+
+
+
 
 int
 mssoSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile);

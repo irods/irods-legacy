@@ -293,11 +293,13 @@ acSetNumThreads {msiSetNumThreads("default","16","default"); }
 #      in the demoResc8 resource.
 #acDataDeletePolicy {ON($objPath like "/tempZone/home/rods/*") {msiDeleteDisallowed; } }
 acDataDeletePolicy { }
+#acDataDeletePolicy {writeLine("serverLog","TEST:acDataDeletePolicy:"++$objPath); }
 #
 # 11) acPostProcForDelete - This rule set the post-processing policy for 
 # deleting data objects.  Currently there is no function written specifically
 # for this rule.
 acPostProcForDelete { }
+#acPostProcForDelete {writeLine("serverLog","TEST:acPostProcForDelete"++$objPath);  }
 #
 # 12) acSetChkFilePathPerm - This rule replaces acNoChkFilePathPerm. 
 # For now, the only safe setting is the default,
@@ -399,12 +401,14 @@ acPostProcForCollCreate { }
 # a collection. Currently there is no function written specifically
 # for this rule.
 acPreprocForRmColl { }
+#acPreprocForRmColl {writeLine("serverLog","TEST:acPreProcForRmColl:"++$collName); }
 #
 # 21) acPostProcForRmColl - This rule set the post-processing policy for
 # removing a collection. Currently there is no function written specifically
 # for this rule.
 # acPostProcForRmColl {msiGetSessionVarValue("all","all"); }
 acPostProcForRmColl { }
+#acPostProcForRmColl {writeLine("serverLog","TEST:acPostProcForRmColl:"++$collName); }
 #
 # 22) acPreProcForModifyUser - This rule set the pre-processing policy for
 # modifying the properties of a user. 
@@ -695,3 +699,12 @@ acGetIcatResults(*Action,*Condition,*GenQOut) {ON(*Action == "list") {msiMakeQue
 acPurgeFiles(*Condition) {ON((*Condition == "null") %% (*Condition == "")) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time'",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } } }
 acPurgeFiles(*Condition) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time' AND *Condition",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } }
 acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*K, $sysUidClient); assign(*R,*K); assign($sysUidClient,*A); }
+
+#
+#  rule for running a workflow
+#
+acRunWorkFlow(*File, *R_BUF) {
+   msiDataObjOpen("objPath=*File++++openFlags=O_RDONLY",*S_FD);
+   msiDataObjRead(*S_FD,33554412,*R_BUF);
+   msiDataObjClose(*S_FD,*Status2);
+}

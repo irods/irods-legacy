@@ -47,6 +47,80 @@ checkSafety(char *file)
   return(0);
 }
 
+
+int pushOnStackInfo()
+{
+  int  i,k;
+  
+  if (MssoSubFileStackTop == 0) {
+    MssoSubFileStackTop++;
+    return(0);
+  }
+  k = MssoSubFileStackTop - 1;
+  MssoSubFileStackTop++;
+
+  /* push the  stuff */
+  MssoSubFileStack[k].stinCnt = stinCnt;
+  MssoSubFileStack[k].stoutCnt = stoutCnt;
+  MssoSubFileStack[k].cpoutCnt = cpoutCnt;
+  MssoSubFileStack[k].clnoutCnt = clnoutCnt;
+  MssoSubFileStack[k].cfcCnt = cfcCnt;
+  MssoSubFileStack[k].noVersions = noVersions;
+  MssoSubFileStack[k].oldRunDirTime = oldRunDirTime;
+
+  strncpy(MssoSubFileStack[k].newRunDirName,newRunDirName,MAX_NAME_LEN);
+  strncpy(MssoSubFileStack[k].stageArea,stageArea,MAX_NAME_LEN);
+  for (i = 0; i < stinCnt; i++)
+    MssoSubFileStack[k].stageIn[i] = stageIn[i];
+  for (i = 0; i < stoutCnt; i++)
+    MssoSubFileStack[k].stageOut[i] = stageOut[i];
+  for (i = 0; i < cpoutCnt; i++)
+    MssoSubFileStack[k].copyToIrods[i] = copyToIrods[i];
+  for (i = 0; i < clnoutCnt; i++)
+    MssoSubFileStack[k].cleanOut[i] = cleanOut[i];
+  for (i = 0; i < cfcCnt; i++)
+    MssoSubFileStack[k].checkForChange[i] = checkForChange[i];
+
+  return(0);
+}
+
+int popOutStackInfo()
+{
+  int i,k;
+  MssoSubFileStackTop--;
+  if (MssoSubFileStackTop == 0) {
+    return(0);
+  }
+  k = MssoSubFileStackTop - 1;
+
+  /* pop the  stuff */
+  stinCnt = MssoSubFileStack[k].stinCnt ;
+  stoutCnt = MssoSubFileStack[k].stoutCnt ;
+  cpoutCnt = MssoSubFileStack[k].cpoutCnt ;
+  clnoutCnt = MssoSubFileStack[k].clnoutCnt ;
+  cfcCnt = MssoSubFileStack[k].cfcCnt ;
+  noVersions = MssoSubFileStack[k].noVersions ;
+  oldRunDirTime = MssoSubFileStack[k].oldRunDirTime ;
+
+  strncpy(newRunDirName, MssoSubFileStack[k].newRunDirName, MAX_NAME_LEN);
+  strncpy(stageArea, MssoSubFileStack[k].stageArea, MAX_NAME_LEN);
+  for (i = 0; i < stinCnt; i++)
+    stageIn[i] =   MssoSubFileStack[k].stageIn[i] ;
+  for (i = 0; i < stoutCnt; i++)
+    stageOut[i] =   MssoSubFileStack[k].stageOut[i] ;
+  for (i = 0; i < cpoutCnt; i++)
+    copyToIrods[i] =   MssoSubFileStack[k].copyToIrods[i] ;
+  for (i = 0; i < clnoutCnt; i++)
+    cleanOut[i] =   MssoSubFileStack[k].cleanOut[i] ;
+  for (i = 0; i < cfcCnt; i++)
+    checkForChange[i] =   MssoSubFileStack[k].checkForChange[i] ;
+
+
+  return(0);
+
+
+}
+
 int
 checkPhySafety(char *file)
 {
@@ -949,7 +1023,7 @@ rsMssoStructFileOpen (rsComm_t *rsComm, specColl_t *specColl, subFile_t *subFile
     specCollCache_t *specCollCache;
 
 #ifdef MSSO_DEBUG
-    rodsLog (LOG_NOTICE,"Entering rsMssotructFileOpen with file:%s for Collection %s and specColl=%lld  and subFile=%lld and specColl->phyPath=%s and specColl->resource=%s and stage=%d",specColl->objPath, specColl->collection, (long long int) specColl, (long long int) (void *) subFile, specColl->phyPath,  specColl->resource, stage);
+    rodsLog (LOG_NOTICE,"Entering rsMssotructFileOpen with file:%s for Collection %s and specColl=%lld  and subFile=%lld and specColl->phyPath=%s and specColl->resource=%s and stage=%d",specColl->objPath, specColl->collection, (long long int) (void *) specColl, (long long int) (void *) subFile, specColl->phyPath,  specColl->resource, stage);
 #endif /* MSSO_DEBUG */
 
     if (specColl == NULL) {
@@ -1351,7 +1425,8 @@ writeBufToLocalFile(char *fName, char *buf)
 {
   FILE *fd;
 
-  fd = fopen(fName, "w");
+  /*  fd = fopen(fName, "w"); */
+  fd = fopen(fName, "a");
   if (fd == NULL)  {
     rodsLog (LOG_ERROR,
              "Cannot open rule file %s. ernro = %d\n",fName, errno);
@@ -1401,7 +1476,7 @@ int
 extractMssoFile (int structFileInx, subFile_t *subFile, char *runDir, char *showFiles)
 {
 
-  int status, jj;
+  int status, jj, i;
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
     char mpfFileName[NAME_LEN];
     char mpfFilePath[MAX_NAME_LEN];
@@ -1488,6 +1563,9 @@ extractMssoFile (int structFileInx, subFile_t *subFile, char *runDir, char *show
 	}
       }
       cfcCnt = jj;
+    }
+    else {
+      inputHasChanged = 1;
     }
     rodsLog (LOG_NOTICE,"Timings for InputChanged = %d and showFiles=%s", inputHasChanged,showFiles);
     if (inputHasChanged == 0 ) {
@@ -1615,7 +1693,7 @@ extractMssoFile (int structFileInx, subFile_t *subFile, char *runDir, char *show
     rodsLog (LOG_NOTICE,"Extracted Rule: %s\nIn Parameters:",execMyRuleInp.myRule);
     printMsParam(&msParamArray);
 #endif /* MSSO_DEBUG */
-
+    
     status = rsExecMyRule (rsComm, &execMyRuleInp, &outParamArray);
     if (status < 0) {
       rodsLog (LOG_NOTICE,"Failure in extractMssoFile at rsExecMyRule: %d\n",
@@ -1728,6 +1806,12 @@ extractMssoFile (int structFileInx, subFile_t *subFile, char *runDir, char *show
 
     /* what is the showfile */
     cleanOutStageArea(stageArea);
+  i = popOutStackInfo();
+  if (i < 0) {
+    rodsLog (LOG_ERROR, "PopOutStackInfo Error:%i\n",i);
+    return(i);
+  }                                 
+
 
     return 0;
 }
@@ -1896,6 +1980,13 @@ prepareForExecution(char *inRuleFile, char *inParamFile, char *runDir, char *sho
   char *inParamName[1024];
   char *tmpPtr, *tmpPtr2;
   msParam_t *mP;
+
+  i = pushOnStackInfo();
+  if (i < 0) {
+    rodsLog (LOG_ERROR, "PushOnStackInfo Error:%i\n",i);
+    return(i);
+  }                                 
+ 
 
   stinCnt=0;
   stoutCnt=0;

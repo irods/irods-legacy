@@ -61,6 +61,8 @@ keyValPair_t *condInput)
     msParamArray_t msParamArray;
     char callCode[100];
 
+
+
     if ((t = strstr(msoObjName, ":")) == NULL) {
       return(MICRO_SERVICE_OBJECT_TYPE_UNDEFINED);
     }
@@ -95,6 +97,7 @@ keyValPair_t *condInput)
   }
   free(myMSICall);
   clearMsParamArray(&msParamArray,0);
+
   return(i);
 
 }
