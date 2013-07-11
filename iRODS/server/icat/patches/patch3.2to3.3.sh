@@ -4,10 +4,10 @@
 # specific queries, so instead of updates at the DBMS level this is
 # done via the following iadmin commands.  To make the patch, start up
 # irods 3.3, authenticate as the admin (iinit), and then run this
-# script (./patch3.2to3.3) to add these new specific queries.
+# script (./patch3.2to3.3.sh) to add these new specific queries.
 #
 # These new specific queries are used by Jargon for much better
-# performance in at in instances with very large sets of ACLs and
+# performance in instances with very large sets of ACLs and
 # users.  Thanks to the iPlant development team for these
 # improvements.
 
