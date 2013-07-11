@@ -1526,7 +1526,7 @@ msiBytesBufToStr(msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei)
 	}
 	outStr = (char *) malloc((inBuf->len + 1));
 	outStr[inBuf->len] = '\0';
-	strncpy(outStr,inBuf->buf, inBuf->len);
+	strncpy(outStr, (char *) inBuf->buf, inBuf->len);
 	fillStrInMsParam(str_msp, outStr);
 	free(outStr);
 	
