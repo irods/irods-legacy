@@ -18,7 +18,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodssetup.pl"} = "March 2012";
+$version{"irodssetup.pl"} = "July 2013";
 
 
 
@@ -189,13 +189,14 @@ if ( $thisUserID == 0 )
 
 
 if ( $isUpgrade ne "") {
-    printNotice("\nNote: When upgrading from 3.1 to 3.2, you should run\n");
-    printNotice("all-patch-v3.1tov3.2.sql via psql (for Postgres)\n");
-    printNotice("or sqlplus (for Oracle)\n");
-    printNotice("or mysql (for MySQL)\n");
-    printNotice("before running this script.\n");
+    printNotice("\nNote: When upgrading from 3.2 to 3.3, you should run\n");
+    printNotice("patch3.2to3.3.sh after running this script.\n");
+    printNotice("Previous patches are SQL updates (run before this script)\n");
+    printNotice("but this one is a series of iadmin commmands to add some\n");
+    printNotice("specific queries (see the script for more).\n");
     printNotice("If you have an older iRODS, you need to run the\n");
-    printNotice("other patch scripts in sequence.\n\n");
+    printNotice("other patch scripts in sequence before running this\n");
+    printNotice("installation script.\n\n");
 
     my $answer = promptYesNo(
 			     "Have you run one of those?",
