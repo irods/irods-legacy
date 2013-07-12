@@ -199,7 +199,7 @@ if ( $isUpgrade ne "") {
     printNotice("installation script.\n\n");
 
     my $answer = promptYesNo(
-			     "Have you run one of those?",
+			     "Please try to remember to run this after the upgrade",
 		"yes" );
     if ( $answer == 0 )
     {
