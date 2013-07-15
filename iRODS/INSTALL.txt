@@ -1,5 +1,5 @@
 		Scripts for installing and uninstalling iRODS
-			Last updated September 2012
+			Last updated July 2013
 
 
 The iRODS distribution uses several configuration files and shell/Perl
@@ -11,28 +11,32 @@ scripts to manage iRODS after it has been installed.
 
 If you are upgrading to a new version of iRODS you will normally want
 to keep your existing state information (the ICAT, information on
-dataObjects, collections, resources, users, etc).  To do so, first run
-the patch file for either PostgreSQL, Oracle, or MySQL to make some
-needed updates to tables (if any).  Assuming your iCAT database is
-named ICAT, this would be, for example:
+dataObjects, collections, resources, users, etc), but updating the
+ICAT database to the new version (table or index changes).  For the
+3.3 release, this is not needed but instead you run the following
+after running the install script (irodsupgrade below):
 
-        psql ICAT < server/icat/patches/all-patch-v3.1tov3.2.sql
+   server/icat/patches/patch3.2to3.3.sh
 
-    or 
-        sqlplus name@instance
-        @server/icat/patches/all-patch-v3.1tov3.2.sql
-
-    or
-        mysql ICAT < server/icat/patches/all-patch-v3.1tov3.2.sql
-
-For 3.2 the patch sql script will add a table and an index for the
-filesystem metadata feature, and add tokens related to other new
-capabilities.
+This will add some new specific queries via some 'iadmin' commands.
 
 If you are upgrading from an older version, you'll need to apply the
 patch file for each released version that has one, in sequence.  For
 most releases, there are separate patch files for each type of DBMS.
-See the server/icat/patches directory for the set of patch files.
+See the server/icat/patches directory for the set of patch files.  To
+apply these patches, run the patch file for either PostgreSQL, Oracle,
+or MySQL to make the needed updates to tables, indexes, etc (if any).
+For example, assuming your iCAT database is named ICAT and you're
+doing the 3.1 to 3.2 step, this would be:
+        psql ICAT < server/icat/patches/all-patch-v3.1tov3.2.sql
+    or 
+        sqlplus name@instance
+        @server/icat/patches/all-patch-v3.1tov3.2.sql
+    or
+        mysql ICAT < server/icat/patches/all-patch-v3.1tov3.2.sql
+You should check the contents of the patch file first and read the
+comments.  For this one for example, there's a change you need
+to apply if your ICAT DBMS is Oracle.
 
 Then run either of these (they are equivalent):
         ./irodsupgrade
