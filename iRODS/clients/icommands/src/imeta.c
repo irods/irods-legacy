@@ -667,6 +667,11 @@ int queryDataObj(char *cmdToken[]) {
       genQueryInp.sqlCondInp.len+=2;
    }
 
+   if (*cmdToken[cmdIx] != '\0') {
+      printf("Unrecognized input\n");
+      return(-2);
+   }
+
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
@@ -755,6 +760,11 @@ int queryCollection(char *cmdToken[]) {
       condVal[condIx]=vstr[condIx];
       condIx++;
       genQueryInp.sqlCondInp.len+=2;
+   }
+
+   if (*cmdToken[cmdIx] != '\0') {
+      printf("Unrecognized input\n");
+      return(-2);
    }
 
    genQueryInp.maxRows=10;
@@ -1357,25 +1367,36 @@ doCommand(char *cmdToken[]) {
    }
 
    if (strcmp(cmdToken[0],"qu") == 0) {
+      int status;
       if (strcmp(cmdToken[1],"-d")==0) {
-	 queryDataObj(cmdToken);
-	 return(0);
+         status = queryDataObj(cmdToken);
+         if (status < 0) return(-2);
+         return(0);
       }
       if (strcmp(cmdToken[1],"-C")==0 || strcmp(cmdToken[1],"-c")==0) {
-	 queryCollection(cmdToken);
-	 return(0);
+         status = queryCollection(cmdToken);
+         if (status < 0) return(-2);
+         return(0);
       }
       if (strcmp(cmdToken[1],"-R")==0 || strcmp(cmdToken[1],"-r")==0) {
-	 queryResc(cmdToken[2], cmdToken[3], cmdToken[4]);
-	 return(0);
+         if (*cmdToken[5] != '\0') {
+           printf("Unrecognized input\n");
+           return(-2);
+         }
+         queryResc(cmdToken[2], cmdToken[3], cmdToken[4]);
+         return(0);
       }
       if (strcmp(cmdToken[1],"-G")==0 || strcmp(cmdToken[1],"-g")==0) {
-	 queryRescGroup(cmdToken[2], cmdToken[3], cmdToken[4]);
-	 return(0);
+         if (*cmdToken[5] != '\0') {
+           printf("Unrecognized input\n");
+           return(-2);
+         }
+         queryRescGroup(cmdToken[2], cmdToken[3], cmdToken[4]);
+         return(0);
       }
       if (strcmp(cmdToken[1],"-u")==0) {
-	 queryUser(cmdToken[2], cmdToken[3], cmdToken[4]);
-	 return(0);
+         queryUser(cmdToken[2], cmdToken[3], cmdToken[4]);
+         return(0);
       }
    }
 
