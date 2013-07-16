@@ -54,6 +54,9 @@ Update time on (touch) rulegen.c to avoid a problem on some hosts
 
 3.0+: 
 remove jargon and clients/prods trees (if they are still in svn)
+For 3.3+:
+remove jargon but not client/prods as prods is OK now with a README.txt that
+  refers to the proper Gforge repository at code.renci.org for PHP.
 
 tar cfz irods3.2.tgz iRODS
   or
