@@ -1154,7 +1154,7 @@ modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
 /* 
  Prompt for input and parse into tokens
 */
-void
+int
 getInput(char *cmdToken[], int maxTokens) {
    int lenstr, i;
    static char ttybuf[BIG_STR];
@@ -1183,7 +1183,7 @@ getInput(char *cmdToken[], int maxTokens) {
       if (ttybuf[i]=='\n') {
 	 ttybuf[i]='\0';
 	 cmdToken[nTokens++]=cpTokenStart;
-	 return;
+	 return(0);
       }
       if (tokenFlag==0) {
 	 if (ttybuf[i]=='\'') {
@@ -1224,6 +1224,10 @@ getInput(char *cmdToken[], int maxTokens) {
 	    cpTokenStart = &ttybuf[i+1];
 	    tokenFlag=0;
 	 }
+      }
+      if (nTokens>=maxTokens) {
+	printf("Limit reached (too many tokens, unrecognized input\n");
+	return(-1);
       }
    }
 }
@@ -1450,8 +1454,8 @@ main(int argc, char **argv) {
 
    int argOffset;
 
-   int maxCmdTokens=20;
-   char *cmdToken[20];
+   int maxCmdTokens=40;
+   char *cmdToken[40];
    int keepGoing;
    int firstTime;
 
@@ -1513,6 +1517,10 @@ main(int argc, char **argv) {
    }
    j=0;
    for (i=argOffset;i<argc;i++) {
+      if (j>=maxCmdTokens+1) {
+         printf("Unrecognzied input, too many input tokens\n");
+         exit(4);
+      }
       cmdToken[j++]=argv[i];
    }
 
@@ -1602,7 +1610,11 @@ main(int argc, char **argv) {
 	 firstTime=0;
       }
       if (keepGoing) {
-	 getInput(cmdToken, maxCmdTokens);
+         status = getInput(cmdToken, maxCmdTokens);
+         if (status<0) {
+           lastCommandStatus=status;
+           break;
+         }
       }
    }
 
