@@ -23,6 +23,8 @@ iadmin asq "SELECT DISTINCT r_coll_main.coll_id, r_coll_main.parent_coll_name, r
 
 iadmin asq "SELECT DISTINCT r_coll_main.coll_id, r_coll_main.parent_coll_name, r_coll_main.coll_name, r_coll_main.coll_owner_name, r_coll_main.coll_owner_zone, r_meta_main.meta_attr_name, r_meta_main.meta_attr_value, r_meta_main.meta_attr_unit, r_user_main.user_name, r_user_main.zone_name, r_objt_access.access_type_id FROM r_coll_main JOIN r_objt_metamap ON r_coll_main.coll_id = r_objt_metamap.object_id JOIN r_meta_main ON r_objt_metamap.meta_id = r_meta_main.meta_id JOIN r_objt_access ON r_coll_main.coll_id = r_objt_access.object_id JOIN r_user_main ON r_objt_access.user_id = r_user_main.user_id WHERE r_meta_main.meta_attr_unit = 'iRODSUserTagging:Share' AND r_user_main.user_name = ? AND r_user_main.zone_name = ? AND r_coll_main.coll_owner_name <> ? ORDER BY r_coll_main.parent_coll_name ASC, r_coll_main.coll_name ASC" listSharedCollectionsSharedWithUser
 
+iadmin asq "SELECT  r_user_main.user_name, r_user_main.user_id, r_objt_access.access_type_id, r_user_main.user_type_name, r_user_main.zone_name,  r_coll_main.coll_name, r_data_main.data_name, USER_GROUP_MAIN.user_name, r_data_main.data_name,r_coll_main.coll_name FROM r_user_main AS USER_GROUP_MAIN JOIN r_user_group JOIN r_user_main ON r_user_group.user_id = r_user_main.user_id ON USER_GROUP_MAIN.user_id = r_user_group.group_user_id JOIN r_objt_access ON r_user_group.group_user_id = r_objt_access.user_id JOIN r_data_main JOIN r_coll_main ON r_data_main.coll_id = r_coll_main.coll_id ON r_objt_access.object_id = r_data_main.data_id WHERE  r_coll_main.coll_name = ? AND r_data_main.data_name = ? AND   r_user_main.user_name = ? ORDER BY r_objt_access.access_type_id DESC" listUserACLForDataObjViaGroup
+
 #The following commands, if uncommented, would reverse the above (asq is add specific query, rsq is remove specific query):
 #iadmin rsq listQueryByAliasLike
 #iadmin rsq findQueryByAlias
@@ -30,4 +32,5 @@ iadmin asq "SELECT DISTINCT r_coll_main.coll_id, r_coll_main.parent_coll_name, r
 #iadmin rsq ilsLADataObjects
 #iadmin rsq listSharedCollectionsOwnedByUser
 #iadmin rsq listSharedCollectionsSharedWithUser
+#iadmin rsq listUserACLForDataObjViaGroup
 
