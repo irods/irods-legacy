@@ -793,7 +793,7 @@ sslPostConnectionCheck(SSL *ssl, char *peer)
     char *verify_server;
     X509 *cert;
     int match = 0;
-    STACK_OF(GENERAL_NAME) *names;
+    STACK_OF(GENERAL_NAMES) *names;
     GENERAL_NAME *name;
     int num_names, i;
     char *namestr;
@@ -820,10 +820,10 @@ sslPostConnectionCheck(SSL *ssl, char *peer)
 
     /* check if the peer name matches any of the subjectAltNames 
        listed in the certificate */
-    names = (STACK_OF(GENERAL_NAME)*)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
-    num_names = sk_GENERAL_NAME_num(names);
+    names = (STACK_OF(GENERAL_NAMES)*)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
+    num_names = sk_GENERAL_NAMES_num(names);
     for (i = 0; i < num_names; i++ ) {
-        name = (GENERAL_NAME*)sk_GENERAL_NAME_value(names, i);
+        name = (GENERAL_NAME*)sk_GENERAL_NAMES_value(names, i);
         if (name->type == GEN_DNS) {
             namestr = (char*)ASN1_STRING_data(name->d.dNSName);
             if (!strcasecmp(namestr, peer)) {
@@ -832,7 +832,7 @@ sslPostConnectionCheck(SSL *ssl, char *peer)
             }
         }
     }
-    sk_GENERAL_NAME_free(names);
+    sk_GENERAL_NAMES_free(names);
 
     /* if no match above, check the common name in the certificate */
     if (!match &&
