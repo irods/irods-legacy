@@ -12,7 +12,7 @@ endif
 #MSOSRB = 1
 
 # uncomment if HTTP/FTP/HTTPS MSO is needed, but make sure libcurl is available as a system library
-MSOHTTP = 1
+#MSOHTTP = 1
 
 
 include $(buildDir)/config/config.mk
