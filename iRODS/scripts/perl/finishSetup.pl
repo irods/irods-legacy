@@ -3008,7 +3008,7 @@ sub fixUsersOdbcIni() {
 			      $databaseLibDir, "libodbcpsql.so" ) );
 
 		if ( $DATABASE_ODBC_TYPE =~ /system/i ) {
-		    my $libPath2 = "/usr/lib/odbc/psqlodbca.so";
+		    my $libPath2 = findOdbcLib($DATABASE_HOME);
 		    if (! -e $libPath2) {
 			printStatus( "ODBC will fail, $libPath2 (driver) does not exist\n" );
 			printLog( "ODBC will fail, $libPath2 (driver) does not exist\n" );

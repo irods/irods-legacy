@@ -51,7 +51,7 @@ if ( $@ )
 }
 Net::FTP->import( );
 
-$version{"utils_platform.pl"} = "March 2012";
+$version{"utils_platform.pl"} = "July 2013";
 
 
 
@@ -1381,7 +1381,56 @@ sub getFamilyProcessIds
 }
 
 
+#
+# @brief	Return the path to the ODBC library (driver), if any.
+#
+# This function looks for the ODBC library on this on this host,
+# checking a set of predefined possibilities.
+#
+# @param	$DB_Path
+# 	the Database path, under which are some of the places to look.
+# @return
+# 	the path to the ODBC library, or undef if not found
+#
+sub findOdbcLib($)
+{
+	my ($DB_Path) = @_;
 
+	# Directories to look in
+	my @libDirectories = (
+		File::Spec->catdir( $DB_Path ),
+		File::Spec->catdir( $DB_Path, "lib" ),
+		File::Spec->catdir( File::Spec->rootdir( ), "usr", "lib" ),
+		File::Spec->catdir( File::Spec->rootdir( ), "usr", "lib", "odbc"),
+		File::Spec->catdir( File::Spec->rootdir( ), "usr", "lib", "i386-linux-gnu", "odbc"),
+	);
+
+	# File to check for
+	my @libFileNames = (
+		"psqlodbcw.so",
+		"psqlodbc.so",
+		"psqlodbca.so",
+	);
+
+	# Loop through the possible directories
+	foreach $dir (@libDirectories)
+	{
+		# Loop through the possible files
+		foreach $libName (@libFileNames)
+		{
+			# Does it exist?
+			$path = File::Spec->catfile( $dir, $libName );
+			printf("checking $path\n");
+			next if ( ! -f $path && ! -l $path );	# not file or symlink
+
+			# Found!
+			return $path;
+		}
+	}
+
+	# Not found.
+	return undef;
+}
 
 
 return( 1 );

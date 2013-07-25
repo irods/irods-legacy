@@ -1388,7 +1388,7 @@ sub promptForNewPostgresConfiguration( $ )
         # Prompt for ODBC version
 	$odbcSource = $ODBC_SOURCE;
 
-        my $OdbcLibPath = "/usr/lib/odbc/psqlodbca.so";
+        my $OdbcLibPath = findOdbcLib($databaseServerPath);
         my $sysODBC = "";
         if (-e $OdbcLibPath) {
 	    printNotice(
@@ -1499,7 +1499,7 @@ sub promptForExistingPostgresDatabase( )
 	# What type of ODBC is it using?
 	while ( 1 )
 	{
-		my $OdbcLibPath = "/usr/lib/odbc/psqlodbca.so";
+		my $OdbcLibPath = findOdbcLib($databaseServerPath);
 		my $sysODBC = "";
 		if (-e $OdbcLibPath) {
 		    printNotice(
