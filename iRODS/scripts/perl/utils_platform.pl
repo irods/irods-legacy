@@ -1420,7 +1420,7 @@ sub findOdbcLib($)
 		{
 			# Does it exist?
 			$path = File::Spec->catfile( $dir, $libName );
-			printf("checking $path\n");
+#			printf("checking $path\n");
 			next if ( ! -f $path && ! -l $path );	# not file or symlink
 
 			# Found!
