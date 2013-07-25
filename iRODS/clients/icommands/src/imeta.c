@@ -1230,6 +1230,7 @@ getInput(char *cmdToken[], int maxTokens) {
 	return(-1);
       }
    }
+   return(0);
 }
 
 /*
