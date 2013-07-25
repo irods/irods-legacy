@@ -33,7 +33,10 @@ history.
 Update config/doxygen.config PROJECT_NUMBER (version) (or Terrell will)
   and doxygen-msi.config
 
-Figure out how to handle new API doxygen docs, put on wiki, add link.
+  Some day it might be nice to include the other Doxygen documentaion
+  (doxygen.config, the APIs etc) on the wiki, similar to the msi's, but
+  currently we do not (see other Doxygen notes below).
+
 
 --------------------------------------------
 Make the release file:
@@ -94,9 +97,17 @@ Send email irods-chat and (no more srb-chat)
 --
 In the days following the release:
 
-Update Doxygen files (gen on Pivo or maybe Zuri, 'ruby runDoxygen.rb', 
-   put in merrimac/misc/www/projects/irods/doxygen)
-  (seems OK but ICAT ones missing, don't know if all are there)
+Update Doxygen files (gen on Pivo or maybe Zuri, 'ruby runDoxygen.rb',
+   put all the generated files that are output into iRODS/doc/html
+   into merrimac/misc/www/projects/irods/doxygen (tar and move).
+
+   This is a subset of the Doxygen documention, just the
+   micro-services.  There are two configuration files (see
+   runDoxygen.rb) and the currently used one is
+   ./config/doxygen-msi.config, and if instead we use the other,
+   ./config/doxygen.config, much more is generated but with various
+   errors.  But we seem to have Doxygen comment blocks for 412 functions
+   but only 255 in the micro-service (used) msi set.
 
 Build and update Mac-PowerPC and Mac-Intel download files
    (did 2.5 but hadn't 3.0, did Intel for 3.1 and 3.2 &they can ask for PowerPC)
