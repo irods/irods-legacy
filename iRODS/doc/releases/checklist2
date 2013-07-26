@@ -112,6 +112,9 @@ Update Doxygen files (gen on Pivo or maybe Zuri, 'ruby runDoxygen.rb',
 Build and update Mac-PowerPC and Mac-Intel download files
    (did 2.5 but hadn't 3.0, did Intel for 3.1 and 3.2 &they can ask for PowerPC)
 
-Update i-cmd wiki help pages with new versions and new i-cmd pages
+Update i-cmd wiki help pages with new versions and new i-cmd pages.
+   In many cases you can use the i-cmd -h (like 'iinit -h') text as
+   the source text for the wiki page; this sometimes requires a little
+   editing but is generally fairly close.
 
 Update wiki Roadmap page
