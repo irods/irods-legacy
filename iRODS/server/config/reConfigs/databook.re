@@ -330,15 +330,15 @@ sendCollectionStructure(*path) {
 	*dataObjs = SELECT DATA_NAME, COLL_NAME, DATA_SIZE WHERE COLL_NAME like "*path%";
         foreach(*dataObj in *dataObjs) {
 		writeLine("stdout", *dataObj);
-		*dataName = getKVP(*dataObj, "DATA_NAME");
-		*dataSize = getKVP(*dataObj, "DATA_SIZE");
-		*collName = getKVP(*dataObj, "COLL_NAME");
+		*dataName = *dataObj.DATA_NAME;
+		*dataSize = *dataObj.DATA_SIZE;
+		*collName = *dataObj.COLL_NAME;
 		*objPath = /*collName/*dataName;
 		sendAddDataObj("sync", *objPath, *dataSize, timeStrNow(), false);
         }
 	*dataObjs = SELECT COLL_NAME WHERE COLL_NAME like "*path%";
         foreach(*dataObj in *dataObjs) {
-		*objPath = getKVP(*dataObj, "COLL_NAME");
+		*objPath = *dataObj.COLL_NAME;
 		sendAddColl("sync", *objPath);
         }
 }
@@ -385,7 +385,7 @@ sendAction(*AccessType, *UserName, *ActionId, *TimeStart, *TimeEnd, *Description
 
 sendActionWithSession(*AccessType, *UserName, *ActionId, *TimeStart, *TimeEnd, *Description, *SessionId) {
 	*AccessId = genAccessId(*AccessType, *UserName, *ActionId, *TimeStart, *Description);
-	*msg=join(list("action", *AccessId, *AccessType, *UserName, *ActionId, *TimeStart, *TimeEnd, *Description, *SessionId));
+	*msg=join(list("action", *ActionId, *AccessId, *AccessType, *UserName, *TimeStart, *TimeEnd, *Description, *SessionId));
         amqpSend("localhost", "metaQueue", *msg);	
 }
 
@@ -567,15 +567,6 @@ createCollIfNotExist(*path) {
 		msiCollCreate(*path, "0", *status);
 	}
 }
-
-#newKVP {
-#	msiString2KeyValPair("",*KVP);
-#	*KVP;
-#}
-
-#addKVP(*KVP, *Key, *Val) {
-#	msiAddKeyVal(*KVP, *Key, *Val);
-#}
 
 getKVP(*KVP, *Key) {
 	msiGetValByKey(*KVP, *Key, *Val);
