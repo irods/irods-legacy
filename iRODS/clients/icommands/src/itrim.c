@@ -105,7 +105,7 @@ usage ()
 "     value is 2.",
 " -r  recursive - trim the whole subtree",
 " -S  srcResource - specifies the resource of the replica to be deleted.",  
-"     If specified, only copies stored in this resource will be condidates",
+"     If specified, only copies stored in this resource will be candidates",
 "     for the deletion.",
 " -v  verbose",
 " -V  Very verbose",
