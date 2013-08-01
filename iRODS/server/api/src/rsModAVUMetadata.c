@@ -88,7 +88,12 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     args[3] = modAVUMetadataInp->arg3; /* attr name */
     args[4] = modAVUMetadataInp->arg4; /* attr val */
     args[5] = modAVUMetadataInp->arg5; /* attr unit */
-    if (args[5]) {
+    args[6] = modAVUMetadataInp->arg6; /* new attr */
+    args[7] = modAVUMetadataInp->arg7; /* new val */
+    args[8] = modAVUMetadataInp->arg8; /* new unit */
+    if(strcmp(args[0], "mod") == 0) {
+    	argc = 9;
+    } else if (args[5]) {
     	argc = 6;
     } else {
     	argc = 5;
@@ -186,6 +191,7 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     else {
       return(CAT_INVALID_ARGUMENT);
     }      
+    /* rei2.status = status; */
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     i =  applyRuleArg("acPostProcForModifyAVUMetadata",args,argc, &rei2, NO_SAVE_REI);
     if (i < 0) {

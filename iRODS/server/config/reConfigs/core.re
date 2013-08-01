@@ -433,6 +433,9 @@ acPostProcForModifyUser(*UserName,*Option,*NewValue) { }
 #
 #acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) {writeLine("serverLog","TEST:acPreProcForModifyAVUMetadata:*Option,*ItemType,*ItemName"); }
 #
+acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) {
+	acPreProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit);
+}
 acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
 acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue) { }
 #
@@ -443,6 +446,9 @@ acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue) { }
 #
 #acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) {writeLine("serverLog","TEST:acPostProcForModifyAVUMetadata:*Option,*ItemType,*ItemName"); }
 #
+acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) {
+	acPostProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit);
+}
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue) { }
 #
