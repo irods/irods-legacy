@@ -62,6 +62,7 @@ rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 }
 
 #ifdef RODS_CAT
+int checkModArgType(char *arg);
 int
 _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 {
@@ -78,8 +79,6 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
       rei2.uoip = &rsComm->proxyUser;
     }
 
-
-
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     args[0] = modAVUMetadataInp->arg0; /* option add, adda, rm, rmw, rmi, cp,
 					  or mod */
@@ -87,16 +86,29 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     args[2] = modAVUMetadataInp->arg2; /* item name */
     args[3] = modAVUMetadataInp->arg3; /* attr name */
     args[4] = modAVUMetadataInp->arg4; /* attr val */
-    args[5] = modAVUMetadataInp->arg5; /* attr unit */
-    args[6] = modAVUMetadataInp->arg6; /* new attr */
-    args[7] = modAVUMetadataInp->arg7; /* new val */
-    args[8] = modAVUMetadataInp->arg8; /* new unit */
+    args[5] = modAVUMetadataInp->arg5;
+    if(args[5] == NULL) args[5] = ""; /* attr unit */
     if(strcmp(args[0], "mod") == 0) {
     	argc = 9;
-    } else if (args[5]) {
-    	argc = 6;
+#define ARG(arg) if((arg) != NULL && (arg)[0] != '\0') avu[checkModArgType(arg)] = arg
+    	if(checkModArgType(modAVUMetadataInp->arg5) != 0) {
+    		char *avu[4] = {"", "", "", ""};
+    		ARG(modAVUMetadataInp->arg5);
+    		ARG(modAVUMetadataInp->arg6);
+    		ARG(modAVUMetadataInp->arg7);
+    		args[5] = "";
+    		memcpy(args+6, avu+1, sizeof(char *[3]));
+    	} else {
+    		char *avu[4] = {"", "", "", ""};
+    	    ARG(modAVUMetadataInp->arg6); /* new attr */
+    	    ARG(modAVUMetadataInp->arg7); /* new val */
+    	    ARG(modAVUMetadataInp->arg8); /* new unit */
+    		memcpy(args+6, avu+1, sizeof(char *[3]));
+    	}
+    } else if(strcmp(args[0], "cp") == 0) {
+    	argc = 4;
     } else {
-    	argc = 5;
+    	argc = 6;
     }
     i =  applyRuleArg("acPreProcForModifyAVUMetadata",args,argc, &rei2, NO_SAVE_REI);
     if (i < 0) {

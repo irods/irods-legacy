@@ -428,29 +428,39 @@ acPostProcForModifyUser(*UserName,*Option,*NewValue) { }
 #
 # 24) acPreProcForModifyAVUmetadata - This rule set the pre-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
-# option= add, adda, rm, rmw, rmi, cp
-# item type= -d,-d,-c,-C,-r,-R,-u,-U 
-#
-#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) {writeLine("serverLog","TEST:acPreProcForModifyAVUMetadata:*Option,*ItemType,*ItemName"); }
-#
-acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) {
-	acPreProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit);
-}
+# For argument format, refer to imeta -h
+# when option =
+# mod
+# new values have the prefix n:, v:, u:, and "" means that that value remain unchanged
+acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
+# add, adda, addw, set, rm, rmw, rmi
 acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
-acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue) { }
+# cp
+acPreProcForModifyAVUMetadata(*Option,*ItemType,*SourceItemName,*TargetItemName) { }
+#
+# for backward compatibility
+#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) {
+#	acPreProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit);
+#}
+#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { 
+# 	on(*AUnit == "") {
+#		# copy old acPreProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue)
+#	}
+#	or {
+#		# copy old acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)
+#	}
+#}
+#acPreProcForModifyAVUMetadata(*Option,*ItemType,*SourceItemName,*TargetItemName) { 
+#	acPreProcForModifyAVUMetadata(*Option, *ItemType, *SourceItemName, *TargetItemName, "", "");
+#}
+#
 #
 # 25) acPostProcForModifyAVUmetadata - This rule set the post-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
-# option= add, adda, rm, rmw, rmi, cp
-# item type= -d,-d,-c,-C,-r,-R,-u,-U
-#
-#acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) {writeLine("serverLog","TEST:acPostProcForModifyAVUMetadata:*Option,*ItemType,*ItemName"); }
-#
-acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) {
-	acPostProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit);
-}
+# See acPreProcForModifyAVUMetadata for which rule to implement and backward compatibility 
+acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
-acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue) { }
+acPostProcForModifyAVUMetadata(*Option,*ItemType,*SourceItemName,*TargetItemName) { }
 #
 # 26) acPreProcForCreateUser - This rule set the pre-processing policy for
 # creating a new user.
