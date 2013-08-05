@@ -12,12 +12,13 @@ ATTR_REPLACED_BY = "data:replacedBy"
 ATTR_RELATED = "data:related"
 ATTR_CONTRIBUTOR = "data:contributor"
 
-
+ERROR_CODE = -1
 
 # AVU Attr's that are mapped to Databook Attr's
 # Do not include system attributes such as data:name, data:dataSize, or data:id
 databookAttr(*Attr) =
 	match *Attr with
+		| ATTR_ID => true
 		| ATTR_HAS_VERSION => true
 		| ATTR_PREVIEW => true
 		| ATTR_THUMB_PREVIEW => true
@@ -31,6 +32,7 @@ databookAttr(*Attr) =
 
 databookAttrType(*Attr) =
 	match *Attr with 
+		| ATTR_ID => "string"
 		| ATTR_HAS_VERSION => "string"
 		| ATTR_PREVIEW => "string"
 		| ATTR_THUMB_PREVIEW => "string"
@@ -42,6 +44,45 @@ databookAttrType(*Attr) =
 		| ATTR_DESCRIPTION => "string"
 		| *_ => let *dummy = writeLine("serverLog", "databookAttrType: unsupported data attribute *Attr, return default type 'string'") in
 			"string"
+constant(*Attr) =
+	match *Attr with 
+		| ATTR_ID => true
+		| ATTR_HAS_VERSION => false
+		| ATTR_PREVIEW => false
+		| ATTR_THUMB_PREVIEW => false
+		| ATTR_CONTRIBUTOR => false
+		| ATTR_RELATED => false
+		| ATTR_REPLACED_BY => false
+		| ATTR_REPLACES => false
+		| ATTR_TITLE => false
+		| ATTR_DESCRIPTION => false
+		| *_ => false
+unique(*Attr) =
+	match *Attr with
+		| ATTR_ID => true
+		| ATTR_HAS_VERSION => true
+		| ATTR_PREVIEW => false
+		| ATTR_THUMB_PREVIEW => false
+		| ATTR_CONTRIBUTOR => false
+		| ATTR_RELATED => false
+		| ATTR_REPLACED_BY => false
+		| ATTR_REPLACES => false
+		| ATTR_TITLE => true
+		| ATTR_DESCRIPTION => true
+		| *_ => false
+required(*Attr) =
+	match *Attr with
+		| ATTR_ID => true
+		| ATTR_HAS_VERSION => true
+		| ATTR_PREVIEW => false
+		| ATTR_THUMB_PREVIEW => false
+		| ATTR_CONTRIBUTOR => false
+		| ATTR_RELATED => false
+		| ATTR_REPLACED_BY => false
+		| ATTR_REPLACES => false
+		| ATTR_TITLE => false
+		| ATTR_DESCRIPTION => false
+		| *_ => false
 
 timeStr(*time) = timestrf(*time, "%Y %m %d %H:%M:%S")
 
@@ -162,34 +203,104 @@ acPostProcForModifyCollMeta { }
 
 acPostProcForModifyDataObjMeta { }
 
-acPostProcForModifyCollectionAVU(*Option,*ItemType,*ItemName,*AName,*AValue) { 
+acPreProcForModifyAVUMetadata(*Option, *ItemType, *SrcItemName, *TgtItemName) { 
 	on(include(*ItemName)) {
-		postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, "");
+		preProcForModifyAVUMetadata(*Option, *ItemType, *SrcItemName, *TgtItemName, "", "", "", "", "");
 	}
 }
 
-acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { 
+acPreProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit) { 
 	on(include(*ItemName)) {
-		postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit);
+		preProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit, "", "", "");
 	}
 }
 
-postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit) {
+acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAVaule, *NAUnit) { 
+	on(include(*ItemName)) {
+		preProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit, *NAName, *NAValue, *NAUnit);
+	}
+}
+
+checkMultiplicity(*AName, *objPath, *min, *max) {
+	*ret = true;
+	(*coll, *data) = splitDataObjPath(*objPath);
+	foreach(*r in SELECT count(META_DATA_ATTR_NAME) WHERE META_DATA_ATTR_NAME = *AName AND COLL_NAME = *coll AND DATA_NAME = *data) {
+		*mul = int(*r.META_DATA_ATTR_NAME)
+		if((*min >=0 && *mul < *min) || (*max >= 0 && *mul > *max)) {
+			*ret = false;
+		}
+		break;
+	}
+	*ret;
+}
+
+preProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit, *NAName, *NAValue, *NAUnit) {
+	on(databookAttr(*AName)) {
+		cut;
+		if(constant(*AName) && *Option != "add") {
+			failmsg(-1, "cannot perform operation *Option on attribute *AName");
+		}
+		if(*Option like "mod*" && *NAName != "") {
+			failmsg(-1, "cannot modify name for attribute *AName");
+		}
+		if(*Option like "add*" && unique(*AName)) {
+			if(!checkMultiplicity(*AName, *ItemName, 0, 0)) {
+				failmsg(-1, "cannot have more than one value for attribute *AName");
+			}
+		}
+		if(*Option like "rm*" && required(*AName)) {
+			if(!checkMultiplicity(*AName, *ItemName, 2, -1)) {
+				failmsg(-1, "cannot have more less than one value for attribute *AName");
+			}
+		}
+	}
+	or {
+		succeed;
+	}
+}
+
+acPostProcForModifyAVUMetadata(*Option, *ItemType, *SrcItemName, *TgtItemName) { 
+	on(include(*ItemName)) {
+		postProcForModifyAVUMetadata(*Option, *ItemType, *SrcItemName, *TgtItemName, "", "", "", "", "");
+	}
+}
+
+acPostProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit) { 
+	on(include(*ItemName)) {
+		postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit, "", "", "");
+	}
+}
+
+acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAVaule, *NAUnit) { 
+	on(include(*ItemName)) {
+		postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit, *NAName, *NAValue, *NAUnit);
+	}
+}
+
+postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit, *NAName, *NAValue, *NAUnit) {
 	on(*AName == "data:id") {
 		writeLine("serverLog", "skip data:id");
-		# data:id should be a constant
 		succeed;
 	}
 	on(databookAttr(*AName)) {
+		cut;
 		writeLine("serverLog", "processing *AName for *ItemName");
-		if(*ItemType == "-d") {
-			*Id = getDataObjId(*ItemName);
-		} else if(*ItemType == "-C") {
-			*Id = getCollId(*ItemName);
+		if(*Option == "rmi") {
+			if(*ItemType == "-d") {
+				*Id = getDataObjIdById(*ItemName);
+			} else if(*ItemType == "-C") {
+				*Id = getCollIdById(*ItemName);
+			} else {
+				failmsg(-1, "unsupported object type: *ItemName, *ItemType");
+			}
 		} else {
-			writeLine("serverLog", "unsupported object type: *ItemName, *ItemType");
-			cut;
-			fail;
+			if(*ItemType == "-d") {
+				*Id = getDataObjId(*ItemName);
+			} else if(*ItemType == "-C") {
+				*Id = getCollId(*ItemName);
+			} else {
+				failmsg(-1, "unsupported object type: *ItemName, *ItemType");
+			}
 		}
 		# need to check *AValue format
 		*DatabookName=triml(*AName, ":");
@@ -204,28 +315,10 @@ postProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AU
 			*msg=join(list("modMeta", *Id, *DatabookName, *AValue, databookAttrType(*AName)));
 			*accessType=ACCESS_TYPE_METADATA_MODIFY;
 		} else if(*Option like "mod*") {
-			writeLine("serverLog", "mod *ItemType *AName");
-		    if(*ItemType == "-d") {
-			(*Coll, *Data) = splitDataObjPath(*ItemName); 
-			writeLine("serverLog", "*Data, *Coll, *AName");
-			foreach(*RS in SELECT META_DATA_ATTR_VALUE WHERE DATA_NAME = *Data AND COLL_NAME = *Coll AND META_DATA_ATTR_NAME = *AName) {
-			writeLine("serverLog", "found value");
-			  *NValue = *RS.META_DATA_ATTR_VALUE;
-			  break;
-			}
-			writeLine("serverLog", "found?");
-		    } else {
-			foreach(*RS in SELECT META_COLL_ATTR_VALUE WHERE COLL_NAME = *ItemName AND META_COLL_ATTR_NAME = *AName) {
-			  *NValue = *RS.META_COLL_ATTR_VALUE;
-			  break;
-			}
-		    }
-			*msg=join(list("modMeta", *Id, *DatabookName, *NValue, databookAttrType(*AName)));
+			*msg=join(list("modMeta", *Id, *DatabookName, *NAValue, databookAttrType(*AName)));
 			*accessType=ACCESS_TYPE_METADATA_MODIFY;
 		} else {
-			writeLine("serverLog", "unsupported option: *Option, *ItemName");
-			cut;
-			fail;
+			failmsg(-1, "unsupported option: *Option, *ItemName");
 		}
         	amqpSend("localhost", "metaQueue", *msg);
 		# send access log	
@@ -338,7 +431,7 @@ sendCollectionStructure(*path) {
         }
 	*dataObjs = SELECT COLL_NAME WHERE COLL_NAME like "*path%";
         foreach(*dataObj in *dataObjs) {
-		*objPath = *dataObj.COLL_NAME;
+		*objPath = path(*dataObj.COLL_NAME);
 		sendAddColl("sync", *objPath);
         }
 }
@@ -389,6 +482,33 @@ sendActionWithSession(*AccessType, *UserName, *ActionId, *TimeStart, *TimeEnd, *
         amqpSend("localhost", "metaQueue", *msg);	
 }
 
+splitDataObjPath(*objPath) {
+	*objPathStr = str(*objPath);
+	*objPathStrLen = strlen(*objPathStr);
+	*collName = trimr(*objPathStr, "/");
+	*dataNameLen = *objPathStrLen-strlen(*collName)-1;
+	*dataName = substr(*objPathStr, *objPathStrLen - *dataNameLen, *objPathStrLen);
+	(*collName, *dataName);
+}
+
+getDataObjIdById(*id) {
+	foreach(*r in SELECT DATA_NAME, COLL_NAME WHERE DATA_ID = *id) {
+	      *objPath = *r.COLL_NAME ++ "/" ++ *r.DATA_NAME;
+	      break;
+	}
+	
+	getDataObjId(*objPath, *Found);
+}
+
+getCollIdById(*id) {
+	foreach(*r in SELECT COLL_NAME WHERE COLL_ID = *id) {
+	      *collPath = *r.COLL_NAME;
+	      break;
+	}
+	
+	getCollId(*collPath, *Found);
+}
+
 getCollId(*coll) {
 	writeLine("serverLog", "getCollId of *coll");
 	*Id = getFirstResult(
@@ -403,15 +523,6 @@ getCollId(*coll) {
 	*Id;
 }
 
-splitDataObjPath(*objPath) {
-	*objPathStr = str(*objPath);
-	*objPathStrLen = strlen(*objPathStr);
-	*collName = trimr(*objPathStr, "/");
-	*dataNameLen = *objPathStrLen-strlen(*collName)-1;
-	*dataName = substr(*objPathStr, *objPathStrLen - *dataNameLen, *objPathStrLen);
-	(*collName, *dataName);
-}
-
 _getDataObjId(*objPath, *Found) {
 	(*collName, *dataName) = splitDataObjPath(*objPath);
 	writeLine("serverLog", "getObjId of *objPath, *dataName, *collName");
@@ -422,6 +533,7 @@ _getDataObjId(*objPath, *Found) {
 	);
 	*Id;
 }
+
 getDataObjId(*objPath) {
 	*Id = _getDataObjId(*objPath, *Found);
 	if(!*Found) {
