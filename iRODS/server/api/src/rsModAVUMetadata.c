@@ -106,7 +106,7 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     		memcpy(args+6, avu+1, sizeof(char *[3]));
     	}
     } else if(strcmp(args[0], "cp") == 0) {
-    	argc = 4;
+    	argc = 5;
     } else {
     	argc = 6;
     }
