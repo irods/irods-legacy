@@ -870,7 +870,7 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
                     convertResToMsParam(myArgv[i], res, errmsg);
 				myArgv[i]->label = fillInParamLabel && isVariableNode(node->subtrees[1]->subtrees[i]) ? strdup(node->subtrees[1]->subtrees[i]->text) : NULL;
                 if(ret!=0) {
-                    generateErrMsg("execMicroService3: error converting arguments to MsParam", NODE_EXPR_POS(node->subtrees[i]), node->subtrees[i]->base, errbuf);
+                    generateErrMsg("execMicroService3: error converting arguments to MsParam", NODE_EXPR_POS(node->subtrees[1]->subtrees[i]), node->subtrees[1]->subtrees[i]->base, errbuf);
                     addRErrorMsg(errmsg, ret, errbuf);
                     int j = i;
                     for(;j>=0;j--) {
