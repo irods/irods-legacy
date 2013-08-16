@@ -329,7 +329,7 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             break;
         case T_INT: /* number */
             var->inOutStruct = (int *)malloc(sizeof(int));
-            *((int *)var->inOutStruct) = (int)RES_INT_VAL(res);
+            *((int *)var->inOutStruct) = RES_INT_VAL(res);
             var->type = strdup(INT_MS_T);
             break;
         case T_STRING: /* string */
