@@ -47,6 +47,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     } else if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
         int retval;
         retval = rcDataObjUnlink (rodsServerHost->conn, dataObjUnlinkInp);
+	status = retval;
         return status;
     }
 
