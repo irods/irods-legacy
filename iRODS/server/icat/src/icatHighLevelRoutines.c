@@ -4662,11 +4662,27 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
        rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-	  int status2;
-	  status2  = cmlCheckGroupAdminAccess(
+      int status2, status3, status4;
+      status2  = cmlCheckGroupAdminAccess(
 	     rsComm->clientUser.userName,
 	     rsComm->clientUser.rodsZone, groupName, &icss);
-	  if (status2 != 0) return(status2);
+      if (status2 != 0) {
+	 /* User is not a groupadmin that is a member of this group. */
+	 /* But if we're doing an 'add' and they are a groupadmin
+	    and the group is empty, allow it */
+	 if (strcmp(option, "add")==0) {
+	    status3 =  cmlCheckGroupAdminAccess(
+			   rsComm->clientUser.userName,
+			   rsComm->clientUser.rodsZone, "", &icss);
+	    if (status3==0) {
+	       status4 = cmlGetGroupMemberCount(groupName, &icss);
+	       if (status4==0) { /* call succeeded and the total is 0 */
+		 status2=0;      /* reset the error to success to allow it */
+	       }
+	    }
+	 }
+      }
+      if (status2 != 0) return(status2);
    }
 
    status = getLocalZone();

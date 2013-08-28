@@ -1410,6 +1410,26 @@ int cmlCheckGroupAdminAccess(char *userName, char *userZone,
    return(0);
 }
 
+/* 
+ Get the number of users who are members of a user group.
+ This is used in some groupadmin access checks.
+ */
+int cmlGetGroupMemberCount(char *groupName, icatSessionStruct *icss)
+{
+
+  rodsLong_t iVal;
+  int status;
+  status = cmlGetIntegerValueFromSql(
+	     "select count(user_id) from r_user_group where  group_user_id != user_id and group_user_id in (select user_id from r_user_main where user_name=? and user_type_name='rodsgroup')",
+	 &iVal, groupName, 0, 0, 0, 0, icss);
+  if (status==0) {
+     status = iVal;
+  }
+  return(status);
+}
+
+
+
 /*********************************************************************
 The following are the auditing functions, different forms.  cmlAudit1,
 2, 3, 4, and 5 each audit (record activity in the audit table) but

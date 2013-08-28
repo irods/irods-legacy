@@ -162,6 +162,29 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
        if (status != 0) chlRollback(rsComm);
        return(status);
     }
+
+    if (strcmp(userAdminInp->arg0,"mkgroup")==0) {
+       /* run the acCreateUser rule */
+       ruleExecInfo_t rei;
+       userInfo_t userInfo;
+       char *args[2];
+       memset((char*)&rei,0,sizeof(rei));
+       rei.rsComm = rsComm;
+       strncpy(userInfo.userName, userAdminInp->arg1, 
+	       sizeof userInfo.userName);
+       strncpy(userInfo.userType, userAdminInp->arg2, 
+	       sizeof userInfo.userType);
+       strncpy(userInfo.rodsZone, userAdminInp->arg3, 
+	       sizeof userInfo.rodsZone);
+       strncpy(userInfo.authInfo.authStr, userAdminInp->arg4, 
+	       sizeof userInfo.authInfo.authStr);
+       rei.uoio = &userInfo;
+       rei.uoic = &rsComm->clientUser;
+       rei.uoip = &rsComm->proxyUser;
+       status = applyRuleArg("acCreateUser", args, 0, &rei, SAVE_REI);
+       if (status != 0) chlRollback(rsComm);
+       return(status);
+    }
     return(CAT_INVALID_ARGUMENT);
 }
 #endif
