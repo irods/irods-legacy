@@ -8,8 +8,16 @@
 # It assumes the iinit has been run for the initial user, the two
 # users (the initial one and U2) exist and the U2_Password is correct,
 # and that the icommands are in the path.  Also, for strict-mode tests,
-# you need to create the $CORE_RE_STRICT file with the strict rule set.
-# Also check the defines for your setup.
+# which are run by default, you need to create the $CORE_RE_STRICT file
+# with the strict rule set and also need to check the defines for your 
+# setup ($CORE_RE_STRICT, $CORE_RE_ORIG, and $CORE_RE) and create those 
+# files ($CORE_RE_STRICT with strict mode set).
+# Also chck $Future_Date and $This_Host and $Other_Host.
+# The user you run this from initially must be an rodsadmin, for example
+# user 'rods'. User 'anonymous' must also exist.
+
+$G1="GROUP1";
+
 #
 # It will print "Success" at the end and have a 0 exit code, if
 # everything works properly.
@@ -47,17 +55,16 @@ $F1="TicketTestFile1";
 $F2="TicketTestFile2";
 $F3="TicketTestFile3";
 
-$Future_Date="2012-12-12";
+$Future_Date="2014-12-12";
 $Past_Date="2012-02-07";
 
-$This_Host="zuri.ucsd.edu";
-$Other_Host="pivo.ucsd.edu";
+$This_Host="pivo.ucsd.edu";
+$Other_Host="zuri.ucsd.edu";
 
 $G1="GROUP1";
-
-$CORE_RE_STRICT="/home/schroeder/svn/trunk/iRODS/server/config/reConfigs/core.re.strict";
-$CORE_RE_ORIG="/home/schroeder/svn/trunk/iRODS/server/config/reConfigs/core.re.orig";
-$CORE_RE="/home/schroeder/svn/trunk/iRODS/server/config/reConfigs/core.re";
+$CORE_RE_STRICT="/tbox/IRODS_BUILD/iRODS/server/config/reConfigs/core.re.strict";
+$CORE_RE_ORIG="/tbox/IRODS_BUILD/iRODS/server/config/reConfigs/core.re.orig";
+$CORE_RE="/tbox/IRODS_BUILD/iRODS/server/config/reConfigs/core.re";
 
 # run a command
 # if option is 0 (normal), check the exit code and fail if non-0
