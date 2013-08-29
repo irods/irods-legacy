@@ -15,6 +15,8 @@
 # Also chck $Future_Date and $This_Host and $Other_Host.
 # The user you run this from initially must be an rodsadmin, for example
 # user 'rods'. User 'anonymous' must also exist.
+#
+# This is run by hand (i.e. is not part of 'irodsctl devtest').
 
 $G1="GROUP1";
 

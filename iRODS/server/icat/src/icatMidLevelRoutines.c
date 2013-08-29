@@ -13,7 +13,6 @@
 
 **************************************************************************/
 
-
 #include "icatMidLevelRoutines.h"
 #include "icatLowLevel.h"
 #include "icatMidLevelHelpers.h"
