@@ -107,7 +107,66 @@ _irodsGetattr (iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf)
 int 
 irodsReadlink (const char *path, char *buf, size_t size)
 {
+    int status;
+    iFuseConn_t *iFuseConn = NULL;
+    int l1descInx;
+    dataObjInp_t dataObjOpenInp;
+    openedDataObjInp_t dataObjReadInp;
+    bytesBuf_t dataObjReadOutBBuf;
+    char collPath[MAX_NAME_LEN];
+
     rodsLog (LOG_DEBUG, "irodsReadlink: %s", path);
+
+    status = parseRodsPathStr ((char *) (path + 1), &MyRodsEnv, collPath);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsReaddir: parseRodsPathStr of %s error", path);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+
+    iFuseConn = getAndUseConnByPath ((char *) path, &MyRodsEnv, &status);
+    
+    memset (&dataObjOpenInp, 0, sizeof (dataObjOpenInp));
+
+    snprintf (dataObjOpenInp.objPath, MAX_NAME_LEN, "%s/%s", MY_HOME, collPath);
+    dataObjOpenInp.openFlags = O_RDONLY;
+
+    status = rcDataObjOpen (iFuseConn->conn, &dataObjOpenInp);
+
+    if (status < 0) {
+        if (isReadMsgError (status)) {
+	    ifuseReconnect (iFuseConn);
+            status = rcDataObjOpen (iFuseConn->conn, &dataObjOpenInp);
+	}
+	if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "irodsReadlink: rcDataObjOpen of %s error. status = %d", collPath, status);
+            unuseIFuseConn (iFuseConn);
+            return -ENOENT;
+	}
+    }
+
+    l1descInx = status;
+
+    memset(&dataObjReadInp, 0, sizeof (dataObjReadInp));
+    memset(&dataObjReadOutBBuf, 0, sizeof (bytesBuf_t));
+
+    dataObjReadInp.l1descInx = l1descInx;
+    dataObjReadInp.len = size - 1;
+
+    status = rcDataObjRead (Comm, &dataObjReadInp, &dataObjReadOutBBuf);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR, "irodsReadlink: rcDataObjRead of %s error. status = %d", collPath, status);
+        unuseIFuseConn (iFuseConn);
+        return -ENOENT;
+    }
+
+    rstrcpy(buf, dataObjReadOutBBuf.buf, dataObjReadOutBBuf.size);
+    rcDataObjClose(iFuseConn->conn, &dataObjOpenInp);
+    unuseIFuseConn (iFuseConn);
+
     return (0);
 }
 
@@ -413,7 +472,81 @@ irodsRmdir (const char *path)
 int 
 irodsSymlink (const char *from, const char *to)
 {
+    int status;
+    iFuseConn_t *iFuseConn = NULL;
+    int l1descInx;
+    dataObjInp_t dataObjOpenInp;
+    openedDataObjInp_t dataObjWriteInp;
+    bytesBuf_t dataObjWriteOutBBuf;
+    char collPath[MAX_NAME_LEN];
+    struct stat stbuf;
+
     rodsLog (LOG_DEBUG, "irodsSymlink: %s to %s", from, to);
+
+    status = parseRodsPathStr ((char *) (from + 1), &MyRodsEnv, collPath);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsReaddir: parseRodsPathStr of %s error", from);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+
+    iFuseConn = getAndUseConnByPath ((char *) from, &MyRodsEnv, &status);
+    status = _irodsGetattr(iFuseConn->conn, (char *) from, &stbuf);
+
+    memset (&dataObjOpenInp, 0, sizeof (dataObjOpenInp));
+    snprintf (dataObjOpenInp.objPath, MAX_NAME_LEN, "%s/%s", MY_HOME, collPath);
+    if(status != -ENOENT) {
+        if (status < 0) {
+            return status;
+        }
+        dataObjOpenInp.dataSize = 0;
+
+        status = rcDataObjTruncate(iFuseConn->conn, &dataObjOpenInp);
+
+        if (status < 0) 
+            rodsLog (LOG_ERROR, "irodsReadlink: rcDataObjTruncate of %s error. status = %d", collPath, status);
+            unuseIFuseConn (iFuseConn);
+            return -ENOENT;
+        }
+    }
+
+    memset (&dataObjOpenInp, 0, sizeof (dataObjOpenInp));
+    snprintf (dataObjOpenInp.objPath, MAX_NAME_LEN, "%s/%s", MY_HOME, collPath);
+    dataObjOpenInp.openFlags = O_WRONLY | O_CREAT;
+
+    status = rcDataObjOpen (iFuseConn->conn, &dataObjOpenInp);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR, "irodsSymlink: rcDataObjOpen of %s error. status = %d", collPath, status);
+        unuseIFuseConn (iFuseConn);
+        return -ENOENT;
+    }
+
+    l1descInx = status;
+
+    memset(&dataObjWriteInp, 0, sizeof (dataObjReadInp));
+    memset(&dataObjWriteOutBBuf, 0, sizeof (bytesBuf_t));
+
+    dataObjWriteInp.l1descInx = l1descInx;
+    dataObjWriteInp.len = strlen(to);
+
+    dataObjWriteOutBBuf.size = strlen(to);
+    dataObjWriteOutBBuf.buf = to;
+    
+    rstrcpy(dataObjWriteOutBBuf.buf, to, dataObjWriteOutBBuf.size);
+
+    status = rcDataObjWrite (Comm, &dataObjWriteInp, &dataObjWriteOutBBuf);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR, "irodsSymlink: rcDataObjWrite of %s error. status = %d", collPath, status);
+        unuseIFuseConn (iFuseConn);
+        return -ENOENT;
+    }
+
+    rcDataObjClose(iFuseConn->conn, &dataObjOpenInp);
+    unuseIFuseConn (iFuseConn);
+
     return (0);
 }
 
