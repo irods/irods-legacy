@@ -518,20 +518,25 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     fd = (FunctionDesc *)lookupFromEnv(ruleEngineConfig.extFuncDescIndex, fn);
 
     localTypingConstraints = newList(r);
-    char ioParam[MAX_FUNC_PARAMS];
+    int ioParam[MAX_FUNC_PARAMS];
     /* evaluation parameters and try to resolve remaining tvars with unification */
     for(i=0;i<n;i++) {
         switch(getIOType(nodeArgs[i])) {
             case IO_TYPE_INPUT | IO_TYPE_OUTPUT: /* input/output */
-                ioParam[i] = 'p';
-                args[i] = evaluateExpression3(appArgs[i], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, newRegion);
+                ioParam[i] = IO_TYPE_INPUT | IO_TYPE_OUTPUT;
+            	if(!isVariableNode(appArgs[i])) {
+            	    res = newErrorRes(r, RE_UNSUPPORTED_AST_NODE_TYPE);
+                    generateAndAddErrMsg("unsupported output parameter type", appArgs[i], RE_UNSUPPORTED_AST_NODE_TYPE, errmsg);
+		    RETURN;
+		}
+                args[i] = evaluateExpression3(appArgs[i], applyAll > 1 ? applyAll : 0, 1, rei, reiSaveFlag, env, errmsg, newRegion);
                 if(getNodeType(args[i])==N_ERROR) {
                     res = (Res *)args[i];
                     RETURN;
                 }
                 break;
             case IO_TYPE_INPUT: /* input */
-                ioParam[i] = 'i';
+                ioParam[i] = IO_TYPE_INPUT;
                 args[i] = appArgs[i];
                 break;
             case IO_TYPE_DYNAMIC: /* dynamic */
@@ -541,16 +546,16 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 						res = args[i];
 						RETURN;
 					} else if(TYPE(args[i]) == T_UNSPECED) {
-						ioParam[i] = 'o';
+						ioParam[i] = IO_TYPE_OUTPUT;
 					} else {
-						ioParam[i] = 'p';
+						ioParam[i] = IO_TYPE_INPUT | IO_TYPE_OUTPUT;
 						if(getNodeType(args[i])==N_ERROR) {
 							res = (Res *)args[i];
 							RETURN;
 						}
 					}
             	} else {
-            		ioParam[i] = 'i';
+            		ioParam[i] = IO_TYPE_INPUT;
             		args[i] = evaluateExpression3(appArgs[i], applyAll > 1 ? applyAll : 0, 1, rei, reiSaveFlag, env, errmsg, newRegion);
 					if(getNodeType(args[i])==N_ERROR) {
 						res = (Res *)args[i];
@@ -559,15 +564,15 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
             	}
                 break;
             case IO_TYPE_OUTPUT: /* output */
-                ioParam[i] = 'o';
+                ioParam[i] = IO_TYPE_OUTPUT;
                 args[i] = newUnspecifiedRes(r);
                 break;
             case IO_TYPE_EXPRESSION: /* expression */
-                ioParam[i] = 'e';
+                ioParam[i] = IO_TYPE_EXPRESSION;
                 args[i] = appArgs[i];
                 break;
             case IO_TYPE_ACTIONS: /* actions */
-                ioParam[i] = 'a';
+                ioParam[i] = IO_TYPE_ACTIONS;
                 args[i] = appArgs[i];
                 break;
         }
@@ -605,7 +610,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 		/* do the input value conversion */
 		ExprType **coercionTypes = coercionType->subtrees;
 		for(i=0;i<n;i++) {
-			if((ioParam[i] == 'i' || ioParam[i] == 'p') && (nodeArgs[i]->option & OPTION_COERCE) != 0) {
+			if(((ioParam[i] | IO_TYPE_INPUT) == IO_TYPE_INPUT) && (nodeArgs[i]->option & OPTION_COERCE) != 0) {
 				args[i] = processCoercion(nodeArgs[i], args[i], coercionTypes[i], env->current, errmsg, newRegion);
 				if(getNodeType(args[i])==N_ERROR) {
 					res = (Res *)args[i];
@@ -664,7 +669,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     for(i=0;i<n;i++) {
         Res *resp = NULL;
 
-        if(ioParam[i] == 'o' || ioParam[i] == 'p') {
+        if((ioParam[i] & IO_TYPE_OUTPUT) == IO_TYPE_OUTPUT) {
             if((appArgs[i]->option & OPTION_COERCE) != 0) {
                 args[i] = processCoercion(nodeArgs[i], args[i], appArgs[i]->exprType, env->current, errmsg, newRegion);
             }
@@ -1447,19 +1452,19 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 		return newIntRes(r, 0);
     case TK_BOOL:
     	RE_ERROR2(getNodeType(v) != N_VAL || TYPE(v) != T_BOOL, "pattern mismatch value is not a boolean.");
-    	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
+    	res = evaluateExpression3(pattern, 0, 1, rei, reiSaveFlag, env, errmsg, r);
     	CASCADE_N_ERROR(res);
     	RE_ERROR2(RES_BOOL_VAL(res) != RES_BOOL_VAL(v) , "pattern mismatch boolean.");
 		return newIntRes(r, 0);
     case TK_INT:
     	RE_ERROR2(getNodeType(v) != N_VAL || (TYPE(v) != T_INT && TYPE(v) != T_DOUBLE), "pattern mismatch value is not an integer.");
-    	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
+    	res = evaluateExpression3(pattern, 0, 1, rei, reiSaveFlag, env, errmsg, r);
     	CASCADE_N_ERROR(res);
     	RE_ERROR2(RES_INT_VAL(res) != (TYPE(v) == T_INT ? RES_INT_VAL(v) : RES_DOUBLE_VAL(v)) , "pattern mismatch integer.");
 		return newIntRes(r, 0);
     case TK_DOUBLE:
     	RE_ERROR2(getNodeType(v) != N_VAL || (TYPE(v) != T_DOUBLE && TYPE(v) != T_INT), "pattern mismatch value is not a double.");
-    	res = evaluateExpression3(pattern, 0, 0, rei, reiSaveFlag, env, errmsg, r);
+    	res = evaluateExpression3(pattern, 0, 1, rei, reiSaveFlag, env, errmsg, r);
     	CASCADE_N_ERROR(res);
     	RE_ERROR2(RES_DOUBLE_VAL(res) != (TYPE(v) == T_DOUBLE ? RES_DOUBLE_VAL(v) : RES_INT_VAL(v)), "pattern mismatch integer.");
 		return newIntRes(r, 0);

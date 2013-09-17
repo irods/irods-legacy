@@ -84,9 +84,9 @@
 #define IO_TYPE_ACTIONS 0x1000
 
 #define getVararg(n) ((n)->option & OPTION_VARARG_MASK)
-#define setVararg(n, v) (n)->option &= ~OPTION_VARARG_MASK; (n)->option |= (v);
+#define setVararg(n, v) (n)->option ^= ((n)->option & OPTION_VARARG_MASK) ^ (v);
 #define getIOType(n) ((n)->option & OPTION_IO_TYPE_MASK)
-#define setIOType(n, v) (n)->option &= ~OPTION_IO_TYPE_MASK; (n)->option |= (v);
+#define setIOType(n, v) (n)->option ^= ((n)->option & OPTION_IO_TYPE_MASK) ^ (v);
 
 typedef struct node Node;
 typedef struct node ExprType;
