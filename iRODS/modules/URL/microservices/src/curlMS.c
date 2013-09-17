@@ -19,6 +19,10 @@ extern "C" {
 #include <curl/curl.h>
 #include <curl/easy.h>
 
+#if LIBCURL_VERSION_NUM < 0x071503
+#include <curl/types.h>
+#endif
+
 #define MAX_DL_STR_LEN	1048576		// 1MB
 
 /* Keep structure definitions local */
