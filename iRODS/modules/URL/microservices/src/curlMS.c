@@ -17,7 +17,6 @@ extern "C" {
 #include <stdio.h>
 
 #include <curl/curl.h>
-#include <curl/types.h>
 #include <curl/easy.h>
 
 #define MAX_DL_STR_LEN	1048576		// 1MB
