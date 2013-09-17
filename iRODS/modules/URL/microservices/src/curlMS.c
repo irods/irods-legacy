@@ -671,7 +671,60 @@ int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *me
 
 #endif
 
+#ifdef JSON
+#include <string.h>
+#include <jansson.h>
 
+int msiParseJSON(msParam_t *json, msParam_t *out) {
+	json_t *root;
+	json_error_t error;
+	char *text;
+
+	/* parse message */
+	if ((text = parseMspForStr(json)) == NULL) {
+		rodsLog (LOG_ERROR, "msiParseJSON: input json is NULL.");
+		return MSI_TYPE_ERROR;
+	}
+
+	root = json_loads(text, 0, &error);
+	free(text);
+
+	if(root == NULL) {
+		rodsLog (LOG_ERROR, "error: on line %d: %s\n", error.line, error.text);
+		return MSI_JSON_ERROR;
+	}
+	
+	fillInMsParam(out, "", JSON_MS_T, root, NULL);
+	return 0;
+}
+
+json_t *parseMspForJson(msParam_t *json) {
+    if (inpParam == NULL || inpParam->inOutStruct == NULL) {
+        return (NULL);
+    }
+
+    if (strcmp (inpParam->type, JSON_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "parseMspForJson: inpParam type %s is not JSON_MS_T",
+          inpParam->type);
+    }
+
+    return (json_t *)(inpParam->inOutStruct);
+}
+
+int msiFreeJSON(msParam_t *json) {
+	json_t *root;
+	
+	/* parse message */
+	if ((root = parseMspForJson(json)) == NULL) {
+		rodsLog (LOG_ERROR, "msiParseJSON: input json is NULL.");
+		return MSI_TYPE_ERROR;
+	}
+
+	json_decref(root);
+	return 0;
+}
+#endif
 
 /**
  *
