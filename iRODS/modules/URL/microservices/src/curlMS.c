@@ -19,6 +19,7 @@ extern "C" {
 #include <curl/curl.h>
 #include <curl/easy.h>
 
+/* types.h is not included in newer versions of libcurl */ 
 #if LIBCURL_VERSION_NUM < 0x071503
 #include <curl/types.h>
 #endif
