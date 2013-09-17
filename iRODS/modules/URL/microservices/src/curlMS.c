@@ -724,6 +724,111 @@ int msiFreeJSON(msParam_t *json) {
 	json_decref(root);
 	return 0;
 }
+
+int msiJSONObjectGet(msParam_t *json, msParam_t *key, msParam_t *value) {
+	json_t *root, *val;
+	char *text;
+	
+	/* parse json */
+	if ((root = parseMspForJson(json)) == NULL) {
+		rodsLog (LOG_ERROR, "msiJSONObjectGet: input json is NULL.");
+		return MSI_TYPE_ERROR;
+	}
+
+	/* parse key */
+	if ((text = parseMspForStr(key)) == NULL) {
+		rodsLog (LOG_ERROR, "msiJSONObjectGet: input key is NULL.");
+		return MSI_TYPE_ERROR;
+	}
+
+	val = json_object_get(root, text);
+
+	if(val == NULL) {
+		rodsLog (LOG_ERROR, "msiJSONObjectGet: cannot get value for key %s.", text);
+		return MSI_JSON_ERROR;
+	}
+
+	fillInMsParam(value, "", JSON_MS_T, val, NULL);
+
+	return 0;
+}
+
+int msiJSONArraySize(msParam_t *json, msParam_t *size) {
+	json_t *root;
+	unsigned int arraySize;
+	
+	/* parse json */
+	if ((root = parseMspForJson(json)) == NULL) {
+		rodsLog (LOG_ERROR, "msiJSONArraySize: input json is NULL.");
+		return MSI_TYPE_ERROR;
+	}
+
+	arraySize = json_array_size(root);
+
+	fillIntInMsParam(value, "", (int) arraySize);
+
+	return 0;
+}
+
+int msiJSONArrayGet(msParam_t *json, msParam_t *inx, msParam_t *value) {
+	json_t *root, *val;
+	int index;
+	
+	/* parse json */
+	if ((root = parseMspForJson(json)) == NULL) {
+		rodsLog (LOG_ERROR, "msiJSONArraySize: input json is NULL.");
+		return MSI_TYPE_ERROR;
+	}
+
+	/* parse key */
+	if ((index = parseMspForPosInt(inx)) < 0) {
+		return index;
+	}
+
+	val = json_array_get(root, index, text);
+
+	if(val == NULL) {
+		rodsLog (LOG_ERROR, "msiJSONObjectGet: cannot get value for index %d.", index);
+		return MSI_JSON_ERROR;
+	}
+
+	fillInMsParam(value, "", JSON_MS_T, val, NULL);
+
+	return 0;
+}
+
+int msiJSONStringValue(msParam_t *json, msParam_t *value) {
+	json_t *root;
+	char *val;
+
+	if ((root = parseMspForJson(json)) == NULL) {
+		rodsLog (LOG_ERROR, "msiJSONStringValue: input json is NULL.");
+		return MSI_TYPE_ERROR;
+	}
+
+	val = json_string_value(root);
+
+	fillStrInMsParam(value, "", STR_MS_T, val);
+
+	return 0;
+}
+
+int msiJSONIntegerValue(msParam_t *json, msParam_t *value) {
+	json_t *root;
+	int val;
+	
+	if ((root = parseMspForJson(json)) == NULL) {
+		rodsLog (LOG_ERROR, "msiParseJSON: input json is NULL.");
+		return MSI_TYPE_ERROR;
+	}
+
+	val = json_integer_value(root);
+
+	fillIntInMsParam(value, "", INT_MS_T, val);
+
+	return 0;
+}
+
 #endif
 
 /**
