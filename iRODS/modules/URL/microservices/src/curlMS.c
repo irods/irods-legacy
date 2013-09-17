@@ -671,9 +671,24 @@ int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *me
 
 #endif
 
+/*#define JSON */
 #ifdef JSON
 #include <string.h>
 #include <jansson.h>
+
+json_t *parseMspForJson(msParam_t *inpParam) {
+    if (inpParam == NULL || inpParam->inOutStruct == NULL) {
+        return (NULL);
+    }
+
+    if (strcmp (inpParam->type, JSON_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "parseMspForJson: inpParam type %s is not JSON_MS_T",
+          inpParam->type);
+    }
+
+    return (json_t *)(inpParam->inOutStruct);
+}
 
 int msiParseJSON(msParam_t *json, msParam_t *out) {
 	json_t *root;
@@ -694,22 +709,8 @@ int msiParseJSON(msParam_t *json, msParam_t *out) {
 		return MSI_JSON_ERROR;
 	}
 	
-	fillInMsParam(out, "", JSON_MS_T, root, NULL);
+	fillMsParam(out, "", JSON_MS_T, root, NULL);
 	return 0;
-}
-
-json_t *parseMspForJson(msParam_t *json) {
-    if (inpParam == NULL || inpParam->inOutStruct == NULL) {
-        return (NULL);
-    }
-
-    if (strcmp (inpParam->type, JSON_MS_T) != 0) {
-        rodsLog (LOG_ERROR,
-          "parseMspForJson: inpParam type %s is not JSON_MS_T",
-          inpParam->type);
-    }
-
-    return (json_t *)(inpParam->inOutStruct);
 }
 
 int msiFreeJSON(msParam_t *json) {
@@ -748,12 +749,12 @@ int msiJSONObjectGet(msParam_t *json, msParam_t *key, msParam_t *value) {
 		return MSI_JSON_ERROR;
 	}
 
-	fillInMsParam(value, "", JSON_MS_T, val, NULL);
+	fillMsParam(value, "", JSON_MS_T, val, NULL);
 
 	return 0;
 }
 
-int msiJSONArraySize(msParam_t *json, msParam_t *size) {
+int msiJSONArraySize(msParam_t *json, msParam_t *value) {
 	json_t *root;
 	unsigned int arraySize;
 	
@@ -765,7 +766,7 @@ int msiJSONArraySize(msParam_t *json, msParam_t *size) {
 
 	arraySize = json_array_size(root);
 
-	fillIntInMsParam(value, "", (int) arraySize);
+	fillIntInMsParam(value, (int) arraySize);
 
 	return 0;
 }
@@ -785,14 +786,14 @@ int msiJSONArrayGet(msParam_t *json, msParam_t *inx, msParam_t *value) {
 		return index;
 	}
 
-	val = json_array_get(root, index, text);
+	val = json_array_get(root, index);
 
 	if(val == NULL) {
 		rodsLog (LOG_ERROR, "msiJSONObjectGet: cannot get value for index %d.", index);
 		return MSI_JSON_ERROR;
 	}
 
-	fillInMsParam(value, "", JSON_MS_T, val, NULL);
+	fillMsParam(value, "", JSON_MS_T, val, NULL);
 
 	return 0;
 }
@@ -806,9 +807,9 @@ int msiJSONStringValue(msParam_t *json, msParam_t *value) {
 		return MSI_TYPE_ERROR;
 	}
 
-	val = json_string_value(root);
+	val = (char *) json_string_value(root);
 
-	fillStrInMsParam(value, "", STR_MS_T, val);
+	fillStrInMsParam(value, val);
 
 	return 0;
 }
@@ -816,7 +817,7 @@ int msiJSONStringValue(msParam_t *json, msParam_t *value) {
 int msiJSONIntegerValue(msParam_t *json, msParam_t *value) {
 	json_t *root;
 	int val;
-	
+
 	if ((root = parseMspForJson(json)) == NULL) {
 		rodsLog (LOG_ERROR, "msiParseJSON: input json is NULL.");
 		return MSI_TYPE_ERROR;
@@ -824,7 +825,7 @@ int msiJSONIntegerValue(msParam_t *json, msParam_t *value) {
 
 	val = json_integer_value(root);
 
-	fillIntInMsParam(value, "", INT_MS_T, val);
+	fillIntInMsParam(value, val);
 
 	return 0;
 }
