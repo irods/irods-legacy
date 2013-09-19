@@ -69,9 +69,9 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     initReiWithDataObjInp (&rei, rsComm, NULL);
     char *args[1];
     args[0] = execCmdInp->cmd;
-    args[1] = execCmdInp->cmdArgv == NULL? "" : execCmdInp->cmdArgv;
-    args[2] = execCmdInp->execAddr == NULL ? "" : execCmdInp->execAddr;
-    args[3] = execCmdInp->hintPath == NULL ? "" : execCmdInp->hintPath;
+    args[1] = execCmdInp->cmdArgv == NULL? (char *) "" : execCmdInp->cmdArgv;
+    args[2] = execCmdInp->execAddr == NULL ? (char *) "" : execCmdInp->execAddr;
+    args[3] = execCmdInp->hintPath == NULL ? (char *) "" : execCmdInp->hintPath;
     status = applyRuleArg ("acPreProcForExecCmd", args, 4, &rei, NO_SAVE_REI);
     if (status < 0) {
         rodsLog (LOG_ERROR,
