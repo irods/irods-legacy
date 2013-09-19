@@ -692,8 +692,9 @@ acPostProcForDataObjWrite(*WriteBuffer) { }
 acPostProcForDataObjRead(*ReadBuffer) { }
 # 55) acPreProcForExecCmd - Rule for pre processing when remotely executing a command
 #     in server/bin/cmd 
-#     parameter contains the command to be executed
-acPreProcForExecCmd(*cmd) { }
+#     parameter contains the command to be executed, arguments, execution address, hint path.
+#     if a parameter is not provided, then it is the empty string
+acPreProcForExecCmd(*cmd, *args, *addr, *hint) { }
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate {acSetCreateConditions; acDOC; }

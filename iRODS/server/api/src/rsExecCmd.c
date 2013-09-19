@@ -69,7 +69,10 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     initReiWithDataObjInp (&rei, rsComm, NULL);
     char *args[1];
     args[0] = execCmdInp->cmd;
-    status = applyRuleArg ("acPreProcForExecCmd", args, 1, &rei, NO_SAVE_REI);
+    args[1] = execCmdInp->cmdArgv == NULL? "" : execCmdInp->cmdArgv;
+    args[2] = execCmdInp->execAddr == NULL ? "" : execCmdInp->execAddr;
+    args[3] = execCmdInp->hintPath == NULL ? "" : execCmdInp->hintPath;
+    status = applyRuleArg ("acPreProcForExecCmd", args, 4, &rei, NO_SAVE_REI);
     if (status < 0) {
         rodsLog (LOG_ERROR,
                  "initAgent: acPreProcForExecCmd error, status = %d", status);
