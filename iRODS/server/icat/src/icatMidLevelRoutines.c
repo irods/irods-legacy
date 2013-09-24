@@ -466,6 +466,7 @@ int cmlGetMultiRowStringValuesFromSql (char *sql,
 			      int maxNumberOfStringsToGet, 
 			      char *bindVar1,
 			      char *bindVar2,
+			      char *bindVar3,
  		              icatSessionStruct *icss) {
 
     int i,j, stmtNum, ii;
@@ -475,7 +476,7 @@ int cmlGetMultiRowStringValuesFromSql (char *sql,
     if (maxNumberOfStringsToGet <= 0) return(CAT_INVALID_ARGUMENT);
 
     i = cllExecSqlWithResultBV(icss, &stmtNum, sql,
-				 bindVar1,bindVar2,0,0,0,0);
+				 bindVar1,bindVar2,bindVar3,0,0,0);
     if (i != 0) {
       if (i <= CAT_ENV_ERR) return(i); /* already an iRODS error code */
       return (CAT_SQL_ERR);

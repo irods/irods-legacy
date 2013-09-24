@@ -80,6 +80,7 @@ int cmlGetMultiRowStringValuesFromSql (char *sql,
 			      int maxNumberOfStringsToGet, 
 			      char *bindVar1,
 			      char *bindVar2,
+			      char *bindVar3,
 			      icatSessionStruct *icss);
 
 int cmlGetIntegerValueFromSql (char *sql, 

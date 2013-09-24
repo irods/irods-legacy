@@ -3515,6 +3515,10 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    rodsLong_t pamMaxTime;
    char *pSha1;
    int hashType;
+   int queryCount, doMore;
+   char lastPwModTs[MAX_PASSWORD_LEN+10];
+   char *cPwTs;
+   int iTs1, iTs2;
 
 #if defined(OS_AUTH)
    int doOsAuthentication = 0;
@@ -3582,54 +3586,73 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    }
 #endif
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
-
-   status = cmlGetMultiRowStringValuesFromSql(
+   doMore=1;
+   for (queryCount=0;doMore==1;queryCount++) {
+     if (queryCount==0) {
+       if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
+       status = cmlGetMultiRowStringValuesFromSql(
 	    "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
 	    pwInfoArray, MAX_PASSWORD_LEN,
 	    MAX_PASSWORDS*4,  /* four strings per password returned */
-	    userName2, myUserZone, &icss);
-   if (status < 4) {
-      if (status == CAT_NO_ROWS_FOUND) {
+	    userName2, myUserZone, 0, &icss);
+     }
+     else {
+       if (queryCount==1) {
+	 /* first time using the order by below, start with 0 to be sure */
+	 rstrcpy(lastPwModTs, "00000000000", sizeof(lastPwModTs));
+       }
+       if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 8");
+       status = cmlGetMultiRowStringValuesFromSql(
+	    "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and R_USER_PASSWORD.modify_ts >=? order by R_USER_PASSWORD.modify_ts",
+	    pwInfoArray, MAX_PASSWORD_LEN,
+	    MAX_PASSWORDS*4,  /* four strings per password returned */
+	    userName2, myUserZone, lastPwModTs, &icss);
+     }
+
+     if (status < 4) {
+       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
 	 if (strncmp(ANONYMOUS_USER, userName2, NAME_LEN)==0) {
 	    /* anonymous user, skip the pw check but do the rest */
 	    goto checkLevel;
 	 }
-      } 
-      return(status);
-   }
+       } 
+       return(status);
+     }
 
-   nPasswords=status/4;    /* four strings per password returned */
-   goodPwExpiry[0]='\0';
-   goodPwTs[0]='\0';
-   goodPwModTs[0]='\0';
+     nPasswords=status/4;    /* four strings per password returned */
+     goodPwExpiry[0]='\0';
+     goodPwTs[0]='\0';
+     goodPwModTs[0]='\0';
 
-   cpw=pwInfoArray;
-   for (k=0;k<MAX_PASSWORDS && k<nPasswords;k++) {
-      memset(md5Buf, 0, sizeof(md5Buf));
-      strncpy(md5Buf, challenge, CHALLENGE_LEN);
-      rstrcpy(lastPw, cpw, MAX_PASSWORD_LEN);
-      icatDescramble(cpw);
-      strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
+     if (nPasswords != MAX_PASSWORDS) doMore=0;  /* End the loop if
+						less than the max has
+						been returned. */
+     cpw=pwInfoArray;
+     for (k=0;k<MAX_PASSWORDS && k<nPasswords;k++) {
+       memset(md5Buf, 0, sizeof(md5Buf));
+       strncpy(md5Buf, challenge, CHALLENGE_LEN);
+       rstrcpy(lastPw, cpw, MAX_PASSWORD_LEN);
+       icatDescramble(cpw);
+       strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
 
-      obfMakeOneWayHash(hashType,
+       obfMakeOneWayHash(hashType,
                   (unsigned char *)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN,
 		  (unsigned char *)digest);
 
-      for (i=0;i<RESPONSE_LEN;i++) {
+       for (i=0;i<RESPONSE_LEN;i++) {
 	 if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't end
 				       early (this matches client code) */
-      }
+       }
 
-      cp = response;
-      OK=1;
-      for (i=0;i<RESPONSE_LEN;i++) {
+       cp = response;
+       OK=1;
+       for (i=0;i<RESPONSE_LEN;i++) {
 	 if (*cp++ != digest[i]) OK=0;
-      }
-
-      memset(md5Buf, 0, sizeof(md5Buf));
-      if (OK==1) {
+       }
+       
+       memset(md5Buf, 0, sizeof(md5Buf));
+       if (OK==1) {
 	 rstrcpy(goodPw, cpw, MAX_PASSWORD_LEN);
 	 cpw+=MAX_PASSWORD_LEN;
 	 rstrcpy(goodPwExpiry, cpw, MAX_PASSWORD_LEN);
@@ -3637,11 +3660,25 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 rstrcpy(goodPwTs, cpw, MAX_PASSWORD_LEN);
 	 cpw+=MAX_PASSWORD_LEN;
 	 rstrcpy(goodPwModTs, cpw, MAX_PASSWORD_LEN);
+	 doMore=0;
 	 break;
-      }
-      cpw+=MAX_PASSWORD_LEN*4;
+       }
+       cPwTs=cpw+(MAX_PASSWORD_LEN*3);
+       iTs1=atoi(cPwTs);
+       iTs2=atoi(lastPwModTs);
+       if (iTs1==iTs2) {
+         /* MAX_PASSWORDS at same time-stamp, skip ahead to avoid infinite
+            loop; things should recover eventually */
+	 snprintf(lastPwModTs, sizeof lastPwModTs, "%011d", iTs1+1);
+       }
+       else {
+         /* normal case */
+	 rstrcpy(lastPwModTs, cPwTs, sizeof(lastPwModTs));
+       }
+       cpw+=MAX_PASSWORD_LEN*4;
+     }
+     memset(pwInfoArray, 0, sizeof(pwInfoArray));
    }
-   memset(pwInfoArray, 0, sizeof(pwInfoArray));
 
    if (OK==0) {
       prevFailure++;
@@ -3723,7 +3760,10 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       }
 
       /* Also remove any expired temporary passwords */
-
+      /* Note that we're only doing this after a temporary password is
+	 successfully used to avoid running this SQL often.  It should
+	 be fairly quick but does check every password and this only
+	 normally needs to be done once in a while. */
       if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 4");
       snprintf(expireStr, sizeof expireStr, "%d", TEMP_PASSWORD_TIME);
       cllBindVars[cllBindVarCount++]=expireStr; 
@@ -6084,7 +6124,7 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
    if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 2");
    /* Query to see if the attribute exists for this object */
    status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_OBJT_METAMAP where meta_id in (select meta_id from R_META_MAIN where meta_attr_name=? AND meta_id in (select meta_id from R_OBJT_METAMAP where object_id=?))",
-		metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, &icss);
+	      metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, 0, &icss);
    
    if (status <= 0) {
      if (status == CAT_NO_ROWS_FOUND) { 
@@ -6123,7 +6163,7 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
    /* Check if there are other objects are using this AVU  */
    if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 4");
    status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_META_MAIN where meta_attr_name=?",
-	    metaIdStr, MAX_NAME_LEN, 2, attribute, 0, &icss);
+	      metaIdStr, MAX_NAME_LEN, 2, attribute, 0, 0, &icss);
    if (status <= 0) {
      rodsLog(LOG_NOTICE,
 	      "chlSetAVUMetadata cmlGetMultiRowStringValueFromSql failure %d",

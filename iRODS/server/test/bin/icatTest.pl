@@ -548,6 +548,29 @@ runCmd(1, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};
 runCmd(0, "ils");
 
+# Large numbers of temporary passwords.
+# MAX_PASSWORDS in icatHighLevelRoutines.c is 40 so make more than
+# that to exercise the SQL that handles that case.
+$count=42;
+for ($i=0;$i<$count;$i++) {
+    runCmd(0,"/tbox/IRODS_BUILD/iRODS/server/test/bin/test_chl tpw 123 > /dev/null 2>&1");
+}
+# Also make sure the new SQL works: that the password can be used.
+# This uses 'iinit' with the temp password, which normally isn't done,
+# but it can be used to test this way.
+# Also note that if expired, these temp passwords should be removed
+# when a valid temp password is used, but since they are not yet
+# expired they won't be.  They should be cleaned up next time the test
+# is run tho.
+runCmd(0,"sleep 1");
+runCmd(0,"/tbox/IRODS_BUILD/iRODS/server/test/bin/test_chl tpw 123 2>&1 | grep derived");
+$ix=index($cmdStdout,"=");
+$pw=substr($cmdStdout,$ix+1);
+runCmd(1, "mv $authFile $F2"); # save the auth file
+runCmd(0, "iinit $pw");
+runCmd(1, "mv $F2 $authFile"); # restore auth file
+runCmd(0, "ils");
+
 # group
 $G1A = $G1 . "a";
 runCmd(1, "iadmin rmgroup $G1");
