@@ -175,12 +175,14 @@ showDataObj(char *name, char *attrName, int wild)
    if (status == CAT_NO_ROWS_FOUND) {
       i1a[0]=COL_D_DATA_PATH;
       genQueryInp.selectInp.len = 1;
+      genQueryInp.sqlCondInp.len=2;
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       if (status==0) {
 	 printf("None\n");
 	 return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
+	 lastCommandStatus = status;
 	 printf("Dataobject %s does not exist\n", fullName);
          printf("or, if 'strict' access control is enabled, you may not have access.\n");
 	 return(0);
@@ -280,12 +282,14 @@ showColl(char *name, char *attrName, int wild)
    if (status == CAT_NO_ROWS_FOUND) {
       i1a[0]=COL_COLL_COMMENTS;
       genQueryInp.selectInp.len = 1;
+      genQueryInp.sqlCondInp.len=1;
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       if (status==0) {
 	 printf("None\n");
 	 return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
+	 lastCommandStatus = status;
 	 printf("Collection %s does not exist.\n", fullName);
 	 return(0);
       }
@@ -371,12 +375,14 @@ showResc(char *name, char *attrName, int wild)
    if (status == CAT_NO_ROWS_FOUND) {
       i1a[0]=COL_R_RESC_INFO;
       genQueryInp.selectInp.len = 1;
+      genQueryInp.sqlCondInp.len=1; 
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       if (status==0) {
 	 printf("None\n");
 	 return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
+	 lastCommandStatus = status;
 	 printf("Resource %s does not exist.\n", name);
 	 return(0);
       }
@@ -465,12 +471,14 @@ showRescGroup(char *name, char *attrName, int wild)
       /* When no AVU found, test the existence of the resource group itself */
       i1a[0]=COL_RESC_GROUP_NAME;
       genQueryInp.selectInp.len = 1;
+      genQueryInp.sqlCondInp.len=1;
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       if (status==0) {
 	 printf("None\n");
 	 return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
+	 lastCommandStatus = status;
 	 printf("Resource group %s does not exist.\n", name);
 	 return(0);
       }
@@ -573,12 +581,14 @@ showUser(char *name, char *attrName, int wild)
    if (status == CAT_NO_ROWS_FOUND) {
       i1a[0]=COL_USER_COMMENT;
       genQueryInp.selectInp.len = 1;
+      genQueryInp.sqlCondInp.len=1;
       status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
       if (status==0) {
 	 printf("None\n");
 	 return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
+	 lastCommandStatus = status;
 	 printf("User %s does not exist.\n", name);
 	 return(0);
       }
