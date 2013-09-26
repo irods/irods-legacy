@@ -820,6 +820,10 @@ runCmd(0, "iquest \"select count(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "irm -f $F2");
 runCmd(0, "irm -f $F1");
 
+# Queries with that find no rows should now (9/26/13) exit success (0)
+runCmd(0, "iquest \"select USER_NAME, USER_ID where USER_ID = '8005'\"");
+runCmd(0, "iquest --sql lsl badName");
+
 #Tickets 
 runCmd(0, "iput $F1");
 runCmd(1, "iticket delete $TICKET1");

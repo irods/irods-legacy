@@ -387,8 +387,14 @@ main(int argc, char **argv) {
     rcDisconnect(conn);
 
     if (status < 0) {
-      rodsLogError(LOG_ERROR,status,"iquest Error: queryAndShowStrCond failed");
-      exit (4);
+      if (status == CAT_NO_ROWS_FOUND) {
+	printf("CAT_NO_ROWS_FOUND: Nothing was found matching your query\n");
+	exit(0);
+      }
+      else {
+	rodsLogError(LOG_ERROR,status,"iquest Error: queryAndShowStrCond failed");
+	exit(4);
+      }
     } else {
       exit(0);
     }
