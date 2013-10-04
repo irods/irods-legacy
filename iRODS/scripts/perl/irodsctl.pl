@@ -743,9 +743,16 @@ sub doTest
 	my $verbosity = isPrintVerbose( );
 	setPrintVerbose( 1 );
 
+        # Before running the icommands tests, copy the example hello
+        # to the cmd directory (for an iexecmd test)
+        `cp $serverBinCmdExamplesDir/hello $serverBinCmdDir`;
+
 	# Test iCommands
 	printSubtitle( "Testing iCommands...\n" );
 	doTestIcommands( );
+
+        # And after, remove the example hello copied above
+        unlink ( "$serverBinCmdDir/hello" );
 
 	# Check if this host is ICAT-enabled.
 	# Note that the tests assume i-commands are in the path so we can too.
