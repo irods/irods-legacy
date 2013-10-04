@@ -181,8 +181,13 @@ ifeq ($(OS_platform), aix_platform)
 LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS)
 CL_LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS)
 else
+ifeq ($(OS_platform), osx_platform)
+LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS)
+CL_LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS)
+else
 LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS) -z muldefs
 CL_LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS) -z muldefs
+endif
 endif
 endif
 
