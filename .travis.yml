@@ -2,4 +2,4 @@ before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq odbc-postgresql unixodbc-dev
 
-script: hostname; cat /etc/hosts; ifconfig; sudo service postgresql stop; cd iRODS; ./irodssetup < ../.travis.irodssetup.input; cat /home/travis/build/irods/irods/iRODS/installLogs/finishSetup.log; cat /home/travis/build/irods/irods/iRODS/server/log/rodsLog*; yes | ./irodsctl devtest
+script: hostname; cat /etc/hosts; ifconfig; sudo service postgresql stop; cd iRODS; export USE_LOCALHOST=1; ./irodssetup < ../.travis.irodssetup.input; cat /home/travis/build/irods/irods/iRODS/installLogs/finishSetup.log; cat /home/travis/build/irods/irods/iRODS/server/log/rodsLog*; cat ~/.irods/.irodsEnv; yes | ./irodsctl devtest
