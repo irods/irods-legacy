@@ -260,9 +260,13 @@ if ( $installDataServer )
 
 printNotice( "\nTo use the iRODS command-line tools, update your PATH:\n" );
 printNotice( "    For csh users:\n" );
-printNotice( "        set path=($icommandsBinDir \$path)\n" );
+printNotice( "        set path=(\$path $icommandsBinDir)\n" );
 printNotice( "    For sh or bash users:\n" );
-printNotice( "        PATH=$icommandsBinDir:\$PATH\n" );
+printNotice( "        PATH=\$PATH:$icommandsBinDir \n" );
+
+printNotice( "\nAlternatively, for your own use, you may want to put $icommandsBinDir\n" );
+printNotice( "at the beginning of your PATH instead of the above to ensure that this\n" );
+printNotice( "newly built set is the one found.\n" );
 
 printNotice("\nIf you wish to set the ports to use, set the environment variable\n");
 printNotice("'svrPortRangeStart' or edit the svrPortRangeStart line in irodsctl.pl.\n");
