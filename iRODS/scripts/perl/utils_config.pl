@@ -731,8 +731,16 @@ sub setEnvironmentVariables
 		# The user's name.
 		$ENV{"PGUSER"} = $DATABASE_ADMIN_NAME;
 
-		# The user's password.
-		$ENV{"PGPASSWORD"} = $DATABASE_ADMIN_PASSWORD;
+		# The user's password.  
+
+                # No longer set this environment variable as it's
+                # deprecated in Postgres and no longer needed by the
+                # iRODS installation scripts with recent versions of
+                # Postgres.  It's safer to not put this into the
+                # environment particularly after the installation is
+                # completed (i.e. for irodsctl).
+
+		#$ENV{"PGPASSWORD"} = $DATABASE_ADMIN_PASSWORD;
 	}
 	if ( $DATABASE_TYPE eq "oracle" )
 	{
