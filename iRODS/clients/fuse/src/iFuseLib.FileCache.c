@@ -229,6 +229,7 @@ int ifuseFileCacheClose(fileCache_t *fileCache) {
     	status = close (fileCache->iFd);
     	fileCache->iFd = 0;
     }
+	fileCache->offset = 0;
 	UNLOCK_STRUCT(*fileCache);
 	return status;
 }
@@ -409,7 +410,6 @@ int _ifuseFileCacheRead (fileCache_t *fileCache, char *buf, size_t size, off_t o
 			}
 		}
     } else {
-    	if (status < 0) return (errno ? (-1 * errno) : -1);
     	status = read (fileCache->iFd, buf, size);
 
     	if (status < 0) return (errno ? (-1 * errno) : -1);
