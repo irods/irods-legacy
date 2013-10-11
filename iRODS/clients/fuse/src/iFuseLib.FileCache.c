@@ -319,7 +319,16 @@ int _ifuseFileCacheWrite (fileCache_t *fileCache, char *buf, size_t size, off_t 
 
     bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
     /* lseek to the right offset in case this cache is share by multiple descs */
-    _iFuseFileCacheLseek(fileCache, offset);
+    status = _iFuseFileCacheLseek(fileCache, offset);
+    if (status < 0) {
+        if ((myError = getErrno (status)) > 0) {
+            return (-myError);
+        } else {
+            return -ENOENT;
+        }
+    }
+
+
     if (fileCache->state == NO_FILE_CACHE) {
         /* no file cache */
     	dataObjWriteInpBBuf.buf = (void *) buf;
@@ -363,36 +372,31 @@ int ifuseFileCacheWrite (fileCache_t *fileCache, char *buf, size_t size, off_t o
 }
 int _ifuseFileCacheRead (fileCache_t *fileCache, char *buf, size_t size, off_t offset)
 {
-    int status;
+    int status, myError;
+
+    status = _iFuseFileCacheLseek(fileCache, offset);
+    if (status < 0) {
+        if ((myError = getErrno (status)) > 0) {
+            return (-myError);
+        } else {
+            return -ENOENT;
+        }
+    }
 
     if (fileCache->state == NO_FILE_CACHE) {
     	iFuseConn_t *conn;
         openedDataObjInp_t dataObjReadInp;
         bytesBuf_t dataObjReadOutBBuf;
-	openedDataObjInp_t dataObjLseekInp;
-	fileLseekOut_t *fileLseekOut;
         int myError;
 
 
         bzero (&dataObjReadInp, sizeof (dataObjReadInp));
-	bzero (&dataObjLseekInp, sizeof (dataObjLseekInp));
         dataObjReadOutBBuf.buf = buf;
         dataObjReadOutBBuf.len = size;
         dataObjReadInp.l1descInx = fileCache->iFd;
         dataObjReadInp.len = size;
-	dataObjLseekInp.l1descInx = fileCache->iFd;
-	dataObjLseekInp.whence = SEEK_SET;
-	dataObjLseekInp.offset = offset;
 
         conn = getAndUseConnByPath(fileCache->localPath, &MyRodsEnv, &status);
-	status = rcDataObjLseek(conn->conn, &dataObjLseekInp, &fileLseekOut);
-		if (status < 0) {
-			if ((myError = getErrno (status)) > 0) {
-				return (-myError);
-			} else {
-				return -ENOENT;
-			}
-		}
 
 		status = rcDataObjRead (conn->conn,
             		&dataObjReadInp, &dataObjReadOutBBuf);
@@ -404,10 +408,7 @@ int _ifuseFileCacheRead (fileCache_t *fileCache, char *buf, size_t size, off_t o
 				return -ENOENT;
 			}
 		}
-	free(fileLseekOut);
     } else {
-    	status = lseek (fileCache->iFd, offset, SEEK_SET);
-
     	if (status < 0) return (errno ? (-1 * errno) : -1);
     	status = read (fileCache->iFd, buf, size);
 
