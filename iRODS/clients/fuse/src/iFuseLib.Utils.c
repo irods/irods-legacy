@@ -23,6 +23,7 @@ fileCache_t *newFileCache(int iFd, char *objPath, char *localPath, char *cacheFi
     fileCache->iFd = iFd;
 	fileCache->state = state;
 	fileCache->status = 0;
+fileCache->offset = 0;
     INIT_STRUCT_LOCK(*fileCache);
     return fileCache;
 }

@@ -82,19 +82,21 @@ int _iFuseFileCacheFlush(fileCache_t *fileCache) {
     }
 
 	/* no need to flush cache file as we are using low-level io */
-    /* status = flush (desc->iFd);
+    /*status = fsync (fileCache->iFd);
     if (status < 0) {
     	status = (errno ? (-1 * errno) : -1);
 		rodsLog (LOG_ERROR,
 				"ifuseFlush: flush of cache file for %s error, status = %d",
-				desc->localPath, status);
+				fileCache->localPath, status);
 		return -EBADF;
     }*/
 
     struct stat stbuf;
     stat(fileCache->fileCachePath, &stbuf);
     /* put cache file to server */
+	UNLOCK_STRUCT(*fileCache);
     iFuseConn_t *conn = getAndUseConnByPath(fileCache->localPath, &MyRodsEnv, &status);
+	LOCK_STRUCT(*fileCache);
 
     RECONNECT_IF_NECESSARY(status, conn, ifusePut (conn->conn, fileCache->objPath, fileCache->fileCachePath, fileCache->mode, stbuf.st_size));
     unuseIFuseConn(conn);
@@ -122,11 +124,11 @@ int _iFuseFileCacheFlush(fileCache_t *fileCache) {
 	    }
 	    fileCache->iFd = objFd;
 	    fileCache->state = NO_FILE_CACHE;
+	    fileCache->offset = 0;
 	} else {
 		fileCache->state = HAVE_READ_CACHE;
 	}
 
-	fileCache->offset = 0;
 
 	UNLOCK_STRUCT(*fileCache);
 
@@ -160,12 +162,12 @@ int ifuseFileCacheSwapOut (fileCache_t *fileCache) {
     }
 
 	/* no need to flush cache file as we are using low-level io */
-    /* status = flush (desc->iFd);
+    /* status = fsync (fileCache->iFd);
     if (status < 0) {
     	status = (errno ? (-1 * errno) : -1);
 		rodsLog (LOG_ERROR,
 				"ifuseFlush: flush of cache file for %s error, status = %d",
-				desc->localPath, status);
+				fileCache->localPath, status);
 		return -EBADF;
     }*/
 
@@ -220,16 +222,19 @@ int ifuseFileCacheClose(fileCache_t *fileCache) {
 	int status;
 	LOCK_STRUCT(*fileCache);
 	if(fileCache->state == NO_FILE_CACHE) {
-    	/* close remote file */
-    	iFuseConn_t *conn = getAndUseConnByPath(fileCache->localPath, &MyRodsEnv, &status);
+    		/* close remote file */
+    		iFuseConn_t *conn = getAndUseConnByPath(fileCache->localPath, &MyRodsEnv, &status);
 		status = closeIrodsFd (conn->conn, fileCache->iFd);
 		unuseIFuseConn(conn);
+		fileCache->offset = 0;
 	} else {
 		/* close local file */
-    	status = close (fileCache->iFd);
-    	fileCache->iFd = 0;
-    }
-	fileCache->offset = 0;
+		if(fileCache->status == 1) {
+	    		status = close (fileCache->iFd);
+	    		fileCache->iFd = 0;
+			fileCache->offset = 0;
+		}
+	}
 	UNLOCK_STRUCT(*fileCache);
 	return status;
 }
@@ -352,11 +357,17 @@ int _ifuseFileCacheWrite (fileCache_t *fileCache, char *buf, size_t size, off_t 
 			return -ENOENT;
 		}
 		fileCache->offset += status;
+		if(fileCache->offset > fileCache->fileSize) {
+			fileCache->fileSize = fileCache->offset;
+		}
     } else {
         status = write (fileCache->iFd, buf, size);
 
         if (status < 0) return (errno ? (-1 * errno) : -1);
         fileCache->offset += status;
+		if(fileCache->offset > fileCache->fileSize) {
+			fileCache->fileSize = fileCache->offset;
+		}
 		if (fileCache->offset >= MAX_NEWLY_CREATED_CACHE_SIZE) {
 			_iFuseFileCacheFlush(fileCache);
 		}
