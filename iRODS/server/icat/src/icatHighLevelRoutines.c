@@ -1544,6 +1544,10 @@ int chlRegResc(rsComm_t *rsComm,
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    }
 
+   if (strlen(rescInfo->rescName)<1) {
+      return(CAT_INVALID_RESOURCE);
+   }
+
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 1 ");
    seqNum = cmlGetNextSeqVal(&icss);
    if (seqNum < 0) {
