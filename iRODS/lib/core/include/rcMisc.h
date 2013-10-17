@@ -61,6 +61,9 @@ int
 freeDataObjInfo (dataObjInfo_t *dataObjInfo);
 int
 freeAllDataObjInfo (dataObjInfo_t *dataObjInfoHead);
+int
+freeAllDataObjInfoDouble (dataObjInfo_t *dataObjInfoHead1,
+                          dataObjInfo_t *dataObjInfoHead2);
 char *
 getValByKey (keyValPair_t *condInput, char *keyWord);
 int

@@ -267,9 +267,12 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 	    } else {
 	        status = 0;
 	    }
-            freeAllDataObjInfo (dataObjInfoHead);
+
+            /* freeAllDataObjInfo in dataObjInfoHead and
+               destDataObjInfo but avoiding possible double frees: */
+            freeAllDataObjInfoDouble(dataObjInfoHead, destDataObjInfo);
+
             freeAllDataObjInfo (oldDataObjInfoHead);
-            freeAllDataObjInfo (destDataObjInfo);
             freeAllRescGrpInfo (myRescGrpInfo);
 	    return status;
 	} else if (status < 0) {

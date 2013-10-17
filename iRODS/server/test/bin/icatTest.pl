@@ -660,6 +660,7 @@ runCmd(0, "echo yes | iadmin modrescdatapaths $Resc2 $Resc2Path/ /tmp/v1/");
 runCmd(0, "echo yes | iadmin modrescdatapaths $Resc2 /tmp/v1/ $Resc2Path/ rods");
 # repl
 runCmd(0, "irepl -R $Resc $F1");
+runCmd(0, "irepl -R $Resc $F1"); # a second irepl to test a problem fixed Oct 2013
 runCmd(0, "irm -f $F1");
 runCmd(0, "imkdir $D1");
 runCmd(0, "icd $D1");

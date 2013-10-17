@@ -622,6 +622,48 @@ freeAllDataObjInfo (dataObjInfo_t *dataObjInfoHead)
     return (0);
 }
 
+/*
+ This is like freeAddDataObjInfo but with two lists as input and it
+ checks to not free an item more than once.  This is needed to avoid a
+ douple-free segfault which would happen in some cases, for example if
+ the user is replicating a data-object to a resource that already has
+ a valid copy.
+ */
+int
+freeAllDataObjInfoDouble (dataObjInfo_t *dataObjInfoHeadOne,
+			  dataObjInfo_t *dataObjInfoHeadTwo)
+{
+    int status;
+    dataObjInfo_t *tmpDataObjInfoOne, *nextDataObjInfoOne;
+    dataObjInfo_t *tmpDataObjInfoTwo, *nextDataObjInfoTwo;
+    int isDup;
+    tmpDataObjInfoOne = dataObjInfoHeadOne;
+
+    /* First, go thru the first list free items but only those that are
+       not in the second. */
+    while (tmpDataObjInfoOne != NULL) {
+       nextDataObjInfoOne = tmpDataObjInfoOne->next;
+       tmpDataObjInfoTwo = dataObjInfoHeadTwo;
+       isDup=0;
+       while (tmpDataObjInfoTwo != NULL) {
+	  nextDataObjInfoTwo = tmpDataObjInfoTwo->next;
+	  if (tmpDataObjInfoOne == tmpDataObjInfoTwo) { isDup=1; }
+	  tmpDataObjInfoTwo = nextDataObjInfoTwo;
+       }
+       if (isDup==0) {
+	  freeDataObjInfo (tmpDataObjInfoOne);
+       }
+       else {
+ 	  rodsLog(LOG_ERROR,"Info: isDup %x",tmpDataObjInfoOne);
+       }
+       tmpDataObjInfoOne = nextDataObjInfoOne;
+    }
+
+    /* Now, free all the items in the second list */
+    status = freeAllDataObjInfo(dataObjInfoHeadTwo);
+    return(status);
+}
+
 /* queDataObjInfo - queue the input dataObjInfo in dataObjInfoHead queue.
  * Input
  * int singleInfoFlag - 1 - the input dataObjInfo is a single dataObjInfo.
