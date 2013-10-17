@@ -671,6 +671,7 @@ runCmd(0, "iput $F2");
 runCmd(0, "ipwd");
 runCmd(0, "icd");
 runCmd(0, "irepl -r -R $Resc2 $D1");
+runCmd(0, "irepl -r -R $Resc2 $D1");  # a 2nd irepl to test an Oct 2013 fix
 runCmd(0, "irm -f -r $D1");
 
 # Resource Groups
