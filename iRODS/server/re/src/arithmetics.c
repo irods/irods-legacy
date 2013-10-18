@@ -169,7 +169,7 @@ Res* evaluateExpression3(Node *expr, int applyAll, int force, ruleExecInfo_t *re
         /* coercions are applied at application locations only */
         return res;
 }
-
+ExprType* isIterable(ExprType *type, int dynamictyping, Hashtable* var_type_table, Region *r);
 Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, rError_t *errmsg, Region *r) {
         char buf[ERR_MSG_LEN>1024?ERR_MSG_LEN:1024];
         char *buf2;
@@ -296,27 +296,13 @@ Res* processCoercion(Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, r
                 case T_CONS:
                     /* we can ignore the not top level type constructor and leave type checking to when it is derefed */
                     switch(TYPE(res)) {
-                    	case T_PATH:
-                    		nres = res;
-                    		break;
                         case T_CONS:
                         	nres = res;
                         	break;
-                        case T_IRODS:
-                            if(strcmp(res->exprType->text, IntArray_MS_T) == 0 ||
-                               strcmp(res->exprType->text, StrArray_MS_T) == 0 ||
-                               strcmp(res->exprType->text, GenQueryOut_MS_T) == 0) {
+                        default:
+                            if(isIterable(res->exprType, 0, newHashTable2(10, r), r) != NULL) {
                             	nres = res;
                             }
-                            break;
-                        case T_TUPLE:
-                        	if(res->exprType->degree == 2 &&
-                        			getNodeType(res->exprType->subtrees[0]) == T_IRODS && strcmp(res->exprType->subtrees[0]->text, GenQueryInp_MS_T) == 0 &&
-                        			getNodeType(res->exprType->subtrees[1]) == T_IRODS && strcmp(res->exprType->subtrees[1]->text, GenQueryOut_MS_T) == 0) {
-                        		nres = res;
-                        	}
-                        	break;
-                        default:
                             break;
                     }
                     break;
@@ -1366,10 +1352,13 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 	    	RE_ERROR2(TYPE(v) != T_STRING , "not a string.");
 		if(getNodeType(N_APP_ARG(pattern, 1)) == N_APPLICATION && N_APP_ARITY(N_APP_ARG(pattern, 1)) == 0) {
 			key = N_APP_FUNC(N_APP_ARG(pattern, 1))->text;
-		} else if (getNodeType(N_APP_ARG(pattern, 1)) == TK_STRING) {
-			key = N_APP_ARG(pattern, 1)->text;
 		} else {
-	    		RE_ERROR2(1, "malformatted key pattern.");
+			Res *res = evaluateExpression3(N_APP_ARG(pattern, 1), 0, 1, rei, reiSaveFlag, env, errmsg, r);
+			if (res->exprType != NULL && TYPE(res) == T_STRING) {
+				key = res->text;
+			} else {
+		    		RE_ERROR2(1, "malformatted key pattern.");
+			}
 		}
 		varName = N_APP_ARG(pattern, 0)->text;
 		if(getNodeType(N_APP_ARG(pattern, 0)) == TK_VAR && varName[0] == '*' && 
