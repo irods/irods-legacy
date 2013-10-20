@@ -695,6 +695,9 @@ acPostProcForDataObjRead(*ReadBuffer) { }
 #     parameter contains the command to be executed, arguments, execution address, hint path.
 #     if a parameter is not provided, then it is the empty string
 acPreProcForExecCmd(*cmd, *args, *addr, *hint) { }
+# Rule for pre and post processing when establishing a parallel connection
+acPreProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
+acPostProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate {acSetCreateConditions; acDOC; }
