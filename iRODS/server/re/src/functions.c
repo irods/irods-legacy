@@ -48,6 +48,7 @@ _rnew = _rnew2;}
 #define RE_BACKWARD_COMPATIBLE
 
 static char globalSessionId[MAX_NAME_LEN] = "Unspecified";
+static keyValPair_t globalHashtable = {0, NULL, NULL};
 
 /* todo include proper header files */
 int rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp);
@@ -66,6 +67,9 @@ Res *smsi_setGlobalSessionId(Node **subtrees, int n, Node *node, ruleExecInfo_t 
 	char *sid = subtrees[0]->text;
 	rstrcpy(globalSessionId, sid, MAX_NAME_LEN);
         return newIntRes(r, 0);
+}
+Res *smsi_properties(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	return newUninterpretedRes(r, KeyValPair_MS_T, &globalHashtable, NULL);
 }
 
 void reIterable_genQuery_init(ReIterableData *itrData, Region *r);
@@ -3021,6 +3025,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "collection", newFunctionFD("path -> `CollInpNew_PI`", smsi_collection, r));
     insertIntoHashTable(ft, "getGlobalSessionId", newFunctionFD("->string", smsi_getGlobalSessionId, r));
     insertIntoHashTable(ft, "setGlobalSessionId", newFunctionFD("string->integer", smsi_setGlobalSessionId, r));
+    insertIntoHashTable(ft, "temporaryStorage", newFunctionFD("->KeyValPair_PI", smsi_properties, r));
 /*    insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));*/
     insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double : 0 {string}", (SmsiFuncTypePtr) NULL, r));
     insertIntoHashTable(ft, "rei->doi->writeFlag", newFunctionFD("integer : 0 {string}", (SmsiFuncTypePtr) NULL, r));
