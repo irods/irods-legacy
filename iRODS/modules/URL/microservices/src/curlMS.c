@@ -671,11 +671,8 @@ int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *me
 
 #endif
 
-/*#define JSON */
 #ifdef JSON
-#include <string.h>
-#include <jansson.h>
-
+#include "parser.h"
 json_t *parseMspForJson(msParam_t *inpParam) {
     if (inpParam == NULL || inpParam->inOutStruct == NULL) {
         return (NULL);
@@ -690,145 +687,155 @@ json_t *parseMspForJson(msParam_t *inpParam) {
     return (json_t *)(inpParam->inOutStruct);
 }
 
-int msiParseJSON(msParam_t *json, msParam_t *out) {
+/* input string -> `JSON_PI` */
+Res *msiParseJSON(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+
 	json_t *root;
 	json_error_t error;
 	char *text;
 
-	/* parse message */
-	if ((text = parseMspForStr(json)) == NULL) {
-		rodsLog (LOG_ERROR, "msiParseJSON: input json is NULL.");
-		return MSI_TYPE_ERROR;
-	}
+	text = subtrees[0]->text;
 
 	root = json_loads(text, 0, &error);
-	free(text);
 
 	if(root == NULL) {
-		rodsLog (LOG_ERROR, "error: on line %d: %s\n", error.line, error.text);
-		return MSI_JSON_ERROR;
+		char err[ERR_MSG_LEN];
+		snprintf(err, ERR_MSG_LEN, "error: on line %d: %s\n", error.line, error.text);
+	    	generateAndAddErrMsg(err, node, RE_JSON_ERROR, errmsg);
+    		return newErrorRes(r, RE_JSON_ERROR);
 	}
 	
-	fillMsParam(out, "", JSON_MS_T, root, NULL);
-	return 0;
+	return newUninterpretedRes(r, JSON_MS_T, root, NULL);
 }
 
-int msiFreeJSON(msParam_t *json) {
+/* input `JSON_PI` -> integer */
+Res* msiFreeJSON(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	json_t *root;
 	
-	/* parse message */
-	if ((root = parseMspForJson(json)) == NULL) {
-		rodsLog (LOG_ERROR, "msiParseJSON: input json is NULL.");
-		return MSI_TYPE_ERROR;
-	}
+	root = (json_t *) RES_UNINTER_STRUCT(subtrees[0]);
 
 	json_decref(root);
-	return 0;
+
+	return newIntRes(r, 0);
 }
 
-int msiJSONObjectGet(msParam_t *json, msParam_t *key, msParam_t *value) {
+/* input `JSON_PI` * input string -> `JSON_PI` */
+Res* msiJSONObjectGet(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	json_t *root, *val;
 	char *text;
 	
-	/* parse json */
-	if ((root = parseMspForJson(json)) == NULL) {
-		rodsLog (LOG_ERROR, "msiJSONObjectGet: input json is NULL.");
-		return MSI_TYPE_ERROR;
-	}
-
-	/* parse key */
-	if ((text = parseMspForStr(key)) == NULL) {
-		rodsLog (LOG_ERROR, "msiJSONObjectGet: input key is NULL.");
-		return MSI_TYPE_ERROR;
-	}
+	root = (json_t *) RES_UNINTER_STRUCT(subtrees[0]);
+	text = subtrees[1]->text;
 
 	val = json_object_get(root, text);
 
 	if(val == NULL) {
-		rodsLog (LOG_ERROR, "msiJSONObjectGet: cannot get value for key %s.", text);
-		return MSI_JSON_ERROR;
+		char err[ERR_MSG_LEN];
+		snprintf(err, ERR_MSG_LEN, "msiJSONObjectGet: cannot get value for key %s.", text);
+	    	generateAndAddErrMsg(err, node, RE_JSON_ERROR, errmsg);
+    		return newErrorRes(r, RE_JSON_ERROR);
 	}
 
-	fillMsParam(value, "", JSON_MS_T, val, NULL);
-
-	return 0;
+	return newUninterpretedRes(r, JSON_MS_T, val, NULL);
 }
 
-int msiJSONArraySize(msParam_t *json, msParam_t *value) {
+/* input `JSON_PI` -> integer */
+Res* msiJSONArraySize(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	json_t *root;
+	
+	root = (json_t *) RES_UNINTER_STRUCT(subtrees[0]);
+
 	unsigned int arraySize;
 	
-	/* parse json */
-	if ((root = parseMspForJson(json)) == NULL) {
-		rodsLog (LOG_ERROR, "msiJSONArraySize: input json is NULL.");
-		return MSI_TYPE_ERROR;
-	}
-
 	arraySize = json_array_size(root);
 
-	fillIntInMsParam(value, (int) arraySize);
-
-	return 0;
+	return newIntRes(r, arraySize);
 }
 
-int msiJSONArrayGet(msParam_t *json, msParam_t *inx, msParam_t *value) {
+/* input `JSON_PI` * input integer -> `JSON_PI` */
+Res* msiJSONArrayGet(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	json_t *root, *val;
 	int index;
 	
-	/* parse json */
-	if ((root = parseMspForJson(json)) == NULL) {
-		rodsLog (LOG_ERROR, "msiJSONArraySize: input json is NULL.");
-		return MSI_TYPE_ERROR;
-	}
-
-	/* parse key */
-	if ((index = parseMspForPosInt(inx)) < 0) {
-		return index;
-	}
+	root = (json_t *) RES_UNINTER_STRUCT(subtrees[0]);
+	index = RES_INT_VAL(subtrees[1]);
 
 	val = json_array_get(root, index);
 
 	if(val == NULL) {
-		rodsLog (LOG_ERROR, "msiJSONObjectGet: cannot get value for index %d.", index);
-		return MSI_JSON_ERROR;
+		char err[ERR_MSG_LEN];
+		snprintf(err, ERR_MSG_LEN, "msiJSONArrayGet: cannot get value for index %d.", index);
+	    	generateAndAddErrMsg(err, node, RE_JSON_ERROR, errmsg);
+    		return newErrorRes(r, RE_JSON_ERROR);
 	}
 
-	fillMsParam(value, "", JSON_MS_T, val, NULL);
-
-	return 0;
+	return newUninterpretedRes(r, JSON_MS_T, val, NULL);
 }
 
-int msiJSONStringValue(msParam_t *json, msParam_t *value) {
+/* input `JSON_PI` -> string */
+Res* msiJSONStringValue(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	json_t *root;
 	char *val;
 
-	if ((root = parseMspForJson(json)) == NULL) {
-		rodsLog (LOG_ERROR, "msiJSONStringValue: input json is NULL.");
-		return MSI_TYPE_ERROR;
-	}
+	root = (json_t *) RES_UNINTER_STRUCT(subtrees[0]);
 
 	val = (char *) json_string_value(root);
 
-	fillStrInMsParam(value, val);
+	if(val == NULL) {
+		char err[ERR_MSG_LEN];
+		snprintf(err, ERR_MSG_LEN, "msiJSONStringValue: cannot get value.");
+	    	generateAndAddErrMsg(err, node, RE_JSON_ERROR, errmsg);
+    		return newErrorRes(r, RE_JSON_ERROR);
+	}
 
-	return 0;
+	return newStringRes(r, val);
 }
 
-int msiJSONIntegerValue(msParam_t *json, msParam_t *value) {
+/* input `JSON_PI` -> integer */
+Res* msiJSONIntegerValue(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	json_t *root;
 	int val;
 
-	if ((root = parseMspForJson(json)) == NULL) {
-		rodsLog (LOG_ERROR, "msiParseJSON: input json is NULL.");
-		return MSI_TYPE_ERROR;
-	}
+	root = (json_t *) RES_UNINTER_STRUCT(subtrees[0]);
 
 	val = json_integer_value(root);
 
-	fillIntInMsParam(value, val);
-
-	return 0;
+	return newIntRes(r, val);
 }
+
+/* input `JSON_PI` -> integer */
+Res* msiJSONObjectKeys(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	json_t *root;
+	int val;
+	int n = 1024;
+	int i = 0;
+	char **arr = (char **) malloc(n * sizeof(char *));
+
+	root = (json_t *) RES_UNINTER_STRUCT(subtrees[0]);
+
+	const char *key;
+	json_t *value;
+
+	json_object_foreach(obj, key, value) {
+    		/* block of code that uses key and value */
+		arr[i++] = key;
+		if(i == n) {
+			n *= 2;
+			arr = (char **) realloc(arr, n * sizeof(char *));
+		}
+	}
+
+	Res *res = newCollRes(i, newSimpType(T_STRING, r), r);
+
+	int c;
+        for(c = 0; c < i; c++) {
+		res->subtrees[c] = newStringRes(r, arr[c]);
+	}
+
+	free(arr);
+	return res;
+}
+
 
 #endif
 

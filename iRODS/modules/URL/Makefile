@@ -52,7 +52,7 @@ LIBS = -L/opt/local/lib -lcurl -lidn -lssl -lcrypto -lssl -lcrypto -lz
 # Additional includes and libs for libxml2
 #
 INCLUDE_FLAGS += -I/opt/local/include/libxml2
-LIBS += -L/opt/local/lib -lxml2 -lz -lpthread -liconv -lm
+LIBS += -L/opt/local/lib -lxml2 -lz -lpthread -lm -ljansson
 
 
 

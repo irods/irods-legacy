@@ -6,3 +6,12 @@
 {"msiFtpGet",				3,		(funcPtr) msiFtpGet},
 {"msiTwitterPost",			4,		(funcPtr) msiTwitterPost},
 {"msiPostThis",				3,		(funcPtr) msiPostThis},
+{"msiParseJSON",			0xff,		(funcPtr) msiParseJSON},
+{"msiFreeJSON",				0xff,		(funcPtr) msiFreeJSON},
+{"msiJSONObjectGet",			0xff,		(funcPtr) msiJSONObjectGet},
+{"msiJSONArraySize",			0xff,		(funcPtr) msiJSONArraySize},
+{"msiJSONArrayGet",			0xff,		(funcPtr) msiJSONArrayGet},
+{"msiJSONIntegerValue",			0xff,		(funcPtr) msiJSONIntegerValue},
+{"msiJSONStringValue",			0xff,		(funcPtr) msiJSONStringValue},
+{"msiJSONObjectKeys",			0xff,		(funcPtr) msiJSONObjectKeys},
+
