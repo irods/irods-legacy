@@ -806,8 +806,7 @@ Res* msiJSONIntegerValue(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei
 /* input `JSON_PI` -> integer */
 Res* msiJSONObjectKeys(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	json_t *root;
-	int val;
-	int n = 1024;
+	int s = 1024;
 	int i = 0;
 	char **arr = (char **) malloc(n * sizeof(char *));
 
@@ -816,12 +815,12 @@ Res* msiJSONObjectKeys(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 	const char *key;
 	json_t *value;
 
-	json_object_foreach(obj, key, value) {
+	json_object_foreach(root, key, value) {
     		/* block of code that uses key and value */
-		arr[i++] = key;
-		if(i == n) {
-			n *= 2;
-			arr = (char **) realloc(arr, n * sizeof(char *));
+		arr[i++] = (char *) key;
+		if(i == s) {
+			s *= 2;
+			arr = (char **) realloc(arr, s * sizeof(char *));
 		}
 	}
 

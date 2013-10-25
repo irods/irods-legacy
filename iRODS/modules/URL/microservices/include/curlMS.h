@@ -37,7 +37,7 @@ Res *msiJSONArraySize(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
 Res *msiJSONArrayGet(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 Res *msiJSONStringValue(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 Res *msiJSONIntegerValue(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
-Res* msiJSONObjectKeys(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+Res *msiJSONObjectKeys(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 #endif
 
 /* DEPRECATED */
