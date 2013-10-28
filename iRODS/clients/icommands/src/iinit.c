@@ -208,6 +208,49 @@ main(int argc, char **argv)
        if (i>0) ttybuf[i-1]='\0';
        strncpy(myEnv.rodsZone, ttybuf, NAME_LEN);
     }
+    #if defined(PAM_AUTH) || defined(GSI_AUTH)
+    if (myEnv.rodsAuthScheme == NULL || strlen(myEnv.rodsAuthScheme)==0) {
+       int authTypes=0,OK;
+       if (doingEnvFileUpdate==1) { /* don't bother if authScheme is
+                                       the only one missing; assume
+                                       that password is what they want */
+#if defined(PAM_AUTH)
+       authTypes=1;    /* PAM */
+#endif
+#if defined(GSI_AUTH)
+       if (authTypes==1) {
+          authTypes=3; /* PAM and GSI */
+       }
+       else {
+          authTypes=2; /* GSI */
+       }
+#endif
+          if (authTypes==1) {
+             printf("Enter your authentication method (password or PAM):");
+          }
+          if (authTypes==2) {
+             printf("Enter your authentication method (password or GSI):");
+          }
+          if (authTypes==3) {
+             printf("Enter your authentication method (password, GSI, or PAM):");
+          }
+          memset(ttybuf, 0, TTYBUF_LEN);
+          fgets(ttybuf, TTYBUF_LEN, stdin);
+          OK=-1;
+          if (strncmp("GSI",ttybuf,3)==0) {OK=1; ttybuf[3]='\0';}
+          if (strncmp("PAM",ttybuf,3)==0) {OK=2; ttybuf[3]='\0';}
+          if (strncmp("password",ttybuf,8)==0) {OK=3; ttybuf[8]='\0';}
+          if (OK < 0) {
+             printf("Warning, invalid authentication type, ignoring\n");
+          }
+          if (OK > 0) {
+             rstrcat(updateText,"irodsAuthScheme ", UPDATE_TEXT_LEN);
+             rstrcat(updateText,ttybuf, UPDATE_TEXT_LEN);
+             strncpy(myEnv.rodsAuthScheme, ttybuf, NAME_LEN);
+          }
+       }
+    }
+#endif
     if (doingEnvFileUpdate) {
        printf("Those values will be added to your environment file (for use by\n");
        printf("other i-commands) if the login succeeds.\n\n");
