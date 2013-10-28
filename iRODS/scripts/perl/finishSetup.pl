@@ -2770,6 +2770,7 @@ sub Postgres_CreateDatabase()
 		my $tmpPassword = createTempFilePath( "create" );
 		printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 		chmod( 0600, $tmpPassword );
+		$ENV{"PGPASSWORD"} = $DATABASE_ADMIN_PASSWORD;
 		if ($DATABASE_HOST eq "localhost") {
 		    ($status,$output) = run( "$createdb $DB_NAME < $tmpPassword" );
 		}
@@ -2777,6 +2778,7 @@ sub Postgres_CreateDatabase()
 		    ($status,$output) = run( "$createdb -h $DATABASE_HOST $DB_NAME < $tmpPassword" );
 		}
 		unlink( $tmpPassword );
+		delete $ENV{"PGPASSWORD"};
 
 		if ( $status != 0 )
 		{
