@@ -694,7 +694,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    HSTMT hstmt;	
    SQLSMALLINT numColumns;
 
-   SQLCHAR         colName[MAX_TOKEN];
+   SQLCHAR         colName[MAX_TOKEN]="";
    SQLSMALLINT     colType;
    SQLSMALLINT     colNameLen;
    SQL_UINT_OR_ULEN precision;
@@ -879,7 +879,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
    HSTMT hstmt;	
    SQLSMALLINT numColumns;
 
-   SQLCHAR         colName[MAX_TOKEN];
+   SQLCHAR         colName[MAX_TOKEN]="";
    SQLSMALLINT     colType;
    SQLSMALLINT     colNameLen;
    SQL_UINT_OR_ULEN precision;
