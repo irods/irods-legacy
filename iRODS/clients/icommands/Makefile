@@ -173,10 +173,14 @@ LDFLAGS +=      $(LIBRARY) $(MODULE_LDFLAGS) $(CL_LDADD)
 
 ifdef GSI_AUTH
 
+ifeq ($(OS_platform), osx_platform)
+GSI_LIB_DIR=lib
+else
 ifeq ($(ADDR_64BITS), 1)
 GSI_LIB_DIR=lib64
 else
 GSI_LIB_DIR=lib
+endif
 endif
 
 ifeq ($(GSI_INSTALL_TYPE),)
