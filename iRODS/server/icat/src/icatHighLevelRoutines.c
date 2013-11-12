@@ -4577,6 +4577,11 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       i = decodePw(rsComm, newValue, decoded);
 
       status2 = icatApplyRule(rsComm, "acCheckPasswordStrength", decoded);
+      if (status2==NO_RULE_OR_MSI_FUNCTION_FOUND_ERR) {
+         int status3;
+         status3 = addRErrorMsg (&rsComm->rError, 0, 
+                                 "acCheckPasswordStrength rule not found");
+      }
       if (status2) return(status2);
 
       icatScramble(decoded); 
