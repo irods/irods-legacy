@@ -51,12 +51,12 @@ rsModAccessControl (rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
 #ifdef RODS_CAT
 int
 _rsModAccessControl (rsComm_t *rsComm, 
-		     modAccessControlInp_t *modAccessControlInp )
+                     modAccessControlInp_t *modAccessControlInp )
 {
-    int status;
+    int status, status2;
 
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-    int i, argc;
+    int argc;
     ruleExecInfo_t rei2;
     char rFlag[15];
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
@@ -66,8 +66,6 @@ _rsModAccessControl (rsComm_t *rsComm,
       rei2.uoip = &rsComm->proxyUser;
     }
 
-
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     sprintf(rFlag,"%d",modAccessControlInp->recursiveFlag);
     args[0] = rFlag;
     args[1] = modAccessControlInp->accessLevel;
@@ -75,39 +73,41 @@ _rsModAccessControl (rsComm_t *rsComm,
     args[3] = modAccessControlInp->zone;
     args[4] = modAccessControlInp->path;
     argc = 5;
-    i =  applyRuleArg("acPreProcForModifyAccessControl",args,argc, &rei2, NO_SAVE_REI);
-    if (i < 0) {
+    status2 =  applyRuleArg("acPreProcForModifyAccessControl",
+                      args,argc, &rei2, NO_SAVE_REI);
+    if (status2 < 0) {
       if (rei2.status < 0) {
-        i = rei2.status;
+        status2 = rei2.status;
       }
       rodsLog (LOG_ERROR,
                "rsModAVUMetadata:acPreProcForModifyAccessControl error for %s.%s of level %s for %s,stat=%d",
-	       modAccessControlInp->zone, modAccessControlInp->userName, modAccessControlInp->accessLevel, modAccessControlInp->path, i);
-      return i;
+               modAccessControlInp->zone, modAccessControlInp->userName, 
+               modAccessControlInp->accessLevel, modAccessControlInp->path, 
+               status2);
+      return status2;
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
 
     status = chlModAccessControl(rsComm, 
-				 modAccessControlInp->recursiveFlag,
-				 modAccessControlInp->accessLevel,
-				 modAccessControlInp->userName,
-				 modAccessControlInp->zone,
-				 modAccessControlInp->path );
-
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-    i =  applyRuleArg("acPostProcForModifyAccessControl",args,argc, &rei2, NO_SAVE_REI);
-    if (i < 0) {
-      if (rei2.status < 0) {
-        i = rei2.status;
+                                 modAccessControlInp->recursiveFlag,
+                                 modAccessControlInp->accessLevel,
+                                 modAccessControlInp->userName,
+                                 modAccessControlInp->zone,
+                                 modAccessControlInp->path );
+    if (status == 0) {
+      status2 =  applyRuleArg("acPostProcForModifyAccessControl",
+                              args,argc, &rei2, NO_SAVE_REI);
+      if (status2 < 0) {
+        if (rei2.status < 0) {
+          status2 = rei2.status;
+        }
+        rodsLog (LOG_ERROR,
+                 "rsModAVUMetadata:acPostProcForModifyAccessControl error for %s.%s of level %s for %s,stat=%d",
+                 modAccessControlInp->zone, modAccessControlInp->userName, 
+                 modAccessControlInp->accessLevel, 
+                 modAccessControlInp->path, status2);
+        return status2;
       }
-      rodsLog (LOG_ERROR,
-               "rsModAVUMetadata:acPostProcForModifyAccessControl error for %s.%s of level %s for %s,stat=%d",
-               modAccessControlInp->zone, modAccessControlInp->userName, modAccessControlInp->accessLevel, modAccessControlInp->path, i);
-      return i;
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
     return(status);
 } 
 #endif
