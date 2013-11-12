@@ -385,6 +385,7 @@ int reIterable_genQuery_hasNext(ReIterableData *itrData, Region *r) {
 			itrData->errorRes = newErrorRes(r, status);
 			return 0;
 		}
+		data->genQueryOut = (genQueryOut_t *) data->genQOutParam.inOutStruct;
 		data->len = getCollectionSize(itrData->res->subtrees[1]->exprType->text, data->genQueryOut, r);
 		if(data->len > 0) {
 			return 1;
