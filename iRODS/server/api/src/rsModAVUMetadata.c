@@ -66,10 +66,10 @@ int checkModArgType(char *arg);
 int
 _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 {
-    int status;
+    int status, status2;
 
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-    int i, argc;
+    int argc;
     ruleExecInfo_t rei2;
 
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
@@ -79,7 +79,6 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
       rei2.uoip = &rsComm->proxyUser;
     }
 
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     args[0] = modAVUMetadataInp->arg0; /* option add, adda, rm, rmw, rmi, cp,
 					  or mod */
     args[1] = modAVUMetadataInp->arg1; /* item type -d,-d,-c,-C,-r,-R,-u,-U */
@@ -110,17 +109,18 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     } else {
     	argc = 6;
     }
-    i =  applyRuleArg("acPreProcForModifyAVUMetadata",args,argc, &rei2, NO_SAVE_REI);
-    if (i < 0) {
+    status2 =  applyRuleArg("acPreProcForModifyAVUMetadata",args,argc,
+                             &rei2, NO_SAVE_REI);
+    if (status2 < 0) {
       if (rei2.status < 0) {
-	i = rei2.status;
+	status2 = rei2.status;
       }
       rodsLog (LOG_ERROR,
 	       "rsModAVUMetadata:acPreProcForModifyAVUMetadata error for %s of type %s and option %s,stat=%d",
-	       modAVUMetadataInp->arg2,modAVUMetadataInp->arg1,modAVUMetadataInp->arg0, i);
-      return i;
+	       modAVUMetadataInp->arg2,modAVUMetadataInp->arg1,
+               modAVUMetadataInp->arg0, status2);
+      return status2;
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
 
     if (strcmp(modAVUMetadataInp->arg0,"add")==0) {
@@ -203,21 +203,21 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     else {
       return(CAT_INVALID_ARGUMENT);
     }      
-    /* rei2.status = status; */
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-    i =  applyRuleArg("acPostProcForModifyAVUMetadata",args,argc, &rei2, NO_SAVE_REI);
-    if (i < 0) {
-      if (rei2.status < 0) {
-        i = rei2.status;
+
+    if (status == 0) {
+      status2 = applyRuleArg("acPostProcForModifyAVUMetadata",
+                            args,argc, &rei2, NO_SAVE_REI);
+      if (status2 < 0) {
+        if (rei2.status < 0) {
+          status2 = rei2.status;
+        }
+        rodsLog (LOG_ERROR,
+                 "rsModAVUMetadata:acPostProcForModifyAVUMetadata error for %s of type %s and option %s,stat=%d",
+                 modAVUMetadataInp->arg2,modAVUMetadataInp->arg1,
+                 modAVUMetadataInp->arg0, status2);
+        return status2;
       }
-      rodsLog (LOG_ERROR,
-               "rsModAVUMetadata:acPostProcForModifyAVUMetadata error for %s of type %s and option %s,stat=%d",
-               modAVUMetadataInp->arg2,modAVUMetadataInp->arg1,modAVUMetadataInp->arg0, i);
-      return i;
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
     return(status);
-
 } 
 #endif
