@@ -9,10 +9,14 @@
 #include "miscServerFunct.h"
 
 
-/* Set requireServerAuth to 1 to fail authentications from
-   un-authenticated Servers (for example, if the LocalZoneSID 
-   is not set) */
-#define requireServerAuth 0 
+/* Set requireServerAuth to 0 if you want only warnings.  When 1, if a
+   SID is set on this server for the remote server, then the remote
+   server must authenticate itself (SIDs must be set up there too). */
+#define requireServerAuth 1
+
+/* If set, then SIDs are always required, errors will be return if a SID
+   is not locally set for a remote server */
+#define requireSIDs 0
 
 int
 rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
@@ -58,49 +62,51 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
    }
 
    if (rodsServerHost->localFlag != LOCAL_HOST) {
-      if (authCheckOut->serverResponse == NULL) {
-	 rodsLog(LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field");
-	 if (requireServerAuth) {
-	    rodsLog(LOG_NOTICE, "Authentication disallowed, no serverResponse field");
-	    return(REMOTE_SERVER_AUTH_NOT_PROVIDED);
+      char username2[NAME_LEN+2];
+      char userZone[NAME_LEN+2];
+      int len;
+      parseUserName(authResponseInp->username, username2, userZone);
+      getZoneServerId(userZone, serverId);
+      len = strlen(serverId);
+      if (len <= 0) {
+	 rodsLog (LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config",
+		  status);
+	 if (requireSIDs) {
+	    rodsLog(LOG_NOTICE, "Authentication disallowed, no RemoteZoneSID defined");
+	    return(REMOTE_SERVER_SID_NOT_DEFINED);  
 	 }
       }
-      else {
-	 char *cp;
-	 int OK, len, i;
-	 if (*authCheckOut->serverResponse == '\0') {
-	    rodsLog(LOG_NOTICE, "Warning, cannot authenticate remote server, serverResponse field is empty");
-	    if (requireServerAuth) { 
-	       rodsLog(LOG_NOTICE, "Authentication disallowed, empty serverResponse");
-	       return(REMOTE_SERVER_AUTH_EMPTY);  
+      else { 
+	 if (authCheckOut->serverResponse == NULL) {
+	    rodsLog(LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field");
+	    if (requireServerAuth) {
+	       rodsLog(LOG_NOTICE, "Authentication disallowed, no serverResponse field");
+	       return(REMOTE_SERVER_AUTH_NOT_PROVIDED);
 	    }
 	 }
 	 else {
-	    char username2[NAME_LEN+2];
-	    char userZone[NAME_LEN+2];
-	    memset(md5Buf, 0, sizeof(md5Buf));
-	    strncpy(md5Buf, authCheckInp.challenge, CHALLENGE_LEN);
-	    parseUserName(authResponseInp->username, username2, userZone);
-	    getZoneServerId(userZone, serverId);
-	    len = strlen(serverId);
-	    if (len <= 0) {
-	       rodsLog (LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config", status);
-	       if (requireServerAuth) {
-		  rodsLog(LOG_NOTICE, "Authentication disallowed, no RemoteZoneSID defined");
-		  return(REMOTE_SERVER_SID_NOT_DEFINED);  
+	    if (*authCheckOut->serverResponse == '\0') {
+	       rodsLog(LOG_NOTICE, "Warning, cannot authenticate remote server, serverResponse field is empty");
+	       if (requireServerAuth) { 
+		  rodsLog(LOG_NOTICE, "Authentication disallowed, empty serverResponse");
+		  return(REMOTE_SERVER_AUTH_EMPTY);  
 	       }
 	    }
-	    else { 
+	    else {
+	       int OK, i;
+	       char *cp;
+	       memset(md5Buf, 0, sizeof(md5Buf));
+	       strncpy(md5Buf, authCheckInp.challenge, CHALLENGE_LEN);
 	       strncpy(md5Buf+CHALLENGE_LEN, serverId, len);
 	       obfMakeOneWayHash(
-                           HASH_TYPE_DEFAULT,
-                           (unsigned char*)md5Buf, 
-			   CHALLENGE_LEN+MAX_PASSWORD_LEN,
-			   (unsigned char*)digest);
+				 HASH_TYPE_DEFAULT,
+				 (unsigned char*)md5Buf, 
+				 CHALLENGE_LEN+MAX_PASSWORD_LEN,
+				 (unsigned char*)digest);
 
 	       for (i=0;i<RESPONSE_LEN;i++) {
-		  if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't
-							end early*/
+		  if (digest[i]=='\0') digest[i]++;  /* make sure 'string'
+						      doesn't end early*/
 	       }
 	       cp = authCheckOut->serverResponse;
 	       OK=1;
