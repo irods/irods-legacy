@@ -204,7 +204,7 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
       return(CAT_INVALID_ARGUMENT);
     }      
 
-    if (status == 0) {
+    if (status >= 0) {
       status2 = applyRuleArg("acPostProcForModifyAVUMetadata",
                             args,argc, &rei2, NO_SAVE_REI);
       if (status2 < 0) {
