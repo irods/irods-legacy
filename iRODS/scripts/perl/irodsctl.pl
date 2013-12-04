@@ -267,7 +267,7 @@ if ($GLOBALREAUDITFLAG)         { $ENV{'GLOBALREAUDITFLAG'}   = $GLOBALREAUDITFL
 if ($GLOBALREDEBUGFLAG)         { $ENV{'GLOBALREDEBUGFLAG'}   = $GLOBALREDEBUGFLAG; }
 if ($DefFileMode)		{ $ENV{'DefFileMode'}         = $DefFileMode; }
 if ($DefDirMode)		{ $ENV{'DefDirMode'}          = $DefDirMode; }
-if ($LOGFILE_INT)		{ $ENV{'LOGFILE_INT'}          = $LOGFILE_INT; }
+if ($LOGFILE_INT)		{ $ENV{'logfileInt'}          = $LOGFILE_INT; }
 
 
 
