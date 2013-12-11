@@ -3667,17 +3667,19 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 doMore=0;
 	 break;
        }
-       cPwTs=cpw+(MAX_PASSWORD_LEN*3);
-       iTs1=atoi(cPwTs);
-       iTs2=atoi(lastPwModTs);
-       if (iTs1==iTs2) {
-         /* MAX_PASSWORDS at same time-stamp, skip ahead to avoid infinite
-            loop; things should recover eventually */
-	 snprintf(lastPwModTs, sizeof lastPwModTs, "%011d", iTs1+1);
-       }
-       else {
-         /* normal case */
-	 rstrcpy(lastPwModTs, cPwTs, sizeof(lastPwModTs));
+       if (k==(nPasswords-1)) { /* only on the last iteration */
+	 cPwTs=cpw+(MAX_PASSWORD_LEN*3);
+	 iTs1=atoi(cPwTs);
+	 iTs2=atoi(lastPwModTs);
+	 if (iTs1==iTs2) {
+           /* MAX_PASSWORDS at same time-stamp, skip ahead to avoid infinite
+           loop; things should recover eventually */
+	   snprintf(lastPwModTs, sizeof lastPwModTs, "%011d", iTs1+1);
+	 }
+	 else {
+	   /* normal case */
+	    rstrcpy(lastPwModTs, cPwTs, sizeof(lastPwModTs));
+	 }
        }
        cpw+=MAX_PASSWORD_LEN*4;
      }
