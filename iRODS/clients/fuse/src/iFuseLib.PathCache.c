@@ -115,7 +115,7 @@ int _updatePathCacheStatFromFileCache (pathCache_t *tmpPathCache)
     		tmpPathCache->stbuf.st_atim = stbuf.st_atim;
     		tmpPathCache->stbuf.st_ctim = stbuf.st_ctim;
     		tmpPathCache->stbuf.st_mtim = stbuf.st_mtim;
-    		tmpPathCache->stbuf.st_mode = stbuf.st_mode;
+    		tmpPathCache->stbuf.st_nlink = stbuf.st_nlink;
     		return 0;
     	}
     } else {
