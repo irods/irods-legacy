@@ -36,7 +36,7 @@ _irodsGetattr (iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf)
 
 #ifdef CACHE_FUSE_PATH
 
-    if (lookupPathNotExist( (char *) path) == 1) {
+/*    if (lookupPathNotExist( (char *) path) == 1) {
         rodsLog (LOG_DEBUG, "irodsGetattr: a match for non existing path %s", path);
         return -ENOENT;
     }
@@ -46,13 +46,12 @@ _irodsGetattr (iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf)
         status = _updatePathCacheStatFromFileCache (tmpPathCache);
         UNLOCK_STRUCT(*tmpPathCache);
         if (status < 0) {
-            /* we have a problem */
             clearPathFromCache ((char *) path);
         } else {
             *stbuf = tmpPathCache->stbuf;
             return (0);
         }
-    }
+    } */
 #endif
 
     memset (stbuf, 0, sizeof (struct stat));
