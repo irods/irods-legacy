@@ -36,22 +36,33 @@ _irodsGetattr (iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf)
 
 #ifdef CACHE_FUSE_PATH
 
-/*    if (lookupPathNotExist( (char *) path) == 1) {
+    /*if (lookupPathNotExist( (char *) path) == 1) {
         rodsLog (LOG_DEBUG, "irodsGetattr: a match for non existing path %s", path);
         return -ENOENT;
-    }
+    }*/
 
     if (matchAndLockPathCache ((char *) path, &tmpPathCache) == 1) {
         rodsLog (LOG_DEBUG, "irodsGetattr: a match for path %s", path);
-        status = _updatePathCacheStatFromFileCache (tmpPathCache);
-        UNLOCK_STRUCT(*tmpPathCache);
-        if (status < 0) {
-            clearPathFromCache ((char *) path);
-        } else {
-            *stbuf = tmpPathCache->stbuf;
-            return (0);
-        }
-    } */
+        if (tmpPathCache->fileCache != NULL) {
+        	LOCK_STRUCT(*(tmpPathCache->fileCache));
+        	if(tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE) {
+        		status = _updatePathCacheStatFromFileCache (tmpPathCache);
+        		UNLOCK_STRUCT(*(tmpPathCache->fileCache));
+                UNLOCK_STRUCT(*tmpPathCache);
+                if (status < 0) {
+                    clearPathFromCache ((char *) path);
+                } else {
+                    *stbuf = tmpPathCache->stbuf;
+                    return (0);
+                }
+        	} else {
+        		UNLOCK_STRUCT(*(tmpPathCache->fileCache));
+                UNLOCK_STRUCT(*tmpPathCache);
+        	}
+		} else {
+	        UNLOCK_STRUCT(*tmpPathCache);
+		}
+    }
 #endif
 
     memset (stbuf, 0, sizeof (struct stat));
