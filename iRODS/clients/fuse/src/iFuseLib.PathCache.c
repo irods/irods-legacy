@@ -110,6 +110,12 @@ int _updatePathCacheStatFromFileCache (pathCache_t *tmpPathCache)
     	} else {
     		/* update the size */
     		tmpPathCache->stbuf.st_size = stbuf.st_size;
+    		tmpPathCache->stbuf.st_uid = stbuf.st_uid;
+    		tmpPathCache->stbuf.st_gid = stbuf.st_gid;
+    		tmpPathCache->stbuf.st_atim = stbuf.st_atim;
+    		tmpPathCache->stbuf.st_ctim = stbuf.st_ctim;
+    		tmpPathCache->stbuf.st_mtim = stbuf.st_mtim;
+    		tmpPathCache->stbuf.st_mode = stbuf.st_mode;
     		return 0;
     	}
     } else {
