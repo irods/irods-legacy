@@ -860,6 +860,13 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
         }
 
         fileCache_t *fileCache = addFileCache(fd, objPath, (char *) path, NULL, stbuf.st_mode, stbuf.st_size, NO_FILE_CACHE);
+        matchAndLockPathCache((char *) path, &tmpPathCache);
+        if(tmpPathCache == NULL) {
+            pathExist((char *) path, fileCache, &stbuf, NULL);
+        } else {
+            _addFileCacheForPath(tmpPathCache, fileCache);
+            UNLOCK_STRUCT(*tmpPathCache);
+        }
         desc = newIFuseDesc (objPath, (char *) path, fileCache, &status);
         if (desc == NULL) {
             rodsLogError (LOG_ERROR, status, "irodsOpen: allocIFuseDesc of %s error", path);
