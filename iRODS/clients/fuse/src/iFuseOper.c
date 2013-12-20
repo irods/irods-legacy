@@ -312,7 +312,7 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
             }
         }
     }
-    fileCache = addFileCache(localFd, objPath, (char *) path, cachePath, mode, HAVE_NEWLY_CREATED_CACHE);
+    fileCache = addFileCache(localFd, objPath, (char *) path, cachePath, mode, 0, HAVE_NEWLY_CREATED_CACHE);
     stbuf.st_mode = mode;
     pathExist ((char *) path, fileCache, &stbuf, &tmpPathCache);
     /* desc = newIFuseDesc (objPath, (char *) path, fileCache, &status); */
@@ -859,7 +859,7 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
             return -ENOENT;
         }
 
-        fileCache_t *fileCache = addFileCache(fd, objPath, (char *) path, NULL, stbuf.st_mode, NO_FILE_CACHE);
+        fileCache_t *fileCache = addFileCache(fd, objPath, (char *) path, NULL, stbuf.st_mode, stbuf.st_size, NO_FILE_CACHE);
         desc = newIFuseDesc (objPath, (char *) path, fileCache, &status);
         if (desc == NULL) {
             rodsLogError (LOG_ERROR, status, "irodsOpen: allocIFuseDesc of %s error", path);
@@ -884,7 +884,7 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
 
         int fd = open(cachePath, O_RDWR);
 
-        fileCache_t *fileCache = addFileCache(fd, objPath, (char *) path, cachePath, stbuf.st_mode, HAVE_READ_CACHE);
+        fileCache_t *fileCache = addFileCache(fd, objPath, (char *) path, cachePath, stbuf.st_mode, stbuf.st_size, HAVE_READ_CACHE);
         matchAndLockPathCache((char *) path, &tmpPathCache);
         if(tmpPathCache == NULL) {
             pathExist((char *) path, fileCache, &stbuf, NULL);

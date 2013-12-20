@@ -103,24 +103,28 @@ int _updatePathCacheStatFromFileCache (pathCache_t *tmpPathCache)
     int status;
 
     if (tmpPathCache->fileCache != NULL) {
+		LOCK_STRUCT(*(tmpPathCache->fileCache));
+		tmpPathCache->stbuf.st_size = tmpPathCache->fileCache->fileSize;
     	if(tmpPathCache->fileCache->state != NO_FILE_CACHE) {
 			struct stat stbuf;
 			status = stat (tmpPathCache->fileCache->fileCachePath, &stbuf);
 			if (status < 0) {
+				UNLOCK_STRUCT(*(tmpPathCache->fileCache));
 				return (errno ? (-1 * errno) : -1);
 			} else {
 				/* update the size */
-				tmpPathCache->stbuf.st_size = stbuf.st_size;
 				tmpPathCache->stbuf.st_uid = stbuf.st_uid;
 				tmpPathCache->stbuf.st_gid = stbuf.st_gid;
 				/* tmpPathCache->stbuf.st_atim = stbuf.st_atim;
 				tmpPathCache->stbuf.st_ctim = stbuf.st_ctim; */
 				tmpPathCache->stbuf.st_mtim = stbuf.st_mtim;
 				tmpPathCache->stbuf.st_nlink = stbuf.st_nlink;
+				UNLOCK_STRUCT(*(tmpPathCache->fileCache));
 				return 0;
 			}
     	} else {
-    		tmpPathCache->stbuf.st_size = tmpPathCache->fileCache->fileSize;
+			UNLOCK_STRUCT(*(tmpPathCache->fileCache));
+    		return 0;
     	}
     } else {
     	return 0;
