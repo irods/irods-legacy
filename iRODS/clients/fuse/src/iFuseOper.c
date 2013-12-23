@@ -253,6 +253,7 @@ off_t offset, struct fuse_file_info *fi)
 #endif
         } else if (collEnt.objType == COLL_OBJ_T) {
         splitPathByKey (collEnt.collName, myDir, mySubDir, '/');
+	if(mySubDir[0] != '\0') {
         filler (buf, mySubDir, NULL, 0);
 #ifdef CACHE_FUSE_PATH
             if (strcmp (path, "/") == 0) {
@@ -267,6 +268,7 @@ off_t offset, struct fuse_file_info *fi)
             pathExist (childPath, NULL, &stbuf, &tmpPathCache);
         }
 #endif
+	}
         }
     }
     rclCloseCollection (&collHandle);
