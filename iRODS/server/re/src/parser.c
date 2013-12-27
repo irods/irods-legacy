@@ -1428,7 +1428,10 @@ PARSER_FUNC_BEGIN(Column)
     		columnFunc = "order_desc";
     	OR(columnFunc)
     		TTEXT2("order_asc", "ORDER_ASC");
-    		columnFunc = "order_asc";
+    		columnFunc = "order";
+    	OR(columnFunc)
+    		TTEXT2("order", "ORDER");
+    		columnFunc = "order";
     	END_TRY(columnFunc)
     	TTEXT("(");
         Label colStart = *FPOS;
