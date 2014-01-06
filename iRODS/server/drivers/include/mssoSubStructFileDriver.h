@@ -13,7 +13,7 @@
 #include "structFileDriver.h"
 #include "execMyRule.h"
 
-#define NUM_MSSO_SUB_FILE_DESC 50
+#define NUM_MSSO_SUB_FILE_DESC 1024
 #define MSSO_CACHE_DIR_STR "mssoCacheDir"
 #define MSSO_RUN_DIR_STR "runDir"
 #define MSSO_RUN_FILE_STR "run"
