@@ -97,7 +97,8 @@ SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hdfsFileDriver.o
 INCLUDES += -I$${HADOOP_HOME}/src/c++/libhdfs
 INCLUDES += -I$${JAVA_HOME}/include
 INCLUDES += -I$${JAVA_HOME}/include/linux
-LDFLAGS += -L$${HADOOP_HOME}/c++/Linux-amd64-64/lib -lhdfs
+#LDFLAGS += -L$${HADOOP_HOME}/c++/Linux-amd64-64/lib -lhdfs
+LDFLAGS += -L$${HADOOP_HOME}/c++/Linux-i386-32/lib -lhdfs
 endif
 
 ifdef DDN_WOS
