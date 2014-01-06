@@ -50,7 +50,7 @@ typedef struct l1desc {
     int replStatus;     /* the replica status */
     int chksumFlag;     /* parsed from condition */
     int srcL1descInx;
-    char chksum[NAME_LEN]; /* the input chksum */
+    char chksum[CHKSUM_LEN]; /* the input chksum */
 #ifdef LOG_TRANSFERS
     struct timeval openStartTime;
 #endif

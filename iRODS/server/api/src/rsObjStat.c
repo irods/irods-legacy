@@ -241,7 +241,7 @@ rodsObjStat_t **rodsObjStatOut)
                     (*rodsObjStatOut)->dataMode =
                       atoi (&dataMode->value[dataMode->len * i]);
                     rstrcpy ((*rodsObjStatOut)->chksum,
-                      &chksum->value[chksum->len * i], NAME_LEN);
+                      &chksum->value[chksum->len * i], CHKSUM_LEN);
 		    rstrcpy ((*rodsObjStatOut)->ownerName,
                       &ownerName->value[ownerName->len * i], NAME_LEN);
                     rstrcpy ((*rodsObjStatOut)->ownerZone,

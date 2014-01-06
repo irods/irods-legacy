@@ -106,7 +106,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
             if (status < 0) {
                 return status;
             }
-	    rstrcpy (dataObjInfo->chksum, chksumStr, NAME_LEN);
+	    rstrcpy (dataObjInfo->chksum, chksumStr, CHKSUM_LEN);
         }
     }
 
@@ -128,7 +128,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
             /** since the object is read here, we apply post procesing 
              * RAJA Dec 2 2010 **/
             if (chksumStr != NULL) {
-                rstrcpy ((*portalOprOut)->chksum, chksumStr, NAME_LEN);
+                rstrcpy ((*portalOprOut)->chksum, chksumStr, CHKSUM_LEN);
                 free (chksumStr);
 	    }
         }
@@ -150,7 +150,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
 
     status = l1descInx;		/* means file not included */
     if (chksumStr != NULL) {
-        rstrcpy ((*portalOprOut)->chksum, chksumStr, NAME_LEN);
+        rstrcpy ((*portalOprOut)->chksum, chksumStr, CHKSUM_LEN);
         free (chksumStr);
     }
 

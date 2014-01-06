@@ -189,7 +189,7 @@ typedef struct DataObjInfo {
     char rescGroupName[NAME_LEN];       /* This could be resource group */
     char dataType[NAME_LEN];
     rodsLong_t dataSize;
-    char chksum[NAME_LEN];
+    char chksum[CHKSUM_LEN];
     char version[NAME_LEN];
     char filePath[MAX_NAME_LEN];
     rescInfo_t *rescInfo;

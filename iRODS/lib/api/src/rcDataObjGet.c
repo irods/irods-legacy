@@ -194,7 +194,7 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 	    rodsLog (LOG_ERROR, 
 	      "rcDataObjGet: VERIFY_CHKSUM_KW set but no chksum from server");
 	} else {
-	    char chksumStr[NAME_LEN];
+	    char chksumStr[CHKSUM_LEN];
 
             status = chksumLocFile (locFilePath, chksumStr);
 

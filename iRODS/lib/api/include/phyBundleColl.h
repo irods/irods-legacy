@@ -27,7 +27,7 @@
 typedef struct BunReplCache {
     rodsLong_t  dataId;
     char objPath[MAX_NAME_LEN];         /* optional for IRODS_ADMIN_KW */
-    char chksumStr[NAME_LEN];
+    char chksumStr[CHKSUM_LEN];
     int srcReplNum;
     struct BunReplCache *next;
 } bunReplCache_t;

@@ -320,6 +320,12 @@ GSI_SSL=
 GSI_CRYPTO=
 endif
 
+#SHA256_FILE_HASH = 1
+ifdef SHA256_FILE_HASH
+SHA256_LIB=crypto
+SHA256_INC=/usr/include/openssl
+endif
+
 # RBUDP_TRANSFER - specify whether RBUDP file transfer mechanism will be
 # supported (iget/iget -U)
 RBUDP_TRANSFER = 1

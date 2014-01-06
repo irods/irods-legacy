@@ -25,7 +25,7 @@ typedef struct FileChksumInp {
     
 #define fileChksumInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags;"
 
-#define fileChksumOut_PI "str chksumStr[NAME_LEN];"
+#define fileChksumOut_PI "str chksumStr[CHKSUM_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_CHKSUM rsFileChksum

@@ -55,7 +55,7 @@
 
 #define PortList_PI "int portNum; int cookie; int sock; int windowSize; str hostAddr[LONG_NAME_LEN];"
 
-#define PortalOprOut_PI "int status; int l1descInx; int numThreads; str chksum[NAME_LEN]; struct PortList_PI;"
+#define PortalOprOut_PI "int status; int l1descInx; int numThreads; str chksum[CHKSUM_LEN]; struct PortList_PI;"
 
 #define DataOprInp_PI "int oprType; int numThreads; int srcL3descInx; int destL3descInx; int srcRescTypeInx; int destRescTypeInx; double offset; double dataSize; struct KeyValPair_PI;"
 
@@ -70,7 +70,7 @@
 
 #define GenQueryOut_PI "int rowCnt; int attriCnt; int continueInx; int totalRowCount; struct SqlResult_PI[MAX_SQL_ATTR];"
 #define GenArraysInp_PI "int rowCnt; int attriCnt; int continueInx; int totalRowCount; struct KeyValPair_PI; struct SqlResult_PI[MAX_SQL_ATTR];"
-#define DataObjInfo_PI "str objPath[MAX_NAME_LEN]; str rescName[NAME_LEN]; str rescGroupName[NAME_LEN]; str dataType[NAME_LEN]; double dataSize; str chksum[NAME_LEN]; str version[NAME_LEN]; str filePath[MAX_NAME_LEN]; str *rescInfo; str dataOwnerName[NAME_LEN]; str dataOwnerZone[NAME_LEN]; int  replNum; int  replStatus; str statusString[NAME_LEN]; double  dataId; double collId; int  dataMapId; int flags; str dataComments[LONG_NAME_LEN]; str dataMode[SHORT_STR_LEN]; str dataExpiry[TIME_LEN]; str dataCreate[TIME_LEN]; str dataModify[TIME_LEN]; str dataAccess[NAME_LEN]; int  dataAccessInx; int writeFlag; str destRescName[NAME_LEN]; str backupRescName[NAME_LEN]; str subPath[MAX_NAME_LEN]; int *specColl; int regUid; int otherFlags; struct KeyValPair_PI; int *next;"
+#define DataObjInfo_PI "str objPath[MAX_NAME_LEN]; str rescName[NAME_LEN]; str rescGroupName[NAME_LEN]; str dataType[NAME_LEN]; double dataSize; str chksum[CHKSUM]; str version[NAME_LEN]; str filePath[MAX_NAME_LEN]; str *rescInfo; str dataOwnerName[NAME_LEN]; str dataOwnerZone[NAME_LEN]; int  replNum; int  replStatus; str statusString[NAME_LEN]; double  dataId; double collId; int  dataMapId; int flags; str dataComments[LONG_NAME_LEN]; str dataMode[SHORT_STR_LEN]; str dataExpiry[TIME_LEN]; str dataCreate[TIME_LEN]; str dataModify[TIME_LEN]; str dataAccess[NAME_LEN]; int  dataAccessInx; int writeFlag; str destRescName[NAME_LEN]; str backupRescName[NAME_LEN]; str subPath[MAX_NAME_LEN]; int *specColl; int regUid; int otherFlags; struct KeyValPair_PI; int *next;"
 
 /* transStat_t is being replaced by transferStat_t because of the 64 bits
  * padding */
@@ -107,7 +107,7 @@
  
 #define TagStruct_PI "int ssLen; str *preTag[ssLen]; str *postTag[ssLen]; str *keyWord[ssLen];" 
 
-#define RodsObjStat_PI "double objSize; int objType; int dataMode; str dataId[NAME_LEN]; str chksum[NAME_LEN]; str ownerName[NAME_LEN]; str ownerZone[NAME_LEN]; str createTime[TIME_LEN]; str modifyTime[TIME_LEN]; struct *SpecColl_PI;" 
+#define RodsObjStat_PI "double objSize; int objType; int dataMode; str dataId[NAME_LEN]; str chksum[CHKSUM_LEN]; str ownerName[NAME_LEN]; str ownerZone[NAME_LEN]; str createTime[TIME_LEN]; str modifyTime[TIME_LEN]; struct *SpecColl_PI;" 
 #define ReconnMsg_PI "int status; int cookie; int procState; int flag;"
 #define VaultPathPolicy_PI "int scheme; int addUserName; int trimDirCnt;"
 #define StrArray_PI "int len; int size; str *value(len)(size);" 

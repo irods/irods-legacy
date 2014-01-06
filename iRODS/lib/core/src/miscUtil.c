@@ -237,7 +237,7 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
 	    rodsPath->objMode = rodsObjStatOut->dataMode;
             rstrcpy (rodsPath->dataId, rodsObjStatOut->dataId, NAME_LEN);
             rodsPath->size = rodsObjStatOut->objSize;
-            rstrcpy (rodsPath->chksum, rodsObjStatOut->chksum, NAME_LEN);
+            rstrcpy (rodsPath->chksum, rodsObjStatOut->chksum, CHKSUM_LEN);
 	}
     }
     rodsPath->rodsObjStat = rodsObjStatOut;
@@ -283,7 +283,7 @@ int inx, int rowCnt)
             rodsPath->size =
               strtoll (&dataSize->value[dataSize->len * i], 0, 0);
             rstrcpy (rodsPath->chksum,
-              &chksum->value[chksum->len * i], NAME_LEN);
+              &chksum->value[chksum->len * i], CHKSUM_LEN);
 	    gotCopy = 1;
         }
     }
@@ -293,7 +293,7 @@ int inx, int rowCnt)
         rstrcpy (rodsPath->dataId, &dataId->value[dataId->len * inx], NAME_LEN);
         rodsPath->size = strtoll (&dataSize->value[dataSize->len * inx], 0, 0);
             rstrcpy (rodsPath->chksum, 
-	      &chksum->value[chksum->len * inx], NAME_LEN);
+	      &chksum->value[chksum->len * inx], CHKSUM_LEN);
     }
 
     rodsPath->objState = EXIST_ST;

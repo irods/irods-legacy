@@ -111,6 +111,10 @@ ifdef PAM_AUTH_NO_EXTEND
 CFLAGS +=	-DPAM_AUTH_NO_EXTEND
 endif
 
+ifdef SHA256_FILE_HASH
+CFLAGS +=	-DSHA256_FILE_HASH
+endif
+
 ifdef HPSS
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hpssFileDriver.o
 endif

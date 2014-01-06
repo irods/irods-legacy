@@ -444,7 +444,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 	rstrcpy (dataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN);
 	rstrcpy (dataObjInfo->dataType, tmpDataType, NAME_LEN);
 	dataObjInfo->dataSize = strtoll (tmpDataSize, 0, 0);
-	rstrcpy (dataObjInfo->chksum, tmpChksum, NAME_LEN);
+	rstrcpy (dataObjInfo->chksum, tmpChksum, CHKSUM_LEN);
 	rstrcpy (dataObjInfo->version, tmpVersion, NAME_LEN);
 	rstrcpy (dataObjInfo->filePath, tmpFilePath, MAX_NAME_LEN);
 	rstrcpy (dataObjInfo->dataOwnerName, tmpDataOwnerName, NAME_LEN);
