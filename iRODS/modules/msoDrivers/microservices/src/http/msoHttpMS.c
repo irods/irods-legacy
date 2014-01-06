@@ -105,7 +105,7 @@ msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode,
 
   /* Do the processing */
   /* opening file and passing i to curl */
-   destFd = fopen (cacheFilename, "w");
+   destFd = fopen (cacheFilename, "wb");
   if (destFd ==  0) {
     status = UNIX_FILE_OPEN_ERR - errno;
      printf (
@@ -127,6 +127,8 @@ msiobjget_http(msParam_t*  inRequestPath, msParam_t* inFileMode,
    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
    curl_easy_setopt(curl, CURLOPT_WRITEDATA, destFd);
    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+   /*   if (reqStr[0] != '\0' && reqStr[strlen(reqStr)-1] == '/')
+	curl_easy_setopt(curl, CURLOPT_FTPLISTONLY, TRUE); */
    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
