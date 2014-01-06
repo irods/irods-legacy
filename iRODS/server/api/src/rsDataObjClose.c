@@ -374,8 +374,13 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     } else if (L1desc[l1descInx].stageFlag == STAGE_SRC) {
         if (L1desc[l1descInx].dataSize == UNKNOWN_FILE_SZ) {
             /* stage from something like HTTP */
-            newSize = getSizeInVault (rsComm, L1desc[l1descInx].dataObjInfo);
-            if (newSize < 0) newSize = UNKNOWN_FILE_SZ;
+	  /* RAJA NOV 2013 for mso to have -99 values */
+	  /*            
+		newSize = getSizeInVault (rsComm, L1desc[l1descInx].dataObjInfo);
+		if (newSize < 0) newSize = UNKNOWN_FILE_SZ; 
+	  */
+	  newSize = UNKNOWN_FILE_SZ;
+	  /* RAJA NOV 2013 for mso to have -99 values */
         } else {
             int rescTypeInx;
 	    newSize = L1desc[l1descInx].dataSize;
