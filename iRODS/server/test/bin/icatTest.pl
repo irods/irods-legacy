@@ -564,7 +564,7 @@ runCmd(0, "ils");
 # that to exercise the SQL that handles that case.
 $count=42;
 for ($i=0;$i<$count;$i++) {
-    runCmd(0,"/tbox/IRODS_BUILD/iRODS/server/test/bin/test_chl tpw 123 > /dev/null 2>&1");
+    runCmd(0,"./test_chl tpw 123 > /dev/null 2>&1");
 }
 # Also make sure the new SQL works: that the password can be used.
 # This uses 'iinit' with the temp password, which normally isn't done,
@@ -574,7 +574,7 @@ for ($i=0;$i<$count;$i++) {
 # expired they won't be.  They should be cleaned up next time the test
 # is run tho.
 runCmd(0,"sleep 1");
-runCmd(0,"/tbox/IRODS_BUILD/iRODS/server/test/bin/test_chl tpw 123 2>&1 | grep derived");
+runCmd(0,"./test_chl tpw 123 2>&1 | grep derived");
 $ix=index($cmdStdout,"=");
 $pw=substr($cmdStdout,$ix+1);
 runCmd(1, "mv $authFile $F2"); # save the auth file
