@@ -4015,10 +4015,10 @@ int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp)
     snprintf (&bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
       NAME_LEN, "%d", replNum);
     if (chksum != NULL && strlen (chksum) > 0) {
-        rstrcpy (&bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt],
-         chksum, NAME_LEN);
+        rstrcpy (&bulkDataObjRegInp->sqlResult[9].value[CHKSUM_LEN * rowCnt],
+         chksum, CHKSUM_LEN);
     } else {
-	bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt] = '\0';
+	bulkDataObjRegInp->sqlResult[9].value[CHKSUM_LEN * rowCnt] = '\0';
     }
 
     bulkDataObjRegInp->rowCnt++;
@@ -4061,11 +4061,11 @@ initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp)
       getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
         i = attriArray->attriCnt;
         attriArray->sqlResult[i].attriInx = COL_D_DATA_CHECKSUM;
-        attriArray->sqlResult[i].len = NAME_LEN;
+        attriArray->sqlResult[i].len = CHKSUM_LEN;
         attriArray->sqlResult[i].value =
-          (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+          (char *)malloc (CHKSUM_LEN * MAX_NUM_BULK_OPR_FILES);
         bzero (attriArray->sqlResult[i].value,
-          NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+          CHKSUM_LEN * MAX_NUM_BULK_OPR_FILES);
         attriArray->attriCnt++;
     }
     attriArray->continueInx = -1;
@@ -4095,11 +4095,11 @@ int offset, bulkOprInp_t *bulkOprInp)
               "initAttriArrayOfBulkOprInp: getSqlResultByInx for COL_D_DATA_CHECKSUM failed");
             return (UNMATCHED_KEY_OR_INDEX);
 	} else {
-            rstrcpy (&chksum->value[NAME_LEN * rowCnt], inpChksum, NAME_LEN);
+            rstrcpy (&chksum->value[CHKSUM_LEN * rowCnt], inpChksum, CHKSUM_LEN);
 	}
     } else {
         if (chksum != NULL) {
-	    chksum->value[NAME_LEN * rowCnt] = '\0';
+	    chksum->value[CHKSUM_LEN * rowCnt] = '\0';
 	}
     }
     rstrcpy (&attriArray->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
