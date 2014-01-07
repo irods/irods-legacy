@@ -51,7 +51,7 @@ main(int argc, char **argv)
     fileReaddirInp_t fileReaddirInp;
     rodsDirent_t *fileReaddirOut;
     fileClosedirInp_t fileClosedirInp;
-    char chksumStr[NAME_LEN];
+    char chksumStr[CHKSUM_LEN];
     fileChksumInp_t fileChksumInp;
     char *chksumStrOut = NULL;
 

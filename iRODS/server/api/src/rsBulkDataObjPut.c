@@ -503,7 +503,7 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
               subObjPath, status);
         } else {
             if ((flags & VERIFY_CHKSUM_FLAG) != 0 && myChksum != NULL) {
-                char chksumStr[NAME_LEN];
+                char chksumStr[CHKSUM_LEN];
                 /* verify the chksum */
                 status = chksumLocFile (dataObjInfo.filePath, chksumStr);
                 if (status < 0) {
@@ -798,7 +798,7 @@ genQueryOut_t *bulkDataObjRegOut)
         if (chksum != NULL) {
             tmpChksum = &chksum->value[chksum->len * i];
             if (strlen (tmpChksum) > 0) {
-                rstrcpy (tmpDataObjInfo->chksum, tmpChksum, NAME_LEN);
+                rstrcpy (tmpDataObjInfo->chksum, tmpChksum, CHKSUM_LEN);
             }
         }
         initReiWithDataObjInp (&rei, rsComm, &dataObjInp);

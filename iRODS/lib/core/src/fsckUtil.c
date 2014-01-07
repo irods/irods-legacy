@@ -142,7 +142,7 @@ chkObjConsistency (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
 	int objSize, srcSize, status;
 	genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
-	char condStr[MAX_NAME_LEN], locChksum[NAME_LEN], *objChksum, *objName, *objPath;
+	char condStr[MAX_NAME_LEN], locChksum[CHKSUM_LEN], *objChksum, *objName, *objPath;
 #ifndef USE_BOOST_FS
 	struct stat sbuf;
 #endif

@@ -555,7 +555,7 @@ dataObjInp_t *dataObjOprInp)
                 rstrcpy (mySrcPath.dataId, collEnt.dataId, NAME_LEN);
             mySrcPath.size = collEnt.dataSize;
             mySrcPath.objMode = collEnt.dataMode;
-            rstrcpy (mySrcPath.chksum, collEnt.chksum, NAME_LEN);
+            rstrcpy (mySrcPath.chksum, collEnt.chksum, CHKSUM_LEN);
             mySrcPath.objState = EXIST_ST;
 
             getFileType (&myTargPath);
@@ -936,7 +936,7 @@ dataObjCopyInp_t *dataObjCopyInp)
             if (strlen (mySrcPath.dataId) == 0)
                 rstrcpy (mySrcPath.dataId, collEnt.dataId, NAME_LEN);
             mySrcPath.size = collEnt.dataSize;
-            rstrcpy (mySrcPath.chksum, collEnt.chksum, NAME_LEN);
+            rstrcpy (mySrcPath.chksum, collEnt.chksum, CHKSUM_LEN);
             mySrcPath.objState = EXIST_ST;
 
 #if 0

@@ -258,7 +258,7 @@ rodsObjStat_t **rodsObjStatOut)
                 /* just use the first one */
                 rstrcpy ((*rodsObjStatOut)->dataId, dataId->value, NAME_LEN);
                 (*rodsObjStatOut)->objSize = strtoll (dataSize->value, 0, 0);
-                rstrcpy ((*rodsObjStatOut)->chksum, chksum->value, NAME_LEN);
+                rstrcpy ((*rodsObjStatOut)->chksum, chksum->value, CHKSUM_LEN);
                 rstrcpy ((*rodsObjStatOut)->ownerName, ownerName->value, 
 		  NAME_LEN);
                 rstrcpy ((*rodsObjStatOut)->ownerZone, ownerZone->value, 

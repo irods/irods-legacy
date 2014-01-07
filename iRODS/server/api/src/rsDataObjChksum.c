@@ -162,7 +162,7 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 	} else {
 	    /* save it */
 	    if (strlen (tmpDataObjInfo->chksum) == 0) {
-	        rstrcpy (tmpDataObjInfo->chksum, tmpChksumStr, NAME_LEN);
+	        rstrcpy (tmpDataObjInfo->chksum, tmpChksumStr, CHKSUM_LEN);
 	    }	
 	    free (tmpChksumStr);
 	}

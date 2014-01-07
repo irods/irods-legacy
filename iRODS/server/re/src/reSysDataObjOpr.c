@@ -480,7 +480,7 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
 	rei->status = dataObjChksumAndReg (rei->rsComm, dataObjInfoHead, 
 	  &chksumStr);
 	if (chksumStr != NULL) {
-	    rstrcpy (dataObjInfoHead->chksum, chksumStr,NAME_LEN);
+	    rstrcpy (dataObjInfoHead->chksum, chksumStr,CHKSUM_LEN);
 	    free (chksumStr);
 	}
     }
