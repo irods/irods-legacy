@@ -3941,11 +3941,11 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp)
     bzero (bulkDataObjRegInp->sqlResult[8].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_DATA_CHECKSUM;
-    bulkDataObjRegInp->sqlResult[9].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[9].len = CHKSUM_LEN;
     bulkDataObjRegInp->sqlResult[9].value =
-      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (CHKSUM_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[9].value,
-      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      CHKSUM_LEN * MAX_NUM_BULK_OPR_FILES);
 
     bulkDataObjRegInp->continueInx = -1;
 
