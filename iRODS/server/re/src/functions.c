@@ -696,7 +696,7 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
     Res *res;
     char* varName = ((Node *)subtrees[0])->text;
 	Res* orig = evaluateVar3(varName, ((Node *)subtrees[0]), rei, reiSaveFlag, env, errmsg, r);
-	if(TYPE(orig)==T_ERROR) {
+	if(getNodeType(orig) == N_ERROR || TYPE(orig)==T_ERROR) {
 		return orig;
 	}
 
