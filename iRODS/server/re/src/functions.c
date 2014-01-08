@@ -288,6 +288,7 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
         }
         step = evaluateExpression3((Node *)params[2], 0,1,rei,reiSaveFlag, env,errmsg,GC_REGION);
         if(getNodeType(step) == N_ERROR) {
+			res = step;
             break;
         }
         GC_ON(env);
