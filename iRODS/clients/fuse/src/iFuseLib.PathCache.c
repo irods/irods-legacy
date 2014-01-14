@@ -115,7 +115,7 @@ int _updatePathCacheStatFromFileCache (pathCache_t *tmpPathCache)
 			tmpPathCache->stbuf.st_gid = stbuf.st_gid;
 			/* tmpPathCache->stbuf.st_atim = stbuf.st_atim;
 			tmpPathCache->stbuf.st_ctim = stbuf.st_ctim; */
-			tmpPathCache->stbuf.st_mtim = stbuf.st_mtim;
+			tmpPathCache->stbuf.st_mtime = stbuf.st_mtime;
 			tmpPathCache->stbuf.st_nlink = stbuf.st_nlink;
 			UNLOCK_STRUCT(*(tmpPathCache->fileCache));
 			return 0;
