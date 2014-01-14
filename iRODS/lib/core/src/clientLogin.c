@@ -506,6 +506,26 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    memset(md5Buf, 0, sizeof(md5Buf));
    strncpy(md5Buf, authReqOut->challenge, CHALLENGE_LEN);
 
+/* Save a representation of some of the challenge string for use
+   as a session signiture */
+   snprintf(prevChallengeSignitureClient,200,"%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
+	     (unsigned char)md5Buf[0], 
+	     (unsigned char)md5Buf[1], 
+	     (unsigned char)md5Buf[2], 
+	     (unsigned char)md5Buf[3],
+	     (unsigned char)md5Buf[4], 
+	     (unsigned char)md5Buf[5], 
+	     (unsigned char)md5Buf[6], 
+	     (unsigned char)md5Buf[7],
+	     (unsigned char)md5Buf[8], 
+	     (unsigned char)md5Buf[9], 
+	     (unsigned char)md5Buf[10], 
+	     (unsigned char)md5Buf[11],
+	     (unsigned char)md5Buf[12], 
+	     (unsigned char)md5Buf[13], 
+	     (unsigned char)md5Buf[14], 
+	     (unsigned char)md5Buf[15]);
+
    if (md5Buf[0]=='s' &&
        md5Buf[1]=='h' &&
        md5Buf[2]=='a' &&
