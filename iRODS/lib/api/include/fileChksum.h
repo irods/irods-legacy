@@ -40,7 +40,7 @@ int
 remoteFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
 char **chksumStr, rodsServerHost_t *rodsServerHost);
 int
-fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr);
+fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr, int use_sha256);
 #else
 #define RS_FILE_CHKSUM NULL
 #endif

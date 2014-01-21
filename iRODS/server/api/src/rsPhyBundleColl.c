@@ -396,7 +396,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag)
 	  tmpBunReplCache->dataId);
 	if (chksumFlag != 0) {
 	    status = fileChksum (UNIX_FILE_TYPE, rsComm, subPhyPath, 
-	      tmpBunReplCache->chksumStr);
+	      tmpBunReplCache->chksumStr, UseSHA256);
 	    if (status < 0) {
                 savedStatus = status;
                 rodsLogError (LOG_ERROR, status,

@@ -142,7 +142,7 @@ chkObjConsistency (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
 	int objSize, srcSize, status;
 	genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
-	char condStr[MAX_NAME_LEN], locChksum[CHKSUM_LEN], *objChksum, *objName, *objPath;
+	char condStr[MAX_NAME_LEN], *objChksum, *objName, *objPath;
 #ifndef USE_BOOST_FS
 	struct stat sbuf;
 #endif
@@ -180,14 +180,12 @@ chkObjConsistency (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
 		if ( srcSize == objSize ) {
 			if ( myRodsArgs->verifyChecksum == True ) {
 				if ( strcmp(objChksum,"") != 0 ) {
-					status = chksumLocFile(inpPath, locChksum);
-					if ( status == 0 ) {
-						if ( strcmp(locChksum, objChksum) != 0 ) {
+					status = verifyChksumLocFile(inpPath, objChksum, NULL);
+					if ( status == USER_CHKSUM_MISMATCH ) {
 							printf ("CORRUPTION: local file %s checksum not consistent with \
 iRODS object %s/%s checksum.\n", inpPath, objPath, objName);
-						}
-					}
-					else {
+						
+					} else if ( status < 0 ) {
 						printf ("ERROR: unable to compute checksum for local file %s.\n", inpPath);
 					}
 				}

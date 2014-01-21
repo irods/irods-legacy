@@ -503,21 +503,19 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
               subObjPath, status);
         } else {
             if ((flags & VERIFY_CHKSUM_FLAG) != 0 && myChksum != NULL) {
-                char chksumStr[CHKSUM_LEN];
-                /* verify the chksum */
-                status = chksumLocFile (dataObjInfo.filePath, chksumStr);
-                if (status < 0) {
+		char chksumStr[CHKSUM_LEN];
+		status = verifyChksumLocFile(dataObjInfo.filePath, myChksum, chksumStr);
+		if(status == USER_CHKSUM_MISMATCH) {
+		    rodsLog (LOG_ERROR,
+                      "bulkProcAndRegSubfile: chksum of %s %s != input %s",
+                        dataObjInfo.filePath, chksumStr, myChksum);
+		    return status;
+		} else if(status < 0)  {
                     rodsLog (LOG_ERROR,
                      "bulkProcAndRegSubfile: chksumLocFile error for %s ",
                       dataObjInfo.filePath);
-                    return (status);
-                }
-                if (strcmp (myChksum, chksumStr) != 0) {
-                    rodsLog (LOG_ERROR,
-                      "bulkProcAndRegSubfile: chksum of %s %s != input %s",
-                        dataObjInfo.filePath, chksumStr, myChksum);
-                    return (USER_CHKSUM_MISMATCH);
-                }
+		    return status;
+		}
             }
         }
     }

@@ -17,14 +17,23 @@
 extern "C" {
 #endif
 
+int verifyChksumLocFile(char *fileName, char *myChksum, char *chksumStr);
 int
-chksumLocFile (char *fileName, char *chksumStr);
+chksumLocFile (char *fileName, char *chksumStr, int use_sha256);
 int
 md5ToStr (unsigned char *digest, char *chksumStr);
 int
 hashToStr (unsigned char *digest, char *digestStr);
 int
 rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput);
+
+#ifdef SHA256_FILE_HASH
+#define SHA256_CHKSUM_PREFIX "sha2:"
+
+extern int UseSHA256;
+void sha256ToStr (unsigned char *hash, char chksumStr[CHKSUM_LEN]);
+#endif
+
 
 #ifdef  __cplusplus
 }

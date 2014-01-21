@@ -954,7 +954,7 @@ bulkOprInfo_t *bulkOprInfo)
     if (getValByKey (&bulkOprInp->condInput, REG_CHKSUM_KW) != NULL ||
       getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
 	char chksumStr[CHKSUM_LEN];
-        status = chksumLocFile (srcPath, chksumStr);
+        status = chksumLocFile (srcPath, chksumStr, UseSHA256);
         if (status < 0) {
             rodsLog (LOG_ERROR,
              "bulkPutFileUtil: chksumLocFile error for %s ", srcPath);

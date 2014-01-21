@@ -3,6 +3,7 @@
 
 #include "md5Checksum.h"
 #include "rcMisc.h"
+#include "base64.h"
 
 #ifdef SHA256_FILE_HASH
 #include "sha.h"
@@ -37,21 +38,37 @@ int main (int argc, char *argv[])
 #endif 	/* MD5_TESTING */
 
 #ifdef SHA256_FILE_HASH
+int UseSHA256 = 1;
 void sha256ToStr (unsigned char hash[SHA256_DIGEST_LENGTH],
-		  char outputBuffer[65]) {
-    int i = 0;
+		  char outputBuffer[CHKSUM_LEN]) {
+    int len = strlen(SHA256_CHKSUM_PREFIX);
+    rstrcpy(outputBuffer, SHA256_CHKSUM_PREFIX, CHKSUM_LEN);
+    long unsigned int l = CHKSUM_LEN - len;
+    base64_encode(hash, SHA256_DIGEST_LENGTH, (unsigned char *) outputBuffer + len, &l);
 
-    for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    {
-        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
-    }
-    outputBuffer[i*2] = 0;
 }
 #endif
 
 
+int verifyChksumLocFile(char *fileName, char *myChksum, char *chksumStr) {
+    int status;
+    char chksumBuf[CHKSUM_LEN];
+    if(chksumStr == NULL) chksumStr = chksumBuf;
+                /* verify the chksum */
+    int use_sha256=strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX));
+
+                status = chksumLocFile (fileName, chksumStr, use_sha256);
+                if (status < 0) {
+                    return (status);
+                }
+                if (strcmp (myChksum, chksumStr) != 0) {
+                    return (USER_CHKSUM_MISMATCH);
+                }
+    return 0;
+}
+
 int
-chksumLocFile (char *fileName, char *chksumStr)
+chksumLocFile (char *fileName, char *chksumStr, int use_sha256)
 {
     FILE *file;
     MD5_CTX context;
@@ -61,7 +78,6 @@ chksumLocFile (char *fileName, char *chksumStr)
 #ifdef SHA256_FILE_HASH
     unsigned char sha256_hash[SHA256_DIGEST_LENGTH+10];
     SHA256_CTX sha256;
-    int use_sha256=1;
 #endif
 
     if ((file = fopen (fileName, "rb")) == NULL) {
@@ -170,7 +186,7 @@ rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput)
         return (USER_BAD_KEYWORD_ERR);
     }
  
-    status = chksumLocFile (fileName, chksumStr);
+    status = chksumLocFile (fileName, chksumStr, UseSHA256);
 
     if (status < 0) {
 	return (status);

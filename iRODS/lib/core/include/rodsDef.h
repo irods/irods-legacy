@@ -59,7 +59,7 @@
 #define TIME_LEN        32
 #define NAME_LEN        64
 #ifdef SHA256_FILE_HASH
-#define CHKSUM_LEN      80
+#define CHKSUM_LEN      64  /* keep chksum_len the same as the old size */
 #else
 #define CHKSUM_LEN      64  /* for temporary/debug,use old size if no SHA256 */
 #endif

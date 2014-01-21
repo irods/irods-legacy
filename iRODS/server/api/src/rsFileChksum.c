@@ -3,6 +3,7 @@
 
 /* See fileChksum.h for a description of this API call.*/
 
+#include "md5Checksum.h"
 #include "fileChksum.h"
 #include "miscServerFunct.h"
 
@@ -92,7 +93,7 @@ char **chksumStr)
     *chksumStr = (char*)malloc (CHKSUM_LEN);
 
     status = fileChksum (fileChksumInp->fileType, rsComm, 
-      fileChksumInp->fileName, *chksumStr);
+      fileChksumInp->fileName, *chksumStr, 1);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE, 
@@ -107,7 +108,7 @@ char **chksumStr)
 } 
 
 int
-fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
+fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr, int use_sha256)
 {
     int fd;
     MD5_CTX context;
@@ -115,7 +116,6 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     unsigned char buffer[SVR_MD5_BUF_SZ];
     unsigned char digest[16]; /* for MD5 */
 #ifdef SHA256_FILE_HASH
-    int use_sha256=1;
     unsigned char sha256_hash[SHA256_DIGEST_LENGTH+10];
     SHA256_CTX sha256;
 #endif
@@ -170,7 +170,7 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
 
 #ifdef SHA256_FILE_HASH 
     if (use_sha256) {
-       sha256_hash_string(sha256_hash, chksumStr);
+       sha256ToStr(sha256_hash, chksumStr);
     }
     else {
        md5ToStr (digest, chksumStr);
