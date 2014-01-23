@@ -225,7 +225,7 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
     /* have to take care of checksum here since it needs to be recalcuated */ 
     if (rodsArgs->checksum == True) {
         status = rcChksumLocFile (srcPath, REG_CHKSUM_KW,
-          &dataObjOprInp->condInput);
+          &dataObjOprInp->condInput, extractHashFunction3(rodsArgs));
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "putFileUtil: rcChksumLocFile error for %s, status = %d", 
@@ -234,7 +234,7 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
         }
     } else if (rodsArgs->verifyChecksum == True) {
         status = rcChksumLocFile (srcPath, VERIFY_CHKSUM_KW,
-          &dataObjOprInp->condInput);
+          &dataObjOprInp->condInput, extractHashFunction3(rodsArgs));
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "putFileUtil: rcChksumLocFile error for %s, status = %d",
@@ -954,7 +954,7 @@ bulkOprInfo_t *bulkOprInfo)
     if (getValByKey (&bulkOprInp->condInput, REG_CHKSUM_KW) != NULL ||
       getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
 	char chksumStr[CHKSUM_LEN];
-        status = chksumLocFile (srcPath, chksumStr, UseSHA256);
+        status = chksumLocFile (srcPath, chksumStr, extractHashFunction3(rodsArgs));
         if (status < 0) {
             rodsLog (LOG_ERROR,
              "bulkPutFileUtil: chksumLocFile error for %s ", srcPath);

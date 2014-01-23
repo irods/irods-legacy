@@ -159,6 +159,11 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
 	return (0);
     }
 
+    if(rodsArgs->hash == True && rodsArgs->hashValue != NULL) {
+        addKeyVal (&dataObjInp->condInput, HASH_KW, rodsArgs->hashValue);
+        addKeyVal (&collInp->condInput, HASH_KW, rodsArgs->hashValue);
+    }
+
     if (rodsArgs->force == True && rodsArgs->verifyChecksum) {
 	rodsLog (LOG_ERROR,
 	  "initCondForChksum: the 'K' and 'f' option cannot be used together");

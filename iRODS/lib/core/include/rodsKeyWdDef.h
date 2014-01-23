@@ -13,6 +13,7 @@
 #define FORCE_FLAG_KW 	"forceFlag" 	/* force update */
 #define CLI_IN_SVR_FIREWALL_KW "cliInSvrFirewall" /* cli behind same firewall */
 #define REG_CHKSUM_KW	"regChksum" 	/* register checksum */
+#define HASH_KW "hash"
 #define VERIFY_CHKSUM_KW "verifyChksum"	/* verify checksum */
 #define VERIFY_BY_SIZE_KW "verifyBySize" /* verify by size - used by irsync */
 #define OBJ_PATH_KW	"objPath"	/* logical path of the object */ 

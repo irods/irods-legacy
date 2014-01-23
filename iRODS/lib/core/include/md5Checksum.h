@@ -12,6 +12,7 @@
 #include "global.h"
 #include "md5.h"
 #include "sha1.h"
+#include "parseCommandLine.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -25,12 +26,13 @@ md5ToStr (unsigned char *digest, char *chksumStr);
 int
 hashToStr (unsigned char *digest, char *digestStr);
 int
-rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput);
+rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput, int use_sha256);
 
+int extractHashFunction(keyValPair_t *condInput);
+int extractHashFunction2(char *myChksum);
+int extractHashFunction3(rodsArguments_t *rodsArgs);
 #ifdef SHA256_FILE_HASH
 #define SHA256_CHKSUM_PREFIX "sha2:"
-
-extern int UseSHA256;
 void sha256ToStr (unsigned char *hash, char chksumStr[CHKSUM_LEN]);
 #endif
 

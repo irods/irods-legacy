@@ -38,7 +38,6 @@ int main (int argc, char *argv[])
 #endif 	/* MD5_TESTING */
 
 #ifdef SHA256_FILE_HASH
-int UseSHA256 = 1;
 void sha256ToStr (unsigned char hash[SHA256_DIGEST_LENGTH],
 		  char outputBuffer[CHKSUM_LEN]) {
     int len = strlen(SHA256_CHKSUM_PREFIX);
@@ -47,6 +46,39 @@ void sha256ToStr (unsigned char hash[SHA256_DIGEST_LENGTH],
     base64_encode(hash, SHA256_DIGEST_LENGTH, (unsigned char *) outputBuffer + len, &l);
 
 }
+int extractHashFunction(keyValPair_t *condInput) {
+	char *hash_function = getValByKey (condInput, HASH_KW);
+	int use_sha256 = 1;
+	if(hash_function != NULL) {
+		if(strcmp(hash_function, "sha2") == 0) {
+			use_sha256 = 1;
+		} else { /* default to md5 */
+			use_sha256 = 0;
+		}
+	}
+	return use_sha256;
+}
+int extractHashFunction2(char *myChksum) {
+	return strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX));
+}
+int extractHashFunction3(rodsArguments_t *rodsArgs) {
+    if(rodsArgs->hash == True) {
+        if(strcmp(rodsArgs->hashValue, "sha2") == 0) {
+            return 1;
+        }
+    }
+	return 0;
+}
+#else
+int extractHashFunction(keyValPair_t *condInput) {
+	return 0;
+}
+int extractHashFunction2(char *chksum) {
+	return 0;
+}
+int extractHashFunction3(rodsArguments_t *rodsArgs) {
+	return 0;
+}
 #endif
 
 
@@ -54,16 +86,16 @@ int verifyChksumLocFile(char *fileName, char *myChksum, char *chksumStr) {
     int status;
     char chksumBuf[CHKSUM_LEN];
     if(chksumStr == NULL) chksumStr = chksumBuf;
-                /* verify the chksum */
-    int use_sha256=strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX));
-
-                status = chksumLocFile (fileName, chksumStr, use_sha256);
-                if (status < 0) {
-                    return (status);
-                }
-                if (strcmp (myChksum, chksumStr) != 0) {
-                    return (USER_CHKSUM_MISMATCH);
-                }
+    
+    int use_sha256 = extractHashFunction2(myChksum);
+    /* verify the chksum */
+	status = chksumLocFile (fileName, chksumStr, use_sha256);
+	if (status < 0) {
+	    return (status);
+	}
+	if (strcmp (myChksum, chksumStr) != 0) {
+	    return (USER_CHKSUM_MISMATCH);
+	}
     return 0;
 }
 
@@ -167,7 +199,7 @@ hashToStr (unsigned char *digest, char *digestStr)
  */
 
 int 
-rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput)
+rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput, int use_sha256)
 {
     char chksumStr[CHKSUM_LEN];
     int status;
@@ -186,7 +218,7 @@ rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput)
         return (USER_BAD_KEYWORD_ERR);
     }
  
-    status = chksumLocFile (fileName, chksumStr, UseSHA256);
+    status = chksumLocFile (fileName, chksumStr, use_sha256);
 
     if (status < 0) {
 	return (status);

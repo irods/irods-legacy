@@ -39,7 +39,7 @@ rodsPathInp_t *rodsPathInp)
 
         if (myRodsArgs->collection == False && myRodsArgs->checksum == True) {
             status = rcChksumLocFile (srcPath->outPath, REG_CHKSUM_KW,
-              &dataObjOprInp.condInput);
+              &dataObjOprInp.condInput,extractHashFunction3(myRodsArgs));
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "regUtil: rcChksumLocFile error for %s, status = %d",
