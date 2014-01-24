@@ -67,7 +67,7 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     ruleExecInfo_t rei;
 
     initReiWithDataObjInp (&rei, rsComm, NULL);
-    char *args[1];
+    char *args[4];
     args[0] = execCmdInp->cmd;
     args[1] = execCmdInp->cmdArgv == NULL? (char *) "" : execCmdInp->cmdArgv;
     args[2] = execCmdInp->execAddr == NULL ? (char *) "" : execCmdInp->execAddr;
