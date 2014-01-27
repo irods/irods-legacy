@@ -440,7 +440,7 @@ directAccessFileMkdir (rsComm_t *rsComm, char *dirname, int mode,
 
 #else /* RUN_SERVER_AS_ROOT */
     
-    return unixFileMkdir(rsComm, filename, mode, condInput);
+    return unixFileMkdir(rsComm, dirname, mode, condInput);
 
 #endif /* RUN_SERVER_AS_ROOT */
 }       
