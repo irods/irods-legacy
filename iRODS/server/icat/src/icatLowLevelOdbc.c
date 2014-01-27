@@ -526,6 +526,13 @@ bindTheVariables(HSTMT myHstmt, char *sql) {
    int i;
    char tmpStr[TMP_STR_LEN+2];
 
+   //////////////
+   SQLCHAR sql_state[6], msg[SQL_MAX_MESSAGE_LENGTH];
+   SQLINTEGER native_err;
+   SQLSMALLINT msg_len;
+   SQLINTEGER pcbValue = SQL_NTS;
+   //////////////
+
    myBindVarCount = cllBindVarCount;
    cllBindVarCountPrev=cllBindVarCount; /* save in case we need to log error */
    cllBindVarCount = 0; /* reset for next call */
@@ -541,7 +548,21 @@ bindTheVariables(HSTMT myHstmt, char *sql) {
 
       for (i=0;i<myBindVarCount;i++) {
 	 stat = SQLBindParameter(myHstmt, i+1, SQL_PARAM_INPUT, SQL_C_CHAR,
-				 SQL_C_CHAR, 0, 0, cllBindVars[i], 0, 0);
+				 SQL_CHAR, strlen(cllBindVars[i])+1, 0, cllBindVars[i], strlen(cllBindVars[i])+1, &pcbValue);
+
+
+	  /////////////////
+	  if (stat != SQL_SUCCESS) {
+		  SQLGetDiagRec ( SQL_HANDLE_STMT, myHstmt, i+1, sql_state, &native_err, msg, sizeof(msg), &msg_len);
+		  rodsLog(LOG_NOTICE, "bindTheVariables: cllBindVars[%d] = %s", i, cllBindVars[i]);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: RECORD NBR = %d", i+1);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: SQLSTATE = %s", sql_state);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: NATIVE ERROR CODE = %ld", native_err);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: MSG = %s", msg);
+	  }
+	  /////////////////
+
+
 	 snprintf(tmpStr, TMP_STR_LEN, "bindVar[%d]=%s", i+1, cllBindVars[i]);
 	 rodsLogSql(tmpStr);
 	 if (stat != SQL_SUCCESS) {
@@ -896,6 +917,16 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
    char *status;
    char tmpStr[TMP_STR_LEN+2];
 
+
+   //////////////
+   SQLCHAR sql_state[6], msg[SQL_MAX_MESSAGE_LENGTH];
+   SQLINTEGER native_err;
+   SQLSMALLINT msg_len;
+   //////////////
+
+
+
+
    myHdbc = icss->connectPtr;
    rodsLog(LOG_DEBUG1, sql);
    stat = SQLAllocStmt(myHdbc, &hstmt); 
@@ -938,6 +969,20 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       if (bindVar1 != 0 && *bindVar1 != '\0') {
 	  stat = SQLBindParameter(hstmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR,
 	 			 SQL_C_CHAR, 0, 0, bindVar1, 0, 0);
+
+
+	  /////////////////
+	  if (stat != SQL_SUCCESS) {
+		  SQLGetDiagRec ( SQL_HANDLE_STMT, hstmt, 1, sql_state, &native_err, msg, sizeof(msg), &msg_len);
+		  rodsLog(LOG_NOTICE, "cllExecSqlWithResultBV: bindVar1 = %s", bindVar1);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: RECORD NBR = %d", 1);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: SQLSTATE = %s", sql_state);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: NATIVE ERROR CODE = %ld", native_err);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: MSG = %s", msg);
+	  }
+	  /////////////////
+
+
 	  snprintf(tmpStr, TMP_STR_LEN, 
 		   "bindVar1=%s", bindVar1);
 	  rodsLogSql(tmpStr);
@@ -950,6 +995,22 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       if (bindVar2 != 0 && *bindVar2 != '\0') {
 	 stat = SQLBindParameter(hstmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR,
 				 SQL_C_CHAR, 0, 0, bindVar2, 0, 0);
+
+
+
+	  /////////////////
+	  if (stat != SQL_SUCCESS) {
+		  SQLGetDiagRec ( SQL_HANDLE_STMT, hstmt, 2, sql_state, &native_err, msg, sizeof(msg), &msg_len);
+		  rodsLog(LOG_NOTICE, "cllExecSqlWithResultBV: bindVar2 = %s", bindVar2);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: RECORD NBR = %d", 2);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: SQLSTATE = %s", sql_state);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: NATIVE ERROR CODE = %ld", native_err);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: MSG = %s", msg);
+	  }
+	  /////////////////
+
+
+
 	 snprintf(tmpStr, TMP_STR_LEN, 
 		  "bindVar2=%s", bindVar2);
 	 rodsLogSql(tmpStr);
@@ -962,6 +1023,22 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       if (bindVar3 != 0 && *bindVar3 != '\0') {
 	 stat = SQLBindParameter(hstmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR,
 				 SQL_C_CHAR, 0, 0, bindVar3, 0, 0);
+
+
+
+	  /////////////////
+	  if (stat != SQL_SUCCESS) {
+		  SQLGetDiagRec ( SQL_HANDLE_STMT, hstmt, 3, sql_state, &native_err, msg, sizeof(msg), &msg_len);
+		  rodsLog(LOG_NOTICE, "cllExecSqlWithResultBV: bindVar3 = %s", bindVar3);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: RECORD NBR = %d", 3);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: SQLSTATE = %s", sql_state);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: NATIVE ERROR CODE = %ld", native_err);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: MSG = %s", msg);
+	  }
+	  /////////////////
+
+
+
 	 snprintf(tmpStr, TMP_STR_LEN, 
 		   "bindVar3=%s", bindVar3);
 	 rodsLogSql(tmpStr);
@@ -974,6 +1051,21 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       if (bindVar4 != 0 && *bindVar4 != '\0') {
 	 stat = SQLBindParameter(hstmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR,
 				 SQL_C_CHAR, 0, 0, bindVar4, 0, 0);
+
+
+	  /////////////////
+	  if (stat != SQL_SUCCESS) {
+		  SQLGetDiagRec ( SQL_HANDLE_STMT, hstmt, 4, sql_state, &native_err, msg, sizeof(msg), &msg_len);
+		  rodsLog(LOG_NOTICE, "cllExecSqlWithResultBV: bindVar4 = %s", bindVar4);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: RECORD NBR = %d", 4);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: SQLSTATE = %s", sql_state);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: NATIVE ERROR CODE = %ld", native_err);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: MSG = %s", msg);
+	  }
+	  /////////////////
+
+
+
 	 snprintf(tmpStr, TMP_STR_LEN, 
 		   "bindVar4=%s", bindVar4);
 	 rodsLogSql(tmpStr);
@@ -986,6 +1078,21 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       if (bindVar5 != 0 && *bindVar5 != '\0') {
 	 stat = SQLBindParameter(hstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR,
 				 SQL_C_CHAR, 0, 0, bindVar5, 0, 0);
+
+
+	  /////////////////
+	  if (stat != SQL_SUCCESS) {
+		  SQLGetDiagRec ( SQL_HANDLE_STMT, hstmt, 5, sql_state, &native_err, msg, sizeof(msg), &msg_len);
+		  rodsLog(LOG_NOTICE, "cllExecSqlWithResultBV: bindVar5 = %s", bindVar5);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: RECORD NBR = %d", 5);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: SQLSTATE = %s", sql_state);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: NATIVE ERROR CODE = %ld", native_err);
+		  rodsLog(LOG_NOTICE, "SQLGetDiagRec: MSG = %s", msg);
+	  }
+	  /////////////////
+
+
+
 	 snprintf(tmpStr, TMP_STR_LEN, 
 		   "bindVar5=%s", bindVar5);
 	 rodsLogSql(tmpStr);
