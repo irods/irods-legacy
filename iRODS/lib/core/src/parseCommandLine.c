@@ -173,18 +173,24 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             }
          }
 	 if (strcmp("--hash", argv[i])==0) {
-            rodsArgs->hash = True;
-            argv[i]="-Z";
+        rodsArgs->hash = True;
+        argv[i]="-Z";
 	    if(argc >= i+2) {
                 if(*argv[i+1] == '-') {
                     rodsLog (LOG_ERROR,
                      "--hash option needs to specify md5 or sha2");
                     return USER_INPUT_OPTION_ERR;
                 }
-		rodsArgs->hashValue=strdup(argv[i+1]);
-		argv[i+1]="-Z";
-            }
-         }
+                if(strcmp(argv[i+1], "sha2")!=0 &&
+                   strcmp(argv[i+1], "md5")!=0) {
+                    rodsLog (LOG_ERROR,
+                     "--hash option needs to specify md5 or sha2");
+                    return USER_INPUT_OPTION_ERR;
+                }
+                rodsArgs->hashValue=strdup(argv[i+1]);
+                argv[i+1]="-Z";
+        }
+     }
          if (strcmp("--dryrun", argv[i])==0) {
             rodsArgs->dryrun=True;
             argv[i]="-Z";
