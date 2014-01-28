@@ -1,13 +1,16 @@
 #!/bin/sh
-text=`grep $1 ../../lib/core/include/rodsErrorTable.h`
-i=1
-for text1 in $text ; do
-   if [ $i -eq 2 ]
-   then
-     echo "$text1"
-   fi
-   i=`expr $i +  1`
-done
+#
+# First, reduce the user's input to one blank-delimited string 
+# and remove possible problem characters.
+pat=`echo $1 | cut -d' ' -f 1 | cut -d'-' -f2 | cut -d'\`' -f2 | cut -d'$' -f2`
+#
+# Grep for the pattern and remove lines with '*' on them.
+# If one uses the for/in loop as in the previous version, the * will expand
+# to file names.  In this .h file, we know lines with * (comments) need not
+# be matched.
+text=`grep "$pat" ../../lib/core/include/rodsErrorTable.h | grep -v \*`
+#
+# Reduce the result to one string, the error code name using head and cut.
+text1=`echo "$text" | head -1 | cut -d' ' -f2 | cut -f1`
+echo "$text1"
 exit 0
-
-
