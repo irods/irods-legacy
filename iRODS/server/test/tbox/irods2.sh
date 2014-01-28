@@ -51,8 +51,14 @@ pgsql=`ls -d pgsql`
 # Once or twice a day, test with SHA1 as the default hash
 if [ $myhour -eq 00 ] ; then
     options="$options SHA1"
-    $out1=`printf ",s/defaultHashType=HASH_TYPE_MD5/defaultHashType=HASH_TYPE_SHA1/g\nw\nq" | ed iRODS/lib/core/src/obf.c`;
+    out1=`printf ",s/defaultHashType=HASH_TYPE_MD5/defaultHashType=HASH_TYPE_SHA1/g\nw\nq" | ed iRODS/lib/core/src/obf.c`;
     printf $out1 . "\n";
+fi
+
+# Once or twice a day, test with SHA2 as the default file-hash
+if [ $myhour -eq 08 ] ; then
+    options="$options SHA256"
+    out1=`printf ",s/#SHA256_FILE_HASH = 1/SHA256_FILE_HASH = 1/g\nw\nq" | ed iRODS/config/config.mk.in`;
 fi
 
 #cd /tbox/IRODS_BUILD/iRODS
