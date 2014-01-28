@@ -63,11 +63,9 @@ int extractHashFunction2(char *myChksum) {
 }
 int extractHashFunction3(rodsArguments_t *rodsArgs) {
     if(rodsArgs->hash == True) {
-        if(strcmp(rodsArgs->hashValue, "sha2") == 0) {
-            return 1;
-        }
+        return strcmp(rodsArgs->hashValue, "md5") != 0;
     }
-	return 0;
+	return 1;
 }
 #else
 int extractHashFunction(keyValPair_t *condInput) {
