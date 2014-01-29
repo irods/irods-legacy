@@ -59,7 +59,7 @@ int extractHashFunction(keyValPair_t *condInput) {
 	return use_sha256;
 }
 int extractHashFunction2(char *myChksum) {
-	return strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX));
+	return strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX)) == 0;
 }
 int extractHashFunction3(rodsArguments_t *rodsArgs) {
     if(rodsArgs->hash == True) {
