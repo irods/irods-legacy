@@ -48,7 +48,7 @@ void sha256ToStr (unsigned char hash[SHA256_DIGEST_LENGTH],
 }
 int extractHashFunction(keyValPair_t *condInput) {
 	char *hash_function = getValByKey (condInput, HASH_KW);
-	int use_sha256 = 1;
+	int use_sha256 = PREFER_SHA256_FILE_HASH;
 	if(hash_function != NULL) {
 		if(strcmp(hash_function, "sha2") == 0) {
 			use_sha256 = 1;
@@ -65,7 +65,7 @@ int extractHashFunction3(rodsArguments_t *rodsArgs) {
     if(rodsArgs->hash == True) {
         return strcmp(rodsArgs->hashValue, "md5") != 0;
     }
-	return 1;
+	return PREFER_SHA256_FILE_HASH;
 }
 #else
 int extractHashFunction(keyValPair_t *condInput) {
