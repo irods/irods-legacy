@@ -7778,15 +7778,87 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    makeEscapedPath(pathName, pathStart, sizeof(pathStart));
    strncat(pathStart, "/%", sizeof(pathStart));
 
+#if (defined ORA_ICAT || defined MY_ICAT)
+#else
+   /* The temporary table created and used below has been found to
+      greatly speed up the execution of subsequent deletes and
+      updates.  We did a lot of testing and 'explain' SQL using a copy
+      (minus passwords) of the large iPlant ICAT DB to find this.  It
+      makes sense that using a table like this will speed it up,
+      except for the constraints aspect (further below).
+
+      It is very likely that the same temporary table would also speed
+      up Oracle and MySQL ICATs but we didn't have time to test that
+      so this is only for Postgres for now.  The SQL for creating the
+      table is probably a bit different for Oracle and MySQL but
+      otherwise I expect this would work for them.
+
+      Before this change the SQL could take minutes on a very large
+      instance.  With this, it can take less than a second on a
+      'ichmod -r' on a small sub-collection, and is fairly fast on
+      moderate sized ones.  I expect it will perform somewhat better
+      than the old SQL on large ones, but I was unable to reliably
+      test this on our fairly modest hardware.
+
+      Since these SQL statements are only for Postgres, we can't add
+      rodsLog(LOG_SQL, ...) calls (so 'devtest' will verify it is
+      called), but since the later postgres SQL depends on this table,
+      we can be sure this is exercised if "chlModAccessControl SQL 8" is.
+   */
+   status =  cmlExecuteNoAnswerSql("create temporary table R_MOD_ACCESS_TEMP1 (coll_id bigint not null, coll_name varchar(2700) not null) on commit drop",
+				   &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	     "chlModAccessControl cmlExecuteNoAnswerSql create temp table failure %d",
+	      status);
+      _rollback("chlModAccessControl");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("create unique index idx_r_mod_access_temp1 on R_MOD_ACCESS_TEMP1 (coll_name)",
+				   &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	   "chlModAccessControl cmlExecuteNoAnswerSql create index failure %d",
+	    status);
+      _rollback("chlModAccessControl");
+      return(status);
+   }
+
+   cllBindVars[cllBindVarCount++]=pathName;
+   cllBindVars[cllBindVarCount++]=pathStart;
+   status =  cmlExecuteNoAnswerSql("insert into R_MOD_ACCESS_TEMP1 (coll_id, coll_name) select  coll_id, coll_name from R_COLL_MAIN where coll_name = ? or coll_name like ?",
+				   &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	    "chlModAccessControl cmlExecuteNoAnswerSql insert failure %d",
+	     status);
+      _rollback("chlModAccessControl");
+      return(status);
+   }
+#endif
+
    cllBindVars[cllBindVarCount++]=userIdStr;
    cllBindVars[cllBindVarCount++]=pathName;
    cllBindVars[cllBindVarCount++]=pathStart;
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 8");
-   status =  cmlExecuteNoAnswerSql(
 #if (defined ORA_ICAT || defined MY_ICAT)
+   status =  cmlExecuteNoAnswerSql(
                 "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
 #else
-                "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)))",
+     /*  Use the temporary table to greatly speed up this operation
+	 (and similar ones below).  The last constraint, the 'where
+	 coll_name = ? or coll_name like ?' isn't really needed (since
+	 that table was populated via constraints like those) but,
+	 oddly, does seem to make it run much faster.  Using 'explain'
+	 SQL and test runs confirmed that it is faster with those
+	 constraints.
+     */
+   status =  cmlExecuteNoAnswerSql(
+                "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?)))",
 #endif
                 &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
@@ -7797,13 +7869,13 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    cllBindVars[cllBindVarCount++]=userIdStr;
    cllBindVars[cllBindVarCount++]=pathName;
    cllBindVars[cllBindVarCount++]=pathStart;
-
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
-   status =  cmlExecuteNoAnswerSql(
 #if (defined ORA_ICAT || defined MY_ICAT)
+   status =  cmlExecuteNoAnswerSql(
  	   "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
 #else
- 	   "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+   status =  cmlExecuteNoAnswerSql(
+ 	   "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select coll_id from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?))",
 #endif
 	       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
@@ -7851,8 +7923,9 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
 		 &icss);
 #else
+   /* For Postgres, also use the temporary R_MOD_ACCESS_TEMP1 table */
    status =  cmlExecuteNoAnswerSql(
-	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?))",
 		 &icss);
 #endif
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* no files, OK */
@@ -7880,8 +7953,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
 		 &icss);
 #else
+   /* For Postgres, also use the temporary R_MOD_ACCESS_TEMP1 table */
    status =  cmlExecuteNoAnswerSql(
-	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
+	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?)",
+
 		 &icss);
 #endif
    if (status != 0) {
@@ -7906,6 +7981,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    return(status);
 }
+
 
 /* 
  * chlRenameObject - Rename a dataObject or collection.
