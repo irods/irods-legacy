@@ -71,7 +71,14 @@ int extractHashFunction3(rodsArguments_t *rodsArgs) {
 int extractHashFunction(keyValPair_t *condInput) {
 	return 0;
 }
-int extractHashFunction2(char *chksum) {
+int extractHashFunction2(char *myChksum) {
+
+	if(strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX)) == 0) {
+	rodsLogError (LOG_ERROR, UNSUPPORTED_HASH_TYPE_USED,
+        "File has a SHA256 file hash which is not enabled in this program");
+	    return UNSUPPORTED_HASH_TYPE_USED;
+	}
+    
 
 	if(strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX)) == 0) {
 	rodsLogError (LOG_ERROR, UNSUPPORTED_HASH_TYPE_USED,
