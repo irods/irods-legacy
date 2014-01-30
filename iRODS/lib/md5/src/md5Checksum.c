@@ -72,6 +72,13 @@ int extractHashFunction(keyValPair_t *condInput) {
 	return 0;
 }
 int extractHashFunction2(char *chksum) {
+
+	if(strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX)) == 0) {
+	rodsLogError (LOG_ERROR, UNSUPPORTED_HASH_TYPE_USED,
+        "File has a SHA256 file hash which is not enabled in this program");
+	    return UNSUPPORTED_HASH_TYPE_USED;
+	}
+    
 	return 0;
 }
 int extractHashFunction3(rodsArguments_t *rodsArgs) {
@@ -83,9 +90,17 @@ int extractHashFunction3(rodsArguments_t *rodsArgs) {
 int verifyChksumLocFile(char *fileName, char *myChksum, char *chksumStr) {
     int status;
     char chksumBuf[CHKSUM_LEN];
+    int use_sha256;
+    
     if(chksumStr == NULL) chksumStr = chksumBuf;
     
-    int use_sha256 = extractHashFunction2(myChksum);
+    status = extractHashFunction2(myChksum);
+    if (status < 0) {
+        return status;
+    }
+    
+    use_sha256 = status; 
+    
     /* verify the chksum */
 	status = chksumLocFile (fileName, chksumStr, use_sha256);
 	if (status < 0) {
