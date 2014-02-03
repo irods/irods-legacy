@@ -30,6 +30,7 @@ rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput, int 
 int extractHashFunction(keyValPair_t *condInput);
 int extractHashFunction2(char *myChksum);
 int extractHashFunction3(rodsArguments_t *rodsArgs);
+int verifyHashUse(char *chksumStr);
 #ifdef SHA256_FILE_HASH
 void sha256ToStr (unsigned char *hash, char chksumStr[CHKSUM_LEN]);
 #endif

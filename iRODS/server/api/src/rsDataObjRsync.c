@@ -124,6 +124,11 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
           "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing for %s",
 	  dataObjInp->objPath);
         return (CHKSUM_EMPTY_IN_STRUCT_ERR);
+    } else if((status = verifyHashUse(fileChksumStr)) < 0) {
+        rodsLog (LOG_ERROR, 
+            "rsRsyncDataToFile: unsupported file hash for %s, status = %d",
+            dataObjInp->objPath, status);
+        return (status);
     }
 
     status = _rsDataObjChksum (rsComm, dataObjInp, &dataObjChksumStr,
@@ -190,6 +195,11 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         rodsLog (LOG_ERROR,
           "rsRsyncFileToData: RSYNC_CHKSUM_KW input is missing");
         return (CHKSUM_EMPTY_IN_STRUCT_ERR);
+    } else if((status = verifyHashUse(fileChksumStr)) < 0) {
+        rodsLog (LOG_ERROR, 
+            "rsRsyncFileToData: unsupported file hash for %s, status = %d",
+            dataObjInp->objPath, status);
+        return (status);
     }
 
     status = _rsDataObjChksum (rsComm, dataObjInp, &dataObjChksumStr,

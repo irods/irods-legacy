@@ -67,6 +67,9 @@ int extractHashFunction3(rodsArguments_t *rodsArgs) {
     }
 	return PREFER_SHA256_FILE_HASH;
 }
+int verifyHashUse(char *chksum) {
+    return extractHashFunction2(chksum) == 1 ? 0 : UNSUPPORTED_HASH_TYPE_USED;
+}
 #else
 int extractHashFunction(keyValPair_t *condInput) {
 	return 0;
@@ -90,6 +93,9 @@ int extractHashFunction2(char *myChksum) {
 }
 int extractHashFunction3(rodsArguments_t *rodsArgs) {
 	return 0;
+}
+int verifyHashUse(char *chksum) {
+    return extractHashFunction2(chksum) == 0 ? 0 : UNSUPPORTED_HASH_TYPE_USED;
 }
 #endif
 
