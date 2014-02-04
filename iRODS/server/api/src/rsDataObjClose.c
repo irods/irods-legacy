@@ -894,6 +894,12 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
         if (strlen (L1desc[l1descInx].chksum) > 0) {
             /* from a put type operation */
             /* verify against the input value. */
+            if((status = verifyHashUse(L1desc[l1descInx].chksum)) < 0) {
+                rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
+                free (*chksumStr);
+		        *chksumStr = NULL;
+                return status;
+            }
             if (strcmp (L1desc[l1descInx].chksum, *chksumStr) != 0) {
                 rodsLog (LOG_NOTICE,
                  "procChksumForClose: mismach chksum for %s.inp=%s,compute %s",
