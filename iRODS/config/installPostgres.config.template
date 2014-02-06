@@ -41,7 +41,7 @@
 #	$ODBC_SOURCE = "unixODBC-2.2.12.tar.gz";
 #
 # These values must be set in this file.
-$POSTGRES_SOURCE = "postgresql-9.2.4.tar.gz";
+$POSTGRES_SOURCE = "postgresql-9.3.2.tar.gz";
 $ODBC_SOURCE     = "unixODBC-2.2.12.tar.gz";
 
 
