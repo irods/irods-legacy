@@ -917,6 +917,12 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
        } else if (oprType == REPLICATE_DEST) {
             if (strlen (dataObjInfo->chksum) > 0) {
                 /* for replication, the chksum in dataObjInfo was duplicated */
+                if((status = verifyHashUse(L1desc[l1descInx].chksum)) < 0) {
+                    rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
+                    free (*chksumStr);
+		            *chksumStr = NULL;
+                    return status;
+                }
                 if (strcmp (dataObjInfo->chksum, *chksumStr) != 0) {
                     rodsLog (LOG_NOTICE,
                      "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
@@ -944,6 +950,12 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
             if (strlen (srcDataObjInfo->chksum) > 0) {
+                if((status = verifyHashUse(L1desc[l1descInx].chksum)) < 0) {
+                    rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
+                    free (*chksumStr);
+		            *chksumStr = NULL;
+                    return status;
+                }
                 if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
                     rodsLog (LOG_NOTICE,
                      "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
