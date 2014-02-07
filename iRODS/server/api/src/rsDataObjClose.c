@@ -1021,8 +1021,8 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
         if (strlen (L1desc[l1descInx].chksum) > 0) {
             /* from a put type operation */
 
-#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
             char *chksum = L1desc[l1descInx].chksum;
+#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
             char *chksumStr2 = strdup(chksum);
             *chksumStr = chksumStr2;
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
