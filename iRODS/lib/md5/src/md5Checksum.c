@@ -48,7 +48,13 @@ void sha256ToStr (unsigned char hash[SHA256_DIGEST_LENGTH],
 }
 int extractHashFunction(keyValPair_t *condInput) {
 	char *hash_function = getValByKey (condInput, HASH_KW);
-	int use_sha256 = PREFER_SHA256_FILE_HASH;
+	int use_sha256 = 
+#if PREFER_SHA256_FILE_HASH > 0
+        1
+#else
+        0
+#endif
+    ;
 	if(hash_function != NULL) {
 		if(strcmp(hash_function, "sha2") == 0) {
 			use_sha256 = 1;
@@ -59,13 +65,19 @@ int extractHashFunction(keyValPair_t *condInput) {
 	return use_sha256;
 }
 int extractHashFunction2(char *myChksum) {
-	return strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX)) == 0;
+	return strncmp(myChksum, SHA256_CHKSUM_PREFIX, strlen(SHA256_CHKSUM_PREFIX)) == 0?1:0;
 }
 int extractHashFunction3(rodsArguments_t *rodsArgs) {
     if(rodsArgs->hash == True) {
-        return strcmp(rodsArgs->hashValue, "md5") != 0;
+        return strcmp(rodsArgs->hashValue, "md5") != 0?1:0;
     }
-	return PREFER_SHA256_FILE_HASH;
+	return 
+#if PREFER_SHA256_FILE_HASH > 0
+        1
+#else
+        0
+#endif
+    ;
 }
 int verifyHashUse(char *chksum) {
     return extractHashFunction2(chksum) == 1 ? 0 : UNSUPPORTED_HASH_TYPE_USED;

@@ -89,18 +89,24 @@ _rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
 char **chksumStr)
 {
     int status;
+    
+    int useSha256 = 1;
+    
+#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
+    if(*chksumStr != NULL) useSha256 = extractHashFunction2(*chksumStr);
+#endif
 
     *chksumStr = (char*)malloc (CHKSUM_LEN);
 
     status = fileChksum (fileChksumInp->fileType, rsComm, 
-      fileChksumInp->fileName, *chksumStr, 1);
+      fileChksumInp->fileName, *chksumStr, useSha256);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE, 
           "_rsFileChksum: fileChksum for %s, status = %d",
           fileChksumInp->fileName, status);
-	free (*chksumStr);
-	*chksumStr = NULL;
+        free (*chksumStr);
+        *chksumStr = NULL;
         return (status);
     }
 

@@ -859,13 +859,30 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
           srcDataObjInfo->replStatus > 0) {
             /* the source has chksum. Must verify chksum */
 
+#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
+            char *chksumStr2 = strdup(srcDataObjInfo->chksum);
+            *chksumStr = chksumStr2;
+            status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+            free(chksumStr2);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                 "procChksumForClose: _dataObjChksum error for %s, status = %d",
+                  dataObjInfo->objPath, status);
+		        return status;
+#else    
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
                  "procChksumForClose: _dataObjChksum error for %s, status = %d",
                   dataObjInfo->objPath, status);
-		return status;
-            } else {
+                return status;
+            } else if((status = verifyHashUse(L1desc[l1descInx].chksum)) < 0) {
+                rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
+                free (*chksumStr);
+	            *chksumStr = NULL;
+                return status;
+#endif
+		    } else {
 		rstrcpy (dataObjInfo->chksum, *chksumStr, CHKSUM_LEN);
                 if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
                     free (*chksumStr);
@@ -888,18 +905,26 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
     if (L1desc[l1descInx].chksumFlag == 0) {
 	return 0;
     } else if (L1desc[l1descInx].chksumFlag == VERIFY_CHKSUM) {
-        status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
-        if (status < 0)  return (status);
 
         if (strlen (L1desc[l1descInx].chksum) > 0) {
             /* from a put type operation */
             /* verify against the input value. */
+#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
+            char *chksumStr2 = strdup(L1desc[l1descInx].chksum);
+            *chksumStr = chksumStr2;
+            status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+            free(chksumStr2);
+            if (status < 0)  return (status);
+#else    
+            status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+            if (status < 0)  return (status);
             if((status = verifyHashUse(L1desc[l1descInx].chksum)) < 0) {
                 rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
                 free (*chksumStr);
 		        *chksumStr = NULL;
                 return status;
             }
+#endif
             if (strcmp (L1desc[l1descInx].chksum, *chksumStr) != 0) {
                 rodsLog (LOG_NOTICE,
                  "procChksumForClose: mismach chksum for %s.inp=%s,compute %s",
@@ -917,12 +942,22 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
        } else if (oprType == REPLICATE_DEST) {
             if (strlen (dataObjInfo->chksum) > 0) {
                 /* for replication, the chksum in dataObjInfo was duplicated */
-                if((status = verifyHashUse(L1desc[l1descInx].chksum)) < 0) {
+#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
+            char *chksumStr2 = strdup(L1desc[l1descInx].chksum);
+            *chksumStr = chksumStr2;
+            status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+            free(chksumStr2);
+            if (status < 0)  return (status);
+#else    
+            status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+            if (status < 0)  return (status);
+                if((status = verifyHashUse(dataObjInfo->chksum)) < 0) {
                     rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
                     free (*chksumStr);
 		            *chksumStr = NULL;
                     return status;
                 }
+#endif
                 if (strcmp (dataObjInfo->chksum, *chksumStr) != 0) {
                     rodsLog (LOG_NOTICE,
                      "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
@@ -950,12 +985,23 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
             if (strlen (srcDataObjInfo->chksum) > 0) {
-                if((status = verifyHashUse(L1desc[l1descInx].chksum)) < 0) {
+#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
+            char *chksumStr2 = strdup(L1desc[l1descInx].chksum);
+            *chksumStr = chksumStr2;
+            status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+            free(chksumStr2);
+            if (status < 0)  return (status);
+#else    
+            status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+            if (status < 0)  return (status);
+
+                if((status = verifyHashUse(srcDataObjInfo->chksum)) < 0) {
                     rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
                     free (*chksumStr);
 		            *chksumStr = NULL;
                     return status;
                 }
+#endif
                 if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
                     rodsLog (LOG_NOTICE,
                      "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
@@ -972,9 +1018,23 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             return 0;
 	}
     } else {	/* REG_CHKSUM */
+#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
+        char *chksumStr2 = strdup(dataObjInfo->chksum);
+        *chksumStr = chksumStr2;
+        status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+        free(chksumStr2);
+        if (status < 0)  return (status);
+#else    
         status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
         if (status < 0)  return (status);
 
+        if((status = verifyHashUse(srcDataObjInfo->chksum)) < 0) {
+            rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
+            free (*chksumStr);
+            *chksumStr = NULL;
+            return status;
+        }
+#endif
         if (strlen (L1desc[l1descInx].chksum) > 0) {
             /* from a put type operation */
 
