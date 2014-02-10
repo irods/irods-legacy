@@ -942,8 +942,9 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
        } else if (oprType == REPLICATE_DEST) {
             if (strlen (dataObjInfo->chksum) > 0) {
                 /* for replication, the chksum in dataObjInfo was duplicated */
+                char *chksum = dataObjInfo->chksum;
 #if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
-            char *chksumStr2 = strdup(L1desc[l1descInx].chksum);
+            char *chksumStr2 = strdup(chksum);
             *chksumStr = chksumStr2;
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
             free(chksumStr2);
@@ -951,17 +952,17 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
 #else    
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
             if (status < 0)  return (status);
-                if((status = verifyHashUse(dataObjInfo->chksum)) < 0) {
+                if((status = verifyHashUse(chksum)) < 0) {
                     rodsLog (LOG_NOTICE, "procChksumForClose: mismach chksum for %s.inp=%s,compute %s", dataObjInfo->objPath, L1desc[l1descInx].chksum, *chksumStr);
                     free (*chksumStr);
 		            *chksumStr = NULL;
                     return status;
                 }
 #endif
-                if (strcmp (dataObjInfo->chksum, *chksumStr) != 0) {
+                if (strcmp (chksum, *chksumStr) != 0) {
                     rodsLog (LOG_NOTICE,
                      "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
-                     dataObjInfo->objPath, dataObjInfo->chksum, *chksumStr);
+                     dataObjInfo->objPath, chksum, *chksumStr);
                     status = USER_CHKSUM_MISMATCH;
                 } else {
                     /* not need to register because reg repl will do it */
