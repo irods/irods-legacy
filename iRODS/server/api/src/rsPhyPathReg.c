@@ -340,7 +340,7 @@ rescInfo_t *rescInfo)
 
     if ((chksum = getValByKey (&phyPathRegInp->condInput, 
       REG_CHKSUM_KW)) != NULL) {
-        if((status = verifyHashUse(dataObjInfo.chksum)) == 0) {
+        if((status = verifyHashUse(chksum)) == 0) {
             rstrcpy (dataObjInfo.chksum, chksum, CHKSUM_LEN);
         } else {
             rodsLog (LOG_ERROR, 
