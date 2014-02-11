@@ -947,7 +947,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 	} 
 	else {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-							"msiSetACL: Unsupported input recursiveFlag type %i",
+							"msiSetACL: Unsupported input recursiveFlag type %s",
 							recursiveFlag->type);
 		return (USER_PARAM_TYPE_ERR);
 	}
