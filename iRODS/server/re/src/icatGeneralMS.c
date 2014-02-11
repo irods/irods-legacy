@@ -21,6 +21,7 @@ This documentation is generated from the iRODS code.
  - <a href="workflow.html">Rule Engine Workflow Microservices</a>
  - #msiGoodFailure   - Useful when you want to fail but no recovery initiated
  - #msiSleep         - Sleep
+ - #smsi_getValByKey - The dot (.) operator
 
 \section msicore Core Microservices
 
@@ -928,7 +929,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
   
 	RE_TEST_MACRO ("    Calling msiSetACL")
     /* the above line is needed for loop back testing using irule -i option */
-   
+    rsComm = rei->rsComm;
 	if ( recursiveFlag == NULL || accessLevel == NULL || userName == NULL ||
 		 pathName == NULL ) {
 		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
