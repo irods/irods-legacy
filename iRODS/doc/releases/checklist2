@@ -15,6 +15,9 @@ there is time, and resolve them if straight-forward.
 
 Change version number/month-yr in lib/core/include/rodsVersion.h.
 
+Update the copyright date to include the current year in LICENSE.txt
+and COPYRIGHT/Copyright.txt.
+
 Check for updated scripts in the scripts/perl directory and update
 version (date) in those changed.
 
