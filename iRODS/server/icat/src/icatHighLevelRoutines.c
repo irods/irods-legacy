@@ -4201,11 +4201,11 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
    pwLen2 = strlen(upassword);
 
    if (pwLen2 > MAX_PASSWORD_LEN-5 && pwLen2==pwLen1) {
-      /* probable failure */
-      char errMsg[160];
+      /* Include a message with some probable failure causes */
+      char errMsg[260];
       int i;
-      snprintf(errMsg, 150, 
-	       "Error with password encoding.\nPlease try connecting directly to the ICAT host (setenv irodsHost)");
+      snprintf(errMsg, 250, 
+	       "Error with password encoding.  This can be caused by not connecting directly to the ICAT host, not using password authentication (using GSI or Kerberos instead), or entering your password incorrectly (if prompted).");
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       return(CAT_PASSWORD_ENCODING_ERROR);
    }
