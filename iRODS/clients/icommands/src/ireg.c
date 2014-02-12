@@ -142,12 +142,34 @@ usage ()
 "     resource is located and must be an absolute pathname.", 
 " -v  verbose",
 " -V  Very verbose",
+" --hash md5|sha256 - use the specified file hash type (checksum) instead of",
+""};
+   char *msgs2[]={
+"     See https://www.irods.org/index.php/File_Hashes for more.",
 " -h  this help",
 ""};
    int i;
+#ifdef SHA256_FILE_HASH
+   int use_sha256 = PREFER_SHA256_FILE_HASH;
+#endif
    for (i=0;;i++) {
       if (strlen(msgs[i])==0) break;
       printf("%s\n",msgs[i]);
+   }
+#ifdef SHA256_FILE_HASH
+   if (use_sha256==1) {
+      printf("     the default (which is sha256 for this 'ireg' build).\n");
+   }
+   else {
+      printf("     the default (which is md5 for this 'ireg' build).\n");
+   }
+#else
+   printf("     the default.  This 'ireg' is built without sha256 support\n");
+   printf("     so the '--hash' option is not available.\n");
+#endif
+   for (i=0;;i++) {
+      if (strlen(msgs2[i])==0) break;
+      printf("%s\n",msgs2[i]);
    }
    printReleaseInfo("ireg");
 }

@@ -198,14 +198,36 @@ usage ()
 "      synchronization.",
 " --age age_in_minutes - The maximum age of the source copy in minutes for sync.",
 "      i.e., age larger than age_in_minutes will not be synced.",
+" --hash md5|sha256 - use the specified file hash type (checksum) instead of",
+""};
+   char *msgs2[]={
+"      See https://www.irods.org/index.php/File_Hashes for more.",
 " ",
 "Also see 'irepl' for the replication and synchronization of physical",
 "copies (replica).",
 ""};
    int i;
+#ifdef SHA256_FILE_HASH
+   int use_sha256 = PREFER_SHA256_FILE_HASH;
+#endif
    for (i=0;;i++) {
       if (strlen(msgs[i])==0) break;
       printf("%s\n",msgs[i]);
+   }
+#ifdef SHA256_FILE_HASH
+   if (use_sha256==1) {
+      printf("      the default (which is sha256 for this 'irsync' build).\n");
+   }
+   else {
+      printf("      the default (which is md5 for this 'irsync' build).\n");
+   }
+#else
+   printf("      the default.  This 'irsync' is built without sha256 support\n");
+   printf("      so the '--hash' option is not available.\n");
+#endif
+   for (i=0;;i++) {
+      if (strlen(msgs2[i])==0) break;
+      printf("%s\n",msgs2[i]);
    }
    printReleaseInfo("irsync");
 }
