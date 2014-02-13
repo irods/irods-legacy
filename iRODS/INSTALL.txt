@@ -13,10 +13,10 @@ If you are upgrading to a new version of iRODS you will normally want
 to keep your existing state information (the ICAT, information on
 dataObjects, collections, resources, users, etc), but updating the
 ICAT database to the new version (table or index changes).  For the
-3.3 release, this is not needed but instead you run the following
+3.3.1 release, this is not needed but instead you run the following
 after running the install script (irodsupgrade below):
 
-   server/icat/patches/patch3.2to3.3.sh
+   server/icat/patches/patch3.3to3.3.1.sh
 
 This will add some new specific queries via some 'iadmin' commands.
 
