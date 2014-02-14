@@ -90,7 +90,13 @@ char **chksumStr)
 {
     int status;
     
-    int useSha256 = 1;
+    int useSha256 = 
+#if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH != 0
+        1
+#else
+        0
+#endif
+    ;
     
 #if defined(PREFER_SHA256_FILE_HASH) && PREFER_SHA256_FILE_HASH <= 1
     if(*chksumStr != NULL) useSha256 = extractHashFunction2(*chksumStr);
