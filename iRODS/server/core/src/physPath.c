@@ -530,7 +530,7 @@ char **chksumStr)
             rodsLogError (LOG_ERROR, status,
              "_dataObjChksum: _l3FileStage failed for %s",
               dataObjInfo->objPath);
-            return destL1descInx;
+            return status;
         }
 #endif
     } else if (rescClass == BUNDLE_CL) {
