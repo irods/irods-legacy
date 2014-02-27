@@ -651,9 +651,9 @@ allocReThr (rsComm_t *rsComm, reExec_t *reExec)
 	    reExec->runCnt++;
 	}
     }
-    if (thrInx == SYS_NO_FREE_RE_THREAD) {
+/*    if (thrInx == SYS_NO_FREE_RE_THREAD) {
 	thrInx = waitAndFreeReThr (rsComm, reExec);
-    }
+    }*/
     if (thrInx >= 0) 
         reExec->reExecProc[thrInx].procExecState = RE_PROC_RUNNING;
 
