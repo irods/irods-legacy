@@ -501,7 +501,6 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
 		  reExec->reExecProc[thrInx].pid, thrInx); 
 #endif
 	        /* parent fall through here */
-	        reExec->runCnt++;
 	        continue;
 	    }
 	}
@@ -641,16 +640,14 @@ allocReThr (rsComm_t *rsComm, reExec_t *reExec)
 	return 0;	
     }
 
-    reExec->runCnt = 0;		/* reset each time */
     for (i = 0; i < reExec->maxRunCnt; i++) {
 	if (reExec->reExecProc[i].procExecState == RE_PROC_IDLE) {
 	    if (thrInx == SYS_NO_FREE_RE_THREAD) {
 		thrInx = i;
 	    }
-	} else {
-	    reExec->runCnt++;
 	}
     }
+	reExec->runCnt++;
 /*    if (thrInx == SYS_NO_FREE_RE_THREAD) {
 	thrInx = waitAndFreeReThr (rsComm, reExec);
     }*/
@@ -706,6 +703,15 @@ waitAndFreeReThr (rsComm_t *rsComm, reExec_t *reExec)
 
 	        if(exeFrequency == NULL || strlen(exeFrequency->value) == 0 || strcmp(exeStatus->value, RE_RUNNING) == 0) {
 
+			int i;
+			int overlap = 0;
+			for(i =0;i<reExec->maxRunCnt;i++) {
+				if(i != thrInx && strcmp(reExec->reExecProc[i].ruleExecSubmitInp.ruleExecId, ruleExecId)==0) {
+				    overlap++;
+				}
+			}
+				        
+			if(overlap == 0) {
 		/* something wrong since the entry is not deleted. could
 		 * be core dump */
                 if ((reExecProc->jobType & RE_FAILED_STATUS) == 0) {
@@ -718,6 +724,7 @@ waitAndFreeReThr (rsComm_t *rsComm, reExec_t *reExec)
 		      ruleExecId);
 		    rstrcpy (ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN);
                     status = rsRuleExecDel (rsComm, &ruleExecDelInp);
+			}
 		}
 	        }
 			freeGenQueryOut (&genQueryOut);
