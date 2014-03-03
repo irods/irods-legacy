@@ -45,7 +45,7 @@ int _lockDesc(iFuseDesc_t *desc) {
 
 #ifdef USE_BOOST
     try {
-       IFuseDesc[descInx].mutex->lock();
+       desc->mutex->lock();
     } catch( boost::thread_resource_error ) {
        status = -1;
     }
@@ -73,7 +73,7 @@ int _unlockDesc(iFuseDesc_t *desc) {
 	int status;
 #ifdef USE_BOOST
     try {
-        IFuseDesc[descInx].mutex->unlock();
+        desc->mutex->unlock();
     } catch ( boost::thread_resource_error ) {
         status = -1;
     }
