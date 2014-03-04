@@ -55,9 +55,9 @@
 
 	}
 
-	void timeoutWait(boost::mutex *ConnManagerLock, boost::condition_variable *ConnManagerCond, int sleepTime) {
+	void timeoutWait(boost::mutex** ConnManagerLock, boost::condition_variable *ConnManagerCond, int sleepTime) {
 		boost::system_time const tt=boost::get_system_time() + boost::posix_time::seconds( sleepTime );
-	        boost::unique_lock< boost::mutex > boost_lock( *ConnManagerLock );
+	        boost::unique_lock< boost::mutex > boost_lock(**ConnManagerLock );
 	        ConnManagerCond->timed_wait( boost_lock, tt );
 	}
 	void notifyTimeoutWait(boost::mutex **ConnManagerLock, boost::condition_variable *ConnManagerCond) {
