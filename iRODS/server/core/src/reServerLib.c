@@ -644,10 +644,11 @@ allocReThr (rsComm_t *rsComm, reExec_t *reExec)
 	if (reExec->reExecProc[i].procExecState == RE_PROC_IDLE) {
 	    if (thrInx == SYS_NO_FREE_RE_THREAD) {
 		thrInx = i;
+	    reExec->runCnt++;
+	    break;
 	    }
 	}
     }
-	reExec->runCnt++;
 /*    if (thrInx == SYS_NO_FREE_RE_THREAD) {
 	thrInx = waitAndFreeReThr (rsComm, reExec);
     }*/
