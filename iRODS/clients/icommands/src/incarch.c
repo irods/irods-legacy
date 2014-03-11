@@ -36,7 +36,7 @@ main(int argc, char **argv) {
     }
 
     if (argc - optind <= 0) {
-        rodsLog (LOG_ERROR, "incattr: no input");
+        rodsLog (LOG_ERROR, "incarch: no input");
         printf("Use -h for help.\n");
         exit (2);
     }
@@ -149,5 +149,5 @@ usage ()
       if (strlen(msgs[i])==0) break;
       printf("%s\n",msgs[i]);
    }
-   printReleaseInfo("incattr");
+   printReleaseInfo("incarch");
 }
