@@ -55,6 +55,38 @@ checkCollAccessPerm (rsComm_t *rsComm, char *collection, char *accessPerm)
     return (status);
 }
 
+/*
+ Try a specific-query for the a particular Data-object in collection
+ query first, for performance improvements, before going back to a
+ general-query.  This is called from rsQueryDataObjInCollReCur below.
+ See the svn commit log (r5682) for the specific query definition.
+ */
+int 
+trySpecificQueryDataObjInCollReCur (rsComm_t *rsComm, char *collection,
+		    genQueryOut_t **genQueryOut) 
+
+{
+    int status;
+    char collNamePercent[MAX_NAME_LEN+2];
+
+    specificQueryInp_t specificQueryInp;
+
+    rstrcpy (collNamePercent, collection, MAX_NAME_LEN);
+    rstrcat (collNamePercent, "/%", MAX_NAME_LEN);
+
+    memset (&specificQueryInp, 0, sizeof (specificQueryInp_t));
+
+    specificQueryInp.maxRows= MAX_SQL_ROWS;
+    specificQueryInp.continueInx=0;
+
+    specificQueryInp.sql="DataObjInCollReCur";
+    specificQueryInp.args[0]=collection;
+    specificQueryInp.args[1]=collNamePercent;
+
+    status = rsSpecificQuery (rsComm, &specificQueryInp, genQueryOut);
+    return(status);
+}
+
 int
 rsQueryDataObjInCollReCur (rsComm_t *rsComm, char *collection,
 genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut, char *accessPerm,
@@ -99,8 +131,18 @@ int singleFlag)
         rmKeyVal (&genQueryInp->condInput, RODS_ZONE_CLIENT_KW);
         rmKeyVal (&genQueryInp->condInput, ACCESS_PERMISSION_KW);
     } else {
-        genQueryInp->maxRows = MAX_SQL_ROWS;
-        status =  rsGenQuery (rsComm, genQueryInp, genQueryOut);
+	status = trySpecificQueryDataObjInCollReCur (rsComm, collection,
+						     genQueryOut);
+	if (status < 0 && status !=CAT_NO_ROWS_FOUND) {
+	   rodsLog (LOG_NOTICE, "Note: DataObjInCollReCur specific-Query failed (not defined?), running standard query, status=%d", 
+		    status);
+	   /* remove the level 0 error msg added by the specifc-query failure */
+           status = freeRErrorContent(&rsComm->rError);
+	   /* fall back to the general-query call which used before this
+              specific-query was added (post 3.3.1) */
+	   genQueryInp->maxRows = MAX_SQL_ROWS;
+	   status =  rsGenQuery (rsComm, genQueryInp, genQueryOut);
+	}
     }
 
 
