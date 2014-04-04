@@ -84,6 +84,28 @@ trySpecificQueryDataObjInCollReCur (rsComm_t *rsComm, char *collection,
     specificQueryInp.args[1]=collNamePercent;
 
     status = rsSpecificQuery (rsComm, &specificQueryInp, genQueryOut);
+
+    if (status == 0) {
+       /*
+	 Set the attriInx values so the server-side code can locate
+	 the fields (avoid a UNMATCHED_KEY_OR_INDEX error) the way
+	 general-query is handled.  The specific-query can't set these
+	 because the columns being returned are not known (unlike for
+	 general-query).  So this code assumes the DataObjInCollReCur
+	 is defined correctly and is returning the following columns.
+	 The result->attriCnt == 6 test is a sanity check.
+	*/
+       genQueryOut_t *result;
+       result = *genQueryOut;
+       if (result->attriCnt == 6) {
+	  result->sqlResult[0].attriInx = COL_D_DATA_ID;
+	  result->sqlResult[1].attriInx = COL_COLL_NAME;
+	  result->sqlResult[2].attriInx = COL_DATA_NAME;
+	  result->sqlResult[3].attriInx = COL_DATA_REPL_NUM;
+	  result->sqlResult[4].attriInx = COL_D_RESC_NAME;
+	  result->sqlResult[5].attriInx = COL_D_DATA_PATH;
+       }
+    }
     return(status);
 }
 
