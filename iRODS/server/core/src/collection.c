@@ -153,6 +153,14 @@ int singleFlag)
         rmKeyVal (&genQueryInp->condInput, RODS_ZONE_CLIENT_KW);
         rmKeyVal (&genQueryInp->condInput, ACCESS_PERMISSION_KW);
     } else {
+        genQueryInp->maxRows = MAX_SQL_ROWS; /* Set this for the case
+           where the specific-query below does work and also
+           MAX_SQL_ROWS is reached so the caller has to call back to
+           get additional rows.  That call back will get into
+           chlGenQuery which will call lower level ICAT functions and
+           will work fine, if maxRows in genQueryInp is set so it will
+           return more rows.  Note that this is set for the rsGenQuery
+           call below too. */
 	status = trySpecificQueryDataObjInCollReCur (rsComm, collection,
 						     genQueryOut);
 	if (status < 0 && status !=CAT_NO_ROWS_FOUND) {
