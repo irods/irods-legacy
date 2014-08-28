@@ -86,7 +86,9 @@ OBJS =		\
 		$(objDir)/genOSAuth.o \
 		$(objDir)/iticket.o \
 		$(objDir)/igroupadmin.o \
-		$(objDir)/ifind.o 
+		$(objDir)/ifind.o \
+		$(objDir)/ipc.o
+
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -137,7 +139,8 @@ BINS =		\
 		$(binDir)/genOSAuth \
 		$(binDir)/iticket \
 		$(binDir)/igroupadmin \
-		$(binDir)/ifind
+		$(binDir)/ifind \
+		$(binDir)/ipc
 
 
 ifdef NETCDF_CLIENT
