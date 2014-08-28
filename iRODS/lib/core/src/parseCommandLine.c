@@ -21,6 +21,35 @@ CommandLineOptions document so we can keep it all consistent.
 #include "irodsntutil.h"
 #endif
 
+#define ENV_OPTION_MAX_LEN 120
+
+int
+handleEnvOpt(char *optionName, char **argv, int argc, int index)
+{
+   char *envStr;
+   /* This seems to work fine if envStr is static 'static char envStr[120];'
+      but I'm malloc'ing it as I think that's safer; the putenv man
+      page says the string becomes part of the environment and if one
+      does modify it after putenv'ing it, it's value does change. */
+   envStr=(char *)malloc(ENV_OPTION_MAX_LEN);
+   argv[index]="-Z";
+   if (index + 2 <= argc) {
+      if (*argv[index+1] == '-') {
+	 rodsLog (LOG_ERROR,
+		  "--%s option needs an input parameter", optionName);
+	 return USER_INPUT_OPTION_ERR;
+      }
+      snprintf(envStr,ENV_OPTION_MAX_LEN-2,"%s=%s",optionName, argv[index+1]);
+      putenv(envStr);
+      argv[index+1]="-Z";
+   }
+   else {
+      rodsLog (LOG_ERROR,
+	       "--%s option needs an input parameter", optionName);
+      return USER_INPUT_OPTION_ERR;
+   }
+   return(0);
+}
 
 /* 
  Input: 
@@ -42,6 +71,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
    char fullOpts[]="aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:Tu:vVzZxWY:";
    char *opts;
    int VCount=0;
+   int status;
 
    /* Set all flags and pointers to false/null */
    memset(rodsArgs, 0, sizeof(rodsArguments_t));
@@ -210,6 +240,34 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          if (strcmp("--showFirstLine", argv[i])==0) {
         	 rodsArgs->showFirstLine = True;
         	 argv[i]="-Z";
+         }
+         if (strcmp("--irodsHost", argv[i])==0) {
+	    status = handleEnvOpt("irodsHost",argv,argc,i);
+	    if (status) return(status);
+         }
+         if (strcmp("--irodsPort", argv[i])==0) {
+	    status = handleEnvOpt("irodsPort",argv,argc,i);
+	    if (status) return(status);
+         }
+         if (strcmp("--irodsUserName", argv[i])==0) {
+	    status = handleEnvOpt("irodsUserName",argv,argc,i);
+	    if (status) return(status);
+         }
+         if (strcmp("--irodsZone", argv[i])==0) {
+	    status = handleEnvOpt("irodsZone",argv,argc,i);
+	    if (status) return(status);
+         }
+         if (strcmp("--irodsHome", argv[i])==0) {
+	    status = handleEnvOpt("irodsHome",argv,argc,i);
+	    if (status) return(status);
+         }
+         if (strcmp("--irodsCwd", argv[i])==0) {
+	    status = handleEnvOpt("irodsCwd",argv,argc,i);
+	    if (status) return(status);
+         }
+         if (strcmp("--irodsDefResource", argv[i])==0) {
+	    status = handleEnvOpt("irodsDefResource",argv,argc,i);
+	    if (status) return(status);
          }
 #ifdef NETCDF_CLIENT
          if (strcmp("--reg", argv[i])==0) {

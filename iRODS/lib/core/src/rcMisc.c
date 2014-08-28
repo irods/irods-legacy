@@ -3855,6 +3855,15 @@ collInp201ToCollInp (collInp201_t *collInp201, collInp_t *collInp)
 void
 printReleaseInfo(char *cmdName) {
    char tmp[40];
+   /* First print information about the new -- environment options.
+      I've put this in this function for simplicity, altho it would
+      more properly belong in a separate function but that would
+      require updating all the i-command source files and it's better
+      to keep this update more limited like this, for now. */
+   printf("\nA set of -- options can also be used to specify environment\n");
+   printf("variables, see ienv -h\n");
+
+      
    strncpy(tmp, RODS_REL_VERSION, 40);   /* to skip over the 'rods' part 
 					    of the string */
    printf("\niRODS Version %s                  %s                  %s\n",

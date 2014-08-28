@@ -17,9 +17,9 @@ main(int argc, char **argv) {
 	char *optStr;
 	
 	
-	optStr = "h";
+	optStr = "hZ";
 	
-	status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+	status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 	
 	if (status < 0) {
 		printf("Use -h for help\n");
@@ -53,6 +53,20 @@ usage () {
 "Display current irods environment. Equivalent to iinit -l.",
 "Options are:",
 " -h  this help",
+" ",
+"For this version of iRODS, for many i-commands, environment variables",
+"can also be passed on the command line via '--' options and if the four",
+"key ones are input, no other user environment is needed (for example",
+"the ~/.irods/.irodsEnv file). These are:",
+"--irodsHost --irodsPort --irodsUserName --irodsZone",
+"Also available are:",
+"--irodsHome --irodsCwd --irodsDefResource",
+"These are input with a blank and the associated value, for example,",
+"'--irodsHost pivo.ucsd.edu'",
+"These option values are placed into the process environment.",
+"For an example, try running: ienv --irodsHost somename",
+" ",
+"For more information, see https://wiki.irods.org/index.php/user_environment",
 ""};
    int i;
    for (i=0;;i++) {
@@ -61,5 +75,6 @@ usage () {
    }
    printReleaseInfo("ienv");
 }
+
 
 
