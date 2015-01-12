@@ -697,6 +697,14 @@ acPostProcForDataObjRead(*ReadBuffer) { }
 acPreProcForExecCmd(*cmd, *args, *addr, *hint) { }
 # Rule for pre and post processing when establishing a parallel connection
 acPreProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
+acPreProcForWriteSessionVariable(*var) {
+	on(*var == "status") {
+		succeed;
+	}
+	or {
+		failmsg(-1, "Update session variable $*var not allowed!");
+	}
+}
 acPostProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
 # ----------------------------------------------------------------------------
 # These rules are for testing only

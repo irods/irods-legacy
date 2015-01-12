@@ -463,6 +463,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 	unsigned int n;
 	Node* subtrees0[MAX_FUNC_PARAMS];
 	Node* args[MAX_FUNC_PARAMS];
+    Node* argsProcessed[MAX_FUNC_PARAMS];
 	i = 0;
 	Node *appFuncRes = appRes;
     while(getNodeType(appFuncRes) == N_PARTIAL_APPLICATION) {
@@ -596,14 +597,18 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 		/* do the input value conversion */
 		ExprType **coercionTypes = coercionType->subtrees;
 		for(i=0;i<n;i++) {
-			if(((ioParam[i] | IO_TYPE_INPUT) == IO_TYPE_INPUT) && (nodeArgs[i]->option & OPTION_COERCE) != 0) {
-				args[i] = processCoercion(nodeArgs[i], args[i], coercionTypes[i], env->current, errmsg, newRegion);
-				if(getNodeType(args[i])==N_ERROR) {
-					res = (Res *)args[i];
+			if(((ioParam[i] & IO_TYPE_INPUT) == IO_TYPE_INPUT) && (nodeArgs[i]->option & OPTION_COERCE) != 0) {
+                argsProcessed[i] = processCoercion( nodeArgs[i], args[i], coercionTypes[i], env->current, errmsg, newRegion );
+                if ( getNodeType( argsProcessed[i] ) == N_ERROR ) {
+                    res = ( Res * )argsProcessed[i];
 					RETURN;
 				}
+            } else {
+            	argsProcessed[i] = args[i];
 			}
 		}
+    } else {
+    	memcpy(argsProcessed, args, sizeof(Res *) * n);
     }
 
 
@@ -617,19 +622,19 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
     if(fd!=NULL) {
         switch(getNodeType(fd)) {
             case N_FD_DECONSTRUCTOR:
-                res = deconstruct(fn, args, n, FD_PROJ(fd), errmsg, r);
+                res = deconstruct( fn, argsProcessed, n, FD_PROJ( fd ), errmsg, r );
                 break;
             case N_FD_CONSTRUCTOR:
-                res = construct(fn, args, n, instantiate(node->exprType, env->current, 1, r), r);
+                res = construct( fn, argsProcessed, n, instantiate( node->exprType, env->current, 1, r ), r );
                 break;
             case N_FD_FUNCTION:
-                res = (Res *) FD_SMSI_FUNC_PTR(fd)(args, n, node, rei, reiSaveFlag,  env, errmsg, newRegion);
+                res = ( Res * ) FD_SMSI_FUNC_PTR( fd )( argsProcessed, n, node, rei, reiSaveFlag,  env, errmsg, newRegion );
                 break;
             case N_FD_EXTERNAL:
-                res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
+                res = execAction3( fn, argsProcessed, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
                 break;
             case N_FD_RULE_INDEX_LIST:
-                res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
+                res = execAction3(fn, argsProcessed, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
                 break;
             default:
             	res = newErrorRes(r, RE_UNSUPPORTED_AST_NODE_TYPE);
@@ -637,7 +642,7 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
                 RETURN;
         }
     } else {
-        res = execAction3(fn, args, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
+        res = execAction3(fn, argsProcessed, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion);
     }
 
 	if (GlobalREAuditFlag > 0) {
@@ -657,13 +662,15 @@ Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExe
 
         if((ioParam[i] & IO_TYPE_OUTPUT) == IO_TYPE_OUTPUT) {
             if((appArgs[i]->option & OPTION_COERCE) != 0) {
-                args[i] = processCoercion(nodeArgs[i], args[i], appArgs[i]->exprType, env->current, errmsg, newRegion);
+                argsProcessed[i] = processCoercion( nodeArgs[i], argsProcessed[i], appArgs[i]->exprType, env->current, errmsg, newRegion );
             }
-            if(getNodeType(args[i])==N_ERROR) {
-                res = (Res *)args[i];
+            if(getNodeType(argsProcessed[i])==N_ERROR) {
+                res = (Res *)argsProcessed[i];
                 RETURN ;
             }
-            resp = setVariableValue(appArgs[i]->text, args[i], nodeArgs[i], rei,env,errmsg,r);
+            if(( ioParam[i] & IO_TYPE_INPUT ) == 0 || !definitelyEq(args[i], argsProcessed[i])) {
+            	resp = setVariableValue( appArgs[i]->text, argsProcessed[i], nodeArgs[i], rei, env, errmsg, r );
+            }
             /*char *buf = convertResToString(args[i]);
             printEnvIndent(env);
             printf("setting variable %s to %s\n", appArgs[i]->text, buf);
@@ -1062,6 +1069,7 @@ Res* execRuleFromCondIndex(char *ruleName, Res **args, int argc, CondIndexVal *c
 
 
 }
+#define SYSTEM_SPACE_RULE 0x100
 /*
  * look up rule node by rulename from index
  * apply rule condition index if possilbe
@@ -1087,11 +1095,18 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
     strcpy(ruleName, ruleNameInp);
     mapExternalFuncToInternalProc2(ruleName);
 
+	int systemSpaceRuleFlag = (reiSaveFlag & SYSTEM_SPACE_RULE) != 0 || lookupFromHashTable(ruleEngineConfig.coreFuncDescIndex->current, ruleName) != NULL ? SYSTEM_SPACE_RULE : 0;
+	int _reiSaveFlag = reiSaveFlag & SAVE_REI;
+
     RuleIndexListNode *ruleIndexListNode;
     int success = 0;
     int first = 1;
     while (1) {
-        statusI = findNextRule2(ruleName, ruleInx, &ruleIndexListNode);
+		if(systemSpaceRuleFlag != 0) {
+			statusI = findNextRuleFromIndex( ruleEngineConfig.coreFuncDescIndex, ruleName, ruleInx, &ruleIndexListNode);
+		} else {
+			statusI = findNextRule2( ruleName, ruleInx, &ruleIndexListNode );
+		}
 
         if (statusI != 0) {
 			if(applyAllRule == 0) {
@@ -1104,7 +1119,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 			}
             break;
         }
-		if (reiSaveFlag == SAVE_REI) {
+        if ( _reiSaveFlag == SAVE_REI ) {
 			int statusCopy = 0;
 			if (inited == 0) {
 				saveRei = (ruleExecInfo_t *) mallocAndZero(sizeof (ruleExecInfo_t));
@@ -1126,7 +1141,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 		}
 
 		if(ruleIndexListNode->secondaryIndex) {
-        	statusRes = execRuleFromCondIndex(ruleName, args, argc, ruleIndexListNode->condIndex, applyAllRule, env, rei, reiSaveFlag, errmsg, r);
+            statusRes = execRuleFromCondIndex( ruleName, args, argc, ruleIndexListNode->condIndex, applyAllRule, env, rei, reiSaveFlag | systemSpaceRuleFlag, errmsg, r );
         } else {
 
         	RuleDesc *rd = getRuleDesc(ruleIndexListNode->ruleIndex);
@@ -1159,8 +1174,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 		#endif
 				/* printTree(rule, 0); */
 
-				statusRes = execRuleNodeRes(rule, args, argc,  applyAllRule > 1? applyAllRule : 0, env, rei, reiSaveFlag, errmsg, r);
-
+                statusRes = execRuleNodeRes( rule, args, argc, applyAllRule > 1? applyAllRule : 0, env, rei, reiSaveFlag | systemSpaceRuleFlag, errmsg, r );
 			}
         }
 		if(getNodeType(statusRes)!=N_ERROR) {
@@ -1168,7 +1182,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
 			if (applyAllRule == 0) { /* apply first rule */
 				break;
 			} else { /* apply all rules */
-				if (reiSaveFlag == SAVE_REI) {
+				if (_reiSaveFlag == SAVE_REI) {
 					freeRuleExecInfoStruct(saveRei, 0);
 					inited = 0;
 				}
@@ -1473,6 +1487,10 @@ Res *setVariableValue(char *varName, Res *val, Node *node, ruleExecInfo_t *rei, 
     char *varMap;
     char errbuf[ERR_MSG_LEN];
     if (varName[0] == '$') {
+        char *arg = varName + 1;
+        if ( ( i = applyRuleArg( "acPreProcForWriteSessionVariable", &arg, 1, rei, 0 ) ) < 0 ) {
+            return newErrorRes( r, i );
+        }
         i = getVarMap("", varName, &varMap, 0);
         if (i < 0) {
             snprintf(errbuf, ERR_MSG_LEN, "error: unsupported session variable \"%s\".",varName);
@@ -1513,3 +1531,55 @@ Res *setVariableValue(char *varName, Res *val, Node *node, ruleExecInfo_t *rei, 
     }
     return newIntRes(r, 0);
 }
+
+int definitelyEq(Res *a, Res *b) {
+	if(a != b && TYPE(a) == TYPE(b)) {
+		switch(TYPE(a)) {
+		case T_INT:
+			return RES_INT_VAL(a) == RES_INT_VAL(b);
+		case T_DOUBLE:
+			return RES_DOUBLE_VAL(a) == RES_DOUBLE_VAL(b);
+		case T_STRING:
+			return strcmp(a->text, b->text) == 0 ? 1 : 0;
+		case T_DATETIME:
+			return RES_TIME_VAL(a) == RES_TIME_VAL(b);
+		case T_BOOL:
+			return RES_BOOL_VAL(a) == RES_BOOL_VAL(b);
+		case T_IRODS:
+			return RES_UNINTER_STRUCT(a) == RES_UNINTER_STRUCT(b) && RES_UNINTER_BUFFER(a) == RES_UNINTER_BUFFER(b);
+		case T_PATH:
+			return strcmp(a->text, b->text) == 0 ? 1 : 0;
+		case T_CONS:
+			if(a->degree == b->degree) {
+				if(a->text == b->text || strcmp(a->text, b->text) == 0) {
+					int res = 1;
+					for(int i=0;i<a->degree;i++) {
+						if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
+							res = 0;
+							break;
+						}
+					}
+					return res;
+				}
+			}
+			return 0;
+		case T_TUPLE:
+			if(a->degree == b->degree) {
+				int res = 1;
+				for(int i=0;i<a->degree;i++) {
+					if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
+						res = 0;
+						break;
+					}
+				}
+				return res;
+			}
+			return 0;
+		default:
+			return 0;
+		}
+
+	}
+	return a == b;
+}
+
